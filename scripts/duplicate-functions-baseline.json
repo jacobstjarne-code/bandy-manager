@@ -1,0 +1,105 @@
+{
+  "reviewedAt": "2026-09-02",
+  "pairs": [
+    {
+      "id": "src/domain/services/counterAttackInteractionService.ts#assistantPickCounter <> src/domain/services/freeKickInteractionService.ts#assistantPickFreeKick",
+      "disposition": "consolidate",
+      "rationale": "Identisk viktad assistentlogik; kandidat för delad interaktionshelper."
+    },
+    {
+      "id": "src/domain/services/worldGenerator.ts#pickArchetype <> src/domain/services/youthIntakeService.ts#pickArchetype",
+      "disposition": "ambiguous-canonical",
+      "rationale": "Exakt dublett men trösklarna i akademins tredje variant har drivit isär; kanon måste beslutas före sammanslagning."
+    },
+    {
+      "id": "src/domain/services/matchUtils.ts#countGoalsByPlayer <> src/domain/services/seasonSummaryService.ts#countSeasonGoalsByPlayer",
+      "disposition": "consolidate",
+      "rationale": "Samma räknemönster med olika tidsurval; kandidat för parametriserad statistikhelper."
+    },
+    {
+      "id": "src/domain/services/matchUtils.ts#countGoalsByPlayer <> src/domain/services/seasonSummaryService.ts#countSeasonAssistsByPlayer",
+      "disposition": "false-positive",
+      "rationale": "Lik struktur men avsiktligt olika händelsetyper och säsongsfilter."
+    },
+    {
+      "id": "src/domain/services/worldGenerator.ts#generateAttributes <> src/domain/services/youthIntakeService.ts#generateYouthAttributes",
+      "disposition": "ambiguous-canonical",
+      "rationale": "Hög likhet men olika generationskontext; tidigare uttryckligen flaggad som oklar kanon."
+    },
+    {
+      "id": "src/domain/data/portalBeats.ts#completedLeagueCount <> src/domain/services/anslagService.ts#leagueComplete",
+      "disposition": "consolidate",
+      "rationale": "Två beräkningar av spelade ligaomgångar; bör läsa en gemensam helper."
+    },
+    {
+      "id": "src/domain/services/matchCore.ts#getIceHardnessMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
+      "disposition": "false-positive",
+      "rationale": "Likformade numeriska trappor för helt olika domäner."
+    },
+    {
+      "id": "src/domain/services/matchCore.ts#getPenaltyPeriodMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
+      "disposition": "false-positive",
+      "rationale": "Likformade numeriska trappor för helt olika domäner."
+    },
+    {
+      "id": "src/domain/data/portalBeats.ts#completedLeagueCount <> src/domain/services/anslagService.ts#firstPlayoffMatchUpcoming",
+      "disposition": "false-positive",
+      "rationale": "Delad fixture-filtrering men olika frågor och returkontrakt."
+    },
+    {
+      "id": "src/domain/data/csPressEventText.ts#pickCSPressPublishedQuote <> src/domain/data/eventCardInlineStrings.ts#pickPlayerPraiseText",
+      "disposition": "false-positive",
+      "rationale": "Samma mallvalsform men separata textdomäner och substitutionskontrakt."
+    },
+    {
+      "id": "src/domain/services/portal/triggers/matchTriggers.ts#getNextManagedFixture <> src/domain/services/situationFragments.ts#nextManagedFixture",
+      "disposition": "consolidate",
+      "rationale": "Samma nästa-match-fråga i två tjänster; kandidat för gemensam fixture-helper."
+    },
+    {
+      "id": "src/domain/services/seasonGoalService.ts#derivePersonChangeLine <> src/domain/services/seasonTransitionService.ts#formatAwayEventLine",
+      "disposition": "false-positive",
+      "rationale": "Liknande strängformatering men olika sanning, data och output."
+    },
+    {
+      "id": "src/domain/services/matchUtils.ts#weightedPick <> src/domain/services/transferService.ts#weightedPickIndexByWeights",
+      "disposition": "consolidate",
+      "rationale": "Generisk viktad slumpning med olika returform; kandidat för delad random-helper."
+    },
+    {
+      "id": "src/domain/data/portalBeats.ts#nextManagedLeagueFixture <> src/domain/services/anslagService.ts#leagueComplete",
+      "disposition": "false-positive",
+      "rationale": "Överlappande fixture-loop men olika villkor och returvärde."
+    },
+    {
+      "id": "src/domain/services/academyService.ts#archetypeForPosition <> src/domain/services/worldGenerator.ts#pickArchetype",
+      "disposition": "ambiguous-canonical",
+      "rationale": "Tre arketypimplementationer har divergerande trösklar; ingen mekanisk kanon."
+    },
+    {
+      "id": "src/domain/services/academyService.ts#archetypeForPosition <> src/domain/services/youthIntakeService.ts#pickArchetype",
+      "disposition": "ambiguous-canonical",
+      "rationale": "Tre arketypimplementationer har divergerande trösklar; ingen mekanisk kanon."
+    },
+    {
+      "id": "src/domain/data/seasonPhases.ts#getFunctionaryPhase <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
+      "disposition": "false-positive",
+      "rationale": "Likformade trappor för fas respektive ålder; ingen gemensam domänsanning."
+    },
+    {
+      "id": "src/domain/services/matchUtils.ts#weightedPick <> src/domain/services/scandalService.ts#pickScandalType",
+      "disposition": "consolidate",
+      "rationale": "Skandalvalet duplicerar generisk viktad slumpning."
+    },
+    {
+      "id": "src/domain/services/matchCore.ts#getPenaltyPeriodMod <> src/domain/services/penaltyInteractionService.ts#resolveAIPenaltyKeeperDive",
+      "disposition": "false-positive",
+      "rationale": "Samma AST-form råkar uppstå i två orelaterade sannolikhetsmodeller."
+    },
+    {
+      "id": "src/domain/data/scenes/boardMeetingScene.ts#shouldTriggerBoardMeeting <> src/domain/data/scenes/valetScene.ts#shouldTriggerValet",
+      "disposition": "false-positive",
+      "rationale": "Avsiktligt parallella scen-gates med olika domänvillkor."
+    }
+  ]
+}

@@ -24,12 +24,14 @@
 
 import * as ts from 'typescript'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, extname } from 'node:path'
+import { join, extname, resolve } from 'node:path'
 
 const MIN_NODES = 40          // filtrerar bort triviala en-radare OCH generiska hjälpfunktioner (pick/hash/clamp)
 const SIZE_BAND = 0.35        // jämför bara funktioner inom ±35% nodantal
 const SIMILARITY_THRESHOLD = 0.72  // Levenshtein-ratio — validerat: riktig dubblett=0.85, orelaterat=0.41
 const CROSS_FILE_ONLY = true  // samma-fil-syskon (trackGoal/trackAssist etc) är avsiktligt parallella, inte "tyst duplicerad sanning"
+const CHECK_MODE = process.argv.includes('--check')
+const BASELINE_PATH = resolve('scripts/duplicate-functions-baseline.json')
 
 function walkDir(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -50,6 +52,21 @@ interface FnEntry {
   name: string
   line: number
   tokens: string[]
+}
+
+interface BaselinePair {
+  id: string
+  disposition: 'consolidate' | 'ambiguous-canonical' | 'false-positive'
+  rationale: string
+}
+
+interface DuplicateBaseline {
+  reviewedAt: string
+  pairs: BaselinePair[]
+}
+
+function pairId(a: FnEntry, b: FnEntry): string {
+  return [`${a.file}#${a.name}`, `${b.file}#${b.name}`].sort().join(' <> ')
 }
 
 function normalize(node: ts.Node, sf: ts.SourceFile, parts: string[]): void {
@@ -159,6 +176,26 @@ function main(): void {
   }
 
   console.log(`${pairsChecked} par jämförda (efter storleksbucketing), ${hits.length} över ${SIMILARITY_THRESHOLD}-tröskeln.`)
+
+  if (CHECK_MODE) {
+    const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) as DuplicateBaseline
+    const knownIds = new Set(baseline.pairs.map(pair => pair.id))
+    const currentIds = new Set(hits.map(hit => pairId(hit.a, hit.b)))
+    const newIds = [...currentIds].filter(id => !knownIds.has(id)).sort()
+    const removedIds = [...knownIds].filter(id => !currentIds.has(id)).sort()
+
+    if (removedIds.length > 0) {
+      console.log(`[info] ${removedIds.length} triagerade par har försvunnit — baslinjen kan skärpas.`)
+    }
+    if (newIds.length > 0) {
+      console.error(`\nDubblettgrinden: ${newIds.length} nytt otriagerat par hittades:`)
+      for (const id of newIds) console.error(`  - ${id}`)
+      console.error(`Triagera paret och uppdatera ${BASELINE_PATH}; dölj det inte genom att höja en totalsiffra.`)
+      process.exitCode = 1
+    } else {
+      console.log(`Dubblettgrinden: inga nya par utanför baslinjen (${baseline.pairs.length} triagerade ${baseline.reviewedAt}) ✓`)
+    }
+  }
 }
 
 main()

@@ -46,6 +46,8 @@ jobs:
       # fel (se tsconfig.scripts.json:s egen kommentar + BACKLOG.md).
       - name: Type-check (tsc, scripts/)
         run: npx tsc -p tsconfig.scripts.json
+      - name: Duplicate-function ratchet
+        run: npm run lint:duplicate-functions
       - name: Tests (vitest)
         run: npm test
       # ETAPP 1.2 (Skutskär-auditen, 2026-08-17): tsc --noEmit ensam missade
