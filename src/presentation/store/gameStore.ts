@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import type { SaveGame, RoundSummaryData, Sponsor } from '../../domain/entities/SaveGame'
+import { CURRENT_SAVE_VERSION, type SaveGame, type RoundSummaryData, type Sponsor } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
@@ -17,7 +17,14 @@ import { type AdvanceResult } from '../../application/useCases/advanceToNextEven
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { diffTactics } from '../utils/tacticData'
-import { loadSaveGame, migrateLocalStorageIfNeeded, saveSaveGame, snapshotSave } from '../../infrastructure/persistence/saveGameStorage'
+import {
+  loadSaveGame,
+  markSaveRecoveryNeeded,
+  migrateLocalStorageIfNeeded,
+  saveSaveGame,
+  snapshotSave,
+} from '../../infrastructure/persistence/saveGameStorage'
+import { migrateSaveGame } from '../../infrastructure/persistence/saveGameMigration'
 import { subscribeToSaveWrites } from '../../infrastructure/persistence/saveConflictChannel'
 import { applyFinanceChange, appendFinanceLog } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
@@ -212,6 +219,33 @@ const indexedDBStorage = {
   removeItem: async (name: string): Promise<void> => {
     await idbDel(name)
   },
+}
+
+/** Zustand kräver ett numeriskt versionsfält; domänens semver är sanningen. */
+export function persistSchemaVersion(saveVersion = CURRENT_SAVE_VERSION): number {
+  const [major = 0, minor = 0, patch = 0] = saveVersion.split('.').map(part => Number(part))
+  return major * 1_000_000 + minor * 1_000 + patch
+}
+
+export const PERSIST_SCHEMA_VERSION = persistSchemaVersion()
+
+/**
+ * U7: Zustand-data är en andra laddningsväg vid appstart. Den måste köra
+ * samma domänmigrering som loadSaveGame(), och snapshotten måste vara klar
+ * innan den riskabla migreringen börjar.
+ */
+export async function migratePersistedGameState(persistedState: unknown): Promise<{ game: SaveGame | null }> {
+  if (!persistedState || typeof persistedState !== 'object') {
+    throw new Error('Ogiltig persisterad spelstate')
+  }
+  const state = persistedState as { game?: unknown }
+  if (state.game === null || state.game === undefined) return { game: null }
+
+  await snapshotSave('pre_migration', state.game as SaveGame)
+  // Zustand-payloaden är JSON-data. Migrera en klon så att snapshotten och
+  // den ännu olästa råposten förblir orörda om migreringen kastar halvvägs.
+  const migrationInput = JSON.parse(JSON.stringify(state.game)) as unknown
+  return { game: migrateSaveGame(migrationInput) }
 }
 
 // C1 (5c9a7a8, 2026-08-24): läste tidigare på att saveSaveGame() skulle
@@ -1252,9 +1286,16 @@ export const useGameStore = create<GameState>()(
       name: 'bandy-game-store',
       storage: createJSONStorage(() => indexedDBStorage),
       partialize: (state) => ({ game: state.game }),
+      version: PERSIST_SCHEMA_VERSION,
+      migrate: migratePersistedGameState,
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.warn('persist rehydration misslyckades, återställer till tomt spel', error)
+          // Sätt INTE recovery-state via set() här: varje set triggar Zustand-
+          // persist och hade skrivit över den felande råposten med game:null.
+          // Ett litet localStorage-larm väcker den globala U7-bannern medan
+          // den riktiga rådatan ligger kvar i den roterade IndexedDB-snapshotten.
+          markSaveRecoveryNeeded()
         }
         // GAP-1: kraschåterställning — om ErrorBoundary bad om det, rensa pending-flöden
         // INNAN spelet renderas, så ett save-inducerat renderingsfel inte loopar.

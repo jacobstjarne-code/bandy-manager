@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { FeedbackButton } from '../components/FeedbackButton'
 import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
 import { SaveConflictModal } from '../components/SaveConflictModal'
+import { SaveRecoveryBanner } from '../components/SaveRecoveryBanner'
 import { RuleVersionNotice } from '../components/RuleVersionNotice'
 
 const DevScenesScreen = import.meta.env.DEV
@@ -196,6 +197,9 @@ export function AppRouter() {
       <FeedbackButton />
       <PwaUpdateBanner />
       <RuleVersionNotice />
+      {/* U7: global eftersom persist-hydreringen kan fallera före en route
+          eller en aktiv game-state alls finns att rendera mot. */}
+      <SaveRecoveryBanner />
       {/* M2: route-oberoende — en konflikt kan upptäckas på VILKEN skärm som
           helst (GameShell/GameGuard täcker bara /game/*, inte t.ex. /saves
           eller /intro). Läser saveConflict direkt ur gameStore. */}

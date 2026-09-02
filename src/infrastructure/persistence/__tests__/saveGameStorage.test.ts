@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot } from '../saveGameStorage'
+import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot, restoreLatestSaveSnapshot } from '../saveGameStorage'
 import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -409,6 +409,22 @@ describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_K
       snapshots: { attempts: 1, succeeded: 0, failed: 1 },
       restores: { attempts: 1, succeeded: 0, notFound: 0, failed: 1 },
     })
+  })
+
+  it('hoppar över en trasig nyare snapshot och återställer den senaste migrerbara punkten', async () => {
+    const valid = makeGame('save_recoverable', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    await snapshotSave('pre_newgame', valid)
+    // Ett truthy primitivvärde når migrateSaveGame men kan inte versionsstämplas.
+    // Det motsvarar den snapshot som just orsakade boot-migreringsfelet.
+    await snapshotSave('pre_migration', 42 as unknown as SaveGame)
+
+    const restored = await restoreLatestSaveSnapshot()
+
+    expect(restored.success).toBe(true)
+    if (!restored.success) return
+    expect(restored.game.id).toBe('save_recoverable')
+    expect(restored.game.version).toBe(CURRENT_SAVE_VERSION)
+    expect((idbStore[`bandy_save_${restored.game.id}`] as SaveGame).id).toBe('save_recoverable')
   })
 })
 

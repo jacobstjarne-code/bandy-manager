@@ -18,7 +18,7 @@ import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../..
 import { logEvent } from '../../../domain/services/eventLedgerService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
-import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
+import { getCoffeeRoomReturnDueMatchday, getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 import { logNarrativeBeat, pickPoolIndexAvoidingCooldown, BIRGER_SM_QUOTE_PREFIX, BIRGER_CUP_QUOTE_PREFIX } from '../../../domain/services/narrativeLogService'
@@ -749,7 +749,12 @@ export function gameFlowActions(get: Get, set: Set) {
             updatedGame.coffeeRoomAnswers = { ...(updatedGame.coffeeRoomAnswers ?? {}), [questionId]: answerId }
             updatedGame.coffeeRoomPendingReturns = [
               ...(updatedGame.coffeeRoomPendingReturns ?? []),
-              { questionId, answerId, answeredMatchday: updatedGame.currentMatchday },
+              {
+                questionId,
+                answerId,
+                answeredMatchday: updatedGame.currentMatchday,
+                dueMatchday: getCoffeeRoomReturnDueMatchday(questionId, updatedGame.currentMatchday),
+              },
             ]
           }
         }

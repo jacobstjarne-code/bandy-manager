@@ -15,6 +15,8 @@ import { recordRestoreResult, recordSnapshotResult } from './saveRecoveryMetrics
 // idb-keyval-mönster som resten av filen — ingen ny lagringsmekanism.
 const SNAPSHOT_KEY_PREFIX = 'bandy_snapshot_'
 const SNAPSHOT_ROTATION_SIZE = 2
+export const SAVE_RECOVERY_NEEDED_KEY = 'bandy-save-recovery-needed'
+export const SAVE_RECOVERY_NEEDED_EVENT = 'bandy-save-recovery-needed'
 
 async function snapshotRotationKeys(): Promise<string[]> {
   const raw = await get<string[]>(`${SNAPSHOT_KEY_PREFIX}index`)
@@ -27,7 +29,7 @@ async function snapshotRotationKeys(): Promise<string[]> {
 let snapshotCounter = 0
 
 /** Skriver en snapshot och roterar bort den äldsta om gränsen (2) nås. */
-export async function snapshotSave(reason: string, game: SaveGame): Promise<void> {
+export async function snapshotSave(reason: string, game: SaveGame): Promise<string | null> {
   try {
     const keys = await snapshotRotationKeys()
     const key = `${SNAPSHOT_KEY_PREFIX}${reason}_${Date.now()}_${snapshotCounter++}`
@@ -39,12 +41,41 @@ export async function snapshotSave(reason: string, game: SaveGame): Promise<void
     }
     await set(`${SNAPSHOT_KEY_PREFIX}index`, updated)
     recordSnapshotResult(reason, true)
+    return key
   } catch (e) {
     recordSnapshotResult(reason, false)
     // Snapshot är ett skyddsnät, inte en kritisk operation — ett misslyckat
     // snapshot ska aldrig blockera det faktiska sparflödet/newGame-flödet.
     console.warn('snapshotSave: kunde inte spara', e)
+    return null
   }
+}
+
+/**
+ * U7: ett litet, save-fritt boot-larm. Själva återställningspunkterna ligger
+ * fortsatt i IndexedDB; localStorage bär bara att UI:t ska erbjuda dem. Det
+ * gör att ett misslyckat Zustand-hydreringsförsök inte behöver mutera store:t
+ * (vilket i sin tur hade skrivit över den felande `bandy-game-store`-posten).
+ */
+export function markSaveRecoveryNeeded(): void {
+  try {
+    localStorage.setItem(SAVE_RECOVERY_NEEDED_KEY, new Date().toISOString())
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(SAVE_RECOVERY_NEEDED_EVENT))
+  } catch { /* localStorage otillgänglig — snapshoten ligger ändå kvar */ }
+}
+
+export function isSaveRecoveryNeeded(): boolean {
+  try {
+    return localStorage.getItem(SAVE_RECOVERY_NEEDED_KEY) !== null
+  } catch {
+    return false
+  }
+}
+
+export function clearSaveRecoveryNeeded(): void {
+  try {
+    localStorage.removeItem(SAVE_RECOVERY_NEEDED_KEY)
+  } catch { /* localStorage otillgänglig */ }
 }
 
 export interface SaveSnapshotSummary {
@@ -76,6 +107,48 @@ export async function loadSaveSnapshot(key: string): Promise<SaveGame | null> {
     recordRestoreResult('failed')
     throw error
   }
+}
+
+export type RestoreLatestSnapshotResult =
+  | { success: true; game: SaveGame; snapshot: SaveSnapshotSummary }
+  | { success: false }
+
+/**
+ * Provar snapshots nyast först och återställer den första som både går att
+ * migrera med aktuell kod och skriva till den auktoritativa save-platsen.
+ * Den snapshot som just orsakade migreringsfelet kan vara oläsbar; därför
+ * måste rotationens äldre punkt också provas i stället för att samma fel
+ * körs om i en loop.
+ */
+export async function restoreLatestSaveSnapshot(): Promise<RestoreLatestSnapshotResult> {
+  let snapshots: SaveSnapshotSummary[]
+  try {
+    snapshots = await listSaveSnapshots()
+  } catch {
+    return { success: false }
+  }
+
+  for (const snapshot of snapshots) {
+    try {
+      const raw = await loadSaveSnapshot(snapshot.key)
+      if (!raw) continue
+      // Saves är JSON-data. Klonen gör att en misslyckad migrering aldrig kan
+      // mutera själva återställningspunkten i minnesbaserade lagringsadaptrar.
+      const migrationInput = JSON.parse(JSON.stringify(raw)) as unknown
+      const migrated = migrateSaveGame(migrationInput)
+      if (!isValidSaveGameStructure(migrated)) continue
+      const write = await saveSaveGame(migrated, { force: true })
+      if (!write.success) return { success: false }
+      return {
+        success: true,
+        game: { ...migrated, revision: write.newRevision },
+        snapshot,
+      }
+    } catch {
+      // En trasig nyare snapshot får inte skymma en fungerande äldre punkt.
+    }
+  }
+  return { success: false }
 }
 
 export function exportSaveAsJson(game: SaveGame): void {
