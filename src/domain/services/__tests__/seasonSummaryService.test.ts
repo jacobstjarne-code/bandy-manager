@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
-import { generateSeasonSummary, getClubPositionTrend } from '../seasonSummaryService'
+import { generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend } from '../seasonSummaryService'
 import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
 
@@ -452,6 +452,71 @@ describe('getClubPositionTrend (2026-08-25, Jacobs order "AI-klubbarnas föränd
       ],
     }
     expect(getClubPositionTrend(withHistory, 'club_heros')?.direction).toBe('rising')
+  })
+})
+
+// DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
+// getClubPositionTrend ovan: ren läsning av seasonSummaries[].boardTruth,
+// ofönstrad (hela karriären, till skillnad från positionstrendens lastNSeasons).
+function boardTruthSummaryAt(
+  season: number,
+  overrides: { boardPatienceAfter: number; zone: 'stabilt' | 'under_press' | 'ultimatum'; verdict: 'exceeded' | 'met' | 'failed' },
+): SeasonSummary {
+  return {
+    season,
+    boardTruth: {
+      statedGoal: { expectation: 'topFour' as never, anchorPosition: 4, label: 'Utmana toppen' },
+      outcome: { finalPosition: 4, rating: 3, verdict: overrides.verdict, isChampion: false },
+      relationship: {
+        boardPatienceAfter: overrides.boardPatienceAfter,
+        zone: overrides.zone,
+        consecutiveFailuresAfter: 0,
+        managerFired: false,
+      },
+    },
+  } as unknown as SeasonSummary
+}
+
+describe('getBoardRelationshipTrend (DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2)', () => {
+  it('returnerar en kronologisk kurva av boardPatienceAfter/zone/verdict, en punkt per säsong som bär boardTruth', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const withHistory = {
+      ...game,
+      seasonSummaries: [
+        boardTruthSummaryAt(2026, { boardPatienceAfter: 40, zone: 'under_press', verdict: 'failed' }),
+        boardTruthSummaryAt(2025, { boardPatienceAfter: 70, zone: 'stabilt', verdict: 'met' }),
+      ],
+    }
+    // Osorterad indata (2026 före 2025) ska ändå ge äldst→nyast-ordning.
+    expect(getBoardRelationshipTrend(withHistory)).toEqual({
+      points: [
+        { season: 2025, boardPatienceAfter: 70, zone: 'stabilt', verdict: 'met' },
+        { season: 2026, boardPatienceAfter: 40, zone: 'under_press', verdict: 'failed' },
+      ],
+    })
+  })
+
+  it('hoppar tyst över säsonger utan boardTruth (saves från före A-H4) i stället för att krascha', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const withHistory = {
+      ...game,
+      seasonSummaries: [
+        { season: 2024 } as unknown as SeasonSummary,  // ingen boardTruth
+        boardTruthSummaryAt(2025, { boardPatienceAfter: 70, zone: 'stabilt', verdict: 'met' }),
+        boardTruthSummaryAt(2026, { boardPatienceAfter: 60, zone: 'stabilt', verdict: 'met' }),
+      ],
+    }
+    expect(getBoardRelationshipTrend(withHistory)?.points).toHaveLength(2)
+  })
+
+  it('null vid färre än två säsonger med boardTruth — ingen kurva på en enda punkt', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const withOneSeasson = {
+      ...game,
+      seasonSummaries: [boardTruthSummaryAt(2026, { boardPatienceAfter: 50, zone: 'stabilt', verdict: 'met' })],
+    }
+    expect(getBoardRelationshipTrend(withOneSeasson)).toBeNull()
+    expect(getBoardRelationshipTrend({ ...game, seasonSummaries: [] })).toBeNull()
   })
 })
 

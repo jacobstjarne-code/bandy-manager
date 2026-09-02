@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
-import type { SeasonSummary } from '../entities/SeasonSummary'
+import type { SeasonSummary, SeasonBoardTruth } from '../entities/SeasonSummary'
 import type { Fixture } from '../entities/Fixture'
+import type { BoardPatienceZone } from './portal/boardPatienceZone'
 import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
 import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
@@ -1016,4 +1017,44 @@ export function getClubPositionTrend(game: SaveGame, clubId: string, lastNSeason
   const last = positions[positions.length - 1]
   const direction = last < first ? 'rising' : last > first ? 'falling' : 'stable'
   return { clubId, positions, direction }
+}
+
+export interface BoardRelationshipTrendPoint {
+  season: number
+  boardPatienceAfter: number
+  zone: BoardPatienceZone
+  verdict: 'exceeded' | 'met' | 'failed'
+}
+
+export interface BoardRelationshipTrend {
+  points: BoardRelationshipTrendPoint[]   // äldst→nyast, en per säsong som bär boardTruth
+}
+
+/**
+ * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
+ * getClubPositionTrend ovan, men OFÖNSTRAD (Jacobs dom: "hela karriärens
+ * board-kurva", samma oavgränsade räckvidd JourneyGraph redan använder för
+ * finalPosition — inget lastNSeasons-fönster här).
+ *
+ * Ren läsning av game.seasonSummaries[].boardTruth (buildSeasonBoardTruth,
+ * boardService.ts) — noll ny lagring, noll ny beräkning. Säsonger utan
+ * boardTruth (saves från före A-H4) hoppas tyst över, precis som
+ * getClubPositionTrend redan hoppar över säsonger utan standingsSnapshot.
+ *
+ * null om färre än två säsonger bär boardTruth — samma "ingen kurva på en
+ * enda punkt"-golv som getClubPositionTrend.
+ */
+export function getBoardRelationshipTrend(game: SaveGame): BoardRelationshipTrend | null {
+  const points = [...game.seasonSummaries]
+    .sort((a, b) => a.season - b.season)
+    .filter((s): s is SeasonSummary & { boardTruth: SeasonBoardTruth } => s.boardTruth !== undefined)
+    .map(s => ({
+      season: s.season,
+      boardPatienceAfter: s.boardTruth.relationship.boardPatienceAfter,
+      zone: s.boardTruth.relationship.zone,
+      verdict: s.boardTruth.outcome.verdict,
+    }))
+
+  if (points.length < 2) return null
+  return { points }
 }

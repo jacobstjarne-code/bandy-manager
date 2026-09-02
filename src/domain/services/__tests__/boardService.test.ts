@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState, isUnderdogSeason } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, boardGraceState, isUnderdogSeason, getBoardEscalationLevel } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { Club } from '../../entities/Club'
+import type { SaveGame } from '../../entities/SaveGame'
 const TOTAL = 12
 
 // Skutskär-auditens test 2, Jacobs dom 2026-08-24: evaluateBoard läser nu
@@ -654,5 +655,39 @@ describe('isUnderdogSeason — canonical säsongsdom, låg startförväntan', ()
     expect(isUnderdogSeason(ClubExpectation.Survive, 12, TOTAL, false)).toBe(false)
     expect(isUnderdogSeason(ClubExpectation.WinLeague, 1, TOTAL, false)).toBe(false)
     expect(isUnderdogSeason(ClubExpectation.ChallengeTop, 2, TOTAL, false)).toBe(false)
+  })
+})
+
+// DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — ren läsning av
+// consecutiveExpectationMisses för en berättande yta, samma tröskel som
+// tröghet-domen (TROGHET_THRESHOLD=2), inte en ny beräkning.
+describe('getBoardEscalationLevel (DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3)', () => {
+  function makeGame(expectation: ClubExpectation, misses: number | undefined): SaveGame {
+    return {
+      managedClubId: 'club_managed',
+      clubs: [{ id: 'club_managed', boardExpectation: expectation, consecutiveExpectationMisses: misses }],
+    } as unknown as SaveGame
+  }
+
+  it('null under tröskeln — 0 eller 1 miss ger ingen eskalering (ingen påhittad oro)', () => {
+    expect(getBoardEscalationLevel(makeGame(ClubExpectation.ChallengeTop, 0))).toBeNull()
+    expect(getBoardEscalationLevel(makeGame(ClubExpectation.ChallengeTop, 1))).toBeNull()
+    expect(getBoardEscalationLevel(makeGame(ClubExpectation.ChallengeTop, undefined))).toBeNull()
+  })
+
+  it('"second" vid EXAKT TROGHET_THRESHOLD (2)', () => {
+    const result = getBoardEscalationLevel(makeGame(ClubExpectation.ChallengeTop, 2))
+    expect(result).toMatchObject({ level: 'second', consecutiveExpectationMisses: 2 })
+    expect(result?.expectationLabel).toBeTruthy()
+  })
+
+  it('"thirdPlus" över tröskeln (3+) — en klubb kan fastna vid botten-rungen och ackumulera obegränsat', () => {
+    expect(getBoardEscalationLevel(makeGame(ClubExpectation.Survive, 3))?.level).toBe('thirdPlus')
+    expect(getBoardEscalationLevel(makeGame(ClubExpectation.Survive, 5))?.level).toBe('thirdPlus')
+  })
+
+  it('ingen hanterad klubb hittad: null, ingen krasch', () => {
+    const game = { managedClubId: 'saknas', clubs: [] } as unknown as SaveGame
+    expect(getBoardEscalationLevel(game)).toBeNull()
   })
 })

@@ -716,6 +716,41 @@ function recalibrateExpectationLadder(
   return { newExpectation: EXPECTATION_LADDER[newIdx], newConsecutiveExpectationMisses: newMisses }
 }
 
+export interface BoardEscalationState {
+  level: 'second' | 'thirdPlus'
+  consecutiveExpectationMisses: number
+  /** BOARD_EXPECTATION_TEXT[boardExpectation] — styrelsens egen kortfras för
+   *  målet, för en eventuell mall som vill referera det konkret ("topp-fyra"). */
+  expectationLabel: string
+}
+
+/**
+ * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
+ * consecutiveExpectationMisses (skriven varje säsong av recalibrateExpectation-
+ * Ladder ovan) läses idag BARA av tröghets-demoteringen — spårad, aldrig
+ * talad. Denna funktion är en ren läsning av samma räknare för en berättande
+ * yta, INTE en ny beräkning och INTE en utökning av tröghet-domen (den
+ * ÄNDRAR förväntan, denna BERÄTTAR förloppet — samma räknare, olika syfte).
+ *
+ * Samma tröskel som tröghet (TROGHET_THRESHOLD=2) — 'second' vid EXAKT 2,
+ * 'thirdPlus' därutöver. null under tröskeln: en klubb som möter förväntan
+ * får ingen eskaleringsrad (domens SKYDDAT — ingen påhittad oro).
+ *
+ * Platsering (årsbok/board-möte/kurv-bildtext) och den talade textens
+ * innehåll är INTE avgjort här — se domens ÄGARSKAP. Denna funktion levererar
+ * bara strukturen ett framtida konsumentval bygger på.
+ */
+export function getBoardEscalationLevel(game: SaveGame): BoardEscalationState | null {
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  const misses = club?.consecutiveExpectationMisses ?? 0
+  if (!club || misses < TROGHET_THRESHOLD) return null
+  return {
+    level: misses === TROGHET_THRESHOLD ? 'second' : 'thirdPlus',
+    consecutiveExpectationMisses: misses,
+    expectationLabel: BOARD_EXPECTATION_TEXT[club.boardExpectation],
+  }
+}
+
 export function generatePreSeasonMessage(
   club: Club,
   standings: StandingRow[],

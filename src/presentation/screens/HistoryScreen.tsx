@@ -13,6 +13,8 @@ import { buildBlodslinje } from '../components/clubmemory/ClubMemoryView'
 import { Spine } from '../components/shared/Spine'
 import { deriveGoalOutcomeLine, derivePersonChangeLine, deriveRivalryLine, deriveEraChangeLine, shouldShowEraChangeLine } from '../../domain/services/seasonGoalService'
 import { TabBar } from '../components/shared/TabBar'
+import { getBoardRelationshipTrend } from '../../domain/services/seasonSummaryService'
+import type { BoardRelationshipTrendPoint } from '../../domain/services/seasonSummaryService'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -207,6 +209,77 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   )
 }
 
+/**
+ * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — syskonkurva till
+ * JourneyGraph ovan, INTE en ersättning (domens SKYDDAT: positionskurvan
+ * rörs inte). Samma visuella språk (W/H/padding/linjebredd/typsnitt) medvetet
+ * kopierat rakt av — det här är en dataväxling på ett bevisat mönster, inte
+ * en ny designparadigm. Enda skillnaden: patience är "högre = bättre" (ingen
+ * axelinvertering behövs, till skillnad från tabellposition).
+ */
+function BoardRelationshipGraph({ trend }: { trend: ReturnType<typeof getBoardRelationshipTrend> }) {
+  if (!trend) return null
+  const { points } = trend
+  const W = 300
+  const H = 100
+  const padL = 28
+  const padR = 12
+  const padT = 10
+  const padB = 24
+
+  const xStep = (W - padL - padR) / (points.length - 1)
+  function xOf(i: number) { return padL + i * xStep }
+  function yOf(patience: number) {
+    return padT + ((100 - patience) / 100) * (H - padT - padB)
+  }
+
+  const ZONE_COLOR: Record<BoardRelationshipTrendPoint['zone'], string> = {
+    stabilt: 'var(--success)',
+    under_press: 'var(--warning)',
+    ultimatum: 'var(--danger)',
+  }
+
+  const svgPoints = points.map((p, i) => `${xOf(i)},${yOf(p.boardPatienceAfter)}`).join(' ')
+
+  return (
+    <div className="card-sharp" style={{ padding: '10px 14px 8px', marginBottom: 8 }}>
+      <p className="h-label" style={{ marginBottom: 10 }}>
+        Styrelsens förtroende — läge per säsong
+      </p>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+        {[0, 50, 100].map(patience => (
+          <line key={patience} x1={padL} x2={W - padR} y1={yOf(patience)} y2={yOf(patience)}
+            stroke="var(--border)" strokeWidth="0.8" strokeDasharray="3,3" />
+        ))}
+        {[0, 50, 100].map(patience => (
+          <text key={patience} x={padL - 4} y={yOf(patience) + 3.5} textAnchor="end"
+            fontSize="7" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
+            {patience}
+          </text>
+        ))}
+        {/* adherence-exempt: Sparkline saknar axel-etiketter/rutnät helt (minimal per definition) — DOM_BOARDRELATION_BAGE_2026-09-02.md beställde JourneyGraph-ovans redan baselinade visuella språk, inte en Sparkline-ombyggnad som tappar årtalsetiketterna. */}
+        <polyline points={svgPoints} fill="none" stroke="color-mix(in srgb, var(--accent) 70%, transparent)" strokeWidth="1.8" strokeLinejoin="round" />
+        {points.map((p, i) => {
+          const cx = xOf(i)
+          const cy = yOf(p.boardPatienceAfter)
+          return (
+            <g key={p.season}>
+              <circle cx={cx} cy={cy} r={p.verdict === 'exceeded' ? 5 : 3.5}
+                fill={ZONE_COLOR[p.zone]}
+                stroke={p.verdict === 'failed' ? 'var(--danger)' : 'var(--bg-elevated)'}
+                strokeWidth="1.5" />
+              <text x={cx} y={H - 4} textAnchor="middle"
+                fontSize="6.5" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
+                {String(seasonStartYear(p.season)).slice(-2)}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
+
 type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos' | 'blodslinje'
 
 export interface HistoryScreenProps {
@@ -337,6 +410,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
 
       {activeTab !== 'seasons' && activeTab !== 'blodslinje' && <div style={{ display: 'none' }}><JourneyGraph summaries={[]} /></div>}
       {activeTab === 'seasons' && <JourneyGraph summaries={game.seasonSummaries ?? []} />}
+      {activeTab === 'seasons' && <BoardRelationshipGraph trend={getBoardRelationshipTrend(game)} />}
 
       {/* Blodslinje — mentorkedjor */}
       {activeTab === 'blodslinje' && (() => {
