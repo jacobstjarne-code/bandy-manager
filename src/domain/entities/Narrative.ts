@@ -165,6 +165,14 @@ export type EventLedgerType =
   // `mecenat_costshare` fel händelse (kostnadsdelning, inte avhopp) — ingen
   // befintlig medlem täckte "en mecenat lämnade", därav ny medlem.
   | 'mecenat_withdrawal'
+  // DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron→liggaren.
+  // `patron_change` fanns redan men konstruerades ALDRIG någonstans (varken
+  // i det gamla MemoryEventType eller här) — för generisk för att bära både
+  // anskaffning och uttåg (samma polaritetsdelning som sponsor_positive/
+  // negative och transfer_signed/sold), lämnad orörd. patron_withdrawal är
+  // medvetet skild från mecenat_withdrawal — grundpelarens uttåg är en egen,
+  // tyngre sak (domens ord), inte samma händelse på en annan entitet.
+  | 'patron_emerge' | 'patron_withdrawal'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -214,7 +222,11 @@ export interface EventLedgerEntry {
   // vilken entitet som helst utan att schemat växer per typ. `kind` sluten
   // union, växer medvetet, aldrig en fri sträng — samma disciplin som `type`.
   // pickSeasonDecisions `namedPerson ? 1 : 0` blir `subject !== undefined`.
-  subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
+  // 'patron' tillagd DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) —
+  // samma polymorfa union, en fjärde entitetstyp. Patron.id är fältet
+  // subject.id pekar på (aldrig patron.name — id är en identitet, namnet
+  // slås upp via id:t vid vy-tillfället, samma mönster som player/club/mecenat).
+  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron'; id: string }
   // Skärpning 3 (Fas 4 Moment-vägval, 2026-09-01, Opus dom): för genuint
   // två-parts-händelser — en Moment som redan bär BÅDA subjectPlayerId OCH
   // subjectClubId (transfer_story: spelaren + köpande klubben; rival_sale:

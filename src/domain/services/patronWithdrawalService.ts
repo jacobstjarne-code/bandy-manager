@@ -1,10 +1,17 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { EventLedgerEntry } from '../entities/Narrative'
 
 export interface PatronHappinessTransition {
   patron: SaveGame['patron']
   patronWithdrawnSeason: number | undefined
   withdrawalEvent?: GameEvent
+  /** DOM_PATRON_MECENAT_LAST_2026-09-02.md — satt bara vid en genuin
+   *  nollpunktsövergång (samma villkor som withdrawalEvent). Ingen
+   *  madeByPlayer-spärr: avhoppet är en systemkonsekvens av ackumulerad
+   *  happiness, inte ett enskilt spelarval — samma princip som de
+   *  ripple-triggade liggarposterna (star_injury/mecenat_withdrawal). */
+  ledgerEntry?: EventLedgerEntry
 }
 
 /**
@@ -51,10 +58,26 @@ export function applyPatronHappinessTransition(
         }],
         resolved: false,
       }
+  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren. significance 95,
+  // högre än allt i MOMENT_LEDGER_SIGNIFICANCE (topp 85) och högre än
+  // mecenat_withdrawal (dynamisk, ripple-buren) — "fundamentet knakar" är
+  // medvetet den tyngsta händelseklassen liggaren bär. Skriven vid samma
+  // villkor (!alreadyKnown) som withdrawalEvent, aldrig en andra gång.
+  const ledgerEntry: EventLedgerEntry | undefined = alreadyKnown
+    ? undefined
+    : {
+        type: 'patron_withdrawal',
+        semanticKey: withdrawalId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        subject: { kind: 'patron', id: patron.id },
+        significance: 95,
+      }
 
   return {
     patron: updatedPatron,
     patronWithdrawnSeason: game.currentSeason,
     withdrawalEvent,
+    ledgerEntry,
   }
 }

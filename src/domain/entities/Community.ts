@@ -55,6 +55,13 @@ export type CommunityActivitiesSince = Partial<Record<StaleableActivityKey, numb
 export type PatronPersonality = 'selfless' | 'controlling' | 'strategic' | 'nostalgic'
 
 export interface Patron {
+  /** DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — stabil identitet,
+   *  samma mönster som Mecenat.id (mecenat_${namn}_${säsong}). Krävs för att
+   *  EventLedgerEntry.subject ({ kind: 'patron', id }) ska kunna slå upp
+   *  namnet ur game.patron i stället för att bära namnet direkt i subject
+   *  (subject.id är en identitet, aldrig ett visningsnamn). Saknas på saves
+   *  äldre än detta fält — saveGameMigration.ts backfyller deterministiskt. */
+  id: string
   name: string
   business: string
   influence: number

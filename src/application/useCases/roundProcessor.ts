@@ -1464,6 +1464,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       game.inbox.some(i => i.id === evictionId) ||
       allNewEvents.some(e => e.id === evictionId)
     if (!alreadyQueued) {
+      const evictedPatronId = updatedPatron.id
       updatedPatron = { ...updatedPatron, isActive: false }
       patronWithdrawnSeasonAfterCsEviction = game.currentSeason
       allNewEvents.push({
@@ -1477,6 +1478,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
         resolved: false,
+      })
+      // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, samma
+      // significance som den happiness-baserade avhoppsvägen
+      // (patronWithdrawalService.ts) — samma händelseklass, olika orsak.
+      rippleLedgerEntries.push({
+        type: 'patron_withdrawal',
+        semanticKey: evictionId,
+        season: game.currentSeason,
+        matchday: nextMatchday,
+        subject: { kind: 'patron', id: evictedPatronId },
+        significance: 95,
       })
     }
   }

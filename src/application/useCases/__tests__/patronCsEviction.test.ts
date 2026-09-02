@@ -35,7 +35,7 @@ function withAutoLineup(game: SaveGame): SaveGame {
 
 function makePatron(overrides: Partial<Patron>): Patron {
   return {
-    name: 'Test Testsson', business: 'AB Test', influence: 50, happiness: 80,
+    id: 'patron_test_testsson', name: 'Test Testsson', business: 'AB Test', influence: 50, happiness: 80,
     contribution: 200000, isActive: true, hasBeenWarned: false, goodwill: 80,
     totalContributed: 0, demands: [],
     ...overrides,
@@ -54,6 +54,14 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
     expect(result.game.patronWithdrawnSeason).toBe(game.currentSeason)
     const evictionEvent = result.pendingEvents.find(e => e.id.startsWith('patron_cs_eviction_'))
     expect(evictionEvent).toBeDefined()
+    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, CS-uttågsvägen.
+    const ledgerEntry = result.game.eventLedger?.find(e => e.type === 'patron_withdrawal')
+    expect(ledgerEntry).toMatchObject({
+      type: 'patron_withdrawal',
+      semanticKey: evictionEvent!.id,
+      subject: { kind: 'patron', id: 'patron_test_testsson' },
+      significance: 95,
+    })
   })
 
   it('communityStanding över tröskeln: patronen påverkas inte', () => {

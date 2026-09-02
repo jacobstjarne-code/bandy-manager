@@ -264,6 +264,17 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.financeLog === undefined) data.financeLog = []
   if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
   if (data.mecenater === undefined) data.mecenater = []
+  // DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron.id är nytt;
+  // äldre saves saknar det. Ingen säsong/ankomsttid sparad för en befintlig
+  // patron, så ett namnbaserat id (samma "stabilt, inte namnet i sig"-krav
+  // som Mecenat.id, men utan säsongen mecenat-mönstret annars använder) —
+  // stabilt över omladdningar, det enda kravet en migrering kan garantera.
+  if (data.patron && typeof data.patron === 'object') {
+    const patron = data.patron as Record<string, unknown>
+    if (typeof patron.id !== 'string' && typeof patron.name === 'string') {
+      patron.id = `patron_${patron.name.toLowerCase().replace(/\s+/g, '_')}`
+    }
+  }
   if (data.facilityState === undefined) data.facilityState = migrateFacilityState((data.facilityProjects as LegacyFacilityProject[] | undefined) ?? [])
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.aiTransferLog === undefined) data.aiTransferLog = []

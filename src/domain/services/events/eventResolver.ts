@@ -84,6 +84,8 @@ function applyPatronHappiness(game: SaveGame, amount: number): SaveGame {
     pendingEvents: transition.withdrawalEvent
       ? [...(game.pendingEvents ?? []), transition.withdrawalEvent]
       : game.pendingEvents,
+    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, uttågshalvan.
+    eventLedger: transition.ledgerEntry ? logEvent(game, transition.ledgerEntry) : game.eventLedger,
   }
 }
 
@@ -823,9 +825,13 @@ export function resolveEvent(
       try {
         const p = JSON.parse(rawPatron)
         if (!p.name || !p.business) throw new Error("effect 'spawnPatron': parsad data saknar obligatoriskt fält name/business")
+        // DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som
+        // Mecenat/setupManagedClub.ts:s generatePatron (namn+säsong).
+        const patronId = `patron_${String(p.name).split(' ')[0].toLowerCase()}_${updatedGame.currentSeason}`
         updatedGame = {
           ...updatedGame,
           patron: {
+            id: patronId,
             name: p.name,
             business: p.business,
             influence: p.influence ?? 50,
@@ -839,6 +845,26 @@ export function resolveEvent(
             totalContributed: 0,
             demands: [],
           },
+        }
+        // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, Fas 4+-
+        // mönstret (samma som recentMoments/ripple-kedjorna). Skrivs bara vid
+        // en genuin anskaffning (madeByPlayer, dvs 'welcome'/'cautious' — den
+        // enda vägen hit; 'decline' använder effekten 'noOp' och når aldrig
+        // denna case). significance 85 = samma tyngdklass som era_shift
+        // (MOMENT_LEDGER_SIGNIFICANCE) — en stor, positiv händelse.
+        if (madeByPlayer) {
+          updatedGame = {
+            ...updatedGame,
+            eventLedger: logEvent(updatedGame, {
+              type: 'patron_emerge',
+              semanticKey: event.id,
+              season: updatedGame.currentSeason,
+              matchday: updatedGame.currentMatchday,
+              subject: { kind: 'patron', id: patronId },
+              significance: 85,
+              madeByPlayer: true,
+            }),
+          }
         }
       } catch (e) {
         if (e instanceof SyntaxError) { /* malformad JSON, tystas */ } else { throw e }

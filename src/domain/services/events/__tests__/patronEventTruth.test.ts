@@ -14,6 +14,7 @@ function withPatron(happiness: number, season = 2026) {
     ...game,
     currentSeason: season,
     patron: {
+      id: 'patron_testsson',
       name: 'Patron Testsson',
       business: 'Testbruket',
       influence: 50,
@@ -84,6 +85,30 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
 
     expect(result.clubs.find(club => club.id === base.managedClubId)?.finances).toBe(before + 20000)
     expect(result.patron?.happiness).toBe(95)
+  })
+
+  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, anskaffnings-
+  // halvan. 'decline' använder 'noOp' och når aldrig spawnPatron — ingen
+  // ledgerpost för ett avböjt erbjudande, bara en genuin anskaffning.
+  it('en accepterad anskaffning (welcome) skriver en patron_emerge-liggarpost, ett avböjt (decline) gör det inte', () => {
+    const base = { ...makeGame(), currentSeason: 2026, patron: undefined }
+    const offer = generatePatronEmergenceEvent(base, () => 0)!
+    expect(offer).not.toBeNull()
+
+    const welcomed = resolveEvent({ ...base, pendingEvents: [offer] }, offer.id, 'welcome', undefined, true)
+    expect(welcomed.patron?.isActive).toBe(true)
+    const emergeEntry = welcomed.eventLedger?.find(e => e.type === 'patron_emerge')
+    expect(emergeEntry).toMatchObject({
+      type: 'patron_emerge',
+      semanticKey: offer.id,
+      season: 2026,
+      subject: { kind: 'patron', id: welcomed.patron?.id },
+      significance: 85,
+    })
+
+    const declined = resolveEvent({ ...base, pendingEvents: [offer] }, offer.id, 'decline', undefined, true)
+    expect(declined.patron).toBeUndefined()
+    expect(declined.eventLedger?.some(e => e.type === 'patron_emerge')).toBeFalsy()
   })
 
   it('en negativ patron-subeffekt behåller samma avhoppsföljd som top-level-effekten', () => {

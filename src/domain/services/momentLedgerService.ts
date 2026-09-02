@@ -99,5 +99,11 @@ export function resolveSubjectName(game: SaveGame, subject?: EventLedgerEntry['s
       return game.clubs.find(c => c.id === subject.id)?.name
     case 'mecenat':
       return (game.mecenater ?? []).find(m => m.id === subject.id)?.name
+    case 'patron':
+      // DOM_PATRON_MECENAT_LAST_2026-09-02.md — game.patron är EN entitet,
+      // inte en array (till skillnad från mecenater). id-matchning ändå,
+      // aldrig bara "returnera game.patron.name": en avgången patron kan ha
+      // ersatts av en ny med annat id innan en gammal liggarpost renderas.
+      return game.patron?.id === subject.id ? game.patron.name : undefined
   }
 }

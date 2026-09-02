@@ -61,6 +61,7 @@ export function generatePatron(
   clubReputation: number,
   managedPlayers: Player[],
   rand: () => number,
+  season: number,
 ): Patron | undefined {
   if (clubReputation < 35 || rand() > 0.75) return undefined
   const profile = pickRandom(PATRON_PROFILES, rand)
@@ -78,6 +79,9 @@ export function generatePatron(
     : undefined
 
   return {
+    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som Mecenat
+    // (mecenat_${namn}_${säsong}).
+    id: `patron_${profile.first.toLowerCase()}_${season}`,
     name: `${profile.first} ${profile.last}`,
     business: profile.biz,
     influence,
@@ -289,7 +293,7 @@ export function generateManagedClubEntourage(input: ManagedClubEntourageInput): 
   const journalist = createJournalist(localPaperName, rand)
   const doctor = createDoctor(rand)
   const mecenater = rand() < 0.5 ? [generateMecenat(clubId, civicSeason, rand)] : []
-  const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
+  const patron = generatePatron(managedClub.reputation, managedPlayers, rand, civicSeason)
   const localPolitician = generatePolitician(rand, civicSeason)
   const board = generateBoardMembers(clubId, rand)
 

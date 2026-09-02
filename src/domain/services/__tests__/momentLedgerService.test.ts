@@ -203,4 +203,16 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(resolveSubjectName(game, { kind: 'player', id: 'okänd' })).toBeUndefined()
     expect(resolveSubjectName(game, undefined)).toBeUndefined()
   })
+
+  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron är EN entitet (game.patron,
+  // inte en array), id-matchning ändå (en avgången patron kan ha ersatts av
+  // en ny med annat id innan en gammal liggarpost renderas).
+  it('resolveSubjectName slår upp patronen ur game.patron via id, mismatch/frånvaro ger undefined', () => {
+    const game = makeMinimalGame({
+      patron: { id: 'patron_karl', name: 'Karl Hedin' } as unknown as SaveGame['patron'],
+    })
+    expect(resolveSubjectName(game, { kind: 'patron', id: 'patron_karl' })).toBe('Karl Hedin')
+    expect(resolveSubjectName(game, { kind: 'patron', id: 'patron_annan' })).toBeUndefined()
+    expect(resolveSubjectName(makeMinimalGame({ patron: undefined }), { kind: 'patron', id: 'patron_karl' })).toBeUndefined()
+  })
 })

@@ -11,7 +11,7 @@ function gameWithPatron(overrides: Partial<NonNullable<SaveGame['patron']>> = {}
   return {
     ...game,
     patron: {
-      name: 'Patron Test', business: 'Testbruket', influence: 50,
+      id: 'patron_test', name: 'Patron Test', business: 'Testbruket', influence: 50,
       happiness: 20, contribution: 200_000, isActive: true, goodwill: 80,
       totalContributed: 0, demands: [],
       ...overrides,
@@ -31,6 +31,14 @@ describe('patronWithdrawal — en kanonisk nollpunktsövergång', () => {
       type: 'patronWithdrawal',
       choices: [{ id: 'acknowledge', effect: { type: 'patronWithdrawn' } }],
     })
+    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren.
+    expect(result.ledgerEntry).toMatchObject({
+      type: 'patron_withdrawal',
+      semanticKey: `patron_withdrawal_${game.currentSeason}`,
+      season: game.currentSeason,
+      subject: { kind: 'patron', id: 'patron_test' },
+      significance: 95,
+    })
   })
 
   it('ett redan pending/deferred/resolved avhopps-id dupliceras inte', () => {
@@ -46,6 +54,7 @@ describe('patronWithdrawal — en kanonisk nollpunktsövergång', () => {
       const result = applyPatronHappinessTransition(game, -1)
       expect(result.patron?.isActive).toBe(false)
       expect(result.withdrawalEvent).toBeUndefined()
+      expect(result.ledgerEntry).toBeUndefined()
     }
   })
 
