@@ -47,13 +47,29 @@ describe('classifyEventNature', () => {
   // namngivna seten. seasonGoalHalfway är background/notis (samma HIGH
   // 11-klassning som communityEvent var) men matchar fortfarande ingen av
   // de tre seten, så den prövar samma fjärde gren (ad hoc priority=critical).
-  it('an ad hoc priority=critical event with choices:[] → reactions, not a dead-end critical card', () => {
-    expect(classifyEventNature(makeEvent('seasonGoalHalfway', { priority: 'critical' }))).toBe('reactions')
+  //
+  // MASTER_OPPET.md d-evt1-eventprimary-overlay (2026-09-02): fallgrenen
+  // läser nu getEffectivePriority (D1 punkt 4), som nedgraderar en
+  // priority='critical'-stämpel UTAN en "därför nu"-rad till 'normal' —
+  // exakt samma självkontroll GameShell/PortalEventSlot/EventPrimary redan
+  // gjorde. Bägge testen nedan bär därför nu en instans-whyNow (whyNowPerson)
+  // för att fortsätta testa en GENUINT motiverad ad hoc-kritisk händelse,
+  // inte bara en obekräftad prioritetsstämpel.
+  it('an ad hoc, GENUINELY JUSTIFIED priority=critical event with choices:[] → reactions, not a dead-end critical card', () => {
+    expect(classifyEventNature(makeEvent('seasonGoalHalfway', { priority: 'critical', whyNow: { whyNowPerson: 'Test Testsson' } }))).toBe('reactions')
   })
 
-  it('an ad hoc priority=critical event with a real choice → critical', () => {
-    const withChoice = { priority: 'critical' as const, choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
+  it('an ad hoc, GENUINELY JUSTIFIED priority=critical event with a real choice → critical', () => {
+    const withChoice = { priority: 'critical' as const, whyNow: { whyNowPerson: 'Test Testsson' }, choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
     expect(classifyEventNature(makeEvent('seasonGoalHalfway', withChoice))).toBe('critical')
+  })
+
+  // Nytt test (samma fynd): en priority='critical'-stämpel UTAN whyNow är
+  // enligt D1 inte verkligt pivotal — ska nedgraderas till 'inbox-only',
+  // inte tyst blockera Granskas "Fortsätt" som en obekräftad kritisk händelse.
+  it('an ad hoc priority=critical event WITHOUT a whyNow-line downgrades to inbox-only (D1 punkt 4)', () => {
+    const withChoice = { priority: 'critical' as const, choices: [{ id: 'yes', label: 'Ja', effect: {} }] }
+    expect(classifyEventNature(makeEvent('seasonGoalHalfway', withChoice))).toBe('inbox-only')
   })
 
   it('classifies player types correctly', () => {

@@ -1,4 +1,5 @@
 import type { GameEvent, GameEventType } from '../entities/GameEvent'
+import { getEffectivePriority } from './eventQueueService'
 
 export type EventNature = 'critical' | 'player' | 'reactions' | 'inbox-only'
 
@@ -95,6 +96,14 @@ export const REACTION_TYPES = new Set<GameEventType>([
  * en reaktion) — det landade ändå i 'critical' och gav ett kriskort utan val,
  * ett soft-lock av "Fortsätt"-knappen (observerat: förlorad slutspelsmatch +
  * aktiv ekonomisk kris). Samma gap fanns i priority==='critical'-fallgrenen.
+ *
+ * MASTER_OPPET.md d-evt1-eventprimary-overlay (2026-09-02): fallgrenen läste
+ * rå `event.priority === 'critical'` — varken `?? getEventPriority(e.type)`-
+ * fallbacken eller D1 punkt 4:s självkontroll (getEffectivePriority
+ * nedgraderar critical→normal om eventet saknar en "därför nu"-rad).
+ * Granska kunde alltså räkna ett event som blockerande kritiskt som
+ * GameShell/PortalEventSlot/EventPrimary redan korrekt nedgraderat till
+ * normal. Läser nu samma delade funktion.
  */
 export function classifyEventNature(event: GameEvent): EventNature {
   if (CRITICAL_GRANSKA_TYPES.has(event.type)) {
@@ -104,7 +113,7 @@ export function classifyEventNature(event: GameEvent): EventNature {
   if (REACTION_TYPES.has(event.type)) {
     return event.choices.length === 0 ? 'reactions' : 'critical'
   }
-  if (event.priority === 'critical') {
+  if (getEffectivePriority(event) === 'critical') {
     return event.choices.length === 0 ? 'reactions' : 'critical'
   }
   return 'inbox-only'

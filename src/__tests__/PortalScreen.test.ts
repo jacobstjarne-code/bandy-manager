@@ -163,6 +163,27 @@ describe('PortalScreen integration — primärkort per game-state', () => {
   })
 
   it('kritisk händelse → väljer event_critical (EventPrimary)', () => {
+    // MASTER_OPPET.md d-evt1-eventprimary-overlay (2026-09-02): eventTriggers.ts
+    // läser nu getEffectivePriority (D1 punkt 4), som nedgraderar en
+    // priority='critical'-stämpel utan en instans-whyNow-rad till 'normal'.
+    // Fixturen bär därför whyNow för att testa en genuint motiverad händelse.
+    const game = makeGame({
+      pendingEvents: [
+        {
+          id: 'evt_1',
+          type: 'economicStress',
+          priority: 'critical',
+          whyNow: { whyNowPerson: 'Test Testsson' },
+          resolved: false,
+        } as never,
+      ],
+    })
+
+    const layout = buildPortal(game, makeSeed(game))
+    expect(layout.primary.id).toBe('event_critical')
+  })
+
+  it('kritisk händelse UTAN whyNow-rad nedgraderas — väljer inte event_critical', () => {
     const game = makeGame({
       pendingEvents: [
         {
@@ -175,7 +196,7 @@ describe('PortalScreen integration — primärkort per game-state', () => {
     })
 
     const layout = buildPortal(game, makeSeed(game))
-    expect(layout.primary.id).toBe('event_critical')
+    expect(layout.primary.id).not.toBe('event_critical')
   })
 
   it('layout har alltid exakt 1 primary oavsett state', () => {
