@@ -88,9 +88,14 @@ describe('politicianEvent — text, state och livscykel håller ihop', () => {
     const base = { ...makeGame('prestige'), localPolitician: { ...makeGame('prestige').localPolitician, relationship: 20 } }
     const event = generatePoliticianEvents(base, 10, new Set(), () => 0)
       .find(candidate => candidate.id === 'politician_warning_2026')!
+    const choice = event.choices.find(candidate => candidate.id === 'board_contact')!
 
     const result = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'board_contact', undefined, true)
 
+    expect(choice).toMatchObject({
+      consequenceLevel: 'costly',
+      costLabel: 'Kostar relationen till Anna Testsson',
+    })
     expect(result.boardPatience).toBe((base.boardPatience ?? 70) + 2)
     expect(result.localPolitician?.relationship).toBe(17)
   })
@@ -185,6 +190,20 @@ describe('gentjanst — text, state och livscykel håller ihop', () => {
     expect(accepted.players.map(player => player.id)).toEqual(playerIds)
     expect(accepted.youthTeam?.players.map(player => player.id)).toEqual(youthIds)
     expect(accepted.sourceCooldowns?.kommunen).toEqual({ roundsLeft: 8, totalRounds: 8 })
+  })
+
+  it('nej-valets verkliga relationskostnad använder den gemensamma konsekvensmarkören', () => {
+    const base = {
+      ...makeGame('prestige'),
+      localPolitician: { ...makeGame('prestige').localPolitician!, corruption: 80 },
+    }
+    const event = generatePoliticianEvents(base, 2, new Set(), () => 0)
+      .find(candidate => candidate.type === 'gentjanst')!
+
+    expect(event.choices.find(choice => choice.id === 'no')).toMatchObject({
+      consequenceLevel: 'costly',
+      costLabel: 'Kostar relationen till Anna Testsson',
+    })
   })
 
   it('rinner ut vid rollover eftersom inget neutralt noOp-val finns', () => {

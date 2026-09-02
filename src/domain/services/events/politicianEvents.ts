@@ -216,6 +216,8 @@ export function generatePoliticianEvents(
               id: 'board_contact',
               label: 'Be styrelsen ta kontakt',
               subtitle: '📋 +2 styrelsens tålamod · 🤝 -3 relation',
+              consequenceLevel: 'costly',
+              costLabel: `Kostar relationen till ${politician.name}`,
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'boardPatience', amount: 2 },
                 { type: 'politicianRelationship', amount: -3 },
@@ -328,6 +330,8 @@ export function generatePoliticianEvents(
             id: 'no',
             label: 'Vi lämnar inga personliga rekommendationer',
             subtitle: '🤝 -10 relation · ⭐ +3 styrelsens tålamod',
+            consequenceLevel: 'costly',
+            costLabel: `Kostar relationen till ${pol3.name}`,
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'politicianRelationship', amount: -10 },
               { type: 'boardPatience', amount: 3 },

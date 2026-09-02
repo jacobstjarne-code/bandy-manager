@@ -72,9 +72,14 @@ function buildDinnerChoices(scene: DinnerScene): GameEvent['choices'] {
     const choiceId = `final|${chosenOptions.map(option => option.id).join('|')}`
     const resolution = getDinnerResolution(scene, choiceId)
     if (!resolution) throw new Error('Mecenatmiddagen skapade en ogiltig valkombination')
+    const costsMecenatRelationship = chosenOptions.some(option => option.id === 'q2_opt1')
     return {
       id: choiceId,
       label: resolution.choiceLabel,
+      ...(costsMecenatRelationship && {
+        consequenceLevel: 'costly' as const,
+        costLabel: `Kostar relationen till ${scene.mecenatName}`,
+      }),
       effect: {
         type: 'multiEffect' as const,
         subEffects: JSON.stringify([

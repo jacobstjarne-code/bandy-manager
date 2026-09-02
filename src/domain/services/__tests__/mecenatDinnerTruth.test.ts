@@ -58,6 +58,19 @@ describe('mecenatDinner — O11:s text/state-kontrakt', () => {
     }
   })
 
+  it('markerar bara q2-vägen med verklig relationskostnad som kostsam', () => {
+    const event = generateDinnerEvent(game(), 20)!
+    const loyal = event.choices.find(choice => choice.id === 'final|q0_opt0|q1_opt0|q2_opt0')!
+    const competitive = event.choices.find(choice => choice.id === 'final|q0_opt0|q1_opt0|q2_opt1')!
+
+    expect(loyal.consequenceLevel).toBeUndefined()
+    expect(loyal.costLabel).toBeUndefined()
+    expect(competitive).toMatchObject({
+      consequenceLevel: 'costly',
+      costLabel: 'Kostar relationen till Karin Berg',
+    })
+  })
+
   it('slutvalet går genom den gemensamma effektmotorn och avslutar kortet', () => {
     const base = game()
     const event = generateDinnerEvent(base, 20)!
