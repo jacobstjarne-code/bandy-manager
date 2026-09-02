@@ -39,6 +39,7 @@ export const LICENSE_RISK_WARNING_THRESHOLD = 40
 export const LICENSE_RISK_POINT_DEDUCTION_THRESHOLD = 60
 export const LICENSE_RISK_DENIED_THRESHOLD = 80
 export const LICENSE_RISK_SCORE_CAP = 100
+export const LICENSE_ACTION_PLAN_CAPITAL_INCOME = 40_000
 
 /**
  * Zon-texten, LÅST av Jacob (2026-08-26, samma dom som magnituderna) — "ingen
@@ -58,6 +59,10 @@ export function licenseZoneFromScore(score: number): LicenseStatus {
   if (score >= LICENSE_RISK_POINT_DEDUCTION_THRESHOLD) return 'point_deduction'
   if (score >= LICENSE_RISK_WARNING_THRESHOLD) return 'first_warning'
   return 'clear'
+}
+
+export function isActiveLicenseWarning(status: LicenseStatus | undefined): boolean {
+  return status === 'first_warning' || status === 'point_deduction'
 }
 
 // ── Text ───────────────────────────────────────────────────────────────────
@@ -160,11 +165,27 @@ export function checkLicenseStatus(
     }
   }
 
-  // Försämring till en ny, sämre zon (aldrig vid förbättring TILL en
-  // fortsatt dålig zon, t.ex. point_deduction→first_warning — ingen text
-  // finns för "bättre men inte bra", och det motsvarar inget av de fyra
-  // narrativen TEXT redan bär). newZone !== 'clear' är redan garanterat av
-  // return:en ovan.
+  if (
+    (currentZone === 'license_denied' && newZone === 'point_deduction') ||
+    (currentZone === 'point_deduction' && newZone === 'first_warning')
+  ) {
+    const t = TEXT[newZone]
+    const message = currentZone === 'license_denied'
+      ? 'Ni har vänt det värsta. Licensnämnden häver hotet om nedflyttning — men poängavdraget står kvar tills ekonomin är i balans.'
+      : 'Det går åt rätt håll. Nämnden lättar på poängavdraget, men bevakningen fortsätter. Ni är inte ur det än.'
+    return {
+      action: {
+        type: newZone,
+        message,
+        inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
+      },
+      newLicenseRiskScore: newScore,
+      newLicenseStatus: newZone,
+    }
+  }
+
+  // Försämring till en ny, sämre zon. newZone !== 'clear' är redan
+  // garanterat av return:en ovan.
   const worsened =
     (newZone === 'first_warning' && currentZone === 'clear') ||
     (newZone === 'point_deduction' && (currentZone === 'clear' || currentZone === 'first_warning')) ||

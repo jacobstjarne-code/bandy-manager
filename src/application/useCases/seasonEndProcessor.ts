@@ -37,8 +37,7 @@ import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
-import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services/licenseService'
-import type { LicenseReview } from '../../domain/entities/SaveGame'
+import { checkLicenseStatus, buildLicenseInboxItem, isActiveLicenseWarning, LICENSE_ACTION_PLAN_CAPITAL_INCOME } from '../../domain/services/licenseService'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
 import { appendFinanceLog, applyFinanceChange, type FinanceEntry } from '../../domain/services/economyService'
@@ -432,96 +431,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  // ── License check (V0.9) ──────────────────────────────────────────────────
+  const baseSeed = seed ?? (game.currentSeason * 12345)
+
+  // ── License check (System B, canonical) ───────────────────────────────────
   const managedClubForLicense = game.clubs.find(c => c.id === game.managedClubId)
-  let licenseReview: LicenseReview | undefined = game.licenseReview
-  let licenseWarningCount = game.licenseWarningCount ?? 0
-
-  if (managedClubForLicense) {
-    const licFinances = managedClubForLicense.finances
-    const hasYouth = !!(game.youthTeam) || !!(game.communityActivities?.bandyplay)
-    const prevDenied = game.licenseReview?.status === 'denied'
-
-    let failCount = 0
-    if (licFinances <= 0) failCount++
-    if (!hasYouth) failCount++
-    if (prevDenied) failCount++
-
-    let licStatus: LicenseReview['status']
-    if (licFinances < -200000 || licenseWarningCount >= 3) {
-      licStatus = 'denied'
-    } else if (failCount === 0) {
-      licStatus = 'approved'
-    } else if (failCount === 1) {
-      licStatus = 'warning'
-    } else {
-      licStatus = 'continued_review'
-    }
-
-    if (licStatus === 'approved') {
-      licenseWarningCount = 0
-    } else if (licStatus === 'warning' || licStatus === 'continued_review') {
-      licenseWarningCount++
-    }
-
-    licenseReview = {
-      season: game.currentSeason,
-      status: licStatus,
-      requiredCapital: licFinances < 0 ? Math.abs(licFinances) : undefined,
-      warningCount: licenseWarningCount,
-    }
-
-    if (licStatus === 'approved') {
-      newInboxItems.push({
-        id: `inbox_license_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.LicenseReview,
-        title: 'Licensnämnden: Licens beviljad',
-        body: `Licensnämnden har granskat ${managedClubForLicense.name} och beviljar licens för nästa säsong. Fortsätt det goda arbetet.`,
-        isRead: false,
-      } as InboxItem)
-    } else if (licStatus === 'warning') {
-      newInboxItems.push({
-        id: `inbox_license_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.LicenseReview,
-        title: 'Licensnämnden: Varning utfärdad',
-        body: `Licensnämnden har identifierat brister hos ${managedClubForLicense.name}. En formell varning utfärdas. Handlingsplan krävs.`,
-        isRead: false,
-      } as InboxItem)
-    } else if (licStatus === 'continued_review') {
-      newInboxItems.push({
-        id: `inbox_license_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.LicenseReview,
-        title: 'Licensnämnden: Fortsatt granskning',
-        body: `Licensnämnden ger ${managedClubForLicense.name} fortsatt villkorlig licens. Flera kriterier uppfylls inte. Omedelbara åtgärder krävs.`,
-        isRead: false,
-      } as InboxItem)
-    } else if (licStatus === 'denied') {
-      // Tvångsnedflyttning
-      newInboxItems.push({
-        id: `inbox_license_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.LicenseReview,
-        title: 'LICENSNÄMNDEN: LICENS NEKAD — TVÅNGSNEDFLYTTNING',
-        body: `Licensnämnden beslutar om nedflyttning för ${managedClubForLicense.name}. Efter överläggning beviljas respit — klubben får spela kvar, mot hårda villkor. En sponsor drar sig ur, och ekonomin är så pressad att truppen kan behöva bantas. Klubbens rykte tar skada. Styrelsen låter tränaren stanna. Under hårt tryck.`,
-        isRead: false,
-      } as InboxItem)
-    }
-
-    // Inbox notification for handlingsplan (the actual GameEvent is created below in seasonEndPendingEvents)
-    if (licStatus === 'warning' || licStatus === 'continued_review') {
-      newInboxItems.push({
-        id: `inbox_handlingsplan_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.LicenseReview,
-        title: 'Licensnämnden kräver handlingsplan',
-        body: 'Öppna händelserna för att svara på licensnämndens krav.',
-        isRead: false,
-      } as InboxItem)
-    }
-  }
+  const licenseCheck = checkLicenseStatus(game, baseSeed)
+  const newLicenseStatus = licenseCheck.newLicenseStatus
+  const newLicenseRiskScore = licenseCheck.newLicenseRiskScore
 
   // Youth intake for all clubs
   const youthPlayers: Player[] = []
@@ -549,8 +465,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   let youthIntakeResultForManagedClub: ReturnType<typeof generateYouthIntake> | null = null
-
-  const baseSeed = seed ?? (game.currentSeason * 12345)
 
   for (let i = 0; i < updatedClubs.length; i++) {
     const club = updatedClubs[i]
@@ -1325,8 +1239,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // fortfarande vem som säljs — det gör redan `checkEconomicCrisis`
   // (economicCrisisService.ts, fas 3: sälj/kommunlån/mecenat), en redan
   // byggd, testad, spelarvals-driven mekanism som triggar på SAMMA -200 000-
-  // gräns. Ingen ny händelse behövs för "tvinga fram ett val" — den finns.
-  if (licenseReview?.status === 'denied' && managedClubForLicense) {
+  // krisväg. Licenskonsekvenserna fyrar nu bara när den kanoniska
+  // licenseRiskScore-modellen går IN i license_denied; kassans djup används
+  // enbart för att skala ryktesförlusten. Ingen ny händelse behövs för
+  // "tvinga fram ett val" — den finns.
+  if (licenseCheck.action?.type === 'license_denied' && managedClubForLicense) {
     // Ryktesförlust skalar med underskottets djup istf ett fast tal.
     // Magnitud FÖRESLAGEN, inte dömd: -5 vid tröskeln, +5 extra per
     // ytterligare 50 000 kr under -200 000, tak -30 (samma golv som förut
@@ -1410,7 +1327,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const resolvedSet = new Set(game.resolvedEventIds ?? [])
   if (
     newJournalistRelationship < 30 &&
-    (managedClubFin < -50000 || licenseReview?.status === 'warning' || licenseReview?.status === 'continued_review') &&
+    (managedClubFin < -50000 || isActiveLicenseWarning(newLicenseStatus)) &&
     !resolvedSet.has(gravId)
   ) {
     newCommunityStanding = Math.max(0, newCommunityStanding - 5)
@@ -1452,17 +1369,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  // ── Lager 3: Licensnämnden — consecutive loss season check ───────────────
-  // Flyttad hit (2026-08-26, RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md)
-  // FÖRE handlingsplan-händelsen — den ska triggas av SAMMA system som
-  // faktiskt avskedar (licenseStatus/checkLicenseStatus), inte det parallella
-  // licenseReview som bara var kopplat av misstag. checkLicenseStatus läser
-  // bara `game` (oförändrad in-parameter) + baseSeed, så flytten ändrar
-  // ingenting om VAD som beräknas.
-  const licenseCheck = checkLicenseStatus(game, baseSeed)
-  const newLicenseStatus = licenseCheck.newLicenseStatus
-  const newLicenseRiskScore = licenseCheck.newLicenseRiskScore
-
   // ── Build handlingsplan pending event if needed ───────────────────────────
   const seasonEndPendingEvents: GameEvent[] = [...retirementCeremonyEvents]
   if (newLicenseStatus === 'first_warning' || newLicenseStatus === 'point_deduction') {
@@ -1475,9 +1381,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         {
           id: 'sparplan',
           label: 'Skjut till kapital ur egen kassa',
-          subtitle: `💰 engångsintäkt ${Math.round((licenseReview?.requiredCapital ?? 50000) * 0.8 / 1000)} tkr`,
+          subtitle: `💰 engångsintäkt ${LICENSE_ACTION_PLAN_CAPITAL_INCOME / 1000} tkr`,
           effect: { type: 'multiEffect', subEffects: JSON.stringify([
-            { type: 'income', amount: Math.round((licenseReview?.requiredCapital ?? 50000) * 0.8) },
+            { type: 'income', amount: LICENSE_ACTION_PLAN_CAPITAL_INCOME },
           ]) },
         },
         {
@@ -2157,7 +2063,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // den inte skilja "resten av säsongen återstår" (konkursvägen) från
     // "säsongen är redan spelad" (den här vägen).
     firedAtSeason: managerFired ? game.currentSeason : game.firedAtSeason,
-    fanMood: licenseReview?.status === 'denied'
+    fanMood: licenseCheck.action?.type === 'license_denied'
       ? Math.max(0, (game.fanMood ?? 50) - 15)
       : game.fanMood,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
@@ -2281,8 +2187,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     })(),
     loanDeals: [],
     // V0.9 fields
-    licenseReview,
-    licenseWarningCount,
     namedCharacters: updatedNamedCharacters,
     communityStanding: Math.min(100, newCommunityStanding + communityStandingDelta),
     journalistRelationship: newJournalistRelationship,
@@ -2317,7 +2221,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),
-      ...(licenseReview?.status !== 'denied' ? [] : []),
       gravId,
       raddId,
     ].slice(-200),

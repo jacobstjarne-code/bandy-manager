@@ -31,6 +31,9 @@ describe('seasonEndProcessor — licenseHandlingsplan triggas av System B (licen
     const events = result.game.pendingEvents ?? []
     const handlingsplan = events.find(e => e.type === 'licenseHandlingsplan')
     expect(handlingsplan, 'handlingsplan-händelsen ska finnas när System B ger first_warning').toBeDefined()
+    expect(result.game.inbox.filter(item => item.id === `inbox_license_status_${game.currentSeason}`)).toHaveLength(1)
+    expect(result.game.inbox.some(item => item.id === `inbox_license_${game.currentSeason}`)).toBe(false)
+    expect(result.game.inbox.some(item => item.id === `inbox_handlingsplan_${game.currentSeason}`)).toBe(false)
   })
 
   it('alla visade val levererar exakt sitt deklarerade utfall', () => {
@@ -52,6 +55,7 @@ describe('seasonEndProcessor — licenseHandlingsplan triggas av System B (licen
     const capital = resolveEvent(prepared, event!.id, 'sparplan', undefined, true)
     const capitalClub = capital.clubs.find(c => c.id === capital.managedClubId)!
     const declaredCapital = Number(event!.choices.find(c => c.id === 'sparplan')?.subtitle?.match(/(\d+) tkr/)?.[1]) * 1000
+    expect(declaredCapital).toBe(40_000)
     expect(capitalClub.finances - clubBefore.finances).toBe(declaredCapital)
 
     const membership = resolveEvent(prepared, event!.id, 'membership', undefined, true)

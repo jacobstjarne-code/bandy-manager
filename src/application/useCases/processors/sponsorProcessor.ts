@@ -6,6 +6,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { isActiveLicenseWarning } from '../../../domain/services/licenseService'
 
 export interface SponsorProcessorResult {
   updatedSponsors: Sponsor[]
@@ -74,10 +75,7 @@ export function processSponsors(
     }
   }
 
-  if (
-    game.licenseReview?.status === 'warning' ||
-    game.licenseReview?.status === 'continued_review'
-  ) {
+  if (isActiveLicenseWarning(game.licenseStatus)) {
     const activeSponsorsForCheck = v09Sponsors.filter(s => s.contractRounds > 0)
     if (activeSponsorsForCheck.length > 0 && v09Rand() < 0.2) {
       const leavingIdx = Math.floor(v09Rand() * activeSponsorsForCheck.length)

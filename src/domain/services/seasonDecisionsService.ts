@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FACILITY_NODE_DEFS } from './facilityService'
+import { LICENSE_ZONE_TEXT } from './licenseService'
 
 function objectiveDisplayName(game: SaveGame, objectiveId: string): string {
   const liveLabel = game.boardObjectives?.find(o => o.id === objectiveId)?.label
@@ -74,10 +75,10 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   }
 
   // License
-  if (game.licenseReview?.season === season && game.licenseReview.status !== 'approved') {
+  if (game.licenseStatus && game.licenseStatus !== 'clear') {
     decisions.push({
       icon: '📋',
-      text: `Licensnämnden: ${game.licenseReview.status === 'warning' ? 'Varning' : 'Fortsatt granskning'}`,
+      text: `Licensnämnden: ${LICENSE_ZONE_TEXT[game.licenseStatus]}`,
     })
   }
 

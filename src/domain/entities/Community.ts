@@ -285,15 +285,6 @@ export interface BoardObjective {
   carryOver: boolean
 }
 
-export interface LicenseReview {
-  season: number
-  status: 'approved' | 'warning' | 'continued_review' | 'denied'
-  conditions?: string[]
-  deadline?: number           // rounds to fix
-  requiredCapital?: number
-  warningCount?: number       // consecutive warnings
-}
-
 export type SupporterRole = 'leader' | 'veteran' | 'youth' | 'family'
 
 export interface SupporterCharacter {

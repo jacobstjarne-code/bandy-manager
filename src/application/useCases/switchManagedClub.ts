@@ -225,8 +225,6 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
 
     licenseStatus: undefined,
     licenseRiskScore: undefined,
-    licenseReview: undefined,
-    licenseWarningCount: 0,
     financeWarningGivenThisSeason: false,
     wageBudgetOverrunRounds: 0,
     wageBudgetWarningSent: false,

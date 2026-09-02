@@ -67,4 +67,17 @@ describe('collectSeasonDecisions — excludeStorylineTypes', () => {
     const game = makeGame({ boardObjectiveHistory: [{ season: 8, objectiveId: 'cupRun', result: 'met' }] as never })
     expect(collectSeasonDecisions(game)[0].text).toBe('Styrelseuppdrag: Gå långt i cupen — uppfyllt')
   })
+
+  it('läser licensraden från den kanoniska licenseStatus-zonen', () => {
+    const game = makeGame({ licenseStatus: 'point_deduction' })
+    expect(collectSeasonDecisions(game)).toContainEqual({
+      icon: '📋',
+      text: 'Licensnämnden: Licensen är hotad. Vänd resultatet inom två säsonger.',
+    })
+  })
+
+  it('skriver ingen årsboksrad för clear', () => {
+    const game = makeGame({ licenseStatus: 'clear' })
+    expect(collectSeasonDecisions(game)).toEqual([])
+  })
 })

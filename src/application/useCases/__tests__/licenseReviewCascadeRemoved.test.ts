@@ -22,10 +22,12 @@ function makeCrisisGame(finances: number, sponsors: Sponsor[]): SaveGame {
     ...base,
     clubs: base.clubs.map(c => c.id === base.managedClubId ? { ...c, finances } : c),
     sponsors,
+    licenseStatus: 'point_deduction',
+    licenseRiskScore: 60,
   }
 }
 
-describe('seasonEndProcessor — licenseReview-kaskaden borttagen (2026-08-26)', () => {
+describe('seasonEndProcessor — license_denied-effekter ägs av System B', () => {
   it('tar ALDRIG bort spelare pga licenskaskaden — kris- och frisk klubb tappar lika många (retirement/kontrakt, inte kaskaden)', () => {
     // Samma seed, enda skillnaden är finanserna — normal säsongsslutsaktivitet
     // (pensionering, kontraktsutgång, truppkomplettering) rör truppstorleken
@@ -87,5 +89,52 @@ describe('seasonEndProcessor — licenseReview-kaskaden borttagen (2026-08-26)',
     const repAfter = result.game.clubs.find(c => c.id === deep.managedClubId)!.reputation!
     expect(repBefore - repAfter).not.toBe(15)
     expect(repBefore - repAfter).toBeGreaterThan(15)  // djupt underskott ska kosta MER än det gamla fasta talet
+  })
+
+  it('drar fanMood med 15 när System B går in i license_denied', () => {
+    const game = { ...makeCrisisGame(-250_000, []), fanMood: 55 }
+    const result = handleSeasonEnd(game, 1)
+    expect(result.game.fanMood).toBe(40)
+  })
+
+  it('upprepar inte denied-effekterna när System B redan står kvar i denied-zonen', () => {
+    const sponsors = [makeSponsor('a', 5000), makeSponsor('b', 3000)]
+    const game = {
+      ...makeCrisisGame(-250_000, sponsors),
+      licenseStatus: 'license_denied' as const,
+      licenseRiskScore: 80,
+      fanMood: 55,
+    }
+    const repBefore = game.clubs.find(c => c.id === game.managedClubId)!.reputation
+    const result = handleSeasonEnd(game, 1)
+    expect(result.game.sponsors).toHaveLength(sponsors.length)
+    expect(result.game.fanMood).toBe(55)
+    expect(result.game.clubs.find(c => c.id === game.managedClubId)!.reputation).toBeGreaterThanOrEqual(repBefore)
+  })
+
+  it('låter den kanoniska varningszonen utlösa grävande artikel även med positiv kassa', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 1 })
+    const managedClub = base.clubs.find(c => c.id === base.managedClubId)!
+    const game: SaveGame = {
+      ...base,
+      clubs: base.clubs.map(c => c.id === base.managedClubId ? { ...c, finances: 100_000 } : c),
+      seasonStartSnapshot: {
+        season: base.currentSeason,
+        finalPosition: 12,
+        finances: 200_000,
+        communityStanding: 50,
+        squadSize: 16,
+        supporterMembers: 100,
+      },
+      licenseStatus: 'clear',
+      licenseRiskScore: 20,
+      journalistRelationship: 20,
+      journalist: base.journalist ? { ...base.journalist, relationship: 20 } : undefined,
+      resolvedEventIds: [],
+    }
+    const result = handleSeasonEnd(game, 1)
+    expect(managedClub.finances).toBeGreaterThan(-50_000)
+    expect(result.game.licenseStatus).toBe('first_warning')
+    expect(result.game.inbox.some(item => item.id === `inbox_gravande_${game.currentSeason}`)).toBe(true)
   })
 })

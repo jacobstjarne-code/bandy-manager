@@ -21,6 +21,8 @@ describe('seasonEndProcessor — canonical journalistrelation', () => {
     const result = handleSeasonEnd({
       ...game,
       clubs: game.clubs.map(club => club.id === game.managedClubId ? { ...club, finances: -100_000 } : club),
+      licenseStatus: 'clear',
+      licenseRiskScore: 20,
       journalist: { ...game.journalist!, relationship: 24 },
       journalistRelationship: 80,
     }, 123).game

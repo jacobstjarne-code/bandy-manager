@@ -134,12 +134,22 @@ describe('checkLicenseStatus — ackumulator, +20 straff / -18 lättnad', () => 
     expect(result.action?.type).toBe('cleared')
   })
 
-  it('förbättring TILL en fortsatt dålig zon (point_deduction→first_warning) ger INGEN action — ingen text finns för "bättre men inte bra"', () => {
+  it('point_deduction→first_warning ger lättnadsbesked utan att kalla klubben friad', () => {
     const game = makeGame({ finances: 200000, startFinances: 100000, licenseRiskScore: 65, licenseStatus: 'point_deduction' })
     const result = checkLicenseStatus(game, 1)
     expect(result.newLicenseRiskScore).toBe(47)
     expect(result.newLicenseStatus).toBe('first_warning')
-    expect(result.action).toBeNull()
+    expect(result.action?.type).toBe('first_warning')
+    expect(result.action?.message).toBe('Det går åt rätt håll. Nämnden lättar på poängavdraget, men bevakningen fortsätter. Ni är inte ur det än.')
+  })
+
+  it('license_denied→point_deduction ger rätt lättnadsbesked men behåller zonvarningen', () => {
+    const game = makeGame({ finances: 200000, startFinances: 100000, licenseRiskScore: 80, licenseStatus: 'license_denied' })
+    const result = checkLicenseStatus(game, 1)
+    expect(result.newLicenseRiskScore).toBe(62)
+    expect(result.newLicenseStatus).toBe('point_deduction')
+    expect(result.action?.type).toBe('point_deduction')
+    expect(result.action?.message).toBe('Ni har vänt det värsta. Licensnämnden häver hotet om nedflyttning — men poängavdraget står kvar tills ekonomin är i balans.')
   })
 
   it('action texts are non-empty strings', () => {
@@ -185,6 +195,14 @@ describe('buildLicenseInboxItem — bär LÅST zon-text, ingen siffra (Jacobs do
     expect(action?.type).toBe('cleared')
     const item = buildLicenseInboxItem(action!, '2026-04-01', 1, newLicenseStatus)
     expect(item.licenseZoneLabel).toBeUndefined()
+  })
+
+  it('bär den kvarvarande riskzonen på ett lättnadsbesked', () => {
+    const game = makeGame({ finances: 200000, startFinances: 100000, licenseRiskScore: 80, licenseStatus: 'license_denied' })
+    const { action, newLicenseStatus } = checkLicenseStatus(game, 1)
+    const item = buildLicenseInboxItem(action!, '2026-04-01', 1, newLicenseStatus)
+    expect(action?.type).toBe('point_deduction')
+    expect(item.licenseZoneLabel).toBe(LICENSE_ZONE_TEXT.point_deduction)
   })
 
   it('inga siffror läcker in i den låsta texten', () => {

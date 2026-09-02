@@ -31,7 +31,7 @@ export const CURRENT_SAVE_VERSION = '0.3.8'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
-import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
+import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry } from './Narrative'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
@@ -84,7 +84,7 @@ export interface ResolvedChoice {
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
-export type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
+export type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { BoardMember, BoardRole, BoardPersonality }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry }
 export type { StandingRow }
@@ -508,8 +508,6 @@ export interface SaveGame {
   doctor?: DoctorIdentity
 
   // V0.9 NÄTET fields
-  licenseReview?: LicenseReview
-  licenseWarningCount?: number   // consecutive seasons with warning/continued_review
   financeWarningGivenThisSeason?: boolean  // true once warning/license-denial inbox sent; reset at season end
   /**
    * Jacobs körorder 2026-09-01 (financelog-gap-diagnos): dedup-minne för

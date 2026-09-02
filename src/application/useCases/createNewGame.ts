@@ -215,7 +215,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     communityStanding: 50,
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
-    licenseWarningCount: 0,
     supporterGroup: entourage.supporterGroup,
     namedCharacters: generateNamedCharacters((input.seed ?? 1) + 99991),
     aiCoaches: generateAICoaches(clubs.map(c => c.id), input.seed ?? 42),
