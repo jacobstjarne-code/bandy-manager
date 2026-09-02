@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && npm run lint:design-guard && npm run lint:design-adherence && npm run lint:content-contract",
+    "build": "tsc && vite build && npm run lint:design-guard && npm run lint:design-adherence && npm run lint:content-contract && npm run lint:facility-consequences",
     "start": "node server.js",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,6 +14,7 @@
     "lint:design-adherence": "node scripts/design-adherence.mjs",
     "lint:text-guard": "node scripts/text-guard-lint.mjs",
     "lint:content-contract": "node_modules/.bin/vite-node scripts/content-contract-guard.ts",
+    "lint:facility-consequences": "node_modules/.bin/vite-node scripts/facility-consequence-guard.ts",
     "lint:duplicate-functions": "node_modules/.bin/vite-node scripts/find-duplicate-functions.ts --check",
     "mirror:generate": "node scripts/generate-color-mirror.mjs",
     "mirror:check": "node scripts/generate-color-mirror.mjs --check",

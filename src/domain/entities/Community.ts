@@ -134,11 +134,30 @@ export type FacilityFinancingMode = 'club' | 'kommun' | 'mecenat'
 
 export type FacilityGren = 'anlaggning' | 'verksamhet' | 'akademi'
 
-export interface FacilityConsequence {
+export type FacilityMechanicalHook =
+  | 'construction_cost'
+  | 'capacity_bonus'
+  | 'facilities_training_bonus'
+  | 'kiosk_sales_bonus'
+
+interface FacilityConsequenceBase {
   dim: 'publik' | 'ekonomi' | 'ungdom' | 'sjal'
   dir: 'upp' | 'ned' | 'noll'
   label: string
 }
+
+/**
+ * A-GRIND: varje synligt nodlöfte måste deklarera vilken sorts sanning det är.
+ * Bara `mechanical` får peka på spelmekanik, via en sluten hook-union som
+ * verifieras av facility-consequence-guard. Övriga sorter är uttryckliga
+ * icke-mekaniska påståenden och kan inte råka låtsas vara en state-effekt.
+ */
+export type FacilityConsequence = FacilityConsequenceBase & (
+  | { kind: 'mechanical'; hook: FacilityMechanicalHook }
+  | { kind: 'trueByConstruction' }
+  | { kind: 'futureState' }
+  | { kind: 'flavor' }
+)
 
 // B1 §1 — finansieringskällor per nod. Egen kassa är alltid implicit (full cost).
 export interface NodeFinancing {

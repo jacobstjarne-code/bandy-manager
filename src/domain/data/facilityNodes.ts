@@ -33,9 +33,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     capacityBonus: 100,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'publik', dir: 'upp', label: 'Folk stannar längre' },
-      { dim: 'sjal',   dir: 'upp', label: 'Kaffe i kylan — en del av ritualerna' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −120 tkr' },
+      { dim: 'publik', dir: 'upp', label: 'Folk stannar längre', kind: 'flavor' },
+      { dim: 'sjal',   dir: 'upp', label: 'Kaffe i kylan — en del av ritualerna', kind: 'flavor' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −120 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -50,9 +50,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     capacityBonus: 400,
     financing: { kommun: { share: 0.3, minRelation: 55, minStanding: 50 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'publik',  dir: 'upp', label: '+400 platser, fler på plats' },
-      { dim: 'ekonomi', dir: 'upp', label: 'Mer biljettintäkt' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −300 tkr' },
+      { dim: 'publik',  dir: 'upp', label: '+400 platser, fler på plats', kind: 'mechanical', hook: 'capacity_bonus' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Mer biljettintäkt', kind: 'mechanical', hook: 'capacity_bonus' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −300 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -66,9 +66,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 5,
     financing: { kommun: { share: 0.4, minRelation: 45 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'ungdom',  dir: 'upp',  label: 'Kvällsträning möjlig' },
-      { dim: 'publik',  dir: 'noll', label: 'Inga effekter på läktaren' },
-      { dim: 'ekonomi', dir: 'ned',  label: 'Kassa −240 tkr' },
+      { dim: 'ungdom',  dir: 'upp',  label: 'Kvällsträning möjlig', kind: 'trueByConstruction' },
+      { dim: 'publik',  dir: 'noll', label: 'Inga effekter på läktaren', kind: 'trueByConstruction' },
+      { dim: 'ekonomi', dir: 'ned',  label: 'Kassa −240 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -93,9 +93,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     // året om" och "Träningstid året om" är sanna av konstruktion (en
     // inomhushall tillåter faktiskt det, oavsett årstid) — kvar.
     consequences: [
-      { dim: 'sjal',    dir: 'ned', label: 'De trognaste i öppet brott' },
-      { dim: 'ekonomi', dir: 'upp', label: 'Bandy året om' },
-      { dim: 'ungdom',  dir: 'upp', label: 'Träningstid året om' },
+      { dim: 'sjal',    dir: 'ned', label: 'De trognaste i öppet brott', kind: 'flavor' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Bandy året om', kind: 'trueByConstruction' },
+      { dim: 'ungdom',  dir: 'upp', label: 'Träningstid året om', kind: 'trueByConstruction' },
     ],
   },
 
@@ -114,9 +114,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 3,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'publik',  dir: 'upp', label: 'Folk stannar under paus' },
-      { dim: 'ekonomi', dir: 'upp', label: 'Försäljningsintäkter' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr' },
+      { dim: 'publik',  dir: 'upp', label: 'Folk stannar under paus', kind: 'flavor' },
+      { dim: 'ekonomi', dir: 'upp', label: 'Försäljningsintäkter', kind: 'mechanical', hook: 'kiosk_sales_bonus' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -135,8 +135,8 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 5,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'publik',  dir: 'upp', label: 'Kvällsmatcher i bättre ljus' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr' },
+      { dim: 'publik',  dir: 'upp', label: 'Kvällsmatcher i bättre ljus', kind: 'trueByConstruction' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −80 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -155,9 +155,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 8,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.4 } },
     consequences: [
-      { dim: 'ungdom',  dir: 'upp', label: 'Snabbare utveckling' },
-      { dim: 'sjal',    dir: 'upp', label: 'Spelarna kan bygga styrka året om' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −150 tkr' },
+      { dim: 'ungdom',  dir: 'upp', label: 'Snabbare utveckling', kind: 'mechanical', hook: 'facilities_training_bonus' },
+      { dim: 'sjal',    dir: 'upp', label: 'Spelarna kan bygga styrka året om', kind: 'trueByConstruction' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −150 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -176,8 +176,8 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 8,
     financing: { kommun: { share: 0.4, minRelation: 50 }, mecenat: { share: 0.5 } },
     consequences: [
-      { dim: 'ungdom',  dir: 'upp', label: 'Inomhusträning hela året' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −380 tkr' },
+      { dim: 'ungdom',  dir: 'upp', label: 'Inomhusträning hela året', kind: 'trueByConstruction' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −380 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
 
@@ -193,9 +193,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 5,
     financing: { kommun: { share: 0.3, minRelation: 40 }, mecenat: { share: 0.5 } },
     consequences: [
-      { dim: 'ungdom', dir: 'upp', label: 'Strukturerat ungdomsprogram' },
-      { dim: 'sjal',   dir: 'upp', label: 'Egna spelare i framtiden' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −120 tkr' },
+      { dim: 'ungdom', dir: 'upp', label: 'Strukturerat ungdomsprogram', kind: 'futureState' },
+      { dim: 'sjal',   dir: 'upp', label: 'Egna spelare i framtiden', kind: 'futureState' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −120 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
   {
@@ -209,9 +209,9 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     facilitiesBonus: 8,
     financing: { kommun: { share: 0.4, minRelation: 55 }, mecenat: { share: 0.5 } },
     consequences: [
-      { dim: 'ungdom', dir: 'upp', label: 'Elitakademi' },
-      { dim: 'sjal',   dir: 'upp', label: 'Orten ger egna spelare' },
-      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −250 tkr' },
+      { dim: 'ungdom', dir: 'upp', label: 'Elitakademi', kind: 'futureState' },
+      { dim: 'sjal',   dir: 'upp', label: 'Orten ger egna spelare', kind: 'futureState' },
+      { dim: 'ekonomi', dir: 'ned', label: 'Kassa −250 tkr', kind: 'mechanical', hook: 'construction_cost' },
     ],
   },
 ]
