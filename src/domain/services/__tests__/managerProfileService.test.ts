@@ -11,6 +11,9 @@ import {
   BURNOUT_NATURAL_DECAY,
   BURNOUT_CEILING_TRIGGER_ROUNDS,
   BURNOUT_CEILING_RECOVERY_MAX_DELTA,
+  coachNemesisScore,
+  deriveCoachNemesis,
+  updateH2HRecord,
 } from '../managerProfileService'
 import { FixtureStatus } from '../../enums'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -451,5 +454,37 @@ describe('isBurnoutRelapse', () => {
       { season: 4, matchday: 12, type: 'burnout_peak', text: 'Den säsongen tog nästan slut på dig. Du stannade ändå.' },
     ]})
     expect(isBurnoutRelapse(profile, 4)).toBe(true) // säsong 1 räknas, trots att säsong 4-posten är samma som currentSeason
+  })
+})
+
+describe('deriveCoachNemesis', () => {
+  it('väljer största klubbnycklade H2H-underläget med den gemensamma score-formeln', () => {
+    const rivalries = [
+      { clubId: 'club_b', personality: 'kall' as const, h2hWins: 1, h2hDraws: 0, h2hLosses: 3 },
+      { clubId: 'club_c', personality: 'heders' as const, h2hWins: 0, h2hDraws: 4, h2hLosses: 1 },
+      { clubId: 'club_d', personality: 'odmjuk' as const, h2hWins: 2, h2hDraws: 0, h2hLosses: 2 },
+    ]
+
+    expect(coachNemesisScore(rivalries[0])).toBe(8)
+    expect(coachNemesisScore(rivalries[1])).toBe(5)
+    expect(coachNemesisScore(rivalries[2])).toBe(0)
+    expect(deriveCoachNemesis(rivalries)?.clubId).toBe('club_b')
+  })
+
+  it('börjar följa en ny motståndarklubb efter klubbyte via samma H2H-uppdaterare', () => {
+    const profile = makeProfile({
+      coachRivalries: [
+        { clubId: 'club_b', personality: 'kall', h2hWins: 1, h2hDraws: 0, h2hLosses: 0 },
+      ],
+    })
+
+    const updated = updateH2HRecord(profile, 'former_managed_club', 0, 1)
+
+    expect(updated.coachRivalries.find(r => r.clubId === 'former_managed_club')).toEqual({
+      clubId: 'former_managed_club',
+      h2hWins: 0,
+      h2hDraws: 0,
+      h2hLosses: 1,
+    })
   })
 })

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { generatePressConference } from '../pressConferenceService'
+import { generateVarselEvent } from '../events/eventFactories'
+import { resolveEvent } from '../events/eventResolver'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../services/worldGenerator'
 import { FixtureStatus } from '../../enums'
@@ -70,29 +72,54 @@ describe('generatePressConference — High 4: dagjobbs-state-gate', () => {
     }
   })
 
-  it('rescued_from_unemployment-frågan tillåter dagjobbssvaret för en spelare som INTE är heltidsproffs', () => {
+  it('ett verkligt flerspelarvarsel väljer den räddade målskyttens ankare och utesluter dagjobbssvaret', () => {
     let game = makeGame()
-    const managedPlayer = game.players.find(p => p.clubId === game.managedClubId)!
+    const targets = game.players.filter(p => p.clubId === game.managedClubId).slice(0, 2)
     game = {
       ...game,
-      players: game.players.map(p => p.id === managedPlayer.id ? { ...p, isFullTimePro: false } : p),
-      storylines: [{
-        id: 'story_rescue_1', type: 'rescued_from_unemployment', season: game.currentSeason, matchday: 2,
-        playerId: managedPlayer.id, description: '', displayText: '', resolved: true,
-      }],
+      players: game.players.map(p => targets.some(t => t.id === p.id)
+        ? { ...p, isFullTimePro: false, salary: 10_000, dayJob: { title: 'Testjobb', flexibility: 50, weeklyIncome: 1_000 } }
+        : p),
     }
-    // Behöver en matchande målskytt för "resa tillbaka"-varianten (annars väljs varsel-varianten utan tp_liv1)
+    const affected = targets.map(t => game.players.find(p => p.id === t.id)!)
+    const varsel = generateVarselEvent(affected, 'Testföretaget', game.currentSeason)
+    game = resolveEvent({ ...game, pendingEvents: [varsel] }, varsel.id, 'offer_pro', undefined, true)
+    const scorer = affected[1]
     const fixture = makeFixture(game, {
-      events: [{ type: 'goal' as never, playerId: managedPlayer.id, clubId: game.managedClubId!, minute: 10 }],
+      events: [{ type: 'goal' as never, playerId: scorer.id, clubId: game.managedClubId!, minute: 10 }],
     })
     const events = runMany(game, fixture, 300)
-    const rescueQuestionEvents = events.filter(e => e.body.includes('resa tillbaka'))
+    const rescueQuestionEvents = events.filter(e => e.body.includes(`${scorer.firstName} ${scorer.lastName}s resa tillbaka`))
     expect(rescueQuestionEvents.length).toBeGreaterThan(0)
-    expect(rescueQuestionEvents.some(e => e.choices.some(c => c.label.includes('går till jobbet klockan sex')))).toBe(true)
+    expect(rescueQuestionEvents.every(e => !e.choices.some(c => c.label.includes('går till jobbet klockan sex')))).toBe(true)
   })
 })
 
 describe('generatePressConference — High 4: storylineBudgetOk (max huvudfråga + en uppföljning per säsong)', () => {
+  it('kan återkalla galavinsten säsongen efter att priset frysts vid rollover', () => {
+    let game = makeGame()
+    const managedPlayer = game.players.find(p => p.clubId === game.managedClubId)!
+    game = {
+      ...game,
+      storylines: [{
+        id: `story_gala_arets_spelare_${game.currentSeason - 1}`,
+        type: 'gala_winner',
+        season: game.currentSeason - 1,
+        matchday: 22,
+        playerId: managedPlayer.id,
+        clubId: game.managedClubId,
+        description: '',
+        displayText: '',
+        resolved: true,
+      }],
+      narrativeBeatLog: [],
+    }
+    const fixture = makeFixture(game)
+    const events = runMany(game, fixture, 300)
+
+    expect(events.some(e => e.body.includes(`${managedPlayer.firstName} ${managedPlayer.lastName} vann galan`))).toBe(true)
+  })
+
   it('en frisk storyline (ingen tidigare narrativeBeatLog-post) KAN ge sin fråga', () => {
     let game = makeGame()
     const managedPlayer = game.players.find(p => p.clubId === game.managedClubId)!

@@ -1,4 +1,5 @@
 import type { Journalist } from '../../entities/SaveGame'
+import { getJournalistRelationshipStoryText } from '../../services/journalistVisibilityService'
 
 export interface JournalistSceneMemoryEntry {
   matchday: number
@@ -50,16 +51,15 @@ function buildStatusText(relationship: number, lastName: string): string {
 function buildOutlookText(journalist: Journalist): string {
   const rel = journalist.relationship
   const refusals = journalist.pressRefusals ?? 0
-  const lastName = journalist.name.split(' ').pop() ?? journalist.name
   if (rel <= 20) {
     if (refusals >= 3) return `${refusals} nekade presskonferenser. Det syns i rubrikerna.`
-    return 'Relationen är bruten. Det krävs tid och ärlighet för att vända.'
+    return getJournalistRelationshipStoryText({ journalist }, 'broken_under_20')!
   }
   if (rel <= 30) {
     return 'Några ärliga svar i rad — då vänder det.'
   }
   if (rel >= 75) {
-    return `${lastName} är på er sida nu. Det håller så länge du är lika öppen tillbaka.`
+    return getJournalistRelationshipStoryText({ journalist }, 'recovered_above_75')!
   }
   return 'Fortsätt svara ärligt. Relationen håller.'
 }

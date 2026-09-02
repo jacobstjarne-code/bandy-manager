@@ -17,6 +17,7 @@ import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
+import { getDefaultRolloverChoice } from '../deferredRolloverService'
 
 function makeGame(): SaveGame {
   const template = CLUB_TEMPLATES[0]
@@ -55,6 +56,7 @@ describe('csPress — individual: oförändrad uppsida, ny 18%-jealousyrisk', ()
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(Math.min(100, before.morale + 5))
     expect(g.journalist!.relationship).toBe(Math.min(100, beforeRel + 3))
+    expect(g.journalist!.lastInteractionMatchday).toBe(game.currentMatchday)
   })
 
   it('vid låg rand (<0.18): en annan lagkamrat tappar 4 moral, spelaren själv opåverkad av risken', () => {
@@ -123,5 +125,36 @@ describe('csPress — system: riskfri journalistnisch, ingen overksam moral-pena
     const after = g.players.find(p => p.id === playerId)!
     expect(after.morale).toBe(before.morale)
     expect(g.journalist!.relationship).toBe(Math.min(100, beforeRel + 4))
+  })
+})
+
+describe('csPress — beslutslivscykel och minnesankare', () => {
+  it('sparar den verkliga motståndaren i journalistminnet', () => {
+    const game = makeGame()
+    const fixture = game.fixtures[0]
+    if (!fixture) throw new Error('Testspel saknar fixture')
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const opponentId = fixture.homeClubId === game.managedClubId
+      ? fixture.awayClubId
+      : fixture.homeClubId
+    const opponent = game.clubs.find(c => c.id === opponentId)!
+    const event = makeCSPressEvent(playerId, fixture.id)
+
+    const result = resolveEvent({ ...game, pendingCSPress: event }, event.id, 'team', undefined, true)
+
+    expect(result.journalist!.memory.at(-1)).toMatchObject({
+      event: 'cs_press_team',
+      opponentShort: opponent.shortName ?? opponent.name,
+      matchday: game.currentMatchday,
+    })
+  })
+
+  it('saknar rollover-default trots att de specialresolverade valen är märkta noOp', () => {
+    const game = makeGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const event = makeCSPressEvent(club.squadPlayerIds[0], 'fixture')
+
+    expect(getDefaultRolloverChoice(event)).toBeNull()
   })
 })

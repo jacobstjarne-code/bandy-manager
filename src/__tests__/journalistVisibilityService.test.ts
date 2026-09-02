@@ -3,6 +3,8 @@ import {
   getJournalistCardSeverity,
   shouldShowJournalistCard,
   detectRelationshipEvent,
+  appendJournalistRelationshipStoryline,
+  getJournalistRelationshipStoryText,
   getJournalistAttendanceModifier,
   getJournalistCommunityModifier,
 } from '../domain/services/journalistVisibilityService'
@@ -10,6 +12,11 @@ import type { SaveGame } from '../domain/entities/SaveGame'
 
 function makeGame(relationship: number, lastTriggered?: number): SaveGame {
   return {
+    currentSeason: 2026,
+    currentMatchday: 8,
+    managedClubId: 'club_forsbacka',
+    fixtures: [],
+    storylines: [],
     journalist: {
       name: 'Karin Bergström',
       outlet: 'Lokaltidningen',
@@ -57,6 +64,42 @@ describe('detectRelationshipEvent', () => {
     expect(detectRelationshipEvent(makeGame(50, 48))).toBeNull())
   it('null utan journalist', () =>
     expect(detectRelationshipEvent(makeGameNoJournalist())).toBeNull())
+})
+
+describe('journalistens relationsstorylines', () => {
+  it('fryser en feud-post bara vid en verklig ny ≤20-passering', () => {
+    const game = makeGame(18, 25)
+    const result = appendJournalistRelationshipStoryline(game, 'broken_under_20')
+
+    expect(result.storylines).toEqual([{
+      id: 'story_journalist_feud_2026_8',
+      type: 'journalist_feud',
+      season: 2026,
+      matchday: 0,
+      clubId: 'club_forsbacka',
+      description: 'Relationen är bruten. Det krävs tid och ärlighet för att vända.',
+      displayText: 'Relationen är bruten. Det krävs tid och ärlighet för att vända.',
+      resolved: true,
+    }])
+    expect(appendJournalistRelationshipStoryline(makeGame(15, 10), 'broken_under_20').storylines).toEqual([])
+  })
+
+  it('fryser en redemption-post bara vid en verklig ny ≥75-passering', () => {
+    const game = makeGame(80, 70)
+    const result = appendJournalistRelationshipStoryline(game, 'recovered_above_75')
+    const text = getJournalistRelationshipStoryText(game, 'recovered_above_75')
+
+    expect(text).toBe('Bergström är på er sida nu. Det håller så länge du är lika öppen tillbaka.')
+    expect(result.storylines?.[0]).toMatchObject({
+      id: 'story_journalist_redemption_2026_8',
+      type: 'journalist_redemption',
+      clubId: 'club_forsbacka',
+      description: text,
+      displayText: text,
+      resolved: true,
+    })
+    expect(appendJournalistRelationshipStoryline(makeGame(82, 78), 'recovered_above_75').storylines).toEqual([])
+  })
 })
 
 describe('getJournalistAttendanceModifier', () => {

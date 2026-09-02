@@ -148,19 +148,46 @@ export function generateCoachRivalries(opponentClubIds: string[], seed: number):
   }))
 }
 
+/**
+ * CoachRivalry är historiskt klubbnycklad (clubId), trots namnet. Samma
+ * härledning används därför av både Tränare-fliken och Portal-callbacken;
+ * ingen av ytorna får utse en annan nemesis genom en parallell score-formel.
+ */
+export function coachNemesisScore(rivalry: CoachRivalry): number {
+  const meetings = rivalry.h2hWins + rivalry.h2hDraws + rivalry.h2hLosses
+  return meetings * Math.max(0, rivalry.h2hLosses - rivalry.h2hWins)
+}
+
+export function deriveCoachNemesis(rivalries: CoachRivalry[]): CoachRivalry | null {
+  return rivalries
+    .filter(rivalry => coachNemesisScore(rivalry) > 0)
+    .sort((a, b) => coachNemesisScore(b) - coachNemesisScore(a))[0] ?? null
+}
+
 export function updateH2HRecord(
   profile: ManagerProfile,
   opponentClubId: string,
   managedScore: number,
   opponentScore: number,
 ): ManagerProfile {
+  const existing = profile.coachRivalries.some(r => r.clubId === opponentClubId)
   const rivalries = profile.coachRivalries.map(r => {
     if (r.clubId !== opponentClubId) return r
     if (managedScore > opponentScore) return { ...r, h2hWins: r.h2hWins + 1 }
     if (managedScore < opponentScore) return { ...r, h2hLosses: r.h2hLosses + 1 }
     return { ...r, h2hDraws: r.h2hDraws + 1 }
   })
-  return { ...profile, coachRivalries: rivalries }
+  if (existing) return { ...profile, coachRivalries: rivalries }
+
+  return {
+    ...profile,
+    coachRivalries: [...rivalries, {
+      clubId: opponentClubId,
+      h2hWins: managedScore > opponentScore ? 1 : 0,
+      h2hDraws: managedScore === opponentScore ? 1 : 0,
+      h2hLosses: managedScore < opponentScore ? 1 : 0,
+    }],
+  }
 }
 
 export function getContractStatusText(profile: ManagerProfile, currentSeason: number): string {

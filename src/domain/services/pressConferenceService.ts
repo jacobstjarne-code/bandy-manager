@@ -327,7 +327,6 @@ export const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'tp_liv4', tag: 'topic_person', label: '"Han bad aldrig om något. Det var vi som frågade."', moraleEffect: 5, mediaQuote: 'Tränaren: "Han bad aldrig om något. Det var vi som frågade honom."' },
   { id: 'tp_liv5', tag: 'topic_person', label: '"Trygghet gör folk modigare. Det syns på isen också."', moraleEffect: 6, mediaQuote: 'Tränaren: "Trygghet gör folk modigare. Det syns på isen också."' },
   { id: 'tp_liv6', tag: 'topic_person', label: '"Ett kontrakt är papper. Det som räknas är att någon vill ha en kvar."', moraleEffect: 5, mediaQuote: 'Tränaren: "Ett kontrakt är bara papper. Det som räknas är att någon vill ha en kvar."' },
-  { id: 'tp_liv7', tag: 'topic_person', label: '"Han hade kunnat gå någon annanstans. Han gjorde inte det."', moraleEffect: 6, mediaQuote: 'Tränaren: "Han hade kunnat gå någon annanstans. Han valde oss."' },
   { id: 'tp_liv8', tag: 'topic_person', label: '"Vi lovade ingenting. Vi sa bara att vi finns kvar."', moraleEffect: 4, mediaQuote: 'Tränaren: "Vi lovade honom ingenting. Vi sa bara att vi finns kvar."' },
   // ── topic_town: orten ──
   { id: 'tp_ort1', tag: 'topic_town', label: '"Folk säger hej i affären igen. Det är hela mätaren."', moraleEffect: 6, mediaQuote: 'Tränaren: "Folk säger hej i affären igen. Det är hela mätaren för mig."' },
@@ -941,10 +940,26 @@ export function generatePressConference(
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
     const underdogStory = seasonStories.find(s => s.type === 'underdog_season')
     const captainStory = seasonStories.find(s => s.type === 'captain_rallied_team')
-    const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
+    const rescueStories = seasonStories.filter(s => s.type === 'rescued_from_unemployment')
+    const managedGoalScorerIds = new Set(
+      (fixture.events ?? [])
+        .filter(e => e.type === MatchEventType.Goal && e.clubId === game.managedClubId && e.playerId)
+        .map(e => e.playerId as string),
+    )
+    // Ett varsel kan rädda flera spelare. Om någon av dem gjorde mål i den
+    // aktuella matchen måste den spelaranknutna berättelsen vinna över den
+    // första posten i arrayen; annars blev personfrågan godtyckligt låst till
+    // den först räddade spelaren.
+    const rescueStory = rescueStories.find(s => s.playerId && managedGoalScorerIds.has(s.playerId)) ?? rescueStories[0]
     const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
-    const returnStory = seasonStories.find(s => s.type === 'returned_to_club')
-    const galaStory = seasonStories.find(s => s.type === 'gala_winner')
+    // Gala awards are frozen onto the season that just ended. By the time a
+    // press conference can happen, currentSeason has already rolled forward,
+    // so the relevant fresh memory is deliberately last season's award.
+    const galaStory = storylines.find(s =>
+      s.resolved
+      && s.type === 'gala_winner'
+      && s.season === game.currentSeason - 1,
+    )
 
     if (ctx.won && underdogStory && storylineBudgetOk(underdogStory)) {
       question = { text: 'Ingen trodde på er i augusti. Vad säger du till tvivlarna?', preferIds: ['tp_tvi2', 'tp_tvi1', 'tp_tvi3'] }
@@ -957,8 +972,7 @@ export function generatePressConference(
       storylinePressKey = `press_storyline_${captainStory.id}`
     } else if (rescueStory && storylineBudgetOk(rescueStory) && rand() < 0.5) {
       const rescuePlayer = rescueStory.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
-      const matchGoalEvents = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal && e.clubId === game.managedClubId)
-      const rescueScorerMatch = rescuePlayer && matchGoalEvents.some(e => e.playerId === rescuePlayer.id)
+      const rescueScorerMatch = rescuePlayer && managedGoalScorerIds.has(rescuePlayer.id)
       if (rescuePlayer && rescueScorerMatch) {
         question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: ['tp_liv1', 'tp_liv4', 'tp_liv2'] }
         if (rescuePlayer.isFullTimePro) excludedResponseIds.push('tp_liv1')
@@ -974,13 +988,6 @@ export function generatePressConference(
         // dagjobbssvaret är alltid fel här, inte bara villkorat.
         excludedResponseIds.push('tp_liv1')
         storylinePressKey = `press_storyline_${proStory.id}`
-      }
-    } else if (returnStory && storylineBudgetOk(returnStory) && rand() < 0.5) {
-      const returnPlayer = returnStory.playerId ? game.players.find(p => p.id === returnStory.playerId) : null
-      if (returnPlayer) {
-        question = { text: `Berätta om ${returnPlayer.firstName} ${returnPlayer.lastName}s resa tillbaka till klubben.`, preferIds: ['tp_liv7', 'tp_liv6', 'tp_liv3'] }
-        if (returnPlayer.isFullTimePro) excludedResponseIds.push('tp_liv1')
-        storylinePressKey = `press_storyline_${returnStory.id}`
       }
     } else if (galaStory && storylineBudgetOk(galaStory) && rand() < 0.5) {
       const galaPlayer = galaStory.playerId ? game.players.find(p => p.id === galaStory.playerId) : null

@@ -3,7 +3,10 @@ import type { BurnoutZone, BurnoutCause } from '../services/managerProfileServic
 
 export interface CoachRivalry {
   clubId: string
-  personality: CoachPersonality
+  /** Äldre flavor-data från när rivaliteten presenterades som tränarperson.
+   *  H2H-modellen är i själva verket klubbnycklad; nya klubbar som blir
+   *  motståndare efter ett klubbyte behöver därför inte hitta på en persona. */
+  personality?: CoachPersonality
   h2hWins: number
   h2hDraws: number
   h2hLosses: number
