@@ -916,9 +916,9 @@ export function SeasonSummaryScreen() {
             ingen platshållare där — sektionen renderar, skriver inte om. */}
         {summary.managerSeason && summary.managerSeason.length > 0 && (
           <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
-            <SectionLabel style={{ marginBottom: 6 }}>[Opus]</SectionLabel>
+            <SectionLabel style={{ marginBottom: 6 }}>🧊 DIN SÄSONG SOM TRÄNARE</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 8 }}>
-              [Opus]
+              Tabellen är lagets. Det här var din.
             </p>
             {summary.managerSeason.map((entry, i) => (
               <p
