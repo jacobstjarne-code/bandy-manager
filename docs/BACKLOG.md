@@ -339,6 +339,10 @@ Skärmdumpar + Jacobs öga. **OBS: allt nedan verifierat BARA för CUP-matcher**
 
 ## A. AKTIVA SPRINTAR (Code arbetar eller väntar Code-start)
 
+Sluttestets fulla fynd- och verifieringslogg finns i [`SLUTTEST_KO.md`](SLUTTEST_KO.md).
+Levande status för punkterna finns, liksom för all annan öppen kod, endast i
+[`MASTER_OPPET.md`](MASTER_OPPET.md).
+
 ### TEXT-AUDITEN — STÄNGD 2026-07-05 (raden stod kvar "AKTIV" i nästan två månader, korrigerad av 2026-08-31-inventeringen)
 
 Denna sektion påstod att domän 2–4 var kvar och att Code hade en öppen kö
