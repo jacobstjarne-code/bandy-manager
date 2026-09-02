@@ -425,3 +425,69 @@ describe('callback_legend_debut — exakt strukturerad förstamatch', () => {
     expect(beat.trigger(game)).toBe(false)
   })
 })
+
+describe('callback_legend_record — verklig högsta legendnotering', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'callback_legend_record')!
+
+  it('väljer högsta legendtotalen och närmaste egna spelare under rekordet', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const [nearest, farther] = base.players.filter(player => player.clubId === base.managedClubId)
+    const game = {
+      ...base,
+      players: base.players.map(player => {
+        if (player.id === nearest.id) return { ...player, careerStats: { ...player.careerStats, totalGoals: 98 } }
+        if (player.id === farther.id) return { ...player, careerStats: { ...player.careerStats, totalGoals: 96 } }
+        return player
+      }),
+      clubLegends: [
+        {
+          name: 'L. Lägre', position: nearest.position, seasons: 9,
+          totalGames: 180, totalGoals: 80, totalAssists: 30, titles: [], retiredSeason: 3,
+          playerId: 'legend_low',
+        },
+        {
+          name: 'H. Högst', position: nearest.position, seasons: 11,
+          totalGames: 220, totalGoals: 100, totalAssists: 40, titles: [], retiredSeason: 4,
+          playerId: 'legend_high',
+        },
+      ],
+    }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(typeof beat.text === 'function' ? beat.text(game) : beat.text)
+      .toBe(`${nearest.firstName} ${nearest.lastName} är 2 mål från H. Högst:s rekord.`)
+    expect(getBeatKey(beat, game.currentSeason, game))
+      .toBe(`callback_legend_record_${nearest.id}_legend_high_100`)
+    expect(getBeatKey(beat, 6, { ...game, currentSeason: 6 }))
+      .toBe(`callback_legend_record_${nearest.id}_legend_high_100`)
+    expect(PIVOTAL_BEAT_IDS).toContain('callback_legend_record')
+  })
+
+  it('triggar inte på den borttagna seasonsPlayed-proxyn eller när legendens mål redan överträffats', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const [candidate, holder] = base.players.filter(player => player.clubId === base.managedClubId)
+    const legend = {
+      name: 'R. Rekord', position: candidate.position, seasons: 10,
+      totalGames: 200, totalGoals: 100, totalAssists: 30, titles: [], retiredSeason: 4,
+      playerId: 'legend_record',
+    }
+    const seasonsOnly = {
+      ...base,
+      players: base.players.map(player => player.id === candidate.id
+        ? { ...player, careerStats: { ...player.careerStats, totalGoals: 10, seasonsPlayed: 9 } }
+        : player),
+      clubLegends: [legend],
+    }
+    expect(beat.trigger(seasonsOnly)).toBe(false)
+
+    const surpassed = {
+      ...seasonsOnly,
+      players: seasonsOnly.players.map(player => {
+        if (player.id === candidate.id) return { ...player, careerStats: { ...player.careerStats, totalGoals: 98 } }
+        if (player.id === holder.id) return { ...player, careerStats: { ...player.careerStats, totalGoals: 101 } }
+        return player
+      }),
+    }
+    expect(beat.trigger(surpassed)).toBe(false)
+  })
+})

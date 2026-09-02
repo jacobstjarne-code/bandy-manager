@@ -107,6 +107,28 @@ function findCurrentLegendDebut(game: SaveGame) {
   return null
 }
 
+function findLegendRecordChase(game: SaveGame) {
+  const recordLegend = [...(game.clubLegends ?? [])]
+    .filter(legend => legend.totalGoals > 0)
+    .sort((a, b) => (b.totalGoals - a.totalGoals) || a.name.localeCompare(b.name))[0]
+  if (!recordLegend) return null
+
+  const activePlayers = game.players.filter(player => player.clubId === game.managedClubId)
+  if (activePlayers.some(player => (player.careerStats?.totalGoals ?? 0) > recordLegend.totalGoals)) {
+    return null
+  }
+
+  const candidate = activePlayers
+    .map(player => ({
+      player,
+      goalsDiff: recordLegend.totalGoals - (player.careerStats?.totalGoals ?? 0),
+    }))
+    .filter(({ goalsDiff }) => goalsDiff > 0 && goalsDiff <= 5)
+    .sort((a, b) => (a.goalsDiff - b.goalsDiff) || a.player.id.localeCompare(b.player.id))[0]
+
+  return candidate ? { ...candidate, legend: recordLegend } : null
+}
+
 /** Har transfer_window_open-beatet visats i en tidigare säsong? shownBeats
  *  nollställs aldrig mellan säsonger, så en tidigare säsongs nyckel räcker. */
 function hasSeenTransferWindowBeatBefore(game: SaveGame): boolean {
@@ -464,40 +486,15 @@ export const PORTAL_BEATS: PortalBeat[] = [
     emoji: '🏆',
     kicker: 'Historien väntar',
     severity: () => 1,
-    trigger: (g) => {
-      const legends = g.clubLegends ?? []
-      if (legends.length === 0) return false
-      return g.players.some(p =>
-        p.clubId === g.managedClubId &&
-        legends.some(l =>
-          (l.totalGoals > 0 && Math.abs((p.careerStats?.totalGoals ?? 0) - l.totalGoals) <= 5 && (p.careerStats?.totalGoals ?? 0) < l.totalGoals) ||
-          (l.seasons > 0 && Math.abs((p.careerStats?.seasonsPlayed ?? 0) - l.seasons) <= 1 && (p.careerStats?.seasonsPlayed ?? 0) < l.seasons)
-        )
-      )
-    },
+    trigger: (g) => !!findLegendRecordChase(g),
     text: (g) => {
-      const legends = g.clubLegends ?? []
-      for (const p of g.players.filter(pl => pl.clubId === g.managedClubId)) {
-        for (const l of legends) {
-          const goalsDiff = l.totalGoals - (p.careerStats?.totalGoals ?? 0)
-          if (l.totalGoals > 0 && goalsDiff > 0 && goalsDiff <= 5) {
-            return `${p.firstName} ${p.lastName} är ${goalsDiff} mål från ${l.name}:s rekord. Det har stått sig längre än någon trott.`
-          }
-        }
-      }
-      return ''
+      const chase = findLegendRecordChase(g)
+      if (!chase) return ''
+      return `${chase.player.firstName} ${chase.player.lastName} är ${chase.goalsDiff} mål från ${chase.legend.name}:s rekord.`
     },
     keyFn: (g) => {
-      const legends = g.clubLegends ?? []
-      for (const p of g.players.filter(pl => pl.clubId === g.managedClubId)) {
-        for (const l of legends) {
-          const goalsDiff = l.totalGoals - (p.careerStats?.totalGoals ?? 0)
-          if (l.totalGoals > 0 && goalsDiff > 0 && goalsDiff <= 5) {
-            return `callback_legend_record_${p.id}_${l.playerId ?? l.name}_s${g.currentSeason}`
-          }
-        }
-      }
-      return `callback_legend_record_none_s${g.currentSeason}`
+      const chase = findLegendRecordChase(g)
+      return `callback_legend_record_${chase?.player.id ?? 'none'}_${chase?.legend.playerId ?? chase?.legend.name ?? 'none'}_${chase?.legend.totalGoals ?? 'none'}`
     },
     oncePerSeason: true,
   },
