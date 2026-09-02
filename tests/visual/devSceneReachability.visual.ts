@@ -77,3 +77,50 @@ test('Champion-scenen visar hela slutspelsresan och SM-guldet', async ({ page })
   await expect(scene.getByText(/^SM-Final vs /)).toBeVisible()
   await expect(scene.getByRole('button', { name: /Nästa säsong/ })).toBeVisible()
 })
+
+test('Lönekravsscenen visar två verkliga spelare och ett aktivt val', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=contract-demands&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('LÖNEKRAV')).toBeVisible()
+  await expect(scene.getByText('Mattias Holm')).toBeVisible()
+  await expect(scene.getByText('Daniel Pettersson')).toBeVisible()
+  await expect(scene.getByRole('button', { name: 'BEKRÄFTA BESLUT →' })).toBeVisible()
+})
+
+test('Karriäruppehållet visar säsongen utan spelaren före marknaden', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=career-break&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('Edsbyn BK', { exact: true })).toBeVisible()
+  await expect(scene.getByText(/Oskar Berglund/)).toBeVisible()
+  await expect(scene.getByRole('button')).toBeVisible()
+})
+
+test('Inkorgsscenen visar alla tre severity-grupperna', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=inbox&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('KRÄVER SVAR')).toBeVisible()
+  await expect(scene.getByText('NYHETER')).toBeVisible()
+  await expect(scene.getByText('RAPPORTER')).toBeVisible()
+})
+
+test('Simuleringssammanfattningen visar tre matcher och tabellklättring', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=sim-summary&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('SIMULERINGSRESULTAT')).toBeVisible()
+  await expect(scene.getByText('3 matcher simulerade')).toBeVisible()
+  await expect(scene.getByText('5:e')).toBeVisible()
+  await expect(scene.getByText('3:e')).toBeVisible()
+})
+
+test('Hallprövningen visar förankringsfas och stöd-mätare', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=hall-provning&width=390', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText('FÖRANKRING')).toBeVisible()
+  await expect(scene.getByText('STÖD I BYGDEN')).toBeVisible()
+  await expect(scene.getByText('56')).toBeVisible()
+})

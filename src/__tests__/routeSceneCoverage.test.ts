@@ -29,7 +29,7 @@ import { getGameRoutes, getUncoveredGameRoutes } from '../../tests/visual/routeS
 // HistoryScreens `snapshot`), så den kan inte monteras i dev-skalet med ett
 // påhittat spel förrän den tar emot careerBreak som prop. Stäng-villkor och
 // ägare i docs/BACKLOG.md ("BYGGT MEN OSYNLIGT/ONÅBART").
-const BASELINE_UNCOVERED_GAME_ROUTES = 5
+const BASELINE_UNCOVERED_GAME_ROUTES = 0
 
 describe('route → dev-scene-täckning (H1 meta-grind)', () => {
   it('varje /game-rutt i AppRouter.tsx har minst ett registrerat SCENES-id i ROUTE_SCENE_MAP', () => {

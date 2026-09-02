@@ -12,7 +12,7 @@ import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 import { FORMATIONS } from '../../../domain/entities/Formation'
-import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus } from '../../../domain/enums'
+import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
@@ -58,6 +58,11 @@ import { CallupModal } from '../../components/portal/CallupModal'
 import { ChampionScreen } from '../ChampionScreen'
 import { PlayoffIntroScreen } from '../PlayoffIntroScreen'
 import { QFSummaryScreen } from '../QFSummaryScreen'
+import { SeasonContractDemandsScreen } from '../SeasonContractDemandsScreen'
+import { CareerBreakScreen } from '../CareerBreakScreen'
+import { InboxScreen } from '../InboxScreen'
+import { SimSummaryScreen } from '../SimSummaryScreen'
+import HallProvningScreen from '../HallProvningScreen'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
@@ -154,6 +159,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Route-ratchet 2026-09-01: tre slutspelsrutter som tidigare bara gick att
   // nå genom en hel säsong, nu byggda på samma deterministiska slutspelsresa.
   | 'playoff-intro' | 'qf-summary' | 'champion'
+  // Route-ratchet 2026-09-02: de fem sista /game-rutterna. Alla använder
+  // riktiga produktskärmar och deterministisk state, inte ytkopior.
+  | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -238,6 +246,11 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'playoff-intro', label: 'Slutspel — grundserien avklarad' },
   { id: 'qf-summary', label: 'Slutspel — kvartsfinalerna avgjorda' },
   { id: 'champion', label: 'Slutspel — svenska mästare' },
+  { id: 'contract-demands', label: 'Lönekrav — två spelare, ett mött' },
+  { id: 'career-break', label: 'Karriäruppehåll — säsongen utan dig' },
+  { id: 'inbox', label: 'Inkorg — svar, nyheter och rapporter' },
+  { id: 'sim-summary', label: 'Simulering — tre matcher och tabellrörelse' },
+  { id: 'hall-provning', label: 'Hallprövning — förankring och stöd' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -485,6 +498,75 @@ const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
+
+// De fem sista route-fixturerna använder bara fält respektive produktvy
+// faktiskt läser. Samma SaveGame-form som resten av galleriet, ingen egen
+// presentationskopia av skärmen.
+const contractDemandsGame = makeGame(makeLeagueFixtures(), {
+  pendingContractDemands: [
+    { playerId: 'p-d1', currentSalary: 8_000, minSalary: 10_500 },
+    { playerId: 'p-f2', currentSalary: 7_700, minSalary: 9_800 },
+  ],
+})
+
+const careerBreakGame = makeGame(makeLeagueFixtures(), {
+  careerBreak: {
+    firedAtSeason: 7,
+    stage: 'season',
+    renomme: 61,
+    careerOver: false,
+    report: {
+      formerClubId: HOME_ID,
+      formerClubName: 'Edsbyn BK',
+      positionUnderPlayer: 9,
+      bestPositionUnderReplacement: 5,
+      replacementCoachName: 'Oskar Berglund',
+      formerClubDidWorse: false,
+      seasonsSimulated: 2,
+      seasons: [
+        { season: 8, formerClubPosition: 7, championClubId: AWAY_ID, championClubName: 'Bollnäs GoIF' },
+        { season: 9, formerClubPosition: 5, championClubId: HOME_ID, championClubName: 'Edsbyn BK' },
+      ],
+      finalStandings: [{ clubId: HOME_ID, position: 5 }, { clubId: AWAY_ID, position: 11 }],
+    },
+    offers: [{
+      clubId: AWAY_ID,
+      clubName: 'Bollnäs GoIF',
+      lastPosition: 11,
+      boardExpectation: 'avoidBottom',
+      reputation: 54,
+      isFormerClub: false,
+      departedCoachName: 'Per Andersson',
+      pitch: 'En förening som behöver börja om, med tålamod för ett riktigt bygge.',
+    }],
+  },
+})
+
+const inboxGame = makeGame(makeLeagueFixtures(), {
+  inbox: [
+    { id: 'dev-inbox-license', date: '2026-01-15', type: InboxItemType.LicenseReview, title: 'Licensen kräver en plan', body: 'Styrelsen vill se en åtgärd före nästa kontroll.', isRead: false, createdMatchday: 16, createdRound: 14, licenseZoneLabel: 'Riskzon' },
+    { id: 'dev-inbox-media', date: '2026-01-14', type: InboxItemType.Media, title: 'Vinterns formkurva väcker frågor', body: 'Gefle Dagblad summerar de senaste matcherna.', isRead: false, createdMatchday: 15, createdRound: 13, outlet: 'Gefle Dagblad' },
+    { id: 'dev-inbox-scout', date: '2026-01-13', type: InboxItemType.ScoutReport, title: 'Scoutrapport klar', body: 'Tre spelare har följts under månaden.', isRead: true, createdMatchday: 14, createdRound: 12 },
+  ],
+})
+
+const simSummaryFixtures = makeLeagueFixtures().slice(-3)
+const simSummaryGame = makeGame(makeLeagueFixtures())
+const simSummaryLocationState = {
+  __devScene: 'sim-summary',
+  simulatedFixtures: simSummaryFixtures,
+  positionBefore: 5,
+  positionAfter: 3,
+  pointsBefore: 18,
+  pointsAfter: 24,
+}
+
+const hallProvningGame = makeGame(makeLeagueFixtures(), {
+  facilityState: {
+    builtNodeIds: [],
+    hallTrial: { stage: 'forankring', support: 56, startedSeason: 8, stageStartedRound: 14 },
+  },
+})
 // Lugn trupp (allEmpty) för NU-stiltje: inga skador/avstängningar/låg moral
 const calmPlayers = devPlayers.map(p => ({ ...p, isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0, morale: 70 }))
 const stillnessGame = makeGame(makeLeagueFixtures(), { players: calmPlayers, captainPlayerId: 'p-d1' })
@@ -659,6 +741,21 @@ function MatchLiveDevScene({ locationState }: { locationState: MatchLiveLocation
   // utan att gräva. Montera aldrig skärmen innan statet faktiskt finns.
   if (!location.state) return null
   return <MatchLiveScreen />
+}
+
+/** SimSummaryScreen är den andra produktskärmen som kräver route-state.
+ * Markören gör scenbyte robust även om location.state från match-live ligger
+ * kvar på samma /dev/scenes-historikpost. */
+function SimSummaryDevScene() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const state = location.state as { __devScene?: string } | null
+  useEffect(() => {
+    if (state?.__devScene === 'sim-summary') return
+    navigate(location.pathname + location.search, { state: simSummaryLocationState, replace: true })
+  }, [location.pathname, location.search, navigate, state?.__devScene])
+  if (state?.__devScene !== 'sim-summary') return null
+  return <SimSummaryScreen />
 }
 
 // Mobil speltest-audit (2026-08-17), tap-target-grinden: forcerar de N senaste
@@ -1348,6 +1445,11 @@ export function DevScenesScreen() {
   // etablerade (default = befintligt beteende, opt-in för det nya).
   const navGate = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('navGate') === '1'
+  // Manuell/agentdriven produktinspektion: den växande dev-menyn är numera
+  // högre än en mobilviewport och skulle annars täcka scenen som ska bedömas.
+  // Opt-in; snapshots och vanlig gallerinavigering är oförändrade.
+  const inspectMode = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('inspect') === '1'
   const storeReady = useGameStore(s => s.game?.lastCompletedFixtureId === 'fx-granska')
   const seasonReady = useGameStore(s => (s.game?.seasonSummaries?.length ?? 0) > 0)
   const finalReady = useGameStore(s => !!s.game?.playoffBracket?.final)
@@ -1419,6 +1521,11 @@ export function DevScenesScreen() {
       : scene === 'playoff-intro' ? playoffIntroGame
       : scene === 'qf-summary' ? qfSummaryGame
       : scene === 'champion' ? championGame
+      : scene === 'contract-demands' ? contractDemandsGame
+      : scene === 'career-break' ? careerBreakGame
+      : scene === 'inbox' ? inboxGame
+      : scene === 'sim-summary' ? simSummaryGame
+      : scene === 'hall-provning' ? hallProvningGame
       : portalGame
     const roundSummaryForScene =
       scene === 'granska' ? granskaRoundSummary
@@ -1464,7 +1571,7 @@ export function DevScenesScreen() {
         style={{
           position: 'sticky', top: 0, zIndex: 50,
           background: '#111', borderBottom: '1px solid #2a2a2a',
-          padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+          padding: '6px 12px', display: inspectMode ? 'none' : 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
         }}
       >
         <span style={{ fontSize: 9, letterSpacing: '2px', color: '#555', textTransform: 'uppercase', marginRight: 4 }}>
@@ -1620,6 +1727,31 @@ export function DevScenesScreen() {
         {scene === 'champion' && (
           <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
             <ChampionScreen />
+          </div>
+        )}
+        {scene === 'contract-demands' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <SeasonContractDemandsScreen />
+          </div>
+        )}
+        {scene === 'career-break' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <CareerBreakScreen />
+          </div>
+        )}
+        {scene === 'inbox' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+            <InboxScreen />
+          </div>
+        )}
+        {scene === 'sim-summary' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <SimSummaryDevScene />
+          </div>
+        )}
+        {scene === 'hall-provning' && (
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+            <HallProvningScreen />
           </div>
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (

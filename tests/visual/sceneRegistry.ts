@@ -111,4 +111,7 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // Route-ratchet 2026-09-01: tre riktiga slutspelsskärmar på samma
   // deterministiska resa — öppning, avgjorda kvartsfinaler och SM-guld.
   ['playoff-intro'], ['qf-summary'], ['champion'],
+  // Route-ratchet 2026-09-02: de fem sista /game-rutterna har nu riktiga,
+  // deterministiska produktkomponentscener.
+  ['contract-demands'], ['career-break'], ['inbox'], ['sim-summary'], ['hall-provning'],
 ]

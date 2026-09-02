@@ -99,6 +99,11 @@ export const ROUTE_SCENE_MAP: Record<string, string[]> = {
   'playoff-intro': ['playoff-intro'],
   'qf-summary': ['qf-summary'],
   champion: ['champion'],
+  'contract-demands': ['contract-demands'],
+  'career-break': ['career-break'],
+  inbox: ['inbox'],
+  'sim-summary': ['sim-summary'],
+  'hall-provning': ['hall-provning'],
 }
 
 export interface UncoveredRoute { route: string; reason: string }
