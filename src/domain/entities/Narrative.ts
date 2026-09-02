@@ -34,6 +34,14 @@ export interface JournalistMemory {
   event: string       // 'refused_press', 'good_answer', 'bad_answer', 'big_win', 'crisis'
   sentiment: number   // -10 to +10
   opponentShort?: string  // B1 — motståndaren matchen gällde, för Efterklang-premiss ("…efter {opp}")
+  /** C-SY1 Pilot 2: stabil identitet för den faktiskt visade pressfrågan. */
+  questionId?: string
+  /** C-SY1 Pilot 2: stabil identitet för svaret spelaren faktiskt valde. */
+  answerId?: string
+  /** Personen frågan gällde, när interaktionen var spelarbunden. */
+  subjectPlayerId?: string
+  /** Matchen interaktionen gällde; används som orsak, aldrig som tidsaxel. */
+  fixtureId?: string
 }
 
 export interface Journalist {

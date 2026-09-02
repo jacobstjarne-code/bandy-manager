@@ -2037,6 +2037,10 @@ export function resolveEvent(
           event: `cs_press_${choiceType}`,
           sentiment: relDelta,
           opponentShort: opponent?.shortName ?? opponent?.name,
+          questionId: event.journalistQuestionId,
+          answerId: choiceType,
+          subjectPlayerId: playerId,
+          fixtureId,
         },
       ]
 

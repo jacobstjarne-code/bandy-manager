@@ -9,7 +9,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { GameEvent } from '../entities/GameEvent'
 import type { Player } from '../entities/Player'
 import { PlayerPosition } from '../enums'
-import { pickCSPressQuestion, CS_PRESS_CHOICE_BUTTONS } from '../data/csPressEventText'
+import { pickCSPressQuestionSelection, CS_PRESS_CHOICE_BUTTONS } from '../data/csPressEventText'
 
 // ── CS streak ────────────────────────────────────────────────────────────────
 
@@ -131,13 +131,23 @@ export function buildCSPressEvent(
 ): GameEvent {
   const journalist = game.journalist!
   const relationship = journalist.relationship ?? game.journalistRelationship ?? 50
-  const question = pickCSPressQuestion(player, fixture.id, relationship)
+  const previousCSPressMemory = [...journalist.memory]
+    .reverse()
+    .find(memory => memory.event.startsWith('cs_press_'))
+  const question = pickCSPressQuestionSelection(
+    player,
+    fixture.id,
+    relationship,
+    game.currentSeason,
+    fixture.matchday,
+    previousCSPressMemory,
+  )
 
   return {
     id: `csPress_${fixture.id}`,
     type: 'csPress',
     title: journalist.name,
-    body: question,
+    body: question.text,
     choices: [
       { id: 'individual', label: CS_PRESS_CHOICE_BUTTONS.individual, effect: { type: 'noOp' } },
       { id: 'team',       label: CS_PRESS_CHOICE_BUTTONS.team,       effect: { type: 'noOp' } },
@@ -148,5 +158,6 @@ export function buildCSPressEvent(
     priority: 'normal',
     relatedPlayerId: player.id,
     relatedFixtureId: fixture.id,
+    journalistQuestionId: question.id,
   }
 }

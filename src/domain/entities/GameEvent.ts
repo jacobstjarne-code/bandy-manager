@@ -313,6 +313,8 @@ export interface GameEvent {
   relatedClubId?: string
   relatedBidId?: string
   relatedFixtureId?: string
+  /** C-SY1 Pilot 2: stabilt id för csPress-frågan som faktiskt visas. */
+  journalistQuestionId?: string
   sponsorData?: string
   resolved: boolean
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)

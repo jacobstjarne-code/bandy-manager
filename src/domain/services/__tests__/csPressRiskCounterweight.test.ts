@@ -18,6 +18,7 @@ import { CLUB_TEMPLATES } from '../worldGenerator'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { getDefaultRolloverChoice } from '../deferredRolloverService'
+import { buildCSPressEvent } from '../csPressEventService'
 
 function makeGame(): SaveGame {
   const template = CLUB_TEMPLATES[0]
@@ -31,6 +32,7 @@ function makeCSPressEvent(playerId: string, fixtureId: string): GameEvent {
     title: 't', body: 'b',
     relatedPlayerId: playerId,
     relatedFixtureId: fixtureId,
+    journalistQuestionId: 'cs_neutral_1',
     choices: [
       { id: 'individual', label: 'Han har varit avgörande', effect: { type: 'noOp' } },
       { id: 'team', label: 'Hela laget försvarar', effect: { type: 'noOp' } },
@@ -129,7 +131,7 @@ describe('csPress — system: riskfri journalistnisch, ingen overksam moral-pena
 })
 
 describe('csPress — beslutslivscykel och minnesankare', () => {
-  it('sparar den verkliga motståndaren i journalistminnet', () => {
+  it('bygger ett stabilt fråge-id och sparar full fråga-/svarsidentitet i journalistminnet', () => {
     const game = makeGame()
     const fixture = game.fixtures[0]
     if (!fixture) throw new Error('Testspel saknar fixture')
@@ -139,7 +141,8 @@ describe('csPress — beslutslivscykel och minnesankare', () => {
       ? fixture.awayClubId
       : fixture.homeClubId
     const opponent = game.clubs.find(c => c.id === opponentId)!
-    const event = makeCSPressEvent(playerId, fixture.id)
+    const player = game.players.find(p => p.id === playerId)!
+    const event = buildCSPressEvent(game, fixture, player)
 
     const result = resolveEvent({ ...game, pendingCSPress: event }, event.id, 'team', undefined, true)
 
@@ -147,7 +150,12 @@ describe('csPress — beslutslivscykel och minnesankare', () => {
       event: 'cs_press_team',
       opponentShort: opponent.shortName ?? opponent.name,
       matchday: game.currentMatchday,
+      questionId: event.journalistQuestionId,
+      answerId: 'team',
+      subjectPlayerId: playerId,
+      fixtureId: fixture.id,
     })
+    expect(event.journalistQuestionId).toMatch(/^cs_(?:cause_)?/)
   })
 
   it('saknar rollover-default trots att de specialresolverade valen är märkta noOp', () => {

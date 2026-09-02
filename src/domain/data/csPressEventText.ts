@@ -17,6 +17,19 @@
 export type PressSeverity = 'provocative' | 'neutral' | 'friendly'
 export type PressChoice = 'individual' | 'team' | 'system' | 'silent'
 
+export interface CSPressQuestionSelection {
+  id: string
+  text: string
+  referencesPreviousAnswer: boolean
+}
+
+export interface CSPressCauseMemory {
+  season: number
+  matchday: number
+  questionId?: string
+  answerId?: string
+}
+
 /**
  * 15 frågor, 5 per severity-nivå. Plockas baserat på journalist.relationship.
  * {NAME} ersätts med spelarens fullnamn vid rendering.
@@ -44,6 +57,33 @@ export const CS_PRESS_QUESTIONS: Record<PressSeverity, readonly string[]> = {
     `Hur viktigt är det att {NAME} får det här erkännandet just i dag?`,
   ],
 }
+
+/**
+ * C-SY1 Pilot 2 — inflätade återkopplingar till det verkliga föregående
+ * csPress-svaret. Precis som Pilot 1 är detta en parallell pool, inte en
+ * mekanisk wrapper runt en vanlig fråga.
+ */
+export const CS_PRESS_CAUSE_QUESTIONS: Record<PressChoice, readonly string[]> = {
+  individual: [
+    `Sist gav du en spelare hela äran efter nollan. Vem bär mest av det här i dag?`,
+    `Förra gången lyfte du fram en enskild spelare. Ser du den här nollan på samma sätt?`,
+  ],
+  team: [
+    `Sist gav du hela laget äran. Är det samma svar efter ännu en hållen nolla?`,
+    `Förra gången talade du om elva man. Var det kollektivet som bar er i dag också?`,
+  ],
+  system: [
+    `Du talade om systemet sist. Är det strukturen som håller fortfarande?`,
+    `Förra gången gav du arbetssättet äran. Var det planen som höll nollan i dag också?`,
+  ],
+  silent: [
+    `Sist blev det ingen kommentar. Säger du mer om den här nollan?`,
+    `Du avstod från att svara förra gången. Vad vill du säga efter nollan i dag?`,
+  ],
+}
+
+export const CS_PRESS_CAUSE_PREFIX_THRESHOLD = 0.35
+export const CS_PRESS_CAUSE_MAX_AGE = 8
 
 /**
  * Knapptexter för spelarens fyra val. Tre kärnval + ghost-val.
@@ -99,7 +139,7 @@ export const CS_PRESS_MEMORY_TEMPLATES: Record<PressChoice, string> = {
  * Pick-funktioner enligt mönstret i eventCardInlineStrings.ts.
  * Deterministisk seed så samma matchspel ger samma fråga vid återbesök.
  */
-import { seededPick } from '../utils/random'
+import { fixtureSeed, seededPick } from '../utils/random'
 
 export function getSeverityFromRelationship(relationship: number): PressSeverity {
   if (relationship <= 33) return 'provocative'
@@ -112,9 +152,57 @@ export function pickCSPressQuestion(
   fixtureId: string,
   relationship: number,
 ): string {
+  return pickCSPressQuestionSelection(player, fixtureId, relationship, 0, 0).text
+}
+
+export function csPressCauseIsRelevant(
+  memory: CSPressCauseMemory | undefined,
+  currentSeason: number,
+  currentMatchday: number,
+): memory is CSPressCauseMemory & { questionId: string; answerId: PressChoice } {
+  if (!memory?.questionId || !memory.answerId) return false
+  if (!Object.prototype.hasOwnProperty.call(CS_PRESS_CAUSE_QUESTIONS, memory.answerId)) return false
+  if (memory.season !== currentSeason) return false
+  const age = currentMatchday - memory.matchday
+  return age >= 1 && age <= CS_PRESS_CAUSE_MAX_AGE
+}
+
+/**
+ * Returnerar både texten och dess stabila identitet. Äldre minnesposter utan
+ * questionId/answerId kan inte bära en sann återkoppling och faller därför
+ * alltid tillbaka till den vanliga relationsstyrda frågepoolen.
+ */
+export function pickCSPressQuestionSelection(
+  player: { id: string; firstName: string; lastName: string },
+  fixtureId: string,
+  relationship: number,
+  currentSeason: number,
+  currentMatchday: number,
+  previousMemory?: CSPressCauseMemory,
+): CSPressQuestionSelection {
+  const causeRelevant = csPressCauseIsRelevant(previousMemory, currentSeason, currentMatchday)
+  const useCause = causeRelevant
+    && fixtureSeed(`${fixtureId}_cs_press_cause`) % 100 < CS_PRESS_CAUSE_PREFIX_THRESHOLD * 100
+
+  if (useCause) {
+    const answerId = previousMemory.answerId
+    const pool = CS_PRESS_CAUSE_QUESTIONS[answerId]
+    const text = seededPick(pool, `${fixtureId}_${answerId}_cause`)
+    return {
+      id: `cs_cause_${answerId}_${pool.indexOf(text) + 1}`,
+      text,
+      referencesPreviousAnswer: true,
+    }
+  }
+
   const severity = getSeverityFromRelationship(relationship)
-  const variant = seededPick(CS_PRESS_QUESTIONS[severity], `${player.id}_${fixtureId}`)
-  return variant.replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
+  const pool = CS_PRESS_QUESTIONS[severity]
+  const template = seededPick(pool, `${player.id}_${fixtureId}`)
+  return {
+    id: `cs_${severity}_${pool.indexOf(template) + 1}`,
+    text: template.replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`),
+    referencesPreviousAnswer: false,
+  }
 }
 
 export function pickCSPressPublishedQuote(
