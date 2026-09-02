@@ -83,9 +83,11 @@ interface StartStepProps {
   ritualText?: string
   farewellPlayerName?: string  // C-B3: set for farewell matches
   squadPlayers?: Player[]
+  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  showFooter?: boolean
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName, squadPlayers }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName, squadPlayers, showFooter = true }: StartStepProps) {
   // Ärlig trötthetsmagnitud (se utils/lagstyrka): idag vs utvilat, ur motorns egen evaluateSquad.
   const { idag: styrkaIdag, utvilat: styrkaUtvilat, gap: styrkaGap } = useMemo(
     () => computeLagstyrka(startingIds, squadPlayers, tacticState),
@@ -216,16 +218,18 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onBack} className="btn btn-outline" style={{
-          flex: 1, padding: '13px', fontSize: 13,
-        }}>
-          ← Taktik
-        </button>
-        <button onClick={onPlay} className="btn btn-primary btn-cta" style={{ flex: 2, width: 'auto' }}>
-          Spela matchen →
-        </button>
-      </div>
+      {showFooter && (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onBack} className="btn btn-outline" style={{
+            flex: 1, padding: '13px', fontSize: 13,
+          }}>
+            ← Taktik
+          </button>
+          <button onClick={onPlay} className="btn btn-primary btn-cta" style={{ flex: 2, width: 'auto' }}>
+            Spela matchen →
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -16,7 +16,7 @@ vi.mock('../../components/EventOverlay', () => ({ EventOverlay: () => null }))
 // IndexedDB-vägen (den har sin egen täckning i saveGameStorage-testerna).
 vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }))
 
-const { GameShell } = await import('../GameShell')
+const { GameShell, routeOwnsLedgerChrome } = await import('../GameShell')
 
 /**
  * Skutskär-auditens test 20 (52009671, 2026-08-20): "Deep-link rehydration:
@@ -151,5 +151,17 @@ describe('GameShell — deep-link rehydration (Skutskär-audit test 20)', () => 
     } finally {
       useGameStore.persist.hasHydrated = originalHasHydrated
     }
+  })
+})
+
+describe('GameShell — LedgerFrame äger rondflödets chrome', () => {
+  it('låter både Förbered och Spela äga sin chrome', () => {
+    expect(routeOwnsLedgerChrome('/game/match', null)).toBe(true)
+    expect(routeOwnsLedgerChrome('/game/match/live', null)).toBe(true)
+  })
+
+  it('behåller GameShell-chrome för den äldre historiska rapportöppningen', () => {
+    expect(routeOwnsLedgerChrome('/game/match', { showReport: true })).toBe(false)
+    expect(routeOwnsLedgerChrome('/game/review', null)).toBe(false)
   })
 })

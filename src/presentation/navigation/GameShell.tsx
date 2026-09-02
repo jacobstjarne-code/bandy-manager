@@ -43,6 +43,15 @@ function DoctorFAB() {
   return null
 }
 
+export function routeOwnsLedgerChrome(pathname: string, state: unknown): boolean {
+  if (pathname.includes('/match/live')) return true
+  if (pathname !== '/game/match') return false
+  // Den äldre historiska rapportöppningen renderar ännu MatchReportView utan
+  // LedgerFrame och måste därför behålla GameShells chrome tills Granska-wiringen
+  // får sin egen punkt. Alla verkliga Förbered-lägen äger däremot ramen själva.
+  return !(state && typeof state === 'object' && 'showReport' in state && state.showReport === true)
+}
+
 export function GameShell() {
   const game = useGameStore(s => s.game)
   const hasHydrated = useHasHydrated()
@@ -109,8 +118,9 @@ export function GameShell() {
     location.pathname === '/game/review'
   const isReviewRoute = location.pathname === '/game/review'
   const isPressConferenceRoute = location.pathname.includes('/press-conference')
-  // match/live owns its own chrome via LedgerFrame — suppress GameHeader + PhaseStrip on that route only
-  const isLedgerOwnedChrome = location.pathname.includes('/match/live')
+  // Förbered och Spela äger sin chrome via LedgerFrame. Den äldre historiska
+  // rapportöppningen på /game/match undantas tills Granska-wiringen byggs.
+  const isLedgerOwnedChrome = routeOwnsLedgerChrome(location.pathname, location.state)
   const shouldShowEventOverlay =
     attention.kind === 'event' &&
     getEventRenderTarget(attention.event) === 'overlay' &&

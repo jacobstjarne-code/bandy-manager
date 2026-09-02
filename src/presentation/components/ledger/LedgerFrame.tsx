@@ -28,8 +28,10 @@ interface LedgerFrameProps {
   roundLabel: string
   phase: LedgerPhase
   /** null = ingen stämpel (aktiv speltid) */
-  stamp: { label: string; onClick: () => void } | null
-  /** Valfri flikrad — bara Granska skickar detta */
+  stamp: { label: string; onClick: () => void; disabled?: boolean } | null
+  /** Förbereds intra-fas-flikar, direkt under RPS-stripen. */
+  subTabs?: LedgerTab[]
+  /** Granskas flikrad, mellan body och stämpel. */
   tabs?: LedgerTab[]
   /** Grepp 4: under spel ersätts masthead + RPS-strip av en tunn live-rad.
    *  Bara phase='spela' skickar detta — annars full masthead. */
@@ -59,6 +61,7 @@ export function LedgerFrame({
   roundLabel,
   phase,
   stamp,
+  subTabs,
   tabs,
   liveScore,
   dock,
@@ -119,6 +122,21 @@ export function LedgerFrame({
         </>
       )}
 
+      {/* ── Subflikrad (Förbered) ── */}
+      {subTabs && subTabs.length > 0 && (
+        <div className="lf-subtabs">
+          {subTabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`lf-subtab${tab.active ? ' active' : ''}`}
+              onClick={tab.onClick}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── Body: marginal + innehåll ── */}
       <div className="lf-body">
         <div className="lf-margin" aria-hidden="true">
@@ -146,7 +164,7 @@ export function LedgerFrame({
 
       {/* ── Stämpel-CTA ── */}
       {stamp && (
-        <button className="lf-stamp" onClick={stamp.onClick}>
+        <button className="lf-stamp" onClick={stamp.onClick} disabled={stamp.disabled}>
           {stamp.label}
         </button>
       )}

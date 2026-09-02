@@ -64,6 +64,8 @@ interface LineupStepProps {
   pendingForcedAutoFill: { belowFloorStarters: Player[]; shortfall: number } | null
   onConfirmForcedAutoFill: () => void
   onCancelForcedAutoFill: () => void
+  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  showFooter?: boolean
 }
 
 const GROUP_LABELS: Partial<Record<string, string>> = {
@@ -124,6 +126,7 @@ export function LineupStep({
   pendingForcedAutoFill,
   onConfirmForcedAutoFill,
   onCancelForcedAutoFill,
+  showFooter = true,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
   const [justFilled, setJustFilled] = useState(false)
@@ -582,7 +585,7 @@ export function LineupStep({
           flyttad till Tillträdets dockade .scene-cta-area (samma position som
           F1/F3/F4) — döljs härifrån helt, renderas inte inline i det
           scrollande kortet längre. */}
-      {!practice && (
+      {!practice && showFooter && (
         <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
           <button
             onClick={() => {

@@ -216,7 +216,44 @@
   min-height: 0;
 }
 
-/* ── Flikrad (Granska only) ── */
+/* ── Subflikrad (Förbered) ── */
+.lf-subtabs {
+  display: flex;
+  background: var(--paper-warm);
+  border-bottom: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+
+.lf-subtab {
+  flex: 1;
+  position: relative;
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  color: var(--ink-mute);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.lf-subtab.active {
+  color: var(--copper);
+  font-weight: 700;
+}
+
+.lf-subtab.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--copper);
+}
+
+/* ── Flikrad (Granska) ── */
 .lf-tabs {
   display: flex;
   background: var(--paper-warm); /* #F5F1EB — handoff #f4eee1, flaggad */
@@ -281,6 +318,13 @@
 .lf-stamp:active {
   background: var(--copper-deep);
   border-color: var(--copper-deep);
+}
+
+.lf-stamp:disabled {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--ink-faint);
+  cursor: not-allowed;
 }
 
 /* ── Sektionsrubrik (.lf-sh) — shared across Förbered/Granska children ── */

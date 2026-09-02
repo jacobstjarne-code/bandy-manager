@@ -15,6 +15,8 @@ interface TacticStepProps {
   onChange: <K extends keyof Tactic>(key: K, value: Tactic[K]) => void
   onBack: () => void
   onNext: () => void
+  /** LedgerFrame äger fasens enda framåt-handling i matchförberedelsen. */
+  showFooter?: boolean
 }
 
 // Maps tactic value index (0=conservative, ..., last=aggressive) to intensity class.
@@ -28,7 +30,7 @@ function intensityClass(idx: number, total: number): string {
   return 'intensity-2'
 }
 
-export function TacticStep({ tacticState, startingIds, game, opponent, nextFixture, onChange, onBack, onNext }: TacticStepProps) {
+export function TacticStep({ tacticState, startingIds, game, opponent, nextFixture, onChange, onBack, onNext, showFooter = true }: TacticStepProps) {
   const opponentPlayers = opponent ? game.players.filter(p => opponent.squadPlayerIds.includes(p.id)) : []
   const analysis = (opponent && nextFixture)
     ? generateDetailedAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, nextFixture.id)
@@ -188,11 +190,12 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
         )
       })}
 
-      {/* Footer */}
-      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 10, padding: '14px 14px 0', borderTop: '0.5px solid var(--border)', marginTop: 12 }}>
-        <button onClick={onBack} className="btn btn-outline">← Trupp</button>
-        <button onClick={onNext} className="btn btn-cta btn-primary">Nästa: Starta →</button>
-      </div>
+      {showFooter && (
+        <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 10, padding: '14px 14px 0', borderTop: '0.5px solid var(--border)', marginTop: 12 }}>
+          <button onClick={onBack} className="btn btn-outline">← Trupp</button>
+          <button onClick={onNext} className="btn btn-cta btn-primary">Nästa: Starta →</button>
+        </div>
+      )}
     </div>
   )
 }

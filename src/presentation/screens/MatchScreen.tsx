@@ -27,6 +27,10 @@ import { getRitualText } from '../../domain/services/supporterRituals'
 import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
 import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
+import { FatigueFloorConfirm } from '../components/match/FatigueFloorConfirm'
+import { LedgerFrame } from '../components/ledger/LedgerFrame'
+import { getManagerDisplayName } from '../../domain/services/managerProfileService'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { shouldRouteQuicksimToCeremony } from './matchLiveHelpers'
 
 export function MatchScreen() {
@@ -59,6 +63,7 @@ export function MatchScreen() {
     const beat = computeLaddningBeat(game, fixture)
     return beat.tier !== 'none' ? 'laddning' : 'lineup'
   })
+  const [confirmingMatchStart, setConfirmingMatchStart] = useState(false)
   const matchMode = game?.preferredMatchMode ?? 'full'
 
   useEffect(() => {
@@ -265,6 +270,23 @@ export function MatchScreen() {
     }
   }
 
+  function handlePreparationStamp() {
+    if (!canPlay) {
+      setMatchStep('lineup')
+      setLineupError(startingIds.length !== 11
+        ? `Välj exakt 11 startspelare (du har ${startingIds.length})`
+        : 'Skadade eller avstängda spelare i startuppställningen')
+      return
+    }
+    // A3-golvet ska ligga på beslutet att spela, även när LedgerFrame ersätter
+    // wizardens interna Nästa-knapp. Samma bekräftelse, ingen parallell regel.
+    if (floorBreach.belowFloorStarters.length > 0) {
+      setConfirmingMatchStart(true)
+      return
+    }
+    handlePlayMatch()
+  }
+
   const opponentId = nextFixture
     ? (nextFixture.homeClubId === managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)
     : null
@@ -283,26 +305,62 @@ export function MatchScreen() {
 
   if (!nextFixture) {
     return (
-      <div style={{ padding: '12px 12px' }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16 }}>Match</h2>
-        <div className="card-round" style={{ padding: '32px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Säsongen är slut</p>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Inga fler matcher att spela den här säsongen.</p>
-        </div>
-        {lastCompletedFixture && (
-          <div style={{ marginTop: 20 }}>
-            <p style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 10,
-            }}>
-              Senaste match
-            </p>
-            <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
+      <LedgerFrame
+        clubId={managedClub.id}
+        clubName={managedClub.name}
+        managerName={getManagerDisplayName(game)}
+        season={seasonSpanLabel(game.currentSeason)}
+        roundLabel="SÄSONGEN SLUT"
+        phase="forbered"
+        stamp={null}
+      >
+        <div style={{ padding: '12px', overflowY: 'auto' }}>
+          <div className="card-round" style={{ padding: '32px 20px', textAlign: 'center' }}>
+            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Säsongen är slut</p>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Inga fler matcher att spela den här säsongen.</p>
           </div>
-        )}
-      </div>
+          {lastCompletedFixture && (
+            <div style={{ marginTop: 20 }}>
+              <p style={{
+                fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 10,
+              }}>
+                Senaste match
+              </p>
+              <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
+            </div>
+          )}
+        </div>
+      </LedgerFrame>
     )
   }
+
+  // ── Match header data ──────────────────────────────────────────────
+  const isPlayoffRound = nextFixture.roundNumber > 22
+  const playoffBracket = game.playoffBracket
+  const allSeries = playoffBracket ? [
+    ...playoffBracket.quarterFinals,
+    ...playoffBracket.semiFinals,
+    ...(playoffBracket.final ? [playoffBracket.final] : []),
+  ] : []
+  const playoffSeries = allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
+  const isSeriesHome = playoffSeries ? playoffSeries.homeClubId === managedClubId : false
+  const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
+  const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
+  const isCupFixture = nextFixture.isCup === true
+  const cupMatchEntry = isCupFixture ? game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : null
+  const isCupFinal = cupMatchEntry?.round === 4
+  const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
+  // HIGH 5: rondnamnet kommer nu ur roundLabel.ts (samma uppslag som
+  // GameHeader/ChampionScreen/MatchReportView), inte ur en lokal matchday.
+  const playoffRoundLabel = playoffSeries ? playoffRoundNameUpper(playoffSeries.round) : ''
+  const roundLabel = isPlayoffRound && playoffSeries
+    ? isFinalMatch
+      ? 'SM-FINAL · Studenternas IP, Uppsala'
+      : `${playoffRoundLabel} · Serie ${myWins}–${theirWins} (bäst av 5)`
+    : isCupFixture
+      ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
+      : rivalry ? `🔥 ${rivalry.name}` : getRoundLabel(nextFixture, playoffBracket).long
 
   // A3 — Laddning beat: full screen before lineup step
   if (effectiveStep === 'laddning' && nextFixture) {
@@ -346,39 +404,43 @@ export function MatchScreen() {
     p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0
   )
   if (effectiveStep === 'lineup' && availableForMatch.length < 11) {
-    return <NodtruppScene game={game} availableCount={availableForMatch.length} nextFixtureId={nextFixture.id} />
+    return (
+      <LedgerFrame
+        clubId={managedClub.id}
+        clubName={managedClub.name}
+        managerName={getManagerDisplayName(game)}
+        season={seasonSpanLabel(game.currentSeason)}
+        roundLabel={roundLabel}
+        phase="forbered"
+        stamp={{ label: 'KOMPLETTERA TRUPPEN FÖRST', onClick: () => {}, disabled: true }}
+        subTabs={[{ id: 'lineup', label: 'Trupp', active: true, onClick: () => {} }]}
+      >
+        <NodtruppScene game={game} availableCount={availableForMatch.length} nextFixtureId={nextFixture.id} />
+      </LedgerFrame>
+    )
   }
-
-  // ── Match header data ──────────────────────────────────────────────
-  const isPlayoffRound = nextFixture.roundNumber > 22
-  const playoffBracket = game.playoffBracket
-  const allSeries = playoffBracket ? [
-    ...playoffBracket.quarterFinals,
-    ...playoffBracket.semiFinals,
-    ...(playoffBracket.final ? [playoffBracket.final] : []),
-  ] : []
-  const playoffSeries = allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
-  const isSeriesHome = playoffSeries ? playoffSeries.homeClubId === managedClubId : false
-  const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
-  const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
-  const isCupFixture = nextFixture.isCup === true
-  const cupMatchEntry = isCupFixture ? game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : null
-  const isCupFinal = cupMatchEntry?.round === 4
-  const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
-  // HIGH 5: rondnamnet kommer nu ur roundLabel.ts (samma uppslag som
-  // GameHeader/ChampionScreen/MatchReportView), inte ur en lokal ternary.
-  const playoffRoundLabel = playoffSeries ? playoffRoundNameUpper(playoffSeries.round) : ''
-  const roundLabel = isPlayoffRound && playoffSeries
-    ? isFinalMatch
-      ? `SM-FINAL · Studenternas IP, Uppsala`
-      : `${playoffRoundLabel} · Serie ${myWins}–${theirWins} (bäst av 5)`
-    : isCupFixture
-      ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
-      : rivalry ? `🔥 ${rivalry.name}` : getRoundLabel(nextFixture, playoffBracket).long
   const matchWeatherData = game.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
+  const activePreparationTab = effectiveStep === 'lineup' ? 'lineup' : 'tactic'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+    <LedgerFrame
+      clubId={managedClub.id}
+      clubName={managedClub.name}
+      managerName={getManagerDisplayName(game)}
+      season={seasonSpanLabel(game.currentSeason)}
+      roundLabel={roundLabel}
+      phase="forbered"
+      subTabs={[
+        { id: 'lineup', label: 'Trupp', active: activePreparationTab === 'lineup', onClick: () => setMatchStep('lineup') },
+        { id: 'tactic', label: 'Taktik', active: activePreparationTab === 'tactic', onClick: () => setMatchStep('tactic') },
+      ]}
+      stamp={{
+        label: canPlay ? 'SPELA MATCHEN →' : 'FYLL ELVAN FÖRST',
+        onClick: handlePreparationStamp,
+        disabled: !canPlay,
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ padding: '12px 12px 0' }}>
         {lastCompletedFixture && (
@@ -423,37 +485,6 @@ export function MatchScreen() {
           />
         )}
 
-        {/* Step indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>
-          {(['lineup', 'tactic', 'start'] as const).map((s, i) => {
-            const labels = ['Välj trupp', 'Välj taktik', 'Starta']
-            const isActive = effectiveStep === s
-            const isDone = (effectiveStep === 'tactic' && s === 'lineup') || (effectiveStep === 'start' && s !== 'start')
-            return (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--bg-elevated)',
-                    border: `2px solid ${isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--border)'}`,
-                    fontSize: 12, fontWeight: 700,
-                    color: isDone || isActive ? 'var(--text-light)' : 'var(--text-muted)',
-                    cursor: isDone ? 'pointer' : 'default',
-                    transition: 'all 0.2s',
-                  }} onClick={() => isDone && setMatchStep(s)}>
-                    {isDone ? '✓' : i + 1}
-                  </div>
-                  <span style={{ fontSize: 10, color: isActive ? 'var(--accent)' : 'var(--text-muted)', fontWeight: isActive ? 700 : 400, letterSpacing: '0.3px' }}>
-                    {labels[i]}
-                  </span>
-                </div>
-                {i < 2 && (
-                  <div style={{ width: 24, height: 2, background: isDone ? 'var(--success)' : 'var(--border)', marginBottom: 18, flexShrink: 0 }} />
-                )}
-              </div>
-            )
-          })}
-        </div>
       </div>
 
       {effectiveStep === 'lineup' && (
@@ -484,58 +515,73 @@ export function MatchScreen() {
           pendingForcedAutoFill={pendingForcedAutoFill}
           onConfirmForcedAutoFill={confirmPendingAutoFill}
           onCancelForcedAutoFill={cancelPendingAutoFill}
+          showFooter={false}
         />
       )}
 
-      {effectiveStep === 'tactic' && (
-        <TacticStep
-          tacticState={tacticState}
-          matchWeatherData={matchWeatherData}
-          startingIds={startingIds}
+      {activePreparationTab === 'tactic' && (
+        <>
+          <TacticStep
+            tacticState={tacticState}
+            matchWeatherData={matchWeatherData}
+            startingIds={startingIds}
+            game={game}
+            opponent={opponent}
+            nextFixture={nextFixture}
+            onChange={handleTacticChange}
+            onBack={() => setMatchStep('lineup')}
+            onNext={() => setMatchStep('start')}
+            showFooter={false}
+          />
+          {/* Starta-detaljerna bor i Taktik-foten enligt handoffens lean:
+              matchläge + förmatchskontext, utan ett tredje wizard-steg. */}
+          <StartStep
+            startingIds={startingIds}
+            tacticState={tacticState}
+            matchWeatherData={matchWeatherData}
+            matchMode={matchMode}
+            lineupError={lineupError}
+            onSetMatchMode={m => { void updateMatchMode(m) }}
+            onBack={() => setMatchStep('tactic')}
+            onPlay={handlePlayMatch}
+            fixture={nextFixture}
+            isHome={isHome}
+            fanMood={game.fanMood ?? 50}
+            expectedAttendance={(() => {
+              const params = buildAttendanceParams(game, nextFixture)
+              return params ? calcAttendance(params) : undefined
+            })()}
+            arenaName={(() => {
+              const isFinal = nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id)
+              if (isFinal) return 'Studenternas IP, Uppsala'
+              const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
+              return homeClub?.arenaName ? formatArenaName(homeClub.arenaName) : undefined
+            })()}
+            ritualText={getRitualText(game, 'kickoff') ?? undefined}
+            farewellPlayerName={(() => {
+              if (!nextFixture.farewellMatchForPlayerId) return undefined
+              const fp = game.players.find(p => p.id === nextFixture.farewellMatchForPlayerId)
+              return fp ? `${fp.firstName} ${fp.lastName}` : undefined
+            })()}
+            squadPlayers={squadPlayers}
+            showFooter={false}
+          />
+        </>
+      )}
+
+      {confirmingMatchStart && (
+        <FatigueFloorConfirm
           game={game}
-          opponent={opponent}
-          nextFixture={nextFixture}
-          onChange={handleTacticChange}
-          onBack={() => setMatchStep('lineup')}
-          onNext={() => setMatchStep('start')}
+          belowFloorStarters={floorBreach.belowFloorStarters}
+          shortfall={floorBreach.shortfall}
+          onConfirm={() => {
+            setConfirmingMatchStart(false)
+            handlePlayMatch()
+          }}
+          onCancel={() => setConfirmingMatchStart(false)}
         />
       )}
-
-      {effectiveStep === 'start' && (
-        <StartStep
-          startingIds={startingIds}
-          tacticState={tacticState}
-          matchWeatherData={matchWeatherData}
-          matchMode={matchMode}
-          lineupError={lineupError}
-          onSetMatchMode={m => { void updateMatchMode(m) }}
-          onBack={() => setMatchStep('tactic')}
-          onPlay={handlePlayMatch}
-          fixture={nextFixture ?? undefined}
-          isHome={isHome}
-          fanMood={game.fanMood ?? 50}
-          expectedAttendance={nextFixture ? (() => {
-            // Preview-mönstret, "samma funktion, samma indata" (2026-08-26):
-            // se buildAttendanceParams-kommentaren i economyService.ts.
-            const params = buildAttendanceParams(game, nextFixture)
-            return params ? calcAttendance(params) : undefined
-          })() : undefined}
-          arenaName={(() => {
-            if (!nextFixture) return undefined
-            const isFinal = nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id)
-            if (isFinal) return 'Studenternas IP, Uppsala'
-            const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
-            return homeClub?.arenaName ? formatArenaName(homeClub.arenaName) : undefined
-          })()}
-          ritualText={getRitualText(game, 'kickoff') ?? undefined}
-          farewellPlayerName={(() => {
-            if (!nextFixture?.farewellMatchForPlayerId) return undefined
-            const fp = game.players.find(p => p.id === nextFixture.farewellMatchForPlayerId)
-            return fp ? `${fp.firstName} ${fp.lastName}` : undefined
-          })()}
-          squadPlayers={squadPlayers}
-        />
-      )}
-    </div>
+      </div>
+    </LedgerFrame>
   )
 }
