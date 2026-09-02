@@ -32,7 +32,7 @@ test('Säsongsdelningsscenen bär ett verkligt SÄSONGENS MATCH-kort', async ({ 
   await expect(page.getByText(/SÄSONGENS MATCH/).last()).toBeVisible()
   await expect(page.getByText('5–4', { exact: true })).toBeVisible()
   await expect(page.getByText('Karl Lindström avgjorde på tilläggstid efter vinterns stora vändning.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Dela säsongen', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Dela matchen', exact: true })).toBeVisible()
 })
 
 test('CallupModal-devscenen visar två uttagna spelare och bonusen', async ({ page }) => {
@@ -247,6 +247,18 @@ test('Styrelsens minimalkort visar ultimatum, orsak och väg tillbaka', async ({
   await expect(scene.getByText('Det som återstår: Nå topp 6.')).toBeVisible()
 })
 
+test('Klubbens sex flikar ryms och är nåbara i 390 px', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=club-established&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  for (const label of ['Träning', 'Ekonomi', 'Orten', 'Akademi', 'Minne', 'Tränare']) {
+    await expect(scene.getByRole('tab', { name: label, exact: true })).toBeVisible()
+  }
+
+  const hasHorizontalOverflow = await scene.evaluate((element) => element.scrollWidth > element.clientWidth)
+  expect(hasHorizontalOverflow).toBe(false)
+})
+
 test('Derbykortets vs-gren renderas i portalens mörka kontext', async ({ page }) => {
   await page.goto('/dev/scenes?scene=next-match-derby&width=390&inspect=1', { waitUntil: 'networkidle' })
   const primary = page.locator('[data-primary-card]')
@@ -263,4 +275,36 @@ test('Annandagskortets vs-gren renderas i portalens mörka kontext', async ({ pa
   await expect(primary).toBeVisible()
   await expect(primary.getByText('Annandagsbandyn', { exact: true })).toBeVisible()
   await expect(primary.getByText('vs', { exact: true })).toBeVisible()
+})
+
+for (const [sceneId, title] of [
+  ['corner-interaction', 'HÖRNA'],
+  ['penalty-interaction', 'STRAFF'],
+  ['counter-interaction', 'KONTRING'],
+  ['free-kick-interaction', 'FRISLAG'],
+] as const) {
+  test(`${title}-interaktionen är nåbar som riktig produktkomponent`, async ({ page }) => {
+    await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
+    await expect(page.locator('.interaction-root')).toBeVisible()
+    await expect(page.locator('.interaction-title')).toHaveText(title)
+  })
+}
+
+for (const [sceneId, text] of [
+  ['phase-overlay', 'FÖRLÄNGNING'],
+  ['bid-modal', 'Lägg bud'],
+  ['renew-contract-modal', 'Förläng kontrakt'],
+  ['ceremony-sm-final', 'SVENSKA MÄSTARE!'],
+  ['ceremony-cup-final', 'CUPVINNARE!'],
+] as const) {
+  test(`${sceneId} är nåbar i mobilbredd`, async ({ page }) => {
+    await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
+    await expect(page.getByText(text, { exact: true }).first()).toBeVisible()
+  })
+}
+
+test('managerFired omdirigerar en vanlig game-route till avskedet i browsern', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=manager-fired-redirect&width=390&inspect=1', { waitUntil: 'networkidle' })
+  await expect(page).toHaveURL(/\/game\/game-over$/)
+  await expect(page.getByRole('heading', { name: 'DU HAR SPARKATS' })).toBeVisible()
 })

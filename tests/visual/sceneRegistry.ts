@@ -126,4 +126,12 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // styrelsens förvarningszon och båda specialmatchernas portal-kontrast.
   ['granska-level3'], ['board-patience-minimal'],
   ['next-match-derby'], ['next-match-annandagen'],
+  // Matchens sista nio ogrindade produktkomponenter. Interaktionerna ligger
+  // i matchdockens normala flöde; fas/modaler/ceremonier täcker viewporten.
+  ['corner-interaction'], ['penalty-interaction'], ['counter-interaction'], ['free-kick-interaction'],
+  ['phase-overlay', undefined, undefined, true],
+  ['bid-modal', undefined, undefined, true],
+  ['renew-contract-modal', undefined, undefined, true],
+  ['ceremony-sm-final', undefined, undefined, true],
+  ['ceremony-cup-final', undefined, undefined, true],
 ]

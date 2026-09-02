@@ -75,6 +75,15 @@ import { TilltradeScreen } from '../TilltradeScreen'
 import { NameInputScreen } from '../NameInputScreen'
 import { KlubbparmOverlay } from '../../components/KlubbparmOverlay'
 import { CeremonyRetirement } from '../../components/portal/CeremonyRetirement'
+import { CornerInteraction } from '../../components/match/CornerInteraction'
+import { PenaltyInteraction } from '../../components/match/PenaltyInteraction'
+import { CounterInteraction } from '../../components/match/CounterInteraction'
+import { FreeKickInteraction } from '../../components/match/FreeKickInteraction'
+import { PhaseOverlay } from '../../components/match/PhaseOverlay'
+import { CeremonySmFinal } from '../../components/match/CeremonySmFinal'
+import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
+import { BidModal } from '../../components/transfers/BidModal'
+import { RenewContractModal } from '../../components/transfers/RenewContractModal'
 import { BoardPatienceMinimal } from '../../components/portal/minimal/BoardPatienceMinimal'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
@@ -179,6 +188,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
   | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen'
+  | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
+  | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
+  | 'manager-fired-redirect'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -284,6 +296,16 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
   { id: 'next-match-derby', label: 'Nästa match — derby i portal' },
   { id: 'next-match-annandagen', label: 'Nästa match — annandagen i portal' },
+  { id: 'corner-interaction', label: 'Matchinteraktion — hörna' },
+  { id: 'penalty-interaction', label: 'Matchinteraktion — straff' },
+  { id: 'counter-interaction', label: 'Matchinteraktion — kontring' },
+  { id: 'free-kick-interaction', label: 'Matchinteraktion — frislag' },
+  { id: 'phase-overlay', label: 'Matchfas — förlängning' },
+  { id: 'bid-modal', label: 'Övergång — lägg bud' },
+  { id: 'renew-contract-modal', label: 'Kontrakt — förläng' },
+  { id: 'ceremony-sm-final', label: 'Ceremoni — SM-final' },
+  { id: 'ceremony-cup-final', label: 'Ceremoni — cupfinal' },
+  { id: 'manager-fired-redirect', label: 'Route — sparkad redirect' },
 ]
 
 // ── Fingered data ────────────────────────────────────────────────────────────
@@ -531,6 +553,26 @@ const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
+const interactionPlayer = (squadGame.players.find(p => p.clubId === squadGame.managedClubId) ?? squadGame.players[0])!
+const interactionCornerData = {
+  cornerTakerId: interactionPlayer.id, cornerTakerName: `${interactionPlayer.firstName[0]}. ${interactionPlayer.lastName}`,
+  rusherIds: squadGame.players.slice(1, 6).map(p => p.id), topRusherName: 'K. Lindström',
+  opponentPenaltyKill: 'active' as const, isHome: true, supporterBoost: 3, minute: 78,
+}
+const interactionPenaltyData = {
+  minute: 84, shooterName: 'Karl Lindström', shooterId: 'p-f1', shooterSkill: 76,
+  keeperName: 'Jonas Berg', keeperSkill: 69,
+}
+const interactionCounterData = {
+  minute: 67, runnerName: 'Daniel Pettersson', runnerId: 'p-f2', runnerSpeed: 78,
+  supportName: 'Karl Lindström', supportId: 'p-f1', defendersBeat: 2,
+}
+const interactionFreeKickData = {
+  minute: 72, kickerName: 'Mikael Strand', kickerId: 'p-h2', kickerShooting: 73,
+  kickerPassing: 79, distanceMeters: 24, wallSize: 4,
+}
+const ceremonyHomeLineup = buildSimpleLineup(squadGame, HOME_ID)
+const ceremonyAwayLineup = buildSimpleLineup(squadGame, AWAY_ID)
 const journalistSceneGame = {
   ...efterklangGame,
   journalist: {
@@ -793,6 +835,14 @@ function MatchLiveDevScene({ locationState }: { locationState: MatchLiveLocation
   // utan att gräva. Montera aldrig skärmen innan statet faktiskt finns.
   if (!location.state) return null
   return <MatchLiveScreen />
+}
+
+function ManagerFiredRedirectDevScene() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    navigate('/game/history', { replace: true })
+  }, [navigate])
+  return null
 }
 
 /** SimSummaryScreen är den andra produktskärmen som kräver route-state.
@@ -1682,6 +1732,10 @@ export function DevScenesScreen() {
       : scene === 'board-patience-minimal' ? boardPatienceWarningGame
       : scene === 'next-match-derby' ? nextMatchDerbyGame
       : scene === 'next-match-annandagen' ? nextMatchAnnandagenGame
+      : scene === 'manager-fired-redirect' ? gameOverGame
+      : scene === 'corner-interaction' || scene === 'penalty-interaction' || scene === 'counter-interaction'
+        || scene === 'free-kick-interaction' || scene === 'phase-overlay' || scene === 'bid-modal'
+        || scene === 'renew-contract-modal' || scene === 'ceremony-sm-final' || scene === 'ceremony-cup-final' ? squadGame
       : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' || scene === 'ceremony-retirement' ? squadGame
       : portalGame
     const roundSummaryForScene =
@@ -1955,6 +2009,73 @@ export function DevScenesScreen() {
         {scene === 'ceremony-retirement' && (
           <CeremonyRetirement game={squadGame} event={retirementEvent} />
         )}
+        {scene === 'corner-interaction' && (
+          <CornerInteraction data={interactionCornerData} outcome={null} onChoose={() => {}} practice />
+        )}
+        {scene === 'penalty-interaction' && (
+          <PenaltyInteraction data={interactionPenaltyData} outcome={null} onChoose={() => {}} />
+        )}
+        {scene === 'counter-interaction' && (
+          <CounterInteraction data={interactionCounterData} outcome={null} onChoose={() => {}} />
+        )}
+        {scene === 'free-kick-interaction' && (
+          <FreeKickInteraction data={interactionFreeKickData} outcome={null} onChoose={() => {}} />
+        )}
+        {scene === 'phase-overlay' && (
+          <PhaseOverlay phase="overtime" onContinue={() => {}} />
+        )}
+        {scene === 'bid-modal' && (
+          <BidModal
+            player={interactionPlayer}
+            managedClub={{ transferBudget: 400_000, finances: 650_000 }}
+            rivalry={{ name: 'Bollnäs GoIF', intensity: 2 }}
+            onClose={() => {}}
+            onConfirm={() => {}}
+          />
+        )}
+        {scene === 'renew-contract-modal' && (
+          <RenewContractModal
+            player={interactionPlayer}
+            currentSeason={squadGame.currentSeason}
+            minSalary={interactionPlayer.salary + 1_000}
+            onClose={() => {}}
+            onConfirm={() => {}}
+          />
+        )}
+        {scene === 'ceremony-sm-final' && (
+          <CeremonySmFinal
+            slide={2}
+            homeClubName="Edsbyn BK"
+            awayClubName="Bollnäs GoIF"
+            homeScore={5}
+            awayScore={3}
+            fixture={smFinalFixture as never}
+            managedClubId={HOME_ID}
+            season={squadGame.currentSeason}
+            steps={[]}
+            homeLineup={ceremonyHomeLineup}
+            awayLineup={ceremonyAwayLineup}
+            players={squadGame.players}
+            onAdvance={() => {}}
+            onNavigate={() => {}}
+          />
+        )}
+        {scene === 'ceremony-cup-final' && (
+          <CeremonyCupFinal
+            slide={2}
+            homeClubName="Edsbyn BK"
+            awayClubName="Bollnäs GoIF"
+            homeScore={5}
+            awayScore={3}
+            fixture={cupFinalFixture as never}
+            managedClubId={HOME_ID}
+            season={squadGame.currentSeason}
+            clubs={squadGame.clubs}
+            cupBracket={undefined}
+            onNavigate={() => {}}
+          />
+        )}
+        {scene === 'manager-fired-redirect' && <ManagerFiredRedirectDevScene />}
         {scene === 'board-patience-minimal' && (
           <div className="card--portal" style={{ minHeight: '844px', background: 'var(--bg-portal-surface)', padding: '28px 16px' }}>
             <div className="card-sharp" style={{ background: 'var(--bg-portal-surface)', padding: '16px 12px' }}>
