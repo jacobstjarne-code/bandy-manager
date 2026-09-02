@@ -865,4 +865,31 @@ describe('pickMostImportantDecisionText — samma vinnare som pickSeasonDecision
     const game = makeGame({ eventLedger: [unComposable] })
     expect(pickMostImportantDecisionText(game, game.currentSeason)).toBe(SEASON_DECISION_NONE_TEXT)
   })
+
+  it('burnout-valet kan vinna rangordningen utan att vara hårdkodat som vinnare', () => {
+    const burnout: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'burnoutCeiling:step_back', season: 1, matchday: 20,
+      significance: 100, irreversible: true, tension: true, systemsAffectedCount: 4, madeByPlayer: true,
+    }
+    const smaller: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: 1, matchday: 22,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1, madeByPlayer: true,
+    }
+
+    expect(pickSeasonDecisionFromLedger([smaller, burnout])).toBe(burnout)
+  })
+
+  it('ett genuint större namngivet beslut kan fortfarande slå burnout-valet', () => {
+    const burnout: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'burnoutCeiling:push_through', season: 1, matchday: 20,
+      significance: 100, irreversible: true, tension: true, systemsAffectedCount: 4, madeByPlayer: true,
+    }
+    const larger: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'criticalEconomy:sell_star', season: 1, matchday: 10,
+      subject: { kind: 'player', id: 'p1' }, significance: 100,
+      irreversible: true, tension: true, systemsAffectedCount: 5, moneyAmount: 500_000, madeByPlayer: true,
+    }
+
+    expect(pickSeasonDecisionFromLedger([burnout, larger])).toBe(larger)
+  })
 })

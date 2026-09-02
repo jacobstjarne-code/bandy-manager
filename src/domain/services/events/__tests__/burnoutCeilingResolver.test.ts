@@ -72,6 +72,17 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     expect(game.burnoutCeilingRecoveryUntilRound).toBe(26)
     expect(game.burnoutTrainingSlowdownUntilRound).toBe(26)
     expect(game.boardPatience).toBe(60)
+    expect(game.eventLedger).toContainEqual({
+      type: 'decision',
+      semanticKey: 'burnoutCeiling:step_back',
+      season: 3,
+      matchday: 20,
+      significance: 100,
+      irreversible: true,
+      tension: true,
+      systemsAffectedCount: 4,
+      madeByPlayer: true,
+    })
   })
 
   it("push_through: burnoutScar='hardened', diary-post skriven, INGET mekaniskt pris (ingen recovery, ingen slowdown, boardPatience orörd)", () => {
@@ -87,6 +98,16 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     expect(game.burnoutCeilingRecoveryUntilRound).toBeUndefined()
     expect(game.burnoutTrainingSlowdownUntilRound).toBeUndefined()
     expect(game.boardPatience).toBe(70)
+    expect(game.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'decision',
+      semanticKey: 'burnoutCeiling:push_through',
+      season: 3,
+      matchday: 20,
+      irreversible: true,
+      tension: true,
+      systemsAffectedCount: 4,
+      madeByPlayer: true,
+    }))
   })
 
   it('madeByPlayer=false — inget ärr skrivs (HIGH 6-disciplinen, samma gate som varsel/offer_pro)', () => {
@@ -99,6 +120,7 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
 
     expect(game.managerProfile!.burnoutScar).toBeUndefined()
     expect((game.managerProfile!.diary ?? []).some(e => e.type === 'burnout_scar')).toBe(false)
+    expect((game.eventLedger ?? []).some(e => e.semanticKey.startsWith('burnoutCeiling:'))).toBe(false)
   })
 
   it('ingen managerProfile → ingen krasch', () => {
@@ -107,6 +129,8 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     game = { ...game, pendingEvents: [event] }
 
     expect(() => resolveEvent(game, 'test_ceiling_4', 'step_back', undefined, true)).not.toThrow()
+    game = resolveEvent(game, 'test_ceiling_4', 'step_back', undefined, true)
+    expect(game.eventLedger).toContainEqual(expect.objectContaining({ semanticKey: 'burnoutCeiling:step_back' }))
   })
 
   it('dubbel-resolution-skydd: en redan skriven ärr-post för samma säsong+omgång skrivs inte igen', () => {

@@ -73,6 +73,8 @@ import {
   getDetOmojligaValetKeepSentence,
   getTransferBidAcceptSentence,
   getMecenatOfferTributeSentence,
+  getBurnoutCeilingStepBackSentence,
+  getBurnoutCeilingPushThroughSentence,
 } from '../data/seasonDecisionSentences'
 
 /** A-H9: låst text (Jacobs ord, ordagrant) för när ingen kandidat kvalificerar. */
@@ -767,6 +769,10 @@ export function composeSeasonDecisionSentence(entry: EventLedgerEntry, game: Sav
       if (!mecenat) return null
       return getMecenatOfferTributeSentence({ name: mecenat.name })
     }
+    case 'burnoutCeiling:step_back':
+      return getBurnoutCeilingStepBackSentence()
+    case 'burnoutCeiling:push_through':
+      return getBurnoutCeilingPushThroughSentence()
     // KÄND, FLAGGAD LUCKA (MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
     // Fas 2, rapporterad till Opus/Jacob, INTE tyst löst): mecenatkonfliktens
     // mening ("Du valde {backed}s sida... {other} glömmer inte...") behöver

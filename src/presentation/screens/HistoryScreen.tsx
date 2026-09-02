@@ -91,6 +91,35 @@ export function shouldShowEraChangeForSummary(
   return shouldShowEraChangeLine(current.clubEra, previous.clubEra)
 }
 
+/**
+ * HIGH 2 (2026-09-02): historiken ska läsa säsongens FRYSTA managerposter,
+ * inte det levande managerProfile som kan ha ändrats flera säsonger senare.
+ * Ren accessor för samma testmönster som övrig HistoryScreen-wiring.
+ */
+export function managerSeasonEntriesForHistory(summary: SeasonSummary) {
+  return summary.managerSeason ?? []
+}
+
+export function HistoryManagerSeason({ summary }: { summary: SeasonSummary }) {
+  return (
+    <>
+      {managerSeasonEntriesForHistory(summary).map((entry, idx) => (
+        <p
+          key={`manager_${entry.season}_${entry.matchday}_${idx}`}
+          style={{
+            fontSize: 12,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.5,
+            marginTop: idx === 0 ? 8 : 4,
+          }}
+        >
+          {entry.text}
+        </p>
+      ))}
+    </>
+  )
+}
+
 function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   if (summaries.length < 2) return null
 
@@ -203,7 +232,7 @@ export function resolveDisplayedGame(snapshot: SaveGame | undefined, liveGame: S
 }
 
 /**
- * @cites s.finalPosition, s.topScorer, s.mostImproved, s.startFinances, s.endFinances, s.narrativeSummary, s.personalGoal, s.personChange, s.rivalryStanding, s.clubEra, s.legacyVerdictWasCorrected, s.verdictSentence
+ * @cites s.finalPosition, s.topScorer, s.mostImproved, s.startFinances, s.endFinances, s.narrativeSummary, s.managerSeason, s.personalGoal, s.personChange, s.rivalryStanding, s.clubEra, s.legacyVerdictWasCorrected, s.verdictSentence
  */
 export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
   const navigate = useNavigate()
@@ -652,6 +681,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                             </div>
                           )
                         })}
+                      <HistoryManagerSeason summary={s} />
                     </div>
                   )}
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>

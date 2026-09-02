@@ -11,7 +11,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { deriveCareerSpells, shouldShowEraChangeForSummary } from '../HistoryScreen'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { deriveCareerSpells, HistoryManagerSeason, managerSeasonEntriesForHistory, shouldShowEraChangeForSummary } from '../HistoryScreen'
 import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
 import { ClubExpectation } from '../../../domain/enums'
 
@@ -112,5 +114,25 @@ describe('O13 — säsongskortets klubbidentitet är fryst, inte live', () => {
       if (summary.season === 2026) expect(highlighted).not.toBe(liveManagedClubId)
       expect(highlighted).toBe(summary.clubId)
     }
+  })
+})
+
+describe('HIGH 2 — managerhistoriken läser säsongens frysta poster', () => {
+  it('återger managerSeason ordagrant och i lagrad ordning', () => {
+    const frozen = [
+      { season: 2027, matchday: 8, type: 'burnout_peak' as const, text: 'Första frysta raden.' },
+      { season: 2027, matchday: 20, type: 'burnout_scar' as const, text: 'Andra frysta raden.' },
+    ]
+    const summary = s(2027, 'club_a', 'Alfa', { managerSeason: frozen })
+
+    expect(managerSeasonEntriesForHistory(summary)).toEqual(frozen)
+    const markup = renderToStaticMarkup(createElement(HistoryManagerSeason, { summary }))
+    expect(markup).toContain('Första frysta raden.')
+    expect(markup).toContain('Andra frysta raden.')
+    expect(markup.indexOf('Första frysta raden.')).toBeLessThan(markup.indexOf('Andra frysta raden.'))
+  })
+
+  it('gissar inte fram managerhistorik för äldre säsonger utan fältet', () => {
+    expect(managerSeasonEntriesForHistory(s(2026, 'club_a', 'Alfa'))).toEqual([])
   })
 })

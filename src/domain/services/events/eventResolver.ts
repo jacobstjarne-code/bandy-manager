@@ -2313,11 +2313,11 @@ export function resolveEvent(
   // era_shift, roundProcessor.ts) skrivs redan på GLOBAL skala — att blanda
   // in en ligarond-stämplad post i samma array hade återskapat exakt den
   // skalbugg-klass Fas 3 jagade (två numreringssystem i samma fält).
-  if (madeByPlayer && event.type === 'burnoutCeiling' && updatedGame.managerProfile) {
+  if (madeByPlayer && event.type === 'burnoutCeiling') {
     const scar: 'hardened' | 'stepped_back' = choiceId === 'step_back' ? 'stepped_back' : 'hardened'
-    const alreadyScarred = (updatedGame.managerProfile.diary ?? []).some(
+    const alreadyScarred = (updatedGame.managerProfile?.diary ?? []).some(
       e => e.type === 'burnout_scar' && e.season === updatedGame.currentSeason && e.matchday === updatedGame.currentMatchday)
-    if (!alreadyScarred) {
+    if (updatedGame.managerProfile && !alreadyScarred) {
       updatedGame = {
         ...updatedGame,
         managerProfile: {
@@ -2325,9 +2325,37 @@ export function resolveEvent(
           burnoutScar: scar,
           diary: [
             ...(updatedGame.managerProfile.diary ?? []),
-            { season: updatedGame.currentSeason, matchday: updatedGame.currentMatchday, type: 'burnout_scar' as const, text: scar === 'stepped_back' ? 'Den våren tog du ett steg tillbaka. Första gången du satte dig själv först. Det sätter sig, ett sånt beslut.' : 'Den våren var du nära att gå sönder och stannade kvar ändå. Något härdades, och gick inte att ta tillbaka.' },
+            { season: updatedGame.currentSeason, matchday: updatedGame.currentMatchday, type: 'burnout_scar' as const, text: scar === 'stepped_back' ? 'Den våren blev du kvar i klubben men klev tillbaka från bänken en period. Första gången du satte dig själv först. Det sätter sig, ett sånt beslut.' : 'Den våren var du nära att gå sönder och körde vidare ändå. Något härdades, och gick inte att ta tillbaka.' },
           ],
         },
+      }
+    }
+
+    // HIGH 1 (DOM_HIGH1_BURNOUT_LEDGER_2026-09-02): ärret är manager-
+    // minnets vy av beslutet; liggaren är den kanoniska sanningen som
+    // "Säsongens beslut" läser. Dual-write, aldrig flytt. Posten byggs
+    // direkt eftersom burnout-valet inte är en effektverifierad A-H9-
+    // builder: själva valet vid taket är den irreversibla händelsen.
+    const semanticKey = `burnoutCeiling:${choiceId}`
+    const alreadyLogged = (updatedGame.eventLedger ?? []).some(entry =>
+      entry.type === 'decision'
+      && entry.semanticKey === semanticKey
+      && entry.season === updatedGame.currentSeason
+      && entry.matchday === updatedGame.currentMatchday)
+    if (!alreadyLogged) {
+      updatedGame = {
+        ...updatedGame,
+        eventLedger: logEvent(updatedGame, {
+          type: 'decision',
+          semanticKey,
+          season: updatedGame.currentSeason,
+          matchday: updatedGame.currentMatchday,
+          significance: 100,
+          irreversible: true,
+          tension: true,
+          systemsAffectedCount: 4,
+          madeByPlayer: true,
+        }),
       }
     }
   }
