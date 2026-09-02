@@ -86,6 +86,17 @@ describe('seasonEndProcessor — pendingSeasonTransitionEvents (5.1 Sommaren)', 
 
     expect(result.game.managerProfile?.burnoutScore).toBe(55)
   })
+
+  it('fryser den avslutade säsongen på den faktiska kaptenens historik', () => {
+    const base = makeGame()
+    const captainId = base.managedClubPendingLineup?.captainPlayerId!
+    const before = base.players.find(player => player.id === captainId)?.wasCaptainSeasons ?? 0
+
+    const result = handleSeasonEnd({ ...base, captainPlayerId: captainId }, 1)
+    const captain = result.game.players.find(player => player.id === captainId)
+
+    expect(captain?.wasCaptainSeasons).toBe(before + 1)
+  })
 })
 
 describe('H6 (människoupplevelse-audit 7024f8a, 2026-08-24) — epokLinens säsongsordinal', () => {

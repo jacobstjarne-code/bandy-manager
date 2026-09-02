@@ -1,10 +1,44 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
-import { getFarewellMatchPlayer, generateRetirementData } from '../retirementService'
+import {
+  getFarewellMatchPlayer,
+  generateRetirementData,
+  isRetiringClubLegendEligible,
+  recordCompletedCaptainSeason,
+} from '../retirementService'
 import type { ActiveArc } from '../../entities/Narrative'
 import type { CareerMilestone } from '../../entities/Player'
 
 const base = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 5 })
+
+describe('kaptenshistorik och legendkriterium', () => {
+  it('räknar bara den hanterade klubbens faktiska kapten och ackumulerar säsonger', () => {
+    const captain = base.players.find(p => p.clubId === base.managedClubId)!
+    const first = recordCompletedCaptainSeason(captain, captain.id, base.managedClubId)
+    const second = recordCompletedCaptainSeason(first, captain.id, base.managedClubId)
+    const afterLeaving = recordCompletedCaptainSeason(
+      { ...second, clubId: 'club_other' },
+      captain.id,
+      base.managedClubId,
+    )
+
+    expect(first.wasCaptainSeasons).toBe(1)
+    expect(second.wasCaptainSeasons).toBe(2)
+    expect(afterLeaving.wasCaptainSeasons).toBe(2)
+  })
+
+  it('en ledare kvalificerar via två verkliga kaptenssäsonger, inte bara tid i klubben', () => {
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const ledare = {
+      ...player,
+      trait: 'ledare' as const,
+      careerStats: { ...player.careerStats, totalGames: 20, seasonsPlayed: 2 },
+    }
+
+    expect(isRetiringClubLegendEligible({ ...ledare, wasCaptainSeasons: 1 })).toBe(false)
+    expect(isRetiringClubLegendEligible({ ...ledare, wasCaptainSeasons: 2 })).toBe(true)
+  })
+})
 
 describe('getFarewellMatchPlayer — pool 2 (delad gate-signal med coffeeRoomService)', () => {
   it('returnerar null utan aktiv veteran_farewell-arc', () => {

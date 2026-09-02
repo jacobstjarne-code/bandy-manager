@@ -165,3 +165,27 @@ export function generateRetirementData(player: Player, managedClubId: string): R
     isLegend: player.clubId === managedClubId && (games >= 100 || goals >= 50),
   }
 }
+
+/**
+ * Fryser en avslutad kaptenssäsong före pensioneringskontrollen. Bara den
+ * hanterade klubbens faktiska kapten räknas; ett stale kaptens-id efter en
+ * klubblämning får inte skriva historik på spelaren i den nya klubben.
+ */
+export function recordCompletedCaptainSeason(
+  player: Player,
+  captainPlayerId: string | undefined,
+  managedClubId: string,
+): Player {
+  if (player.id !== captainPlayerId || player.clubId !== managedClubId) return player
+  return { ...player, wasCaptainSeasons: (player.wasCaptainSeasons ?? 0) + 1 }
+}
+
+/** Sprint 27:s fyra vägar till klubblegend vid pensionering. */
+export function isRetiringClubLegendEligible(player: Player): boolean {
+  const seasonsInClub = player.careerStats?.seasonsPlayed ?? 1
+  const totalGames = player.careerStats?.totalGames ?? 0
+  return totalGames >= 100
+    || (player.trait === 'veteran' && seasonsInClub >= 3)
+    || (player.trait === 'ledare' && (player.wasCaptainSeasons ?? 0) >= 2)
+    || seasonsInClub >= 4
+}

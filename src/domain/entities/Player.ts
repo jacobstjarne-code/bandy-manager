@@ -128,6 +128,8 @@ export interface Player {
   seasonStats: PlayerSeasonStats       // A5: liga-only (cup separeras till seasonCupStats)
   seasonCupStats?: PlayerSeasonStats   // A5: cup-only denna säsong; careerStats är fortsatt all-tävling
   careerStats: PlayerCareerStats
+  /** Antal avslutade säsonger som kapten för spelarens dåvarande klubb. */
+  wasCaptainSeasons?: number
   careerMilestones?: CareerMilestone[]
   isOnLoan?: boolean
   loanClubName?: string

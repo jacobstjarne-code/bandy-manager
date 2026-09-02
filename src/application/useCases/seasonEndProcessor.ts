@@ -17,7 +17,7 @@ import {
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
 import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/playerDevelopmentService'
-import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
+import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth } from '../../domain/services/boardService'
@@ -486,12 +486,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Reset player season stats, recover fitness, age players
   const allPlayers = [...game.players, ...youthPlayers]
+  const playersWithCaptainHistory = allPlayers.map(player =>
+    recordCompletedCaptainSeason(player, game.captainPlayerId, game.managedClubId)
+  )
   const retirementRand = mulberry32(baseSeed + 99991)
   const retiredPlayerIds = new Set<string>()
   const retirementMessages: InboxItem[] = []
   let nextCaptainPlayerId: string | undefined = game.captainPlayerId
 
-  let resetPlayers = allPlayers.map(player => ({
+  let resetPlayers = playersWithCaptainHistory.map(player => ({
     ...player,
     age: player.age + 1,
     // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 — "sommaren måste ge
@@ -635,11 +638,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const player = resetPlayers.find(p => p.id === pid)
     if (!player || player.clubId !== game.managedClubId) continue
     const seasonsInClub = (player.careerStats?.seasonsPlayed ?? 1)
-    const totalGames = player.careerStats?.totalGames ?? 0
-    const isLegendEligible = totalGames >= 100
-      || (player.trait === 'veteran' && seasonsInClub >= 3)
-      || (player.trait === 'ledare' && seasonsInClub >= 2)
-      || seasonsInClub >= 4
+    const isLegendEligible = isRetiringClubLegendEligible(player)
     if (isLegendEligible) {
       const storyline = (game.storylines ?? []).find(s => s.playerId === pid && s.resolved)
       newLegends.push({
