@@ -2,6 +2,15 @@ import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
 import type { TalentSearchRequest, TalentSearchResult, TalentSuggestion } from '../entities/SaveGame'
 
+/**
+ * C-T5: scouting has one shared population. Academy players from other clubs
+ * are normal Player entities carrying academyClubId, so they must not be
+ * hidden behind a separate academy-only discovery path.
+ */
+export function getScoutablePlayers(allPlayers: Player[], managedClubId: string): Player[] {
+  return allPlayers.filter(player => player.clubId !== managedClubId)
+}
+
 function generateTalentNote(player: Player, _club: Club | undefined, rand: () => number): string {
   const attrs = player.attributes
   const strengths: string[] = []
@@ -35,8 +44,7 @@ export function executeTalentSearch(
   season: number,
   round: number,
 ): TalentSearchResult {
-  const candidates = allPlayers.filter(p => {
-    if (p.clubId === managedClubId) return false
+  const candidates = getScoutablePlayers(allPlayers, managedClubId).filter(p => {
     if (request.position !== 'any' && p.position !== request.position) return false
     if (p.age > request.maxAge) return false
     if (p.salary > request.maxSalary) return false

@@ -5,6 +5,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
 import { PlayerPosition } from '../../../domain/enums'
 import { getScoutReportAge } from '../../../domain/services/scoutingService'
+import { getScoutablePlayers } from '../../../domain/services/talentScoutService'
 import { positionShort, positionLong, formatValue } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 
@@ -68,8 +69,7 @@ export function ScoutingTab({
   const [expandedGroups, setExpandedGroups] = useState<Set<PlayerPosition>>(new Set())
   const [reportsExpanded, setReportsExpanded] = useState(false)
 
-  const scoutablePlayers = game.players
-    .filter(p => p.clubId !== game.managedClubId)
+  const scoutablePlayers = getScoutablePlayers(game.players, game.managedClubId)
     .sort((a, b) => {
       const aScout = !!scoutReports[a.id]
       const bScout = !!scoutReports[b.id]
