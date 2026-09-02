@@ -1096,3 +1096,27 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Åtgärd:** när en testfixtur override:ar ETT fält på en entitet som har FLERA fält som tillsammans beskriver ett tillstånd (en `StandingRow` är poäng+position+spelade OCH ETT internt konsistent), kontrollera att kombinationen faktiskt kan uppstå i verkligheten — inte bara att TypeScript accepterar den. Fråga: "skulle `calculateStandings()` (eller motsvarande verklig producent) någonsin faktiskt producera DENNA kombination?" Om nej, lägg till de andra fälten som gör den verklig (här: `played: 10`), gissa inte att ett enda override räcker.
 
 **Känn igen:** ett test som override:ar ett enda fält på en fixtur byggd från en verklig konstruktor (`createNewGame`, `calculateStandings`, etc.) för att tvinga fram ett specifikt scenario — utan att kontrollera om de ANDRA fälten på samma objekt fortfarande är sanna givet det nya värdet. Om en fix senare gör testet rött "av fel anledning" (fixen är korrekt, men testfixturen beskrev något omöjligt) — det är signalen, inte bara "uppdatera fixturen och gå vidare": skriv upp instansen här om mönstret upprepas en fjärde gång.
+
+## 51. Parallella agenter i samma träd kolliderar utan filbaserade lanes + committa-innan-nästa + en broms
+
+**Mönster:** Tre agenter (Opus/Code/Codex) i samma arbetsträd rör samma filer okommitterat. En checkpoint blir en rörlig måltavla; commits kan inte isoleras utan att antingen tappa den ena agentens arbete eller frysa den mitt i skrivning. En grön build ligger opushad och exponerad.
+
+**Rotorsak:** Ämnesbaserade order ("fixa result-truth") låter en agent vandra in i en annans filer — ämnen överlappar, fillistor gör det inte. Ingen committa-innan-nästa-regel gör att en burst-agent skriver ovanpå ocommittat arbete. Och en agent utan pausbroms (utanför sessionens agentregister) kan inte frysas för en säker checkpoint — du kan varna den skriftligt men inte stoppa den.
+
+**Fix:** (1) Ge varje agent ett FILOMRÅDE, inte ett ämne. "Rör bara `src/domain/` + de namngivna komponentfilerna" är en gräns hen kan följa. (2) Committa-innan-nästa: en agent landar och committar sitt pass grönt innan nästa släpps in i samma filer. (3) När brytaren saknas — kör SEKVENTIELLT, inte parallellt: en landar + committar, sen nästa rebasar. (4) Frys + committa den gröna checkpointen mellan bursts. Ett grönt OTCOMMITTAT träd är exponerat, inte säkrat — kämpa inte för ett rent commit-split när många filer står oskyddade; säkra först, snyggt sen.
+
+**Känn igen:** Två agenter rapporterar arbete i samma fil samma pass. "N filer ändrade/nya, okommitterat" där N är stort. En agent du inte kan pausa. En grön checkpoint som ligger opushad. "Ämnesorder" i stället för filområde.
+
+**Historik (2026-09-01):** Codex (utanför agentregistret, ingen pausbroms) + Code i samma `boardService.ts`/`eventResolver.ts` okommitterat; 124 filer exponerade innan frys-och-committa; result-truth-passets fyra Code-fixar blandades oisolerbart med Codex bredare `deriveUtfall`-migrering. Löst med filbaserade lanes (Codex i domän, Code i store+grind, Opus i domar/text) + committa-innan-nästa. Codex prioriterar brett-mekaniskt arbete bättre än Opus — lanes är hur man drar nytta av det utan kollision, inte ett argument för färre agenter.
+
+## 52. Avstämning är första handlingen på en rapport, inte den sista — en status som bara bor i chatten är förlorad
+
+**Mönster:** En dom/status/schema uttalas i chatten och förs aldrig in på kartan (DOMLOGG/MASTER_OPPET/disk). Kartan driver stale mot vad som faktiskt hänt. Jacob fångar det, gång på gång, i stället för att systemet håller sig sant själv.
+
+**Rotorsak:** Reaktivt läge — svara på rapporten, gå vidare, "för in det sen". Avstämning behandlas som en efterhandssyssla i stället för första handlingen. En regel skriven i ett dokument upprätthåller inte sig själv (samma klass som #39). Och "det fanns inget att spara" är en bekväm slutsats som ofta är overifierad — samma genväg som #35, i miniatyr.
+
+**Fix:** När en rapport landar — öppna kartan och stäm av FÖRST, före svaret formuleras. Läs rapport → uppdatera karta → sen svara, och låt svaret börja med "avstämt" eller "inget att stämma av", verifierat. En dom/spec/schema som bara finns i chatten skrivs till disk samma tur den uttalas. Detta är inte ett löfte om bättring — det är en ändrad ordning i vad som görs FÖRST, för ett löfte har brustit flera gånger.
+
+**Känn igen:** "jag för in det sen", "det bor i chatten", ett schema/dom en agent bygger mot som inte finns på disk. Jacob frågar "har du stämt av mot kartorna?" — frågan i sig är signalen att avstämningen släpade. Kontrollen är load-bearing (Jacob fångar) i stället för självbärande (systemet håller sig sant).
+
+**Historik (2026-08-31/09-01):** DOMLOGG drev stale mot Codes byggen tre gånger (motbud, ekonomi, board-tröghet); `EventLedgerEntry`-schemat levde bara i chatten medan Code byggde mot det; MASTER_OPPET släpade mot fyllda texter + de tre nya fundamentdokumenten. Varje gång fångade Jacob det, inte systemet. §6 i `DOMLOGG_2026-08-31.md` bär samma lärdom för STÄNGNINGSDOMAR specifikt; denna generaliserar den till all status och gör avstämningen till FÖRSTA handlingen, inte en påmind efterhandssyssla.

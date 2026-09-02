@@ -90,6 +90,10 @@ export interface EventLedgerEntry {
   moneyAmount?: number         // A-H9 fält 5, sista skiljedomaren
   // URSPRUNG
   madeByPlayer?: boolean       // HIGH 6:s attributions-skillnad, ärvd aldrig tappad
+  systemhandelse?: boolean     // O19:s säsongsbudget-klassning, satt vid event-
+                               // skapande. EGEN axel — ett event kan vara
+                               // systemhandelse OCH auto-resolvat; ej härledbar
+                               // ur type/madeByPlayer.
 }
 
 export interface LedgerConsequence {
@@ -114,6 +118,10 @@ export interface LedgerConsequence {
 - **`subject` är polymorft** (`kind: 'player'|'club'|'mecenat'`), inte `subjectPlayerId`/`subjectClubId`. Tre byggare bär en MECENAT som namngiven person, som varken player- eller club-id täcker — utan detta skulle deras `namedPerson`-tiebreak tyst scoras som namnlös. Ett fjärde `subjectMecenatId?` skulle bara flytta problemet till nästa entitetstyp; polymorfin bär alla utan att schemat växer per typ. `pickSeasonDecision`s `namedPerson ? 1 : 0` blir `subject !== undefined`.
 
 Bägge bärs BARA av beslutsbyggarna (utom `subject`, som också bär VEM för entitets-händelser). Lärdomen: ripples fältmängd är inte "alla system ett beslut rör" — att anta det var en elegant-men-fel genväg.
+
+**Skärpning 2 (Fas 3-vägval, 2026-09-01):** `systemhandelse?` tillagt — O19:s säsongsbudget-klassning som `systemhandelseBudgetOk` filtrerar på. EGEN axel, ej härledbar ur `type`/`madeByPlayer` (ett event kan vara systemhandelse OCH auto-resolvat). Tredje schema-utökningen — mönstret är nu namngivet: jag underspecificerade schemat mot de GENERELLA händelserna och missade de klassnings-axlar de befintliga minnena redan bar (systemsAffectedCount, subject-mecenat, systemhandelse). Låt inte den befintliga strukturen bestämma vad en post får bära — låt postens faktiska natur bestämma strukturen.
+
+**SKALA-DOM (Fas 3, 2026-09-01, Opus):** narrativeBeatLogs `round`-fält är i dag INKONSEKVENT — `eventResolver`+de flesta `gameFlowActions` skriver `getCurrentLeagueRound` (ligarond), `roundProcessor`s siter skriver `nextMatchday` (global). `wasLoggedThisRound` har alltså jämfört två numreringssystem beroende på vilken familj som skrev posten — en preexisterande BUGG liggaren råkade lysa upp, inte ett Fas 3-problem. **Dom: standardisera ALLA skrivare på global matchday SOM DEL av migreringen** (liggarens `matchday` är per regel global-only; att migrera in blandningen vore att gjuta buggen i fundamentet). MEN det är en LIVE beteendeändring för ligarond-skrivarna, så: (1) regressionstest som fångar cooldown/wasLoggedThisRound-beteendet FÖRE ändringen; (2) Code verifierar att ingen cooldown-fönster-längd är kalibrerad mot ligarond-skalan — om en är det (t.ex. "6 omgångar" som menade ligaronder) blir den kortare i realtid på global skala, och då är det ett ANDRA vägval (justera konstanten), Code stannar igen.
 
 **Två saker medvetet UTE (återinför inte):**
 - Ingen `text`/prosa (ovan).
