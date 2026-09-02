@@ -1468,6 +1468,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         : newClubEra === 'legacy'
         ? 'Det är inte längre bara bandy. Det är ortens identitet.'
         : 'Tuffa tider. Men det är nu det verkligen gäller.',
+      // Skärpning 4 — eran den skiftade TILL, strukturerat (samma värde som
+      // title-strängen ovan uttrycker i prosa via eraLabel()-funktionen).
+      eraLabel: newClubEra,
     })
   }
   const allNewMomentsThisRound = [...newMoments, ...eraShiftMoments]

@@ -67,6 +67,9 @@ export function ClubMemoryView({ game }: Props) {
               matchday: entry.matchday,
               season: entry.season,
               significance: entry.significance,
+              eraLabel: entry.eraLabel,
+              transferRole: entry.transferRole,
+              matchCategory: entry.matchCategory,
             })
             return (
               <div key={entry.semanticKey} className={`moment-row ${kind}`}>

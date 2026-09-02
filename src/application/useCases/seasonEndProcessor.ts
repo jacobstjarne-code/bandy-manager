@@ -1611,6 +1611,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     season: game.currentSeason,
     title: `Säsongens match — ${matchHighlight.opponentName}`,
     body: matchHighlight.narrative,
+    // Skärpning 4 (Code-fynd, 2026-09-02, flaggat) — matchHighlight.narrative
+    // branchar på category (matchHighlightService.ts's buildMatchNarrative,
+    // 7-vägs switch), inte fast prosa. Buret strukturerat för en branchad mall.
+    matchCategory: matchHighlight.category,
   }] : []
 
   const updatedGame: SaveGame = {

@@ -1,3 +1,7 @@
+import type { ClubEra } from './SaveGame'
+import type { MatchHighlightCategory } from './SeasonSummary'
+import type { TransferRole } from './Moment'
+
 /**
  * Gemensam basstruktur för alla arc-lika system.
  * Specifika arc-typer (TrainerArc, ActiveArc) utökar detta.
@@ -250,6 +254,15 @@ export interface EventLedgerEntry {
   // ── URSPRUNG ──
   /** HIGH 6:s attributions-skillnad (beslut vs systemhändelse) — ärvd, aldrig tappad. */
   madeByPlayer?: boolean
+
+  // Skärpning 4 (Fas 4 Moment-vägval #2, 2026-09-02, Opus dom): tre Moment-
+  // källors bodyn branchade på ett klassificerande värde (olika MENING per
+  // gren) innan title/body strippades till liggaren — det värdet måste bäras
+  // strukturerat, annars kan ingen branchad vy-mall skrivas. Bara EN sätts
+  // per post, `type` avgör vilken (se Moment.ts).
+  eraLabel?: ClubEra                      // era_shift
+  transferRole?: TransferRole             // transfer_story
+  matchCategory?: MatchHighlightCategory  // season_highlight — Code-fynd, flaggat till Opus
 }
 
 export interface BandyLetter {

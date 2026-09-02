@@ -82,6 +82,41 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(entry.semanticKey).toBe(m.id)
   })
 
+  // Skärpning 4 (2026-09-02, Opus dom) — de tre källor vars body branchade på
+  // ett klassificerande värde bär det strukturerat till liggarposten, så en
+  // branchad vy-mall kan skrivas efter att title/body strippats.
+  it('era_shift: eraLabel kopieras rakt, övriga två fälten osatta', () => {
+    const m = makeMoment({ source: 'era_shift', eraLabel: 'legacy' })
+    const entry = buildMomentLedgerEntry(m)
+    expect(entry.eraLabel).toBe('legacy')
+    expect(entry.transferRole).toBeUndefined()
+    expect(entry.matchCategory).toBeUndefined()
+  })
+
+  it('transfer_story: transferRole kopieras rakt, övriga två fälten osatta', () => {
+    const m = makeMoment({ source: 'transfer_story', transferRole: 'kapten' })
+    const entry = buildMomentLedgerEntry(m)
+    expect(entry.transferRole).toBe('kapten')
+    expect(entry.eraLabel).toBeUndefined()
+    expect(entry.matchCategory).toBeUndefined()
+  })
+
+  it('season_highlight: matchCategory kopieras rakt (Code-fynd, flaggat till Opus), övriga två fälten osatta', () => {
+    const m = makeMoment({ source: 'season_highlight', matchCategory: 'derby_win' })
+    const entry = buildMomentLedgerEntry(m)
+    expect(entry.matchCategory).toBe('derby_win')
+    expect(entry.eraLabel).toBeUndefined()
+    expect(entry.transferRole).toBeUndefined()
+  })
+
+  it('captain_crisis: fast prosa + namn, verifierat att INGET av de tre klassificeringsfälten sätts (behöver inget fält)', () => {
+    const m = makeMoment({ source: 'captain_crisis', subjectPlayerId: 'p1' })
+    const entry = buildMomentLedgerEntry(m)
+    expect(entry.eraLabel).toBeUndefined()
+    expect(entry.transferRole).toBeUndefined()
+    expect(entry.matchCategory).toBeUndefined()
+  })
+
   it('enkelparts-moment (bara subjectPlayerId) → subject satt, subject2 osatt', () => {
     const m = makeMoment({ source: 'star_injury', subjectPlayerId: 'p1' })
     const entry = buildMomentLedgerEntry(m)

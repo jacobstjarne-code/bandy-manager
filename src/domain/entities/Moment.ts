@@ -1,3 +1,6 @@
+import type { ClubEra } from './SaveGame'
+import type { MatchHighlightCategory } from './SeasonSummary'
+
 // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Skärpning 3 (Opus dom,
 // 2026-09-01): 'mecenat_left' släppt — deklarerad här sedan tidigare men
 // aldrig faktiskt konstruerad som ett Moment någonstans (mecenatens avhopp
@@ -17,6 +20,9 @@ export type MomentSource =
   | 'era_shift'          // M14 — klubbens era förändrades
   | 'rival_sale'         // C-T9 — sålt spelare till rivalklubben
 
+/** transfer_story's rollklassning — samma fyra strängar som transferProcessor.ts's lokala `role`-variabel. */
+export type TransferRole = 'kapten' | 'klackfavorit' | 'legend' | 'akademiprodukt'
+
 export interface Moment {
   id: string
   source: MomentSource
@@ -26,4 +32,17 @@ export interface Moment {
   body: string            // 2-3 rader prosa, narrativt
   subjectPlayerId?: string
   subjectClubId?: string
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Skärpning 4 (2026-09-02, Opus dom):
+  // body-konstruktionen för dessa tre källor branchar på ett klassificerande
+  // värde (olika MENING per gren, inte bara ett namn i samma mening) — måste
+  // bäras strukturerat hit så en branchad vy-mall kan skrivas efter att
+  // title/body strippats till liggaren. Bara EN sätts per Moment, källan
+  // avgör vilken. Kopieras rakt in på EventLedgerEntry i buildMomentLedgerEntry.
+  eraLabel?: ClubEra                      // era_shift — eran den skiftade TILL
+  transferRole?: TransferRole             // transfer_story
+  // matchCategory: Code-fynd (2026-09-02, ej i ursprungsordern) — season_highlight
+  // bygger sin narrative-sträng ur matchHighlightService.ts's 7-vägs switch på
+  // MatchHighlightCategory (late_winner/derby_win/cup_drama/playoff_decisive/
+  // big_win/comeback/underdog_upset), inte fast prosa. Flaggat till Opus.
+  matchCategory?: MatchHighlightCategory  // season_highlight
 }

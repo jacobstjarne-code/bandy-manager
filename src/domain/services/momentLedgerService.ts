@@ -59,6 +59,11 @@ export function buildMomentLedgerEntry(moment: Moment): EventLedgerEntry {
     subject,
     subject2,
     significance: MOMENT_LEDGER_SIGNIFICANCE[moment.source],
+    // Skärpning 4 — kopieras rakt, satta av respektive källa vid dual-write
+    // (Moment.ts's fälthuvud). Undefined för alla källor utom sin egen.
+    eraLabel: moment.eraLabel,
+    transferRole: moment.transferRole,
+    matchCategory: moment.matchCategory,
   }
 }
 

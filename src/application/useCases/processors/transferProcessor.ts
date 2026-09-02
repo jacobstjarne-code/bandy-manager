@@ -507,6 +507,8 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
           body: `Vår ${role} lämnar${buyerClub ? ` till ${buyerClub.name}` : ''}. Det är inte lätt att ta in.`,
           subjectPlayerId: bid.playerId,
           subjectClubId: buyerClub?.id,
+          // Skärpning 4 — samma role-variabel bodyn redan interpolerade, buret strukturerat.
+          transferRole: role,
         })
       }
     }
