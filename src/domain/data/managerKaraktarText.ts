@@ -69,6 +69,28 @@ export const BURNOUT_MARK = {
   },
 }
 
+/**
+ * Återfalls-mallen (2026-09-02, Opus dom, MIGRATIONSPLAN_HANDELSELIGGAREN
+ * Fas 4+) — BurnoutMark.tsx väljer denna i stället för BURNOUT_MARK ovan när
+ * managerProfileService.isBurnoutRelapse() är sant (en burnout-topp har
+ * fyrat en TIDIGARE säsong). Samma form (quotesByZone/helpersByZone, ingen
+ * interpolation), men tonen ska kännas som "andra gången", inte "första
+ * gången" — refererar att managern känner igen mönstret. Opus levererar.
+ * Tomma pooler = BurnoutMark.tsx degraderar säkert till intro-mallen (samma
+ * "tom pool"-golv som BURNOUT_CAUSE_LINES nedan redan följer) tills detta
+ * fyllts.
+ */
+export const BURNOUT_MARK_RELAPSE = {
+  quotesByZone: {
+    markbar: [] as string[],
+    hog: [] as string[],
+  },
+  helpersByZone: {
+    markbar: [] as string[],
+    hog: [] as string[],
+  },
+}
+
 /** Opus levererar. En rad per orsak — Code härleder orsaken (deriveBurnoutCause,
  *  managerProfileService.ts), visar BURNOUT_CAUSE_LINES[orsak] om poolen inte är
  *  tom. Tomma pooler = ingen orsaksrad visas (ingen krasch, bara utelämnad). */

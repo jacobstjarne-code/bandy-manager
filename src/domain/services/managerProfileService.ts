@@ -370,6 +370,24 @@ export function getBurnoutZone(score: number): BurnoutZone {
   return 'frisk'
 }
 
+/**
+ * Återfalls-läsningen (2026-09-02, Opus dom) — SÄSONGSÖVERSKRIDANDE. Skiljer
+ * sig från shouldShowBurnoutMark ovan (som bara vet "steg zonen NU") genom
+ * att fråga historiken: har en burnout-topp fyrat i en TIDIGARE säsong?
+ * Om ja är detta ett återfall, inte ett förstagångstillfälle — BurnoutMark.tsx
+ * ska då välja den eskalerade mallen (BURNOUT_MARK_RELAPSE) i stället för
+ * intro-mallen (BURNOUT_MARK).
+ *
+ * `diary`s burnout_peak-poster (roundProcessor.ts, skrivs vid zoneRose) bär
+ * redan season+matchday — de ENDA data som behövs, ingen ny lagring. Kortare
+ * `burnoutHistory` (rullande fönster, BURNOUT_HISTORY_MAX=22 omgångar) räcker
+ * INTE för detta — den trimmas långt innan en säsongsgräns, dagboken är den
+ * enda platsen minnet faktiskt sträcker sig över säsonger.
+ */
+export function isBurnoutRelapse(profile: ManagerProfile, currentSeason: number): boolean {
+  return (profile.diary ?? []).some(e => e.type === 'burnout_peak' && e.season < currentSeason)
+}
+
 const HOMETOWN_POOL: string[] = [
   'Edsbyn', 'Bollnäs', 'Sandviken', 'Falun', 'Ljusdal', 'Söderhamn',
   'Hudiksvall', 'Gävle', 'Borlänge', 'Mora', 'Rättvik', 'Alfta',

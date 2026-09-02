@@ -13,7 +13,10 @@ import {
   pickBurnoutQuoteIndex,
   pickBurnoutHelperIndex,
   pickBurnoutOpponentReadIndex,
+  pickBurnoutRelapseQuoteIndex,
+  pickBurnoutRelapseHelperIndex,
   BURNOUT_QUOTE_PREFIX,
+  BURNOUT_RELAPSE_QUOTE_PREFIX,
   BURNOUT_OPPONENT_READ_PREFIX,
   BURNOUT_OPPONENT_READ,
 } from '../burnoutReliefService'
@@ -223,6 +226,45 @@ describe('pickBurnoutQuoteIndex — no-repeat inom säsongen', () => {
 
   it('pickBurnoutHelperIndex fungerar oberoende av quote-indexet (egen prefix)', () => {
     const idx = pickBurnoutHelperIndex(baseGame, 'hog', 2)
+    expect(idx).toBeGreaterThanOrEqual(0)
+    expect(idx).toBeLessThan(2)
+  })
+})
+
+/**
+ * Återfalls-varianterna (2026-09-02, Opus dom) — MEDVETET skiljda från
+ * pickBurnoutQuoteIndex ovan: säsongsöverskridande cooldown i stället för
+ * säsongsscopad. Det var poängen — "Konsum"-upprepningen (samma citat kom
+ * tillbaka året därpå) fick inte hända igen i den nya poolen.
+ */
+describe('pickBurnoutRelapseQuoteIndex — cooldown ÖVER säsongsgränsen', () => {
+  const baseGame = { currentSeason: 3, currentMatchday: 10, narrativeBeatLog: undefined }
+
+  it('citatet visades en TIDIGARE säsong (1 säsong sedan) — FORTFARANDE på cooldown, till skillnad från intro-poolen', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_RELAPSE_QUOTE_PREFIX}markbar_${10 % 5}`, season: 2, round: 5 }],
+    }
+    const idx = pickBurnoutRelapseQuoteIndex(game, 'markbar', 5)
+    expect(idx).not.toBe(10 % 5)
+  })
+
+  it('utan logg: deterministiskt via tie-break (matchday), samma primitiv som intro-poolen', () => {
+    const idx = pickBurnoutRelapseQuoteIndex(baseGame, 'markbar', 5)
+    expect(idx).toBe(10 % 5)
+  })
+
+  it('delar aldrig cooldown-utrymme med intro-poolen (egen prefix)', () => {
+    const game = {
+      ...baseGame,
+      narrativeBeatLog: [{ semanticKey: `${BURNOUT_QUOTE_PREFIX}markbar_${10 % 5}`, season: 3, round: 5 }],
+    }
+    const idx = pickBurnoutRelapseQuoteIndex(game, 'markbar', 5)
+    expect(idx).toBe(10 % 5) // opåverkad av intro-poolens cooldown
+  })
+
+  it('pickBurnoutRelapseHelperIndex fungerar oberoende (egen prefix)', () => {
+    const idx = pickBurnoutRelapseHelperIndex(baseGame, 'hog', 2)
     expect(idx).toBeGreaterThanOrEqual(0)
     expect(idx).toBeLessThan(2)
   })

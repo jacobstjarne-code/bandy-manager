@@ -9,6 +9,21 @@ import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
 
 export const BURNOUT_QUOTE_PREFIX = 'burnout_quote_'
 export const BURNOUT_HELPER_PREFIX = 'burnout_helper_'
+export const BURNOUT_RELAPSE_QUOTE_PREFIX = 'burnout_relapse_quote_'
+export const BURNOUT_RELAPSE_HELPER_PREFIX = 'burnout_relapse_helper_'
+
+/**
+ * Återfalls-poolens repetitionsskydd är MEDVETET annorlunda än intro-poolens
+ * nedan (pickBurnoutQuoteIndex/pickBurnoutHelperIndex, minSeasonsApart=1,
+ * säsongsscopat — ett dokumenterat, accepterat mål för INTRO-poolen). Ett
+ * återfall kan ligga flera säsonger ifrån föregående; minSeasonsApart=1 hade
+ * gjort exakt samma upprepning möjlig som redan observerats i intro-poolen
+ * (samma "Konsum"-citat kom tillbaka året därpå, eftersom cooldownen där
+ * nollställs varje ny säsong). 50 är "inom en hel karriär, i praktiken
+ * aldrig" utan att vara oändligt (fallback till hela poolen om allt är på
+ * cooldown, samma golv som pickPoolIndexAvoidingCooldown redan har).
+ */
+const BURNOUT_RELAPSE_MIN_SEASONS_APART = 50
 
 /**
  * A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): no-repeat INOM säsongen (minSeasonsApart=1
@@ -23,6 +38,15 @@ export function pickBurnoutQuoteIndex(game: Pick<SaveGame, 'currentSeason' | 'cu
 
 export function pickBurnoutHelperIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
   return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_HELPER_PREFIX}${zone}_`, game.currentMatchday * 7, 1)
+}
+
+/** Återfalls-varianterna — samma primitiv, säsongsöverskridande cooldown (se BURNOUT_RELAPSE_MIN_SEASONS_APART). */
+export function pickBurnoutRelapseQuoteIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
+  return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_RELAPSE_QUOTE_PREFIX}${zone}_`, game.currentMatchday, BURNOUT_RELAPSE_MIN_SEASONS_APART)
+}
+
+export function pickBurnoutRelapseHelperIndex(game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'narrativeBeatLog'>, zone: 'markbar' | 'hog', poolLength: number): number {
+  return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_RELAPSE_HELPER_PREFIX}${zone}_`, game.currentMatchday * 7, BURNOUT_RELAPSE_MIN_SEASONS_APART)
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   shouldShowBurnoutMark,
   shouldShowBurnoutRelief,
   shouldShowBurnoutClose,
+  isBurnoutRelapse,
   BURNOUT_NATURAL_DECAY,
 } from '../managerProfileService'
 import { FixtureStatus } from '../../enums'
@@ -284,5 +285,47 @@ describe('getBurnoutZone', () => {
     expect(getBurnoutZone(69)).toBe('markbar')
     expect(getBurnoutZone(70)).toBe('hog')
     expect(getBurnoutZone(100)).toBe('hog')
+  })
+})
+
+/**
+ * Återfalls-läsningen (2026-09-02, Opus dom) — säsongsöverskridande. Skiljer
+ * sig från lastShownBurnoutZone (som bara vet NUVARANDE/senast visade zon)
+ * genom att fråga hela dagboken efter en TIDIGARE säsongs burnout_peak.
+ */
+describe('isBurnoutRelapse', () => {
+  it('ingen burnout_peak i dagboken → inte ett återfall', () => {
+    const profile = makeProfile({ diary: [] })
+    expect(isBurnoutRelapse(profile, 3)).toBe(false)
+  })
+
+  it('burnout_peak från en TIDIGARE säsong → återfall', () => {
+    const profile = makeProfile({ diary: [
+      { season: 1, matchday: 10, type: 'burnout_peak', text: 'Det började ta på dig den säsongen. Du sa inget om det.' },
+    ]})
+    expect(isBurnoutRelapse(profile, 3)).toBe(true)
+  })
+
+  it('burnout_peak SAMMA säsong (denna omgångs egen toppning) → INTE ett återfall — det är förstagångstillfället, inte ett upprepat', () => {
+    const profile = makeProfile({ diary: [
+      { season: 3, matchday: 10, type: 'burnout_peak', text: 'Den säsongen tog nästan slut på dig. Du stannade ändå.' },
+    ]})
+    expect(isBurnoutRelapse(profile, 3)).toBe(false)
+  })
+
+  it('andra dagbokstyper (era_shift, rivalry) räknas inte som burnout_peak', () => {
+    const profile = makeProfile({ diary: [
+      { season: 1, matchday: 5, type: 'era_shift', text: 'Klubben reste sig under dig.' },
+      { season: 2, matchday: 8, type: 'rivalry', text: 'Rivalen blev din nemesis.' },
+    ]})
+    expect(isBurnoutRelapse(profile, 3)).toBe(false)
+  })
+
+  it('flera burnout_peak, minst en tidigare säsong → återfall', () => {
+    const profile = makeProfile({ diary: [
+      { season: 1, matchday: 10, type: 'burnout_peak', text: 'Det började ta på dig den säsongen. Du sa inget om det.' },
+      { season: 4, matchday: 12, type: 'burnout_peak', text: 'Den säsongen tog nästan slut på dig. Du stannade ändå.' },
+    ]})
+    expect(isBurnoutRelapse(profile, 4)).toBe(true) // säsong 1 räknas, trots att säsong 4-posten är samma som currentSeason
   })
 })

@@ -1,6 +1,6 @@
-import { getBurnoutZone, getManagerDisplayName, BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
-import { BURNOUT_MARK, BURNOUT_CAUSE_LINES } from '../../../domain/data/managerKaraktarText'
-import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex } from '../../../domain/services/burnoutReliefService'
+import { getBurnoutZone, getManagerDisplayName, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
+import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE, BURNOUT_CAUSE_LINES } from '../../../domain/data/managerKaraktarText'
+import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex } from '../../../domain/services/burnoutReliefService'
 import { wasLoggedThisRound } from '../../../domain/services/narrativeLogService'
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
 
@@ -25,10 +25,25 @@ export function BurnoutMark({ game }: CardRenderProps) {
   // omgång som burnoutScore uppdateras.
   const zone = getBurnoutZone(profile.burnoutScore)
   if (zone === 'frisk') return null
-  const quotes = BURNOUT_MARK.quotesByZone[zone]
-  const helpers = BURNOUT_MARK.helpersByZone[zone]
-  const quoteIdx = pickBurnoutQuoteIndex(game, zone, quotes.length)
-  const helperIdx = pickBurnoutHelperIndex(game, zone, helpers.length)
+
+  // Återfalls-läsningen (2026-09-02, Opus dom) — säsongsöverskridande, se
+  // isBurnoutRelapse (managerProfileService.ts). Måste spegla EXAKT samma
+  // useRelapse-avgörande som roundProcessor.ts:s skrivsida (samma relapse-
+  // status, samma "tom pool degraderar till intro"-golv), annars visas ett
+  // citat ur en pool ingen semanticKey loggades för.
+  const relapse = isBurnoutRelapse(profile, game.currentSeason)
+  const relapseQuotePool = BURNOUT_MARK_RELAPSE.quotesByZone[zone]
+  const relapseHelperPool = BURNOUT_MARK_RELAPSE.helpersByZone[zone]
+  const useRelapse = relapse && relapseQuotePool.length > 0 && relapseHelperPool.length > 0
+
+  const quotes = useRelapse ? relapseQuotePool : BURNOUT_MARK.quotesByZone[zone]
+  const helpers = useRelapse ? relapseHelperPool : BURNOUT_MARK.helpersByZone[zone]
+  const quoteIdx = useRelapse
+    ? pickBurnoutRelapseQuoteIndex(game, zone, quotes.length)
+    : pickBurnoutQuoteIndex(game, zone, quotes.length)
+  const helperIdx = useRelapse
+    ? pickBurnoutRelapseHelperIndex(game, zone, helpers.length)
+    : pickBurnoutHelperIndex(game, zone, helpers.length)
   const quote = quotes[quoteIdx]
   const helper = helpers[helperIdx]
   const eyebrow = BURNOUT_MARK.eyebrow.replace('{manager}', getManagerDisplayName(game))
