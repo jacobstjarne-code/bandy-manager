@@ -3,9 +3,9 @@ import { generateBurnoutCeilingEvent } from '../burnoutCeilingService'
 import { BURNOUT_CEILING_RECOVERY_WINDOW_ROUNDS, BURNOUT_CEILING_BOARD_PATIENCE_COST } from '../managerProfileService'
 
 /**
- * DOM_BURNOUT_TAK_2026-09-02 (A) — det tvingande valet. Mallsträngarna är
- * '[Opus]' (Code skriver aldrig svensk speltext); testerna verifierar bara
- * strukturen — form, effekter, magnituder — inte prosan.
+ * DOM_BURNOUT_TAK_2026-09-02 (A) — det tvingande valet. Texten levererades
+ * av Opus 2026-09-02; testerna verifierar strukturen — form, effekter,
+ * magnituder, samt att inget '[Opus]' längre läcker — inte prosan i sig.
  */
 describe('generateBurnoutCeilingEvent', () => {
   it('rätt typ, olöst, unikt id per säsong+omgång', () => {
@@ -40,13 +40,15 @@ describe('generateBurnoutCeilingEvent', () => {
     expect(pushThrough.effect).toEqual({ type: 'noOp' })
   })
 
-  it('title/body/subtitles är alla \'[Opus]\' — Code skriver aldrig svensk speltext', () => {
+  it('title/body/subtitles är ifyllda text, inget \'[Opus]\'-läckage kvar', () => {
     const event = generateBurnoutCeilingEvent(10, 3)
-    expect(event.title).toBe('[Opus]')
-    expect(event.body).toBe('[Opus]')
+    expect(event.title).not.toBe('[Opus]')
+    expect(event.body).not.toBe('[Opus]')
+    expect(event.title.length).toBeGreaterThan(0)
+    expect(event.body.length).toBeGreaterThan(0)
     for (const choice of event.choices) {
-      expect(choice.label).toBe('[Opus]')
-      expect(choice.subtitle).toBe('[Opus]')
+      expect(choice.label).not.toBe('[Opus]')
+      expect(choice.subtitle).not.toBe('[Opus]')
     }
   })
 })

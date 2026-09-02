@@ -25,13 +25,13 @@ export function generateBurnoutCeilingEvent(matchday: number, season: number): G
   return {
     id: `event_burnout_ceiling_${season}_${matchday}`,
     type: 'burnoutCeiling',
-    title: '[Opus]',
-    body: '[Opus]',
+    title: 'Det går inte att köra så här längre',
+    body: 'Det har legat på max ett tag nu, och det släpper inte av sig självt. Assistenten har sagt det rakt ut: antingen kliver du tillbaka en period, eller så kör du vidare och ser vad som händer. Ingen av vägarna är gratis.',
     choices: [
       {
         id: 'step_back',
-        label: '[Opus]',
-        subtitle: '[Opus]',
+        label: 'Kliv tillbaka en period',
+        subtitle: 'Assistenten tar rodret, lätt träning tvingas fram, styrelsen gillar det inte — men det släpper på riktigt.',
         irreversible: true,
         effect: {
           type: 'multiEffect',
@@ -44,8 +44,8 @@ export function generateBurnoutCeilingEvent(matchday: number, season: number): G
       },
       {
         id: 'push_through',
-        label: '[Opus]',
-        subtitle: '[Opus]',
+        label: 'Kör vidare',
+        subtitle: 'Du släpper inte taget om laget. Det kan härda dig — eller sätta sig för gott.',
         irreversible: true,
         effect: { type: 'noOp' },
       },
