@@ -2,6 +2,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { ScoutReport } from '../../../domain/entities/Scouting'
 import { positionShort, formatSalary } from '../../utils/formatters'
 import { getCandidateScore } from '../../../domain/services/retirementDecisionService'
+import { TriangleAlert } from 'lucide-react'
 
 interface FreeAgentListProps {
   freeAgents: Player[]
@@ -26,35 +27,34 @@ export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: 
   if (freeAgents.length === 0) {
     return (
       <div className="card-sharp transfers-empty-state">
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
+        <p className="transfers-free-empty-text">Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
       </div>
     )
   }
 
   return (
-    <div className="card-sharp" style={{ overflow: 'hidden' }}>
+    <div className="card-sharp transfers-card-clipped">
       {freeAgents.map((agent, index) => {
         const retirementRisk = getCandidateScore(agent) >= RETIREMENT_RISK_THRESHOLD
         return (
-          <div key={agent.id} className="transfers-list-row-lg" style={{ borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+          <div key={agent.id} className={`transfers-list-row-lg ${index < freeAgents.length - 1 ? 'transfers-row-divider' : ''}`}>
             <div className="transfers-list-content">
               <p className="transfers-list-name-lg">
                 {agent.firstName} {agent.lastName}
               </p>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+              <p className="transfers-player-meta transfers-player-meta--spaced">
                 {positionShort(agent.position)} · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatSalary(agent.salary)}
               </p>
               {retirementRisk && (
-                <p style={{ fontSize: 11, color: 'var(--warm)', marginTop: 3 }}>
-                  ⚠️ Kan bli aktuell för pensionsbeslut redan till nästa säsong
+                <p className="transfers-retirement-risk">
+                  <TriangleAlert size={12} aria-hidden="true" /> Kan bli aktuell för pensionsbeslut redan till nästa säsong
                 </p>
               )}
             </div>
             <button
               onClick={() => windowOpen && onSign(agent.id)}
               disabled={!windowOpen}
-              className={`btn ${windowOpen ? 'btn-copper' : 'btn-ghost'}`}
-              style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+              className={`btn ${windowOpen ? 'btn-copper' : 'btn-ghost'} transfers-btn-sm`}
             >
               Värva
             </button>

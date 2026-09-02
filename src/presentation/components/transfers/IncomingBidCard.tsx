@@ -42,29 +42,28 @@ export function IncomingBidCard({ bid, player, buyingClub, currentRound, choices
 
   return (
     <div
-      className="card-sharp transfers-state-copper-strong"
-      style={{ marginBottom: 16, padding: '12px 14px' }}
+      className="card-sharp transfers-state-copper-strong transfers-incoming-bid"
       data-entity-id={`bid:${bid.id}`}
       data-entity-source="IncomingBidCard"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+      <div className="transfers-incoming-header">
         <div>
-          <p className="transfers-list-name-lg" style={{ marginBottom: 2 }}>
+          <p className="transfers-list-name-lg transfers-incoming-name">
             {player.firstName} {player.lastName}
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          <p className="transfers-incoming-meta">
             {buyingClub.name} · Bud: {formatValue(bid.offerAmount)}
           </p>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+        <span className="transfers-incoming-deadline">
           {roundsLeft > 0 ? `Svar om ${roundsLeft} omg.` : 'Svar väntat'}
         </span>
       </div>
 
       {(isDreamClub || loyalty != null) && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+        <div className="transfers-incoming-tags">
           {isDreamClub && <span className="tag tag-copper">Drömklubb</span>}
-          {loyalty != null && <span className="tag" style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>Lojalitet {loyalty}/10</span>}
+          {loyalty != null && <span className="tag transfers-loyalty-tag">Lojalitet {loyalty}/10</span>}
         </div>
       )}
 

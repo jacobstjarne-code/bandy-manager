@@ -92,29 +92,29 @@ export function ScoutingTab({
   return (
     <>
       {/* ── 1. Talangspaning — söker okända spelare ── */}
-      <div className="card-stagger-1" style={{ marginBottom: 24 }}>
-        <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12 }}>
+      <div className="card-stagger-1 transfers-section">
+        <div className="card-sharp transfers-spaning-intro">
           <p className="transfers-spaning-info">
-            <strong style={{ color: 'var(--text-primary)' }}>Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
+            <strong className="transfers-strong">Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
           </p>
         </div>
 
         {game.activeScoutAssignment && (
-          <div className="card-sharp transfers-state-danger" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
+          <div className="card-sharp transfers-state-danger transfers-state-message transfers-state-message--danger">
             Scouten är upptagen med en utvärdering. Klar om {game.activeScoutAssignment.roundsRemaining} omgång{game.activeScoutAssignment.roundsRemaining !== 1 ? 'ar' : ''}.
           </div>
         )}
 
         {game.activeTalentSearch && (
-          <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          <div className="card-sharp transfers-state-copper">
             Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )}
 
         {!game.activeTalentSearch && (
-          <div className="card-sharp" style={{ padding: '16px', marginBottom: 16 }}>
+          <div className="card-sharp transfers-search-form">
             <SectionLabel>Ny talangspaning</SectionLabel>
-            <div style={{ marginBottom: 12 }}>
+            <div className="transfers-form-group">
               <label className="transfers-label">Position</label>
               <select
                 value={spaningPosition}
@@ -127,7 +127,7 @@ export function ScoutingTab({
                 ))}
               </select>
             </div>
-            <div style={{ marginBottom: 12 }}>
+            <div className="transfers-form-group">
               <label className="transfers-label">Max ålder</label>
               <select
                 value={spaningMaxAge}
@@ -140,7 +140,7 @@ export function ScoutingTab({
                 <option value={40}>Alla åldrar</option>
               </select>
             </div>
-            <div style={{ marginBottom: 16 }}>
+            <div className="transfers-form-group transfers-form-group--md">
               <label className="transfers-label">Max lön (kr/mån)</label>
               <select
                 value={spaningMaxSalary}
@@ -167,7 +167,6 @@ export function ScoutingTab({
               }}
               disabled={scoutBudget < 2}
               className={`btn ${scoutBudget >= 2 ? 'btn-copper' : 'btn-ghost'} transfers-spaning-cta`}
-              style={{ cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
             >
               Starta spaning
             </button>
@@ -179,14 +178,14 @@ export function ScoutingTab({
           return (
             <div>
               <SectionLabel>Senaste spaningsrapport</SectionLabel>
-              <div className="card-sharp" style={{ overflow: 'hidden' }}>
+              <div className="card-sharp transfers-card-clipped">
                 {latestResult.players.map((suggestion, index) => {
                   const player = game.players.find(p => p.id === suggestion.playerId)
                   const club = player ? game.clubs.find(c => c.id === player.clubId) : null
                   const report = player ? (game.scoutReports ?? {})[player.id] : null
                   const isAlreadyScouted = !!report
                   return (
-                    <div key={suggestion.playerId} className="transfers-talent-row" style={{ borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', borderLeft: isAlreadyScouted ? '3px solid var(--accent)' : '3px solid transparent' }}>
+                    <div key={suggestion.playerId} className={`transfers-talent-row ${index < latestResult.players.length - 1 ? 'transfers-row-divider' : ''} ${isAlreadyScouted ? 'transfers-talent-row--scouted' : ''}`}>
                       <div className="transfers-list-content">
                         <p className="transfers-talent-name">
                           {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
@@ -202,8 +201,7 @@ export function ScoutingTab({
                           <button
                             onClick={() => player && onScout(player)}
                             disabled={!!activeAssignment || scoutBudget <= 0}
-                            className={`btn ${(!activeAssignment && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'}`}
-                            style={{ padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: (!activeAssignment && scoutBudget > 0) ? 'pointer' : 'not-allowed', opacity: (!activeAssignment && scoutBudget > 0) ? 1 : 0.5 }}
+                            className={`btn ${(!activeAssignment && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--slim`}
                           >
                             {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
                           </button>
@@ -211,8 +209,7 @@ export function ScoutingTab({
                         {windowOpen && player && managedClub && (
                           <button
                             onClick={() => onBid(suggestion.playerId)}
-                            className="btn btn-outline"
-                            style={{ padding: '5px 10px', fontSize: 12, fontWeight: 600 }}
+                            className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim"
                           >
                             Lägg bud
                           </button>
@@ -239,21 +236,20 @@ export function ScoutingTab({
         const reportEntries = [...shortlistedEntries, ...visibleRest]
         const hiddenCount = restEntries.length - visibleRest.length
         return (
-          <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+          <div className="card-stagger-2 transfers-section">
             <SectionLabel>Scoutrapporter ({allEntries.length})</SectionLabel>
-            <div className="card-sharp" style={{ overflow: 'hidden' }}>
+            <div className="card-sharp transfers-card-clipped">
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
                 const reportClub = game.clubs.find(c => c.id === report.clubId)
                 const age = getScoutReportAge(report, game.currentSeason, report.scoutedSeason)
                 const freshnessLabel = age === 'fresh' ? 'Färsk' : age === 'aging' ? 'Gammal' : 'Inaktuell'
-                const freshnessColor = age === 'fresh' ? 'var(--success)' : age === 'aging' ? 'var(--warning)' : 'var(--danger)'
+                const freshnessClass = `transfers-freshness--${age}`
                 const caRange = Math.round((100 - report.accuracy) / 10)
                 return (
                   <div
                     key={report.playerId}
-                    className="transfers-report-row"
-                    style={{ borderBottom: index < reportEntries.length - 1 ? '1px solid var(--border)' : 'none' }}
+                    className={`transfers-report-row ${index < reportEntries.length - 1 ? 'transfers-row-divider' : ''}`}
                   >
                     <div className="transfers-list-content">
                       <div className="transfers-report-header">
@@ -263,8 +259,7 @@ export function ScoutingTab({
                         <button
                           onClick={() => onToggleShortlist(report.playerId)}
                           aria-label={report.shortlisted ? 'Ta bort från favoriter' : 'Lägg till i favoriter'}
-                          className="btn-ghost"
-                          style={{ flexShrink: 0, padding: 4, display: 'flex', border: 'none', background: 'none', cursor: 'pointer' }}
+                          className="btn-ghost transfers-shortlist-btn"
                         >
                           <Star
                             size={16}
@@ -272,7 +267,7 @@ export function ScoutingTab({
                             fill={report.shortlisted ? 'var(--accent)' : 'none'}
                           />
                         </button>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: freshnessColor, flexShrink: 0 }}>
+                        <span className={`transfers-freshness ${freshnessClass}`}>
                           {freshnessLabel}
                         </span>
                       </div>
@@ -286,7 +281,7 @@ export function ScoutingTab({
                         <p className="transfers-report-notes">{report.notes}</p>
                       )}
                       {report.attributeProfile && (
-                        <div style={{ marginTop: 8 }}>
+                        <div className="transfers-attribute-profile">
                           {([
                             { label: 'Offensiv', value: report.attributeProfile.offensive },
                             { label: 'Defensiv', value: report.attributeProfile.defensive },
@@ -309,8 +304,7 @@ export function ScoutingTab({
                     {windowOpen && reportPlayer && managedClub && (
                       <button
                         onClick={() => onBid(report.playerId)}
-                        className="btn btn-outline"
-                        style={{ flexShrink: 0, padding: '5px 10px', fontSize: 12, fontWeight: 600 }}
+                        className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim"
                       >
                         Lägg bud
                       </button>
@@ -321,9 +315,8 @@ export function ScoutingTab({
             </div>
             {!reportsExpanded && hiddenCount > 0 && (
               <button
-                className="btn btn-ghost"
+                className="btn btn-ghost transfers-expand-btn"
                 onClick={() => setReportsExpanded(true)}
-                style={{ marginTop: 4, fontSize: 11, padding: '4px 10px', width: '100%' }}
               >
                 + {hiddenCount} fler rapporter
               </button>
@@ -333,9 +326,9 @@ export function ScoutingTab({
       })()}
 
       {/* ── 3. Spelare att utvärdera — grupperat per position ── */}
-      <div className="card-stagger-3" style={{ marginBottom: 24 }}>
+      <div className="card-stagger-3 transfers-section">
         <SectionLabel right={
-          <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-secondary)' : 'var(--danger)', fontWeight: 600 }}>
+          <span className={`transfers-budget-remaining ${scoutBudget > 3 ? '' : 'transfers-budget-remaining--low'}`}>
             Budget: {scoutBudget} kvar
           </span>
         }>Spelare att utvärdera</SectionLabel>
@@ -348,9 +341,9 @@ export function ScoutingTab({
           const hidden = groupPlayers.length - GROUP_CAP
 
           return (
-            <div key={pos} style={{ marginBottom: 16 }}>
+            <div key={pos} className="transfers-group">
               <SectionLabel>{positionLong(pos)}</SectionLabel>
-              <div className="card-sharp" style={{ overflow: 'hidden' }}>
+              <div className="card-sharp transfers-card-clipped">
                 {visible.map((player, index) => {
                   const report = scoutReports[player.id]
                   const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
@@ -362,43 +355,38 @@ export function ScoutingTab({
                   return (
                     <div
                       key={player.id}
-                      className={`transfers-list-row-lg${isScouted ? ' transfers-state-scouted-bg' : ''}`}
-                      style={{
-                        borderBottom: index < visible.length - 1 ? '1px solid var(--border)' : 'none',
-                        opacity: isScouted ? 0.8 : 1,
-                      }}
+                      className={`transfers-list-row-lg${isScouted ? ' transfers-state-scouted-bg transfers-player-row--scouted' : ''}${index < visible.length - 1 ? ' transfers-row-divider' : ''}`}
                     >
                       <div className="transfers-list-content">
                         <p className="transfers-list-name-lg">
                           {player.firstName} {player.lastName}
-                          {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
+                          {isStale && <span className="transfers-stale-label">Föråldrad</span>}
                           {reportAge === 'aging' && !isStale && (
-                            <span className="tag tag-outline" style={{ marginLeft: 6, color: 'var(--warning)' }}>1 säsong sedan</span>
+                            <span className="tag tag-outline transfers-aging-tag">1 säsong sedan</span>
                           )}
                         </p>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+                        <p className="transfers-player-meta">
                           {positionShort(player.position)} · {player.age} år · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
                           {isScouted
                             ? <span>Styrka ~{report!.estimatedCA}</span>
-                            : <span style={{ color: 'var(--text-muted)' }}>Styrka ej utvärderad</span>
+                            : <span className="transfers-muted">Styrka ej utvärderad</span>
                           }
                           {cost && (
-                            <span style={{ marginLeft: 6 }}>
-                              <span className={`tag ${cost === 'direkt' ? 'tag-copper' : 'tag-outline'}`} style={{ fontSize: 10 }}>
+                            <span className="transfers-cost-wrap">
+                              <span className={`tag ${cost === 'direkt' ? 'tag-copper' : 'tag-outline'} transfers-cost-tag`}>
                                 {cost}
                               </span>
                             </span>
                           )}
                         </p>
                         {isScouted && (
-                          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report!.notes}</p>
+                          <p className="transfers-player-notes">{report!.notes}</p>
                         )}
                       </div>
                       {isScouted && windowOpen && (
                         <button
                           onClick={() => onBid(player.id)}
-                          className="btn btn-outline"
-                          style={{ flexShrink: 0, padding: '5px 10px', fontSize: 12, fontWeight: 600, marginLeft: 4 }}
+                          className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim transfers-btn-offset"
                         >
                           Bud
                         </button>
@@ -407,8 +395,7 @@ export function ScoutingTab({
                         <button
                           onClick={() => canScout && onScout(player)}
                           disabled={!canScout}
-                          className={`btn ${canScout ? 'btn-outline' : 'btn-ghost'}`}
-                          style={{ flexShrink: 0, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: canScout ? 'pointer' : 'not-allowed', opacity: canScout ? 1 : 0.5 }}
+                          className={`btn ${canScout ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--slim`}
                         >
                           {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
                         </button>
@@ -419,9 +406,8 @@ export function ScoutingTab({
               </div>
               {!isExpanded && hidden > 0 && (
                 <button
-                  className="btn btn-ghost"
+                  className="btn btn-ghost transfers-expand-btn"
                   onClick={() => setExpandedGroups(prev => new Set([...prev, pos]))}
-                  style={{ marginTop: 4, fontSize: 11, padding: '4px 10px', width: '100%' }}
                 >
                   + {hidden} fler {positionLong(pos).toLowerCase()}
                 </button>

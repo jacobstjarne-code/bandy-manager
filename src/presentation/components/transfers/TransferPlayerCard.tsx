@@ -2,6 +2,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { ScoutReport } from '../../../domain/entities/Scouting'
 import { positionShort, formatValue } from '../../utils/formatters'
+import { Star } from 'lucide-react'
 
 interface TransferPlayerCardProps {
   player: Player
@@ -32,26 +33,24 @@ export function TransferPlayerCard({
 
   return (
     <div
-      className={`transfers-list-row-lg ${isScouted ? 'transfers-state-scouted-bg' : ''}`}
+      className={`transfers-list-row-lg ${isScouted ? 'transfers-state-scouted-bg' : ''} ${isLast ? '' : 'transfers-row-divider'}`}
       data-entity-id={`player:${player.id}`}
       data-entity-source="TransferPlayerCard"
-      style={{ borderBottom: isLast ? 'none' : '1px solid var(--border)' }}
     >
       <div className="transfers-list-content">
         <p className="transfers-list-name-lg">
           {player.firstName} {player.lastName}
-          {isBargain && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 700 }}>⭐ Fynd</span>}
+          {isBargain && <span className="transfers-bargain"><Star size={11} aria-hidden="true" /> Fynd</span>}
         </p>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+        <p className="transfers-player-meta">
           {positionShort(player.position)} · {player.age} år · {club?.shortName ?? '?'} · {isScouted ? `Styrka ~${estimatedCA}` : 'Styrka ?'} · MV {formatValue(player.marketValue)}
         </p>
       </div>
-      {isScouted && <span className="tag tag-copper" style={{ flexShrink: 0 }}>Scoutad</span>}
+      {isScouted && <span className="tag tag-copper transfers-no-shrink">Scoutad</span>}
       {windowOpen && (
         <button
           onClick={() => onBid(player.id)}
-          className="btn btn-outline"
-          style={{ flexShrink: 0, padding: '5px 10px', fontSize: 11, fontWeight: 600 }}
+          className="btn btn-outline transfers-btn-xs"
         >
           Bud
         </button>
@@ -60,8 +59,7 @@ export function TransferPlayerCard({
         <button
           onClick={() => !activeAssignment && scoutBudget > 0 && onScout(player)}
           disabled={!!activeAssignment || scoutBudget <= 0}
-          className="btn btn-ghost"
-          style={{ flexShrink: 0, padding: '5px 8px', fontSize: 11, opacity: !activeAssignment && scoutBudget > 0 ? 1 : 0.5 }}
+          className="btn btn-ghost transfers-btn-xs transfers-btn-xs--narrow"
         >
           Scout
         </button>

@@ -1,4 +1,5 @@
 import { Overlay } from '../primitives/Overlay'
+import { Siren, TriangleAlert } from 'lucide-react'
 
 interface WageOverrunWarningProps {
   overrunPct: number
@@ -31,35 +32,31 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
   const text = texts[seasonSeed % texts.length].replace('{PCT}', String(overrunPct))
 
   const title = variant === 'severe'
-    ? '🚨 Ordföranden vädjar'
-    : '⚠️ ' + (variant === 'notable' ? 'Ordföranden är orolig' : 'Ordföranden vill prata')
+    ? 'Ordföranden vädjar'
+    : variant === 'notable' ? 'Ordföranden är orolig' : 'Ordföranden vill prata'
 
   const confirmLabel = variant === 'light' ? 'Bekräfta köp' : 'Bekräfta köp ändå'
 
   return (
     <Overlay onClose={onCancel} ariaLabel={title} maxWidth={430} zIndex="var(--z-overlay)" backdropPadding="20px" backdropStyle={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div
-        className="transfers-modal-box"
-        style={{ border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}` }}
-      >
-        <p className="h-name" style={{ marginBottom: 14 }}>
-          {title}
+      <div className={`transfers-modal-box transfers-warning-modal transfers-warning-modal--${variant}`}>
+        <p className="h-name transfers-warning-title">
+          {variant === 'severe' ? <Siren size={18} aria-hidden="true" /> : <TriangleAlert size={18} aria-hidden="true" />}
+          <span>{title}</span>
         </p>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: 24 }}>
+        <p className="transfers-warning-quote">
           "{text}"
         </p>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="transfers-warning-actions">
           <button
             onClick={onCancel}
-            className="btn btn-outline"
-            style={{ flex: 1, padding: '12px', fontSize: 14, fontWeight: 600 }}
+            className="btn btn-outline transfers-warning-action"
           >
             Avbryt
           </button>
           <button
             onClick={onConfirm}
-            className="btn btn-copper"
-            style={{ flex: 1, padding: '12px', fontSize: 14, fontWeight: 600 }}
+            className="btn btn-copper transfers-warning-action"
           >
             {confirmLabel}
           </button>

@@ -60,34 +60,6 @@
   border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
 }
 
-/* ── Del B: Modal overlays ── */
-
-.transfers-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 430px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.transfers-modal-overlay-high {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 430px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
 .transfers-modal-box {
   background: var(--bg);
   border-radius: var(--radius-md);
@@ -95,7 +67,7 @@
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-modal);
   border: 1px solid var(--border);
 }
 
@@ -121,33 +93,6 @@
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 15px;
-}
-
-/* ── Tab bar ── */
-
-.transfers-tab-bar {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.transfers-tab-scroll {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.transfers-tab-fade {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: calc(100% - 7px);
-  background: linear-gradient(to left, var(--bg), transparent);
-  pointer-events: none;
 }
 
 /* ── Scout budget row ── */
@@ -296,35 +241,11 @@
   margin-bottom: 8px;
 }
 
-.transfers-cta-btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
 /* ── Screen root ── */
 .transfers-screen {
   padding: 0 12px;
   padding-top: 8px;
   background: var(--bg);
-}
-
-/* ── Tab button ── */
-.transfers-tab-btn {
-  padding: 6px 10px;
-  white-space: nowrap;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.transfers-tab-dot {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
 }
 
 /* ── Window status bar ── */
@@ -485,11 +406,6 @@
   font-weight: 600;
 }
 
-/* ── Modal border variant ── */
-.transfers-modal-box-bordered {
-  border: 1px solid var(--border);
-}
-
 /* ── Sell tab interest badge ── */
 /* AUDIT DEL 2 B1 (2026-08-09): degraderad till sekundär referens — IncomingBidCard
    (Marknad) är nu den primära, agerbara ytan för ett bud. Badgen är kvar (den
@@ -593,4 +509,452 @@
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* ── Sprint 1 completion: shared transfer layout vocabulary ── */
+
+.transfers-section {
+  margin-bottom: 24px;
+}
+
+.transfers-group {
+  margin-bottom: 16px;
+}
+
+.transfers-active-bids {
+  margin-bottom: 10px;
+}
+
+.transfers-card-clipped {
+  overflow: hidden;
+}
+
+.transfers-row-divider {
+  border-bottom: 1px solid var(--border);
+}
+
+.transfers-no-shrink {
+  flex-shrink: 0;
+}
+
+.transfers-btn-sm,
+.transfers-btn-xs {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.transfers-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.transfers-btn-sm--compact {
+  padding-inline: 10px;
+}
+
+.transfers-btn-sm--slim {
+  padding: 5px 10px;
+}
+
+.transfers-btn-xs {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.transfers-btn-xs--narrow {
+  padding-inline: 8px;
+}
+
+.transfers-btn-offset {
+  margin-left: 4px;
+}
+
+.transfers-bargain,
+.transfers-retirement-risk,
+.transfers-section-label,
+.transfers-interest-badge,
+.transfers-wage-warning-text {
+  display: inline-flex;
+  align-items: center;
+}
+
+.transfers-bargain {
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.transfers-player-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.transfers-player-meta--spaced {
+  margin-top: 2px;
+}
+
+.transfers-retirement-risk {
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--warm);
+}
+
+.transfers-incoming-bid {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.transfers-incoming-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.transfers-incoming-name {
+  margin-bottom: 2px;
+}
+
+.transfers-incoming-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.transfers-incoming-deadline {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.transfers-incoming-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.transfers-loyalty-tag {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.transfers-modal-shell {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.transfers-modal-header-pad {
+  padding: 16px 12px 12px;
+}
+
+.transfers-modal-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.transfers-modal-content {
+  flex: 1;
+  padding: 4px 12px 16px 10px;
+}
+
+.transfers-info-box--lg {
+  margin-bottom: 20px;
+}
+
+.transfers-info-primary {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.transfers-form-group--md {
+  margin-bottom: 16px;
+}
+
+.transfers-form-group--xl {
+  margin-bottom: 24px;
+}
+
+.transfers-contract-end {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.transfers-modal-error {
+  font-size: 13px;
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+
+.transfers-warning-modal {
+  border: 1px solid var(--warning);
+}
+
+/* adherence-semantic-key: severe wage warning */
+.transfers-warning-modal--severe {
+  border-color: var(--danger);
+}
+
+.transfers-warning-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.transfers-warning-quote {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.transfers-warning-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.transfers-warning-action {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.transfers-market-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.transfers-market-link-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.transfers-contract-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.transfers-wage-warning-text {
+  gap: 5px;
+}
+
+.transfers-spaning-intro {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.transfers-strong {
+  color: var(--text-primary);
+}
+
+.transfers-state-message {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+/* adherence-semantic-key: unavailable scout state */
+.transfers-state-message--danger {
+  color: var(--danger);
+}
+
+.transfers-search-form {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.transfers-talent-row {
+  border-left: 2px solid transparent;
+}
+
+.transfers-talent-row--scouted {
+  border-left-color: var(--accent);
+}
+
+.transfers-shortlist-btn {
+  flex-shrink: 0;
+  padding: 4px;
+  display: flex;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.transfers-shortlist-btn:focus-visible,
+.transfers-market-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.transfers-freshness {
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* adherence-semantic-key: scout-report freshness */
+.transfers-freshness--fresh { color: var(--success); }
+.transfers-freshness--aging { color: var(--warning); }
+.transfers-freshness--stale { color: var(--danger); }
+
+.transfers-attribute-profile {
+  margin-top: 8px;
+}
+
+.transfers-expand-btn {
+  margin-top: 4px;
+  padding: 4px 10px;
+  width: 100%;
+  font-size: 11px;
+}
+
+.transfers-budget-remaining {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* adherence-semantic-key: low scout budget */
+.transfers-budget-remaining--low {
+  color: var(--danger);
+}
+
+.transfers-player-row--scouted {
+  opacity: 0.8;
+}
+
+.transfers-stale-label {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--danger);
+  font-weight: 400;
+}
+
+.transfers-aging-tag {
+  margin-left: 6px;
+  color: var(--warning);
+}
+
+.transfers-muted {
+  color: var(--text-muted);
+}
+
+.transfers-cost-wrap {
+  margin-left: 6px;
+}
+
+.transfers-cost-tag {
+  font-size: 10px;
+}
+
+.transfers-player-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.transfers-scout-dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.transfers-scout-dots,
+.transfers-section-label,
+.transfers-interest-badge {
+  gap: 2px;
+}
+
+.transfers-scout-count,
+.transfers-response-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* adherence-semantic-key: low scout budget */
+.transfers-scout-count--low {
+  color: var(--danger);
+}
+
+.transfers-window-status--open { color: var(--success); }
+.transfers-window-status--winter { color: var(--accent); }
+.transfers-window-status--closed { color: var(--danger); }
+
+.transfers-section-label {
+  gap: 5px;
+}
+
+.transfers-market-empty {
+  padding: 24px 18px;
+  text-align: center;
+}
+
+.transfers-market-empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.transfers-market-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.transfers-market-empty-copy {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+.transfers-list-overflow {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+.transfers-window-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.transfers-interest-badge {
+  gap: 3px;
+}
+
+.transfers-free-empty-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }

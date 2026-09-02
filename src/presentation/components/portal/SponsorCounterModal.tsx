@@ -3,6 +3,8 @@ import { X } from 'lucide-react'
 import type { Sponsor } from '../../../domain/entities/Sponsor'
 import type { SponsorCounterResult } from '../../../domain/services/sponsorCounterService'
 import '../../styles/ledger.css'
+import '../../styles/transfers.css'
+import { Overlay } from '../primitives/Overlay'
 
 const PERF_DOTS = Array.from({ length: 8 })
 
@@ -46,24 +48,20 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
   }
 
   return (
-    <div onClick={handleDismiss} className="transfers-modal-overlay">
-      <div
-        onClick={e => e.stopPropagation()}
-        className="transfers-modal-box"
-        style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-      >
-        <div className="transfers-modal-header-sm" style={{ padding: '16px 12px 12px' }}>
+    <Overlay onClose={handleDismiss} ariaLabel={`Motbud till ${sponsor.name}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
+      <div className="transfers-modal-box transfers-modal-shell">
+        <div className="transfers-modal-header-sm transfers-modal-header-pad">
           <div>
             <h3 className="transfers-modal-title">Motbud</h3>
             <p className="transfers-modal-player-name">{sponsor.name}</p>
           </div>
           <button onClick={handleDismiss} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
-        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        <div className="transfers-modal-body">
           <div className="lf-margin" aria-hidden="true">
             {PERF_DOTS.map((_, i) => <div key={i} className="lf-perf" />)}
           </div>
-          <div style={{ flex: 1, padding: '4px 12px 16px 10px' }}>
+          <div className="transfers-modal-content">
             {result ? (
               <div className="transfers-info-box">
                 {result.outcome === 'accepted'
@@ -94,12 +92,11 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
             onClick={handleSubmit}
             disabled={!isValid}
             className="lf-stamp"
-            style={{ cursor: isValid ? 'pointer' : 'not-allowed', opacity: isValid ? 1 : 0.5 }}
           >
             Skicka →
           </button>
         )}
       </div>
-    </div>
+    </Overlay>
   )
 }

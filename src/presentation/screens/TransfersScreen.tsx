@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Lock, Circle } from 'lucide-react'
+import { Lock, Circle, Search, Flame, FileText, Frown, TrendingDown, CircleDollarSign, Send } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
@@ -209,14 +210,14 @@ export function TransfersScreen() {
 
       <div className="transfers-scout-budget">
         <span className="transfers-scout-label">Scoutbudget:</span>
-        <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center' }}>
+        <span className="transfers-scout-dots">
           {/* Q3: chrome-meter ● → Lucide Circle (solid dot) */}
           {Array.from({ length: 10 }, (_, i) => (
             <Circle key={i} size={8} strokeWidth={0} fill="currentColor"
-              style={{ color: i < scoutBudget ? 'var(--accent)' : 'var(--border)' }} />
+              color={i < scoutBudget ? 'var(--accent)' : 'var(--border)'} />
           ))}
         </span>
-        <span style={{ fontSize: 11, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
+        <span className={`transfers-scout-count ${scoutBudget > 3 ? '' : 'transfers-scout-count--low'}`}>
           {scoutBudget}/10
         </span>
       </div>
@@ -235,7 +236,7 @@ export function TransfersScreen() {
       <TabIntro entry={TAB_INTROS[activeTab]} />
 
       <div className={`card-sharp transfers-window-bar ${windowInfo.status === 'open' ? 'transfers-window-open' : windowInfo.status === 'winter' ? 'transfers-window-winter' : 'transfers-window-closed'}`}>
-        <p className="transfers-window-status" style={{ color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)' }}>
+        <p className={`transfers-window-status transfers-window-status--${windowInfo.status}`}>
           <span className={`transfers-dot ${windowInfo.status === 'open' ? 'transfers-dot-green' : windowInfo.status === 'winter' ? 'transfers-dot-yellow' : 'transfers-dot-red'}`} />
           {windowInfo.label} · <span className="transfers-window-desc">{windowInfo.description}</span>
         </p>
@@ -271,17 +272,16 @@ export function TransfersScreen() {
         const outgoing = (game.transferBids ?? []).filter(b => b.direction === 'outgoing' && b.status === 'pending')
         if (outgoing.length === 0) return null
         return (
-          <div style={{ marginBottom: 10 }}>
-            <SectionLabel>📤 Dina aktiva bud</SectionLabel>
-            <div className="card-sharp" style={{ overflow: 'hidden' }}>
+          <div className="transfers-active-bids">
+            <SectionLabel><span className="transfers-section-label"><Send size={12} aria-hidden="true" /> Dina aktiva bud</span></SectionLabel>
+            <div className="card-sharp transfers-card-clipped">
               {outgoing.map((bid, i) => {
                 const player = game.players.find(p => p.id === bid.playerId)
                 const club = game.clubs.find(c => c.id === bid.sellingClubId)
                 return (
                   <div
                     key={bid.id}
-                    className="transfers-list-row"
-                    style={{ borderBottom: i < outgoing.length - 1 ? '1px solid var(--border)' : 'none' }}
+                    className={`transfers-list-row ${i < outgoing.length - 1 ? 'transfers-row-divider' : ''}`}
                     data-entity-id={`bid:${bid.id}`}
                     data-entity-source="TransfersOutgoingBid"
                   >
@@ -292,7 +292,7 @@ export function TransfersScreen() {
                     {(() => {
                       const roundsLeft = (bid.expiresRound ?? 0) - currentRound
                       return (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
+                        <span className="transfers-response-time">
                           {roundsLeft > 0 ? `Svar om ${roundsLeft} omg.` : 'Svar väntat'}
                         </span>
                       )
@@ -312,27 +312,27 @@ export function TransfersScreen() {
           p.clubId !== 'free_agent' &&
           p.availability && p.availability !== 'unavailable'
         )
-        const groups: { key: string; label: string; emoji: string; desc: string; players: typeof availablePlayers }[] = [
-          { key: 'contract_expiring', label: 'Kontrakt går ut', emoji: '📋', desc: 'Kan värvas gratis efter säsongen. Förhandling möjlig nu.', players: availablePlayers.filter(p => p.availability === 'contract_expiring') },
-          { key: 'unhappy', label: 'Missnöjda', emoji: '😤', desc: 'Spelare som vill byta miljö. Kräver transferbud.', players: availablePlayers.filter(p => p.availability === 'unhappy') },
-          { key: 'surplus', label: 'Övertaliga', emoji: '🔻', desc: 'Klubben har för många på positionen. Kan sälja billigt.', players: availablePlayers.filter(p => p.availability === 'surplus') },
-          { key: 'financial', label: 'Ekonomiska skäl', emoji: '💰', desc: 'Klubben behöver sälja. Pruta hårt.', players: availablePlayers.filter(p => p.availability === 'financial') },
+        const groups: { key: string; label: string; icon: ReactNode; desc: string; players: typeof availablePlayers }[] = [
+          { key: 'contract_expiring', label: 'Kontrakt går ut', icon: <FileText size={12} aria-hidden="true" />, desc: 'Kan värvas gratis efter säsongen. Förhandling möjlig nu.', players: availablePlayers.filter(p => p.availability === 'contract_expiring') },
+          { key: 'unhappy', label: 'Missnöjda', icon: <Frown size={12} aria-hidden="true" />, desc: 'Spelare som vill byta miljö. Kräver transferbud.', players: availablePlayers.filter(p => p.availability === 'unhappy') },
+          { key: 'surplus', label: 'Övertaliga', icon: <TrendingDown size={12} aria-hidden="true" />, desc: 'Klubben har för många på positionen. Kan sälja billigt.', players: availablePlayers.filter(p => p.availability === 'surplus') },
+          { key: 'financial', label: 'Ekonomiska skäl', icon: <CircleDollarSign size={12} aria-hidden="true" />, desc: 'Klubben behöver sälja. Pruta hårt.', players: availablePlayers.filter(p => p.availability === 'financial') },
         ].filter(g => g.players.length > 0)
 
         return (
-          <div style={{ marginBottom: 24 }}>
+          <div className="transfers-section">
             {/* Å4 (SLUTTEST_KO.md, 2026-08-18): "Marknaden är tom" visades tidigare
                 även med tre aktiva inkommande bud synliga precis ovanför — olika
                 datakällor (köpbara spelare vs. bud på egna spelare) men samma skärm,
                 läste som självmotsägande. Gaten mot incomingBids.length istället för
                 ny text som förklarar skillnaden (Code skriver ingen ny svensk text). */}
             {groups.length === 0 && incomingBids.length === 0 ? (
-              <div className="card-sharp" style={{ padding: '24px 18px', textAlign: 'center' }}>
-                <p style={{ fontSize: 22, marginBottom: 10 }}>🔍</p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+              <div className="card-sharp transfers-market-empty">
+                <Search size={22} className="transfers-market-empty-icon" aria-hidden="true" />
+                <p className="transfers-market-empty-title">
                   Marknaden är tom just nu
                 </p>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: 16 }}>
+                <p className="transfers-market-empty-copy">
                   Spelare dyker upp när klubbar säljer. Vill du hitta egna talanger — skicka ut en scout.
                 </p>
                 <button
@@ -343,10 +343,10 @@ export function TransfersScreen() {
                 </button>
               </div>
             ) : groups.map(group => (
-              <div key={group.key} style={{ marginBottom: 16 }}>
-                <SectionLabel>{group.emoji} {group.label}</SectionLabel>
+              <div key={group.key} className="transfers-group">
+                <SectionLabel><span className="transfers-section-label">{group.icon} {group.label}</span></SectionLabel>
                 <p className="transfers-group-desc">{group.desc}</p>
-                <div className="card-sharp" style={{ overflow: 'hidden' }}>
+                <div className="card-sharp transfers-card-clipped">
                   {group.players.slice(0, 10).map((player, i) => (
                     <TransferPlayerCard
                       key={player.id}
@@ -365,10 +365,7 @@ export function TransfersScreen() {
                       över 10 spelare utan att visa att det fanns fler — samma
                       spillmönster som Trupp-chipsen (VISUELL_AUDIT punkt 3, +N-pill). */}
                   {group.players.length > 10 && (
-                    <div style={{
-                      padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)',
-                      textAlign: 'center', fontWeight: 600,
-                    }}>
+                    <div className="transfers-list-overflow">
                       +{group.players.length - 10} fler spelare
                     </div>
                   )}
@@ -421,14 +418,14 @@ export function TransfersScreen() {
 
       {/* Sell tab */}
       {activeTab === 'sell' && (
-        <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+        <div className="card-stagger-2 transfers-section">
           <SectionLabel>Sätt spelare till salu</SectionLabel>
           {!windowOpen && (
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
+            <p className="transfers-window-note">Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
           )}
-          <div className="card-sharp" style={{ overflow: 'hidden' }}>
+          <div className="card-sharp transfers-card-clipped">
             {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
-              <div key={player.id} className="transfers-list-row-lg" style={{ borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div key={player.id} className={`transfers-list-row-lg ${index < managedClubPlayers.length - 1 ? 'transfers-row-divider' : ''}`}>
                 <div className="transfers-list-content">
                   <p className="transfers-list-name-lg">
                     {player.firstName} {player.lastName}
@@ -438,7 +435,7 @@ export function TransfersScreen() {
                     {(() => {
                       const bidsForPlayer = (game.transferBids ?? []).filter(b => b.playerId === player.id && b.direction === 'incoming')
                       return bidsForPlayer.length > 0
-                        ? <span className="transfers-interest-badge">🔥 {bidsForPlayer.length} klubb{bidsForPlayer.length > 1 ? 'ar' : ''} intresserad{bidsForPlayer.length > 1 ? 'e' : ''}</span>
+                        ? <span className="transfers-interest-badge"><Flame size={11} aria-hidden="true" /> {bidsForPlayer.length} klubb{bidsForPlayer.length > 1 ? 'ar' : ''} intresserad{bidsForPlayer.length > 1 ? 'e' : ''}</span>
                         : null
                     })()}
                   </p>
@@ -451,8 +448,7 @@ export function TransfersScreen() {
                   <button
                     onClick={() => windowOpen && handleListForSale(player.id)}
                     disabled={!windowOpen}
-                    className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'}`}
-                    style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+                    className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--compact`}
                   >
                     Till salu
                   </button>

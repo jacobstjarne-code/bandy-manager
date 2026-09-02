@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, ArrowRight } from 'lucide-react'
+import { X, ArrowRight, TriangleAlert } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { positionShort, formatValue, formatSalary, formatContractUntil } from '../../utils/formatters'
@@ -105,7 +105,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
   }
 
   return (
-    <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+    <div className="card-stagger-2 transfers-section">
       {renewConfirmText && (
         <div className="transfers-state-success-strong transfers-renew-confirm">
           <p className="transfers-renew-confirm-text">{renewConfirmText}</p>
@@ -113,7 +113,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
       )}
       {wageWarning && (
         <div className="transfers-state-copper-strong transfers-wage-warning">
-          <p className="transfers-wage-warning-text">⚠️ {wageWarning}</p>
+          <p className="transfers-wage-warning-text"><TriangleAlert size={14} aria-hidden="true" />{wageWarning}</p>
           <button onClick={() => setWageWarning(null)} className="transfers-wage-warning-close"><X size={12} /></button>
         </div>
       )}
@@ -121,24 +121,19 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
           som bara är permanent i navet när fönstret är öppet). */}
       <button
         onClick={() => navigate('/game/transfers')}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
-          padding: '10px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-          color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-        }}
+        className="transfers-market-link"
       >
         <span>Transfermarknaden — marknad, scouting, fria, sälj</span>
-        <ArrowRight size={15} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+        <ArrowRight size={15} className="transfers-market-link-icon" />
       </button>
 
       <SectionLabel>Utgående kontrakt</SectionLabel>
       {expiringPlayers.length === 0 ? (
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Inga kontrakt utgår snart.</p>
+        <p className="transfers-contract-empty">Inga kontrakt utgår snart.</p>
       ) : (
-        <div className="card-sharp" style={{ overflow: 'hidden' }}>
+        <div className="card-sharp transfers-card-clipped">
           {expiringPlayers.map((player, index) => (
-            <div key={player.id} className="transfers-list-row" style={{ borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <div key={player.id} className={`transfers-list-row ${index < expiringPlayers.length - 1 ? 'transfers-row-divider' : ''}`}>
               <div className="transfers-list-content">
                 <p className="transfers-list-name">
                   {player.firstName} {player.lastName}
@@ -147,7 +142,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
                   {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatSalary(player.salary)} · {formatContractUntil(player.contractUntilSeason)}
                 </p>
               </div>
-              <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>
+              <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline transfers-btn-sm transfers-btn-sm--compact">
                 Förläng
               </button>
             </div>
