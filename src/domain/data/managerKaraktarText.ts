@@ -82,12 +82,30 @@ export const BURNOUT_MARK = {
  */
 export const BURNOUT_MARK_RELAPSE = {
   quotesByZone: {
-    markbar: [] as string[],
-    hog: [] as string[],
+    markbar: [
+      'Jag känner igen det här nu. Det börjar som förra gången.',
+      'Samma tyngd som i fjol, samma tid på säsongen. Jag vet vart det bär.',
+      'De sena kvällarna igen. Jag har sett vad de leder till.',
+      'Det är inte nytt längre. Det är det som oroar mig.',
+      'Kroppen minns förra året innan huvudet hinner med.',
+    ],
+    hog: [
+      'Här är jag igen. Samma vägg som förra säsongen.',
+      'Jag lovade mig själv att inte hamna här en gång till. Ändå.',
+      'Förra gången höll jag ut. Jag vet inte om det gör det lättare eller inte.',
+      'Det är andra gången nu. Man tror man ska lära sig. Man gör inte det.',
+      'Folk på Konsum frågar igen. De frågade förra vintern också.',
+    ],
   },
   helpersByZone: {
-    markbar: [] as string[],
-    hog: [] as string[],
+    markbar: [
+      'Det här kände du förra året. Ta paus tidigare den här gången.',
+      'Du vet vart det leder. Bryt mönstret medan det går.',
+    ],
+    hog: [
+      'Samma punkt som i fjol. Förra gången höll det — men inte gratis.',
+      'Det gick en gång. Att lita på att det går igen är ingen vila.',
+    ],
   },
 }
 
