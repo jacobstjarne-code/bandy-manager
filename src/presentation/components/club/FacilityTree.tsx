@@ -157,6 +157,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
 
   return (
     <div
+      data-facility-node-id={def.id}
       style={{
         position: 'relative',
         background: selected ? 'color-mix(in srgb, var(--accent) 8%, var(--bg-surface))' : bg,
@@ -170,6 +171,14 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
         outline: selected ? '1px solid var(--accent)' : undefined,
       }}
       onClick={clickable ? () => onSelect?.(def.id) : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect?.(def.id)
+        }
+      } : undefined}
     >
       {isHall && (
         <div style={{
