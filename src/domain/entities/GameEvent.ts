@@ -32,6 +32,7 @@ export type GameEventType =
   | 'economicStress'
   | 'mecenatEvent'
   | 'academyEvent'
+  | 'academyDecision'
   | 'playoffEvent'
   | 'bandyLetter'
   | 'criticalEconomy'
@@ -269,6 +270,7 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'transferBidReceived':
     case 'contractRequest':
     case 'academyEvent':
+    case 'academyDecision':
     case 'playoffEvent':
     // O4 (DOM_BURNOUT_2026-08-17.md): "Aldrig pivotal" — burnoutRelief är en
     // återkommande, sjukdomsartad situation, inte ett unikt ödesögonblick.
@@ -302,6 +304,12 @@ export interface GameEvent {
   // resolveringstillfället — den filtreringen kan ge ett annat, större urval
   // än vad kortet faktiskt visade spelaren.
   selectedPlayerIds?: string[]
+  /**
+   * C-T6: the three deterministic P19 candidates named by the annual
+   * bandy-school decision. The payload travels with the pending event so the
+   * resolver applies exactly the players that were offered, never a re-roll.
+   */
+  schoolIntakeCandidates?: import('./Academy').YouthPlayer[]
   relatedClubId?: string
   relatedBidId?: string
   relatedFixtureId?: string

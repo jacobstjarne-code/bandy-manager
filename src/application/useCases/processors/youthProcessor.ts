@@ -7,6 +7,7 @@ import { simulateYouthMatch } from '../../../domain/services/academyService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { academyBreakthroughQuote } from '../../../domain/data/academyBreakthroughText'
+import { generateAcademySchoolPartnershipEvent } from '../../../domain/services/academySchoolPartnershipService'
 
 export interface YouthProcessorResult {
   updatedYouthTeam: YouthTeam | undefined
@@ -151,6 +152,13 @@ export function processYouth(
       })
     }
   }
+
+  const academySchoolPartnership = generateAcademySchoolPartnershipEvent(
+    game,
+    nextMatchday,
+    baseSeed + 61_006,
+  )
+  if (academySchoolPartnership) gameEvents.push(academySchoolPartnership)
 
   // ── WEAK-017: Breakthrough event — young player debut + goal ─────────────────
   //

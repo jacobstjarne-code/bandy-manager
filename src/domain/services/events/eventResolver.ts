@@ -1895,6 +1895,31 @@ export function resolveEvent(
     }
   }
 
+  // C-T6: add exactly the bandy-school candidates carried by the decision.
+  // The two-player option is resolved from the frozen payload, not by
+  // regenerating prospects from the current P19 state.
+  if (eventId.startsWith('event_academy_school_partnership_') && updatedGame.youthTeam) {
+    const candidates = event.schoolIntakeCandidates ?? []
+    const selected = choiceId === 'take_all'
+      ? candidates
+      : choiceId === 'take_best'
+        ? [...candidates]
+            .sort((a, b) => b.potentialAbility - a.potentialAbility || b.currentAbility - a.currentAbility)
+            .slice(0, 2)
+        : []
+    const existingIds = new Set(updatedGame.youthTeam.players.map(player => player.id))
+    updatedGame = {
+      ...updatedGame,
+      youthTeam: {
+        ...updatedGame.youthTeam,
+        players: [
+          ...updatedGame.youthTeam.players,
+          ...selected.filter(player => !existingIds.has(player.id)),
+        ],
+      },
+    }
+  }
+
   // Special: pressConference — clear pendingPressConference + DEV-013 refusal consequence
   if (event.type === 'pressConference') {
     // Clear pendingPressConference (WEAK-002)

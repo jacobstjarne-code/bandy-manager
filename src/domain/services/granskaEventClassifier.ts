@@ -31,6 +31,7 @@ export const CRITICAL_GRANSKA_TYPES = new Set<GameEventType>([
   'riskySponsorOffer',
   'bidWar',
   'communityEvent',
+  'academyDecision',
   // DOM_BURNOUT_TAK_2026-09-02 — samma klass som mecenatWithdrawal/varsel/
   // detOmojligaValet ovan: en riktig, viktig händelse (brytpunkt-mode,
   // irreversibla val, permanent ärr) som ändå defaultar till EventPriority

@@ -149,7 +149,7 @@ export function getEffectiveWhyNowLine(event: { type: string; whyNow?: Pick<Cont
 }
 
 // Exporterad (A-M3, SEXSÄSONGSAUDITEN 2026-08-26) så eventTypeLabels.test.ts
-// kan iterera EXAKT samma 49 id:n utan att skriva en tredje, driftbenägen
+// kan iterera EXAKT samma id:n utan att skriva en tredje, driftbenägen
 // kopia av listan — en sanning, ett ställe (Port 4/OPUS-regel #4).
 export const GAME_EVENT_TYPE_IDS = [
   'transferBidReceived', 'contractRequest', 'playerUnhappy', 'starPerformance', 'sponsorOffer',
@@ -157,7 +157,7 @@ export const GAME_EVENT_TYPE_IDS = [
   'politicianEvent', 'hallDebate', 'hallProcess', 'licenseHandlingsplan', 'kommunMote', 'gentjanst',
   'icaMaxiEvent', 'patronInfluence', 'spoksponsor', 'detOmojligaValet', 'varsel', 'playerMediaComment',
   'playerPraise', 'captainSpeech', 'playerArc', 'supporterEvent', 'mecenatInteraction',
-  'journalistExclusive', 'retirementCeremony', 'economicStress', 'mecenatEvent', 'academyEvent',
+  'journalistExclusive', 'retirementCeremony', 'economicStress', 'mecenatEvent', 'academyEvent', 'academyDecision',
   'playoffEvent', 'bandyLetter', 'criticalEconomy', 'schoolAssignment', 'mecenatDinner',
   'refereeMeeting', 'riskySponsorOffer', 'mecenatWithdrawal', 'patronWithdrawal',
   'fanLetter', 'opponentQuote', 'csPress', 'playThroughInjury', 'seasonGoalHalfway',
@@ -471,6 +471,15 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     semanticKey: 'academyEvent vid resolution; instans-id event_breakthrough_{playerId}',
     recallSurface: 'Före svar visas kortet under Granska → Spelare med den berörda spelarens tagg; debutmålet finns kvar i matchrapport/statistik. Efter kvittering finns ingen separat permanent spelarvänd beslutshistorik eftersom ingen ny effekt har valts; resolvedChoices och narrativeBeatLog är interna bärare. Ett rollover-default syns i Inkorg.',
     notes: 'Verifierad och rättad 2026-09-02 mot youthProcessor.ts, eventResolver.ts, granskaEventClassifier.ts, GranskaSpelare.tsx, eventQueueService.ts och deferredRolloverService.ts. HIGH 8 hade redan gjort id:t stabilt, krävt verklig förstamatch och avgränsat till egna akademiprodukter. O11-spårningen hittade att typen routes till spelarytan men saknade relatedPlayerId, så den namngivna spelaren inte kunde visas som tagg; generatorn bär nu samma id som premissen. Kvitteringen är avsiktligt noOp: texten beskriver bara redan inträffad matchdata och lovar ingen ny mekanisk belöning. Ingen separat source-/säsongscooldown finns, så cooldownSeasons lämnas medvetet undefined.',
+  },
+  academyDecision: {
+    trigger: 'På global matchdag 16 skapar generateAcademySchoolPartnershipEvent ett säsongsbundet beslut när den avancerade bandyskolan är aktiv, YouthTeam finns och event_academy_school_partnership_{season} saknas i pendingEvents, deferredDecisions och resolvedEventIds. Tre deterministiska YouthPlayer-kandidater genereras genom den befintliga academyService-pipelinen och fryses på eventet.',
+    stateEffect: `take_all lägger eventets tre frysta kandidater i YouthTeam och drar 8 000 kr. take_best rangordnar samma tre på potentialAbility och därefter currentAbility, lägger de två högsta i YouthTeam och drar 5 000 kr. send_neighbor lägger ingen kandidat i YouthTeam, ger 8 000 kr och sänker communityStanding med 5. Ekonomin går genom den gemensamma resolverns applyFinanceChange/financeLog-väg; kandidat-id:n dedupliceras mot befintligt YouthTeam.`,
+    systems: ['advanced bandySchool som trigger', 'canonical YouthTeam/P19-simulering och Akademi-flik', 'klubbekonomi och financeLog', 'communityStanding', 'pending/deferred/resolved-deduplicering'],
+    lifespan: 'Högst ett beslut per säsong genom säsongsbundet event-id. Antagna spelare följer ordinarie YouthTeam-carry-over, utveckling och åldersgräns och lämnar P19 vid 20; kostnaden eller ersättningen tas exakt när beslutet löses den säsongen. Ett obesvarat kort saknar noOp och rinner därför ut uttryckligt vid rollover.',
+    semanticKey: 'academyDecision vid resolution; instans-id event_academy_school_partnership_{season}',
+    recallSurface: 'Före svar visas det som ett månadsklassat dilemma under Granska. Efter antagning syns exakt de valda kandidaterna i Akademi-flikens P19-trupp; alla tre utfallens pengar syns i financeLog och grannklubbsvalets CS-fall på Ortens ordinarie ytor. resolvedChoices, narrativeBeatLog och eventLedger bär det kanoniska beslutsspåret.',
+    notes: 'C-T6, byggd 2026-09-02. Den tidigare bandySchool-aktiveringen höjde bara Club.youthRecruitment i det separata säsongsintaget; YouthTeam, Akademi-fliken och P19-simuleringen läste aldrig värdet. Lösningen kopplar skolan direkt till den befintliga YouthTeam-pipelinen och bär erbjudna kandidater på GameEvent så resolvern aldrig gör ett nytt urval. academyDecision är en egen eventkategori eftersom detta är ett flervalsdilemma med verklig trupp-/pengaeffekt; academyEvent förblir den rena enknappsnotisen om ett redan inträffat debutmål. Ingen separat skolbank eller sekundär akademitrupp skapades.',
   },
   playoffEvent: {
     trigger: 'Tre fasbundna kort. QF skapas av handlePlayoffStart när den kanoniska tabellen placerar managed club topp 8 och playoff_qf_{season} saknas i pending, deferred och resolved. SF/final skapas av processPlayoffRound när hela föregående fasen är avgjord, managed club faktiskt finns i den nya bracketen och respektive playoff_sf_/playoff_final_{season}-id saknas i alla tre köminnen. QF-textens första-året-kontrast läser verklig seasonSummaries.playoffResult; SF/final väljer en befintlig aktiv mecenat/supporterledare eller ordförande-fallback.',

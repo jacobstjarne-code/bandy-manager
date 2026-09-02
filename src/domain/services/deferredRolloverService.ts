@@ -84,6 +84,8 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   hallProcess: 'decline',
   politicianEvent: 'decline',
   academyEvent: 'decline',
+  // Alla tre svar är verkliga trupp-/ekonomival; inget får väljas åt spelaren.
+  academyDecision: 'expire',
   // ANSPRÅK 4, spak 3: eventet bär ett uttryckligt 'decline'-val med
   // effect.type === 'noOp' ("låt den stå kvar sliten"). Ett obesvarat
   // förnyelsebeslut ska landa där, inte rinna ut tyst — utfallet är ändå

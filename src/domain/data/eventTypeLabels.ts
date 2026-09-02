@@ -44,6 +44,7 @@ export const EVENT_TYPE_LABELS: Record<GameEventType, EventTypeLabel> = {
   captainSpeech:        { icon: 'Ⓒ', label: 'Kaptenen' },
   bandyLetter:          { icon: '✉️', label: 'Insändare' },
   academyEvent:         { icon: '🎓', label: 'Akademin' },
+  academyDecision:      { icon: '🎓', label: 'Akademin' },
   refereeMeeting:       { icon: '⚖️', label: 'Domaren' },
   journalistExclusive:  { icon: '📰', label: 'Lokaltidningen' },
   politicianEvent:      { icon: '🏛️', label: 'Kommunen' },

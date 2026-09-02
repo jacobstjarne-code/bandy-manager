@@ -70,6 +70,7 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   politicianEvent: 'month',
   gentjanst: 'month',
   academyEvent: 'month',
+  academyDecision: 'month',
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
   // Domen skriver "'denna månad'-nivå för normalt, 'måste'-nivå bara om CS är
   // på väg under en uttågströskel" — den villkorade halvan är INTE byggd, och
@@ -198,6 +199,7 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   kommunMote: 'dilemma',
   politicianEvent: 'dilemma',
   gentjanst: 'dilemma',
+  academyDecision: 'dilemma',
   economicStress: 'dilemma',
   playThroughInjury: 'dilemma',
   burnoutRelief: 'dilemma',
