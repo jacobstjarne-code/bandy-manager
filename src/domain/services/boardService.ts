@@ -4,6 +4,7 @@ import { ordinal } from '../utils/numberFormat'
 import type { Club } from '../entities/Club'
 import { boardPatienceZoneFromScore } from './portal/boardPatienceZone'
 import type { SeasonBoardTruth } from '../entities/SeasonSummary'
+import { BOARD_ESCALATION_TEXT } from '../data/boardEscalationText'
 
 // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): Survive-raderna nedan i
 // BOARD_EXPECTATION_TEXT/BOARD_EXPECTATION_CEREMONIAL är '[Opus]'-platshållare.
@@ -726,26 +727,39 @@ export interface BoardEscalationState {
 
 /**
  * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
+ * Samma tröskel som tröghet (TROGHET_THRESHOLD=2) — 'second' vid EXAKT 2,
+ * 'thirdPlus' därutöver. null under tröskeln: en klubb som möter förväntan
+ * får ingen eskaleringsrad (domens SKYDDAT — ingen påhittad oro).
+ *
+ * Delad av getBoardEscalationLevel (game-läsning, för framtida konsumenter)
+ * och generatePreSeasonMessage (läser sitt eget nyss uträknade
+ * newConsecutiveExpectationMisses direkt — se den funktionen för varför).
+ */
+function classifyEscalationLevel(misses: number): 'second' | 'thirdPlus' | null {
+  if (misses < TROGHET_THRESHOLD) return null
+  return misses === TROGHET_THRESHOLD ? 'second' : 'thirdPlus'
+}
+
+/**
  * consecutiveExpectationMisses (skriven varje säsong av recalibrateExpectation-
  * Ladder ovan) läses idag BARA av tröghets-demoteringen — spårad, aldrig
  * talad. Denna funktion är en ren läsning av samma räknare för en berättande
  * yta, INTE en ny beräkning och INTE en utökning av tröghet-domen (den
  * ÄNDRAR förväntan, denna BERÄTTAR förloppet — samma räknare, olika syfte).
  *
- * Samma tröskel som tröghet (TROGHET_THRESHOLD=2) — 'second' vid EXAKT 2,
- * 'thirdPlus' därutöver. null under tröskeln: en klubb som möter förväntan
- * får ingen eskaleringsrad (domens SKYDDAT — ingen påhittad oro).
- *
- * Platsering (årsbok/board-möte/kurv-bildtext) och den talade textens
- * innehåll är INTE avgjort här — se domens ÄGARSKAP. Denna funktion levererar
- * bara strukturen ett framtida konsumentval bygger på.
+ * Wirad i generatePreSeasonMessage (styrelsens röst vid förväntanssättningen,
+ * Jacobs placeringsdom 2026-09-02) — den läser sitt eget färska
+ * newConsecutiveExpectationMisses istället för att anropa denna funktion,
+ * så den slipper ta emot game som parameter. Denna funktion finns kvar för
+ * konsumenter som redan har ett SaveGame till hands (t.ex. HistoryScreen).
  */
 export function getBoardEscalationLevel(game: SaveGame): BoardEscalationState | null {
   const club = game.clubs.find(c => c.id === game.managedClubId)
   const misses = club?.consecutiveExpectationMisses ?? 0
-  if (!club || misses < TROGHET_THRESHOLD) return null
+  const level = club ? classifyEscalationLevel(misses) : null
+  if (!club || !level) return null
   return {
-    level: misses === TROGHET_THRESHOLD ? 'second' : 'thirdPlus',
+    level,
     consecutiveExpectationMisses: misses,
     expectationLabel: BOARD_EXPECTATION_TEXT[club.boardExpectation],
   }
@@ -778,6 +792,11 @@ export function generatePreSeasonMessage(
     body += `Förväntningarna har justerats: vi förväntar oss nu att ${expectationText[newExpectation]}. `
   } else {
     body += `Målsättningen kvarstår: ${expectationText[newExpectation]}. `
+  }
+
+  const escalationLevel = classifyEscalationLevel(newConsecutiveExpectationMisses)
+  if (escalationLevel) {
+    body += `${BOARD_ESCALATION_TEXT[escalationLevel]} `
   }
 
   if (financialChange > 50000) {

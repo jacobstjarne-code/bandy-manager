@@ -109,14 +109,6 @@ const ALLOWLIST: AllowlistEntry[] = [
     owner: 'Code',
     since: '2026-08-31',
   },
-  {
-    file: 'src/domain/data/boardEscalationText.ts',
-    maxAllowed: 2,
-    reason: 'DOM_BOARDRELATION_BAGE_2026-09-02.md steg 3 — de två eskaleringsraderna (second/thirdPlus) väntar Opus text, men ÄNNU INTE wirade till någon skärm (placeringsdomen — årsbok/board-möte/kurv-bildtext — är uttryckligen Opus/Jacobs nästa steg). Ingen spelare kan nå literalen just nu.',
-    reachable: false,
-    owner: 'Opus',
-    since: '2026-09-02',
-  },
 ]
 
 function walk(dir: string, out: string[]): void {

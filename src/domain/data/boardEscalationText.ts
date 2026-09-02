@@ -2,20 +2,11 @@
 // Callback-principen (samma som BURNOUT_MARK_RELAPSE, managerKaraktarText.ts):
 // texten VET att det hänt förr, "andra året"/"tredje året", inte bara nuläget.
 //
-// getBoardEscalationLevel() (boardService.ts) avgör NÄR (level: 'second' |
-// 'thirdPlus'), denna pool bär bara TEXTEN. Opus skriver mot den byggda
-// strukturen — se domens startförslag:
-//   second:    "Andra året i rad under vad de hoppats. Styrelsen säger det
-//               inte rakt ut, men mötena är kortare nu."
-//   thirdPlus: "Tredje året topp-fyra, aldrig guld. De har slutat säga det
-//               högt. Du hör det ändå."
-//
-// ÄNNU INTE WIRAD till en yta — placeringsdomen (årsbok/board-möte/kurv-
-// bildtext) är uttryckligen Opus/Jacobs nästa steg, inte avgjord här. Se
-// tests/grind/opusPlaceholderGate.ts:s ALLOWLIST (reachable:false, samma
-// motivering) tills en konsument finns och detta antingen fylls eller flyttas
-// dit texten faktiskt behövs.
+// Wirad i generatePreSeasonMessage (boardService.ts) — Jacobs placeringsdom
+// 2026-09-02: styrelsens röst vid förväntanssättningen, inte årsboken. Raden
+// fogas till försäsongsmeddelandet när det nyss uträknade
+// newConsecutiveExpectationMisses klassas som 'second'/'thirdPlus'.
 export const BOARD_ESCALATION_TEXT: Record<'second' | 'thirdPlus', string> = {
-  second: '[Opus]',
-  thirdPlus: '[Opus]',
+  second: 'Andra året i rad under vad de hoppats. Ingen säger det rakt ut, men mötena blir kortare och frågorna rakare.',
+  thirdPlus: 'Tredje året nu. De har slutat prata om vad ni ska bli, och börjat prata om vad ni är. Du hör skillnaden.',
 }
