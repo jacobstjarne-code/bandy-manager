@@ -2,7 +2,7 @@
  * INNEHÅLLSKONTRAKTET (O11, SLUTTEST_KO.md) — `docs/DOM_INNEHALLSKONTRAKTET_2026-08-17.md`.
  *
  * Rapportera-först besvarad, 2026-08-20: NEJ, inget enat register finns.
- * Fyra separata källor, ingen av dem en tabell: `GameEventType` (50 värden,
+ * Fyra separata källor, ingen av dem en tabell: `GameEventType` (51 värden,
  * GameEvent.ts — 48 vid O11:s ursprungsleverans, `burnoutRelief` tillagd
  * 2026-08-23 samma pass som täckningsgrinden nedan byggdes), `StorylineType`
  * (17, Narrative.ts), `ArcType` (6, Narrative.ts — 8 vid O11:s leverans,
@@ -10,23 +10,18 @@
  * 2026-09-02, se BACKLOG.md
  * "Två läsare, en sanning"), `PORTAL_BEATS` (17 id:n, portalBeats.ts — den
  * enda som redan ÄR en array, inte bara en typ).
- * 50+17+6+17 = 90 distinkta narrativa former.
+ * 51+17+6+17 = 91 distinkta narrativa former.
  * Samma arbete som `U5`:s semanticKey-kartläggning, byggda ihop per domens
  * egen instruktion ("gör dem tillsammans, inte två gånger") — U5 var klar
  * (`4e341891`) innan detta pass startade.
  *
- * TÄCKNINGSLÄGE (ärligt, inte optimistiskt, uppdaterat 2026-09-02): 90 rader,
- * en per nuvarande canonical
- * id ur de fyra källorna — registret är strukturellt komplett och
- * användbart som HÄNGSTABELL nu (test: contentContract.test.ts). 84 rader
- * har alla sex fälten ifyllda (`filled: true`) — spårade under detta och
- * tidigare pass i samma session (domens motiverande felfall, två pivotal
- * beats, O2-dominansrevisionens granskade val). Resten (6) är
- * `filled: false`, TODO-rader — antalet ratchet:as nu av
- * `scripts/content-contract-guard.ts` (kan inte öka, se ENFORCEMENT nedan).
- * Att fylla i alla 90 korrekt kräver att varje källa läses individuellt —
- * inte något att gissa sig igenom för hastighetens skull, exakt det
- * kontraktet finns för att förhindra.
+ * TÄCKNINGSLÄGE (uppdaterat 2026-09-02): 91 rader, en per nuvarande canonical
+ * id ur de fyra källorna. Samtliga 91 har alla sex fälten verifierade mot
+ * producent, state-effekt och återkallningsyta (`filled: true`); inga
+ * TODO-rader återstår. `contentContract.test.ts` låser mängd och struktur,
+ * medan `scripts/content-contract-guard.ts` ratchet:ar TODO-antalet vid noll.
+ * Varje rad fylldes genom individuell källäsning, inte genom inferens från
+ * typnamn eller blotta call-sites — samma integrationsdjup som INT-2 krävde.
  *
  * ENFORCEMENT — O11 (2026-08-23, utökad 2026-08-24). Tre mekanismer, INTE
  * `scripts/eventGuardInstrument.ts` (den simulerar spelat state och fångar
