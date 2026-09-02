@@ -67,12 +67,12 @@ function nextManagedFixture(game: SaveGame) {
 
 const MAX_STEPS = 2000
 
-function advanceFull(game: SaveGame): SaveGame | null {
+function advanceFull(game: SaveGame): SaveGame | undefined {
   let g = game
   for (let i = 0; i < MAX_STEPS; i++) {
     // Resolve pending screen
     const r = autoResolvePendingScreen(g)
-    if (r.unresolvable) return null
+    if (r.unresolvable) return undefined
     g = r.game
 
     // Auto-resolve pending events
@@ -85,17 +85,17 @@ function advanceFull(game: SaveGame): SaveGame | null {
     }
     // Auto-resolve weekly decision
     if (g.pendingWeeklyDecision) {
-      g = { ...g, pendingWeeklyDecision: null }
+      g = { ...g, pendingWeeklyDecision: undefined }
       continue
     }
     // Auto-resolve scene
     if (g.pendingScene) {
-      g = { ...g, pendingScene: null }
+      g = { ...g, pendingScene: undefined }
       continue
     }
     return g
   }
-  return null
+  return undefined
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────

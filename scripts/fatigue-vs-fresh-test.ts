@@ -160,7 +160,7 @@ for (let i = 0; i < N; i++) {
     const gameBfresh = restoreFitness(gameAtM1)
     // Inject m1's completed result (same outcome as A) so standings/fixtures align,
     // then advance AI fixtures at m1Matchday
-    let gameB = {
+    let gameB: SaveGame = {
       ...gameBfresh,
       fixtures: gameBfresh.fixtures.map(f => f.id === leagueFixtures[0].id ? { ...m1A } : f),
       managedClubPendingLineup: undefined,

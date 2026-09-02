@@ -8,6 +8,7 @@ import { simulateFirstHalf, simulateSecondHalf } from '../src/domain/services/ma
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
+import type { Tactic } from '../src/domain/entities/Club'
 
 // ── Player/squad factory (same as calibrate.ts) ──────────────────────────────
 
@@ -32,15 +33,15 @@ function makePlayer(clubId: string, position: PlayerPosition, ca = 55): Player {
     clubId, academyClubId: undefined, isHomegrown: false,
     position, archetype: isGK ? PlayerArchetype.ReflexGoalkeeper : PlayerArchetype.TwoWaySkater,
     salary: 0, contractUntilSeason: 2, marketValue: 0,
-    morale: 70, form: 70, fitness: 85, sharpness: 75,
+    morale: 70, form: 70, fitness: 85, sharpness: 75, seasonForm: 70,
     isFullTimePro: false,
     currentAbility: ca,
-    potentialAbility: ca,
+    potentialAbility: ca, developmentRate: 50, injuryProneness: 50, discipline: 70,
     attributes: {
       skating: ca, acceleration: ca, stamina: ca, ballControl: ca,
       passing: ca, shooting: ca, dribbling: ca, vision: ca,
       decisions: ca, workRate: ca, positioning: ca, defending: ca,
-      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20,
+      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20, cornerRecovery: ca,
     },
     isInjured: false, injuryDaysRemaining: 0,
     suspensionGamesRemaining: 0,
@@ -84,7 +85,7 @@ const defaultTactic = {
   cornerStrategy: 'standard' as const,
   passingRisk: 'safe' as const,
   penaltyKillStyle: 'active' as const,
-}
+} as unknown as Tactic
 
 // ── Counters ──────────────────────────────────────────────────────────────────
 
@@ -120,7 +121,6 @@ let sh2ShotsTrailer = 0
 
 const SEEDS = 10
 const MATCHES_PER_SEED = 200
-const TOTAL = SEEDS * MATCHES_PER_SEED
 
 for (let seed = 0; seed < SEEDS; seed++) {
   for (let m = 0; m < MATCHES_PER_SEED; m++) {
@@ -143,7 +143,7 @@ for (let seed = 0; seed < SEEDS; seed++) {
     }
 
     const fixture: Fixture = {
-      id: `fix${matchIdx}`,
+      id: `fix${matchIdx}`, leagueId: 'htlead',
       homeClubId: homeId, awayClubId: awayId,
       season: 1, matchday: m + 1, roundNumber: m + 1,
       status: FixtureStatus.Scheduled,
@@ -218,7 +218,6 @@ for (let seed = 0; seed < SEEDS; seed++) {
     const trailerHtScore = leaderIsHome ? htAway : htHome
 
     const leaderClubId = leaderIsHome ? homeId : awayId
-    const trailerClubId = leaderIsHome ? awayId : homeId
 
     // Leader outcome
     if (leaderFinalScore > trailerFinalScore) {

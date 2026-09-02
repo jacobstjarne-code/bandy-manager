@@ -283,7 +283,6 @@ const regularWithHt = regular.filter(m => m.halfTimeHome !== m.halfTimeAway)
 for (const ct of comebackTargets) {
   const trailing = regularWithHt.filter(m => {
     const htTrailingTeam = m.halfTimeHome < m.halfTimeAway ? 'home' : 'away'
-    const deficit = Math.abs(m.halfTimeHome - m.halfTimeAway)
     // Check correct deficit bucket
     if (!ct.deficit(m.halfTimeHome, m.halfTimeAway)) return false
     // Did trailing team come back?
@@ -691,18 +690,16 @@ console.log(DIV)
     let clubsUnder100k = 0, clubsOver2M = 0
     const seasonCount = Math.max(...seasonsWithEcon.map(s => s.season))
 
-    for (const [key, seasons] of bySeed) {
+    for (const seasons of bySeed.values()) {
       const clubName = seasons[0].clubId.replace('club_', '')
       const rep = seasons[0].clubRep
 
       const cells: string[] = []
-      let prevEnd = seasons[0].econSnapshots[0]?.finances ?? 0
-
       for (const s of seasons.sort((a, b) => a.season - b.season)) {
         const snaps = s.econSnapshots
         if (snaps.length === 0) { cells.push('      —'); continue }
         const endFin = snaps[snaps.length - 1].finances
-        const negRounds = snaps.filter((snap, i) => {
+        const negRounds = snaps.filter((_, i) => {
           if (i === 0) return false
           return snaps[i].finances < snaps[i - 1].finances
         }).length
@@ -718,7 +715,6 @@ console.log(DIV)
           if (endFin < 100_000) clubsUnder100k++
           if (endFin > 2_000_000) clubsOver2M++
         }
-        prevEnd = endFin
       }
 
       console.log(
@@ -763,7 +759,6 @@ console.log(DIV)
     let roundsAt100 = 0
     let seasonEndPuls: Record<number, number[]> = {}
     let maxStuckAt100 = 0
-    let currentStreak = 0
     let recoveredSeasons = 0  // seasons where puls was ≤30 at some point but ended ≥60
 
     const seasonCount = Math.max(...seasonsWithEcon.map(s => s.season))

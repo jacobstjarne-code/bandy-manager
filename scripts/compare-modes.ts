@@ -61,7 +61,14 @@ function interactiveCanScore(homeScore: number, awayScore: number, managedIsHome
 }
 
 function neutralWeather() {
-  return { condition: WeatherCondition.Clear, temperature: -5, windSpeed: 5, iceQuality: IceQuality.Good }
+  return {
+    condition: WeatherCondition.Clear,
+    temperature: -5,
+    windStrength: 5,
+    iceQuality: IceQuality.Good,
+    snowfall: false,
+    region: 'Hälsingland',
+  }
 }
 
 // Bygger en match från EN spelarvärld. Plockar två klubbar baserat på seed-offset
@@ -159,14 +166,6 @@ function runLive(seed: number): { home: number; away: number; interactive: Inter
   let iHome = 0
   let iAway = 0
 
-  const tryScore = (managedScores: boolean): boolean => {
-    // managedScores=true: managed team scoring; false: opponent scoring via interactive event
-    // (I praktiken triggas alltid managed-team i interaktiva events)
-    const curHome = /* generator sees lower score — use best approximation */ 0  // patched below
-    return false  // placeholder, replaced in processStep
-  }
-  void tryScore
-
   const processStep = (step: any) => {
     const score = (eventType: keyof InteractiveStats, goalResult: boolean) => {
       if (!goalResult) return
@@ -224,7 +223,7 @@ function runLive(seed: number): { home: number; away: number; interactive: Inter
   const coreInput = {
     fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
     homeAdvantage: 5, seed, weather, homeClubName, awayClubName,
-    isPlayoff: false, managedIsHome, mode: 'live' as const,
+    isPlayoff: false, managedIsHome, mode: 'full' as const,
   }
 
   let lastFH: any = null
@@ -285,7 +284,7 @@ function runCapAudit(seeds: number[]): AuditResult {
     const coreInput = {
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       homeAdvantage: 5, seed, weather, homeClubName, awayClubName,
-      isPlayoff: false, managedIsHome, mode: 'live' as const,
+      isPlayoff: false, managedIsHome, mode: 'full' as const,
     }
 
     // Stress-start: 4-0 i ingångsscore för andra halvlek
@@ -334,7 +333,9 @@ function runCapAudit(seeds: number[]): AuditResult {
         const def = awayPlayers.filter((p: any) => p.position !== PlayerPosition.Goalkeeper)
         const gk  = awayPlayers.find((p: any)  => p.position === PlayerPosition.Goalkeeper)
         const taker = atk.find((p: any) => p.id === d.cornerTakerId) ?? atk[0]
-        const rushers = d.rusherIds.map((id: string) => atk.find((p: any) => p.id === id)).filter(Boolean)
+        const rushers = d.rusherIds
+          .map((id: string) => atk.find((p: any) => p.id === id))
+          .filter((p): p is NonNullable<typeof p> => p !== undefined)
         if (taker) {
           const out = resolveCorner({ zone: 'center', delivery: 'hard' }, taker, rushers, def, gk, d.opponentPenaltyKill, d.isHome, 50, rand)
           checkInteractive('corner', out.type === 'goal', step.homeScore, step.awayScore)

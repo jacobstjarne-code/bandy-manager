@@ -58,6 +58,7 @@ function makePlayer(clubId: string, position: PlayerPosition, ca: number): Playe
     form: 70,
     fitness: 85,
     sharpness: 75,
+    seasonForm: 70,
     isFullTimePro: false,
     currentAbility: ca,
     potentialAbility: ca,
@@ -120,11 +121,11 @@ function makeSquad(
     return makePlayer(clubId, pos, playerCA)
   })
 
-  const tactic: Tactic = {
+  const tactic = {
     mentality: 'balanced', tempo: 'normal', press: 'medium',
     passingRisk: 'mixed', width: 'normal', attackingFocus: 'mixed',
     cornerStrategy: 'standard', penaltyKillStyle: 'active', formation,
-  }
+  } as unknown as Tactic
 
   return {
     players: [...starters, ...bench],

@@ -19,6 +19,7 @@
 import { simulateMatch } from '../src/domain/services/matchEngine'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
+import type { Tactic } from '../src/domain/entities/Club'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
 import { accumulateScorelineMinutes, bucket30min, bucket15min } from './stress/scoreline-utils'
 import * as fs from 'fs'
@@ -42,6 +43,7 @@ interface MatchFoul {
 }
 
 interface DetailedMatch {
+  ___EXAMPLE?: boolean
   matchId: string
   season: string
   round: number
@@ -83,8 +85,8 @@ if (fs.existsSync(DETAILED_PATH)) {
   const raw = JSON.parse(fs.readFileSync(DETAILED_PATH, 'utf-8'))
   // Matches live under raw.herr.matches (schema v2) or raw.matches (legacy)
   const matchArray: DetailedMatch[] = raw?.herr?.matches ?? raw?.matches ?? []
-  detailedData = { ...raw, matches: matchArray.filter((m: Record<string, unknown>) => !m.___EXAMPLE) }
-  hasDetailedData = detailedData.matches.length > 0
+  detailedData = { ...raw, matches: matchArray.filter(m => !m.___EXAMPLE) }
+  hasDetailedData = (detailedData?.matches.length ?? 0) > 0
 }
 
 if (!hasDetailedData) {
@@ -983,14 +985,15 @@ function makePlayer(clubId: string, position: PlayerPosition, ca = 55): Player {
     clubId, academyClubId: undefined, isHomegrown: false,
     position, archetype: isGK ? PlayerArchetype.ReflexGoalkeeper : PlayerArchetype.TwoWaySkater,
     salary: 0, contractUntilSeason: 2, marketValue: 0,
-    morale: 70, form: 70, fitness: 85, sharpness: 75, isFullTimePro: false,
-    currentAbility: ca, potentialAbility: ca,
+    morale: 70, form: 70, fitness: 85, sharpness: 75, seasonForm: 70, isFullTimePro: false,
+    currentAbility: ca, potentialAbility: ca, developmentRate: 50,
     attributes: {
       skating: ca, acceleration: ca, stamina: ca, ballControl: ca,
       passing: ca, shooting: ca, dribbling: ca, vision: ca,
       decisions: ca, workRate: ca, positioning: ca, defending: ca,
-      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20,
+      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20, cornerRecovery: ca,
     },
+    injuryProneness: 50, discipline: 70,
     isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0,
     isCharacterPlayer: false, trait: undefined,
     seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0,
@@ -1017,7 +1020,7 @@ const defaultTactic = {
   mentality: 'balanced' as const, tempo: 'normal' as const, press: 'medium' as const,
   width: 'normal' as const, attackingFocus: 'mixed' as const,
   cornerStrategy: 'standard' as const, passingRisk: 'safe' as const, penaltyKillStyle: 'active' as const,
-}
+} as unknown as Tactic
 
 function runSimulation() {
   console.log(`\n${'═'.repeat(70)}`)

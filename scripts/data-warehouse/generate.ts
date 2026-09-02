@@ -78,14 +78,14 @@ const TACTIC_PROFILES: Record<string, TacticProfile> = {
 const PROFILE_NAMES = Object.keys(TACTIC_PROFILES)
 
 // All tactic enum values
-const ALL_MENTALITIES: TacticProfile['mentality'][] = ['defensive', 'balanced', 'offensive']
-const ALL_TEMPOS: TacticProfile['tempo'][] = ['low', 'normal', 'high']
-const ALL_PRESSES: TacticProfile['press'][] = ['low', 'medium', 'high']
-const ALL_PASSING_RISKS: TacticProfile['passingRisk'][] = ['safe', 'mixed', 'direct']
-const ALL_WIDTHS: TacticProfile['width'][] = ['narrow', 'normal', 'wide']
-const ALL_ATTACK_FOCUSES: TacticProfile['attackingFocus'][] = ['wings', 'mixed', 'central']
-const ALL_CORNER_STRATEGIES: TacticProfile['cornerStrategy'][] = ['safe', 'standard', 'aggressive']
-const ALL_PENALTY_KILLS: TacticProfile['penaltyKillStyle'][] = ['passive', 'active', 'aggressive']
+const ALL_MENTALITIES = ['defensive', 'balanced', 'offensive'] as Tactic['mentality'][]
+const ALL_TEMPOS = ['low', 'normal', 'high'] as Tactic['tempo'][]
+const ALL_PRESSES = ['low', 'medium', 'high'] as Tactic['press'][]
+const ALL_PASSING_RISKS = ['safe', 'mixed', 'direct'] as Tactic['passingRisk'][]
+const ALL_WIDTHS = ['narrow', 'normal', 'wide'] as Tactic['width'][]
+const ALL_ATTACK_FOCUSES = ['wings', 'mixed', 'central'] as Tactic['attackingFocus'][]
+const ALL_CORNER_STRATEGIES = ['safe', 'standard', 'aggressive'] as Tactic['cornerStrategy'][]
+const ALL_PENALTY_KILLS = ['passive', 'active', 'aggressive'] as Tactic['penaltyKillStyle'][]
 const ALL_FORMATIONS: FormationType[] = ['5-3-2', '4-3-3', '3-3-4', '3-4-3', '2-3-2-3', '4-2-4']
 
 // Weather options
@@ -166,6 +166,7 @@ function makePlayer(clubId: string, position: PlayerPosition, ca: number): Playe
     form: 70,
     fitness: 85,
     sharpness: 75,
+    seasonForm: 70,
     isFullTimePro: false,
     currentAbility: ca,
     potentialAbility: ca,
@@ -237,7 +238,7 @@ function makeSquad(
     return makePlayer(clubId, pos, playerCA)
   })
 
-  const tactic: Tactic = {
+  const tactic = {
     mentality: 'balanced',
     tempo: 'normal',
     press: 'medium',
@@ -247,7 +248,7 @@ function makeSquad(
     cornerStrategy: 'standard',
     penaltyKillStyle: 'active',
     formation,
-  }
+  } as unknown as Tactic
 
   const lineup: TeamSelection = {
     startingPlayerIds: starters.map(p => p.id),
@@ -287,7 +288,7 @@ function tacticFromProfile(profile: TacticProfile, formation: FormationType): Ta
     cornerStrategy: profile.cornerStrategy,
     penaltyKillStyle: profile.penaltyKillStyle,
     formation,
-  }
+  } as unknown as Tactic
 }
 
 // ---- SAMPLING BUCKET GENERATORS ----
@@ -446,7 +447,7 @@ function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
   const seed = matchIndex * 7919 + BUCKET_OFFSETS.control + bucketSeed
   const formation: FormationType = '5-3-2'
   const BASE_CA = 70
-  const BASE: TacticProfile = TACTIC_PROFILES.balanced
+  const BASE = tacticFromProfile(TACTIC_PROFILES.balanced, formation)
 
   // Vary one tactic dimension at a time. 7 dimensions × 7 matches each = 49. Match 49 = baseline.
   const dim = Math.floor(matchIndex / 7) // 0-7
@@ -525,7 +526,7 @@ function generateLimits(matchIndex: number, bucketSeed: number): MatchConfig {
   const seed = matchIndex * 7919 + BUCKET_OFFSETS.limits + bucketSeed
   const formation: FormationType = '5-3-2'
   const BASE_CA = 70
-  const BASE: TacticProfile = TACTIC_PROFILES.balanced
+  const BASE = tacticFromProfile(TACTIC_PROFILES.balanced, formation)
 
   // 4 groups of 12-13 matches each, 3 seeds per pair
   // Group 0 (0-11): press=low home vs press=high away
@@ -539,32 +540,32 @@ function generateLimits(matchIndex: number, bucketSeed: number): MatchConfig {
   if (matchIndex < 12) {
     // press contrast — 4 pairs × 3 seeds
     const pairIdx = Math.floor(matchIndex / 3) % 4
-    const homePress = pairIdx % 2 === 0 ? 'low' as const : 'high' as const
-    const awayPress = pairIdx % 2 === 0 ? 'high' as const : 'low' as const
+    const homePress = pairIdx % 2 === 0 ? ALL_PRESSES[0] : ALL_PRESSES[2]
+    const awayPress = pairIdx % 2 === 0 ? ALL_PRESSES[2] : ALL_PRESSES[0]
     homeTactic = { ...BASE, press: homePress, formation }
     awayTactic = { ...BASE, press: awayPress, formation }
   } else if (matchIndex < 24) {
     // cornerStrategy contrast
     const localIdx = matchIndex - 12
     const pairIdx = Math.floor(localIdx / 3) % 4
-    const homeCS = pairIdx % 2 === 0 ? 'safe' as const : 'aggressive' as const
-    const awayCS = pairIdx % 2 === 0 ? 'aggressive' as const : 'safe' as const
+    const homeCS = pairIdx % 2 === 0 ? ALL_CORNER_STRATEGIES[0] : ALL_CORNER_STRATEGIES[2]
+    const awayCS = pairIdx % 2 === 0 ? ALL_CORNER_STRATEGIES[2] : ALL_CORNER_STRATEGIES[0]
     homeTactic = { ...BASE, cornerStrategy: homeCS, formation }
     awayTactic = { ...BASE, cornerStrategy: awayCS, formation }
   } else if (matchIndex < 37) {
     // width contrast
     const localIdx = matchIndex - 24
     const pairIdx = Math.floor(localIdx / 3) % 5
-    const homeW = pairIdx % 2 === 0 ? 'narrow' as const : 'wide' as const
-    const awayW = pairIdx % 2 === 0 ? 'wide' as const : 'narrow' as const
+    const homeW = pairIdx % 2 === 0 ? ALL_WIDTHS[0] : ALL_WIDTHS[2]
+    const awayW = pairIdx % 2 === 0 ? ALL_WIDTHS[2] : ALL_WIDTHS[0]
     homeTactic = { ...BASE, width: homeW, formation }
     awayTactic = { ...BASE, width: awayW, formation }
   } else {
     // passingRisk contrast
     const localIdx = matchIndex - 37
     const pairIdx = Math.floor(localIdx / 3) % 5
-    const homePR = pairIdx % 2 === 0 ? 'safe' as const : 'direct' as const
-    const awayPR = pairIdx % 2 === 0 ? 'direct' as const : 'safe' as const
+    const homePR = pairIdx % 2 === 0 ? ALL_PASSING_RISKS[0] : ALL_PASSING_RISKS[2]
+    const awayPR = pairIdx % 2 === 0 ? ALL_PASSING_RISKS[2] : ALL_PASSING_RISKS[0]
     homeTactic = { ...BASE, passingRisk: homePR, formation }
     awayTactic = { ...BASE, passingRisk: awayPR, formation }
   }

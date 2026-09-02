@@ -7,6 +7,7 @@ import { simulateMatch } from '../src/domain/services/matchEngine'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
+import type { Tactic } from '../src/domain/entities/Club'
 
 // ── Targets från Bandygrytan 1124-matchs-dataset (detaljdata) ────────────────
 const TARGETS = {
@@ -43,15 +44,15 @@ function makePlayer(clubId: string, position: PlayerPosition, ca = 55): Player {
     clubId, academyClubId: undefined, isHomegrown: false,
     position, archetype: isGK ? PlayerArchetype.ReflexGoalkeeper : PlayerArchetype.TwoWaySkater,
     salary: 0, contractUntilSeason: 2, marketValue: 0,
-    morale: 70, form: 70, fitness: 85, sharpness: 75,
+    morale: 70, form: 70, fitness: 85, sharpness: 75, seasonForm: 70,
     isFullTimePro: false,
     currentAbility: ca,
-    potentialAbility: ca,
+    potentialAbility: ca, developmentRate: 50, injuryProneness: 50, discipline: 70,
     attributes: {
       skating: ca, acceleration: ca, stamina: ca, ballControl: ca,
       passing: ca, shooting: ca, dribbling: ca, vision: ca,
       decisions: ca, workRate: ca, positioning: ca, defending: ca,
-      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20,
+      cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20, cornerRecovery: ca,
     },
     isInjured: false, injuryDaysRemaining: 0,
     suspensionGamesRemaining: 0,
@@ -96,7 +97,7 @@ const defaultTactic = {
   cornerStrategy: 'standard' as const,
   passingRisk: 'safe' as const,
   penaltyKillStyle: 'active' as const,
-}
+} as unknown as Tactic
 
 // ── Run simulations ───────────────────────────────────────────────────────────
 const N = 200
@@ -125,7 +126,7 @@ for (let i = 0; i < N; i++) {
   }
 
   const fixture: Fixture = {
-    id: `fix${i}`,
+    id: `fix${i}`, leagueId: 'calibration',
     homeClubId: homeId, awayClubId: awayId,
     season: 1, matchday: i + 1, roundNumber: i + 1,
     status: FixtureStatus.Scheduled,

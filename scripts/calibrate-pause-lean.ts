@@ -11,6 +11,7 @@ import { simulateFirstHalf, simulateSecondHalf } from '../src/domain/services/ma
 import { PlayerPosition, PlayerArchetype, FixtureStatus } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
+import type { Tactic } from '../src/domain/entities/Club'
 import type { MatchStep } from '../src/domain/services/matchUtils'
 
 const CLUB_CAS = [85, 78, 68, 65, 63, 62, 60, 55, 52, 50, 48, 45]
@@ -31,12 +32,12 @@ function makePlayer(clubId: string, position: PlayerPosition, ca = 55): Player {
     clubId, academyClubId: undefined, isHomegrown: false,
     position, archetype: isGK ? PlayerArchetype.ReflexGoalkeeper : PlayerArchetype.TwoWaySkater,
     salary: 0, contractUntilSeason: 2, marketValue: 0,
-    morale: 70, form: 70, fitness: 85, sharpness: 75, isFullTimePro: false,
-    currentAbility: ca, potentialAbility: ca,
+    morale: 70, form: 70, fitness: 85, sharpness: 75, seasonForm: 70, isFullTimePro: false,
+    currentAbility: ca, potentialAbility: ca, developmentRate: 50, injuryProneness: 50, discipline: 70,
     attributes: {
       skating: ca, acceleration: ca, stamina: ca, ballControl: ca, passing: ca,
       shooting: ca, dribbling: ca, vision: ca, decisions: ca, workRate: ca,
-      positioning: ca, defending: ca, cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20,
+      positioning: ca, defending: ca, cornerSkill: ca, goalkeeping: isGK ? ca + 20 : 20, cornerRecovery: ca,
     },
     isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0,
     isCharacterPlayer: false, trait: undefined,
@@ -53,7 +54,7 @@ const defaultTactic = {
   mentality: 'balanced' as const, tempo: 'normal' as const, press: 'medium' as const,
   width: 'normal' as const, attackingFocus: 'mixed' as const, cornerStrategy: 'standard' as const,
   passingRisk: 'safe' as const, penaltyKillStyle: 'active' as const,
-}
+} as unknown as Tactic
 
 function lastStep(gen: Generator<MatchStep>): MatchStep | null {
   let last: MatchStep | null = null
@@ -81,7 +82,7 @@ for (let i = 0; i < N; i++) {
   const homeLineup = mk(homePlayers)
   const awayLineup = mk(awayPlayers)
   const fixture: Fixture = {
-    id: `fix${i}`, homeClubId: 'home', awayClubId: 'away',
+    id: `fix${i}`, leagueId: 'calibration', homeClubId: 'home', awayClubId: 'away',
     season: 1, matchday: i + 1, roundNumber: i + 1, status: FixtureStatus.Scheduled,
     date: '2025-01-01', homeScore: 0, awayScore: 0, events: [], attendance: 500,
     isCup: false, isKnockout: false, isNeutralVenue: false,

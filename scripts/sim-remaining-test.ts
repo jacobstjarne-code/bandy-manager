@@ -21,7 +21,7 @@
 
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus, PendingScreen } from '../src/domain/enums'
-import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
+import { createHeadlessGame, autoSelectLineup } from './stress/fixtures'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
 const args = process.argv.slice(2)
@@ -67,7 +67,6 @@ function advanceNLeagueRounds(game: SaveGame, n: number): SaveGame {
     // Resolve pending events
     if ((game.pendingEvents?.length ?? 0) > 0) {
       const event = game.pendingEvents[0]
-      const choice = event.choices[0]
       game = { ...game, pendingEvents: game.pendingEvents.filter(e => e.id !== event.id) }
       continue
     }
@@ -121,10 +120,6 @@ function simulateStep(game: SaveGame): { game: SaveGame; seasonEnded: boolean; p
   // Resolve pending events
   if ((game.pendingEvents?.length ?? 0) > 0) {
     const event = game.pendingEvents[0]
-    const neutralChoice = event.choices.find(c =>
-      c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
-      (c.effect as { type?: string })?.type === 'noOp'
-    ) ?? event.choices[0]
     const updated: SaveGame = {
       ...game,
       pendingEvents: game.pendingEvents.filter(e => e.id !== event.id),
@@ -133,9 +128,6 @@ function simulateStep(game: SaveGame): { game: SaveGame; seasonEnded: boolean; p
   }
   // Set lineup if needed
   if (!game.managedClubPendingLineup) {
-    const available = game.players
-      .filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining <= 0)
-      .sort((a, b) => b.currentAbility - a.currentAbility)
     game = autoSelectLineup(game)
   }
   if (game.fixtures.filter(f => f.status === FixtureStatus.Scheduled).length === 0) {
