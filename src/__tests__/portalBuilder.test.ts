@@ -276,8 +276,11 @@ describe('buildPortal — C1 endgame-kurering', () => {
     // match-/slutspelsrelevanta — ska överleva
     { id: 'opponent_form', tier: 'secondary', weight: 80, triggers: [() => true], Component: MockSecondary1 as never },
     { id: 'tabell', tier: 'secondary', weight: 70, triggers: [() => true], Component: MockSecondary2 as never },
+    // MEDIUM 2: ett redan loggat, synligt bågsteg — ska inte föräldralösas
+    // bara för att burnout-takets sena timing sammanfaller med endgame.
+    { id: 'burnout_relief_mark', tier: 'secondary', weight: 96, triggers: [() => true], Component: MockSecondary3 as never },
     // distraktioner med HÖGRE weight — utan kurering skulle de annars vinna platserna
-    { id: 'coffee_room_card', tier: 'secondary', weight: 95, triggers: [() => true], Component: MockSecondary3 as never },
+    { id: 'coffee_room_card', tier: 'secondary', weight: 99, triggers: [() => true], Component: MockSecondary3 as never },
     { id: 'ekonomi', tier: 'secondary', weight: 90, triggers: [() => true], Component: MockSecondary4 as never },
     { id: 'squad_status', tier: 'minimal', weight: 60, triggers: [() => true], Component: MockMinimal1 as never },
     { id: 'klacken_mood_minimal', tier: 'minimal', weight: 90, triggers: [() => true], Component: MockMinimal2 as never },
@@ -292,8 +295,23 @@ describe('buildPortal — C1 endgame-kurering', () => {
     const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
     expect(ids).toContain('opponent_form')
     expect(ids).toContain('tabell')
+    expect(ids).toContain('burnout_relief_mark')
     expect(ids).not.toContain('coffee_room_card')
     expect(ids).not.toContain('ekonomi')
+  })
+
+  it('slutspel: burnout-lättnaden överlever kureringen och vinner secondary-rankingen', () => {
+    const playoffBracket = {
+      status: PlayoffStatus.QuarterFinals,
+      quarterFinals: [{ homeClubId: 'club_a', awayClubId: 'club_b', fixtures: ['pf1'], winnerId: null, loserId: null, homeWins: 0, awayWins: 0 }],
+      semiFinals: [],
+      final: null,
+    }
+    const fixtures = [{ id: 'pf1', status: 'scheduled', isCup: false, isKnockout: true, roundNumber: 27, homeClubId: 'club_a', awayClubId: 'club_b' }]
+    const game = makeGame({ fixtures: fixtures as never, playoffBracket: playoffBracket as never })
+    const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
+
+    expect(ids[0]).toBe('burnout_relief_mark')
   })
 
   it('endgame: döljer icke-match-minimal (klack-pill) trots högre weight', () => {

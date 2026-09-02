@@ -16,6 +16,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { buildPortal, makeSeed } from '../domain/services/portal/portalBuilder'
 import { initCardBag, resetCardBag } from '../domain/services/portal/initCardBag'
 import { getSeasonalTone } from '../domain/services/portal/seasonalTone'
+import { BURNOUT_RELIEF_FIRED_KEY } from '../domain/services/managerProfileService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
 
@@ -217,6 +218,30 @@ describe('PortalScreen integration — primärkort per game-state', () => {
     const layout = buildPortal(game, makeSeed(game))
     expect(layout.minimal.length).toBeGreaterThanOrEqual(0)
     expect(layout.minimal.length).toBeLessThanOrEqual(4)
+  })
+
+  it('MEDIUM 2: en loggad burnout-lättnad syns även i slutspurten', () => {
+    const game = makeGame({
+      currentMatchday: 20,
+      managerProfile: {} as never,
+      narrativeBeatLog: [{
+        semanticKey: BURNOUT_RELIEF_FIRED_KEY,
+        season: 2026,
+        round: 20,
+      }],
+      fixtures: [
+        makeFixture({
+          matchday: 20,
+          roundNumber: 20,
+          homeClubId: 'club_home',
+          awayClubId: 'club_away',
+          status: 'scheduled',
+        }),
+      ],
+    })
+
+    const layout = buildPortal(game, makeSeed(game))
+    expect(layout.secondary.map(card => card.id)).toContain('burnout_relief_mark')
   })
 
 })

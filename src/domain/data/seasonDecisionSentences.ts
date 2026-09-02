@@ -186,10 +186,8 @@ export function getMecenatOfferTributeSentence(t: NamedPersonTokens): string | n
 
 /**
  * HIGH 1 (DOM_HIGH1_BURNOUT_LEDGER_2026-09-02): composer-strukturen för
- * burnout-takets två val. Texten ägs av Opus och mallarna lämnas därför
- * tomma tills den ordagranna leveransen landar. `fill` gör tom mall till
- * null, så ingen nåbar [Opus]-platshållare eller blank årsboksrad kan nå
- * spelaren under tiden.
+ * burnout-takets två val. Opus ordagranna meningar levererades 2026-09-02;
+ * samma `fill`-väg används som för övriga beslut.
  */
 export function sentenceForBurnoutCeiling(template: string): string | null {
   return fill(template, {})
@@ -226,8 +224,8 @@ const MECENAT_CONFLICT_SIDE = 'Du valde {backed}s sida när mecenaterna drabbade
 const CAPTAIN_TAKE_CHARGE = '{captain} bad om att få ta kommandot i krisen. Du tog det själv, och {last} kände av det.'
 const CAPTAIN_SUPPORT = 'Du ställde dig bakom {captain} inför laget. Omklädningsrummet slöt sig, men styrelsen noterade att du valde {last} före dem.'
 const FACILITY_BUILD = '{facility} stod klar. Den kostade {cost} ur kassan, men blir kvar längre än de flesta beslut.'
-const BURNOUT_CEILING_STEP_BACK = '' // [Opus] säsongens beslut: kliv tillbaka
-const BURNOUT_CEILING_PUSH_THROUGH = '' // [Opus] säsongens beslut: kör vidare
+const BURNOUT_CEILING_STEP_BACK = 'Du klev tillbaka en period när det tog för hårt. Första gången du valde dig själv.'
+const BURNOUT_CEILING_PUSH_THROUGH = 'Du körde vidare fast kroppen sa ifrån. Det satte sina spår.'
 
 // ── Meningsbyggare (mall injicerbar för test) ─────────────────────────────
 // `sentenceFor*` tar mallen som parameter så att interpolationslogiken kan

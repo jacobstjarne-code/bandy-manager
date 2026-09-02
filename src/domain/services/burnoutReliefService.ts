@@ -132,6 +132,13 @@ const BURNOUT_RELIEF_BODY: Record<'markbar' | 'hog', string> = {
   hog: 'Du läser inte rapporterna längre. Du bläddrar förbi dem.',
 }
 
+/** MEDIUM 1 (2026-09-02): Opus låsta återfallstext. Samma historikläsning
+ * (`isBurnoutRelapse`) som burnout-bågens övriga återfallsytor; ingen ny state. */
+export const BURNOUT_RELIEF_BODY_RELAPSE: Record<'markbar' | 'hog', string> = {
+  markbar: 'Samma sak som förra gången. Du hinner inte förbereda som du vill, och nu vet du precis vart det leder.',
+  hog: 'Du känner igen bläddrandet. Rapporterna, förbi. Sist gick det över till slut — den här gången litar du inte på det.',
+}
+
 /**
  * Den degraderade motståndarläsningen (O4, äntligen skriven — se docstringen
  * ovan om varför den saknades). När managern är utbränd byts den SKARPA
@@ -171,7 +178,7 @@ export function pickBurnoutOpponentReadIndex(game: Pick<SaveGame, 'currentSeason
   return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_OPPONENT_READ_PREFIX}${zone}_`, game.currentMatchday, 1)
 }
 
-export function generateBurnoutReliefEvent(matchday: number, season: number, zone: 'markbar' | 'hog'): GameEvent {
+export function generateBurnoutReliefEvent(matchday: number, season: number, zone: 'markbar' | 'hog', relapse = false): GameEvent {
   return {
     id: `event_burnout_relief_${season}_${matchday}`,
     type: 'burnoutRelief',
@@ -182,7 +189,7 @@ export function generateBurnoutReliefEvent(matchday: number, season: number, zon
     // Inget sender-fält — det här är managerns EGEN situation, ingen
     // avsändare att namnge (att skriva "Du" / "Manager" hade varit precis
     // den typen konstruerad UI-text CLAUDE.md förbjuder Code att skriva).
-    body: BURNOUT_RELIEF_BODY[zone],
+    body: relapse ? BURNOUT_RELIEF_BODY_RELAPSE[zone] : BURNOUT_RELIEF_BODY[zone],
     choices: [
       {
         id: 'delegate',

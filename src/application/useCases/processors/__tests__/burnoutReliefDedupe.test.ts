@@ -23,4 +23,20 @@ describe('burnoutRelief — kölivscykel', () => {
   it('har inget rollover-default eftersom alla tre val har verkliga priser', () => {
     expect(getDefaultRolloverChoice(generateBurnoutReliefEvent(10, 2025, 'hog'))).toBeNull()
   })
+
+  it('MEDIUM 1: tidigare säsongs burnout_peak ger återfallstext i den genererade händelsen', () => {
+    const game = makeGame()
+    const relapseGame = {
+      ...game,
+      managerProfile: {
+        ...game.managerProfile!,
+        diary: [{ season: 2024, matchday: 20, type: 'burnout_peak', text: 'Tidigare topp' }],
+      },
+    }
+
+    const result = processGameEvents(relapseGame, [], undefined, 10, () => 0.99)
+    const relief = result.gameEvents.find(event => event.type === 'burnoutRelief')
+
+    expect(relief?.body).toBe('Samma sak som förra gången. Du hinner inte förbereda som du vill, och nu vet du precis vart det leder.')
+  })
 })

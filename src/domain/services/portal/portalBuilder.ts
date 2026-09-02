@@ -12,9 +12,16 @@ import { stringHash } from '../../utils/random'
 // C1: endgame-kurering (R3-specen). I avgörande matchfönster (slutspel + slutspurt
 // omg ≥20) är portalen EN sak: matchen. Dessa secondary/minimal-kort ÖVERLEVER —
 // de är match-/slutspelsrelevanta. Allt annat (kafferum, journalist, signatur, nemesis,
-// burnout, mecenat/kommun-cooldown, efterklang, veckobeslut/sponsorbastu, ekonomi,
-// klack, styrelsemål, bud, arcs) hård-döljs. Inte dämpas.
-const ENDGAME_KEEP_SECONDARY = new Set(['opponent_form', 'tabell', 'watch_others', 'injury_status', 'landslag_franvaro'])
+// burnout-eskalering, mecenat/kommun-cooldown, efterklang, veckobeslut/
+// sponsorbastu, ekonomi, klack, styrelsemål, bud, arcs) hård-döljs. Inte dämpas.
+const ENDGAME_KEEP_SECONDARY = new Set([
+  'opponent_form', 'tabell', 'watch_others', 'injury_status', 'landslag_franvaro',
+  // MEDIUM 2 (2026-09-02): burnout-lättnaden är en engångsbeat som bara är
+  // eligible samma omgång narrativeBeatLog-posten skrivs. Takvalet händer
+  // typiskt sent; endgame-kureringen filtrerade därför bort beaten permanent.
+  // Återanvänd samma secondary-slot och ranking — inget separat minnessystem.
+  'burnout_relief_mark',
+])
 const ENDGAME_KEEP_MINIMAL = new Set(['squad_status', 'form_status'])
 
 // B9 T2: shownCount tillagt för frekvensgolv (optional för migration-säkerhet)

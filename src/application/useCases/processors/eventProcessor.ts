@@ -12,7 +12,7 @@ import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterSe
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
-import { getBurnoutZone, shouldTriggerBurnoutCeilingChoice } from '../../../domain/services/managerProfileService'
+import { getBurnoutZone, isBurnoutRelapse, shouldTriggerBurnoutCeilingChoice } from '../../../domain/services/managerProfileService'
 import { generateBurnoutReliefEvent } from '../../../domain/services/burnoutReliefService'
 import { generateBurnoutCeilingEvent } from '../../../domain/services/burnoutCeilingService'
 import { generateCommunityRenewalEvent } from '../../../domain/services/communityRenewalService'
@@ -144,7 +144,12 @@ export function processGameEvents(
     canAddDecision(game, nextMatchday) &&
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
-    gameEvents.push(generateBurnoutReliefEvent(nextMatchday, game.currentSeason, burnoutZone))
+    gameEvents.push(generateBurnoutReliefEvent(
+      nextMatchday,
+      game.currentSeason,
+      burnoutZone,
+      !!game.managerProfile && isBurnoutRelapse(game.managerProfile, game.currentSeason),
+    ))
   }
 
   // DOM_BURNOUT_TAK_2026-09-02 (A) — tak-triggern. INGEN canAddDecision/

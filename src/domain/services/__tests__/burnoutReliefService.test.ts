@@ -138,6 +138,16 @@ describe('generateBurnoutReliefEvent', () => {
     expect(event.body).toBe('Du läser inte rapporterna längre. Du bläddrar förbi dem.')
   })
 
+  it('MEDIUM 1: återfall väljer Opus låsta kroppstext men behåller zonrubriken', () => {
+    const markbar = generateBurnoutReliefEvent(10, 3, 'markbar', true)
+    const hog = generateBurnoutReliefEvent(10, 3, 'hog', true)
+
+    expect(markbar.title).toBe('Märkbar')
+    expect(markbar.body).toBe('Samma sak som förra gången. Du hinner inte förbereda som du vill, och nu vet du precis vart det leder.')
+    expect(hog.title).toBe('Hög')
+    expect(hog.body).toBe('Du känner igen bläddrandet. Rapporterna, förbi. Sist gick det över till slut — den här gången litar du inte på det.')
+  })
+
   it('tre val med domens exakta etiketter och citat', () => {
     const event = generateBurnoutReliefEvent(10, 3, 'hog')
     expect(event.choices).toHaveLength(3)

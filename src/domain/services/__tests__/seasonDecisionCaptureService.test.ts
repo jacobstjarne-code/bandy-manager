@@ -879,6 +879,20 @@ describe('pickMostImportantDecisionText — samma vinnare som pickSeasonDecision
     expect(pickSeasonDecisionFromLedger([smaller, burnout])).toBe(burnout)
   })
 
+  it('komponerar Opus båda burnout-val ordagrant från liggaren', () => {
+    const stepBack: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'burnoutCeiling:step_back', season: 1, matchday: 20,
+      significance: 100, irreversible: true, tension: true, systemsAffectedCount: 4, madeByPlayer: true,
+    }
+    const pushThrough: EventLedgerEntry = {
+      ...stepBack,
+      semanticKey: 'burnoutCeiling:push_through',
+    }
+
+    expect(composeSeasonDecisionSentence(stepBack, makeGame())).toBe('Du klev tillbaka en period när det tog för hårt. Första gången du valde dig själv.')
+    expect(composeSeasonDecisionSentence(pushThrough, makeGame())).toBe('Du körde vidare fast kroppen sa ifrån. Det satte sina spår.')
+  })
+
   it('ett genuint större namngivet beslut kan fortfarande slå burnout-valet', () => {
     const burnout: EventLedgerEntry = {
       type: 'decision', semanticKey: 'burnoutCeiling:push_through', season: 1, matchday: 20,
