@@ -57,7 +57,7 @@ Det löser hockeyrink-problemet vid roten: modellen får aldrig chansen.
 
 **Undantag:** `annandagen` mår sannolikt bra av folk och läktare. Även då — publiken bakifrån, planen som ett suddigt ljus bortom. Inte planen som motiv.
 
-**Om en plan ändå måste synas:** en bandyplan är 65×110 meter, alltså större än en fotbollsplan. Ingen sarg — låga stakethinder. Målen är låga och breda. Skriv det, annars får du en rink.
+**Om en plan ändå måste synas:** en bandyplan är 65×110 meter, alltså större än en fotbollsplan. Låg, flyttbar sarg som man ser över — inte hockeyns höga plexiglas. Målen är låga och breda. Skriv det, annars får du en rink. *(Rättat 2026-09-03: tidigare stod "Ingen sarg — låga stakethinder", vilket var fel — sargen finns, se `BANDY_KANON.md` §5.)*
 
 ---
 

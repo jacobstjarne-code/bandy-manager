@@ -4,6 +4,14 @@
 **Target:** `bandy-manager` codebase (React + TS PWA)
 **Last sync:** 2026-05-17 — F1 Beslutsekonomi UI levererad
 
+**⚠️ DENNA FIL ÄR HISTORISK.** Skriven när designsystemet ännu levde som ett separat
+claude.ai-projekt ("detta projekt" nedan syftar på det, inte på `design-system/`-mappen
+i repot — flytten in i kodprojektet skedde 2026-05-05, se `design-system/CLAUDE.md`s
+RECENT CHANGES). **Levande design-lane-kö:** `design-system/briefs/DESIGN-KO-2026-07-02.md`
+(Fable-koherensrevisionen) — dit, inte hit, går nya fynd. Punkterna nedan är omverifierade
+mot dagens kod 2026-09-03 (dokhygien, MASTER_OPPET.md `inv-1-handoff-stale`) — status
+uppdaterad där koden redan hunnit ikapp.
+
 ---
 
 ## Aktiva handover-paket (separata filer)
@@ -50,49 +58,30 @@ Every item below links a design decision to the file in the codebase that must c
 
 ---
 
-## 1 · Logotyp-användning på ljus bakgrund `[ ]`
+## 1 · Logotyp-användning på ljus bakgrund `[x]`
 
 **Preview:** `preview/brand-logo.html`
 **Change:** Logon (`bandymanager-logo.png`) är designad för mörk bakgrund. På ljus bakgrund **måste** den inverteras till svart.
 
-**Code changes**
-- Lägg till CSS-helper globalt (t.ex. i `src/styles/globals.css`):
-  ```css
-  .logo-invert { filter: invert(1) brightness(0); }
-  ```
-- Varhelst logon används utanför `GameHeader` (onboarding, splash, print-vyer), applicera `.logo-invert` när bakgrunden är ljus.
-- Filer att granska: `src/presentation/screens/Intro*.tsx`, `IntroBackground`, eventuella print/share-komponenter.
+**Verifierat 2026-09-03:** `src/presentation/components/Logo.tsx` löser detta redan, fast med en annan mekanism än den föreslagna CSS-klassen — `variant='dark'|'light'` prop, `light` (default) ger krämvit filter för mörka läderytor, `dark` finns för ljusa ytor men "ej använt i appen ännu" (appen är genomgående mörk-tematiserad, ingen ljus yta har uppstått som behöver den). Mekanismen finns och fungerar; TODO-kommentaren i filen väntar bara på en riktig inverterad logo-asset istället för CSS-filtret (FAS 3, se BRAND-BRIEF.md) — kosmetisk finish, inte en saknad funktion.
 
 ---
 
-## 2 · GameHeader + PhaseIndicator redesign `[ ]`
+## 2 · GameHeader + PhaseIndicator redesign `[x]`
 
 **Preview:** `preview/components-header.html`
 **Change:** Headern omdesignad — 3-kolumns grid, läsbar subtext, sigill-chip för omgång, SVG-kuvert istället för 🔔. PhaseIndicator har riktig stepper-logik (done → current → upcoming) med checkmark + halo.
 
-**Code changes**
-- `src/presentation/components/GameHeader.tsx`:
-  - Layout till `grid-template-columns: auto 1fr auto`
-  - Subtextfärg: `#C9B89A` (ej `rgba(245,241,235,0.55)`)
-  - Subtext i `var(--font-display)` italic
-  - Omgångschip: ny underkomponent, border 1px `rgba(196,122,58,0.45)`, bg `rgba(196,122,58,0.18)`
-  - Byt 🔔 mot inline-SVG kuvert (se preview för path-data), 16×14 px, stroke `var(--accent)` 1.3 px
-- `src/presentation/components/PhaseIndicator.tsx`:
-  - Tre tillstånd per steg: `done` (fylld cirkel + checkmark), `current` (halo + filled dot), `upcoming` (outline)
-  - Connectors byter opacitet beroende på följande stegs status
-  - Bara aktivt stegs label i copper + bold; övriga i `rgba(245,241,235,0.5)` / `#F5F1EB`
+**Verifierat 2026-09-03:** `GameHeader.tsx` har `display: 'grid'`, `var(--font-display)`-subtext, egen inline `EnvelopeIcon`-komponent (ersätter 🔔), samt `lucide-react`-ikoner genomgående. `PhaseIndicator.tsx` har exakt den beskrivna tre-tillstånds-logiken (`state = i < currentIdx ? 'done' : i === currentIdx ? 'current' : 'upcoming'`), med opacitetsstyrda connectors och egen styling per tillstånd. Byggt under emoji→Lucide-svepet (N-1–N-5, `f9b7aeeb`/`b83cf967`), inte som en egen HANDOFF-leverans — därför stod den kvar som `[ ]` här trots att koden redan hunnit ikapp.
 
 ---
 
-## 3 · Tag-regel: status utan emoji `[ ]`
+## 3 · Tag-regel: status utan emoji `[x]`
 
 **Preview:** `preview/components-tags.html`
 **Change:** Status-tags (Redo / Skadad / Bänken / temperatur) är **alltid utan emoji** — färg + text räcker. Kategori-tags i feed/timeline **får** prefix-emoji från `EMOJI_MAP`. Aldrig två emoji per tag, aldrig emoji efter texten.
 
-**Code changes**
-- Granska alla förekomster av `tag-*` klasser och ta bort emoji från status-tags.
-- Dokumentera regeln i `DESIGN_SYSTEM.md §Tags`.
-- Överväg `<Tag variant="status" | "category">` props där category auto-prefixar från `EMOJI_MAP`.
+**Verifierat 2026-09-03:** Status-tags (t.ex. `SquadStatusCard.tsx`s "N redo"/"N skadade") renderar ren `tag tag-green`/`tag tag-red` utan emoji. Reglen lever i praktiken sedan emoji→Lucide-svepet; ingen separat `<Tag variant>`-prop byggdes, men regeln hålls av konvention i alla granskade förekomster.
 
 ---
 
@@ -104,6 +93,8 @@ Every item below links a design decision to the file in the codebase that must c
 **Code changes**
 - `src/presentation/components/CtaButton.tsx` kan stå kvar; skapa en wrapping-komponent `CeremonialCta` som tar `from`, `to`, `subtext`, `pulse` props.
 - Applicera på skärm-botten i Dashboard, TacticsScreen, ResultsScreen.
+
+**Verifierat 2026-09-03:** Genuint fortsatt öppen — noll träffar på `CeremonialCta` eller motsvarande `from`/`to`/`pulse`-mönster i `src/`. Portalens `getNextActionCue` (`nextActionCue.ts`, byggd `0c8c6365`) löser en näraliggande men INTE identisk fråga (en generell "vad nu?"-rad, inte en per-CTA fas-ledtråd) — förväxla inte de två.
 
 ---
 
@@ -128,21 +119,25 @@ Every item below links a design decision to the file in the codebase that must c
 
 ---
 
-## 6 · BottomNav — custom ikonserie `[⚠]`
+## 6 · BottomNav — custom ikonserie `[x]`
 
 **Preview:** `preview/components-bottomnav.html` (flaggad **⚠ Placeholder**)
 **Status:** Blockerad — kräver designprojekt.
 **Deliverable:** 6 SVGs @ 24×24, line + fill variant, linjevikt 1.75 px, matchar Lucide. Ämnen: klubbhus, radade silhuetter, bandyklubba/klubba+boll, tabellpall, handshake, kyrkotorn/skorsten.
 **Code changes (när klart):** Byt emoji-spans i `BottomNav.tsx` mot `<Icon name="hem" />` etc.
 
+**Verifierat 2026-09-03:** Löst annorlunda än specat — `BottomNav.tsx` importerar `lucide-react` direkt (`Home`/`Users`/`Swords`/`Table2`/`Building2`/`Hammer`/`ArrowLeftRight`), `strokeWidth={isActive ? 2.2 : 1.8}` matchar den efterfrågade linjevikten. Inga custom-ritade SVG:er (klubbhus/skorsten-motiven) togs fram, men målet — emoji ersatt med konsekventa line-ikoner — är uppfyllt via befintlig Lucide-uppsättning. Ingen ny designleverans krävs om inte den unika woodcut-känslan prioriteras separat.
+
 ---
 
-## 7 · Emoji-kategorisystem — piktogramserie `[⚠]`
+## 7 · Emoji-kategorisystem — piktogramserie `[x]`
 
 **Preview:** `preview/brand-emoji.html` (flaggad **⚠ Placeholder**)
 **Status:** Blockerad — kräver designprojekt.
 **Deliverable:** 24 SVGs @ 16×16 + 24×24, monokrom (accent eller text-primary), woodcut/linjesnittskänsla. Översättningstabell finns i preview-kortet.
 **Code changes (när klart):** `EMOJI_MAP` blir `ICON_MAP` som pekar på SVG-komponenter istället för emoji-strängar. Påverkar alla `SectionLabel`, feed-tags, notiser.
+
+**Verifierat 2026-09-03:** Löst via samma emoji→Lucide-svep som punkt 6 (N-1–N-5, `docs/sprints/OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md` rad 32) — `Icon.tsx`/`lucide-react` fungerar som den efterfrågade `ICON_MAP`-ersättningen, importerad i 11+ filer inkl. `PlayerCard.tsx`, `InboxScreen.tsx`, `GameHeader.tsx`. Woodcut-stilriktningen realiserades inte (Lucides linjeikoner istället), men funktionsmålet (inga hand-skrivna emoji-strängar kvar i UI-chrome) är uppfyllt.
 
 ---
 
@@ -181,13 +176,15 @@ Every item below links a design decision to the file in the codebase that must c
 
 ---
 
-## 8 · Klubbmärken — research per ort `[⚠]`
+## 8 · Klubbmärken — research per ort `[x]`
 
 **Preview:** `preview/brand-badges.html` (flaggad **⚠ Placeholder**)
 **Status:** Blockerad — kräver eget designprojekt.
 **Orter:** Forsbacka, Söderfors, Västanfors, Karlsborg, Målilla, Gagnef, Hälleforsnäs, Lesjöfors, Rögle, Slottsbron, Skutskär, Heros.
 **Process:** research (heraldik, bruksindustri, kyrktorn, naturmärken) → 2–3 riktningar per klubb → låsa form.
 **Code changes (när klart):** Ersätt generiska SVG:er i `ClubBadge.tsx`.
+
+**Verifierat 2026-09-03:** `ClubBadge.tsx` har redan riktiga per-klubb-definitioner för samtliga tolv orter (unikt primary/secondary-färgpar + symbol, t.ex. `club_forsbacka`: hammare, `club_soderfors`: stjärna) — inte generiska placeholder-SVG:er. Detta är samma fil som huvud-CLAUDE.md räknar som ett permanent undantag från token-grinden ("12 klubbars unika heraldik — data, inte design-system").
 
 ---
 
