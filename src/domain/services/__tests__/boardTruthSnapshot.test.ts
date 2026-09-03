@@ -153,7 +153,7 @@ describe('gameOverBoardStatement — samma tre låsta texter som GameOverScreen.
     )
   })
 
-  it('bankruptcy-vägen (managerfired-vag-osynlig, MASTER_OPPET.md) — samma generiska text, medvetet ingen egen ännu', () => {
+  it('bankruptcy-vägen (managerfired-vag-osynlig, MASTER_OPPET.md) — egen rad, inte den generiska', () => {
     const truth = buildSeasonBoardTruth({
       expectation: ClubExpectation.MidTable,
       finalPosition: 6,
@@ -165,7 +165,7 @@ describe('gameOverBoardStatement — samma tre låsta texter som GameOverScreen.
       firedReason: 'bankruptcy',
     })
     expect(gameOverBoardStatement(truth, 'Slottsbron BK')).toBe(
-      'Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i Slottsbron BK.'
+      'Det fanns inga pengar kvar. En klubb kan överleva dåliga resultat, men inte en tom kassa — och när ekonomin brast fanns inget val kvar för styrelsen. Slottsbron BK går vidare utan dig, med skulderna kvar att reda ut.'
     )
   })
 })

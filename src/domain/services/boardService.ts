@@ -965,9 +965,10 @@ export function gameOverBoardStatement(
     }
     return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
   }
-  // 'bankruptcy' faller medvetet igenom till den generiska raden nedan —
-  // Code skriver aldrig ny svensk speltext (CLAUDE.md), och den generiska
-  // texten är inte FELAKTIG för konkurs, bara oattribuerad. En egen
-  // konkurs-rad är en Opus-textuppgift, inte en del av denna wiring-fix.
+  if (firedReason === 'bankruptcy') {
+    return `Det fanns inga pengar kvar. En klubb kan överleva dåliga resultat, men inte en tom kassa — och när ekonomin brast fanns inget val kvar för styrelsen. ${clubName ?? 'Klubben'} går vidare utan dig, med skulderna kvar att reda ut.`
+  }
+  // 'bankruptcy' har nu en egen rad ovan (Opus-text 2026-09-02). Övriga
+  // oattribuerade avsked faller på den generiska raden nedan.
   return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${clubName ?? 'klubben'}.`
 }
