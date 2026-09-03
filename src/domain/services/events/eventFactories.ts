@@ -62,8 +62,15 @@ export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent
       {
         id: 'convince',
         label: 'Lova en nyckelroll (+moral)',
-        subtitle: '+15 moral',
-        effect: { type: 'boostMorale', targetPlayerId: bid.playerId, value: 15 },
+        // O20-klassen (DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut): ett
+        // val där en gren uppenbart vinner är ingen avvägning. convince är
+        // ett BESLUT (du pressar spelaren) och får en verklig, om än liten,
+        // nedsida — resolveras probabilistiskt i eventResolver.ts (id-
+        // baserad special-casing, effekten deklareras noOp här och
+        // appliceras på riktigt vid resolution, samma mönster som
+        // mecenatavgångarna).
+        subtitle: '+15 moral (kan slå tillbaka)',
+        effect: { type: 'noOp' },
       },
       {
         id: 'accept',

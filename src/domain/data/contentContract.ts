@@ -603,14 +603,14 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     notes: 'Verifierad och rättad 2026-09-02 mot burnoutReliefService.ts, eventProcessor.ts, eventResolver.ts, playerDevelopmentService.ts, roundProcessor.ts, sourceCooldownService.ts, seasonEndProcessor.ts, managerProfileService.ts, TaktikScreen.tsx, SquadScreen.tsx och OpponentAnalysisCard.tsx samt generator-/resolver-/suppression-/rollover-testerna. O4:s tre numeriska avvägningar och informationskvalitetskostnad var redan byggda. O11 hittade att cooldown bara startar vid resolution medan generatorn saknade pending/deferred-dedupe, så nya unika kort kunde köas varje omgång under fortsatt burnout; samma typ spärras nu över båda köerna. Rollover är explicit expire i stället för decline eftersom inget neutralt val finns. Ingen parallell burnout- eller träningsmodell skapades. De separat öppna frågorna om inkorgsprioritering och fördröjda betyg förblir design-/systemblockers i masterlistan.',
   },
   hesitantPlayer: {
-    trigger: `Transferbud där bid.buyingClubId har lägre reputation än spelarens nuvarande klubb (hesitantPlayerEvent, eventFactories.ts:40)`,
-    stateEffect: `'convince': boostMorale +15 (targetPlayerId=bid.playerId). 'accept': noOp — verifierat av O2-revisionen (2026-08-20), ingen dold effekt.`,
+    trigger: `Transferbud där bid.buyingClubId har lägre reputation än spelarens nuvarande klubb (hesitantPlayerEvent, eventFactories.ts)`,
+    stateEffect: `'convince' deklareras noOp vid konstruktion och resolveras probabilistiskt i eventResolver.ts (DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut): 65% ger +15 moral (targetPlayerId=bid.relatedPlayerId), 35% slår tillbaka och ger −8 moral i stället — en verklig avvägning mot det säkra 'accept': noOp.`,
     systems: ['spelarmoral', 'transferbud'],
     lifespan: 'engångs',
     semanticKey: 'hesitant_player',
     cooldownSeasons: 0,
     recallSurface: 'ingen — modal stängs, ingen loggpost',
-    notes: 'Domens eget referensfall för O2. Ärligt: bara två val, ingen tredje "no-op med löfte om mer"-risk kvar i denna specifika event.',
+    notes: 'DOM_O20_K3K5_KLASS_2026-09-02 rättade O2:s ursprungliga referensfall (2026-08-20): "bara två val, ingen tredje no-op-med-löfte-om-mer-risk" höll för TEXT-löftet, men convince dominerade accept mekaniskt (garanterad vinst mot riskfri noOp) — samma klass som O20:s gratis-goda gester, fast på ett BESLUT, inte en gest. convince fick därför en riktig, liten nedsida (2026-09-03).',
   },
   playerPraise: {
     trigger: 'En spelare berömmer en lagkamrat i media; generatePlayerPraiseEvent bygger ett namngivet kort för de två spelarna.',

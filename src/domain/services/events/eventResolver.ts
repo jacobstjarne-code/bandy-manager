@@ -2300,6 +2300,27 @@ export function resolveEvent(
     }
   }
 
+  // DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut — hesitantPlayer/convince
+  // var ett val där en gren uppenbart vann (garanterad +15 moral mot ett
+  // riskfritt noOp), ingen verklig avvägning. convince deklareras nu noOp
+  // vid konstruktion (eventFactories.ts) och appliceras här probabilistiskt:
+  // 65% ger den lovade +15-moralen, 35% slår tillbaka — spelaren känner sig
+  // pressad och tappar lite förtroende istället. accept förblir en äkta
+  // noOp (det trygga icke-valet ska inte GE något — nedsidan hör på det
+  // aktiva valet, per domen).
+  if (madeByPlayer && event.type === 'hesitantPlayer' && choiceId === 'convince') {
+    const pid = event.relatedPlayerId
+    if (!pid) throw new Error("hesitantPlayer/convince saknar obligatoriskt fält relatedPlayerId")
+    const backfired = rand() >= 0.65
+    const delta = backfired ? -8 : 15
+    updatedGame = {
+      ...updatedGame,
+      players: updatedGame.players.map(p =>
+        p.id === pid ? { ...p, morale: Math.max(0, Math.min(100, p.morale + delta)) } : p,
+      ),
+    }
+  }
+
   // 2.5 (choice-label-svepet, 2026-08-17): skrevs tidigare oavsett om
   // multiEffect-subeffekterna faktiskt lyckades applicera makeFullTimePro på
   // någon spelare — samma "storyline oberoende av effektutfall"-mönster som
