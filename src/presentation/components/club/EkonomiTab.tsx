@@ -182,7 +182,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: ca?.kiosk !== 'none' && !!ca?.kiosk,
       status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
       income: activityIncome(kioskDelta), incomeDelta: kioskDelta,
-      note: 'Lönar sig först när publiken är tillräckligt stor — vid låg uppslutning äter inropen upp intäkten.',
+      note: 'Kiosken bär sig först när publiken är på gott humör — grundkiosken kring 83, den utbyggda redan vid 50. Innan dess är korven en förlust bygden uppskattar.',
       ...(ca?.kiosk === 'none' || !ca?.kiosk
         ? { actionKey: 'kiosk', actionLevel: 'basic', actionCost: 3000, actionLabel: 'Starta kiosk — 3 tkr' }
         : ca?.kiosk === 'basic'
@@ -330,7 +330,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
               </span>
             </div>
             <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
-              Starkare förankring kan ge större publik och bättre kommunbidrag.
+              Ortens förtroende för klubben. Fyller läktaren och väger tungt när kommunen sätter bidraget.
             </p>
           </>
         )}

@@ -103,6 +103,33 @@ export function managerSeasonEntriesForHistory(summary: SeasonSummary) {
   return summary.managerSeason ?? []
 }
 
+/**
+ * c-hist1-klubbhistorik-berattelse (DOM 2026-09-03, Opus): Timeline-lite.
+ * `keyMoments` fryses redan per säsong (seasonSummaryService.ts, matar
+ * även SeasonSummaryScreens "DIN SÄSONG"-tidslinje för INNEVARANDE säsong,
+ * sedan Codex' ledger-routning 2026-09-03) — samma frusna fält, ingen ny
+ * datakälla. Kompakt: 3–5 rader, ingen egen skärm. Ikon-mappningen speglar
+ * SeasonSummaryScreen.tsx:s (samma sju typer, samma ikoner — en sanning).
+ */
+export function keyMomentTimelineForHistory(summary: SeasonSummary): Array<{ icon: string; headline: string }> {
+  return (summary.keyMoments ?? [])
+    .slice()
+    .sort((a, b) => a.round - b.round)
+    .slice(0, 5)
+    .map(m => ({
+      icon: m.type === 'derbyWin' ? '🔥'
+        : m.type === 'derbyLoss' ? '😶'
+        : m.type === 'hatTrick' ? '🎩'
+        : m.type === 'bigWin' ? '✅'
+        : m.type === 'bigLoss' ? '❌'
+        : m.type === 'comeback' ? '💪'
+        : m.type === 'lateWinner' ? '⚡'
+        : m.type === 'storyline' ? '📖'
+        : '⛸️',
+      headline: m.headline,
+    }))
+}
+
 export function HistoryManagerSeason({ summary }: { summary: SeasonSummary }) {
   return (
     <>
@@ -757,6 +784,11 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>
                     📋 {s.narrativeSummary}
                   </p>
+                  {keyMomentTimelineForHistory(s).map((moment, idx) => (
+                    <p key={`keymoment_${s.season}_${idx}`} style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>
+                      {moment.icon} {moment.headline}
+                    </p>
+                  ))}
                   {/* M8 (audit 5c9a7a8, 2026-08-24): en säsong sparad före A5-domen
                       (2026-08-17) kan ha en felaktig dom bakad in i narrativeSummary
                       OVAN ("2:a plats uppfyller kravet att vinna ligan"). Migreringen

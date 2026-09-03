@@ -13,7 +13,20 @@ import { getManagerDisplayName } from '../../domain/services/managerProfileServi
 import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
 import { exportSaveRecoveryReportAsJson } from '../../infrastructure/persistence/saveRecoveryMetrics'
 import { playoffRoundName } from '../../domain/roundLabel'
+import type { PlayoffBracket } from '../../domain/entities/Playoff'
 
+/**
+ * sidofynd-gameheader-playoffbracket-legacy-save (Codex dagsrapport 2026-09-03
+ * §7): rot var `!== null`, som inte fångar `undefined` — en save vars
+ * `playoffBracket` saknas helt skulle nå `bracket.status` och krascha.
+ * migrateSaveGame (saveGameMigration.ts:281) backfyller redan undefined→null
+ * för varje riktig laddningsväg, så kraschen är inte reproducerbar idag, men
+ * kollen var ändå falsk trygghet — `!= null` (löst) fångar båda utan att
+ * förlita sig på att migreringen alltid körs före denna komponent.
+ */
+export function isInPlayoffBracket(bracket: PlayoffBracket | null | undefined): boolean {
+  return bracket != null && bracket.status !== PlayoffStatus.Completed
+}
 
 // C1 (5c9a7a8, 2026-08-24) — "senast bekräftad sparningstid" i UI.
 function formatRelativeSaveTime(iso: string): string {
@@ -152,7 +165,7 @@ export function GameHeader() {
   // ersätter den gamla "match N"-suffixen när serien faktiskt är kritisk —
   // annars visas matchnumret som förut.
   const bracket = game.playoffBracket
-  const isInPlayoff = bracket !== null && bracket.status !== PlayoffStatus.Completed
+  const isInPlayoff = isInPlayoffBracket(bracket)
   const playoffCtx = isInPlayoff ? getPlayoffSeriesContext(game) : null
   let playoffLabel: string | null = null
   if (isInPlayoff) {

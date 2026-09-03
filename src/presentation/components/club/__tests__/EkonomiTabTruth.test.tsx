@@ -34,7 +34,7 @@ describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', (
     expect(html).toContain('Beräknade intäkter nästa omg')
     expect(html).toContain('Beräknade kostnader nästa omg')
     expect(html).toContain('Netto nästa omg')
-    expect(html).toContain('Starkare förankring kan ge större publik och bättre kommunbidrag.')
+    expect(html).toContain('Ortens förtroende för klubben. Fyller läktaren och väger tungt när kommunen sätter bidraget.')
     expect(html).not.toContain('~8 500 netto/match')
     expect(html).not.toContain('~1 500/match')
     expect(html).not.toContain('~4 000 besparing/match')

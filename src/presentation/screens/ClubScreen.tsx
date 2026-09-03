@@ -14,10 +14,21 @@ import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
 import { SectionLabel } from '../components/SectionLabel'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
+import { getArcMoodText } from '../../domain/services/trainerArcService'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
 type ClubTab = 'training' | 'ekonomi' | 'orten' | 'akademi' | 'minne' | 'tranare'
+
+/**
+ * inv-2-21b-getarcmoodtext (DOM 2026-09-03, Opus): seed = currentSeason*100 +
+ * matchday så raden byter per omgång, inte per render. null när trainerArc
+ * saknas (äldre saves) eller när poolen själv ger null.
+ */
+export function computeArcMoodText(game: { trainerArc?: { current: import('../../domain/entities/Narrative').ArcPhase }; currentSeason: number; currentMatchday: number }): string | null {
+  if (!game.trainerArc) return null
+  return getArcMoodText(game.trainerArc.current, game.currentSeason * 100 + game.currentMatchday)
+}
 
 export function ClubScreen() {
   const club = useManagedClub()
@@ -89,6 +100,10 @@ export function ClubScreen() {
   // visa "år 0" under hela spelarens faktiska första säsong.
   const seasonCount = game.managerProfile?.seasonsAtClub ?? 1
   const openMemories = (game.activeAnniversaries ?? []).length
+  // inv-2-21b-getarcmoodtext (DOM 2026-09-03, Opus): en dämpad rad i tränarbågens
+  // status-område, direkt under epok-etiketten — enda ytan i koden som visar en
+  // arc-liknande indikator.
+  const arcMoodText = computeArcMoodText(game)
 
   return (
     <div className="screen-col-layout">
@@ -101,6 +116,11 @@ export function ClubScreen() {
             <SectionLabel style={{ color: 'var(--text-light-secondary)', margin: 0 }}>
               {`Epok · år ${seasonCount}`}
             </SectionLabel>
+            {arcMoodText && (
+              <div style={{ fontSize: 11, color: 'var(--text-light-secondary)', opacity: 0.75, marginTop: 4 }}>
+                {arcMoodText}
+              </div>
+            )}
           </div>
           {openMemories > 0 && (
             <div style={{ borderLeft: '1px solid rgba(255,255,255,.15)', paddingLeft: 12 }}>

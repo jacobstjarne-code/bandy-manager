@@ -1134,6 +1134,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const objectiveHistory = game.boardObjectiveHistory ?? []
   let bufferEligibleObjectiveDelta = 0
   let unprotectedObjectiveDelta = 0
+  // sluttest-objektivminne-text (TEXT LÅST 2026-09-03, Opus): mekaniken har
+  // spårat upprepade missade objektiv sedan styrelseobjektiv-tier-domen
+  // (2026-08-25), men ingen text erkände temat för spelaren. Flaggan fångar
+  // om NÅGOT objektiv denna säsong var en upprepning — styrelsens replik är
+  // medvetet neutral om magnitud (nämner inte buffer-skyddet), så texten
+  // inte lovar en tyngd mekaniken inte har.
+  let anyRepeatedObjectiveFailureThisSeason = false
   for (const obj of game.boardObjectives ?? []) {
     const result = evaluateObjective(obj, game)
     objectiveStatuses.push(result.status)
@@ -1158,8 +1165,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     if (isRepeatedObjectiveFailure(obj.id, cost, objectiveHistory)) {
       bufferEligibleObjectiveDelta += cost * REPEATED_FAILURE_BUFFER_PROTECTION
       unprotectedObjectiveDelta += cost * (1 - REPEATED_FAILURE_BUFFER_PROTECTION)
+      anyRepeatedObjectiveFailureThisSeason = true
     } else {
       bufferEligibleObjectiveDelta += cost
+    }
+  }
+  if (anyRepeatedObjectiveFailureThisSeason && boardAssessment) {
+    boardAssessment = {
+      ...boardAssessment,
+      seasonAcknowledgment: `${boardAssessment.seasonAcknowledgment} Styrelsen minns. Samma mål missades förra säsongen också, och ordföranden behövde inte slå upp det.`,
     }
   }
   const objectiveOutcome = {
