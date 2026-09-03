@@ -89,6 +89,7 @@ import {
 } from '../../domain/data/landslagText'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
+import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTalkService'
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
@@ -2439,6 +2440,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         }
       }
       updatedGame = { ...updatedGame, managerProfile: profileWithH2H }
+    }
+
+    // DOM_PEPTALK_YTA_2026-09-02, Beslut 3 — loggar det VISADE citatets
+    // semanticKey NÄR matchen avgörs (samma "logga NÄR DE VISAS"-mönster som
+    // burnout ovan), inte varje omgångspassering. Gated på
+    // justCompletedManagedFixture: en repeterad körning mot SAMMA senaste
+    // match (ingen ny match spelad denna omgång) hade annars fått sin egen
+    // tidigare skrivning att visa som on-cooldown för sig själv och drivit
+    // fram ett annat index än det som faktiskt en gång loggades.
+    if (justCompletedManagedFixture) {
+      const pepSelection = selectPepTalk(updatedGame)
+      if (pepSelection) {
+        const pepKey = `${PEPTALK_QUOTE_PREFIX}${pepSelection.category}_${pepSelection.index}`
+        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, pepKey, updatedGame.currentSeason, nextMatchday) }
+      }
     }
 
     // Squad-pulse sampling — samlas på samma ställe som fatigueHistory

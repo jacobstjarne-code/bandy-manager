@@ -1,33 +1,32 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCurrentAct } from './seasonActService'
+import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
 
 /**
- * TVÅ SORTERS DÖD KOD — TEXT-UTAN-YTA (CLAUDE.md), dödmarkerad 2026-08-27
- * (Jacobs dom, `RAPPORT_DODA_FUNKTIONER_2026-08-27.md`): "Den hade en yta
- * som togs bort medvetet och Portal fick aldrig rollen. Det är text som
- * väntar på en yta, inte skräp."
+ * DOM_PEPTALK_YTA_2026-09-02 (Opus + Jacob): wirad till förbered-fasen som
+ * en tränar-reflektion inför nästa match (INTE ambient PortalBeat — dessa
+ * repliker är efter-match-reflektioner som blickar framåt, "omklädningsrums-
+ * tal", för specifika/reaktiva för bakgrund). Konsumeras av MatchScreen.tsx
+ * i förbered-fasen. Texten (21 låsta repliker, fem kategorier) och den
+ * deterministiska round-seedningen är oförändrade sedan `f7580371`.
  *
- * Byggd i `f7580371` ("pep-talk — tränarcitat på dashboard efter varje
- * omgång") MED en hemvist — den gamla `DashboardScreen`. Konsumenten
- * försvann i `4a417895` ("remove dead DashboardScreen + 6 orphaned
- * dependencies") när Dashboard byttes ut mot Portal. `getPepTalk` fick
- * ALDRIG en ny anropare — noll träffar i `src/` idag utanför denna fil.
- * Texten (21 låsta repliker, fem kategorier) och mekaniken (deterministiskt
- * seedad på rundnummer, redan `played===0`-gated) är oförändrat kvalitativa
- * — det är hemvisten som saknas, inte innehållet.
- *
- * RADERA INTE. Om Portal ska få en peptalk hör den hemma som en PortalBeat-
- * rad på D1:s ambient-nivå, inte som ett eget kort (Jacobs anteckning,
- * `docs/BACKLOG.md`, "BYGGT MEN OSYNLIGT") — en designfråga, inte
- * prioriterad.
+ * Beslut 3 (cooldown): replikvalet undviker nu samma index den senast
+ * visade genom `pickPoolIndexAvoidingCooldown` (narrativeBeatLog, samma
+ * primitiv som burnoutReliefService.ts) — samma peptalk kommer inte upprepat
+ * innan hela poolen för kategorin har roterat. RÄTT lager per
+ * DOM_LIGGARE_COOLDOWN_GRANS: detta är VISNING-cooldown, inte kanon.
  */
+
+export type PepTalkCategory = 'win' | 'loss' | 'draw' | 'crisis' | 'top'
+
+export const PEPTALK_QUOTE_PREFIX = 'peptalk_'
 
 const PEP_WIN = [
   'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
   'Två poäng. Inget snack. Nu fokuserar vi framåt.',
   'Det fanns ett beslut i omklädningsrummet före avslag. Ni valde rätt.',
   'Jag ser spelare som tror på varandra. Det är farligare än talang.',
-  'Bra matcher vinner man med fötterna. Stora matcher vinner man med huvudet.',
+  'Bra matcher vinner man med skridskorna. Stora matcher vinner man med huvudet.',
 ]
 
 const PEP_LOSS = [
@@ -56,7 +55,28 @@ const PEP_TOP = [
   'Njut inte ännu. Njut i mars.',
 ]
 
-export function getPepTalk(game: SaveGame): string | null {
+const POOL_BY_CATEGORY: Record<PepTalkCategory, string[]> = {
+  win: PEP_WIN,
+  loss: PEP_LOSS,
+  draw: PEP_DRAW,
+  crisis: PEP_CRISIS,
+  top: PEP_TOP,
+}
+
+export interface PepTalkSelection {
+  category: PepTalkCategory
+  index: number
+  /** roundNumber på matchen reflektionen gäller — bara relevant för win/loss/draw:s aktsuffix. */
+  lastFixtureRoundNumber: number
+}
+
+/**
+ * Ren härledning: vilken kategori/replikindex gäller för spelarens senast
+ * spelade match. Delad av getPepTalk (render) och roundProcessor.ts (loggar
+ * `${PEPTALK_QUOTE_PREFIX}${category}_${index}` som en narrativeBeatLog-post
+ * när matchen avgörs, samma "logga NÄR DE VISAS"-mönster som burnout).
+ */
+export function selectPepTalk(game: SaveGame): PepTalkSelection | null {
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   if (!standing || standing.played === 0) return null
 
@@ -70,21 +90,40 @@ export function getPepTalk(game: SaveGame): string | null {
   const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore
   const theirScore = isHome ? lastFixture.awayScore : lastFixture.homeScore
 
-  // Use round number as deterministic seed for quote selection
+  // Use round number as deterministic tie-break seed for quote selection
   const seed = lastFixture.roundNumber
 
+  let category: PepTalkCategory
   // Crisis: position 11-12 or way more losses than wins
   if (standing.position >= 11 || standing.losses >= standing.wins + 3) {
-    return PEP_CRISIS[seed % PEP_CRISIS.length]
+    category = 'crisis'
+  // Top: position 1-3 after 5+ rounds
+  } else if (standing.position <= 3 && standing.played >= 5) {
+    category = 'top'
+  } else if (myScore > theirScore) {
+    category = 'win'
+  } else if (myScore < theirScore) {
+    category = 'loss'
+  } else {
+    category = 'draw'
   }
 
-  // Top: position 1-3 after 5+ rounds
-  if (standing.position <= 3 && standing.played >= 5) {
-    return PEP_TOP[seed % PEP_TOP.length]
-  }
+  const poolLength = POOL_BY_CATEGORY[category].length
+  const index = pickPoolIndexAvoidingCooldown(game, game.currentSeason, poolLength, `${PEPTALK_QUOTE_PREFIX}${category}_`, seed, 1)
+
+  return { category, index, lastFixtureRoundNumber: lastFixture.roundNumber }
+}
+
+export function getPepTalk(game: SaveGame): string | null {
+  const selection = selectPepTalk(game)
+  if (!selection) return null
+  const { category, index, lastFixtureRoundNumber } = selection
+  const text = POOL_BY_CATEGORY[category][index]
+
+  if (category === 'crisis' || category === 'top') return text
 
   // Act-based suffix added to result quotes
-  const act = getCurrentAct(lastFixture.roundNumber)
+  const act = getCurrentAct(lastFixtureRoundNumber)
   const ACT_SUFFIX: Record<typeof act, string> = {
     1: ' Säsongen är ung — varje match är lärdom.',
     2: ' Vintern testar viljan. Ni bestämmer.',
@@ -93,8 +132,5 @@ export function getPepTalk(game: SaveGame): string | null {
   }
   const suffix = act >= 3 ? ACT_SUFFIX[act] : ''
 
-  // Result-based
-  if (myScore > theirScore) return PEP_WIN[seed % PEP_WIN.length] + suffix
-  if (myScore < theirScore) return PEP_LOSS[seed % PEP_LOSS.length] + suffix
-  return PEP_DRAW[seed % PEP_DRAW.length] + suffix
+  return text + suffix
 }

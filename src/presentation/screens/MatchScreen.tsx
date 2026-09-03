@@ -23,6 +23,7 @@ import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance, buildAttendanceParams } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
+import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
 import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
@@ -448,6 +449,20 @@ export function MatchScreen() {
             <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
           </div>
         )}
+        {/* Tränar-reflektionen — DOM_PEPTALK_YTA_2026-09-02: en bro mellan
+            matcher, inte en ambient rad. Samma card-round/h-quote-sm-språk
+            som Stämningskortet nedan. */}
+        {lastCompletedFixture && (() => {
+          const pepTalk = getPepTalk(game)
+          if (!pepTalk) return null
+          return (
+            <div className="card-round" style={{ margin: '0 0 12px', padding: '8px 12px' }}>
+              <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>
+                {pepTalk}
+              </p>
+            </div>
+          )
+        })()}
         {/* Combined match info + weather card — ABOVE stepper */}
         {nextFixture && (
           <div style={{ marginBottom: 8 }}>
