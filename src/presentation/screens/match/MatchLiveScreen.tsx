@@ -834,7 +834,18 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
-      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
+      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
+      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
+      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
+      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
+      if (!isCommentaryMode) {
+        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
+          setMatchDone(true)
+          if (isSmFinal || isCupFinal) setCeremonySlide(1)
+        } else {
+          setCurrentStep(prev => prev + 1)
+        }
+      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -904,7 +915,18 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActivePenalty(null)
       setPenaltyOutcome(null)
-      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
+      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
+      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
+      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
+      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
+      if (!isCommentaryMode) {
+        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
+          setMatchDone(true)
+          if (isSmFinal || isCupFinal) setCeremonySlide(1)
+        } else {
+          setCurrentStep(prev => prev + 1)
+        }
+      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -977,7 +999,18 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActiveCounter(null)
       setCounterOutcome(null)
-      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
+      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
+      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
+      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
+      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
+      if (!isCommentaryMode) {
+        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
+          setMatchDone(true)
+          if (isSmFinal || isCupFinal) setCeremonySlide(1)
+        } else {
+          setCurrentStep(prev => prev + 1)
+        }
+      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -1049,7 +1082,21 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
-      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
+      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
+      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
+      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
+      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
+      // En fjärde instans av samma klass (utöver corner/straff/kontring) —
+      // upptäckt i samma grep, fixad i samma pass för att stänga hela
+      // klassen, inte bara de tre uttryckligen namngivna.
+      if (!isCommentaryMode) {
+        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
+          setMatchDone(true)
+          if (isSmFinal || isCupFinal) setCeremonySlide(1)
+        } else {
+          setCurrentStep(prev => prev + 1)
+        }
+      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
