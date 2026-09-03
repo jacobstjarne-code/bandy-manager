@@ -12,6 +12,18 @@ const GOAL_RATE_MOD = 0.936
 // 2019-2026, 100% täckning) — 7,7% 5-min / 92,1% 10-min över hela datasetet.
 const SUSPENSION_TEN_MIN_BASE = 0.921
 
+// DOM_DOMARRELATION_2026-09-02 (Jacobs beslut, nivå 3): domarens ackumulerade
+// clubReaction (-2..2, refereeService.ts) mot den hanterade klubben ger en
+// MARGINELL nudge på hur ofta utvisningar/straff döms MOT klubben när den
+// försvarar — aldrig i klubbens favör mot motståndaren (domen: "mot dig",
+// inte "för dig mot dem"). SKYDDAT: "en domare får ALDRIG avgöra en match
+// ensam" — 3% per poäng ger ±6% vid extremvärdena (-2/+2), en böjning av
+// marginalen, inte ett utslag. PROPOSAL, inte låst — Jacob dömer magnituden
+// efter mätning + playtest (nemesis vs rigg, se domens GODKÄNT NÄR punkt 5).
+// Default (odefinierat/0) = no-op, baskalibrering orörd — samma konvention
+// som managedIsHome ovan.
+const REFEREE_ATTITUDE_FOUL_STEP = 0.03
+
 // Två oberoende grindar i canScore(): båda måste vara uppfyllda
 // för att en målscen ska kunna konvertera.
 //
@@ -1053,6 +1065,15 @@ function* simulateMatchCore(
     const attackingClubId   = isHomeAttacking ? fixture.homeClubId : fixture.awayClubId
     const defendingClubId   = isHomeAttacking ? fixture.awayClubId : fixture.homeClubId
 
+    // DOM_DOMARRELATION_2026-09-02: nudgen gäller bara när den HANTERADE
+    // klubben försvarar (domen: fler/färre domslut MOT dig) — aldrig när
+    // motståndaren försvarar mot dig. managedIsHome undefined = AI-match,
+    // ingen nudge (relationen finns bara ur den hanterade klubbens perspektiv).
+    const isManagedDefending = managedIsHome !== undefined && (isHomeAttacking !== managedIsHome)
+    const refereeFoulMult = isManagedDefending
+      ? 1 - (input.refereeClubReaction ?? 0) * REFEREE_ATTITUDE_FOUL_STEP
+      : 1.0
+
     const attAttack      = isHomeAttacking ? homeAttack : awayAttack
     const defDefense     = isHomeAttacking ? awayDefense : homeDefense
     const defGK          = isHomeAttacking ? awayGK  : homeGK
@@ -1105,7 +1126,7 @@ function* simulateMatchCore(
       let penaltyFiredThisStep = false
       if (chanceQuality > 0.40) {
         const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
-        const penProb = 0.19 * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
+        const penProb = 0.19 * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff) * refereeFoulMult
         if (rand() < penProb) {
           const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore, currentContributingFactors(isHomeAttacking))
           for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }
@@ -1380,7 +1401,7 @@ function* simulateMatchCore(
       // M15 (regelboksanpassning 2026-07-03): 1.46→1.02. Diskreta 5/10-minutersutvisningar
       // (var kontinuerligt 4,5-9 min) höjde snittlängden ~43% — sänkt frekvens kompenserar
       // så att totala utvisningsminuter/match bevaras (se commit för mätning).
-      const foulThreshold = foulProb * 1.02 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult  // M15 2026-07-03: was 1.46 (1.25 pre-25b.2.2)
+      const foulThreshold = foulProb * 1.02 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult * refereeFoulMult  // M15 2026-07-03: was 1.46 (1.25 pre-25b.2.2)
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70

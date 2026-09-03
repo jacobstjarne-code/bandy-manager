@@ -105,5 +105,10 @@ export function resolveSubjectName(game: SaveGame, subject?: EventLedgerEntry['s
       // aldrig bara "returnera game.patron.name": en avgången patron kan ha
       // ersatts av en ny med annat id innan en gammal liggarpost renderas.
       return game.patron?.id === subject.id ? game.patron.name : undefined
+    case 'referee': {
+      // DOM_DOMARRELATION_2026-09-02.md — samma mönster som player/club.
+      const ref = (game.referees ?? []).find(r => r.id === subject.id)
+      return ref ? `${ref.firstName} ${ref.lastName}` : undefined
+    }
   }
 }

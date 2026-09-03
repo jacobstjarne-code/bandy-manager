@@ -329,6 +329,14 @@ export function simulateRound(
     const referee = pickRefereeForMatch(updatedReferees, updatedRefereeRelations, nextMatchday, mulberry32(baseSeed + i + 9999))
 
     const isThisManaged = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
+    // DOM_DOMARRELATION_2026-09-02: domarens attityd MOT den hanterade
+    // klubben, ackumulerad från TIDIGARE möten (relationen som fanns innan
+    // denna match, inte den som skrivs efter den). Bara satt för matcher
+    // den hanterade klubben faktiskt spelar — relationen finns bara ur dess
+    // perspektiv, AI-vs-AI-matcher ska inte påverkas.
+    const refereeClubReactionForMatch = isThisManaged
+      ? updatedRefereeRelations.find(r => r.refereeId === referee.id)?.clubReaction
+      : undefined
     const managedChem = isThisManaged
       ? calculateLineupChemistry(
           (isManagedHome ? homeLineup : awayLineup).startingPlayerIds
@@ -356,6 +364,7 @@ export function simulateRound(
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
       refStyle: referee.style,
       refereeName: getRefereeDisplayName(referee),
+      refereeClubReaction: refereeClubReactionForMatch,
       underdogBoost: game.currentSeasonSignature?.modifiers.underdogBoost,
       homeChemistry: isManagedHome ? managedChem : undefined,
       awayChemistry: !isManagedHome ? managedChem : undefined,

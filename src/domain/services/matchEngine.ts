@@ -37,6 +37,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     storylines,
     fixtureMonth,
     underdogBoost,
+    refereeClubReaction,
   } = input
 
   // ── Run first half (fast mode) ───────────────────────────────────────────
@@ -59,6 +60,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     storylines,
     fixtureMonth,
     underdogBoost,
+    refereeClubReaction,
     mode: 'fast' as const,
   }
 

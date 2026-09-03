@@ -85,6 +85,11 @@ export interface SimulateMatchInput {
   fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
+  /** DOM_DOMARRELATION_2026-09-02: domarens ackumulerade attityd (clubReaction,
+   *  refereeService.ts) mot den HANTERADE klubben, -2..2. Odefinierat/0 = no-op
+   *  (samma konvention som managedIsHome) — bara satt av matchSimProcessor.ts
+   *  för matcher den hanterade klubben faktiskt spelar. */
+  refereeClubReaction?: -2 | -1 | 0 | 1 | 2
   underdogBoost?: number  // dream_round signature: boosts weaker team's attack
   homeChemistry?: import('./chemistryService').PairChemistry[]
   awayChemistry?: import('./chemistryService').PairChemistry[]
@@ -331,6 +336,11 @@ export interface StepByStepInput {
   currentMatchday?: number        // C-T9 — needed to check if sale is recent
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
+  /** DOM_DOMARRELATION_2026-09-02: domarens ackumulerade attityd (clubReaction,
+   *  refereeService.ts) mot den HANTERADE klubben, -2..2. Odefinierat/0 = no-op
+   *  (samma konvention som managedIsHome) — bara satt av matchSimProcessor.ts
+   *  för matcher den hanterade klubben faktiskt spelar. */
+  refereeClubReaction?: -2 | -1 | 0 | 1 | 2
   arenaName?: string
   underdogBoost?: number  // dream_round signature: boosts weaker team's attack
   homeChemistry?: import('./chemistryService').PairChemistry[]

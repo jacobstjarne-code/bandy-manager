@@ -1695,8 +1695,44 @@ export function resolveEvent(
               r.refereeId === refId ? { ...r, clubReaction: newReaction } : r
             ),
           }
+          // DOM_DOMARRELATION_2026-09-02 (Jacobs beslut, nivå 3): clubReaction-
+          // valet blir sant på riktigt — när attityden korsar en tröskel (in
+          // i -2/+2 FRÅN ett mindre extremt läge, aldrig bara "ligger kvar
+          // där") skrivs en liggarpost, samma steg-2-3-mönster som patron/
+          // burnout. Första gången SKAPAR relationen (existing===undefined)
+          // kan aldrig träffa tröskeln direkt (delta är max ±1) — bara denna
+          // gren kan korsa. madeByPlayer: true — bara ett spelarval når hit.
+          if (newReaction === -2 && existing.clubReaction > -2) {
+            updatedGame = {
+              ...updatedGame,
+              eventLedger: logEvent(updatedGame, {
+                type: 'referee_feud',
+                semanticKey: `referee_feud_${refId}`,
+                season: updatedGame.currentSeason,
+                matchday: updatedGame.currentMatchday,
+                subject: { kind: 'referee', id: refId },
+                significance: 65,
+                madeByPlayer: true,
+              }),
+            }
+          } else if (newReaction === 2 && existing.clubReaction < 2) {
+            updatedGame = {
+              ...updatedGame,
+              eventLedger: logEvent(updatedGame, {
+                type: 'referee_trust',
+                semanticKey: `referee_trust_${refId}`,
+                season: updatedGame.currentSeason,
+                matchday: updatedGame.currentMatchday,
+                subject: { kind: 'referee', id: refId },
+                significance: 65,
+                madeByPlayer: true,
+              }),
+            }
+          }
         } else {
-          // First time — create relation
+          // First time — create relation. delta är max ±1 (en enda mötes-
+          // choice), kan aldrig träffa ±2-tröskeln direkt — ingen liggarpost
+          // härifrån, se grenen ovan.
           const newReaction = Math.max(-2, Math.min(2, delta)) as -2 | -1 | 0 | 1 | 2
           updatedGame = {
             ...updatedGame,

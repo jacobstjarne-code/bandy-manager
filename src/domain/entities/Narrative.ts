@@ -181,6 +181,13 @@ export type EventLedgerType =
   // medvetet skild från mecenat_withdrawal — grundpelarens uttåg är en egen,
   // tyngre sak (domens ord), inte samma händelse på en annan entitet.
   | 'patron_emerge' | 'patron_withdrawal'
+  // DOM_DOMARRELATION_2026-09-02 (Jacobs beslut, nivå 3) — clubReaction-
+  // valet (respekt/protest) blir sant på riktigt: när den ackumulerade
+  // domar-attityden korsar en tröskel (genuin fejd vid -2, genuint
+  // förtroende vid +2) skrivs en liggarpost. Två separata typer, samma
+  // polaritetsmönster som patron_emerge/withdrawal och sponsor_positive/
+  // negative — inte en typ + outcome-fält.
+  | 'referee_feud' | 'referee_trust'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -234,7 +241,10 @@ export interface EventLedgerEntry {
   // samma polymorfa union, en fjärde entitetstyp. Patron.id är fältet
   // subject.id pekar på (aldrig patron.name — id är en identitet, namnet
   // slås upp via id:t vid vy-tillfället, samma mönster som player/club/mecenat).
-  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron'; id: string }
+  // 'referee' tillagd DOM_DOMARRELATION_2026-09-02.md (Jacobs dom) — samma
+  // polymorfa union, en femte entitetstyp. Referee.id (redan ett stabilt
+  // id-fält, ingen patron-liknande migrering behövs).
+  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee'; id: string }
   // Skärpning 3 (Fas 4 Moment-vägval, 2026-09-01, Opus dom): för genuint
   // två-parts-händelser — en Moment som redan bär BÅDA subjectPlayerId OCH
   // subjectClubId (transfer_story: spelaren + köpande klubben; rival_sale:
