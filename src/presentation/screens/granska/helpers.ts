@@ -1,5 +1,5 @@
 import { MatchEventType, FixtureStatus } from '../../../domain/enums'
-import type { Fixture } from '../../../domain/entities/Fixture'
+import type { Fixture, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
@@ -27,6 +27,35 @@ export function getStartedTiredDirection(
   if (belowFloor) return 'bad'
   if (rating !== undefined) return rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral'
   return fallbackDir
+}
+
+/**
+ * High-prioritering (GPT-fynd 2026-09-03, verifierat mot 5–0→7–7-matchen där
+ * pausbeslutet aldrig nådde ytan): "Dina val" tog tidigare de FÖRSTA fyra
+ * loggposterna i befintlig ordning — lågprioriterade automatiska
+ * started_tired-rader kunde då fylla hela kvoten innan ett pausbeslut
+ * (managerhandling) ens hann in i log-arrayen. Rangordnar loggen FÖRE
+ * fyra-begränsningen, inte istället för den: en managerhandling ska aldrig
+ * trängas undan av en automatiskt härledd konditionsrad. Stabil sortering
+ * (Array.prototype.sort är garanterat stabil sedan ES2019) bevarar
+ * kronologisk ordning INOM varje prioritetsnivå — bara nivåerna själva
+ * omordnas.
+ *
+ * Fyra nivåer, Jacobs dom: (1) pausbeslut + aktiva matchbeslut
+ * (halftime_tactic/pep_talk), (2) kapten/ledarskap (captain), (3) aktivt
+ * vald spelarrotation (bench_fit — vilad-ersättaren), (4) automatiska
+ * started_tired-rader, lägst prioritet.
+ */
+const MANAGER_CHOICE_PRIORITY: Record<ManagerChoiceEntry['type'], number> = {
+  halftime_tactic: 0,
+  pep_talk: 0,
+  captain: 1,
+  bench_fit: 2,
+  started_tired: 3,
+}
+
+export function rankManagerChoiceLog(log: ManagerChoiceEntry[]): ManagerChoiceEntry[] {
+  return [...log].sort((a, b) => MANAGER_CHOICE_PRIORITY[a.type] - MANAGER_CHOICE_PRIORITY[b.type])
 }
 
 /**

@@ -16,7 +16,7 @@ import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
-import { generateQuickSummary, getStartedTiredDirection, getSecondHalfKvittoDir, findRotationSubstituteRating, resolvedWithAssertedLabel } from './helpers'
+import { generateQuickSummary, getStartedTiredDirection, getSecondHalfKvittoDir, findRotationSubstituteRating, resolvedWithAssertedLabel, rankManagerChoiceLog } from './helpers'
 import { DecisionCard } from '../../components/DecisionCard'
 import { getEffectiveDecisionMode } from '../../../domain/services/decisionTierService'
 import { Swords } from 'lucide-react'
@@ -758,7 +758,10 @@ export function GranskaOversikt({
         const rows: OutcomeRow[] = []
         const findPlayer = (id?: string) => id ? game.players.find(p => p.id === id) : undefined
 
-        for (const entry of log) {
+        // GPT-fynd 2026-09-03: rangordna FÖRE fyra-begränsningen — en
+        // managerhandling (pausbeslut/kapten/rotation) får aldrig trängas
+        // undan av automatiska started_tired-rader. Se rankManagerChoiceLog.
+        for (const entry of rankManagerChoiceLog(log)) {
           const i = rows.length
           if (i >= 4) break
           if (entry.type === 'halftime_tactic') {
