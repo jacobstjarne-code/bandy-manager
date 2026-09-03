@@ -1042,8 +1042,10 @@ export const useGameStore = create<GameState>()(
         // HIGH 6 (auditen 2026-08-29): anläggningsbygget är ett av säsongens
         // beslut men går aldrig via resolveEvent — det finns varken GameEvent
         // eller choiceId här. Kandidaten fångas därför med den parallella
-        // infångaren, och läggs på seasonDecisionCandidates i exakt samma form
-        // som eventResolver.ts:s händelsebaserade väg gör.
+        // infångaren och skrivs till liggaren i exakt samma form som
+        // eventResolver.ts:s händelsebaserade väg gör (LIGGARE-PRIO 4,
+        // 2026-09-03: seasonDecisionCandidates-fältet retirerat, årsboken
+        // läser bara liggaren via pickMostImportantDecisionText).
         const gameAfter: SaveGame = {
           ...game,
           facilityState: newState,
@@ -1064,7 +1066,6 @@ export const useGameStore = create<GameState>()(
           game: decisionCandidate
             ? {
                 ...gameAfter,
-                seasonDecisionCandidates: [...(gameAfter.seasonDecisionCandidates ?? []), decisionCandidate],
                 eventLedger: logEvent(
                   gameAfter,
                   buildDecisionLedgerEntry(decisionCandidate, decisionCandidate.eventId, gameAfter.currentMatchday),

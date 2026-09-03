@@ -802,12 +802,10 @@ export function gameFlowActions(get: Get, set: Set) {
               // gameStore.startFacilityBuildNode). Samma beslut, samma
               // infångare — att bara haka på den ena hade återskapat precis
               // den halvt applicerade fixen HIGH 6 handlar om.
+              // LIGGARE-PRIO 4 (2026-09-03): seasonDecisionCandidates-fältet
+              // retirerat, årsboken läser bara liggaren.
               const facilityCandidate = captureFacilityBuildDecision(game, updatedGame, choiceId, def.cost)
               if (facilityCandidate) {
-                updatedGame.seasonDecisionCandidates = [
-                  ...(updatedGame.seasonDecisionCandidates ?? []),
-                  facilityCandidate,
-                ]
                 updatedGame.eventLedger = logEvent(
                   updatedGame,
                   buildDecisionLedgerEntry(facilityCandidate, facilityCandidate.eventId, updatedGame.currentMatchday),

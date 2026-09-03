@@ -39,21 +39,13 @@ describe('gameStore — direkta ekonomiactions loggas', () => {
     }))
   })
 
-  it('dual-writar direkt anläggningsbygge till kandidat och händelseliggare utan prosa', () => {
+  it('loggar direkt anläggningsbygge till händelseliggaren utan prosa', () => {
     useGameStore.setState({ game: makeFinancedGame() })
 
     const result = useGameStore.getState().startFacilityBuildNode('varmestuga', 'club')
     const game = useGameStore.getState().game!
 
     expect(result.success).toBe(true)
-    expect(game.seasonDecisionCandidates).toContainEqual(expect.objectContaining({
-      eventId: 'facility_varmestuga_s2025',
-      systemsAffectedCount: 3,
-      irreversible: true,
-      tension: true,
-      moneyAmount: 120000,
-      sentence: expect.any(String),
-    }))
     expect(game.eventLedger).toContainEqual({
       type: 'decision',
       semanticKey: 'facility_varmestuga_s2025',
@@ -70,16 +62,12 @@ describe('gameStore — direkta ekonomiactions loggas', () => {
     expect(game.eventLedger?.at(-1)).not.toHaveProperty('sentence')
   })
 
-  it('dual-writar Valet-bygget på samma sätt och behåller gamla kandidaten', () => {
+  it('loggar Valet-bygget till händelseliggaren på samma sätt', () => {
     useGameStore.setState({ game: makeFinancedGame() })
 
     useGameStore.getState().completeScene('valet', 'varmestuga')
     const game = useGameStore.getState().game!
 
-    expect(game.seasonDecisionCandidates).toContainEqual(expect.objectContaining({
-      eventId: 'facility_varmestuga_s2025',
-      sentence: expect.any(String),
-    }))
     expect(game.eventLedger).toContainEqual(expect.objectContaining({
       type: 'decision',
       semanticKey: 'facility_varmestuga_s2025',

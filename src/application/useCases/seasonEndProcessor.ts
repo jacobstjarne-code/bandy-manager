@@ -1728,12 +1728,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // meningen när fältet finns.
     objectiveOutcome,
     // O18 fält 2, uppdaterad A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md).
-    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET:
-    // läser nu game.eventLedger i stället för det spridda seasonDecisionCandidates
-    // (samtliga tre kandidatkällor dual-writer dit sedan Fas 2). Samma
+    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — läser
+    // game.eventLedger (samtliga tre kandidatkällor dual-writer dit). Samma
     // femstegsvektor, samma fallback-text (Jacobs ord, ordagrant) vid noll
     // kvalificerande — pickMostImportantDecisionText bär SEASON_DECISION_NONE_TEXT
-    // internt.
+    // internt. Det gamla spridda fältet seasonDecisionCandidates retirerat
+    // LIGGARE-PRIO 4 (2026-09-03).
     mostImportantDecision: pickMostImportantDecisionText(game, game.currentSeason),
   }
 
@@ -2145,10 +2145,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...(game.boardObjectiveHistory ?? []),
       ...objectiveResults,
     ],
-    // O18 fält 2: kandidaterna är redan konsumerade ovan (mostImportantDecision).
-    // Nollställd för nästa säsong — annars skulle en gammal säsongs beslut
-    // kunna vinna en framtida säsongs rankning.
-    seasonDecisionCandidates: [],
     trainerArc: checkSeasonEndArc(
       game.trainerArc ?? { current: 'newcomer', history: [], seasonCount: 0, bestFinish: 12, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false },
       game.playoffBracket?.champion === game.managedClubId,

@@ -111,8 +111,9 @@ export function appendMomentsAndEntriesToLedger(
 /**
  * Läsvägen (Fas 4): recentMoments-VYN blir en läsning av liggaren i stället
  * för det cappade fältet. `game.recentMoments` skrivs fortfarande (dual-write
- * tills ALLA läsare — collectActiveMemories m.fl. — flyttat, se
- * migreringsplanens retire-last-regel), men ClubMemoryView läser härifrån.
+ * tills ALLA läsare flyttat, se migreringsplanens retire-last-regel), men
+ * ClubMemoryView läser härifrån. collectActiveMemories (den tidigare andra
+ * läsaren) retirerad LIGGARE-PRIO 4 (2026-09-03, noll produktionskonsumenter).
  */
 export type MomentLedgerEntry = EventLedgerEntry & { type: MomentSource }
 

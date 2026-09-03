@@ -263,7 +263,7 @@ export interface SeasonSummary {
   /** O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
    *  säsongens viktigaste beslut — den rankade vinnaren bland de O19-märkta
    *  systemhandelse-val spelaren faktiskt löste (seasonDecisionCaptureService.ts,
-   *  pickSeasonDecision). undefined = ingen sådan handelse löstes denna
+   *  pickSeasonDecisionFromLedger). undefined = ingen sådan handelse löstes denna
    *  säsong, vilket är korrekt: "en säsong utan tungt beslut ska se ut som
    *  en säsong utan tungt beslut." Färdig mening, ingen mall kvar att fylla. */
   mostImportantDecision?: string

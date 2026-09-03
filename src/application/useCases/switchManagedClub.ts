@@ -295,7 +295,6 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     seasonGoalChosenForSeason: undefined,
     activeSeasonGoal: undefined,
     pendingSeasonTransitionEvents: [],
-    seasonDecisionCandidates: [],
   }
 
   const signature = createSeasonSignature(

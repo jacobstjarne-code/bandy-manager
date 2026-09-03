@@ -2189,14 +2189,13 @@ export function resolveEvent(
   // aldrig var med om att fatta. Gated nu på madeByPlayer.
   const candidate = madeByPlayer ? captureSystemDecision(game, updatedGame, event, choiceId) : null
   if (candidate) {
-    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET.
-    // Skriver INTE längre seasonDecisionCandidates här — årsboken
-    // (seasonEndProcessor.ts) läser liggaren via pickMostImportantDecisionText
-    // sedan alla tre kandidatkällor (denna, gameStore.ts, gameFlowActions.ts)
-    // dual-writer. `candidate` bärs bara vidare till buildDecisionLedgerEntry,
-    // aldrig till det gamla fältet. Fältet SaveGame.seasonDecisionCandidates
-    // finns kvar (store/-skrivarna refererar typen fortfarande) men är dött
-    // härifrån.
+    // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET,
+    // fullbordad LIGGARE-PRIO 4 (2026-09-03): fältet SaveGame.
+    // seasonDecisionCandidates är borttaget, alla tre kandidatkällor (denna,
+    // gameStore.ts, gameFlowActions.ts) skriver bara till eventLedger.
+    // `candidate` bärs vidare till buildDecisionLedgerEntry — årsboken
+    // (seasonEndProcessor.ts) läser sedan liggaren via
+    // pickMostImportantDecisionText.
     //
     // semanticKey = `${event.type}:${choiceId}`, finkornigare än narrativeBeatLog-
     // skrivningens rena event.type ovan — composeSeasonDecisionSentence

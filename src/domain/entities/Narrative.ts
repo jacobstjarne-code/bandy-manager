@@ -262,7 +262,7 @@ export interface EventLedgerEntry {
   // ── BESLUTS-NATUR (skärpning 2026-09-01, Opus dom, Fas 2-vägval) ──
   // Sätts BARA av type:'decision'-byggare — A-H9:s rangordningsvektor
   // (namngiven person → irreversibelt → spänning → antal system → kr) så
-  // pickSeasonDecision (seasonDecisionCaptureService.ts) kan rekonstrueras
+  // pickSeasonDecisionFromLedger (seasonDecisionCaptureService.ts) kan rekonstrueras
   // EXAKT ur liggaren, ingen kvalitetsförlust mot dagens rangordning.
   // En derby-vinst/skada sätter ALDRIG dessa fält — annars luddar de upp
   // schemat för alla andra händelsetyper. Beslutets natur, inte dekoration.

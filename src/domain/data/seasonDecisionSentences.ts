@@ -19,9 +19,9 @@
  * interpolationen nedan är färdigwirade — men MALLARNA ÄR TOMMA. Med tom mall
  * returnerar getters nedan `null`, och byggaren i
  * seasonDecisionCaptureService.ts returnerar då `null` istället för en kandidat
- * med tom mening. Det är den bärande invarianten: en tom mening får ALDRIG in i
- * `seasonDecisionCandidates`, för då kan pickSeasonDecision välja den och
- * årsboken renderar en blank rad — sämre än att falla tillbaka på
+ * med tom mening. Det är den bärande invarianten: en tom mening får ALDRIG
+ * skrivas till händelseliggaren, för då kan pickSeasonDecisionFromLedger välja
+ * den och årsboken renderar en blank rad — sämre än att falla tillbaka på
  * SEASON_DECISION_NONE_TEXT. Testet
  * `seasonDecisionCaptureService.test.ts` → "tom mall ⇒ ingen kandidat" bevakar
  * det, och `sentenceFor*`-funktionerna nedan är exporterade separat så att

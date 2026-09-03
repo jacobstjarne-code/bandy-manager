@@ -1690,9 +1690,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     pendingVictoryEcho,
     victoryEchoExpires,
     // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 — dual-write, INVARIANTEN håller:
-    // fältet skrivs oförändrat (samma cap-5, samma konsumenter som idag,
-    // t.ex. collectActiveMemories) tills dess sista läsare flyttat till
-    // liggaren. Retireras sist, inte i denna omgång.
+    // fältet skrivs oförändrat (samma cap-5) tills dess sista läsare flyttat
+    // till liggaren. collectActiveMemories retirerad LIGGARE-PRIO 4
+    // (2026-09-03, noll produktionskonsumenter) — fältet skrivs fortfarande
+    // för äldre saves/andra möjliga läsare, retireras separat, inte i denna
+    // omgång.
     recentMoments: [...(game.recentMoments ?? []), ...allNewMomentsThisRound]
       .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
       .slice(0, 5),

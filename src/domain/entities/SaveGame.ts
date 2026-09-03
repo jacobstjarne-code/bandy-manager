@@ -585,20 +585,19 @@ export interface SaveGame {
   // DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
   // 2026-09-01.md, Fas 0 — kanonisk, intern, append-only händelseliggare.
   // Spelaren ser den ALDRIG. Skrivvägar: eventLedgerService.logEvent
-  // (orsak/verkan Fas 1, seasonDecisionCandidates Fas 2) + Fas 4:s
+  // (orsak/verkan Fas 1, säsongens beslut Fas 2) + Fas 4:s
   // momentLedgerService.appendMomentsToLedger (recentMoments' 12 källor,
   // roundProcessor/seasonEndProcessor). narrativeBeatLog subsumerades ALDRIG
   // (Fas 3 struken, se migreringsplanen) — eget lager, egen norm.
   eventLedger?: EventLedgerEntry[]
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
-  // kandidater till "säsongens viktigaste beslut" — en post per resolved
-  // O19-märkt systemhandelse-val DENNA säsong, ur en sluten lista av åtta
-  // klassificerade (event.type, choiceId)-par (seasonDecisionCaptureService.ts).
-  // Fylld vid resolution (eventResolver.ts:s gemensamma resolved-block),
-  // rankad+konsumerad vid säsongsslut (seasonEndProcessor.ts →
-  // SeasonSummary.mostImportantDecision), nollställd nästa säsong.
-  seasonDecisionCandidates?: import('../services/seasonDecisionCaptureService').SeasonDecisionCandidate[]
+  // "säsongens viktigaste beslut" — tidigare en egen kandidatlista här
+  // (seasonDecisionCandidates), retirerad LIGGARE-PRIO 4 (2026-09-03):
+  // samtliga tre kandidatkällor (eventResolver.ts, gameStore.ts,
+  // gameFlowActions.ts) skriver bara till eventLedger nu (type:'decision');
+  // seasonEndProcessor.ts läser den via pickMostImportantDecisionText, ingen
+  // parallell fälllista kvar.
 
   // V1.0 — Market value tracking (previous round values for delta display)
   previousMarketValues?: Record<string, number>  // playerId → last known marketValue
@@ -782,11 +781,12 @@ export interface SaveGame {
   lastTeamPhotoSeason?: number
 
   // M7 — Orten feed: rolling window of narrative moments (max 5, newest first).
-  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 (2026-09-01): dual-write, fältet
-  // skrivs ännu oförändrat (collectActiveMemories läser det fortfarande) —
-  // men ClubMemoryView (den enda text-renderande läsaren) läser numera
-  // game.eventLedger via momentLedgerService.getRecentMomentsFromLedger.
-  // Retireras när collectActiveMemories också flyttat (Fas 4+, opportunistiskt).
+  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4 (2026-09-01): dual-write. ClubMemoryView
+  // (den enda text-renderande läsaren) läser numera game.eventLedger via
+  // momentLedgerService.getRecentMomentsFromLedger. collectActiveMemories
+  // (den tidigare andra läsaren) retirerad LIGGARE-PRIO 4 (2026-09-03, noll
+  // produktionskonsumenter) — fältet skrivs fortfarande (äldre saves,
+  // eventuella andra läsare), egen retirering, opportunistiskt.
   recentMoments?: Moment[]
 
   // M14 — Klubbens era (beräknas varje säsongsstart)
