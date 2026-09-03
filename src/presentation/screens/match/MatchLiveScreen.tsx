@@ -60,7 +60,7 @@ import { MatchFlowFrame } from '../../components/match-flow/MatchFlowFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
-import { buildCeremonyOnlyStep, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed } from '../matchLiveHelpers'
+import { buildCeremonyOnlyStep, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 
 interface LocationState {
   fixture: Fixture
@@ -670,7 +670,7 @@ export function MatchLiveScreen() {
     const delay = isCommentaryMode && !isFastForward ? Math.round(baseDelay * 0.5) : baseDelay
 
     const timer = setTimeout(() => {
-      if (currentStep + 1 >= steps.length) {
+      if (shouldEndMatchAfterStep(currentStep, steps.length)) {
         setMatchDone(true)
         if (isSmFinal || isCupFinal) setCeremonySlide(1)
       } else {
@@ -1058,7 +1058,17 @@ export function MatchLiveScreen() {
     // delay 1500ms so revealed outcome stays visible before next step (FIX-35)
     setTimeout(() => {
       setActiveLastMinutePress(null)
-      setCurrentStep(prev => prev + 1)
+      // BRÅDSKANDE FIX (GPT live-revision, verifierad): denna handler saknade
+      // matchens slutvillkor — currentStep flyttades okontrollerat utanför
+      // steps på matchens sista steg, matchDone sattes aldrig, Granska-knappen
+      // nåddes aldrig. Samma delade slutvillkor som den vanliga stegtimern
+      // (shouldEndMatchAfterStep, matchLiveHelpers.ts).
+      if (shouldEndMatchAfterStep(currentStep, steps.length)) {
+        setMatchDone(true)
+        if (isSmFinal || isCupFinal) setCeremonySlide(1)
+      } else {
+        setCurrentStep(prev => prev + 1)
+      }
     }, isFastForward ? 0 : 2500)
   }
 

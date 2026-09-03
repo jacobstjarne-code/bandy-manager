@@ -15,6 +15,20 @@ export function getEventAlignment(eventClubId: string, homeClubId: string): 'hom
 }
 
 /**
+ * BRÅDSKANDE FIX (GPT live-revision, 2026-09-03): matchens slutvillkor,
+ * extraherad så den kan delas mellan den vanliga stegtimern och varje
+ * interaktionshandlare (corner/penalty/counter/lastMinutePress) som
+ * avancerar currentStep manuellt efter sin egen delay. En handlare som
+ * saknade detta villkor kunde flytta currentStep utanför steps på matchens
+ * sista steg — matchDone sattes aldrig, ingen Granska-knapp, karriären låst.
+ * Extraherad hit av samma skäl som shouldRouteQuicksimToCeremony nedan:
+ * enhetstestbar utan @testing-library/react.
+ */
+export function shouldEndMatchAfterStep(currentStep: number, totalSteps: number): boolean {
+  return currentStep + 1 >= totalSteps
+}
+
+/**
  * A1.5++ (2026-09-01): ett halvtidsbyte bär medvetet sin text på
  * MatchEvent.description medan MatchStep.commentary kan vara tom. Den gamla
  * feeden hade en särskild bytesrad, men Stålvallen-migreringen filtrerade bort
