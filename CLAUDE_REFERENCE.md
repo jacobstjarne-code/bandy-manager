@@ -59,7 +59,7 @@ Säsongsanalys: `scripts/analyze-stress.ts` — jämför stress-test-loggen mot 
 
 ### Bandy-vokabulär — alltid använd
 - **Offside FINNS i bandy** — ta aldrig bort offside-kommentarer
-- **Inga gula kort** — bandy har 10 min utvisning, inte gula/röda kort
+- **Kort i UI (designval)** — Bandy Manager visar inte gula/röda kort i gränssnittet; modellera utvisningar (5/10 min) + matchstraff. OBS: bandy HAR gult kort (= varning) och rött kort (= matchstraff) i verkligheten (`docs/kunskapsbas/REGLER.md` §3). Säg aldrig att bandy saknar kort.
 - **2 poäng för vinst** — inte 3 som i fotboll
 - **Termer:** "avslag" (inte avspark), "brytning" (inte tackling), "frislag" (inte frispark), "vaden" (inte vadden)
 - **Positioner:** MV, DEF (backar), HALF (halvbackar), FWD (forwards). Midfielder = Half i bandy.

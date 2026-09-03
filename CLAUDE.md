@@ -69,6 +69,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 **G. BANDY-ANALYS / DATA / BRAIN / RESONEMANG OM SPORTEN — OBLIGATORISK KUNSKAPSBAS:**
 Innan du resonerar om bandyns regler, tolkar matchhändelser, eller drar slutsatser ur Bandygrytan-datan — läs:
+- `docs/BANDY_KANON.md` — läsbar ingång: regler, positioner, formationer, spelsätt, spelvärld och ekonomi-begrepp (streaming/bandyskola/akademi) samlat. Syntes, inte auktoritet — vid regelfråga gäller REGLER.md. Börja här, gå vidare till specialkällorna nedan.
 - `docs/kunskapsbas/REGLER.md` — bandyns regler (stabil referens). Utvisningar, straffar, hörnor, förlängning, dam-undantag.
 - `docs/kunskapsbas/DATA.md` — vad Bandygrytan-datan faktiskt innehåller, fält för fält. Särskilt: minute-konventionen och half-flaggan.
 - `docs/kunskapsbas/LAGET.md` — nuläget i svensk bandy (FÖRÅLDRAS — kolla datumstämpeln, verifiera med web-sökning om gammal).
