@@ -21,6 +21,7 @@ import { logEvent } from '../eventLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
+import { appendNewlyResolvedStorylines } from '../storylineLedgerService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -2622,5 +2623,5 @@ export function resolveEvent(
     }
   }
 
-  return updatedGame
+  return appendNewlyResolvedStorylines(game, updatedGame, updatedGame.currentMatchday)
 }

@@ -63,6 +63,58 @@ function advanceWithLineup(game: SaveGame, seed: number) {
   return result
 }
 
+describe('roundProcessor — ClubMemory eventLedger-producenter', () => {
+  it('skriver exakt en facility_built-post när ett bygge färdigställs', () => {
+    const game = makeGame()
+    const withCompletingFacility: SaveGame = {
+      ...game,
+      facilityState: {
+        builtNodeIds: [],
+        builtSeasons: {},
+        activeProject: { nodeId: 'kiosk', startedMatchday: 0, etaMatchday: 1 },
+      },
+    }
+
+    const result = advanceWithLineup(withCompletingFacility, 601)
+    const entries = (result.game.eventLedger ?? []).filter(entry => entry.type === 'facility_built')
+
+    expect(entries).toEqual([expect.objectContaining({
+      semanticKey: `facility_completed_kiosk_s${game.currentSeason}_m1`,
+      season: game.currentSeason,
+      matchday: 1,
+      subject: { kind: 'club', id: game.managedClubId },
+      significance: 35,
+    })])
+  })
+
+  it('bevarar spelarmilstolpen i den slutliga liggaren när rundan skrivs ihop', () => {
+    const game = makeGame()
+    const withAcademyDebutants: SaveGame = {
+      ...game,
+      players: game.players.map(player => player.clubId === game.managedClubId
+        ? {
+            ...player,
+            promotedFromAcademy: true,
+            academyClubId: game.managedClubId,
+            careerStats: { ...player.careerStats, totalGames: 0 },
+          }
+        : player),
+    }
+
+    const atManagedFixture = advanceUntilManagedFixture(withAcademyDebutants)
+    const result = advanceWithLineup(withAutoLineup(atManagedFixture), 602)
+    const debutEntries = (result.game.eventLedger ?? []).filter(entry =>
+      entry.type === 'player_milestone' && entry.semanticKey.endsWith(':first_team_debut')
+    )
+
+    expect(debutEntries.length).toBeGreaterThan(0)
+    expect(debutEntries[0]).toMatchObject({
+      subject: { kind: 'player' },
+      subject2: { kind: 'club', id: game.managedClubId },
+    })
+  })
+})
+
 // ── Group 1: Suspension handling ─────────────────────────────────────────────
 
 describe('roundProcessor — suspension handling', () => {

@@ -4,6 +4,8 @@ import { PlayerPosition, InboxItemType } from '../../../domain/enums'
 import { applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
+import { logEvent } from '../../../domain/services/eventLedgerService'
+import { buildAcademyPromotionLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -339,6 +341,12 @@ export function academyActions(get: Get, set: Set) {
           youthTeam: updatedYouthTeam,
           inbox: [inboxItem, ...game.inbox],
           pendingSeasonTransitionEvents: [...(game.pendingSeasonTransitionEvents ?? []), transitionEvent],
+          eventLedger: logEvent(game, buildAcademyPromotionLedgerEntry({
+            playerId: newPlayer.id,
+            clubId: game.managedClubId,
+            season: game.currentSeason,
+            matchday: currentRound,
+          })),
         }
       })
       return { success: true, timing }

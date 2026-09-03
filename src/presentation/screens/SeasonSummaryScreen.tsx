@@ -20,6 +20,7 @@ import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 import { seasonVerdictText } from '../../domain/services/boardService'
 import { BookOpen, Share2 } from 'lucide-react'
+import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -117,12 +118,10 @@ export function SeasonSummaryScreen() {
   const isChampion = summary.playoffResult === 'champion'
 
   // AUDIT DEL 2 A3, uppföljning (2026-08-09): reversibel dedup mellan DIN
-  // SÄSONG och DINA VAL (seasonDecisionsService.ts läser samma game.storylines
-  // helt utan dedup). Jacobs ruling: dela seenTypes så en storyline bara syns
-  // en gång per skärm, men BEHÅLL DINA VAL:s storyline-inkludering — designfrågan
-  // (bär storyline ett fält som pekar mot ett beslut, eller är den ren
-  // inramning?) är öppen, inte löst här. DIN SÄSONG fylls i render-ordning
-  // FÖRE DINA VAL nedan, så den vinner förstahandsanspråk.
+  // SÄSONG och DINA VAL läser samma liggarstyrda resolution-projektion.
+  // Jacobs ruling: dela seenTypes så en storyline bara syns en gång per
+  // skärm. DIN SÄSONG fylls i render-ordning FÖRE DINA VAL nedan och vinner
+  // därför förstahandsanspråk; detta Set är vy-dedup, inte en minnesbank.
   const claimedStorylineTypes = new Set<string>()
 
   function playoffEliminationSentence(r: SeasonSummary['playoffResult']): string {
@@ -538,7 +537,7 @@ export function SeasonSummaryScreen() {
           // sektionerna dubblerade i praktiken varje säsong med ≥1 storyline.)
           // seenSlTypes speglas in i claimedStorylineTypes (komponent-scope)
           // så DINA VAL längre ned kan hoppa över typer som redan visats här.
-          const allSeasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
+          const allSeasonStorylines = getResolvedStorylineProjections(game, summary.season)
           const seenSlTypes = new Set<string>()
           const seasonStorylines = allSeasonStorylines.filter(s => {
             if (seenSlTypes.has(s.type)) return false

@@ -108,6 +108,10 @@ describe('updatePlayerMatchStats — bänkspelare (ej inbytt)', () => {
       matchday: 1,
       type: 'milestone',
     })
+    expect(result.ledgerEntries).toContainEqual(expect.objectContaining({
+      type: 'player_milestone',
+      subject: { kind: 'player', id: substitute.id },
+    }))
   })
 
   it('skriver strukturerad akademidebut även för flygande bänkbyte', () => {
@@ -132,5 +136,9 @@ describe('updatePlayerMatchStats — bänkspelare (ej inbytt)', () => {
 
     expect(updated.careerStats.totalGames).toBe(1)
     expect(updated.diary?.some(entry => entry.semanticKey === 'first_team_debut')).toBe(true)
+    expect(result.ledgerEntries).toContainEqual(expect.objectContaining({
+      type: 'player_milestone',
+      subject: { kind: 'player', id: benchPlayer.id },
+    }))
   })
 })

@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
+import { appendNewlyResolvedStorylines, hasPriorStorylineResolution } from './storylineLedgerService'
 
 export type JournalistCardSeverity = 'cold' | 'warm' | 'hidden'
 
@@ -18,7 +19,7 @@ export function shouldShowJournalistCard(game: SaveGame): boolean {
 export type RelationshipEventType = 'broken_under_20' | 'recovered_above_75' | null
 
 type JournalistStoryContext = Pick<SaveGame, 'journalist'> &
-  Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>
+  Partial<Pick<SaveGame, 'eventLedger' | 'currentSeason' | 'managedClubId'>>
 
 export function detectRelationshipEvent(game: SaveGame): RelationshipEventType {
   const j = game.journalist
@@ -30,17 +31,13 @@ export function detectRelationshipEvent(game: SaveGame): RelationshipEventType {
 }
 
 function hasPreviousSeasonRelationshipStory(
-  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+  game: Partial<Pick<SaveGame, 'eventLedger' | 'currentSeason' | 'managedClubId'>>,
   type: 'journalist_feud' | 'journalist_redemption',
 ): boolean {
   const currentSeason = game.currentSeason
   const managedClubId = game.managedClubId
   if (currentSeason === undefined || !managedClubId) return false
-  return (game.storylines ?? []).some(storyline =>
-    storyline.type === type &&
-    storyline.season < currentSeason &&
-    storyline.clubId === managedClubId,
-  )
+  return hasPriorStorylineResolution(game, type, currentSeason, managedClubId)
 }
 
 /**
@@ -48,14 +45,14 @@ function hasPreviousSeasonRelationshipStory(
  * history proves that the same rupture happened in an earlier season.
  */
 export function isJournalistFeudRelapse(
-  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+  game: Partial<Pick<SaveGame, 'eventLedger' | 'currentSeason' | 'managedClubId'>>,
 ): boolean {
   return hasPreviousSeasonRelationshipStory(game, 'journalist_feud')
 }
 
 /** Same historical read for a renewed reconciliation after an earlier season. */
 export function isJournalistRedemptionRelapse(
-  game: Partial<Pick<SaveGame, 'storylines' | 'currentSeason' | 'managedClubId'>>,
+  game: Partial<Pick<SaveGame, 'eventLedger' | 'currentSeason' | 'managedClubId'>>,
 ): boolean {
   return hasPreviousSeasonRelationshipStory(game, 'journalist_redemption')
 }
@@ -98,7 +95,7 @@ export function appendJournalistRelationshipStoryline(
   const id = `story_${type}_${game.currentSeason}_${game.currentMatchday}`
   if ((game.storylines ?? []).some(story => story.id === id)) return game
 
-  return {
+  const withStoryline: SaveGame = {
     ...game,
     storylines: [
       ...(game.storylines ?? []),
@@ -114,6 +111,7 @@ export function appendJournalistRelationshipStoryline(
       },
     ],
   }
+  return appendNewlyResolvedStorylines(game, withStoryline, game.currentMatchday)
 }
 
 export function getJournalistAttendanceModifier(game: SaveGame): number {

@@ -128,6 +128,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     icon: string; name: string; active: boolean; status: string
     income: string
     incomeDelta?: number
+    note?: string
     actionKey?: string; actionLevel?: string; actionCost?: number; actionLabel?: string
     upgradeKey?: string; upgradeLevel?: string; upgradeCost?: number; upgradeLabel?: string
     noAction?: boolean
@@ -179,6 +180,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: ca?.kiosk !== 'none' && !!ca?.kiosk,
       status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
       income: activityIncome(kioskDelta), incomeDelta: kioskDelta,
+      note: 'Lönar sig först när publiken är tillräckligt stor — vid låg uppslutning äter inropen upp intäkten.',
       ...(ca?.kiosk === 'none' || !ca?.kiosk
         ? { actionKey: 'kiosk', actionLevel: 'basic', actionCost: 3000, actionLabel: 'Starta kiosk — 3 tkr' }
         : ca?.kiosk === 'basic'
@@ -201,6 +203,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.bandyplay,
       status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
       income: activityIncome(bandyplayDelta), incomeDelta: bandyplayDelta,
+      note: 'Går med förlust — deltagaravgifterna täcker inte driften. Bygden får sin bandyskola, klubben bär kostnaden.',
       ...(!ca?.bandyplay
         ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Starta — gratis' }
         : {}),
@@ -415,6 +418,11 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 {row.income}
               </span>
             </div>
+            {row.note && (
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.4, marginTop: 2, marginBottom: (row.actionKey || row.upgradeKey) ? 6 : 0 }}>
+                {row.note}
+              </p>
+            )}
             {row.actionKey && !row.active && (
               <button
                 className="btn btn-outline"

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildMomentLedgerEntry,
   appendMomentsToLedger,
+  appendMomentsAndEntriesToLedger,
   getRecentMomentsFromLedger,
   resolveSubjectName,
   MOMENT_LEDGER_SIGNIFICANCE,
@@ -189,6 +190,56 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     const moments = Array.from({ length: 8 }, (_, i) => makeMoment({ id: `m${i}`, matchday: i + 1 }))
     const game = makeMinimalGame({ eventLedger: appendMomentsToLedger([], moments) })
     expect(getRecentMomentsFromLedger(game, 5)).toHaveLength(5)
+  })
+
+  it('slår ihop Moment och ripple för samma händelse till en kanonisk post', () => {
+    const moment = makeMoment({
+      id: 'moment_derby_fx1',
+      source: 'derby_win',
+      season: 3,
+      matchday: 8,
+      subjectClubId: 'rival',
+    })
+    const ripple: EventLedgerEntry = {
+      type: 'derby_win',
+      semanticKey: 'ripple_big_derby_win_rival_3_8',
+      season: 3,
+      matchday: 8,
+      subject: { kind: 'club', id: 'rival' },
+      significance: 75,
+      consequences: [{ field: 'fanMood', dir: 'up', magnitude: 'kraftigt' }],
+    }
+
+    const ledger = appendMomentsAndEntriesToLedger([], [moment], [ripple])
+
+    expect(ledger).toHaveLength(1)
+    expect(ledger[0]).toMatchObject({
+      semanticKey: 'moment_derby_fx1',
+      type: 'derby_win',
+      significance: 75,
+      consequences: ripple.consequences,
+    })
+  })
+
+  it('behåller separata poster när Moment och ripple beskriver olika händelser', () => {
+    const moment = makeMoment({
+      id: 'moment_injury_p1_8',
+      source: 'star_injury',
+      season: 3,
+      matchday: 8,
+      subjectPlayerId: 'p1',
+    })
+    const ripple: EventLedgerEntry = {
+      type: 'star_injury',
+      semanticKey: 'ripple_star_injured_p2_3_8',
+      season: 3,
+      matchday: 8,
+      subject: { kind: 'player', id: 'p2' },
+      significance: 55,
+      consequences: [{ field: 'playerMorale', dir: 'down', magnitude: 'tydligt' }],
+    }
+
+    expect(appendMomentsAndEntriesToLedger([], [moment], [ripple])).toHaveLength(2)
   })
 
   it('resolveSubjectName slår upp spelare/klubb/mecenat ur id, returnerar undefined för okänt', () => {

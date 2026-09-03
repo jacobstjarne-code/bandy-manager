@@ -43,18 +43,18 @@ function makeGame(overrides: Partial<SaveGame> = {}, completedLeague = 6): SaveG
 
 describe('pickEfterklang — A3 gate', () => {
   it('returnerar [] när färre än 5 ligamatcher spelats', () => {
-    const game = makeGame({ klackEcho: { currentWeight: 70 } as never }, 4)
+    const game = makeGame({ klackEcho: { currentWeight: 0.7 } as never }, 4)
     expect(pickEfterklang(game)).toEqual([])
   })
 
   it('släpper igenom vid exakt 5 spelade ligamatcher', () => {
-    const game = makeGame({ klackEcho: { currentWeight: 70 } as never }, 5)
+    const game = makeGame({ klackEcho: { currentWeight: 0.7 } as never }, 5)
     expect(pickEfterklang(game).length).toBeGreaterThan(0)
   })
 
   it('cupmatcher räknas inte mot gaten', () => {
     const cupFixtures = leagueFixtures(10).map(f => ({ ...f, isCup: true }))
-    const game = makeGame({ klackEcho: { currentWeight: 70 } as never, fixtures: cupFixtures as never }, 0)
+    const game = makeGame({ klackEcho: { currentWeight: 0.7 } as never, fixtures: cupFixtures as never }, 0)
     expect(pickEfterklang(game)).toEqual([])
   })
 })
@@ -188,12 +188,21 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
   })
 
   it('klackEcho: premiss skiftar på currentWeight', () => {
-    expect(find(makeGame({ klackEcho: { currentWeight: 70 } as never }), 'klackEcho')?.premiss)
+    expect(find(makeGame({ klackEcho: { currentWeight: 0.7 } as never }), 'klackEcho')?.premiss)
       .toBe('Klacken har inte släppt det än.')
-    expect(find(makeGame({ klackEcho: { currentWeight: 50 } as never }), 'klackEcho')?.premiss)
+    expect(find(makeGame({ klackEcho: { currentWeight: 0.5 } as never }), 'klackEcho')?.premiss)
       .toBe('Klacken minns hur säsongen kändes.')
-    expect(find(makeGame({ klackEcho: { currentWeight: 30 } as never }), 'klackEcho')?.premiss)
+    expect(find(makeGame({ klackEcho: { currentWeight: 0.3 } as never }), 'klackEcho')?.premiss)
       .toBe('Känslorna sitter kvar i själva läktaren.')
+  })
+
+  it('klackEcho: 0–1-vikten normaliseras mot övriga kandidaters 0–100-skala', () => {
+    const memories = pickEfterklang(makeGame({
+      klackEcho: { currentWeight: 0.7 } as never,
+      boardObjectiveHistory: [{ result: 'failed', ownerReaction: 'Besviken.' }] as never,
+    }), 1)
+
+    expect(memories[0]?.type).toBe('klackEcho')
   })
 
   it('boardObjective: statisk premiss vid failed', () => {

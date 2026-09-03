@@ -1,11 +1,12 @@
 import { getClubMemory, scoreEvent } from '../domain/services/clubMemoryService'
 import type { MemoryEvent } from '../domain/services/clubMemoryService'
 import type { SaveGame } from '../domain/entities/SaveGame'
+import { backfillClubHistoryLedger } from '../domain/services/clubHistoryLedgerService'
 
 const MANAGED_CLUB_ID = 'club_test'
 
 function makeMinimalGame(overrides: Partial<SaveGame> = {}): SaveGame {
-  return {
+  const game = {
     id: 'test',
     currentSeason: 1,
     currentMatchday: 1,
@@ -18,6 +19,7 @@ function makeMinimalGame(overrides: Partial<SaveGame> = {}): SaveGame {
     inbox: [],
     ...overrides,
   } as unknown as SaveGame
+  return { ...game, eventLedger: backfillClubHistoryLedger(game) }
 }
 
 describe('getClubMemory', () => {
@@ -224,6 +226,51 @@ describe('getClubMemory', () => {
       roundLabel: 'Under säsongen',
     })
     expect(event?.text).toBe('Värmestugan står klar. Folk stannar kvar i kylan nu, pratar färdigt.')
+  })
+
+  it('läser migrerade klubbhändelser ur liggaren även när ursprungsfickan inte längre finns', () => {
+    const withPocket = makeMinimalGame({
+      currentSeason: 2,
+      scandalHistory: [{
+        id: 'scandal_canon', season: 2, triggerRound: 8, type: 'match_fixing',
+        affectedClubId: MANAGED_CLUB_ID, isResolved: true,
+      }],
+    } as Partial<SaveGame>)
+    const ledgerOnly = { ...withPocket, scandalHistory: [], activeScandals: [] }
+
+    expect(getClubMemory(ledgerOnly).seasons
+      .flatMap(s => s.events)
+      .filter(e => e.type === 'scandal')).toHaveLength(1)
+  })
+
+  it('behåller en permanent spelarmilstolpe när diary-cachen senare har kapat bort posten', () => {
+    const withDiary = makeMinimalGame({
+      currentSeason: 2,
+      clubs: [
+        { id: MANAGED_CLUB_ID, name: 'Testklubben' },
+        { id: 'club_other', name: 'Motstånd', shortName: 'MOT' },
+      ],
+      fixtures: [{
+        id: 'f1', season: 2, matchday: 5, homeClubId: MANAGED_CLUB_ID, awayClubId: 'club_other',
+        status: 'completed', homeScore: 1, awayScore: 0,
+      }],
+      players: [{
+        id: 'p1', firstName: 'Erik', lastName: 'Salonen', clubId: MANAGED_CLUB_ID,
+        diary: [{
+          season: 2, matchday: 5, type: 'milestone', semanticKey: 'first_team_goal',
+          text: 'Satte sitt första A-lagsmål mot MOT. En dag att minnas.',
+        }],
+      }],
+    } as Partial<SaveGame>)
+    const withoutDiary = {
+      ...withDiary,
+      players: withDiary.players.map(player => ({ ...player, diary: [] })),
+    }
+
+    const milestone = getClubMemory(withoutDiary).seasons
+      .flatMap(item => item.events)
+      .find(event => event.type === 'player_milestone')
+    expect(milestone?.text).toBe('Satte sitt första A-lagsmål mot MOT. En dag att minnas.')
   })
 })
 

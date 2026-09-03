@@ -24,14 +24,14 @@ export function addNarrativeEntry(
  */
 export function generateFirstGoalEntry(opponent: string, season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: 'first_team_goal',
     text: `Satte sitt första A-lagsmål mot ${opponent}. En dag att minnas.`,
   }
 }
 
 export function generateHatTrickEntry(_player: Player, opponent: string, goals: number, season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: `hat_trick_${goals}`,
     text: `Hattrick mot ${opponent} — ${goals} mål. Stämningen exploderade på läktarna.`,
   }
 }
@@ -71,21 +71,21 @@ export function generateGoalStreakEntry(goals: number, season: number, matchday:
 
 export function generateMilestoneGoalEntry(total: number, season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: `career_goals_${total}`,
     text: `Mål nummer ${total} i karriären. En siffra att vara stolt över.`,
   }
 }
 
 export function generateMilestoneGamesEntry(total: number, season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: `career_games_${total}`,
     text: `Match nummer ${total} i A-laget. Lojalitet och uthållighet lönar sig.`,
   }
 }
 
 export function generateAcademyPromotionEntry(season: number, matchday: number): NarrativeEntry {
   return {
-    season, matchday, type: 'milestone',
+    season, matchday, type: 'milestone', semanticKey: 'academy_promotion',
     text: 'Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.',
   }
 }

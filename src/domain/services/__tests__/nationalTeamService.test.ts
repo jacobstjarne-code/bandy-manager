@@ -102,6 +102,13 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     // Block 2c — CALLUP_MODAL-payload: en rad per uttagen, +5 tkr/uttagen (HANDOFF Q3)
     expect(result.callupModal.bonusTkr).toBe(5)
     expect(result.callupModal.names).toEqual([`${player.firstName} ${player.lastName}`])
+    expect(result.ledgerEntries).toEqual([expect.objectContaining({
+      type: 'national_team_callup',
+      season: 2025,
+      matchday: 14,
+      subject: { kind: 'player', id: player.id },
+      significance: 60,
+    })])
   })
 
   it('applyCallupEffects fryser INTE om firstNationalTeamCallupSeason redan finns (andra uttagningen)', () => {
@@ -122,6 +129,7 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     expect(player.nationalTeamCallups).toBe(2)
     expect(player.firstNationalTeamCallupSeason).toBe(2025)
     expect(player.firstNationalTeamCallupMatchday).toBe(14)
+    expect(result.ledgerEntries).toEqual([])
   })
 
   it('applyCallupEffects skalar callupModal.bonusTkr med antal uttagna', () => {

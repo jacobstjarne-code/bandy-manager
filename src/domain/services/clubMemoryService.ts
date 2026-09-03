@@ -1,15 +1,20 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { ClubLegend, AllTimeRecords } from '../entities/Narrative'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import {
   buildEventFromFixture,
   buildEventFromNarrativeLog,
   buildEventFromStoryline,
-  buildEventFromRetirement,
 } from './clubMemoryEventBuilders'
 import type { MomentSource } from '../entities/Moment'
 import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from '../data/facilityPortalBeats'
+import {
+  getFacilityNodeIdFromLedger,
+  getPlayerMilestoneCodeFromLedger,
+} from './clubHistoryLedgerService'
+import { getResolvedStorylineProjections } from './storylineLedgerService'
 
 export type MemoryEventType =
   | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
@@ -80,6 +85,127 @@ function seasonFinishEvent(season: number, pos: number): MemoryEvent {
   }
 }
 
+const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
+  'academy_promotion',
+  'national_team_callup',
+  'retirement',
+  'facility_built',
+  'scandal',
+  'player_milestone',
+])
+
+function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): boolean {
+  if (entry.subject?.kind === 'club') return entry.subject.id === managedClubId
+  if (entry.subject2?.kind === 'club') return entry.subject2.id === managedClubId
+  if (entry.subject?.kind !== 'player') return false
+
+  const player = game.players.find(item => item.id === entry.subject!.id)
+  if (player) {
+    return player.clubId === managedClubId
+      || player.academyClubId === managedClubId
+      || (player.seasonHistory ?? []).some(item => item.clubId === managedClubId && item.season === entry.season)
+  }
+  return (game.clubLegends ?? []).some(legend => legend.playerId === entry.subject!.id)
+}
+
+function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
+  const fixture = game.fixtures.find(item =>
+    item.season === season
+    && item.matchday === matchday
+    && (item.homeClubId === managedClubId || item.awayClubId === managedClubId)
+  )
+  if (!fixture) return 'motståndet'
+  const opponentId = fixture.homeClubId === managedClubId ? fixture.awayClubId : fixture.homeClubId
+  const opponent = game.clubs.find(club => club.id === opponentId)
+  return opponent?.shortName ?? opponent?.name ?? 'motståndet'
+}
+
+function playerMilestoneText(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): string | null {
+  const code = getPlayerMilestoneCodeFromLedger(entry)
+  if (!code) return null
+  const opponent = opponentNameAt(game, entry.season, entry.matchday, managedClubId)
+  if (code === 'first_team_debut') return `A-lagsdebut mot ${opponent}. Nerverna satt — men benen höll.`
+  if (code === 'first_team_goal') return `Satte sitt första A-lagsmål mot ${opponent}. En dag att minnas.`
+  if (code === 'academy_promotion') return 'Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.'
+  const hatTrick = code.match(/^hat_trick_(\d+)$/)
+  if (hatTrick) return `Hattrick mot ${opponent} — ${hatTrick[1]} mål. Stämningen exploderade på läktarna.`
+  const goals = code.match(/^career_goals_(\d+)$/)
+  if (goals) return `Mål nummer ${goals[1]} i karriären. En siffra att vara stolt över.`
+  const games = code.match(/^career_games_(\d+)$/)
+  if (games) return `Match nummer ${games[1]} i A-laget. Lojalitet och uthållighet lönar sig.`
+  return null
+}
+
+function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): MemoryEvent | null {
+  const playerId = entry.subject?.kind === 'player' ? entry.subject.id : undefined
+  const player = playerId ? game.players.find(item => item.id === playerId) : undefined
+  const playerName = player
+    ? `${player.firstName} ${player.lastName}`
+    : (game.clubLegends ?? []).find(item => item.playerId === playerId)?.name
+
+  switch (entry.type) {
+    case 'academy_promotion':
+      if (!playerName) return null
+      return {
+        type: 'academy_promotion', season: entry.season, matchday: entry.matchday,
+        text: `${playerName} uppflyttad från P19 till A-laget.`,
+        emoji: '🎓', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    case 'national_team_callup': {
+      if (!playerName) return null
+      const template = FIRST_CALLUP_MEMORY_LINES[entry.season % FIRST_CALLUP_MEMORY_LINES.length]
+      return {
+        type: 'national_team_callup', season: entry.season, matchday: entry.matchday,
+        text: template.replace('{spelare}', playerName),
+        emoji: '⭐', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'scandal':
+      return {
+        type: 'scandal', season: entry.season, matchday: entry.matchday,
+        text: `Skandal drabbade klubben (omgång ${entry.matchday}).`,
+        emoji: '🔥', significance: entry.significance, subjectClubId: managedClubId,
+      }
+    case 'facility_built': {
+      const nodeId = getFacilityNodeIdFromLedger(entry)
+      const def = nodeId ? FACILITY_NODE_DEFS.find(node => node.id === nodeId) : undefined
+      if (!nodeId || !def) return null
+      const hasExactMatchday = /_s\d+_m\d+$/.test(entry.semanticKey)
+      return {
+        type: 'facility_built', season: entry.season, matchday: entry.matchday,
+        roundLabel: hasExactMatchday ? `Matchdag ${entry.matchday}` : 'Under säsongen',
+        text: FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(def.label),
+        emoji: '🏗️', significance: entry.significance, subjectClubId: managedClubId,
+      }
+    }
+    case 'retirement': {
+      const legend = (game.clubLegends ?? []).find(item => item.playerId === playerId)
+      if (!legend) return null
+      const text = legend.memorableStory
+        ?? `${legend.name} pensionerade sig efter ${legend.seasons} säsonger och ${legend.totalGoals} mål.`
+      return {
+        type: 'retirement', season: entry.season, matchday: entry.matchday,
+        text, emoji: '👋', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'player_milestone': {
+      const text = playerMilestoneText(game, entry, managedClubId)
+      if (!text) return null
+      const code = getPlayerMilestoneCodeFromLedger(entry) ?? ''
+      const emoji = code.startsWith('hat_trick_') ? '🎩'
+        : code.includes('_100') ? '💯'
+        : code === 'first_team_debut' || code === 'first_team_goal' ? '⭐'
+        : '👤'
+      return {
+        type: 'player_milestone', season: entry.season, matchday: entry.matchday,
+        text, emoji, significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    default:
+      return null
+  }
+}
+
 function collectSeasonEvents(game: SaveGame, season: number, managedClubId: string): MemoryEvent[] {
   const events: MemoryEvent[] = []
 
@@ -90,96 +216,38 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
     if (ev) events.push(ev)
   }
 
-  // Player narrative logs
+  // Player diary remains a capped presentation pocket. Its permanent,
+  // structured milestones are read from eventLedger below; only the two
+  // still-unmigrated diary categories remain here.
   for (const player of game.players) {
     if (!player.diary) continue
     const isOurs = player.clubId === managedClubId ||
       (player.seasonHistory ?? []).some(h => h.clubId === managedClubId && h.season === season)
     if (!isOurs) continue
     for (const entry of player.diary) {
+      if (entry.type === 'milestone') continue
       if (entry.season !== season) continue
       const ev = buildEventFromNarrativeLog(player, entry)
       if (ev) events.push(ev)
     }
   }
 
-  // Academy promotions
-  for (const player of game.players) {
-    if (!player.promotedFromAcademy || player.clubId !== managedClubId) continue
-    const promoSeason = player.seasonHistory?.find(h => h.season === season) ? season : game.currentSeason
-    if (promoSeason !== season) continue
-    events.push({
-      type: 'academy_promotion', season,
-      matchday: player.promotionRound ?? 1,
-      text: `${player.firstName} ${player.lastName} uppflyttad från P19 till A-laget.`,
-      emoji: '🎓', significance: 55, subjectPlayerId: player.id,
-    })
+  // De sex migrerade ClubMemory-källorna läses nu ur kanon. Fickorna ovan
+  // fortsätter finnas för sina övriga roller, men får inte längre återskapa
+  // samma historiska händelse parallellt.
+  for (const entry of game.eventLedger ?? []) {
+    if (entry.season !== season || !LEDGER_CLUB_MEMORY_TYPES.has(entry.type)) continue
+    if (!ledgerEntryBelongsToManagedClub(game, entry, managedClubId)) continue
+    const event = buildMemoryEventFromLedger(game, entry, managedClubId)
+    if (event) events.push(event)
   }
 
-  // Release-svepet 2026-07-21 (Block 2b) — första landslagsuttagningen.
-  // firstNationalTeamCallupSeason är fryst en gång (till skillnad från
-  // nationalTeamCallups-räknaren) — se Player.ts:s kommentar vid fältet.
-  // Samma derived-per-säsong-mönster som academy_promotion ovan.
-  for (const player of game.players) {
-    if (player.firstNationalTeamCallupSeason !== season || player.clubId !== managedClubId) continue
-    const template = FIRST_CALLUP_MEMORY_LINES[season % FIRST_CALLUP_MEMORY_LINES.length]
-    events.push({
-      type: 'national_team_callup', season,
-      matchday: player.firstNationalTeamCallupMatchday ?? 1,
-      text: template.replace('{spelare}', `${player.firstName} ${player.lastName}`),
-      emoji: '⭐', significance: 60, subjectPlayerId: player.id,
-    })
-  }
-
-  // Scandals
-  const allScandals = [...(game.scandalHistory ?? []), ...(game.activeScandals ?? [])]
-  for (const s of allScandals) {
-    if (s.affectedClubId !== managedClubId || s.season !== season) continue
-    events.push({
-      type: 'scandal', season, matchday: s.triggerRound,
-      text: `Skandal drabbade klubben (omgång ${s.triggerRound}).`,
-      emoji: '🔥', significance: 70,
-    })
-  }
-
-  // Facility completions. `builtSeasons` är den beständiga sanningen om
-  // VILKEN säsong noden stod klar; completion-kön kompletterar med den exakta
-  // globala matchdagen när den finns. Kön är inte producent — en legacy-post
-  // utan builtSeasons får därför inte hitta på ett historiskt bygge. Om den
-  // exakta dagen saknas visar UI:t "Under säsongen" i stället för en falsk
-  // ligaomgång. Invigningstexten återanvänds från portalbeatets Opus-låsta
-  // källa, så samma completion inte får två konkurrerande berättelser.
-  for (const [nodeId, builtSeason] of Object.entries(game.facilityState?.builtSeasons ?? {})) {
-    if (builtSeason !== season) continue
-    const def = FACILITY_NODE_DEFS.find(node => node.id === nodeId)
-    if (!def) continue
-    const completion = (game.facilityState?.unseenCompletedFacilities ?? [])
-      .filter(item => item.nodeId === nodeId && item.season === season)
-      .sort((a, b) => b.matchday - a.matchday)[0]
-    const matchday = completion?.matchday ?? 1
-    events.push({
-      type: 'facility_built',
-      season,
-      matchday,
-      roundLabel: completion ? `Matchdag ${matchday}` : 'Under säsongen',
-      text: FACILITY_COMPLETED_BEATS[nodeId] ?? FACILITY_COMPLETED_FALLBACK(def.label),
-      emoji: '🏗️',
-      significance: 35,
-      subjectClubId: managedClubId,
-    })
-  }
-
-  // Storylines
-  for (const sl of (game.storylines ?? [])) {
-    if (sl.season !== season) continue
+  // Resolved storylines: the ledger decides what happened. The retained
+  // storyline object supplies only its frozen, already-approved view text.
+  for (const sl of getResolvedStorylineProjections(game, season)) {
     if (sl.clubId && sl.clubId !== managedClubId) continue
     const ev = buildEventFromStoryline(sl)
     if (ev) events.push(ev)
-  }
-
-  // Legend retirements
-  for (const legend of (game.clubLegends ?? [])) {
-    if (legend.retiredSeason === season) events.push(buildEventFromRetirement(legend))
   }
 
   const filtered = events.filter(e => e.significance >= SIGNIFICANCE_THRESHOLD)

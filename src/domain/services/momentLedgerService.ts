@@ -72,6 +72,42 @@ export function appendMomentsToLedger(ledger: EventLedgerEntry[], moments: Momen
   return moments.length === 0 ? ledger : [...ledger, ...moments.map(buildMomentLedgerEntry)]
 }
 
+function sameLedgerEvent(a: EventLedgerEntry, b: EventLedgerEntry): boolean {
+  return a.type === b.type
+    && a.season === b.season
+    && a.matchday === b.matchday
+    && a.subject?.kind === b.subject?.kind
+    && a.subject?.id === b.subject?.id
+}
+
+/**
+ * En systemhändelse kan samtidigt skapa ett Moment för minnesvyn och en
+ * ripple-post för orsak/verkan. De är två projektioner av SAMMA händelse,
+ * inte två kanoniska händelser. Behåll Momentens stabila semanticKey och
+ * vy-metadata, men för över ripple-postens konsekvenser och högsta vikt.
+ */
+export function appendMomentsAndEntriesToLedger(
+  ledger: EventLedgerEntry[],
+  moments: Moment[],
+  entries: EventLedgerEntry[],
+): EventLedgerEntry[] {
+  const remainingEntries = [...entries]
+  const momentEntries = moments.map(buildMomentLedgerEntry).map(momentEntry => {
+    const entryIndex = remainingEntries.findIndex(entry => sameLedgerEvent(momentEntry, entry))
+    if (entryIndex < 0) return momentEntry
+
+    const [entry] = remainingEntries.splice(entryIndex, 1)
+    return {
+      ...entry,
+      ...momentEntry,
+      significance: Math.max(momentEntry.significance, entry.significance),
+      consequences: entry.consequences,
+    }
+  })
+
+  return [...ledger, ...momentEntries, ...remainingEntries]
+}
+
 /**
  * Läsvägen (Fas 4): recentMoments-VYN blir en läsning av liggaren i stället
  * för det cappade fältet. `game.recentMoments` skrivs fortfarande (dual-write

@@ -11,6 +11,7 @@ import { FACILITY_NODE_DEFS } from '../../domain/services/facilityService'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from '../../domain/services/boardService'
 import { buildExpectationVerdictSentence } from '../../domain/services/seasonSummaryService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
+import { backfillClubHistoryLedger } from '../../domain/services/clubHistoryLedgerService'
 
 // B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
 // (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
@@ -710,6 +711,13 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       return { ...rest, diary: narrativeLog }
     })
   }
+
+  // SPEC_LIGGARE_MIGRERING_PRIORITERAD_2026-09-02, prio 1: gamla saves
+  // måste få sina redan inträffade, strukturerat verifierbara klubbhändelser
+  // in i kanon INNAN historikytorna slutar läsa dem ur de cappade/spridda
+  // fickorna. Funktionen är idempotent; prio 3:s lösta storylines ingår nu,
+  // medan aktiva storylines och journalistens cache/livevärde lämnas orörda.
+  data.eventLedger = backfillClubHistoryLedger(data as unknown as SaveGame)
 
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION

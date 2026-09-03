@@ -19,7 +19,7 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
   const data = buildJournalistSceneData(
     game.journalist,
     game.currentSeason,
-    game.storylines,
+    game.eventLedger,
     game.managedClubId,
   )
   const isCold = data.severity === 'cold'

@@ -175,7 +175,13 @@ export interface Player {
     type: 'milestone' | 'form' | 'injury' | 'transfer' | 'storyline'
     /** Maskinläsbar identitet för påståenden som måste återknyta till en
      *  exakt händelse utan att tolka den svenska visningstexten. */
-    semanticKey?: 'first_team_debut'
+    semanticKey?:
+      | 'first_team_debut'
+      | 'first_team_goal'
+      | `hat_trick_${number}`
+      | `career_goals_${number}`
+      | `career_games_${number}`
+      | 'academy_promotion'
   }>
 
   // DREAM-011 — Club legend (one per club, homegrown, never sold)

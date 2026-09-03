@@ -83,6 +83,33 @@ describe('seasonEndProcessor — pendingSeasonTransitionEvents (5.1 Sommaren)', 
     expect(agedEvent?.age).toBeGreaterThanOrEqual(99)
   })
 
+  it('skriver en retirement-post till liggaren när en egen klubblegend pensioneras', () => {
+    const base = makeGame()
+    const target = base.players.find(p => p.clubId === base.managedClubId)!
+    const game = {
+      ...base,
+      players: base.players.map(player => player.id === target.id
+        ? {
+            ...player,
+            age: 99,
+            currentAbility: 1,
+            careerStats: { ...player.careerStats, totalGames: 100, seasonsPlayed: 5 },
+          }
+        : player),
+    }
+
+    const result = handleSeasonEnd(game, 1)
+    const entry = result.game.eventLedger?.find(item =>
+      item.type === 'retirement' && item.subject?.id === target.id)
+
+    expect(entry).toMatchObject({
+      season: base.currentSeason + 1,
+      matchday: 22,
+      subject: { kind: 'player', id: target.id },
+      significance: 90,
+    })
+  })
+
   it('academiuppflyttningar som redan låg i pendingSeasonTransitionEvents (academyActions.ts) bevaras, inte skrivs över', () => {
     const base = makeGame()
     const game = {

@@ -101,12 +101,14 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const echo = pickEcho('klackEcho', seed + 1)
     // B4 — premiss på currentWeight
     const w = game.klackEcho.currentWeight
-    const premiss = w > 60 ? 'Klacken har inte släppt det än.'
-      : w >= 40 ? 'Klacken minns hur säsongen kändes.'
+    const premiss = w > 0.60 ? 'Klacken har inte släppt det än.'
+      : w >= 0.40 ? 'Klacken minns hur säsongen kändes.'
       : 'Känslorna sitter kvar i själva läktaren.'
     candidates.push({
       type: 'klackEcho',
-      score: game.klackEcho.currentWeight,
+      // Klackstate använder 0–1; kandidatfältet använder samma 0–100-skala
+      // som övriga Efterklang-minnen.
+      score: game.klackEcho.currentWeight * 100,
       memory: {
         type: 'klackEcho', primaryText: '', premiss, echo,
         objectName: 'Klacken',

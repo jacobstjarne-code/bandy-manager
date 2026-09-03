@@ -1,8 +1,10 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player, CareerMilestone, PlayerSeasonStats } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
+import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { FixtureStatus, MatchEventType, InboxItemType } from '../../../domain/enums'
 import { mulberry32 } from '../../../domain/utils/random'
+import { buildPlayerMilestoneLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 
 /** A5: tom säsongsstatistik (för cup-grenen innan första cupmatchen). */
 function emptySeasonStats(): PlayerSeasonStats {
@@ -21,6 +23,7 @@ import {
 export interface StatsProcessorResult {
   finalPlayers: Player[]
   milestoneInboxItems: InboxItem[]
+  ledgerEntries: EventLedgerEntry[]
 }
 
 export function updatePlayerMatchStats(
@@ -30,6 +33,7 @@ export function updatePlayerMatchStats(
   nextRound: number,
 ): StatsProcessorResult {
   const newMilestoneInboxItems: InboxItem[] = []
+  const ledgerEntries: EventLedgerEntry[] = []
   const finalPlayers = [...players]
 
   for (const fixture of simulatedFixtures) {
@@ -45,7 +49,10 @@ export function updatePlayerMatchStats(
       const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
       const opponent = game.clubs.find(club => club.id === opponentId)
       const opponentName = opponent?.shortName ?? opponent?.name ?? 'motståndet'
-      return [...(player.diary ?? []), generateDebutEntry(opponentName, game.currentSeason, nextRound)].slice(-20)
+      const entry = generateDebutEntry(opponentName, game.currentSeason, nextRound)
+      const ledgerEntry = buildPlayerMilestoneLedgerEntry(player.id, game.managedClubId, entry)
+      if (ledgerEntry) ledgerEntries.push(ledgerEntry)
+      return [...(player.diary ?? []), entry].slice(-20)
     }
     const allStarters = [
       ...(fixture.homeLineup?.startingPlayerIds ?? []),
@@ -231,6 +238,10 @@ export function updatePlayerMatchStats(
 
         if (newEntries.length > 0) {
           updatedNarrativeLog = [...(p.diary ?? []), ...newEntries].slice(-20)
+          for (const entry of newEntries) {
+            const ledgerEntry = buildPlayerMilestoneLedgerEntry(p.id, game.managedClubId, entry)
+            if (ledgerEntry) ledgerEntries.push(ledgerEntry)
+          }
         }
       }
 
@@ -326,5 +337,6 @@ export function updatePlayerMatchStats(
   return {
     finalPlayers,
     milestoneInboxItems: newMilestoneInboxItems,
+    ledgerEntries,
   }
 }

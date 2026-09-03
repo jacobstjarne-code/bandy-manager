@@ -12,6 +12,7 @@ import {
 } from '../domain/services/journalistVisibilityService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import { buildJournalistSceneData } from '../domain/data/scenes/journalistRelationshipScene'
+import { buildStorylineResolutionLedgerEntry } from '../domain/services/storylineLedgerService'
 
 function makeGame(relationship: number, lastTriggered?: number): SaveGame {
   return {
@@ -20,6 +21,7 @@ function makeGame(relationship: number, lastTriggered?: number): SaveGame {
     managedClubId: 'club_forsbacka',
     fixtures: [],
     storylines: [],
+    eventLedger: [],
     journalist: {
       name: 'Karin Bergström',
       outlet: 'Lokaltidningen',
@@ -43,18 +45,20 @@ function withRelationshipStory(
   season: number,
   clubId = game.managedClubId,
 ): SaveGame {
+  const historicalStory = {
+    id: `historical_${type}_${season}`,
+    type,
+    season,
+    matchday: 12,
+    clubId,
+    description: 'historical',
+    displayText: 'historical',
+    resolved: true,
+  } as const
   return {
     ...game,
-    storylines: [{
-      id: `historical_${type}_${season}`,
-      type,
-      season,
-      matchday: 12,
-      clubId,
-      description: 'historical',
-      displayText: 'historical',
-      resolved: true,
-    }],
+    storylines: [historicalStory],
+    eventLedger: [buildStorylineResolutionLedgerEntry(historicalStory, 16)!],
   }
 }
 
@@ -105,6 +109,12 @@ describe('journalistens relationsstorylines', () => {
       displayText: 'Relationen är bruten. Det krävs tid och ärlighet för att vända.',
       resolved: true,
     }])
+    expect(result.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'storyline_resolution',
+      semanticKey: 'storyline_resolution:journalist_feud:story_journalist_feud_2026_8',
+      matchday: 8,
+      subject: { kind: 'club', id: 'club_forsbacka' },
+    }))
     expect(appendJournalistRelationshipStoryline(makeGame(15, 10), 'broken_under_20').storylines).toEqual([])
   })
 
@@ -122,6 +132,9 @@ describe('journalistens relationsstorylines', () => {
       displayText: text,
       resolved: true,
     })
+    expect(result.eventLedger).toContainEqual(expect.objectContaining({
+      semanticKey: 'storyline_resolution:journalist_redemption:story_journalist_redemption_2026_8',
+    }))
     expect(appendJournalistRelationshipStoryline(makeGame(82, 78), 'recovered_above_75').storylines).toEqual([])
   })
 
@@ -138,7 +151,7 @@ describe('journalistens relationsstorylines', () => {
       displayText: text,
     })
     expect(buildJournalistSceneData(
-      game.journalist!, game.currentSeason, game.storylines, game.managedClubId,
+      game.journalist!, game.currentSeason, game.eventLedger, game.managedClubId,
     ).outlookText)
       .toBe(text)
   })
@@ -156,7 +169,7 @@ describe('journalistens relationsstorylines', () => {
       displayText: text,
     })
     expect(buildJournalistSceneData(
-      game.journalist!, game.currentSeason, game.storylines, game.managedClubId,
+      game.journalist!, game.currentSeason, game.eventLedger, game.managedClubId,
     ).outlookText)
       .toBe(text)
   })

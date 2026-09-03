@@ -4,7 +4,9 @@ import { resolveContractExtension, getManagerDisplayName } from '../../domain/se
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
-import { appendMomentsToLedger } from '../../domain/services/momentLedgerService'
+import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
+import type { EventLedgerEntry } from '../../domain/entities/Narrative'
+import { buildRetirementLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -51,6 +53,7 @@ import type { YouthPlayer } from '../../domain/entities/Academy'
 import type { PendingDemand } from '../../domain/entities/Demand'
 import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoomService'
 import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
+import { appendNewlyResolvedStorylines, getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -875,7 +878,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const seasonsInClub = (player.careerStats?.seasonsPlayed ?? 1)
     const isLegendEligible = isRetiringClubLegendEligible(player)
     if (isLegendEligible) {
-      const storyline = (game.storylines ?? []).find(s => s.playerId === pid && s.resolved)
+      const storyline = getResolvedStorylineProjections(game).find(s => s.playerId === pid)
       newLegends.push({
         name: `${player.firstName[0]}. ${player.lastName}`,
         position: player.position,
@@ -945,6 +948,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as GameEvent)
     }
   }
+
+  const previousLegendIds = new Set((game.clubLegends ?? []).map(legend => legend.playerId).filter(Boolean))
+  const retirementLedgerEntries: EventLedgerEntry[] = newLegends.flatMap(legend => {
+    if (!legend.playerId || previousLegendIds.has(legend.playerId)) return []
+    const entry = buildRetirementLedgerEntry(legend, game.managedClubId)
+    return entry ? [entry] : []
+  })
 
   // ── C-B3: Pensionsval — kandidat för nästa säsongs portal-kort ───────────
   const retirementCandidate = getRetirementCandidate(game)
@@ -2217,7 +2227,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     recentMoments: [...seasonHighlightMoments, ...(game.recentMoments ?? [])]
       .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
       .slice(0, 5),
-    eventLedger: appendMomentsToLedger(game.eventLedger ?? [], seasonHighlightMoments),
+    eventLedger: appendMomentsAndEntriesToLedger(game.eventLedger ?? [], seasonHighlightMoments, retirementLedgerEntries),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),
@@ -2312,7 +2322,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
     : updatedGame
 
-  return { game: { ...gameAfterDeferred, allTimeRecords: updateAllTimeRecords(gameAfterDeferred, seasonSummary) }, roundPlayed: null, seasonEnded: true }
+  const gameWithStorylineLedger = appendNewlyResolvedStorylines(
+    game,
+    gameAfterDeferred,
+    game.currentMatchday,
+  )
+
+  return {
+    game: {
+      ...gameWithStorylineLedger,
+      allTimeRecords: updateAllTimeRecords(gameWithStorylineLedger, seasonSummary),
+    },
+    roundPlayed: null,
+    seasonEnded: true,
+  }
 }
 
 function updateAllTimeRecords(

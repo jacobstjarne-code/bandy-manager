@@ -33,6 +33,14 @@ describe('promoteYouthPlayer — pendingSeasonTransitionEvents (academyActions.t
     const promotedEvent = events.find(e => e.type === 'promoted')
     expect(promotedEvent).toBeDefined()
     expect(promotedEvent?.playerLastName).toBe(youthPlayer!.lastName)
+
+    const promotedPlayerId = `player_promoted_${youthPlayer!.id}_${game.currentSeason}`
+    expect(useGameStore.getState().game?.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'academy_promotion',
+      season: game.currentSeason,
+      subject: { kind: 'player', id: promotedPlayerId },
+      significance: 55,
+    }))
   })
 
   it('flera uppflyttningar under samma säsong ackumuleras, skriver inte över varandra', () => {

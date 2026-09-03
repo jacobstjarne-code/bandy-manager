@@ -377,13 +377,12 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
           ←
         </button>
         <div>
-          {/* O13: rubriken står ORÖRD. En tvåklubbskarriär skulle antagligen
-              vilja heta något annat än "Klubbhistorik" — men vad den ska heta
-              är en textfråga, och Code skriver aldrig svensk spelartext
-              (CLAUDE.md). Underrubriken bär i stället hela sanningen som ren
-              data: varje klubbperiod med sina årtal. Öppen fråga till Opus,
-              noterad i docs/BACKLOG.md. */}
-          <h1 className="h-display-sm">Klubbhistorik</h1>
+          {/* O13: rubriken är "Karriärhistorik", inte "Klubbhistorik" (Opus
+              dom 2026-09-02, `klubbhistorik-rubrik-tvaklubb`): det är managerns
+              resa GENOM klubbar som visas, inte en enskild klubbs krönika —
+              rättare även vid enklubbskarriär, och slipper en villkorlig
+              rubrik. Underrubriken bär klubbperioderna med årtal. */}
+          <h1 className="h-display-sm">Karriärhistorik</h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
             {isMultiClubCareer
               ? spells.map(sp => `${sp.clubName} ${seasonStartYear(sp.fromSeason)}–${seasonStartYear(sp.toSeason)}`).join(' · ')

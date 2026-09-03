@@ -29,6 +29,7 @@ import { findActiveAnniversaries } from '../../domain/services/clubMemoryService
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 import { getBurnoutTacticSuppression, suppressTacticRecommendation, burnoutEffectSeed } from '../../domain/services/burnoutReliefService'
+import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -941,7 +942,9 @@ export function SquadScreen() {
             clubName={clubName}
             onClick={undefined}
             currentSeason={game?.currentSeason}
-            storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
+            storylines={game
+              ? getResolvedStorylineProjections(game).filter(s => s.playerId === selectedPlayer.id)
+              : []}
             onExtendContract={() => { setSelectedPlayerId(null); setScreenTab('värvning'); setRenewDeepLinkId(selectedPlayer.id) }}
             onClose={() => setSelectedPlayerId(null)}
             game={game ?? undefined}

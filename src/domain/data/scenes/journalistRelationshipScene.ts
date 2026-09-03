@@ -51,7 +51,7 @@ function buildStatusText(relationship: number, lastName: string): string {
 function buildOutlookText(
   journalist: Journalist,
   currentSeason: number,
-  storylines: SaveGame['storylines'],
+  eventLedger: SaveGame['eventLedger'],
   managedClubId: string,
 ): string {
   const rel = journalist.relationship
@@ -59,7 +59,7 @@ function buildOutlookText(
   if (rel <= 20) {
     if (refusals >= 3) return `${refusals} nekade presskonferenser. Det syns i rubrikerna.`
     return getJournalistRelationshipStoryText(
-      { journalist, currentSeason, storylines, managedClubId },
+      { journalist, currentSeason, eventLedger, managedClubId },
       'broken_under_20',
     )!
   }
@@ -68,7 +68,7 @@ function buildOutlookText(
   }
   if (rel >= 75) {
     return getJournalistRelationshipStoryText(
-      { journalist, currentSeason, storylines, managedClubId },
+      { journalist, currentSeason, eventLedger, managedClubId },
       'recovered_above_75',
     )!
   }
@@ -78,7 +78,7 @@ function buildOutlookText(
 export function buildJournalistSceneData(
   journalist: Journalist,
   currentSeason: number,
-  storylines: SaveGame['storylines'] = [],
+  eventLedger: SaveGame['eventLedger'] = [],
   managedClubId = '',
 ): JournalistRelationshipSceneData {
   const rel = journalist.relationship
@@ -102,6 +102,6 @@ export function buildJournalistSceneData(
     severity,
     statusText: buildStatusText(rel, lastName),
     memories,
-    outlookText: buildOutlookText(journalist, currentSeason, storylines, managedClubId),
+    outlookText: buildOutlookText(journalist, currentSeason, eventLedger, managedClubId),
   }
 }

@@ -51,6 +51,13 @@ describe('updatePlayerMatchStats — första A-lagsmålet (MISSING-GATE-fix)', (
     const p = result.finalPlayers.find(pl => pl.id === 'p1')!
     const firstGoalEntry = (p.diary ?? []).find(d => d.text.includes('första A-lagsmål'))
     expect(firstGoalEntry, JSON.stringify(p.diary)).toBeDefined()
+    expect(result.ledgerEntries).toContainEqual(expect.objectContaining({
+      type: 'player_milestone',
+      season: 1,
+      matchday: 2,
+      subject: { kind: 'player', id: 'p1' },
+      subject2: { kind: 'club', id: 'club_a' },
+    }))
   })
 
   it('skriver INGEN "första mål"-post för en spelare som redan har karriärmål sedan tidigare', () => {
@@ -59,5 +66,6 @@ describe('updatePlayerMatchStats — första A-lagsmålet (MISSING-GATE-fix)', (
     const p = result.finalPlayers.find(pl => pl.id === 'p2')!
     const firstGoalEntry = (p.diary ?? []).find(d => d.text.includes('första A-lagsmål'))
     expect(firstGoalEntry).toBeUndefined()
+    expect(result.ledgerEntries).toEqual([])
   })
 })

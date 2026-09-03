@@ -1,7 +1,9 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
 import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES } from '../data/landslagText'
+import { buildNationalTeamCallupLedgerEntry } from './clubHistoryLedgerService'
 
 // Release-svepet 2026-07-21 (Block 2c): HANDOFF-C-K1-LANDSLAG-2026-05-23.md
 // Q3, låst av Jacob 2026-05-23 — "+5 tkr/uttagen, synligt narrativt". Fanns
@@ -60,8 +62,10 @@ export function applyCallupEffects(
   activeNationalTeamCamp: { startRound: number; endRound: number; playerIds: string[] }
   inboxItems: InboxItem[]
   callupModal: { playerIds: string[]; names: string[]; bonusTkr: number }
+  ledgerEntries: EventLedgerEntry[]
 } {
   const calledUpPlayers = players.filter(p => playerIds.includes(p.id))
+  const firstCallupPlayerIds = calledUpPlayers.filter(p => !p.nationalTeamCallups).map(p => p.id)
   const names = calledUpPlayers.map(p => p.lastName)
   const nameStr = names.length === 1
     ? names[0]
@@ -109,6 +113,12 @@ export function applyCallupEffects(
     activeNationalTeamCamp: { startRound: round, endRound: round + 1, playerIds },
     inboxItems,
     callupModal: { playerIds, names: calledUpPlayers.map(p => `${p.firstName} ${p.lastName}`), bonusTkr },
+    ledgerEntries: firstCallupPlayerIds.map(playerId => buildNationalTeamCallupLedgerEntry({
+      playerId,
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: round,
+    })),
   }
 }
 

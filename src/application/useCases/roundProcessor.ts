@@ -48,7 +48,7 @@ import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { logNarrativeBeat, filterSystemhandelseBudget } from '../../domain/services/narrativeLogService'
-import { appendMomentsToLedger } from '../../domain/services/momentLedgerService'
+import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import {
   applySurfacingBudget,
   isExemptFromSurfacingBudget,
@@ -80,6 +80,8 @@ import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
+import { buildFacilityBuiltLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
@@ -371,6 +373,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const statsResult = updatePlayerMatchStats(finalPlayers, simulatedFixtures, game, nextMatchday)
   finalPlayers = statsResult.finalPlayers
   const milestoneInboxItems = statsResult.milestoneInboxItems
+  const playerMilestoneLedgerEntries = statsResult.ledgerEntries
 
   // Push milestone inbox items
   newInboxItems.push(...milestoneInboxItems)
@@ -469,7 +472,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const roundRippleChains: RippleChain[] = []
   // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — dual-write av alla
   // tre systemtriggarna (star_injured/big_derby_win/mecenat_left).
-  const rippleLedgerEntries: EventLedgerEntry[] = []
+  const roundLedgerEntries: EventLedgerEntry[] = [...playerMilestoneLedgerEntries]
   for (const { player, days } of newlyInjured) {
     const clubId = player.clubId
     if (clubId === game.managedClubId) {
@@ -480,7 +483,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         `${player.firstName} ${player.lastName}`, nextMatchday, game.currentSeason)
       roundRippleChains.push(starInjuryChain)
       const starInjuryLedgerEntry = buildSystemRippleLedgerEntry(starInjuryChain, 'star_injury', { kind: 'player', id: player.id })
-      if (starInjuryLedgerEntry) rippleLedgerEntries.push(starInjuryLedgerEntry)
+      if (starInjuryLedgerEntry) roundLedgerEntries.push(starInjuryLedgerEntry)
       if (player.currentAbility >= 65) {
         newMoments.push({
           id: `moment_injury_${player.id}_${nextMatchday}`,
@@ -578,6 +581,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       newInboxItems.push(...callupResult.inboxItems)
       nationalTeamCallupBonusTkr = callupResult.callupModal.bonusTkr
       nationalTeamCallupModal = callupResult.callupModal
+      roundLedgerEntries.push(...callupResult.ledgerEntries)
     }
 
     // M16 (regelboksanpassning 2026-07-03): snub-mekaniken flyttad utanför
@@ -735,7 +739,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           rivalClub?.name, nextMatchday, game.currentSeason)
         roundRippleChains.push(derbyChain)
         const derbyLedgerEntry = buildSystemRippleLedgerEntry(derbyChain, 'derby_win', rivalClub ? { kind: 'club', id: rivalClub.id } : undefined)
-        if (derbyLedgerEntry) rippleLedgerEntries.push(derbyLedgerEntry)
+        if (derbyLedgerEntry) roundLedgerEntries.push(derbyLedgerEntry)
         newMoments.push({
           id: `moment_derby_${justCompletedManagedFixture.id}`,
           source: 'derby_win',
@@ -1041,7 +1045,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         m.name, nextMatchday, game.currentSeason)
       roundRippleChains.push(mecenatChain)
       const mecenatLedgerEntry = buildSystemRippleLedgerEntry(mecenatChain, 'mecenat_withdrawal', { kind: 'mecenat', id: m.id })
-      if (mecenatLedgerEntry) rippleLedgerEntries.push(mecenatLedgerEntry)
+      if (mecenatLedgerEntry) roundLedgerEntries.push(mecenatLedgerEntry)
     }
   }
 
@@ -1282,6 +1286,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   newInboxItems.push(...communityResult.inboxItems)
   let { csBoost, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale } = communityResult
+  if (communityResult.completedNodeId) {
+    roundLedgerEntries.push(buildFacilityBuiltLedgerEntry({
+        nodeId: communityResult.completedNodeId,
+        season: game.currentSeason,
+        matchday: nextMatchday,
+        clubId: game.managedClubId,
+    }))
+  }
   // ANSPRÅK 4, spak 3: staleness-klockan (backfylld i processCommunity).
   const updatedCommunityActivitiesSince = communityResult.updatedCommunityActivitiesSince
 
@@ -1332,6 +1344,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Scandals (Lager 1 — Världshändelser) ──────────────────────────────────
   const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
   newInboxItems.push(...scandalResult.inboxItems)
+  roundLedgerEntries.push(...scandalResult.ledgerEntries)
 
   // ── Post-match events: insändare, opponent quote (ambient i Granska) ─────
   // Citatets skandalpremiss måste läsa den här omgångens canonical resultat,
@@ -1483,7 +1496,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, samma
       // significance som den happiness-baserade avhoppsvägen
       // (patronWithdrawalService.ts) — samma händelseklass, olika orsak.
-      rippleLedgerEntries.push({
+      roundLedgerEntries.push({
         type: 'patron_withdrawal',
         semanticKey: evictionId,
         season: game.currentSeason,
@@ -1685,8 +1698,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       .slice(0, 5),
     // Liggarposten — durabel, ocappad. ClubMemoryView (Moment-läsytan) läser
     // härifrån nu (getRecentMomentsFromLedger), se momentLedgerService.ts.
-    // rippleLedgerEntries: Fas 4+, alla tre systemtriggarna — se orsakVerkanService.ts.
-    eventLedger: [...appendMomentsToLedger(game.eventLedger ?? [], allNewMomentsThisRound), ...rippleLedgerEntries],
+    // Ripple och Moment kan beskriva samma systemhändelse. De fogas då till
+    // EN kanonisk post med både Moment-metadata och ripple-konsekvenser.
+    eventLedger: appendMomentsAndEntriesToLedger(game.eventLedger ?? [], allNewMomentsThisRound, roundLedgerEntries),
     currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
     scandalHistory: scandalResult.updatedScandalHistory,
@@ -2475,6 +2489,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // rotorsaken till den provisoriska räkningen). Släppta events tappas för
   // denna omgång — samma konservativa avvägning som canAddDecision ovan.
   const budgetedNewEvents = filterSystemhandelseBudget(allNewEvents, updatedGame, game.currentSeason, nextMatchday)
+
+  updatedGame = appendNewlyResolvedStorylines(game, updatedGame, nextMatchday)
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: budgetedNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }

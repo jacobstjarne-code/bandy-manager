@@ -32,6 +32,8 @@ import { pickDemandCategory, createPendingDemand, isDemandFulfilled } from '../.
 import type { MecenatDemand } from '../../../domain/entities/Mecenat'
 import type { Patron } from '../../../domain/entities/Community'
 import { applyPatronHappinessTransition } from '../../../domain/services/patronWithdrawalService'
+import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
+import { buildScandalLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -718,6 +720,8 @@ export interface ScandalProcessorResult {
   updatedScandalHistory: Scandal[]
   pointDeductions: Record<string, number>
   pendingPointDeductions: Record<string, number>
+  /** Canonical history for a newly triggered managed-club scandal. */
+  ledgerEntries: EventLedgerEntry[]
 }
 
 export function processScandals(
@@ -733,6 +737,7 @@ export function processScandals(
     updatedScandalHistory: game.scandalHistory ?? [],
     pointDeductions: game.pointDeductions ?? {},
     pendingPointDeductions: game.pendingPointDeductions ?? {},
+    ledgerEntries: [],
   }
   if (options?.skipSideEffects) return neutral
 
@@ -766,5 +771,9 @@ export function processScandals(
     updatedScandalHistory: resolved.updatedScandalHistory,
     pointDeductions: effects.pointDeductions,
     pendingPointDeductions: effects.pendingPointDeductions,
+    ledgerEntries: (() => {
+      const entry = buildScandalLedgerEntry(newScandal, game.managedClubId)
+      return entry ? [entry] : []
+    })(),
   }
 }

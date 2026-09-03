@@ -112,12 +112,18 @@ export const BURNOUT_MARK_RELAPSE = {
 /** Opus levererar. En rad per orsak — Code härleder orsaken (deriveBurnoutCause,
  *  managerProfileService.ts), visar BURNOUT_CAUSE_LINES[orsak] om poolen inte är
  *  tom. Tomma pooler = ingen orsaksrad visas (ingen krasch, bara utelämnad). */
-export const BURNOUT_CAUSE_LINES: Record<'losses' | 'inbox' | 'fatigue', string[]> = {
+export const BURNOUT_CAUSE_LINES: Record<'losses' | 'losses_eased' | 'inbox' | 'fatigue', string[]> = {
   losses: [
     'Förlusterna radar upp sig. Det sätter sig.',
     'Svårt att sova efter en förlust. Ännu svårare efter flera.',
     'Varje måndag känns tyngre än den förra just nu.',
     'Det är resultaten som tär. Man bär dem med sig hem.',
+  ],
+  losses_eased: [
+    'Segern gav andrum. Men det som tärde finns kvar under.',
+    'En vinst äntligen. Den räcker inte för att sudda de andra.',
+    'Tre poäng lugnar magen för stunden. Inte huvudet.',
+    'Det lättade lite ikväll. Men veckorna innan sitter kvar.',
   ],
   inbox: [
     'Det ligger för mycket olöst på bordet.',

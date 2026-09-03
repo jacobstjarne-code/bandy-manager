@@ -1,5 +1,6 @@
 import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
+import { storylineResolutionSignificance } from './storylineLedgerService'
 import type { ClubLegend, StorylineEntry } from '../entities/Narrative'
 import { FixtureStatus } from '../enums'
 import { getRivalry } from '../data/rivalries'
@@ -174,24 +175,6 @@ export function buildEventFromNarrativeLog(
 
 export function buildEventFromStoryline(storyline: StorylineEntry): MemoryEvent | null {
   if (!storyline.resolved) return null
-  const sigMap: Partial<Record<StorylineEntry['type'], number>> = {
-    underdog_season: 65,
-    relegation_escape: 65,
-    gala_winner: 60,
-    captain_rallied_team: 55,
-    promotion_sacrifice: 50,
-    hungrig_breakthrough: 50,
-    veteran_farewell: 45,
-    lokal_hero_moment: 45,
-    contract_drama_resolved: 40,
-    derby_echo_resolved: 35,
-    workplace_bond: 40,
-    journalist_feud: 40,
-    journalist_redemption: 40,
-    rescued_from_unemployment: 45,
-    went_fulltime_pro: 50,
-  }
-  const sig = sigMap[storyline.type] ?? 45
 
   return {
     type: 'storyline_resolution',
@@ -199,7 +182,7 @@ export function buildEventFromStoryline(storyline: StorylineEntry): MemoryEvent 
     matchday: storyline.matchday,
     text: storyline.displayText,
     emoji: '📖',
-    significance: sig,
+    significance: storylineResolutionSignificance(storyline.type),
     subjectPlayerId: storyline.playerId,
     subjectClubId: storyline.clubId,
   }

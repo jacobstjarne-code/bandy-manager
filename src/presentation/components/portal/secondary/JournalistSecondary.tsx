@@ -20,7 +20,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
   const data = buildJournalistSceneData(
     game.journalist,
     game.currentSeason,
-    game.storylines,
+    game.eventLedger,
     game.managedClubId,
   )
   const recentSummary = data.memories.length > 0
