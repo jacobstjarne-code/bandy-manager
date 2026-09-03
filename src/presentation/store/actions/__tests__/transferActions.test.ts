@@ -181,13 +181,13 @@ describe('renewContract — O5 kraft 1, löneinflation med rykte', () => {
     const actions = transferActions(store.get, store.set)
     const result = actions.renewContract('berg', 12000, 2)
     expect(result.success).toBe(false)
-    expect((result as { error?: string }).error).toMatch(/kräver minst/)
+    expect((result as { error?: string }).error).toMatch(/vill ha minst/)
   })
 
-  it('accepterar exakt golvet', () => {
+  it('accepterar ett tydligt premiumbud', () => {
     const store = makeStore(makeGame())
     const actions = transferActions(store.get, store.set)
-    const result = actions.renewContract('berg', 12500, 2)
+    const result = actions.renewContract('berg', 15000, 2)
     expect(result.success).toBe(true)
   })
 
@@ -226,7 +226,7 @@ describe('renewContract — loggar till financeLog (Framgångskurvan steg 3, del
   it('skriver en contract_extension-post med amount 0 vid en godkänd förlängning', () => {
     const store = makeStore(makeGame({ financeLog: [] }))
     const actions = transferActions(store.get, store.set)
-    const result = actions.renewContract('berg', 12500, 2)
+    const result = actions.renewContract('berg', 15000, 2)
     expect(result.success).toBe(true)
 
     const game = store.getGame()!
@@ -244,5 +244,52 @@ describe('renewContract — loggar till financeLog (Framgångskurvan steg 3, del
     const result = actions.renewContract('berg', 12000, 2)
     expect(result.success).toBe(false)
     expect(store.getGame()!.financeLog).toEqual([])
+  })
+})
+
+describe('transferflödets rotfixar', () => {
+  it('löser en nollrundors scouting direkt och returnerar samma väntetid som lagras', () => {
+    const target = makePlayer({ id: 'target', clubId: 'c2' })
+    const game = makeGame({
+      players: [makePlayer(), target],
+      scoutReports: {},
+      scoutBudget: 10,
+    })
+    const store = makeStore(game)
+    const result = transferActions(store.get, store.set).startEvaluation('target', 'c2', false, true)
+
+    expect(result).toMatchObject({ success: true, roundsRemaining: 0 })
+    expect(store.getGame()?.activeScoutAssignment).toBeNull()
+    expect(store.getGame()?.scoutReports?.target).toBeDefined()
+    expect(store.getGame()?.scoutBudget).toBe(9)
+  })
+
+  it('låter spelaren acceptera ett faktiskt motbud från Marknad', () => {
+    const target = makePlayer({ id: 'target', clubId: 'c2', marketValue: 200000 })
+    const bid = makeBid({
+      id: 'outgoing', playerId: 'target', buyingClubId: 'c1', sellingClubId: 'c2',
+      direction: 'outgoing', offerAmount: 140000, counterCount: 1,
+    })
+    const game = makeGame({ players: [makePlayer(), target], transferBids: [bid], currentMatchday: 15 })
+    const store = makeStore(game)
+    const result = transferActions(store.get, store.set).respondToOutgoingBid('outgoing', 'raise')
+
+    expect(result.success).toBe(true)
+    expect(store.getGame()?.transferBids[0]).toMatchObject({ offerAmount: 210000, expiresRound: 16, status: 'pending' })
+  })
+
+  it('fria agenter förhandlar lön och kontraktslängd och blir ihågkomna', () => {
+    const agent = makePlayer({ id: 'free', clubId: 'free_agent', salary: 9000 })
+    const game = makeGame({ transferState: { freeAgents: [agent], pendingOffers: [] }, eventLedger: [] })
+    const store = makeStore(game)
+    const result = transferActions(store.get, store.set).signFreeAgent('free', 20000, 3)
+
+    expect(result.success).toBe(true)
+    expect(store.getGame()?.players.find(p => p.id === 'free')).toMatchObject({
+      clubId: 'c1', salary: 20000, contractUntilSeason: 2028,
+    })
+    expect(store.getGame()?.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'transfer_signed', subject: { kind: 'player', id: 'free' },
+    }))
   })
 })

@@ -136,9 +136,9 @@ describe('selectAwayEventLines', () => {
     ]
     const lines = selectAwayEventLines(events)
     expect(lines[0]).toBe('Holms kontrakt gick ut. Ingen ringde honom i tid.')
-    expect(lines).toHaveLength(3)
+    expect(lines).toHaveLength(4)
   })
-  it('max tre rader även med fyra händelser — fjärde (lägst prioritet) faller bort', () => {
+  it('visar alla händelser även när fler än tre inträffat', () => {
     const events: SeasonTransitionEvent[] = [
       { type: 'contractExpired', playerId: 'p1', playerLastName: 'Holm' },
       { type: 'retired', playerId: 'p2', playerLastName: 'Berglund' },
@@ -150,6 +150,7 @@ describe('selectAwayEventLines', () => {
       'Holms kontrakt gick ut. Ingen ringde honom i tid.',
       'Berglund la av.',
       'Åberg fyllde 34.',
+      'Nilsson kom upp från P19.',
     ])
   })
   it('radformerna, en och en', () => {

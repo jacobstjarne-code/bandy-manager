@@ -112,7 +112,11 @@ export function recordSignatureFact(game: SaveGame, fact: string): SaveGame {
  * faktiskt hade noll skandaler faller meningen tillbaka till den gamla
  * (fortfarande sanna, bara förhands-) texten.
  */
-export function summarizeSignature(signature: SeasonSignature, scandalHistory?: { season: number }[]): string | null {
+export function summarizeSignature(
+  signature: SeasonSignature,
+  scandalHistory?: { season: number }[],
+  actualTransferCount = 0,
+): string | null {
   const season = signature.startedSeason
   const facts = signature.observedFacts
 
@@ -136,6 +140,10 @@ export function summarizeSignature(signature: SeasonSignature, scandalHistory?: 
       return facts[0] ? `Skandalsäsongen ${season}. ${facts[0]}` : `Skandalsäsongen ${season}.`
     }
     case 'hot_transfer_market':
+      // Signaturen ökar sannolikheter men är inte i sig ett bevis för att
+      // sommaren faktiskt blev het. Årsboken får bara påstå det när minst en
+      // verklig övergång finns i AI-loggen eller händelseliggaren.
+      if (actualTransferCount <= 0) return null
       return facts[0] ? `Den heta transfersommaren ${season}. ${facts[0]}` : `Den heta transfersommaren ${season}.`
     case 'injury_curve':
       return facts[0] ? `Skadekurvan ${season}. ${facts[0]}` : `Skadekurvan ${season}.`

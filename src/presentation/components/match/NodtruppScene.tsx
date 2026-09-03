@@ -2,7 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { PlayerPosition } from '../../../domain/enums'
 import { useGameStore } from '../../store/gameStore'
-import { positionShort, positionLong } from '../../utils/formatters'
+import { positionShort, positionLong, formatSalary } from '../../utils/formatters'
+import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
+import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
 
 /**
  * CODE_ORDER_NODTRUPP — soft-lock-skydd: visas FÖRE lineup när managed klubb har
@@ -52,6 +54,14 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
     .slice(0, 6)
 
   const deadEnd = youth.length === 0 && freeAgents.length === 0
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const leagueAverages = computeLeaguePositionAverages(game)
+
+  function emergencySalary(player: (typeof freeAgents)[number]): number {
+    if (!managedClub) return player.salary
+    const range = getContractSalaryRange(computeContractMinSalary(player, managedClub, leagueAverages))
+    return Math.ceil((range.max * 1.15) / 1000) * 1000
+  }
 
   function handleWalkover() {
     concedeWalkover(nextFixtureId)
@@ -112,9 +122,9 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', minWidth: 22 }}>{positionShort(a.position)}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{a.firstName} {a.lastName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.age} år · {positionLong(a.position)} · styrka ~{a.currentAbility}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.age} år · {positionLong(a.position)} · styrka ~{a.currentAbility} · {formatSalary(emergencySalary(a))}</div>
                 </div>
-                <button className="btn btn-outline" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => signFreeAgent(a.id)}>
+                <button className="btn btn-outline" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => signFreeAgent(a.id, emergencySalary(a), 3)}>
                   Ring in
                 </button>
               </div>

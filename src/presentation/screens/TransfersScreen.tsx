@@ -7,6 +7,9 @@ import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import type { TransferBid } from '../../domain/entities/GameEvent'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
+import { getCounterOfferAmount } from '../../domain/services/transferService'
+import { computeContractMinSalary, computeLeaguePositionAverages } from '../../domain/services/economyService'
+import { getContractSalaryRange } from '../../domain/services/contractNegotiationService'
 import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 
@@ -39,6 +42,7 @@ export function TransfersScreen() {
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const toggleScoutShortlist = useGameStore(s => s.toggleScoutShortlist)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
+  const respondToOutgoingBid = useGameStore(s => s.respondToOutgoingBid)
   const signFreeAgent = useGameStore(s => s.signFreeAgent)
   const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
   const respondToIncomingBid = useGameStore(s => s.respondToIncomingBid)
@@ -50,6 +54,7 @@ export function TransfersScreen() {
   // pendingAction/overrunPct stannar — buden använder dem (egen wage-overrun-instans per yta).
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
+  const [contractingFreeAgentId, setContractingFreeAgentId] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [overrunPct, setOverrunPct] = useState(0)
   const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'freeagents' | 'sell'>('marknad')
@@ -82,7 +87,10 @@ export function TransfersScreen() {
   const managedClubPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
-  const freeAgents = game.transferState.freeAgents
+  // Äldre/hot-reloadade saves kan bära aktuell versionsstämpel men sakna
+  // fältet och passerar då Zustand utan att migrationsfunktionen körs.
+  // Ett tomt optional-fallback hindrar att hela Värvning kraschar.
+  const freeAgents = game.transferState?.freeAgents ?? []
   const windowInfo = getTransferWindowStatus(game.currentDate)
   const windowOpen = windowInfo.status !== 'closed'
 
@@ -109,11 +117,42 @@ export function TransfersScreen() {
   const marknadHasDot = availablePlayersForDot.length > 0
   const saljHasDot = incomingBids.length > 0
 
-  function handleSignFreeAgent(agentId: string) {
+  function handleSignFreeAgent(agentId: string, _offerAmount: number, offeredSalary: number, contractYears: number) {
     if (!game) return
     const agent = game.transferState.freeAgents.find(p => p.id === agentId)
-    if (!agent) return
-    signFreeAgent(agentId)
+    const club = game.clubs.find(c => c.id === game.managedClubId)
+    if (!agent || !club) return
+
+    const currentWageBill = game.players
+      .filter(p => p.clubId === game.managedClubId)
+      .reduce((sum, p) => sum + p.salary, 0)
+    const weeklyEquiv = Math.round((currentWageBill + offeredSalary) / 4)
+    const wouldExceed = weeklyEquiv > club.wageBudget
+
+    const doSign = () => {
+      const result = signFreeAgent(agentId, offeredSalary, contractYears)
+      if (!result.success) {
+        setScoutMessage(result.error ?? 'Kunde inte värva spelaren.')
+        setTimeout(() => setScoutMessage(null), 4000)
+        return
+      }
+      setContractingFreeAgentId(null)
+    }
+
+    if (wouldExceed) {
+      setOverrunPct(Math.round(((weeklyEquiv - club.wageBudget) / club.wageBudget) * 100))
+      setPendingAction(() => doSign)
+    } else {
+      doSign()
+    }
+  }
+
+  function handleOutgoingBidResponse(bidId: string, choiceId: 'raise' | 'withdraw') {
+    const result = respondToOutgoingBid(bidId, choiceId)
+    if (!result.success) {
+      setScoutMessage(result.error ?? 'Kunde inte svara på motbudet.')
+      setTimeout(() => setScoutMessage(null), 3000)
+    }
   }
 
   function handleListForSale(playerId: string) {
@@ -172,7 +211,7 @@ export function TransfersScreen() {
     )
     const result = startEvaluation(player.id, player.clubId, sameRegion, hasPlayedAgainst)
     if (result.success) {
-      const rounds = hasPlayedAgainst || sameRegion ? 0 : 1
+      const rounds = result.roundsRemaining ?? 0
       setScoutMessage(rounds === 0
         ? `Rapport om ${player.firstName} ${player.lastName} klar direkt!`
         : `Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång.`)
@@ -269,7 +308,9 @@ export function TransfersScreen() {
 
       {/* Aktiva bud (outgoing) — alltid synliga i marknad */}
       {activeTab === 'marknad' && (() => {
-        const outgoing = (game.transferBids ?? []).filter(b => b.direction === 'outgoing' && b.status === 'pending')
+        const outgoing = (game.transferBids ?? []).filter(b =>
+          b.direction === 'outgoing' && (b.status === 'pending' || b.resolvedRound === currentRound),
+        )
         if (outgoing.length === 0) return null
         return (
           <div className="transfers-active-bids">
@@ -288,15 +329,31 @@ export function TransfersScreen() {
                     <div className="transfers-list-content">
                       <p className="transfers-list-name">{player ? `${player.firstName} ${player.lastName}` : '?'}</p>
                       <p className="transfers-list-meta-sm">{club?.name ?? '?'} · Bud: {formatValue(bid.offerAmount)}</p>
+                      {bid.status === 'pending' && (bid.counterCount ?? 0) > 0 && (
+                        <p className="transfers-list-meta-sm">Motbud: {formatValue(getCounterOfferAmount(bid, game).amount)}</p>
+                      )}
                     </div>
-                    {(() => {
+                    {bid.status === 'pending' && (bid.counterCount ?? 0) > 0 ? (
+                      <div className="transfers-year-btns">
+                        <button className="btn btn-outline transfers-btn-sm" onClick={() => handleOutgoingBidResponse(bid.id, 'raise')}>
+                          Höj budet
+                        </button>
+                        <button className="btn btn-ghost transfers-btn-sm" onClick={() => handleOutgoingBidResponse(bid.id, 'withdraw')}>
+                          Tacka nej
+                        </button>
+                      </div>
+                    ) : bid.status === 'pending' ? (() => {
                       const roundsLeft = (bid.expiresRound ?? 0) - currentRound
                       return (
                         <span className="transfers-response-time">
                           {roundsLeft > 0 ? `Svar om ${roundsLeft} omg.` : 'Svar väntat'}
                         </span>
                       )
-                    })()}
+                    })() : (
+                      <span className="transfers-response-time">
+                        {bid.status === 'accepted' ? 'Bud accepterat' : bid.status === 'rejected' ? 'Bud avslaget' : 'Bud avbröts'}
+                      </span>
+                    )}
                   </div>
                 )
               })}
@@ -411,7 +468,7 @@ export function TransfersScreen() {
             freeAgents={freeAgents}
             windowOpen={windowOpen}
             scoutReports={scoutReports}
-            onSign={handleSignFreeAgent}
+            onSign={setContractingFreeAgentId}
           />
         </div>
       )}
@@ -470,6 +527,22 @@ export function TransfersScreen() {
             onClose={() => setBiddingPlayerId(null)}
             onConfirm={handleBid}
             rivalry={bidRivalry}
+          />
+        )
+      })()}
+
+      {contractingFreeAgentId && managedClub && (() => {
+        const agent = game.transferState.freeAgents.find(p => p.id === contractingFreeAgentId)
+        if (!agent) return null
+        const minSalary = computeContractMinSalary(agent, managedClub, computeLeaguePositionAverages(game))
+        return (
+          <BidModal
+            player={agent}
+            managedClub={managedClub}
+            onClose={() => setContractingFreeAgentId(null)}
+            onConfirm={handleSignFreeAgent}
+            mode="freeAgent"
+            salaryRange={getContractSalaryRange(minSalary)}
           />
         )
       })()}

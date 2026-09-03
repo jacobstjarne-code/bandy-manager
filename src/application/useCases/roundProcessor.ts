@@ -1235,6 +1235,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Board objective deltas (only non-zero at rounds 7, 14, 22)
   sponsorNetworkMoodDelta += boardObjSponsorDelta
   newMoments.push(...transferExecResult.moments)
+  roundLedgerEntries.push(...transferExecResult.ledgerEntries)
 
   // C-T1/T9 — Transfer consequence fan mood deltas
   let lastRivalSaleMatchday = game.lastRivalSaleMatchday

@@ -8,7 +8,6 @@ import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
 import { WageOverrunWarning } from './WageOverrunWarning'
 import '../../styles/transfers.css'
-import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 
 interface ContractsTabProps {
   /** Deep-link: öppna renew-modalen direkt för denna spelare (PlayerCard "Förläng"). */
@@ -54,27 +53,8 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
     const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
     const currentPlayer = squadPlayers.find(p => p.id === playerId)
     if (!currentPlayer) return
-    // O5 kraft 1, prestationsfaktor (DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 1):
-    // computeContractMinSalary (economyService.ts) är EN SANNING, ETT STÄLLE —
-    // var duplicerad här, transferActions.ts och transferService.ts.
-    const leagueAverages = computeLeaguePositionAverages(game)
-    const minSalary = computeContractMinSalary(currentPlayer, club, leagueAverages)
-    if (newSalary < minSalary) {
-      setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatSalary(minSalary)}`)
-      return
-    }
-    if (newSalary === minSalary) {
-      let rejectChance = 0
-      if (currentPlayer.currentAbility > 60) rejectChance += 0.40
-      if (currentPlayer.form > 65) rejectChance += 0.20
-      if ((currentPlayer.potentialAbility ?? 0) > 70) rejectChance += 0.15
-      const negotiationRoll = mulberry32(fixtureSeed(`${game.id}:${playerId}:${game.currentSeason}:${newSalary}:${years}`))()
-      if (negotiationRoll < rejectChance) {
-        const counterSalary = Math.round(minSalary * 1.15 / 500) * 500
-        setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(counterSalary)}`)
-        return
-      }
-    }
+    // Själva förhandlingsutfallet ägs av transferActions/domänservicen.
+    // Komponenten räknar bara lönebudgetens varning före bekräftelse.
     const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
     const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
     const weeklyEquiv = Math.round(projectedWageBill / 4)

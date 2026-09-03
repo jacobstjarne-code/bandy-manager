@@ -6,7 +6,7 @@ import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
-import { csColor, formatFinanceAbs, positionShort, playoffResultLabel, cupResultLabel } from '../utils/formatters'
+import { csColor, formatFinance, formatFinanceAbs, positionShort, playoffResultLabel, cupResultLabel } from '../utils/formatters'
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage, downloadSeasonImage } from '../utils/seasonShareImage'
 import { shareMatchImage } from '../utils/matchShareImage'
@@ -951,7 +951,7 @@ export function SeasonSummaryScreen() {
             </div>
           </div>
           <p style={{ fontSize: 13, fontWeight: 600, color: summary.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 8, textAlign: 'center' }}>
-            {summary.financialChange >= 0 ? '+' : ''}{formatFinanceAbs(Math.abs(summary.financialChange))}
+            {formatFinance(summary.financialChange)}
           </p>
         </div>
 

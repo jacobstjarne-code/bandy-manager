@@ -142,7 +142,12 @@ describe('summarizeSignature', () => {
 
   it('returns correct Swedish text for hot_transfer_market', () => {
     const sig: SeasonSignature = { id: 'hot_transfer_market', modifiers: {}, startedSeason: 2029, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('transfersommaren 2029')
+    expect(summarizeSignature(sig, [], 1)).toContain('transfersommaren 2029')
+  })
+
+  it('påstår inte en het transfersommar utan en verklig övergång', () => {
+    const sig: SeasonSignature = { id: 'hot_transfer_market', modifiers: {}, startedSeason: 2029, observedFacts: [] }
+    expect(summarizeSignature(sig, [], 0)).toBeNull()
   })
 
   it('returns correct Swedish text for injury_curve', () => {

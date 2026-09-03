@@ -74,6 +74,9 @@ describe('seasonEndProcessor — offseasonFinanceLog (A-M5)', () => {
     const managedWith = withMecenat.clubs.find(c => c.id === base.managedClubId)!
 
     expect(managedWith.finances - managedWithout.finances).toBe(75_000)
+    // Transferbudgeten ska räknas EFTER mecenatbidraget, inte frysas redan
+    // efter prispengarna. 15 % av 75 000 = 11 250.
+    expect(managedWith.transferBudget - managedWithout.transferBudget).toBe(11_250)
     expect(withMecenat.financeLog?.find(e => e.reason === 'mecenat')).toMatchObject({
       amount: 75_000,
       label: 'Mecenatbidrag (Test Mecenat)',

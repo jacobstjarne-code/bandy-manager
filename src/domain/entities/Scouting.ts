@@ -31,5 +31,5 @@ export interface ScoutAssignment {
   targetPlayerId: string
   targetClubId: string
   startedDate: string
-  roundsRemaining: number  // 1 or 2
+  roundsRemaining: number  // 0, 1 or 2 (0 löses direkt av action-vägen)
 }

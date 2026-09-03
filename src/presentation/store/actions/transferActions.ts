@@ -1,6 +1,6 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
-import { startScoutAssignment } from '../../../domain/services/scoutingService'
-import { createOutgoingBid } from '../../../domain/services/transferService'
+import { processScoutAssignment, startScoutAssignment } from '../../../domain/services/scoutingService'
+import { createOutgoingBid, getCounterOfferAmount } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
@@ -8,7 +8,9 @@ import { bidReceivedEvent } from '../../../domain/services/events/eventFactories
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { formatSalary } from '../../../domain/format'
-import { fixtureSeed, seededPick } from '../../../domain/utils/random'
+import { fixtureSeed, mulberry32, seededPick } from '../../../domain/utils/random'
+import { evaluateContractOffer } from '../../../domain/services/contractNegotiationService'
+import { logEvent } from '../../../domain/services/eventLedgerService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -45,8 +47,35 @@ export function transferActions(get: Get, set: Set) {
       if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
       if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
       const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion, hasPlayedAgainst)
-      set({ game: { ...game, activeScoutAssignment: assignment, scoutBudget: game.scoutBudget - 1 } })
-      return { success: true }
+      const nextScoutBudget = game.scoutBudget - 1
+
+      // En rapport med noll återstående omgångar ska vara klar nu. Tidigare
+      // sparades även den som ett aktivt uppdrag och löstes först när nästa
+      // matchrunda råkade processas, trots att UI lovade "klar direkt".
+      if (assignment.roundsRemaining === 0) {
+        const target = game.players.find(p => p.id === playerId)
+        if (!target) return { success: false, error: 'Spelaren hittades inte' }
+        const scoutAccuracy = Math.min(95, 50 + nextScoutBudget * 2)
+        const report = processScoutAssignment(
+          assignment,
+          target,
+          scoutAccuracy,
+          fixtureSeed(`${game.id}:${game.currentSeason}:${game.currentMatchday}:${playerId}:scout`),
+          game.currentSeason,
+        )
+        set({
+          game: {
+            ...game,
+            activeScoutAssignment: null,
+            scoutBudget: nextScoutBudget,
+            scoutReports: { ...(game.scoutReports ?? {}), [playerId]: report },
+          },
+        })
+        return { success: true, roundsRemaining: 0 }
+      }
+
+      set({ game: { ...game, activeScoutAssignment: assignment, scoutBudget: nextScoutBudget } })
+      return { success: true, roundsRemaining: assignment.roundsRemaining }
     },
 
     // L3 (mobil speltest-audit, 2026-08-26): favoritmärke för scoutrapporter
@@ -82,10 +111,48 @@ export function transferActions(get: Get, set: Set) {
       }
       // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday
       // — samma skala som transferProcessor.ts jämför expiresRound/createdRound mot.
-      const currentRound = scheduledFixtures[0].matchday ?? 0
+      const currentRound = game.currentMatchday ?? 0
       const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
       if (!result.success || !result.bid) return { success: false, error: result.error }
       set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
+      return { success: true }
+    },
+
+    respondToOutgoingBid: (bidId: string, choiceId: 'raise' | 'withdraw') => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const bid = (game.transferBids ?? []).find(b => b.id === bidId)
+      if (!bid || bid.direction !== 'outgoing' || bid.status !== 'pending' || (bid.counterCount ?? 0) < 1) {
+        return { success: false, error: 'Motbudet hittades inte' }
+      }
+
+      const currentRound = game.currentMatchday ?? 0
+      if (choiceId === 'withdraw') {
+        set({
+          game: {
+            ...game,
+            transferBids: game.transferBids.map(b => b.id === bidId
+              ? { ...b, status: 'expired' as const, resolvedRound: currentRound }
+              : b),
+          },
+        })
+        return { success: true }
+      }
+
+      const counterAmount = getCounterOfferAmount(bid, game).amount
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return { success: false, error: 'Ingen klubb hittad' }
+      if (club.transferBudget < counterAmount) return { success: false, error: 'Otillräcklig transferbudget' }
+      if (club.finances - counterAmount < -100000) return { success: false, error: 'Budet skulle föra kassan under −100 000 kr' }
+
+      set({
+        game: {
+          ...game,
+          transferBids: game.transferBids.map(b => b.id === bidId
+            ? { ...b, offerAmount: counterAmount, expiresRound: currentRound + 1 }
+            : b),
+        },
+      })
       return { success: true }
     },
 
@@ -106,7 +173,16 @@ export function transferActions(get: Get, set: Set) {
       // ställen: här, ContractsTab.tsx och transferService.ts).
       const leagueAverages = computeLeaguePositionAverages(game)
       const minSalary = computeContractMinSalary(player, club, leagueAverages)
-      if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${formatSalary(minSalary)}` }
+      const negotiation = evaluateContractOffer(
+        player,
+        minSalary,
+        newSalary,
+        years,
+        mulberry32(fixtureSeed(`${game.id}:${playerId}:${game.currentSeason}:${newSalary}:${years}:renew`)),
+      )
+      if (!negotiation.accepted) {
+        return { success: false, error: `${player.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}` }
+      }
 
       const currentWageBill = game.players
         .filter(p => p.clubId === game.managedClubId)
@@ -164,15 +240,36 @@ export function transferActions(get: Get, set: Set) {
       }
     },
 
-    signFreeAgent: (agentId: string) => {
+    signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const agent = game.transferState.freeAgents.find(p => p.id === agentId)
       if (!agent) return { success: false, error: 'Spelaren hittades inte' }
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+      const leagueAverages = computeLeaguePositionAverages(game)
+      const minSalary = computeContractMinSalary(agent, club, leagueAverages)
+      const negotiation = evaluateContractOffer(
+        agent,
+        minSalary,
+        offeredSalary,
+        contractYears,
+        mulberry32(fixtureSeed(`${game.id}:${agentId}:${game.currentSeason}:${offeredSalary}:${contractYears}:free-agent`)),
+      )
+      if (!negotiation.accepted) {
+        return { success: false, error: `${agent.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}` }
+      }
 
       // tenure-falt-joinedclubseason (DOM 2026-09-03): friövergång är ett av
       // domens tre skrivställen.
-      const agentWithClub = { ...agent, clubId: game.managedClubId, joinedClubSeason: game.currentSeason, contractUntilSeason: game.currentSeason + 2 }
+      const agentWithClub = {
+        ...agent,
+        clubId: game.managedClubId,
+        joinedClubSeason: game.currentSeason,
+        salary: offeredSalary,
+        contractUntilSeason: game.currentSeason + contractYears,
+      }
       const updatedPlayers = [...game.players, agentWithClub]
       const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
       const updatedClubs = game.clubs.map(c =>
@@ -181,15 +278,37 @@ export function transferActions(get: Get, set: Set) {
           : c
       )
 
-      set({
-        game: {
+      const currentWageBill = game.players
+        .filter(p => p.clubId === game.managedClubId)
+        .reduce((sum, p) => sum + p.salary, 0)
+      const updatedGame: SaveGame = {
           ...game,
           players: updatedPlayers,
           clubs: updatedClubs,
           transferState: { ...game.transferState, freeAgents: updatedFreeAgents },
+        }
+      set({
+        game: {
+          ...updatedGame,
+          eventLedger: logEvent(updatedGame, {
+            type: 'transfer_signed',
+            semanticKey: `free-agent:${agentId}:${game.currentSeason}:${game.currentMatchday ?? 0}`,
+            season: game.currentSeason,
+            matchday: game.currentMatchday ?? 0,
+            subject: { kind: 'player', id: agentId },
+            subject2: { kind: 'club', id: game.managedClubId },
+            significance: 40,
+            madeByPlayer: true,
+          }),
         },
       })
-      return { success: true }
+      const projectedWageBill = currentWageBill + offeredSalary
+      return {
+        success: true,
+        wageWarning: projectedWageBill > club.wageBudget
+          ? projectedWageBill - club.wageBudget
+          : undefined,
+      }
     },
 
     listPlayerForSale: (playerId: string) => {

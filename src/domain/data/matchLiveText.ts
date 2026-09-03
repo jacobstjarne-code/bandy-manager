@@ -34,7 +34,7 @@ export const PAUSSNACK_EYEBROW: Record<MatchSituation, string> = {
 /** Förstaalternativet (index 0) är default-markerat i mocken — det "aktiva" valet per läge. */
 export const PAUSSNACK: Record<MatchSituation, PepOption[]> = {
   behind: [
-    { line: 'Upp i deras ände direkt. Det här vänder vi.', effect: '↑ ert tryck i andra · ↑ varians', lean: 'push' },
+    { line: 'Upp på deras halva direkt, det här vänder vi.', effect: '↑ ert tryck i andra · ↑ varians', lean: 'push' },
     { line: 'Inget stressande. Spela som ni kan, så kommer det.', effect: '→ oförändrat tryck · stabilare', lean: 'hold' },
   ],
   level: [
@@ -57,7 +57,7 @@ export const PAUSSNACK_PREVIEW_LABEL = 'Förväntad riktning på baren i andra'
 export const SENT_VAL = {
   /** {minut} interpoleras (matchminut). */
   eyebrow: '⬩ {minut}\u2032 · jämnt · det öppnar upp ⬩',
-  question: 'Gå på vinsten, eller stäng igen?',
+  question: 'Gå för vinsten, eller stäng igen?',
   push: { title: 'Gå på', effect: '↑ chans · ↑ risk' },
   shut: { title: 'Stäng igen', effect: '↓ risk · ↓ chans' },
   gate: 'Tänds bara sent i jämna lägen.',

@@ -881,7 +881,14 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
     signatureRubric: game.currentSeasonSignature
-      ? (summarizeSignature(game.currentSeasonSignature, game.scandalHistory) ?? undefined)
+      ? (summarizeSignature(
+          game.currentSeasonSignature,
+          game.scandalHistory,
+          (game.aiTransferLog ?? []).filter(t => t.season === game.currentSeason).length
+            + (game.eventLedger ?? []).filter(e =>
+              e.season === game.currentSeason && (e.type === 'transfer_signed' || e.type === 'transfer_sold'),
+            ).length,
+        ) ?? undefined)
       : undefined,
     managerSeason: managerSeasonEntries.length > 0 ? managerSeasonEntries : undefined,
   }

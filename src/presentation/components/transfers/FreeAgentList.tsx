@@ -43,7 +43,7 @@ export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: 
                 {agent.firstName} {agent.lastName}
               </p>
               <p className="transfers-player-meta transfers-player-meta--spaced">
-                {positionShort(agent.position)} · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatSalary(agent.salary)}
+                {positionShort(agent.position)} · {agent.age} år · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatSalary(agent.salary)}
               </p>
               {retirementRisk && (
                 <p className="transfers-retirement-risk">

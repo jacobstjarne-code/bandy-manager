@@ -14,21 +14,26 @@ interface BidModalProps {
   onClose: () => void
   onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => void
   rivalry?: { name: string; intensity: number } | null
+  mode?: 'transfer' | 'freeAgent'
+  salaryRange?: { min: number; max: number }
 }
 
-export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: BidModalProps) {
+export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange }: BidModalProps) {
+  const isFreeAgent = mode === 'freeAgent'
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
-  const [offerAmount, setOfferAmount] = useState(suggestedBid)
-  const [offeredSalary, setOfferedSalary] = useState(Math.round(player.salary / 500) * 500)
+  const [offerAmount, setOfferAmount] = useState(isFreeAgent ? 0 : suggestedBid)
+  const [offeredSalary, setOfferedSalary] = useState(
+    isFreeAgent && salaryRange ? salaryRange.max : Math.round(player.salary / 500) * 500,
+  )
   const [contractYears, setContractYears] = useState(3)
-  const canAfford = managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000
+  const canAfford = isFreeAgent || (managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000)
 
   return (
-    <Overlay onClose={onClose} ariaLabel={`Lägg bud på ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
+    <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
       <div className="transfers-modal-box transfers-modal-shell">
         <div className="transfers-modal-header-sm transfers-modal-header-pad">
           <div>
-            <h3 className="transfers-modal-title">Lägg bud</h3>
+            <h3 className="transfers-modal-title">{isFreeAgent ? 'Värva' : 'Lägg bud'}</h3>
             <p className="transfers-modal-player-name">{player.firstName} {player.lastName}</p>
           </div>
           <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
@@ -39,13 +44,17 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
           </div>
           <div className="transfers-modal-content">
             <div className="transfers-info-box">
-              Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
+              {isFreeAgent && salaryRange
+                ? `Lönekrav: ${Math.round(salaryRange.min / 1000)}–${Math.round(salaryRange.max / 1000)} tkr/mån`
+                : `Marknadsvärde: ${formatValue(player.marketValue ?? 0)} · Transferbudget: ${formatValue(managedClub.transferBudget)}`}
             </div>
-            <div className="transfers-form-group">
-              <label className="transfers-label">Budsumma (kr)</label>
-              <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
-                className="transfers-input" />
-            </div>
+            {!isFreeAgent && (
+              <div className="transfers-form-group">
+                <label className="transfers-label">Budsumma (kr)</label>
+                <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
+                  className="transfers-input" />
+              </div>
+            )}
             <div className="transfers-form-group">
               {/* B3 (Designgranskning fresh-eyes 2026-09-03): fältet visade rå
                   kr, DS §11 säger löner alltid tkr/mån (samma fix som
@@ -70,7 +79,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
                 ))}
               </div>
             </div>
-            {rivalry && (
+            {!isFreeAgent && rivalry && (
               <div className="transfers-rivalry-warning">
                 {(() => {
                   const pool = RIVALRY_WARNING_PER_INTENSITY[rivalry.intensity as 1 | 2 | 3]
@@ -78,8 +87,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
                 })()}
               </div>
             )}
-            {managedClub.transferBudget < offerAmount && <p className="transfers-error-text">Otillräcklig transferbudget</p>}
-            {managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 000 kr</p>}
+            {!isFreeAgent && managedClub.transferBudget < offerAmount && <p className="transfers-error-text">Otillräcklig transferbudget</p>}
+            {!isFreeAgent && managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 tkr</p>}
           </div>
         </div>
         <button
@@ -87,7 +96,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
           disabled={!canAfford}
           className="mf-stamp"
         >
-          Lägg bud →
+          {isFreeAgent ? 'Värva →' : 'Lägg bud →'}
         </button>
       </div>
     </Overlay>

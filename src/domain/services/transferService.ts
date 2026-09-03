@@ -321,6 +321,13 @@ export function resolveOutgoingBid(
   const ratio = bid.offerAmount / marketVal
   const countersDone = bid.counterCount ?? 0
 
+  // Ett motbud är klubbens eget pris. Tidigare kunde en toppspelare kräva
+  // 105 %, men samma klubb avslog sedan exakt 105 % eftersom toppspelarens
+  // separata 120 %-gräns kördes igen. Det gjorde svaret självmotsägande.
+  if (countersDone > 0 && bid.offerAmount >= getCounterOfferAmount(bid, game).amount) {
+    return 'accepted'
+  }
+
   // Always accept at 120%+ of market value
   if (ratio >= 1.2) return 'accepted'
 

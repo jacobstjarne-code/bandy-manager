@@ -1574,3 +1574,9 @@ MISSTANKAR — döm i kontext, luta konservativt:
   Mecenat.demands aldrig populerad, media/library/quotes/*.json (7 filer,
   103 citat) helt onåbara. NÄSTA AUDIT-PASS: numrering fortsätter från
   M68 vid framtida punktinsatser.
+
+- 2026-09-04 (Jacob + Code): M68–M69 KLARA. Två spelarobserverade
+  matchrepliker rättade i `matchLiveText.ts`: "gå på vinsten" → "gå för
+  vinsten" och "Upp i deras ände direkt, det här vänder vi" → "Upp på
+  deras halva direkt. Det här vänder vi." Exakta regressionstester låser
+  båda formuleringarna i `matchLiveText.test.ts`.

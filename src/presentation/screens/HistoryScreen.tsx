@@ -697,7 +697,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                     💰 Ekonomi: {formatFinanceAbs(s.startFinances)} → {formatFinanceAbs(s.endFinances)}{' '}
                     <span style={{ color: s.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
-                      ({s.financialChange >= 0 ? '+' : ''}{formatFinanceAbs(s.financialChange)})
+                      ({formatFinance(s.financialChange)})
                     </span>
                   </p>
                   {/* A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): avstämning för

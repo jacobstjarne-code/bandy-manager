@@ -42,7 +42,7 @@ import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../d
 import { checkLicenseStatus, buildLicenseInboxItem, isActiveLicenseWarning, LICENSE_ACTION_PLAN_CAPITAL_INCOME } from '../../domain/services/licenseService'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
-import { appendFinanceLog, applyFinanceChange, type FinanceEntry } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange, deriveSeasonTransferBudget, type FinanceEntry } from '../../domain/services/economyService'
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
@@ -511,7 +511,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const offseasonFinanceLog: FinanceEntry[] = []
   const offseasonRound = game.currentMatchday ?? 0
 
-  // Prize money and transfer budget update for all clubs
+  // Prize money for all clubs. Transferbudgeten räknas först när ALLA
+  // sommarposter är bokförda; tidigare frös den kassan här och missade
+  // mecenat- och kommunbidrag som kom strax nedanför.
   const PRIZE_MONEY = [200000, 150000, 120000, 100000, 80000,
     60000, 50000, 40000, 30000, 25000, 20000, 15000]
 
@@ -531,10 +533,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // skrivningar till finances genom applyFinanceChange, economyService.ts:s
     // ENDA dokumenterade mutationspunkt, istf en egen { ...c, finances: ... }.
     updatedClubs = applyFinanceChange(updatedClubs, updatedClubs[i].id, prize)
-    updatedClubs[i] = {
-      ...updatedClubs[i],
-      transferBudget: Math.max(0, Math.round(updatedClubs[i].finances * 0.15)),
-    }
   }
 
   // Patron contribution at season end
@@ -599,6 +597,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as InboxItem)
     }
   }
+
+  // Nu är sommarkassan komplett för samtliga klubbar. Detta är den enda
+  // basberäkningen; budgetprioriteten nedan modifierar sedan samma värde.
+  updatedClubs = updatedClubs.map(club => ({
+    ...club,
+    transferBudget: deriveSeasonTransferBudget(club.finances),
+  }))
 
   // Budget priority effects at season end
   if (game.budgetPriority && game.budgetPriority !== 'balanced') {

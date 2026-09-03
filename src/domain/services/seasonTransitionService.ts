@@ -104,7 +104,6 @@ export function deriveSommarLine(zone: BurnoutZone): string {
 
 // ── Medan du var borta ──────────────────────────────────────────────────
 
-const MAX_AWAY_EVENT_ROWS = 3
 /**
  * Jacobs DOM (2026-08-18): kontraktsutgång väljs FÖRE de tre andra när den
  * finns — den enda där något gick förlorat genom passivitet, de andra tre
@@ -115,13 +114,15 @@ const AWAY_EVENT_PRIORITY: Record<SeasonTransitionEvent['type'], number> = {
 }
 
 /**
- * Formaterar upp till tre "Medan du var borta"-rader, i låst prioritetsordning.
+ * Formaterar alla "Medan du var borta"-rader, i låst prioritetsordning.
+ * Den tidigare tre-raderskapningen dolde faktiska kontraktsavgångar när
+ * flera spelare lämnade samma sommar.
  * Tomt läge: en enda rad, inte tre tomma punkter (ordern explicit).
  */
 export function selectAwayEventLines(events: SeasonTransitionEvent[]): string[] {
   if (events.length === 0) return ['Ingenting hände. Isen låg och väntade.']
   const sorted = [...events].sort((a, b) => AWAY_EVENT_PRIORITY[a.type] - AWAY_EVENT_PRIORITY[b.type])
-  return sorted.slice(0, MAX_AWAY_EVENT_ROWS).map(formatAwayEventLine)
+  return sorted.map(formatAwayEventLine)
 }
 
 function formatAwayEventLine(event: SeasonTransitionEvent): string {

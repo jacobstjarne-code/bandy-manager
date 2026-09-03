@@ -13,6 +13,7 @@ import {
   BANDYPLAY_SPONSOR_BONUS_MAX,
   BANDY_SCHOOL_BASIC_RUNNING_COST,
   BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE,
+  deriveSeasonTransferBudget,
 } from '../economyService'
 import type { FinanceEntry, LeaguePositionAverage } from '../economyService'
 import type { Club } from '../../entities/Club'
@@ -1188,5 +1189,12 @@ describe('calcAttendance / calcRoundIncome — freshnessFactor (väg C)', () => 
     const away = { ...incomeBase, isHomeMatch: false }
     expect(calcRoundIncome({ ...away, freshnessFactor: 0.65 }).netPerRound)
       .toBe(calcRoundIncome(away).netPerRound)
+  })
+})
+
+describe('deriveSeasonTransferBudget', () => {
+  it('räknar från den färdiga kassan och klampar underskott till noll', () => {
+    expect(deriveSeasonTransferBudget(1_000_000)).toBe(150_000)
+    expect(deriveSeasonTransferBudget(-50_000)).toBe(0)
   })
 })

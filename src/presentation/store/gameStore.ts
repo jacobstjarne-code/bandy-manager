@@ -129,11 +129,12 @@ interface GameState {
   updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => Promise<SaveActionResult>
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
-  startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
+  startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string; roundsRemaining?: number }
   toggleScoutShortlist: (playerId: string) => void
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
+  respondToOutgoingBid: (bidId: string, choiceId: 'raise' | 'withdraw') => { success: boolean; error?: string }
   renewContract: (playerId: string, newSalary: number, years: number) => { success: boolean; error?: string; wageWarning?: number }
-  signFreeAgent: (agentId: string) => { success: boolean; error?: string }
+  signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number) => { success: boolean; error?: string; wageWarning?: number }
   listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
   respondToIncomingBid: (bidId: string, choiceId: string) => { success: boolean; error?: string }
   // HIGH 6 (Jacobs körorder 2026-08-31): madeByPlayer obligatorisk, ingen

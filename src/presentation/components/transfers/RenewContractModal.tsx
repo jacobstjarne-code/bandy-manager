@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { formatSalary, formatContractUntil } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
+import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
 import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -17,12 +18,13 @@ interface RenewContractModalProps {
 }
 
 export function RenewContractModal({ player, currentSeason, minSalary, error, onClose, onConfirm }: RenewContractModalProps) {
+  const salaryRange = getContractSalaryRange(minSalary)
   // B3 (Designgranskning fresh-eyes 2026-09-03, blockerare): förvalet var
   // rått player.salary, som kan hamna UNDER minSalary om den senare stigit
   // sedan spelaren skrev sitt nuvarande kontrakt — förlängningen började då
   // som en förslagen sänkning. Max av båda garanterar "aldrig under
   // nuvarande, aldrig under lägsta accepterade".
-  const [newSalary, setNewSalary] = useState(Math.max(player.salary, minSalary))
+  const [newSalary, setNewSalary] = useState(Math.max(player.salary, salaryRange.max))
   const [years, setYears] = useState(2)
 
   return (
@@ -45,7 +47,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
                 Nuvarande: {formatSalary(player.salary)} · kontrakt {formatContractUntil(player.contractUntilSeason)}
               </p>
               <p className="transfers-info-subtext">
-                Lägsta acceptabelt: {formatSalary(minSalary)}
+                Lönekrav: {formatSalary(salaryRange.min)}–{formatSalary(salaryRange.max)}
               </p>
             </div>
             <div className="transfers-form-group transfers-form-group--md">

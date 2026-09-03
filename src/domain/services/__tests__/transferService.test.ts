@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex, weightedPickIndexByWeights, computeMoraleBidWeight, computeMoraleAcceptanceBonus, playerAcceptsTransfer } from '../transferService'
+import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex, weightedPickIndexByWeights, computeMoraleBidWeight, computeMoraleAcceptanceBonus, playerAcceptsTransfer, getCounterOfferAmount } from '../transferService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
@@ -232,6 +232,17 @@ describe('resolveOutgoingBid', () => {
     }
     expect(resolveOutgoingBid(bid, game, () => 0.5)).toBe('rejected')
   })
+
+  it('accepterar sitt eget motbud även när spelaren är säljarklubbens bästa', () => {
+    const game = makeGame()
+    const initial: TransferBid = {
+      id: 'b1', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: 140000, offeredSalary: 12000, contractYears: 3,
+      direction: 'outgoing', status: 'pending', createdRound: 3, expiresRound: 4,
+    }
+    const revised = { ...initial, offerAmount: getCounterOfferAmount(initial, game).amount, counterCount: 1 }
+    expect(resolveOutgoingBid(revised, game, () => 0)).toBe('accepted')
+  })
 })
 
 describe('executeTransfer', () => {
@@ -287,6 +298,7 @@ describe('executeTransfer', () => {
     expect(buyer.squadPlayerIds).toContain('p1')
     expect(seller.squadPlayerIds).not.toContain('p1')
   })
+
 })
 
 describe('createOutgoingBid', () => {

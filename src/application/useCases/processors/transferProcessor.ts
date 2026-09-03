@@ -4,6 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import type { Moment } from '../../../domain/entities/Moment'
+import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { InboxItemType } from '../../../domain/enums'
 import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer, playerAcceptsTransfer } from '../../../domain/services/transferService'
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
@@ -59,7 +60,7 @@ export function processTransferBids(
   const resolvedBids: TransferBid[] = existingBids.map(b => {
     // Avbryt utgående bud om transferfönstret stängde sedan budet lades
     if (b.direction === 'outgoing' && b.status === 'pending' && windowClosed) {
-      return { ...b, status: 'expired' as const }
+      return { ...b, status: 'expired' as const, resolvedRound: nextMatchday }
     }
     if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
       const outcome = resolveOutgoingBid(b, game, localRand)
@@ -75,14 +76,14 @@ export function processTransferBids(
         if (target && buyerClub && sellerClub) {
           const playerSays = playerAcceptsTransfer(target, buyerClub, sellerClub, localRand)
           if (!playerSays) {
-            return { ...b, status: 'rejected' as const, bidRejectedByPlayer: true }
+            return { ...b, status: 'rejected' as const, bidRejectedByPlayer: true, resolvedRound: nextMatchday }
           }
         }
       }
-      return { ...b, status: outcome }
+      return { ...b, status: outcome, resolvedRound: nextMatchday }
     }
     if (b.status === 'pending' && nextMatchday >= b.expiresRound) {
-      return { ...b, status: 'expired' as const }
+      return { ...b, status: 'expired' as const, resolvedRound: nextMatchday }
     }
     return b
   })
@@ -135,7 +136,7 @@ export function processTransferBids(
 
   // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
   const newlyActiveBids = resolvedBids.filter(
-    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday,
+    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday - 1,
   )
   for (const bid of newlyActiveBids) {
     if (localRand() > 0.50) continue
@@ -398,6 +399,7 @@ export interface TransferExecutionResult {
   nemesisTracker: NonNullable<SaveGame['nemesisTracker']>
   sponsorNetworkMoodDelta: number
   moments: Moment[]
+  ledgerEntries: EventLedgerEntry[]
 }
 
 export function executeAcceptedTransfers(input: TransferExecutionInput): TransferExecutionResult {
@@ -407,6 +409,7 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
   let nemesisTracker = { ...input.nemesisTracker }
   let sponsorNetworkMoodDelta = 0
   const moments: Moment[] = []
+  const ledgerEntries: EventLedgerEntry[] = []
 
   for (const bid of resolvedBids) {
     if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
@@ -416,6 +419,16 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
     const result = executeTransfer(tmpGame, bid)
     players = result.players
     clubs = result.clubs
+    ledgerEntries.push({
+      type: 'transfer_signed',
+      semanticKey: `transfer_signed:${bid.id}`,
+      season: game.currentSeason,
+      matchday: nextMatchday,
+      subject: { kind: 'player', id: bid.playerId },
+      subject2: { kind: 'club', id: bid.sellingClubId },
+      significance: 45,
+      madeByPlayer: true,
+    })
 
     const nemesis = nemesisTracker[bid.playerId]
     if (nemesis && nemesis.goalsAgainstUs >= 3) {
@@ -538,5 +551,5 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
     }
   }
 
-  return { players, clubs, nemesisTracker, sponsorNetworkMoodDelta, moments }
+  return { players, clubs, nemesisTracker, sponsorNetworkMoodDelta, moments, ledgerEntries }
 }

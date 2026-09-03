@@ -456,6 +456,9 @@ export interface TransferBid {
   status: 'pending' | 'accepted' | 'rejected' | 'expired'
   createdRound: number
   expiresRound: number
+  /** Matchday då ett avslutat bud fick sitt utfall; används för att låta
+   *  resultatet ligga kvar på Marknad under den aktuella rundan. */
+  resolvedRound?: number
   counterCount?: number
   bidRejectedByPlayer?: boolean  // C-T1: player refused after club accepted
 }

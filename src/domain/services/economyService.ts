@@ -388,6 +388,11 @@ export function computeContractMinSalary(
   return Math.round((base * repFactor * performanceFactor) / 500) * 500
 }
 
+/** Nästa säsongs transferutrymme räknas från den färdiga sommarkassan. */
+export function deriveSeasonTransferBudget(finances: number): number {
+  return Math.max(0, Math.round(finances * 0.15))
+}
+
 export interface RoundIncomeParamsForNextFixture {
   isHomeMatch: boolean
   matchIsKnockout: boolean
