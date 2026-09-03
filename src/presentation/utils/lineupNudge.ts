@@ -7,7 +7,9 @@
 import { PlayerPosition } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import type { FormationTemplate } from '../../domain/entities/Formation'
-import { autoAssignFormation } from '../../domain/entities/Formation'
+import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation'
+import type { Tactic } from '../../domain/entities/Club'
+import type { TeamSelection } from '../../domain/entities/Fixture'
 import { fixtureSeed, mulberry32 } from '../../domain/utils/random'
 import { getSelectionScore, FATIGUE_AVAILABILITY_FLOOR } from '../../domain/services/squadEvaluator'
 
@@ -115,6 +117,51 @@ export function pickBestEleven(available: Player[]): BestElevenResult {
 export interface NudgeLineup {
   starterIds: string[]
   lineupSlots: Record<string, string | null>
+}
+
+/**
+ * För nästa match vidare den elva som faktiskt spelade senast. Pending-lineup
+ * rensas medvetet efter avslag (den betyder "bekräftad för nästa match"), men
+ * det ska inte samtidigt radera spelarens arbetsutkast. Otillgängliga spelare
+ * tas bort och lämnar riktiga hål; resten behåller sina platser.
+ */
+export function buildCarryForwardLineup(
+  previous: TeamSelection,
+  available: Player[],
+  currentTactic: Tactic,
+): TeamSelection {
+  const availableById = new Map(available.map(player => [player.id, player]))
+  const startingPlayerIds = previous.startingPlayerIds.filter(id => availableById.has(id))
+  const startingSet = new Set(startingPlayerIds)
+  const formation = currentTactic.formation ?? previous.tactic.formation ?? '5-3-2'
+  const sameFormation = formation === previous.tactic.formation
+  const previousSlots = previous.tactic.lineupSlots
+
+  const lineupSlots = sameFormation && previousSlots && Object.keys(previousSlots).length > 0
+    ? Object.fromEntries(Object.entries(previousSlots).map(([slotId, playerId]) => [
+        slotId,
+        playerId && startingSet.has(playerId) ? playerId : null,
+      ]))
+    : autoAssignFormation(
+        FORMATIONS[formation],
+        startingPlayerIds.map(id => availableById.get(id)).filter((player): player is Player => !!player),
+      )
+
+  const previousBench = previous.benchPlayerIds.filter(id => availableById.has(id) && !startingSet.has(id))
+  const previousBenchSet = new Set(previousBench)
+  const remaining = available
+    .filter(player => !startingSet.has(player.id) && !previousBenchSet.has(player.id))
+    .sort((a, b) => getSelectionScore(b) - getSelectionScore(a))
+    .map(player => player.id)
+
+  return {
+    startingPlayerIds,
+    benchPlayerIds: [...previousBench, ...remaining].slice(0, 5),
+    captainPlayerId: previous.captainPlayerId && startingSet.has(previous.captainPlayerId)
+      ? previous.captainPlayerId
+      : startingPlayerIds[0],
+    tactic: { ...currentTactic, formation, lineupSlots },
+  }
 }
 
 /**

@@ -75,7 +75,7 @@ export const tacticExplanations: Record<string, Record<string, string>> = {
   passingRisk: {
     safe: 'Korta, kontrollerade passningar. Minskar risken men kan bli förutsägbart.',
     mixed: 'Varierat passningsspel. Balanserad risk.',
-    direct: 'Långbollar och snabba omställningar. Effektivt i dåligt väder men fler tappade bollar.',
+    direct: 'Långbollar och snabba omställningar. Fler tappade bollar och extra svårt i snö och dimma.',
   },
   width: {
     narrow: 'Smalt spel. Bättre centralt försvar, färre hörnor.',

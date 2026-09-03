@@ -14,10 +14,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { buildNudgeLineup, pickBestEleven, assessFatigueFloorBreach, SPELKLARHET_FITNESS_FLOOR, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
+import { buildNudgeLineup, buildCarryForwardLineup, pickBestEleven, assessFatigueFloorBreach, SPELKLARHET_FITNESS_FLOOR, PREFILL_COUNT, EMPTY_SLOTS } from '../lineupNudge'
 import { getSelectionScore } from '../../../domain/services/squadEvaluator'
-import { FORMATIONS } from '../../../domain/entities/Formation'
+import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
 import type { Player } from '../../../domain/entities/Player'
+import type { Tactic } from '../../../domain/entities/Club'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -107,6 +108,17 @@ function makeFullSquad(): Player[] {
 const FIXTURE_ID_A = 'fixture_league_001'
 const FIXTURE_ID_B = 'fixture_league_002'
 const FORMATION = FORMATIONS['5-3-2']
+const BASE_TACTIC: Tactic = {
+  formation: '5-3-2',
+  mentality: TacticMentality.Balanced,
+  tempo: TacticTempo.Normal,
+  press: TacticPress.Medium,
+  passingRisk: TacticPassingRisk.Mixed,
+  width: TacticWidth.Normal,
+  attackingFocus: TacticAttackingFocus.Mixed,
+  cornerStrategy: CornerStrategy.Standard,
+  penaltyKillStyle: PenaltyKillStyle.Active,
+}
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 
@@ -304,6 +316,49 @@ describe('lineupNudge (B10 T2)', () => {
     // Skadade ska inte finnas bland starterIds
     expect(result.starterIds.includes('f1')).toBe(false)
     expect(result.starterIds.includes('d1')).toBe(false)
+  })
+
+  it('buildCarryForwardLineup: nästa match börjar med samma kompletta elva och platser', () => {
+    const squad = makeFullSquad()
+    const starters = pickBestEleven(squad).starters
+    const lineupSlots = autoAssignFormation(FORMATION, starters)
+    const previous = {
+      startingPlayerIds: starters.map(player => player.id),
+      benchPlayerIds: squad.filter(player => !starters.includes(player)).slice(0, 3).map(player => player.id),
+      captainPlayerId: starters[1].id,
+      tactic: { ...BASE_TACTIC, lineupSlots },
+    }
+
+    const carried = buildCarryForwardLineup(previous, squad, previous.tactic)
+
+    expect(carried.startingPlayerIds).toEqual(previous.startingPlayerIds)
+    expect(carried.tactic.lineupSlots).toEqual(lineupSlots)
+    expect(carried.captainPlayerId).toBe(previous.captainPlayerId)
+  })
+
+  it('buildCarryForwardLineup: en otillgänglig spelare lämnar ett ärligt hål men resten står kvar', () => {
+    const squad = makeFullSquad()
+    const starters = pickBestEleven(squad).starters
+    const lineupSlots = autoAssignFormation(FORMATION, starters)
+    const unavailableId = starters.find(player => player.position !== PlayerPosition.Goalkeeper)!.id
+    const unavailableSlot = Object.entries(lineupSlots).find(([, id]) => id === unavailableId)![0]
+    const previous = {
+      startingPlayerIds: starters.map(player => player.id),
+      benchPlayerIds: squad.filter(player => !starters.includes(player)).map(player => player.id),
+      captainPlayerId: unavailableId,
+      tactic: { ...BASE_TACTIC, lineupSlots },
+    }
+
+    const carried = buildCarryForwardLineup(
+      previous,
+      squad.filter(player => player.id !== unavailableId),
+      previous.tactic,
+    )
+
+    expect(carried.startingPlayerIds).toHaveLength(10)
+    expect(carried.startingPlayerIds).not.toContain(unavailableId)
+    expect(carried.tactic.lineupSlots?.[unavailableSlot]).toBeNull()
+    expect(carried.captainPlayerId).not.toBe(unavailableId)
   })
 
 })

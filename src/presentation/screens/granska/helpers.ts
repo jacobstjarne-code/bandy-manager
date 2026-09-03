@@ -1,4 +1,4 @@
-import { MatchEventType, FixtureStatus } from '../../../domain/enums'
+import { MatchEventType, FixtureStatus, PlayoffStatus } from '../../../domain/enums'
 import type { Fixture, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -7,6 +7,18 @@ import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
 import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
+
+/** Finalens ceremoni går via Granska innan säsongsavslutningen. Bara den
+ * avgjorda SM-finalen får den routingen; cupfinal och tidigare slutspelsmatcher
+ * fortsätter som vanliga matchdagar. */
+export function shouldReviewContinueToChampion(
+  game: Pick<SaveGame, 'playoffBracket'>,
+  fixture: Fixture | undefined,
+): boolean {
+  return !!fixture && !fixture.isCup &&
+    game.playoffBracket?.status === PlayoffStatus.Completed &&
+    !!game.playoffBracket.final?.fixtures.includes(fixture.id)
+}
 
 /**
  * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): hårt villkor, ingen

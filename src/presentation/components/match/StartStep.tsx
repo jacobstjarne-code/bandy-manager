@@ -179,7 +179,10 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
           { label: 'Tempo', value: tacticLabel('tempo', tacticState.tempo) },
           { label: 'Press', value: tacticLabel('press', tacticState.press) },
           { label: 'Passning', value: tacticLabel('passingRisk', tacticState.passingRisk) },
+          { label: 'Bredd', value: tacticLabel('width', tacticState.width) },
+          { label: 'Anfallsfokus', value: tacticLabel('attackingFocus', tacticState.attackingFocus) },
           { label: 'Hörnstrategi', value: tacticLabel('cornerStrategy', tacticState.cornerStrategy) },
+          { label: 'Utvisningsspel', value: tacticLabel('penaltyKillStyle', tacticState.penaltyKillStyle) },
         ].map((row, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{row.label}</span>

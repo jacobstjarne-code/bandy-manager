@@ -1820,7 +1820,7 @@ export function MatchLiveScreen() {
           awayLineup={awayLineup}
           players={game?.players ?? []}
           onAdvance={() => setCeremonySlide(3)}
-          onNavigate={() => navigate('/game/champion', { replace: true })}
+          onNavigate={() => navigate('/game/review', { replace: true })}
         />
       )}
 

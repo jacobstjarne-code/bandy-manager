@@ -49,7 +49,7 @@ interface LineupStepProps {
   injuredInStarting: Player[]
   onTogglePlayer: (pid: string) => void
   onSetCaptain: (pid: string) => void
-  onAutoFill: () => void
+  onAutoFill: () => boolean
   onSlotClick: (slotId: string) => void
   onFormationChange: (newTactic: Tactic) => void
   onAssignPlayer: (playerId: string, slotId: string) => void
@@ -299,9 +299,11 @@ export function LineupStep({
           </span>
           <button
             onClick={() => {
-              onAutoFill()
-              setJustFilled(true)
-              setTimeout(() => setJustFilled(false), 1500)
+              const applied = onAutoFill()
+              if (applied) {
+                setJustFilled(true)
+                setTimeout(() => setJustFilled(false), 1500)
+              }
             }}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,

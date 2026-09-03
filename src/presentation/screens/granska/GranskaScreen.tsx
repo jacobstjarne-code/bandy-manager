@@ -4,15 +4,14 @@ import { Target, Users, LineChart, GraduationCap, type LucideIcon } from 'lucide
 import { Icon } from '../../components/primitives/Icon'
 import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
-import { MatchEventType } from '../../../domain/enums'
-import { FixtureStatus } from '../../../domain/enums'
+import { FixtureStatus, MatchEventType } from '../../../domain/enums'
 import { deriveMatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { NextOpponentHook } from './NextOpponentHook'
-import { countUnresolvedGranskaDecisions, mergeResolvedChoices } from './helpers'
+import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -143,6 +142,7 @@ export function GranskaScreen() {
   const axes = fixture
     ? deriveMatchTypeAxes(fixture, game.managedClubId, game.playoffBracket)
     : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const, utfall: 'oavgjort' as const, gavLigapoang: false, arDerby: false }
+  const completedSmFinal = shouldReviewContinueToChampion(game, fixture)
 
   // M10: snapshot (se useState ovan), inte live game.pendingEvents — se den
   // kommentaren för varför.
@@ -185,7 +185,7 @@ export function GranskaScreen() {
 
   function handleContinue() {
     clearRoundSummary()
-    navigate('/game/dashboard', { replace: true })
+    navigate(completedSmFinal ? '/game/champion' : '/game/dashboard', { replace: true })
   }
 
   function goToStep(s: GranskaStep) {
@@ -334,7 +334,9 @@ export function GranskaScreen() {
             </p>
           )}
           <button onClick={handleContinue} disabled={unresolved > 0} className="btn btn-primary btn-cta">
-            KLAR — NÄSTA OMGÅNG →
+            {completedSmFinal
+              ? 'KLAR — SÄSONGSAVSLUTNING →'
+              : 'KLAR — NÄSTA OMGÅNG →'}
           </button>
         </div>
       </div>

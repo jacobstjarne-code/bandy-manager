@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useGameStore, type SaveActionResult } from '../store/gameStore'
-import { pickBestEleven, buildNudgeLineup, assessFatigueFloorBreach } from '../utils/lineupNudge'
+import { pickBestEleven, buildNudgeLineup, buildCarryForwardLineup, assessFatigueFloorBreach } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
@@ -38,7 +38,8 @@ export interface LineupEditor {
   injuredInStarting: Player[]
   canPlay: boolean
   togglePlayer: (playerId: string) => void
-  handleAutoFill: () => void
+  /** true när elvan applicerades; false när konditionsgrinden tog över. */
+  handleAutoFill: () => boolean
   /**
    * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: nuvarande elvas
    * golvbrott. `forced` = truppen HADE inte elva spelklara över golvet;
@@ -105,10 +106,33 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
 
   const savedLineup = game?.managedClubPendingLineup
 
+  // Pending-lineup är en bekräftelse för NÄSTA match och rensas efter avslag.
+  // Själva arbetsutkastet hämtas därför från den senast spelade fixturen.
+  const carryForwardLineup = useMemo(() => {
+    if (savedLineup || !game) return null
+    const lastFixture = game.lastCompletedFixtureId
+      ? game.fixtures.find(fixture => fixture.id === game.lastCompletedFixtureId)
+      : undefined
+    if (!lastFixture) return null
+    const previous = lastFixture.homeClubId === managedClubId
+      ? lastFixture.homeLineup
+      : lastFixture.awayClubId === managedClubId
+        ? lastFixture.awayLineup
+        : undefined
+    if (!previous) return null
+    const available = squadPlayers.filter(
+      player => !player.isInjured && player.suspensionGamesRemaining <= 0 && (player.restGamesRemaining ?? 0) === 0,
+    )
+    return buildCarryForwardLineup(previous, available, managedClub?.activeTactic ?? previous.tactic)
+  // En editor-mount representerar ett matchförberedelseutkast. Det ska inte
+  // seedas om när store-state förändras medan spelaren redigerar.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── Nudge-lineup: förfyll PREFILL_COUNT, lämna EMPTY_SLOTS tomma (B10 T2) ──
   // Beräknas bara när ingen savedLineup finns. Seedat på nästa fixtures ID.
   const nudgeData = useMemo<{ starterIds: string[]; lineupSlots: Record<string, string | null> } | null>(() => {
-    if (savedLineup) return null
+    if (savedLineup || carryForwardLineup) return null
     if (!game) return null
     const pendingFixture = game.fixtures
       .filter(f =>
@@ -125,18 +149,19 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
   }, []) // Avsiktligt tom dep-array — beräknas EN gång vid mount
 
   const [startingIds, setStartingIds] = useState<string[]>(() =>
-    savedLineup?.startingPlayerIds ?? nudgeData?.starterIds ?? defaultStarting
+    savedLineup?.startingPlayerIds ?? carryForwardLineup?.startingPlayerIds ?? nudgeData?.starterIds ?? defaultStarting
   )
   const [benchIds, setBenchIds] = useState<string[]>(() =>
     savedLineup?.benchPlayerIds ??
+    carryForwardLineup?.benchPlayerIds ??
     squadPlayers.filter(p => !defaultStarting.includes(p.id)).slice(0, 5).map(p => p.id)
   )
   const [captainId, setCaptainId] = useState<string | undefined>(() =>
-    savedLineup?.captainPlayerId ?? (savedLineup ? defaultStarting[0] : nudgeData?.starterIds[0] ?? defaultStarting[0])
+    savedLineup?.captainPlayerId ?? carryForwardLineup?.captainPlayerId ?? (savedLineup ? defaultStarting[0] : nudgeData?.starterIds[0] ?? defaultStarting[0])
   )
   const [lineupError, setLineupError] = useState<string | null>(null)
   const [tacticState, setTacticState] = useState<Tactic>(() => {
-    const base = managedClub?.activeTactic ?? {
+    const base = savedLineup?.tactic ?? carryForwardLineup?.tactic ?? managedClub?.activeTactic ?? {
       mentality: TacticMentality.Balanced,
       tempo: TacticTempo.Normal,
       press: TacticPress.Medium,
@@ -257,7 +282,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     setLineupError(null)
   }
 
-  function handleAutoFill() {
+  function handleAutoFill(): boolean {
     // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): "Fyll bästa
     // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
     // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
@@ -271,9 +296,10 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     // en applicerad elva han inte bad om är redan det dolda straffet.
     if (forced && belowFloorStarters.length > 0) {
       setPendingForcedAutoFill({ starters, rest, belowFloorStarters, shortfall })
-      return
+      return false
     }
     applyAutoFill(starters, rest)
+    return true
   }
 
   function confirmPendingAutoFill() {

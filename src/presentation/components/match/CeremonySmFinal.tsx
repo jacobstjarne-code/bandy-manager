@@ -160,7 +160,7 @@ export function CeremonySmFinal({
           onClick={onNavigate}
           style={{ padding: '16px 32px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
         >
-          Säsongsavslutning →
+          Granska finalen →
         </button>
       </div>
     </div>
