@@ -815,9 +815,15 @@ export interface SaveGame {
   licenseStatus?: import('../services/licenseService').LicenseStatus
   licenseRiskScore?: number
 
-  // Säsongssignatur (SPEC_SAESONGSSIGNATUR_KAPITEL_C)
+  // Säsongssignatur (SPEC_SAESONGSSIGNATUR_KAPITEL_C). pastSeasonSignatures
+  // (rå SeasonSignature-historik, upp till 10 säsonger) retirerat LIGGARE-
+  // PRIO 4 (2026-09-03): aldrig läst i produktion — den synliga historiken
+  // bärs redan av seasonSummaries[].signatureRubric (frusen text per
+  // säsong, SeasonSummaryScreen.tsx). Äldre saves kan fortfarande bära
+  // fältet i sin sparade JSON; migrateSaveGame rör det inte, det är bara
+  // dött viktlöst bagage — ingen migrering krävs (regressionstest:
+  // pastSeasonSignaturesRetireMigration.test.ts).
   currentSeasonSignature?: SeasonSignature
-  pastSeasonSignatures?: SeasonSignature[]
   shownSeasonSignatureRevealSeason?: number  // season when reveal was last shown
 
   // Sprint 25h — Lager 2: Egna beslut med risk

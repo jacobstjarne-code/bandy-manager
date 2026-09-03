@@ -2253,17 +2253,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
       return Object.keys(merged).length > 0 ? merged : undefined
     })(),
-    // Säsongssignatur: flytta aktuell till historik, skapa ny för kommande säsong
+    // Säsongssignatur: ny för kommande säsong. Historik för den avslutade
+    // säsongen bärs redan av seasonSummaries[].signatureRubric (skriven
+    // ovan/nedan via seasonSummaryService) — pastSeasonSignatures-fältet
+    // (rå SeasonSignature-historik, aldrig läst i produktion) retirerat
+    // LIGGARE-PRIO 4 (2026-09-03).
     currentSeasonSignature: (() => {
       const sigRand = mulberry32(nextSeason * 1337 + 99)
       // Build a minimal game context for next season signature
       const nextGameCtx = { ...game, currentSeason: nextSeason }
       return createSeasonSignature(nextGameCtx, sigRand)
     })(),
-    pastSeasonSignatures: [
-      ...(game.pastSeasonSignatures ?? []),
-      ...(game.currentSeasonSignature ? [game.currentSeasonSignature] : []),
-    ].slice(-10),
     shownSeasonSignatureRevealSeason: game.shownSeasonSignatureRevealSeason,
     // Reset per-season anslag (fas-overlay)
     seenAnslag: [],
