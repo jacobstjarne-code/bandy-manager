@@ -66,13 +66,6 @@ export function getInjuryTag(event: GameEvent, players: Player[] | undefined): s
 interface Props {
   event: GameEvent
   currentMatchday?: number
-  /** Batch-av-tre (D1 punkt 4, 2026-08-21): satt av BatchStack (aldrig av
-   *  det ovillkorade PortalEventSlot-fallet) — "besvarat kort sjunker och
-   *  tonar ut nedåt" innan resolveEvent faktiskt körs, så nästa kort i
-   *  stapeln hinner resas med sin egen entré-animation istf att bara byta
-   *  ut sig direkt. Utelämnad (default) = exakt dagens beteende, ingen
-   *  fördröjning, inget nytt för icke-batchade kort. */
-  exitDelayMs?: number
 }
 
 /**
@@ -90,12 +83,11 @@ export function getEventTypeLabel(event: GameEvent): string {
   return `${icon} ${label.toUpperCase()}`
 }
 
-export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) {
+export function EventCardInline({ event, currentMatchday }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const previewSponsorCounter = useGameStore(s => s.previewSponsorCounter)
   const commitSponsorCounter = useGameStore(s => s.commitSponsorCounter)
   const players = useGameStore(s => s.game?.players)
-  const [isExiting, setIsExiting] = useState(false)
   // DOM_SPONSOR_MOTBUD_2026-08-31.md: choiceId==='counter' fångas HÄR, före
   // resolveEvent — Y är fri inmatning (SponsorCounterModal), inte ett
   // fördefinierat val. Detta är den enda platsen sponsorOffer faktiskt
@@ -119,12 +111,7 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
       setShowCounterModal(true)
       return
     }
-    if (!exitDelayMs) {
-      resolveEvent(event.id, choiceId, true)
-      return
-    }
-    setIsExiting(true)
-    setTimeout(() => resolveEvent(event.id, choiceId, true), exitDelayMs)
+    resolveEvent(event.id, choiceId, true)
   }
 
   let sponsorForCounter: Sponsor | null = null
@@ -138,7 +125,7 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
 
   return (
     <div
-      className={`event-card-inline${agedClass ? ` ${agedClass}` : ''}${isExiting ? ' batch-stack-active is-exiting' : ''}`}
+      className={`event-card-inline${agedClass ? ` ${agedClass}` : ''}`}
       style={{
         position: 'relative',
         margin: '0 0 8px 0',
@@ -146,7 +133,6 @@ export function EventCardInline({ event, currentMatchday, exitDelayMs }: Props) 
         border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
         borderRadius: 'var(--radius-md)',
         padding: '14px 16px 14px 18px',
-        pointerEvents: isExiting ? 'none' : undefined,
       }}
       data-entity-id={entityId}
       data-entity-source="EventCardInline"

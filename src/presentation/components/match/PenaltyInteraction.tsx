@@ -6,7 +6,6 @@
  * - SVG pitch: goal front-view, LED zones (6 zones V/M/H × HÖGT/LÅGT),
  *   steel-blue GK, amber shooter dot, red shot lane
  * - Monospace LED sub-choice buttons (LÅGT / HÖGT)
- * - cta.variant = 'danger' ("Skjut straffen →")
  *
  * Mekanik (penaltyInteractionService) ORÖRD — DIR_RATES, height modifiers.
  */
@@ -199,7 +198,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
       readout={{ label: `${dirLabels[dir]} · ${height === 'low' ? 'LÅGT' : 'HÖGT'}`, pct: Math.round(combinedRate(dir, height) * 100) }}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Skjut straffen', variant: 'danger', onClick: () => handleConfirm() }}
+      cta={{ label: 'Skjut straffen', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
         <p style={{

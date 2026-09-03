@@ -827,16 +827,6 @@ a {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Batch-av-tre (D1 punkt 4, dömd 2026-08-21 — docs/incoming/_arkiv-2026-08/
-   Batch-av-tre-och-skuggkanon-D1p4-A14-2026-08-20.dc.html, variant 1b): "beta
-   av", inte "bläddra" — besvarat kort sjunker och tonar ut NEDÅT (fadeIn
-   baklänges), aldrig sidled. Motsatt riktning mot fadeInUpScale, inte samma
-   kurva reverserad — en distinkt, kort (220ms) exit. */
-@keyframes fadeOutDown {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(10px); }
-}
-
 /* Snow particles */
 @keyframes snow {
   0%   { transform: translateY(0) translateX(0); opacity: 0; }
@@ -1873,65 +1863,6 @@ a {
   text-transform: uppercase;
 }
 .event-card-inline.aged-2 .event-card-age-tag { color: #E8A090; }
-
-/* Batch-av-tre (D1 punkt 4, dömd 2026-08-21 — Batch-av-tre-och-skuggkanon-
-   D1p4-A14-2026-08-20.dc.html, variant 1b "Skymtad stapel"). Dark-adapterad
-   mot Portalens EventCardInline-familj (var(--bg-portal-surface)/
-   --text-light) — mocken renderades i ett ljust previewskal, men det
-   aktiva kortet den slår in kring är alltid mörkt i verklig kontext. */
-.batch-stack-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.batch-stack-counter {
-  font-family: var(--font-display);
-  font-size: 11px;
-  color: var(--text-light-secondary);
-}
-.batch-stack-peek {
-  position: relative;
-}
-.batch-stack-sliver {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  top: -8px;
-  height: 20px;
-  background: var(--bg-portal-surface);
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-rest-dark);
-  opacity: 0.55;
-}
-.batch-stack-sliver-near {
-  left: 3px;
-  right: 3px;
-  top: -4px;
-  opacity: 0.8;
-}
-.batch-stack-active {
-  position: relative;
-}
-.batch-stack-active.is-exiting {
-  animation: fadeOutDown 220ms ease-in both;
-}
-.batch-stack-dots {
-  display: flex;
-  gap: 3px;
-  margin-top: 10px;
-  justify-content: center;
-}
-.batch-stack-dot {
-  width: 14px;
-  height: 3px;
-  border-radius: 99px;
-  background: var(--border-dark);
-}
-.batch-stack-dot.is-active {
-  background: var(--accent);
-}
 
 /* Cooldown row */
 .portal-cooldown-row {

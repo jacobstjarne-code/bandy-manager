@@ -345,15 +345,9 @@ export interface GameEvent {
    *  avtal när spelaren accepterar den nya sponsorn. undefined = ingen kostnad
    *  (den vanliga sponsorOffer-varianten utan konflikt). */
   communityStandingDelta?: number
-  /** Batch-av-tre (D1 punkt 4, dömd 2026-08-21). Gränsen för att batcha är
-   *  DELAD ORSAK, inte antal — sätts vid konstruktionsstället när flera
-   *  events uppstår ur SAMMA händelse (t.ex. tre kontrakt vid fönster-
-   *  öppning). getBatchSiblings (eventQueueService.ts) grupperar pending
-   *  events på detta fält, aldrig på type/tidpunkt. INGET nuvarande
-   *  konstruktionsställe sätter fältet — event-genereringen är idag
-   *  medvetet kapad till ~2/omgång (postAdvanceEvents.ts), så en verklig
-   *  samma-orsak-skur förekommer inte i spelet ännu. Mekanismen är byggd
-   *  och redo; ingen konsument fyller den. Se SLUTTEST_KO.md. */
+  /** RETIRERAD (DOM 2026-09-03, batchstack-vilande): BatchStack/getBatchSiblings
+   *  borttagna — ingen generator namngavs på en månad. Fältet finns kvar bara
+   *  som bagage i gamla saves (aldrig satt av nuvarande kod, aldrig läst). */
   triggerGroupId?: string
   /** High 4 (Skutskär-auditen, 2026-08-22): pressminnet. Satt av
    *  generatePressConference() när frågan är en storyline-override —

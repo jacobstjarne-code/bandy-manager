@@ -28,18 +28,12 @@
  */
 
 import { getCurrentAttention } from '../../../domain/services/attentionRouter'
-import { getEventRenderTarget, getBatchSiblings } from '../../../domain/services/eventQueueService'
+import { getEventRenderTarget } from '../../../domain/services/eventQueueService'
 import { selectDashboardDecisions } from '../../../domain/services/decisionTierService'
 import { EventCardInline } from './EventCardInline'
 import { AmbientEventRow } from './AmbientEventRow'
 import { CeremonyRetirement } from './CeremonyRetirement'
-import { BatchStack } from './BatchStack'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-
-// Batch-av-tre (D1 punkt 4, 2026-08-21): "beta av, inte bläddra" — 220ms
-// sjunk-och-tona-ut innan resolveEvent faktiskt körs, så nästa kort i
-// stapeln hinner resas med sin egen entré istf att bytas ut direkt.
-const BATCH_EXIT_DELAY_MS = 220
 
 interface Props {
   game: SaveGame
@@ -79,17 +73,6 @@ export function PortalEventSlot({ game }: Props) {
   if (!primary) return null
   // Skulle det primära vara overlay-routat äger EventOverlay det.
   if (getEventRenderTarget(primary) === 'overlay') return null
-
-  // Batch-av-tre: bara chrome när det faktiskt finns ≥1 syskon med samma
-  // triggerGroupId. Ett enskilt event (ingen delad orsak) ser ut som innan.
-  const siblings = getBatchSiblings(game, primary)
-  if (siblings.length > 0) {
-    return (
-      <BatchStack siblingCount={siblings.length} totalInBatch={siblings.length + 1}>
-        <EventCardInline key={primary.id} event={primary} currentMatchday={game.currentMatchday} exitDelayMs={BATCH_EXIT_DELAY_MS} />
-      </BatchStack>
-    )
-  }
 
   return (
     <EventCardInline event={primary} currentMatchday={game.currentMatchday} />

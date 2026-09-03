@@ -1443,7 +1443,12 @@ function makeSeasonSummary(overrides: Record<string, unknown>) {
 // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: cupResult='winner' läggs till här
 // (var tidigare null) — "mästare → gold-hero+cup" i ordern kräver BÅDA
 // sektionerna samtidigt, inte bara ligamästerskapet.
-const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', cupResult: 'winner' as const, expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const })
+// TEXT LÅST 2026-09-03 (Opus, design-d3-berattelse-utfall): narrativeSummary
+// ordagrant per utfall — dumpens 028/029/030 visade samma default-text
+// ("En stark säsong.") oavsett guld/åtta/sparkad. Produktionens generator
+// (seasonSummaryService.ts:875) är redan utfallsberoende; detta är bara
+// fixturens tre override-objekt.
+const seasonSumChampion = makeSeasonSummary({ finalPosition: 1, playoffResult: 'champion', cupResult: 'winner' as const, expectedVerdict: 'exceeded', expectationVerdict: 'exceeded' as const, narrativeSummary: 'Guld. Det var länge sedan orten fick säga det ordet utan att lägga till ett årtal.' })
 const seasonSumTopThree = makeSeasonSummary({ finalPosition: 2, playoffResult: 'finalist', expectationVerdict: 'met' as const })
 const seasonSumMidtable = makeSeasonSummary({ finalPosition: 6, playoffResult: 'quarterfinal', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
 const seasonSumShare = makeSeasonSummary({
@@ -1462,11 +1467,11 @@ const seasonSumShare = makeSeasonSummary({
 const seasonHeaderGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumChampion] })
 // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: mittfält utan slutspel — didNotQualify,
 // skiljer sig från seasonSumMidtable (season-c) som faktiskt når kvartsfinal.
-const seasonSumNoPlayoffs = makeSeasonSummary({ finalPosition: 8, playoffResult: 'didNotQualify', expectationVerdict: 'met' as const, formTrend: 'stable' as const })
+const seasonSumNoPlayoffs = makeSeasonSummary({ finalPosition: 8, playoffResult: 'didNotQualify', expectationVerdict: 'met' as const, formTrend: 'stable' as const, narrativeSummary: 'En säsong som gick. Åtta i tabellen, inget slutspel, och ingen som riktigt kan säga varför.' })
 const seasonNoPlayoffsGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumNoPlayoffs] })
 // Sparkad: expectationVerdict 'failed' (❌ "Styrelsen är besviken") + managerFired
 // styr handleNextSeason-routningen (→ /game/game-over istf /game/dashboard).
-const seasonSumFired = makeSeasonSummary({ finalPosition: 11, playoffResult: 'didNotQualify', expectationVerdict: 'failed' as const, formTrend: 'declining' as const })
+const seasonSumFired = makeSeasonSummary({ finalPosition: 11, playoffResult: 'didNotQualify', expectationVerdict: 'failed' as const, formTrend: 'declining' as const, narrativeSummary: 'Det tog slut i mars. Styrelsen hade räknat annorlunda än tabellen, och tabellen vann.' })
 const seasonFiredGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumFired], managerFired: true } as never)
 const seasonShareGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumShare] })
 // Finalhelg: playoffBracket med managed i en pågående final (winnerId null) → isSmFinal.
