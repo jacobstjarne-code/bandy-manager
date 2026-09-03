@@ -150,7 +150,7 @@ export function processGameEvents(
       nextMatchday,
       game.currentSeason,
       burnoutZone,
-      !!game.managerProfile && isBurnoutRelapse(game.managerProfile, game.currentSeason),
+      !!game.managerProfile && isBurnoutRelapse(game.managerProfile, game.currentSeason, game.eventLedger),
     ))
   }
 

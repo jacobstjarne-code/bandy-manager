@@ -11,6 +11,7 @@ import { formatRating } from '../format'
 import { getRoundLabel } from '../roundLabel'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
+import { getBurnoutSeasonMemory } from './burnoutReliefService'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -814,8 +815,14 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
 
   // DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerProfile.diary fryst
   // till denna säsongs rader, se SeasonSummary.managerSeason för fullmotiveringen.
-  const managerSeasonEntries = (game.managerProfile?.diary ?? [])
-    .filter(entry => entry.season === game.currentSeason)
+  const burnoutMemory = getBurnoutSeasonMemory(game.eventLedger, game.currentSeason)
+  const hasLedgerBurnout = burnoutMemory.length > 0
+  const managerSeasonEntries = [
+    ...(game.managerProfile?.diary ?? []).filter(entry =>
+      entry.season === game.currentSeason && !(hasLedgerBurnout && entry.type === 'burnout_peak'),
+    ),
+    ...burnoutMemory,
+  ].sort((a, b) => a.matchday - b.matchday)
 
   return {
     id: `${game.id}_s${game.currentSeason}_${managedClubId}`,

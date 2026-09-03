@@ -386,7 +386,6 @@ export function MatchLiveScreen() {
     // en andra gång för samma match.
     if (isCeremonyOnly) return
     if (!matchDone || !fixture || !homeLineup || !awayLineup || steps.length === 0) return
-    const lastStep = steps[steps.length - 1]
     const allEvents = steps.flatMap(s => s.events)
 
     const allStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
@@ -402,24 +401,24 @@ export function MatchLiveScreen() {
     const savesAway = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.awayClubId).length
     const report = {
       playerRatings,
-      shotsHome: lastStep.shotsHome,
-      shotsAway: lastStep.shotsAway,
-      onTargetHome: lastStep.onTargetHome ?? 0,
-      onTargetAway: lastStep.onTargetAway ?? 0,
+      shotsHome: matchState.shotsHome,
+      shotsAway: matchState.shotsAway,
+      onTargetHome: matchState.onTargetHome,
+      onTargetAway: matchState.onTargetAway,
       savesHome,
       savesAway,
-      cornersHome: lastStep.cornersHome,
-      cornersAway: lastStep.cornersAway,
+      cornersHome: matchState.cornersHome,
+      cornersAway: matchState.cornersAway,
       penaltiesHome: penaltyResult?.home ?? 0,
       penaltiesAway: penaltyResult?.away ?? 0,
-      possessionHome: lastStep.shotsHome + lastStep.shotsAway > 0
-        ? Math.round((lastStep.shotsHome / (lastStep.shotsHome + lastStep.shotsAway)) * 100) : 50,
-      possessionAway: lastStep.shotsHome + lastStep.shotsAway > 0
-        ? Math.round((lastStep.shotsAway / (lastStep.shotsHome + lastStep.shotsAway)) * 100) : 50,
+      possessionHome: matchState.shotsHome + matchState.shotsAway > 0
+        ? Math.round((matchState.shotsHome / (matchState.shotsHome + matchState.shotsAway)) * 100) : 50,
+      possessionAway: matchState.shotsHome + matchState.shotsAway > 0
+        ? Math.round((matchState.shotsAway / (matchState.shotsHome + matchState.shotsAway)) * 100) : 50,
       playerOfTheMatchId: potmId,
     }
     saveLiveMatchResult(
-      fixture.id, lastStep.homeScore, lastStep.awayScore,
+      fixture.id, matchState.homeScore, matchState.awayScore,
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
       fixture.attendance, halftimeDecisionForLog ?? undefined,
     )
@@ -490,6 +489,9 @@ export function MatchLiveScreen() {
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
     if (isPaused && !isFastForward) return
+    if (matchDone) return
+    if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
+    if (showHalftime || showOvertimeOverlay || showPenaltiesOverlay) return
 
     const step = steps[currentStep]
 
@@ -699,7 +701,7 @@ export function MatchLiveScreen() {
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [currentStep, isPaused, isFastForward, steps])
+  }, [currentStep, isPaused, isFastForward, steps, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay, isCommentaryMode])
 
   function regenerateRemainderWithUpdatedScore(
     newHomeScore: number,
@@ -828,25 +830,14 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
-    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // Interaktionen äger bara sitt utfall och sin visningstid. Den gemensamma
+    // stegtimern ovan äger ALL progression och läser den senaste steps-längden
+    // efter eventuell omsimulering av resten av matchen.
     // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
     // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
-      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
-      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
-      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
-      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
-      if (!isCommentaryMode) {
-        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
-          setMatchDone(true)
-          if (isSmFinal || isCupFinal) setCeremonySlide(1)
-        } else {
-          setCurrentStep(prev => prev + 1)
-        }
-      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -909,25 +900,12 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
-    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // Progression sker bara i den gemensamma stegtimern.
     // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
     // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActivePenalty(null)
       setPenaltyOutcome(null)
-      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
-      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
-      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
-      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
-      if (!isCommentaryMode) {
-        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
-          setMatchDone(true)
-          if (isSmFinal || isCupFinal) setCeremonySlide(1)
-        } else {
-          setCurrentStep(prev => prev + 1)
-        }
-      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -993,25 +971,12 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
-    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // Progression sker bara i den gemensamma stegtimern.
     // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
     // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveCounter(null)
       setCounterOutcome(null)
-      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
-      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
-      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
-      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
-      if (!isCommentaryMode) {
-        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
-          setMatchDone(true)
-          if (isSmFinal || isCupFinal) setCeremonySlide(1)
-        } else {
-          setCurrentStep(prev => prev + 1)
-        }
-      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
@@ -1076,47 +1041,20 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
-    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
+    // Progression sker bara i den gemensamma stegtimern.
     // B-3: vid mål — linjera dismiss mot tavlans flash (4000ms, ScoreboardStalvallen)
     // så panelen inte glider ner medan siffran fortfarande blinkar.
     setTimeout(() => {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
-      // Samma bugklass som last-minute-press (GPT live-revision, blockeraren
-      // 2026-09-03) — en interaktion som fyrar på matchens SISTA steg fick
-      // tidigare flytta currentStep utanför steps utan att matchDone sattes.
-      // Delat slutvillkor, se shouldEndMatchAfterStep (matchLiveHelpers.ts).
-      // En fjärde instans av samma klass (utöver corner/straff/kontring) —
-      // upptäckt i samma grep, fixad i samma pass för att stänga hela
-      // klassen, inte bara de tre uttryckligen namngivna.
-      if (!isCommentaryMode) {
-        if (shouldEndMatchAfterStep(currentStep, steps.length)) {
-          setMatchDone(true)
-          if (isSmFinal || isCupFinal) setCeremonySlide(1)
-        } else {
-          setCurrentStep(prev => prev + 1)
-        }
-      }
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {
     lastMinutePressResolved.current = true
-    // delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    // Valet äger bara upplösningen; stegtimern äger progressionen.
     setTimeout(() => {
       setActiveLastMinutePress(null)
-      // BRÅDSKANDE FIX (GPT live-revision, verifierad): denna handler saknade
-      // matchens slutvillkor — currentStep flyttades okontrollerat utanför
-      // steps på matchens sista steg, matchDone sattes aldrig, Granska-knappen
-      // nåddes aldrig. Samma delade slutvillkor som den vanliga stegtimern
-      // (shouldEndMatchAfterStep, matchLiveHelpers.ts).
-      if (shouldEndMatchAfterStep(currentStep, steps.length)) {
-        setMatchDone(true)
-        if (isSmFinal || isCupFinal) setCeremonySlide(1)
-      } else {
-        setCurrentStep(prev => prev + 1)
-      }
     }, isFastForward ? 0 : 2500)
   }
 
@@ -1425,13 +1363,22 @@ export function MatchLiveScreen() {
     }
     setIsFastForward(newFF)
     if (newFF && (activeCorner || activeCounter || activeFreeKick)) {
+      // Att avbryta en rutininteraktion förbrukar just det interaktionssteget,
+      // men flyttar inte indexet. När state är rensat fortsätter den gemensamma
+      // stegtimern från samma steg och avgör med den aktuella steps-längden om
+      // matchen ska avslutas eller stega vidare.
+      setSteps(prev => prev.map((step, index) => index === currentStep ? {
+        ...step,
+        cornerInteractionData: undefined,
+        counterInteractionData: undefined,
+        freeKickInteractionData: undefined,
+      } : step))
       setActiveCorner(null)
       setCornerOutcome(null)
       setActiveCounter(null)
       setCounterOutcome(null)
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
-      setCurrentStep(prev => prev + 1)
     }
   }
 
@@ -1816,13 +1763,13 @@ export function MatchLiveScreen() {
       {showOvertimeOverlay && (
         <PhaseOverlay
           phase="overtime"
-          onContinue={() => { setShowOvertimeOverlay(false); setCurrentStep(prev => prev + 1) }}
+          onContinue={() => setShowOvertimeOverlay(false)}
         />
       )}
       {showPenaltiesOverlay && (
         <PhaseOverlay
           phase="penalties"
-          onContinue={() => { setShowPenaltiesOverlay(false); setCurrentStep(prev => prev + 1) }}
+          onContinue={() => setShowPenaltiesOverlay(false)}
         />
       )}
 

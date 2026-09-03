@@ -90,7 +90,8 @@ import {
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
-import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
+import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
+import { logEvent } from '../../domain/services/eventLedgerService'
 import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTalkService'
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
@@ -2313,24 +2314,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
 
     // Manager burnout sampling + narrative log (burnout_peak, era_shift)
-    const prevBurnoutZone = getBurnoutZone(updatedGame.managerProfile?.burnoutScore ?? 0)
     const eraChanged = !!(game.currentEra && game.currentEra !== newClubEra)
     const updatedManagerProfile = updateManagerBurnout(updatedGame)
     if (updatedManagerProfile) {
       let enrichedProfile = updatedManagerProfile
       const newBurnoutZone = getBurnoutZone(enrichedProfile.burnoutScore)
-      const zoneRose = (prevBurnoutZone === 'frisk' && newBurnoutZone !== 'frisk') ||
-                       (prevBurnoutZone === 'markbar' && newBurnoutZone === 'hog')
-      if (zoneRose) {
-        const alreadyLogged = (enrichedProfile.diary ?? []).some(
-          e => e.type === 'burnout_peak' && e.season === game.currentSeason)
-        if (!alreadyLogged) {
-          enrichedProfile = { ...enrichedProfile, diary: [
-            ...(enrichedProfile.diary ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'burnout_peak' as const, text: newBurnoutZone === 'hog' ? 'Den säsongen tog nästan slut på dig. Du stannade ändå.' : 'Det började ta på dig den säsongen. Du sa inget om det.' },
-          ]}
-        }
-      }
       if (eraChanged) {
         const alreadyLogged = (enrichedProfile.diary ?? []).some(
           e => e.type === 'era_shift' && e.season === game.currentSeason)
@@ -2397,7 +2385,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         // se isBurnoutRelapse (managerProfileService.ts). Tom återfallspool
         // (Opus fyller den) degraderar säkert till intro-mallen, samma
         // "tom pool"-golv BURNOUT_CAUSE_LINES redan följer.
-        const relapse = isBurnoutRelapse(enrichedProfile, updatedGame.currentSeason)
+        const relapse = isBurnoutRelapse(enrichedProfile, updatedGame.currentSeason, updatedGame.eventLedger)
         const relapseQuotePool = BURNOUT_MARK_RELAPSE.quotesByZone[newBurnoutZone]
         const relapseHelperPool = BURNOUT_MARK_RELAPSE.helpersByZone[newBurnoutZone]
         const useRelapse = relapse && relapseQuotePool.length > 0 && relapseHelperPool.length > 0
@@ -2418,11 +2406,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         let burnoutLog = logNarrativeBeat(updatedGame, quoteKey, updatedGame.currentSeason, nextMatchday)
         burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, helperKey, updatedGame.currentSeason, nextMatchday)
         burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, BURNOUT_MARK_FIRED_KEY, updatedGame.currentSeason, nextMatchday)
-        updatedGame = { ...updatedGame, narrativeBeatLog: burnoutLog }
+        updatedGame = {
+          ...updatedGame,
+          narrativeBeatLog: burnoutLog,
+          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
+            'mark', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
+          )),
+        }
       } else if (showBurnoutRelief) {
-        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_RELIEF_FIRED_KEY, updatedGame.currentSeason, nextMatchday) }
+        updatedGame = {
+          ...updatedGame,
+          narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_RELIEF_FIRED_KEY, updatedGame.currentSeason, nextMatchday),
+          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
+            'relief', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
+          )),
+        }
       } else if (showBurnoutClose) {
-        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_CLOSE_FIRED_KEY, updatedGame.currentSeason, nextMatchday) }
+        updatedGame = {
+          ...updatedGame,
+          narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_CLOSE_FIRED_KEY, updatedGame.currentSeason, nextMatchday),
+          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
+            'close', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
+          )),
+        }
       }
     }
 

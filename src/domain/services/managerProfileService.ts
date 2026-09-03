@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { ManagerProfile, CoachRivalry } from '../entities/ManagerProfile'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import {
   COACH_FIRST_NAMES,
   COACH_LAST_NAMES,
@@ -473,7 +474,17 @@ export function getBurnoutZone(score: number): BurnoutZone {
  * INTE för detta — den trimmas långt innan en säsongsgräns, dagboken är den
  * enda platsen minnet faktiskt sträcker sig över säsonger.
  */
-export function isBurnoutRelapse(profile: ManagerProfile, currentSeason: number): boolean {
+export function isBurnoutRelapse(
+  profile: ManagerProfile,
+  currentSeason: number,
+  eventLedger?: readonly EventLedgerEntry[],
+): boolean {
+  if ((eventLedger ?? []).some(entry =>
+    entry.type === 'manager_burnout' &&
+    entry.semanticKey.startsWith('manager_burnout:mark:') &&
+    entry.season < currentSeason,
+  )) return true
+  // Legacy-saves kan ha en burnout_peak i dagboken från före liggaren.
   return (profile.diary ?? []).some(e => e.type === 'burnout_peak' && e.season < currentSeason)
 }
 

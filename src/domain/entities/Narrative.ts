@@ -188,6 +188,10 @@ export type EventLedgerType =
   // polaritetsmönster som patron_emerge/withdrawal och sponsor_positive/
   // negative — inte en typ + outcome-fält.
   | 'referee_feud' | 'referee_trust'
+  // Burnout-bågens strukturerade fasminne. Besluten ligger fortsatt som
+  // type:'decision'; denna typ säger bara att zonen markerades, lättade eller
+  // slöts. semanticKey bär fas+zon, aldrig färdig prosa.
+  | 'manager_burnout'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut

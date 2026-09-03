@@ -1,9 +1,11 @@
 import type { ManagerProfile } from '../entities/ManagerProfile'
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { EventLedgerEntry } from '../entities/Narrative'
+import type { ManagerNarrativeEntry } from '../entities/ManagerProfile'
 import type { OpponentAnalysis } from './opponentAnalysisService'
 import { getBurnoutZone } from './managerProfileService'
-import { BURNOUT_ZONE_LABELS } from '../data/managerKaraktarText'
+import { BURNOUT_ZONE_LABELS, BURNOUT_RELIEF_LINES, BURNOUT_CLOSE_LINES } from '../data/managerKaraktarText'
 import { mulberry32 } from '../utils/random'
 import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
 
@@ -11,6 +13,104 @@ export const BURNOUT_QUOTE_PREFIX = 'burnout_quote_'
 export const BURNOUT_HELPER_PREFIX = 'burnout_helper_'
 export const BURNOUT_RELAPSE_QUOTE_PREFIX = 'burnout_relapse_quote_'
 export const BURNOUT_RELAPSE_HELPER_PREFIX = 'burnout_relapse_helper_'
+
+export type BurnoutLedgerBeat = 'mark' | 'relief' | 'close'
+
+export function buildBurnoutBeatLedgerEntry(
+  beat: BurnoutLedgerBeat,
+  zone: 'frisk' | 'markbar' | 'hog',
+  season: number,
+  matchday: number,
+): EventLedgerEntry {
+  return {
+    type: 'manager_burnout',
+    semanticKey: `manager_burnout:${beat}:${zone}`,
+    season,
+    matchday,
+    significance: beat === 'mark' && zone === 'hog' ? 75 : beat === 'close' ? 55 : 45,
+  }
+}
+
+/** Ett tidigare markerat burnout-episode är den strukturerade definitionen
+ * av återfall. Dagboksprosa ska aldrig behöva tolkas för detta. */
+export function hasPriorBurnoutEpisode(
+  entries: readonly EventLedgerEntry[] | undefined,
+  currentSeason: number,
+): boolean {
+  return (entries ?? []).some(entry =>
+    entry.type === 'manager_burnout' &&
+    entry.semanticKey.startsWith('manager_burnout:mark:') &&
+    entry.season < currentSeason,
+  )
+}
+
+export function buildBurnoutDecisionLedgerEntry(
+  choiceId: string,
+  season: number,
+  matchday: number,
+): EventLedgerEntry | null {
+  if (!['delegate', 'train', 'board'].includes(choiceId)) return null
+  return {
+    type: 'decision',
+    semanticKey: `burnoutRelief:${choiceId}`,
+    season,
+    matchday,
+    significance: 70,
+    irreversible: false,
+    tension: true,
+    systemsAffectedCount: 2,
+    madeByPlayer: true,
+  }
+}
+
+const BURNOUT_DECISION_MEMORY: Record<string, string> = {
+  'burnoutRelief:delegate': 'Du lät assistenten ta pressen.',
+  'burnoutRelief:train': 'Du sänkte tempot på träningen.',
+  'burnoutRelief:board': 'Du bad styrelsen om andrum.',
+}
+
+/** Årsbokens vy av den råa liggaren. Här skapas prosa; liggaren själv bär
+ * bara fas, zon och choice-id. */
+export function getBurnoutSeasonMemory(
+  entries: readonly EventLedgerEntry[] | undefined,
+  season: number,
+): ManagerNarrativeEntry[] {
+  return (entries ?? [])
+    .filter(entry => entry.season === season && (
+      entry.type === 'manager_burnout' ||
+      (entry.type === 'decision' && entry.semanticKey.startsWith('burnoutRelief:'))
+    ))
+    .sort((a, b) => a.matchday - b.matchday)
+    .reduce<ManagerNarrativeEntry[]>((memory, entry) => {
+      if (entry.type === 'decision') {
+        const text = BURNOUT_DECISION_MEMORY[entry.semanticKey]
+        if (text) memory.push({ season, matchday: entry.matchday, type: 'burnout_choice', text })
+        return memory
+      }
+
+      const [, beat, zone] = entry.semanticKey.split(':')
+      if (beat === 'mark') {
+        memory.push({
+          season,
+          matchday: entry.matchday,
+          type: 'burnout_peak',
+          text: zone === 'hog'
+            ? 'Den säsongen tog nästan slut på dig.'
+            : 'Det började ta på dig den säsongen.',
+        })
+        return memory
+      }
+      if (beat === 'relief') {
+        memory.push({ season, matchday: entry.matchday, type: 'burnout_relief', text: BURNOUT_RELIEF_LINES[0] })
+        return memory
+      }
+      if (beat === 'close') {
+        memory.push({ season, matchday: entry.matchday, type: 'burnout_close', text: BURNOUT_CLOSE_LINES[0] })
+        return memory
+      }
+      return memory
+    }, [])
+}
 
 /**
  * Återfalls-poolens repetitionsskydd är MEDVETET annorlunda än intro-poolens

@@ -22,6 +22,7 @@ import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { appendNewlyResolvedStorylines } from '../storylineLedgerService'
+import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -120,6 +121,26 @@ function appendDecisionConsequenceLedgerEntry(
   return ledgerEntry
     ? { ...after, eventLedger: logEvent(after, ledgerEntry) }
     : after
+}
+
+/** Burnout-lättnaden är alltid ett meningsbärande val, även när dess pris
+ * ligger utanför ripple-modellens åtta fält (träningstakt/burnout). Därför
+ * har den en uttrycklig strukturerad beslutsproducent i stället för att
+ * hoppas att en before/after-diff råkar kvalificera. */
+function appendBurnoutDecisionLedgerEntry(
+  after: SaveGame,
+  event: GameEvent,
+  choiceId: string,
+  madeByPlayer: boolean,
+): SaveGame {
+  if (!madeByPlayer || event.type !== 'burnoutRelief') return after
+  const entry = buildBurnoutDecisionLedgerEntry(choiceId, after.currentSeason, after.currentMatchday)
+  if (!entry) return after
+  const duplicate = (after.eventLedger ?? []).some(candidate =>
+    candidate.type === entry.type && candidate.semanticKey === entry.semanticKey &&
+    candidate.season === entry.season && candidate.matchday === entry.matchday,
+  )
+  return duplicate ? after : { ...after, eventLedger: logEvent(after, entry) }
 }
 
 /**
@@ -2232,6 +2253,7 @@ export function resolveEvent(
     // criticalEconomy/sell_star från criticalEconomy/ask_mecenat, som delar
     // event.type men har olika meningar.
     updatedGame = appendSeasonDecisionLedgerEntry(game, updatedGame, event, choiceId, madeByPlayer)
+    updatedGame = appendBurnoutDecisionLedgerEntry(updatedGame, event, choiceId, madeByPlayer)
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────

@@ -1,65 +1,22 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { PauseLean } from '../../components/match/HalftimeModal'
-import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
-import { calculateStandings } from '../../../domain/services/standingsService'
-import { updateCupBracketAfterRound, generateNextCupRound } from '../../../domain/services/cupService'
-import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
-import { updateSeriesAfterMatch, advancePlayoffRound, nextPlayoffStart } from '../../../domain/services/playoffService'
-import { isPlayoffNarrativeCardStillValid } from '../../../domain/services/playoffNarrativeService'
-import { isPlayThroughInjuryCardStillValid } from '../../../application/useCases/processors/eventProcessor'
+import { FixtureStatus, InboxItemType } from '../../../domain/enums'
 import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { completeManagedFixture } from '../../../application/useCases/completeManagedFixture'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
 type Set = (partial: Partial<{ game: SaveGame | null }>) => void
 
 /**
- * A3 (2026-08-17, LÅNGSPEL-audit): saveLiveMatchResult/concedeWalkover
- * advancerar playoffBracket direkt (samma domänfunktioner som
- * playoffProcessor.ts använder) men går ALDRIG via processPlayoffRound —
- * roundProcessor.ts's staleEventIds-mekanism (H-02) ser därför aldrig denna
- * fasövergång och kan inte rensa ett kort som blivit ogiltigt precis nu.
- * Om spelaren spelar sin avgörande slutspelsmatch LIVE och bracketen därmed
- * hoppar förbi ett skede (t.ex. semifinal→final när båda semifinalerna
- * avgörs i samma anrop) hinner Portalen visa det gamla kortet innan någon
- * advanceToNextEvent-omgång ens körts. Samma bracket-giltighetsgrind som
- * roundProcessor.ts (isPlayoffNarrativeCardStillValid) appliceras här, direkt
- * vid mutationstillfället — det är den faktiska konsumtionstidpunkten:
- * Portalen läser game.pendingEvents/deferredDecisions nästa gång den renderas,
- * inte först vid nästa advance().
+ * Store-adaptern samlar matchens facit och delegerar hela sluttransaktionen
+ * till completeManagedFixture. Den muterar inte tabell eller bracket själv.
  *
- * HIGH 9 (audit 2026-08-29): samma resonemang gäller ordagrant för
- * `playThroughInjury`-kortet — det handlar om EN specifik kommande match, och
- * livematchvägen fullbordar just den matchen utan att gå via advanceToNextEvent.
- * Portalen renderade därför "Han vill spela" om en match som redan var spelad,
- * ibland om en spelare som hunnit bli frisk. Grinden (eventProcessor.ts) prövas
- * mot fixturelistan EFTER matchen, därav `fixtures`-parametern.
- */
-function purgeStalePlayoffCards(
-  game: SaveGame,
-  bracket: SaveGame['playoffBracket'],
-  fixtures: SaveGame['fixtures'],
-): Pick<SaveGame, 'pendingEvents' | 'deferredDecisions'> {
-  const postMatchGame = { ...game, fixtures }
-  const stillValid = (e: SaveGame['pendingEvents'][number]) =>
-    isPlayoffNarrativeCardStillValid(e.id, bracket, game.managedClubId) &&
-    isPlayThroughInjuryCardStillValid(e, postMatchGame)
-  return {
-    pendingEvents: (game.pendingEvents ?? []).filter(stillValid),
-    deferredDecisions: (game.deferredDecisions ?? []).filter(stillValid),
-  }
-}
-
-/**
- * playoffBracket läses/skrivs här som den faktiska bracket-ADVANCERINGEN
- * efter en spelad match (källan, inte en konsument som påstår "vem blev
- * mästare") — deklarerad öppet.
- *
- * @cites game.captainPlayerId, player.fitness, halftimeDecision, game.lastHalftimeDecision, completed.homeScore, completed.awayScore, playoffBracket
+ * @cites game.captainPlayerId, player.fitness, halftimeDecision, game.lastHalftimeDecision, completed.homeScore, completed.awayScore
  */
 export function matchActions(get: Get, set: Set) {
   return {
@@ -78,12 +35,14 @@ export function matchActions(get: Get, set: Set) {
     ) => {
       const { game } = get()
       if (!game) return
+      const fixture = game.fixtures.find(candidate => candidate.id === fixtureId)
+      if (!fixture || fixture.status === FixtureStatus.Completed) return
 
       // ── T3: managerChoiceLog ────────────────────────────────────────────────
       // Build log from lineup + halftime decision. Raw data only — no
       // player text, no rendering. After-match receipt (Ticket #4) will consume.
       const managedClubId = game.managedClubId
-      const isHome = game.fixtures.find(f => f.id === fixtureId)?.homeClubId === managedClubId
+      const isHome = fixture.homeClubId === managedClubId
       const myLineup = isHome ? homeLineup : awayLineup
       const choiceLog: ManagerChoiceEntry[] = []
 
@@ -153,96 +112,22 @@ export function matchActions(get: Get, set: Set) {
       }
       // ── end T3 ──────────────────────────────────────────────────────────────
 
-      const updatedFixtures = game.fixtures.map(f =>
-        f.id === fixtureId
-          ? {
-              ...f, homeScore, awayScore, events, report: enrichedReport, homeLineup, awayLineup,
-              attendance: attendance ?? f.attendance,
-              status: FixtureStatus.Completed,
-              wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
-              wentToPenalties: penaltyResult !== undefined || undefined,
-              overtimeResult,
-              penaltyResult,
-            }
-          : f
-      )
-      const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
-      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — samma
-      // klass som playoffTransition.ts/seasonEndProcessor.ts, se rotorsak där.
-      const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
-
-      const completedCupFixture = updatedFixtures.find(f => f.id === fixtureId && f.isCup)
-      let updatedCupBracket = game.cupBracket ?? null
-      if (completedCupFixture && updatedCupBracket && !updatedCupBracket.completed) {
-        updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
-
-        const playedMatch = updatedCupBracket.matches.find(m => m.fixtureId === completedCupFixture.id)
-        const round = playedMatch?.round ?? 0
-
-        if (round === 4) {
-          // Cup final decided
-          const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
-          if (finalMatch) {
-            updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
-          }
-        } else if (round > 0) {
-          // Non-final round: if all matches in this round have a winner, generate next round inline.
-          // Mirrors playoff branch logic so nextMatchday sees cup-R(n+1) before liga fixtures.
-          const roundMatches = updatedCupBracket.matches.filter(m => m.round === round)
-          if (roundMatches.every(m => m.winnerId)) {
-            const { updatedBracket, newFixtures } = generateNextCupRound(updatedCupBracket, round, game.currentSeason)
-            const stamped = stampFixturesFromCalendar(newFixtures, game.seasonCalendar ?? [])
-            updatedCupBracket = updatedBracket
-            if (stamped.length > 0) updatedFixtures.push(...stamped)
-          }
-        }
+      const completed = {
+        ...fixture,
+        homeScore,
+        awayScore,
+        events,
+        report: enrichedReport,
+        homeLineup,
+        awayLineup,
+        attendance: attendance ?? fixture.attendance,
+        status: FixtureStatus.Completed,
+        wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
+        wentToPenalties: penaltyResult !== undefined || undefined,
+        overtimeResult,
+        penaltyResult,
       }
-
-      const completedFixture = updatedFixtures.find(f => f.id === fixtureId)!
-      let updatedPlayoffBracket = game.playoffBracket
-      if (completedFixture.isKnockout && !completedFixture.isCup && updatedPlayoffBracket) {
-        updatedPlayoffBracket = {
-          ...updatedPlayoffBracket,
-          quarterFinals: updatedPlayoffBracket.quarterFinals.map(s =>
-            s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
-          ),
-          semiFinals: updatedPlayoffBracket.semiFinals.map(s =>
-            s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
-          ),
-          final: updatedPlayoffBracket.final && updatedPlayoffBracket.final.fixtures.includes(fixtureId)
-            ? updateSeriesAfterMatch(updatedPlayoffBracket.final, completedFixture)
-            : updatedPlayoffBracket.final,
-        }
-
-        const phaseComplete = (() => {
-          if (updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals)
-            return updatedPlayoffBracket.quarterFinals.every(s => s.winnerId !== null)
-          if (updatedPlayoffBracket.status === PlayoffStatus.SemiFinals)
-            return updatedPlayoffBracket.semiFinals.every(s => s.winnerId !== null)
-          if (updatedPlayoffBracket.status === PlayoffStatus.Final)
-            return updatedPlayoffBracket.final?.winnerId !== null
-          return false
-        })()
-
-        if (phaseComplete) {
-          // HIGH 5 (2026-08-29): startRound härleds nu (max+1) istället för
-          // hårdkodade 26/29/32 — se nextPlayoffStart i playoffService.ts.
-          const { startRound, startMatchday } = nextPlayoffStart(updatedFixtures)
-          const { bracket: advancedBracket, newFixtures: newPlayoffFixtures } =
-            advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, startRound, startMatchday)
-          updatedPlayoffBracket = advancedBracket
-          if (newPlayoffFixtures.length > 0) {
-            updatedFixtures.push(...newPlayoffFixtures)
-          }
-        }
-      }
-
-      // A3: bracket may have just been advanced directly above (bypassing
-      // processPlayoffRound) — re-derive playoff-card validity now, at the
-      // real consumption point, not just on the next advanceToNextEvent().
-      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket, updatedFixtures)
-
-      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined, lastHalftimeDecision: undefined, ...playoffCardCleanup } })
+      set({ game: completeManagedFixture(game, completed) })
     },
 
     simulateAbandonedMatch: (fixtureId: string) => {
@@ -271,10 +156,6 @@ export function matchActions(get: Get, set: Set) {
       })
 
       const completed = result.fixture
-      const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
-      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
-      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
-      const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
 
       const isHome = fixture.homeClubId === game.managedClubId
       const managedScore = isHome ? completed.homeScore ?? 0 : completed.awayScore ?? 0
@@ -300,13 +181,8 @@ export function matchActions(get: Get, set: Set) {
         ...(coach ? { tone: 'coach' as const, fromRole: 'ASSISTENTTRÄNARE', coachInitials: coach.initials } : {}),
       }
 
-      set({ game: {
-        ...game,
-        fixtures: updatedFixtures,
-        standings,
-        lastCompletedFixtureId: fixtureId,
-        inbox: [inboxItem, ...game.inbox],
-      }})
+      const completedGame = completeManagedFixture(game, completed)
+      set({ game: { ...completedGame, inbox: [inboxItem, ...completedGame.inbox] } })
     },
 
     // Nödtrupp lager 3 (CODE_ORDER_NODTRUPP): sista utväg när managed klubb inte kan
@@ -323,54 +199,6 @@ export function matchActions(get: Get, set: Set) {
       const awayScore = managedIsHome ? 5 : 0
       const completed = { ...fixture, homeScore, awayScore, events: [], status: FixtureStatus.Completed }
 
-      const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
-      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
-      // 4.1 (SLUTTEST_KO.md, 2026-08-17): pointDeductions saknades — se rotorsak i playoffTransition.ts.
-      const standings = calculateStandings(game.league.teamIds, completedLeague, game.pointDeductions)
-
-      let updatedCupBracket = game.cupBracket ?? null
-      if (fixture.isCup && updatedCupBracket && !updatedCupBracket.completed) {
-        updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completed])
-        const playedMatch = updatedCupBracket.matches.find(m => m.fixtureId === completed.id)
-        const round = playedMatch?.round ?? 0
-        if (round === 4) {
-          const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
-          if (finalMatch) updatedCupBracket = { ...updatedCupBracket, winnerId: finalMatch.winnerId, completed: true }
-        } else if (round > 0) {
-          const roundMatches = updatedCupBracket.matches.filter(m => m.round === round)
-          if (roundMatches.every(m => m.winnerId)) {
-            const { updatedBracket, newFixtures } = generateNextCupRound(updatedCupBracket, round, game.currentSeason)
-            const stamped = stampFixturesFromCalendar(newFixtures, game.seasonCalendar ?? [])
-            updatedCupBracket = updatedBracket
-            if (stamped.length > 0) updatedFixtures.push(...stamped)
-          }
-        }
-      }
-
-      // Playoff: spegla saveLiveMatchResults serieuppdatering + fasframskridning (korrekt bracket)
-      let updatedPlayoffBracket = game.playoffBracket
-      if (completed.isKnockout && !completed.isCup && updatedPlayoffBracket) {
-        updatedPlayoffBracket = {
-          ...updatedPlayoffBracket,
-          quarterFinals: updatedPlayoffBracket.quarterFinals.map(s => s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completed) : s),
-          semiFinals: updatedPlayoffBracket.semiFinals.map(s => s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completed) : s),
-          final: updatedPlayoffBracket.final && updatedPlayoffBracket.final.fixtures.includes(fixtureId)
-            ? updateSeriesAfterMatch(updatedPlayoffBracket.final, completed) : updatedPlayoffBracket.final,
-        }
-        const phaseComplete =
-          updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? updatedPlayoffBracket.quarterFinals.every(s => s.winnerId !== null)
-          : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? updatedPlayoffBracket.semiFinals.every(s => s.winnerId !== null)
-          : updatedPlayoffBracket.status === PlayoffStatus.Final ? updatedPlayoffBracket.final?.winnerId !== null
-          : false
-        if (phaseComplete) {
-          // HIGH 5 (2026-08-29): samma härledning som i saveLiveMatchResult ovan.
-          const { startRound, startMatchday } = nextPlayoffStart(updatedFixtures)
-          const { bracket: advancedBracket, newFixtures } = advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, startRound, startMatchday)
-          updatedPlayoffBracket = advancedBracket
-          if (newFixtures.length > 0) updatedFixtures.push(...newFixtures)
-        }
-      }
-
       const opp = game.clubs.find(c => c.id === (managedIsHome ? fixture.awayClubId : fixture.homeClubId))
       const walkoverItem: InboxItem = {
         id: `inbox_walkover_${fixtureId}`,
@@ -382,21 +210,8 @@ export function matchActions(get: Get, set: Set) {
         isRead: false,
       }
 
-      // A3: same bracket-validity re-check as saveLiveMatchResult — walkover
-      // can also advance the bracket directly, bypassing processPlayoffRound.
-      const playoffCardCleanup = purgeStalePlayoffCards(game, updatedPlayoffBracket, updatedFixtures)
-
-      set({ game: {
-        ...game,
-        fixtures: updatedFixtures,
-        standings,
-        cupBracket: updatedCupBracket,
-        playoffBracket: updatedPlayoffBracket,
-        managedClubPendingLineup: undefined,
-        lastCompletedFixtureId: fixtureId,
-        inbox: [walkoverItem, ...game.inbox],
-        ...playoffCardCleanup,
-      }})
+      const completedGame = completeManagedFixture(game, completed)
+      set({ game: { ...completedGame, inbox: [walkoverItem, ...completedGame.inbox] } })
     },
 
     markMatchStarted: (fixtureId: string, homeLineup?: TeamSelection, awayLineup?: TeamSelection) => {

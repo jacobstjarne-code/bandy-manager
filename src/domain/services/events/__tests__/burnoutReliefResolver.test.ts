@@ -105,6 +105,11 @@ describe('eventResolver — genererade burnoutRelief-val hela vägen', () => {
     expect(game.managerProfile!.burnoutScore).toBe(45)
     expect(game.burnoutTrainingSlowdownUntilRound).toBe(14)
     expect(game.sourceCooldowns?.burnout).toEqual({ roundsLeft: 6, totalRounds: 6 })
+    expect(game.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'decision',
+      semanticKey: 'burnoutRelief:train',
+      madeByPlayer: true,
+    }))
   })
 
   it('board sänker burnout mest och tar verkligt styrelsetålamod', () => {
@@ -116,5 +121,15 @@ describe('eventResolver — genererade burnoutRelief-val hela vägen', () => {
 
     expect(game.managerProfile!.burnoutScore).toBe(35)
     expect(game.boardPatience).toBe(60)
+  })
+
+  it('auto-resolution tillskriver inte spelaren ett burnout-beslut', () => {
+    let game = baseGame({ currentMatchday: 10 })
+    game = { ...game, managerProfile: { ...game.managerProfile!, burnoutScore: 60 } }
+    const event = generateBurnoutReliefEvent(10, game.currentSeason, 'hog')
+
+    game = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'delegate', undefined, false)
+
+    expect((game.eventLedger ?? []).some(entry => entry.semanticKey === 'burnoutRelief:delegate')).toBe(false)
   })
 })

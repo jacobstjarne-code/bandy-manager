@@ -455,6 +455,17 @@ describe('isBurnoutRelapse', () => {
     ]})
     expect(isBurnoutRelapse(profile, 4)).toBe(true) // säsong 1 räknas, trots att säsong 4-posten är samma som currentSeason
   })
+
+  it('den kanoniska liggaren räcker för återfall utan dagboksprosa', () => {
+    const profile = makeProfile({ diary: [] })
+    expect(isBurnoutRelapse(profile, 3, [{
+      type: 'manager_burnout',
+      semanticKey: 'manager_burnout:mark:hog',
+      season: 2,
+      matchday: 18,
+      significance: 75,
+    }])).toBe(true)
+  })
 })
 
 describe('deriveCoachNemesis', () => {

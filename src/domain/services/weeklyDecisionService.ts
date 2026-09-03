@@ -3,6 +3,7 @@ import { PlayerPosition } from '../enums'
 import { getCharacterName } from './supporterService'
 import { calculateClubEra } from './clubEraService'
 import { mulberry32 } from '../utils/random'
+import type { EventLedgerEntry, LedgerConsequence } from '../entities/Narrative'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
 
@@ -19,6 +20,12 @@ export interface WeeklyDecision {
   optionB: WeeklyDecisionOption
   category: WeeklyDecisionCategory
   requiredEra?: ClubEra[]
+  /**
+   * `season` är standard: samma situation kan återkomma en senare säsong.
+   * `untilAccepted` beskriver en faktisk engångsförändring i klubben. När A
+   * väl valts är ledgern sanningskällan för att förändringen redan skett.
+   */
+  repeatPolicy?: 'season' | 'untilAccepted'
   systemhandelse?: boolean  // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
@@ -145,6 +152,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
     {
       id: 'ismaskin_offer',
       category: 'community',
+      repeatPolicy: 'untilAccepted',
       // O20 (2026-08-21, Opus): K2-textbeslutet ur DOM_VARSLET_KLASSIFICERING —
       // kravet får ett namngivet mål (veteranen) i texten. Effekterna orörda.
       // Påståendesvepet #25 (2026-08-24), Jacobs dom 2026-08-26: "tre vintrar"
@@ -161,6 +169,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
     {
       id: 'family_section_request',
       category: 'community',
+      repeatPolicy: 'untilAccepted',
       question: `${family}: "Kan vi få en tydligare familjeplats på läktaren? Barnen behöver en lugn sida."`,
       optionA: { label: 'Ordna det', effect: '+kommunstatus · +stämning', effectColor: 'success' },
       optionB: { label: 'Inte nu', effect: `${family} besviken`, effectColor: 'danger' },
@@ -171,6 +180,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'legacy_naming_arena',
       category: 'community',
       requiredEra: ['legacy'],
+      repeatPolicy: 'untilAccepted',
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
       optionA: { label: 'Acceptera', effect: '+20 tkr engång · −stolthet', effectColor: 'success' },
       optionB: { label: 'Behåll namnet', effect: `+${groupName}-stämning · −boardpatience`, effectColor: 'muted' },
@@ -247,6 +257,7 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
   // utlovade effekt inte kan realiseras (PC-2 corner, PC-3 scout utan budget).
   const available = pool.filter(d => {
     if (resolved.includes(`${d.id}_${game.currentSeason}`)) return false
+    if (d.repeatPolicy === 'untilAccepted' && hasAcceptedWeeklyDecision(game.eventLedger, d.id)) return false
     if (d.requiredEra && !d.requiredEra.includes(currentEra)) return false
     if ((d.id === 'corner_extra_training' || d.id === 'training_corners_vs_matchprep') && !hasCornerCandidate) return false
     if (d.id === 'player_weekend_off' && !hasWearyPlayer) return false
@@ -258,6 +269,113 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
   // Pick deterministically by round + season
   const idx = (round * 13 + game.currentSeason * 7) % available.length
   return available[idx]
+}
+
+const WEEKLY_DECISION_KEY = 'weeklyDecision:'
+
+export function weeklyDecisionSemanticKey(decisionId: string, choice: 'A' | 'B'): string {
+  return `${WEEKLY_DECISION_KEY}${decisionId}:${choice}`
+}
+
+/**
+ * Bestående klubbförändringar läses ur den kanoniska händelseliggaren, inte
+ * ur `resolvedWeeklyDecisions` (som bara är en säsongs-cooldown och dessutom
+ * saknar valt alternativ). En nekad ismaskin kan därför erbjudas igen; en
+ * köpt ismaskin kan det inte.
+ */
+export function hasAcceptedWeeklyDecision(
+  entries: readonly EventLedgerEntry[] | undefined,
+  decisionId: string,
+): boolean {
+  const acceptedKey = weeklyDecisionSemanticKey(decisionId, 'A')
+  return (entries ?? []).some(entry =>
+    entry.type === 'decision'
+      && entry.madeByPlayer === true
+      && entry.semanticKey === acceptedKey,
+  )
+}
+
+function effectChangedState(effect: WeeklyDecisionEffect, before: SaveGame, after: SaveGame): boolean {
+  const beforePlayer = 'playerId' in effect ? before.players.find(player => player.id === effect.playerId) : undefined
+  const afterPlayer = 'playerId' in effect ? after.players.find(player => player.id === effect.playerId) : undefined
+  switch (effect.type) {
+    case 'finances':
+      return before.clubs.find(club => club.id === before.managedClubId)?.finances
+        !== after.clubs.find(club => club.id === after.managedClubId)?.finances
+    case 'supporterMood':
+      return before.supporterGroup?.mood !== after.supporterGroup?.mood
+    case 'communityStanding':
+      return before.communityStanding !== after.communityStanding
+    case 'boardPatience':
+      return before.boardPatience !== after.boardPatience
+    case 'cornerSkill':
+      return beforePlayer?.attributes.cornerSkill !== afterPlayer?.attributes.cornerSkill
+    case 'cornerRecovery':
+      return beforePlayer?.attributes.cornerRecovery !== afterPlayer?.attributes.cornerRecovery
+    case 'morale':
+      return beforePlayer?.morale !== afterPlayer?.morale
+    case 'fitness':
+      return beforePlayer?.fitness !== afterPlayer?.fitness
+    case 'scoutNextOpponent':
+      return before.scoutBudget !== after.scoutBudget
+        || Object.keys(before.opponentAnalyses ?? {}).length !== Object.keys(after.opponentAnalyses ?? {}).length
+    case 'noop':
+      return false
+  }
+}
+
+function consequenceFromEffect(effect: WeeklyDecisionEffect): LedgerConsequence | null {
+  switch (effect.type) {
+    case 'finances':
+      return { field: 'finances', dir: effect.delta >= 0 ? 'up' : 'down', magnitude: Math.abs(effect.delta) >= 10_000 ? 'tydligt' : 'knappt' }
+    case 'supporterMood':
+      return { field: 'supporterMood', dir: effect.delta >= 0 ? 'up' : 'down', magnitude: Math.abs(effect.delta) >= 6 ? 'tydligt' : 'knappt' }
+    case 'communityStanding':
+      return { field: 'communityStanding', dir: effect.delta >= 0 ? 'up' : 'down', magnitude: Math.abs(effect.delta) >= 6 ? 'tydligt' : 'knappt' }
+    case 'boardPatience':
+      return { field: 'boardPatience', dir: effect.delta >= 0 ? 'up' : 'down', magnitude: Math.abs(effect.delta) >= 6 ? 'tydligt' : 'knappt' }
+    case 'morale':
+      return { field: 'playerMorale', dir: effect.delta >= 0 ? 'up' : 'down', magnitude: Math.abs(effect.delta) >= 6 ? 'tydligt' : 'knappt' }
+    default:
+      return null
+  }
+}
+
+/** En rå faktapost för svaret spelaren faktiskt gav och effekterna som kördes. */
+export function buildWeeklyDecisionLedgerEntry(
+  decision: WeeklyDecision,
+  choice: 'A' | 'B',
+  effects: readonly WeeklyDecisionEffect[],
+  gameBefore: SaveGame,
+  gameAfter: SaveGame,
+  matchday: number,
+): EventLedgerEntry {
+  const appliedEffects = effects.filter(effect => effectChangedState(effect, gameBefore, gameAfter))
+  const consequences = appliedEffects
+    .map(consequenceFromEffect)
+    .filter((entry): entry is LedgerConsequence => entry !== null)
+  const affectedSystems = new Set(appliedEffects.map(effect => effect.type)).size
+  const financesBefore = gameBefore.clubs.find(club => club.id === gameBefore.managedClubId)?.finances
+  const financesAfter = gameAfter.clubs.find(club => club.id === gameAfter.managedClubId)?.finances
+  const moneyAmount = financesBefore !== undefined && financesAfter !== undefined
+    ? Math.abs(financesAfter - financesBefore)
+    : 0
+  const irreversible = decision.repeatPolicy === 'untilAccepted' && choice === 'A'
+
+  return {
+    type: 'decision',
+    semanticKey: weeklyDecisionSemanticKey(decision.id, choice),
+    season: gameBefore.currentSeason,
+    matchday,
+    significance: Math.min(100, 25 + affectedSystems * 5 + (decision.systemhandelse ? 15 : 0) + (irreversible ? 10 : 0)),
+    consequences: consequences.length > 0 ? consequences : undefined,
+    irreversible,
+    tension: appliedEffects.some(effect => effect.type === 'finances' && effect.delta < 0)
+      && appliedEffects.some(effect => effect.type !== 'finances'),
+    systemsAffectedCount: affectedSystems,
+    moneyAmount: moneyAmount > 0 ? moneyAmount : undefined,
+    madeByPlayer: true,
+  }
 }
 
 export function resolveWeeklyDecision(

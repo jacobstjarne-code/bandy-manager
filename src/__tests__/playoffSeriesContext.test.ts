@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getPlayoffSeriesContext } from '../domain/services/portal/playoffSeriesContext'
+import { getPlayoffFixtureContext, getPlayoffSeriesContext } from '../domain/services/portal/playoffSeriesContext'
 import { PlayoffRound, PlayoffStatus } from '../domain/enums'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
@@ -291,4 +291,27 @@ describe('getPlayoffSeriesContext', () => {
     expect(ctx!.losses).toBe(1)
   })
 
+})
+
+describe('getPlayoffFixtureContext — retrospektiv matchidentitet', () => {
+  it('returnerar den spelade matchens ordinal, inte nästa match i serien', () => {
+    const g1 = makeFixture('g1', 'club_a', 'club_b', 5, 2)
+    const g2 = makeScheduledFixture('g2', 'club_b', 'club_a')
+    const series = makeSeries('s1', PlayoffRound.QuarterFinal, 'club_a', 'club_b', ['g1', 'g2'], 1, 0)
+    const game = makeGame('club_a', makeBracket({ quarterFinals: [series] }), [g1, g2])
+
+    expect(getPlayoffFixtureContext(game, 'g1')).toEqual({
+      round: PlayoffRound.QuarterFinal,
+      gameNumber: 1,
+    })
+  })
+
+  it('fungerar även när serien är avgjord och därför inte längre är aktiv', () => {
+    const g1 = makeFixture('g1', 'club_a', 'club_b', 5, 2)
+    const series = makeSeries('s1', PlayoffRound.QuarterFinal, 'club_a', 'club_b', ['g1'], 3, 0, 'club_a', 'club_b')
+    const game = makeGame('club_a', makeBracket({ quarterFinals: [series] }), [g1])
+
+    expect(getPlayoffSeriesContext(game)).toBeNull()
+    expect(getPlayoffFixtureContext(game, 'g1')?.gameNumber).toBe(1)
+  })
 })

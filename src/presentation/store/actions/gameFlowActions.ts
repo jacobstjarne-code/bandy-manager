@@ -8,7 +8,7 @@ import { PendingScreen } from '../../../domain/enums'
 import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff, type PortalPhase } from '../../../domain/data/seasonPhases'
 import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
-import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { buildWeeklyDecisionLedgerEntry, resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
@@ -621,6 +621,20 @@ export function gameFlowActions(get: Get, set: Set) {
             }
           }
         }
+      }
+
+      // Ledgern bär vad som faktiskt hände. Bygg posten EFTER effekterna så
+      // klampade värden/no-op inte kan beskrivas som verkliga konsekvenser.
+      updatedGame = {
+        ...updatedGame,
+        eventLedger: logEvent(updatedGame, buildWeeklyDecisionLedgerEntry(
+          decision,
+          choice,
+          effects,
+          game,
+          updatedGame,
+          resolvedRound,
+        )),
       }
 
       const afterPromote = (updatedGame.deferredDecisions ?? []).length > 0

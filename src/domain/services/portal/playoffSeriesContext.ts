@@ -11,6 +11,32 @@ export interface PlayoffSeriesContext {
   nextGame: number
 }
 
+export interface PlayoffFixtureContext {
+  round: PlayoffRound
+  gameNumber: number
+}
+
+/**
+ * Slutspelsidentiteten för en BESTÄMD fixture. Används av retrospektiva
+ * ytor, som Granska, där "nästa match" är fel tidsriktning. Medlemskapet i
+ * serien är facit även efter att serien precis har avgjorts.
+ */
+export function getPlayoffFixtureContext(game: SaveGame, fixtureId: string): PlayoffFixtureContext | null {
+  const bracket = game.playoffBracket
+  if (!bracket) return null
+  const allSeries = [
+    ...bracket.quarterFinals,
+    ...bracket.semiFinals,
+    ...(bracket.final ? [bracket.final] : []),
+  ]
+  const series = allSeries.find(candidate => candidate.fixtures.includes(fixtureId))
+  if (!series) return null
+  return {
+    round: series.round,
+    gameNumber: series.fixtures.indexOf(fixtureId) + 1,
+  }
+}
+
 const ROUND_BASE_WEIGHT: Record<PlayoffRound, number> = {
   [PlayoffRound.QuarterFinal]: 1,
   [PlayoffRound.SemiFinal]: 2,

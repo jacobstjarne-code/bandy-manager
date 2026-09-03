@@ -13,8 +13,8 @@
  * Testet har två halvor: en funktionell (räkningen blir rätt och monoton
  * genom hela slutspelet) och en strukturell (de tre anropsställena kallar
  * faktiskt den delade härledningen och har inga literaler kvar). Den
- * strukturella behövs eftersom matchActions.ts:s båda anropsställen ligger
- * inne i zustand-actions som inte går att köra utan en hel store.
+ * strukturella behövs för att en ny mutationsägare inte ska återinföra ett
+ * hårdkodat rondtal. Matchvägarna ägs nu av completeManagedFixture.
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -121,7 +121,7 @@ describe('slutspelets roundNumber — funktionellt', () => {
 describe('slutspelets roundNumber — de tre anropsställena kan inte gå isär igen', () => {
   const CALL_SITES = [
     'src/application/useCases/playoffTransition.ts',
-    'src/presentation/store/actions/matchActions.ts',
+    'src/application/useCases/completeManagedFixture.ts',
     'src/application/useCases/processors/playoffProcessor.ts',
   ]
 

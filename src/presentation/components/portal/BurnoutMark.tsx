@@ -31,7 +31,7 @@ export function BurnoutMark({ game }: CardRenderProps) {
   // useRelapse-avgörande som roundProcessor.ts:s skrivsida (samma relapse-
   // status, samma "tom pool degraderar till intro"-golv), annars visas ett
   // citat ur en pool ingen semanticKey loggades för.
-  const relapse = isBurnoutRelapse(profile, game.currentSeason)
+  const relapse = isBurnoutRelapse(profile, game.currentSeason, game.eventLedger)
   const relapseQuotePool = BURNOUT_MARK_RELAPSE.quotesByZone[zone]
   const relapseHelperPool = BURNOUT_MARK_RELAPSE.helpersByZone[zone]
   const useRelapse = relapse && relapseQuotePool.length > 0 && relapseHelperPool.length > 0

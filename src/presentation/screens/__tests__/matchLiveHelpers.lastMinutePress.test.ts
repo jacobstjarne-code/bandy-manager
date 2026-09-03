@@ -8,22 +8,23 @@
  * Samma bugklass som den vanliga stegtimern redan skyddar mot (currentStep
  * + 1 >= steps.length → matchDone).
  *
- * Fixen delar nu EN funktion (shouldEndMatchAfterStep) mellan stegtimern
- * och handleLastMinutePressChoice, så de per konstruktion inte kan divergera.
+ * Rotfixen gör stegtimern till ENSAM ägare av progression. Handlaren stänger
+ * bara valet; timern återupptas och använder shouldEndMatchAfterStep mot den
+ * aktuella steps-arrayen, som även kan ha regenererats under interaktionen.
  *
  * LastMinutePress.tsx:s onChoose nås via två vägar som BÅDA landar i
  * MatchLiveScreen.tsx:s handleLastMinutePressChoice: ett aktivt spelarval
  * (handleConfirm(c), knappen "Spräng igenom") och ett timeout-standardval
  * (onTimeout={() => handleConfirm('pushForward')}). Eftersom båda vägarna
- * anropar EXAKT samma handler, verifierar detta test slutvillkoret vid
- * källan (shouldEndMatchAfterStep) — samma arkitektoniska val som
+ * anropar EXAKT samma handler, verifierar detta test timerns slutvillkor —
+ * samma arkitektoniska val som
  * matchLiveHelpers.ceremony.test.ts: ingen DOM-rendering
  * (@testing-library/react finns inte i projektet).
  */
 import { describe, it, expect } from 'vitest'
 import { shouldEndMatchAfterStep } from '../matchLiveHelpers'
 
-describe('shouldEndMatchAfterStep — matchens slutvillkor, delat mellan stegtimer och interaktionshandlare', () => {
+describe('shouldEndMatchAfterStep — stegtimerns enda slutvillkor', () => {
   it('sista steget (currentStep + 1 === totalSteps) ska avsluta matchen', () => {
     // 60-stegs match, sista steget är index 59 (0-indexerat)
     expect(shouldEndMatchAfterStep(59, 60)).toBe(true)

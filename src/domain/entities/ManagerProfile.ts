@@ -18,7 +18,7 @@ export interface ManagerNarrativeEntry {
   // 'burnout_scar' — DOM_BURNOUT_TAK_2026-09-02 (D). Skrivs OAVSETT vilken
   // gren som valdes vid taket ('push_through'/'step_back') — se
   // ManagerProfile.burnoutScar för vilken av de två.
-  type: 'arrival' | 'burnout_peak' | 'burnout_scar' | 'era_shift' | 'rivalry' | 'milestone'
+  type: 'arrival' | 'burnout_peak' | 'burnout_relief' | 'burnout_close' | 'burnout_choice' | 'burnout_scar' | 'era_shift' | 'rivalry' | 'milestone'
   text: string
 }
 

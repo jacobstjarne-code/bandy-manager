@@ -7,24 +7,18 @@
  * fixad i samma pass för att stänga HELA klassen, inte bara de tre
  * uttryckligen listade.
  *
- * Alla fyra handlare (corner/straff/kontring/frislag) delar nu EXAKT samma
- * mönster: `if (!isCommentaryMode) { if (shouldEndMatchAfterStep(...)) {
- * matchDone } else { currentStep++ } }`. De kan per konstruktion inte
- * divergera, eftersom de anropar samma delade, pure funktion.
+ * Rotfixen gör stegtimern till ENSAM ägare av progression. De fyra
+ * handlarnas enda ansvar är att lösa och stänga interaktionen; när den är
+ * stängd kör timern detta gemensamma slutvillkor mot aktuell steps-array.
  *
  * "Regressionstest per handler" här betyder: verifiera shouldEndMatchAfterStep
- * mot de faktiska (currentStep, steps.length)-par som VARJE handlare skulle
- * skicka in om interaktionen fyrade på matchens sista steg — inte fyra
- * separata implementationer att testa (det finns bara en), utan fyra
- * explicita, namngivna bevis på att ingen av de fyra anropsplatserna
- * glömdes. Ingen DOM-rendering (@testing-library/react finns inte i
- * projektet) — samma arkitektoniska val som matchLiveHelpers.ceremony.test.ts
- * och matchLiveHelpers.lastMinutePress.test.ts.
+ * mot de faktiska (currentStep, steps.length)-paren när timern återtar
+ * kontrollen efter respektive interaktion. Ingen handler stegar längre.
  */
 import { describe, it, expect } from 'vitest'
 import { shouldEndMatchAfterStep } from '../matchLiveHelpers'
 
-describe('Interaktionshandlarnas slutvillkor — samma klass som last-minute-press', () => {
+describe('Stegtimerns slutvillkor efter interaktioner', () => {
   it('corner-interaktion (activeCorner) på matchens sista steg leder till matchDone', () => {
     const totalSteps = 60
     const cornerFiresOnLastStep = 59

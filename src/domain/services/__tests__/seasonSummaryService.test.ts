@@ -662,6 +662,28 @@ describe('generateSeasonSummary — managerSeason filtrerar dagboken till inneva
     const summary = generateSeasonSummary(gameWithDiary)
     expect(summary.managerSeason).toBeUndefined()
   })
+
+  it('burnout-minnet kommer från liggarens faktiska fas och val, inte en förtida dom', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const summary = generateSeasonSummary({
+      ...game,
+      managerProfile: { ...game.managerProfile!, diary: [] },
+      eventLedger: [
+        ...(game.eventLedger ?? []),
+        { type: 'manager_burnout', semanticKey: 'manager_burnout:mark:hog', season: 2027, matchday: 8, significance: 75 },
+        { type: 'decision', semanticKey: 'burnoutRelief:train', season: 2027, matchday: 9, significance: 70, madeByPlayer: true },
+        { type: 'manager_burnout', semanticKey: 'manager_burnout:close:frisk', season: 2027, matchday: 15, significance: 55 },
+      ],
+    })
+
+    expect(summary.managerSeason?.map(entry => entry.text)).toEqual([
+      'Den säsongen tog nästan slut på dig.',
+      'Du sänkte tempot på träningen.',
+      'Det gick att andas igen. Man glömmer att det ska kännas så.',
+    ])
+    expect(summary.managerSeason?.some(entry => entry.text.includes('Du stannade ändå'))).toBe(false)
+    expect(summary.managerSeason?.some(entry => entry.text.includes('Du sa inget'))).toBe(false)
+  })
 })
 
 // SEXSÄSONGSAUDITEN 2026-08-26, "Omgångsidentitet": årsbokens bästa match

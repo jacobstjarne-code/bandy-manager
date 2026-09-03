@@ -4,7 +4,12 @@
  * training_corners_vs_matchprep B → cornerRecovery på en back (matchCore läser den direkt).
  */
 import { describe, it, expect } from 'vitest'
-import { resolveWeeklyDecision, generateWeeklyDecision } from '../domain/services/weeklyDecisionService'
+import {
+  buildWeeklyDecisionLedgerEntry,
+  resolveWeeklyDecision,
+  generateWeeklyDecision,
+  hasAcceptedWeeklyDecision,
+} from '../domain/services/weeklyDecisionService'
 import { createNewGame } from '../application/useCases/createNewGame'
 import { PlayerPosition } from '../domain/enums'
 import type { WeeklyDecision } from '../domain/services/weeklyDecisionService'
@@ -53,6 +58,92 @@ describe('Fynd 11 — veckans beslut-effekter', () => {
       const target = game.players.find(p => p.id === effects[0].playerId)
       expect(target?.clubId).toBe(game.managedClubId)
     }
+  })
+
+  it('skriver spelarens faktiska veckoval och konsekvenser strukturerat till ledgern', () => {
+    const machine = {
+      ...decision('ismaskin_offer'),
+      category: 'community' as const,
+      repeatPolicy: 'untilAccepted' as const,
+    }
+    const effects = resolveWeeklyDecision(game, machine, 'A')
+    const club = game.clubs.find(candidate => candidate.id === game.managedClubId)!
+    const applied = {
+      ...game,
+      clubs: game.clubs.map(candidate => candidate.id === club.id
+        ? { ...candidate, finances: candidate.finances - 15_000 }
+        : candidate),
+      communityStanding: (game.communityStanding ?? 50) + 4,
+    }
+    const entry = buildWeeklyDecisionLedgerEntry(machine, 'A', effects, game, applied, 4)
+
+    expect(entry).toMatchObject({
+      type: 'decision',
+      semanticKey: 'weeklyDecision:ismaskin_offer:A',
+      season: 2025,
+      matchday: 4,
+      irreversible: true,
+      tension: true,
+      systemsAffectedCount: 2,
+      moneyAmount: 15_000,
+      madeByPlayer: true,
+    })
+    expect(hasAcceptedWeeklyDecision([entry], 'ismaskin_offer')).toBe(true)
+  })
+
+  it('erbjuder inte en bestående förändring igen efter accept, men ett tidigare nej blockerar inte', () => {
+    const accepted = buildWeeklyDecisionLedgerEntry(
+      { ...decision('ismaskin_offer'), category: 'community', repeatPolicy: 'untilAccepted' },
+      'A',
+      [{ type: 'finances', delta: -15_000 }, { type: 'communityStanding', delta: 4 }],
+      { ...game, currentSeason: game.currentSeason - 1 },
+      {
+        ...game,
+        currentSeason: game.currentSeason - 1,
+        clubs: game.clubs.map(candidate => candidate.id === game.managedClubId
+          ? { ...candidate, finances: candidate.finances - 15_000 }
+          : candidate),
+        communityStanding: (game.communityStanding ?? 50) + 4,
+      },
+      8,
+    )
+    const declined = { ...accepted, semanticKey: 'weeklyDecision:ismaskin_offer:B', irreversible: false }
+
+    expect(hasAcceptedWeeklyDecision([declined], 'ismaskin_offer')).toBe(false)
+    expect(hasAcceptedWeeklyDecision([declined, accepted], 'ismaskin_offer')).toBe(true)
+
+    const acceptedGame = {
+      ...game,
+      eventLedger: [accepted],
+      pendingWeeklyDecision: undefined,
+      weeklyDecisionLastRound: undefined,
+      resolvedWeeklyDecisions: [],
+    }
+    for (let round = 1; round <= 22; round++) {
+      expect(generateWeeklyDecision(acceptedGame, round)?.id).not.toBe('ismaskin_offer')
+    }
+  })
+
+  it('ledgern påstår inte en konsekvens som klampades bort', () => {
+    const machine = {
+      ...decision('ismaskin_offer'),
+      category: 'community' as const,
+      repeatPolicy: 'untilAccepted' as const,
+    }
+    const effects = [{ type: 'finances' as const, delta: -15_000 }, { type: 'communityStanding' as const, delta: 4 }]
+    const capped = { ...game, communityStanding: 100 }
+    const after = {
+      ...capped,
+      clubs: capped.clubs.map(candidate => candidate.id === capped.managedClubId
+        ? { ...candidate, finances: candidate.finances - 15_000 }
+        : candidate),
+    }
+
+    const entry = buildWeeklyDecisionLedgerEntry(machine, 'A', effects, capped, after, 4)
+
+    expect(entry.systemsAffectedCount).toBe(1)
+    expect(entry.consequences).toEqual([{ field: 'finances', dir: 'down', magnitude: 'tydligt' }])
+    expect(entry.tension).toBe(false)
   })
 })
 

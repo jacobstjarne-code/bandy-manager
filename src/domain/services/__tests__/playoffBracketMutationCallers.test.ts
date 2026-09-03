@@ -12,9 +12,10 @@ import { join, relative } from 'node:path'
  *
  * Detta test kan inte verifiera SEMANTISK korrekthet (att en ny anropare
  * faktiskt filtrerar pendingEvents/deferredDecisions rätt) — det är inte
- * mekaniskt kontrollerbart över en asymmetrisk kedja (matchActions.ts
- * applicerar grinden direkt vid mutationsstället, roundProcessor.ts applicerar
- * den ett steg upp från playoffProcessor.ts). Vad det GARANTERAR: om en NY fil
+ * mekaniskt kontrollerbart över en asymmetrisk kedja
+ * (completeManagedFixture.ts applicerar grinden direkt vid mutationsstället,
+ * roundProcessor.ts applicerar den ett steg upp från playoffProcessor.ts).
+ * Vad det GARANTERAR: om en NY fil
  * börjar anropa advancePlayoffRound/updateSeriesAfterMatch failar testet,
  * vilket tvingar en medveten uppdatering av allowlistan här — istället för att
  * den nya vägen tyst saknar grinden, vilket är precis hur denna bugg uppstod.
@@ -23,8 +24,8 @@ import { join, relative } from 'node:path'
 const SRC_ROOT = join(__dirname, '../../..')
 
 const KNOWN_CALLERS = new Set([
+  'application/useCases/completeManagedFixture.ts',
   'application/useCases/processors/playoffProcessor.ts',
-  'presentation/store/actions/matchActions.ts',
 ])
 
 const CALL_PATTERN = /\b(advancePlayoffRound|updateSeriesAfterMatch)\s*\(/
@@ -60,13 +61,13 @@ describe('playoffBracket-mutationsvägar', () => {
       'JSDoc-kommentaren vid båda funktionerna i playoffService.ts. Innan denna ' +
       'lista uppdateras: bekräfta att den nya anroparen filtrerar ' +
       'game.pendingEvents/deferredDecisions via isPlayoffNarrativeCardStillValid ' +
-      '(direkt, som matchActions.ts, eller ett steg upp i anropskedjan, som ' +
+      '(direkt, som completeManagedFixture.ts, eller ett steg upp i anropskedjan, som ' +
       'roundProcessor.ts gör för playoffProcessor.ts) innan den läggs till här.'
     ).toEqual([...KNOWN_CALLERS].sort())
   })
 
-  it('matchActions.ts filtrerar direkt vid mutationsstället (isPlayoffNarrativeCardStillValid)', () => {
-    const content = readFileSync(join(SRC_ROOT, 'presentation/store/actions/matchActions.ts'), 'utf-8')
+  it('completeManagedFixture.ts filtrerar direkt vid mutationsstället (isPlayoffNarrativeCardStillValid)', () => {
+    const content = readFileSync(join(SRC_ROOT, 'application/useCases/completeManagedFixture.ts'), 'utf-8')
     expect(content).toContain('isPlayoffNarrativeCardStillValid')
   })
 

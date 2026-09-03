@@ -96,35 +96,6 @@ export function generateCharacterPlayerEvents(
     const name = `${player.firstName} ${player.lastName}`
     const ls = player.loyaltyScore ?? 5
 
-    // Veteran retirement warning — round 1, age >= 33
-    if (player.trait === 'veteran' && player.age >= 33 && currentRound === 1) {
-      const eid = `veteran_retirement_${player.id}`
-      if (!alreadyQueued.has(eid)) {
-        events.push({
-          id: eid,
-          type: 'communityEvent',
-          title: `${name} funderar på att sluta`,
-          body: `${name} har spelat i ${player.age} år och börjar fundera på pensionen. Hur hanterar du det?`,
-          relatedPlayerId: player.id,
-          choices: [
-            {
-              id: 'honor',
-              label: 'Ge honom en hedersbetygelse och be honom stanna ett år till',
-              subtitle: '⭐ +3 samhällsstöd',
-              effect: { type: 'communityStanding', amount: 3 },
-            },
-            {
-              id: 'plan',
-              label: 'Planera för övergång — hitta en ersättare',
-              subtitle: 'Inga effekter',
-              effect: { type: 'noOp' },
-            },
-          ],
-          resolved: false,
-        })
-      }
-    }
-
     // Jubilee — loyaltyScore hits 10 at round 1
     if (ls >= 10 && currentRound === 1) {
       const eid = `jubilee_${player.id}`

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Settings, BookOpen, Save, FolderOpen, Download, Upload } from 'lucide-react'
 import { Icon } from './primitives/Icon'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
@@ -8,7 +8,7 @@ import { KlubbparmOverlay } from './KlubbparmOverlay'
 import { Logo } from './Logo'
 import { PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
-import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
+import { getPlayoffFixtureContext, getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
 import { exportSaveRecoveryReportAsJson } from '../../infrastructure/persistence/saveRecoveryMetrics'
@@ -68,6 +68,7 @@ function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; co
 }
 
 export function GameHeader() {
+  const location = useLocation()
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const saveGame = useGameStore(s => s.saveGame)
@@ -167,9 +168,14 @@ export function GameHeader() {
   const bracket = game.playoffBracket
   const isInPlayoff = isInPlayoffBracket(bracket)
   const playoffCtx = isInPlayoff ? getPlayoffSeriesContext(game) : null
+  const reviewedPlayoffFixture = location.pathname === '/game/review' && game.lastCompletedFixtureId
+    ? getPlayoffFixtureContext(game, game.lastCompletedFixtureId)
+    : null
   let playoffLabel: string | null = null
   if (isInPlayoff) {
-    if (playoffCtx) {
+    if (reviewedPlayoffFixture) {
+      playoffLabel = `${playoffRoundName(reviewedPlayoffFixture.round)} · match ${reviewedPlayoffFixture.gameNumber}`
+    } else if (playoffCtx) {
       const critLabel = CRIT_LABEL[playoffCtx.criticality]
       const suffix = critLabel ?? `match ${playoffCtx.nextGame}`
       playoffLabel = `${playoffRoundName(playoffCtx.round)} · ${suffix}`

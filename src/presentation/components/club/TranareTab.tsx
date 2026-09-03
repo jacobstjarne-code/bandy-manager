@@ -62,6 +62,9 @@ export function TranareTab({ game }: Props) {
   const TYPE_LABEL: Record<string, string> = {
     arrival: 'Ankomst',
     burnout_peak: 'Belastningstopp',
+    burnout_relief: 'Lättnad',
+    burnout_close: 'Återhämtning',
+    burnout_choice: 'Ditt val',
     era_shift: 'Ny era',
     rivalry: 'Rivalitet',
     milestone: 'Milstolpe',
