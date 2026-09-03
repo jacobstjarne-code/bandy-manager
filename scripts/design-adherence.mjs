@@ -64,13 +64,38 @@ for (const file of TSX_FILES) {
   const source = readFileSync(file, 'utf8')
   const lines = source.split('\n')
 
+  // Flerradiga block-/JSX-kommentarer (`/* ... */`, `{/* ... */}`) följde
+  // tidigare inte med — bara rader som TRIMMADE börjar med `//`/`*` hoppades
+  // över, så en kommentars fortsättningsrader (ingen ledande `*`-konvention
+  // i JSX) och ensamradiga `{/* ... */}`-block lästes som kod. Upptäckt när
+  // HistoryScreen.tsx:s rubrik-kommentar (flerradig, ingen `*`-prefix)
+  // false-positivade två byggen i rad.
+  let inBlockComment = false
+
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index]
     const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || isExempt(lines, index)) continue
+
+    if (inBlockComment) {
+      if (line.includes('*/')) inBlockComment = false
+      continue
+    }
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*')) continue
+    // Bara när HELA raden är en kommentar, från radens start (`{/*`/`/*`) —
+    // en TRAILING inline-kommentar efter riktig kod (t.ex. en style-rad som
+    // avslutas med `{/* ds-exempt: ... */}`) ska INTE hoppas över, annars
+    // döljs den riktiga koden som föregår kommentaren på samma rad.
+    if (trimmed.startsWith('{/*') || trimmed.startsWith('/*')) {
+      if (!line.includes('*/')) inBlockComment = true
+      continue
+    }
+    if (isExempt(lines, index)) continue
 
     // 11 · Tal & enheter: rå kronprecision/kr-period och rå säsongsaxel i UI.
-    if (/\bkr(?:\/mån|\/vecka|\/säsong)?\b/.test(line) && !/\btkr(?:\/mån)?\b/.test(line)) {
+    // Trailing gräns är EXPLICIT (inte \b) — JS:s \b ser åäö som "icke-ord",
+    // så \bkr\b matchade tidigare "kr" inuti svenska ord som "krönika"
+    // (kr+önika, ö räknas som gräns) — falskt larm, ingen kod-avvikelse.
+    if (/\bkr(?:\/mån|\/vecka|\/säsong)?(?![a-zA-ZåäöÅÄÖ])/.test(line) && !/\btkr(?:\/mån)?\b/.test(line)) {
       add('rule11_units', file, index + 1, line)
     }
     if (/Säsong\s+(?:\$\{[^}]*\.currentSeason|\{[^}]*\.currentSeason)/.test(line) && !line.includes('seasonSpanLabel')) {
