@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FACILITY_NODE_DEFS } from './facilityService'
 import { LICENSE_ZONE_TEXT } from './licenseService'
+import { getResolvedStorylineProjections } from './storylineLedgerService'
 
 function objectiveDisplayName(game: SaveGame, objectiveId: string): string {
   const liveLabel = game.boardObjectives?.find(o => o.id === objectiveId)?.label
@@ -33,10 +34,9 @@ export interface SeasonDecision {
 /**
  * AUDIT DEL 2 A3, uppföljning (2026-08-09): `excludeStorylineTypes` låter
  * anroparen (SeasonSummaryScreen.tsx) hoppa över storyline-typer som redan
- * visats i en annan sektion på samma skärm (DIN SÄSONG) — samma
- * game.storylines-array, delad dedup-koordinering istf två okoordinerade
- * läsare. Reversibelt: designfrågan (ska storylines höra hemma här alls?)
- * är öppen, se rapporten i samma commit.
+ * visats i en annan sektion på samma skärm (DIN SÄSONG). Båda ytorna läser
+ * nu samma liggarstyrda resolution-projektion; Set:et koordinerar bara
+ * presentationen mellan sektionerna, inte historisk existens.
  */
 export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: Set<string>): SeasonDecision[] {
   const decisions: SeasonDecision[] = []
@@ -58,8 +58,8 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   }
 
   // Resolved storylines
-  for (const sl of game.storylines ?? []) {
-    if (sl.season === season && sl.displayText && !excludeStorylineTypes?.has(sl.type)) {
+  for (const sl of getResolvedStorylineProjections(game, season)) {
+    if (sl.displayText && !excludeStorylineTypes?.has(sl.type)) {
       decisions.push({ icon: '📖', text: sl.displayText, round: sl.matchday, storylineId: sl.id })
     }
   }

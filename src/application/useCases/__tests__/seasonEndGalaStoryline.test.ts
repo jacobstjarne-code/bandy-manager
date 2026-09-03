@@ -68,5 +68,14 @@ describe('Bandygalan — gala_winner storyline', () => {
       clubId: game.managedClubId,
       resolved: true,
     })
+    expect(result.eventLedger?.filter(entry => (
+      entry.type === 'storyline_resolution'
+      && entry.semanticKey === `storyline_resolution:gala_winner:story_gala_arets_spelare_${game.currentSeason}`
+    ))).toEqual([expect.objectContaining({
+      season: game.currentSeason,
+      matchday: game.currentMatchday,
+      subject: { kind: 'player', id: winner.id },
+      subject2: { kind: 'club', id: game.managedClubId },
+    })])
   })
 })

@@ -11,9 +11,8 @@ import type { EventLedgerEntry } from '../entities/Narrative'
  * anroparen tilldelar den in i sitt uppdaterade game-objekt. Ingen mutation,
  * ingen annan väg att skriva en liggarpost.
  *
- * INGA konsumenter ännu (Fas 0). Fas 1 (orsak/verkan) blir den första rena
- * läsaren. `EventLedgerEntry`s fält är låsta av Opus (schemat i
- * entities/Narrative.ts) — denna funktion gör medvetet ingen egen
+ * `EventLedgerEntry`s fält är låsta av Opus (schemat i
+ * entities/Narrative.ts). Funktionen gör medvetet ingen egen
  * fältvalidering utöver TypeScripts unionstyper; posten är redan
  * färdigformad av anroparen.
  */

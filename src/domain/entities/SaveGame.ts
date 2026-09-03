@@ -565,7 +565,10 @@ export interface SaveGame {
   mecenater?: Mecenat[]
   facilityState?: FacilityState          // B1: facility tree state
 
-  // V1.0 — Storylines + Legacy
+  // V1.0 — aktiva storylines + frusen vytext för lösta poster under
+  // strangler-migreringen. Löst-händelsens kanoniska existens/tid bor i
+  // eventLedger som storyline_resolution; narrativeBeatLog är fortsatt
+  // en separat visnings-cooldown.
   storylines?: StorylineEntry[]
   clubLegends?: ClubLegend[]
 

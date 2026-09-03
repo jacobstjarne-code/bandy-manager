@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-09-02",
+  "reviewedAt": "2026-09-03",
   "pairs": [
     {
       "id": "src/domain/services/counterAttackInteractionService.ts#assistantPickCounter <> src/domain/services/freeKickInteractionService.ts#assistantPickFreeKick",
@@ -27,11 +27,6 @@
       "rationale": "Hög likhet men olika generationskontext; tidigare uttryckligen flaggad som oklar kanon."
     },
     {
-      "id": "src/domain/data/portalBeats.ts#completedLeagueCount <> src/domain/services/anslagService.ts#leagueComplete",
-      "disposition": "consolidate",
-      "rationale": "Två beräkningar av spelade ligaomgångar; bör läsa en gemensam helper."
-    },
-    {
       "id": "src/domain/services/matchCore.ts#getIceHardnessMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
       "disposition": "false-positive",
       "rationale": "Likformade numeriska trappor för helt olika domäner."
@@ -40,11 +35,6 @@
       "id": "src/domain/services/matchCore.ts#getPenaltyPeriodMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
       "disposition": "false-positive",
       "rationale": "Likformade numeriska trappor för helt olika domäner."
-    },
-    {
-      "id": "src/domain/data/portalBeats.ts#completedLeagueCount <> src/domain/services/anslagService.ts#firstPlayoffMatchUpcoming",
-      "disposition": "false-positive",
-      "rationale": "Delad fixture-filtrering men olika frågor och returkontrakt."
     },
     {
       "id": "src/domain/data/csPressEventText.ts#pickCSPressPublishedQuote <> src/domain/data/eventCardInlineStrings.ts#pickPlayerPraiseText",
@@ -65,11 +55,6 @@
       "id": "src/domain/services/matchUtils.ts#weightedPick <> src/domain/services/transferService.ts#weightedPickIndexByWeights",
       "disposition": "consolidate",
       "rationale": "Generisk viktad slumpning med olika returform; kandidat för delad random-helper."
-    },
-    {
-      "id": "src/domain/data/portalBeats.ts#nextManagedLeagueFixture <> src/domain/services/anslagService.ts#leagueComplete",
-      "disposition": "false-positive",
-      "rationale": "Överlappande fixture-loop men olika villkor och returvärde."
     },
     {
       "id": "src/domain/services/academyService.ts#archetypeForPosition <> src/domain/services/worldGenerator.ts#pickArchetype",
@@ -95,6 +80,11 @@
       "id": "src/domain/services/matchCore.ts#getPenaltyPeriodMod <> src/domain/services/penaltyInteractionService.ts#resolveAIPenaltyKeeperDive",
       "disposition": "false-positive",
       "rationale": "Samma AST-form råkar uppstå i två orelaterade sannolikhetsmodeller."
+    },
+    {
+      "id": "src/domain/services/clubHistoryLedgerService.ts#buildScandalLedgerEntry <> src/domain/services/clubMemoryEventBuilders.ts#buildEventFromStoryline",
+      "disposition": "false-positive",
+      "rationale": "Likformade objektbyggare men olika domänkontrakt: den ena skapar en prosa-fri skandalliggarpost, den andra projicerar en redan kanoniserad storyline till en textbärande MemoryEvent."
     },
     {
       "id": "src/domain/data/scenes/boardMeetingScene.ts#shouldTriggerBoardMeeting <> src/domain/data/scenes/valetScene.ts#shouldTriggerValet",

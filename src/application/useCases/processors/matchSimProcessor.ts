@@ -18,6 +18,7 @@ import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation
 import type { Referee, RefereeRelation } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
+import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 
 const AI_FITNESS_FLOOR = 40
 const AI_ROTATION_CA_TOLERANCE = 8
@@ -360,7 +361,7 @@ export function simulateRound(
       rivalry: rivalry ?? undefined,
       fanMood: game.fanMood ?? 50,
       managedIsHome: isManagedHome,
-      storylines: (game.storylines ?? []).filter(s => s.resolved),
+      storylines: getResolvedStorylineProjections(game),
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
       refStyle: referee.style,
       refereeName: getRefereeDisplayName(referee),

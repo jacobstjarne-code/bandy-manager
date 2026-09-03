@@ -38,6 +38,14 @@ describe('seasonEndProcessor — underdog_season', () => {
       displayText: 'Styrelsen hade inte väntat sig det här.',
       resolved: true,
     })
+    expect(result.eventLedger?.filter(entry => (
+      entry.type === 'storyline_resolution'
+      && entry.semanticKey === `storyline_resolution:underdog_season:story_underdog_${game.managedClubId}_${game.currentSeason}`
+    ))).toEqual([expect.objectContaining({
+      season: game.currentSeason,
+      matchday: game.currentMatchday,
+      subject: { kind: 'club', id: game.managedClubId },
+    })])
   })
 
   it('skapar ingen underdog-storyline för en WinLeague-klubb med samma förstaplats', () => {
@@ -108,5 +116,13 @@ describe('seasonEndProcessor — relegation_escape', () => {
       displayText: 'Räddade sig kvar i sista stund',
       resolved: true,
     })
+    expect(result.eventLedger?.filter(entry => (
+      entry.type === 'storyline_resolution'
+      && entry.semanticKey === `storyline_resolution:relegation_escape:story_relegation_escape_${game.managedClubId}_${game.currentSeason}`
+    ))).toEqual([expect.objectContaining({
+      season: game.currentSeason,
+      matchday: game.currentMatchday,
+      subject: { kind: 'club', id: game.managedClubId },
+    })])
   })
 })

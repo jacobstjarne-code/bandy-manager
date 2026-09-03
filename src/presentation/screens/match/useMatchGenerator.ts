@@ -18,6 +18,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import { fixtureSeed } from '../../../domain/utils/random'
+import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 
 type GeneratorSetup = {
   fixture: Fixture
@@ -68,7 +69,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       isPlayoff: matchPhase !== 'regular',
       matchPhase,
       rivalry: rivalry ?? undefined,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
       managedIsHome: fixture.homeClubId === game.managedClubId,
       captainPlayerId: game.captainPlayerId,
       fanFavoritePlayerId: game.supporterGroup?.favoritePlayerId,
@@ -140,7 +141,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
       managedIsHome,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []

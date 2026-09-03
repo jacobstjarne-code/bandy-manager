@@ -9,34 +9,42 @@
  */
 import { describe, it, expect } from 'vitest'
 import { collectSeasonDecisions } from '../seasonDecisionsService'
+import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import type { SaveGame } from '../../entities/SaveGame'
+import type { StorylineEntry } from '../../entities/Narrative'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
-    currentSeason: 8, managedClubId: 'club_home', players: [],
+    currentSeason: 8, currentMatchday: 12, managedClubId: 'club_home', players: [],
     storylines: [], boardObjectiveHistory: [],
     ...overrides,
   } as unknown as SaveGame
 }
 
+function withCanonicalStorylines(storylines: StorylineEntry[]): SaveGame {
+  const game = makeGame({ storylines })
+  return {
+    ...game,
+    eventLedger: storylines.map(storyline => (
+      buildStorylineResolutionLedgerEntry(storyline, game.currentMatchday)!
+    )),
+  }
+}
+
 describe('collectSeasonDecisions — excludeStorylineTypes', () => {
   it('utan exclude-set: alla säsongens storylines listas (befintligt beteende)', () => {
-    const game = makeGame({
-      storylines: [
-        { id: 's1', type: 'underdog_season', season: 8, matchday: 12, description: '', displayText: 'Ingen trodde på oss.', resolved: true },
-      ] as never,
-    })
+    const game = withCanonicalStorylines([
+      { id: 's1', type: 'underdog_season', season: 8, matchday: 12, description: '', displayText: 'Ingen trodde på oss.', resolved: true },
+    ])
     const decisions = collectSeasonDecisions(game)
     expect(decisions.map(d => d.text)).toContain('Ingen trodde på oss.')
   })
 
   it('med exclude-set: en storyline-typ som redan claimats av DIN SÄSONG hoppas över', () => {
-    const game = makeGame({
-      storylines: [
-        { id: 's1', type: 'underdog_season', season: 8, matchday: 12, description: '', displayText: 'Ingen trodde på oss.', resolved: true },
-        { id: 's2', type: 'gala_winner', season: 8, matchday: 21, description: '', displayText: 'Vann galan.', resolved: true },
-      ] as never,
-    })
+    const game = withCanonicalStorylines([
+      { id: 's1', type: 'underdog_season', season: 8, matchday: 12, description: '', displayText: 'Ingen trodde på oss.', resolved: true },
+      { id: 's2', type: 'gala_winner', season: 8, matchday: 21, description: '', displayText: 'Vann galan.', resolved: true },
+    ])
     const claimed = new Set(['underdog_season'])
     const decisions = collectSeasonDecisions(game, claimed)
     expect(decisions.map(d => d.text)).not.toContain('Ingen trodde på oss.')

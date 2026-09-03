@@ -10,6 +10,7 @@ import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComebac
 import { formatRating } from '../format'
 import { getRoundLabel } from '../roundLabel'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
+import { getResolvedStorylineProjections } from './storylineLedgerService'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -759,7 +760,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 
   // Storyline references in narrative
-  const seasonStorylines = (game.storylines ?? []).filter(s => s.season === game.currentSeason && s.resolved)
+  const seasonStorylines = getResolvedStorylineProjections(game, game.currentSeason)
   if (seasonStorylines.length > 0) {
     const storyTexts: string[] = []
     const proStories = seasonStorylines.filter(s => s.type === 'went_fulltime_pro')
@@ -796,9 +797,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     'hungrig_breakthrough', 'joker_vindicated', 'veteran_farewell', 'veteran_stayed',
     'lokal_hero_moment', 'captain_rallied_team', 'contract_drama_resolved', 'derby_echo_resolved',
   ])
-  const resolvedArcStories = (game.storylines ?? []).filter(
-    s => s.season === game.currentSeason && arcStorylineTypes.has(s.type as string) && s.resolved
-  )
+  const resolvedArcStories = seasonStorylines.filter(s => arcStorylineTypes.has(s.type as string))
   type KeyMoment = NonNullable<SeasonSummary['keyMoments']>[number]
   const arcMoments: KeyMoment[] = resolvedArcStories.slice(0, 2).map(arc => ({
     round: arc.matchday,

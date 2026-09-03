@@ -61,6 +61,7 @@ import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
 import { buildCeremonyOnlyStep, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 
 interface LocationState {
   fixture: Fixture
@@ -289,7 +290,7 @@ export function MatchLiveScreen() {
       isPlayoff: matchPhase !== 'regular',
       matchPhase,
       rivalry: rivalry ?? undefined,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
       managedIsHome: fixture.homeClubId === game.managedClubId,
       captainPlayerId: game.captainPlayerId,
       fanFavoritePlayerId: game.supporterGroup?.favoritePlayerId,
@@ -736,7 +737,7 @@ export function MatchLiveScreen() {
       initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
       managedIsHome,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []
@@ -1207,7 +1208,7 @@ export function MatchLiveScreen() {
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
       pauseLean: effectiveLean,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     })
     const firstHalf = steps.slice(0, 31)
     const newSecondHalf: MatchStep[] = []
@@ -1287,7 +1288,7 @@ export function MatchLiveScreen() {
       initialHomeSuspensions: currentMatchStep.activeSuspensions.homeCount,
       initialAwaySuspensions: currentMatchStep.activeSuspensions.awayCount,
       managedIsHome,
-      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
 import { deriveBoardLeagueContext, generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend } from '../seasonSummaryService'
+import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
 
@@ -295,18 +296,20 @@ describe('generateSeasonSummary — resolvade arc-berättelser får INTE type:bi
   it('en resolvad contract_drama_resolved-storyline mappas till type:storyline, inte bigWin', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
     const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const storyline = {
+      id: 'story_1',
+      type: 'contract_drama_resolved' as const,
+      season: game.currentSeason,
+      matchday: 10,
+      playerId: player.id,
+      description: `${player.firstName} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
+      displayText: `${player.firstName} — kontraktsstriden slutade i avsked`,
+      resolved: true,
+    }
     const gameWithStoryline = {
       ...game,
-      storylines: [{
-        id: 'story_1',
-        type: 'contract_drama_resolved',
-        season: game.currentSeason,
-        matchday: 10,
-        playerId: player.id,
-        description: `${player.firstName} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
-        displayText: `${player.firstName} — kontraktsstriden slutade i avsked`,
-        resolved: true,
-      }],
+      storylines: [storyline],
+      eventLedger: [buildStorylineResolutionLedgerEntry(storyline, game.currentMatchday)!],
     }
     const summary = generateSeasonSummary(gameWithStoryline as never)
     const arcMoment = (summary.keyMoments ?? []).find(m => m.relatedPlayerId === player.id)

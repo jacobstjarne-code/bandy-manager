@@ -11,6 +11,7 @@ import {
 } from './templateEligibilityService'
 import { isOnCooldown } from './narrativeLogService'
 import { recentlySurfaced, RECENCY_WINDOW_BY_CHANNEL } from './narrativeCoordinatorService'
+import { getResolvedStorylineProjections } from './storylineLedgerService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -934,7 +935,7 @@ export function generatePressConference(
   let excludedResponseIds: string[] = []
 
   // Storyline-aware question override (30% chance if matching storyline exists)
-  const storylines = game.storylines ?? []
+  const storylines = getResolvedStorylineProjections(game)
   if (rand() < 0.30 && storylines.length > 0) {
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
     const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)

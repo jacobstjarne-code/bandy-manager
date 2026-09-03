@@ -45,5 +45,14 @@ describe('resolveEvent — captain_rallied_team-storylinens matchday är en liga
     expect(storyline).toBeTruthy()
     expect(storyline!.matchday).toBe(22)
     expect(storyline!.matchday).not.toBe(GLOBAL_PLAYOFF_MATCHDAY)
+    expect(result.eventLedger?.filter(entry => (
+      entry.type === 'storyline_resolution'
+      && entry.semanticKey.includes(':captain_rallied_team:')
+    ))).toEqual([expect.objectContaining({
+      season: game.currentSeason,
+      matchday: GLOBAL_PLAYOFF_MATCHDAY,
+      subject: { kind: 'player', id: captain.id },
+      subject2: { kind: 'club', id: game.managedClubId },
+    })])
   })
 })
