@@ -382,9 +382,10 @@ describe('getOrtFreshnessFactor — aggregeringen (väg C)', () => {
     expect(ACTIVITY_CS_BOOST.skolbesok).toBeGreaterThan(ACTIVITY_CS_BOOST.socialMedia)
   })
 
-  it('ACTIVITY_CS_BOOST summerar till 0,72 — D037:s 0,67 plus Bandyplays 0,05', () => {
+  it('ACTIVITY_CS_BOOST summerar till 0,76 — BandyKul 0,12 och Bandyplay 0,05', () => {
     const sum = STALEABLE_ACTIVITY_KEYS.reduce((s, k) => s + ACTIVITY_CS_BOOST[k], 0)
-    expect(sum).toBeCloseTo(0.72, 6)
+    expect(sum).toBeCloseTo(0.76, 6)
+    expect(ACTIVITY_CS_BOOST.bandySchoolBasic).toBeGreaterThan(ACTIVITY_CS_BOOST.bandySchool)
   })
 
   it('en enskild försummad aktivitet drar INTE hela klubben till golvet (inte min())', () => {

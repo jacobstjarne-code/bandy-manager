@@ -116,6 +116,32 @@ describe('generateYouthIntake', () => {
     }
   })
 
+  it('BandyKul ger ett svagt säsongsintagslyft och är svagare än avancerade skolans +2', () => {
+    const baseClub = makeClub({ youthRecruitment: 60 })
+    const advancedClub = makeClub({ youthRecruitment: 62 })
+    const bandyKul = {
+      kiosk: 'none' as const,
+      lottery: 'none' as const,
+      bandySchoolBasic: true,
+      bandyplay: false,
+      functionaries: false,
+      julmarknad: false,
+    }
+    let baseCount = 0
+    let bandyKulCount = 0
+    let advancedCount = 0
+
+    for (let seed = 1; seed <= 500; seed++) {
+      const common = { existingPlayers: [] as Player[], season: 2026, date: '2026-07-01', seed }
+      baseCount += generateYouthIntake({ ...common, club: baseClub }).newPlayers.length
+      bandyKulCount += generateYouthIntake({ ...common, club: baseClub, communityActivities: bandyKul }).newPlayers.length
+      advancedCount += generateYouthIntake({ ...common, club: advancedClub }).newPlayers.length
+    }
+
+    expect(bandyKulCount).toBeGreaterThan(baseCount)
+    expect(advancedCount).toBeGreaterThan(bandyKulCount)
+  })
+
   it('all players have age 15-19', () => {
     const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed: 42 })
     for (const p of result.newPlayers) {

@@ -64,13 +64,14 @@ export const STALEABLE_ACTIVITY_KEYS: readonly StaleableActivityKey[] = [
  * summerar dem, och `getOrtFreshnessFactor` nedan VÄGER med dem. Två kopior av
  * samma nio tal hade kunnat glida isär utan att något test märkte det
  * (CLAUDE.md, "EN SANNING, ETT STÄLLE"). Värdena är oförändrade från D037:s
- * mätta balans, plus Bandyplays beslutade 0,05 — summan är 0,72 CS/omgång
+ * mätta balans, Bandyplays beslutade 0,05 och BandyKuls beslutade tyngre
+ * samhällsvikt 0,12 — summan är 0,76 CS/omgång
  * med alla tio igång.
  */
 export const ACTIVITY_CS_BOOST: Record<StaleableActivityKey, number> = {
   kiosk: 0.08,
   lottery: 0.05,
-  bandySchoolBasic: 0.08,
+  bandySchoolBasic: 0.12,
   bandyplay: 0.05,
   functionaries: 0.05,
   bandySchool: 0.08,

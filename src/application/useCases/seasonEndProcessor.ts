@@ -480,6 +480,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       season: game.currentSeason,
       date: game.currentDate,
       seed: baseSeed + i,
+      // CommunityActivities är managerklubbens state. Barnskolan matar den
+      // befintliga intagspipelinen svagt; AI-klubbar får ingen låtsasaktivitet.
+      communityActivities: club.id === game.managedClubId ? game.communityActivities : undefined,
     })
 
     youthPlayers.push(...intakeResult.newPlayers)

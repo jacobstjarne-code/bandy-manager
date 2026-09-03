@@ -559,6 +559,8 @@ const VIP_RUNNING_COST = 2000
 export const BANDYPLAY_ACTIVATION_COST = 5000
 export const BANDYPLAY_RUNNING_COST = 100
 export const BANDYPLAY_SPONSOR_BONUS_MAX = 0.04
+export const BANDY_SCHOOL_BASIC_RUNNING_COST = 1000
+export const BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE = 0.25
 
 // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom per nod —
 // RAPPORT_BYGGNODLOFTEN_2026-08-27.md): facilityNodes.ts's "Kiosk &
@@ -598,9 +600,16 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     ? BANDYPLAY_SPONSOR_BONUS_MAX * Math.max(0, Math.min(1, streamingFreshnessMultiplier ?? 1))
     : 0
   const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.0086 + streamingSponsorBonus
-  const sponsorIncome = Math.round(sponsors
-    .filter(s => s.contractRounds > 0)
+  const activeSponsors = sponsors.filter(s => s.contractRounds > 0)
+  const sponsorIncome = Math.round(activeSponsors
     .reduce((sum, s) => sum + s.weeklyIncome, 0) * sponsorMoodMultiplier)
+  // BandyKul-modellen: en befintlig aktiv sponsor kan bära en avgränsad del
+  // av buss-/driftskostnaden. Det är ingen separat sponsorbank och aldrig en
+  // intäkt — skolan förblir en kostnad även vid högsta deltagaravgift.
+  const bandySchoolBasicRunningCost = Math.round(
+    BANDY_SCHOOL_BASIC_RUNNING_COST
+      * (activeSponsors.length > 0 ? 1 - BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE : 1),
+  )
 
   // ── Match revenue (home only) ─────────────────────────────────────────────
   let matchRevenue = 0
@@ -678,7 +687,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
       let runningCost = 0
       if (communityActivities.kiosk === 'upgraded') runningCost += KIOSK_RUNNING_COST_UPGRADED
       else if (communityActivities.kiosk === 'basic') runningCost += KIOSK_RUNNING_COST_BASIC
-      if (communityActivities.bandySchoolBasic) runningCost += 1000
+      if (communityActivities.bandySchoolBasic) runningCost += bandySchoolBasicRunningCost
       if (communityActivities.vipTent) runningCost += VIP_RUNNING_COST
       communityMatchIncome -= runningCost
     }
@@ -695,7 +704,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     }
     if (communityActivities.bandySchoolBasic) {
       // Per-round participant fees minus operational cost
-      communityRoundIncome += (250 + Math.round(rand() * 500)) - 1000
+      communityRoundIncome += (250 + Math.round(rand() * 500)) - bandySchoolBasicRunningCost
     }
     if (communityActivities.bandyplay) {
       communityRoundIncome -= BANDYPLAY_RUNNING_COST

@@ -30,8 +30,8 @@ const ALLA_AKTIVITETER: CommunityActivities = {
   julmarknad: false, bandySchool: true, socialMedia: true, vipTent: true,
   pensionarskaffe: true, soppkvall: true, skolbesok: true,
 }
-/** Summan av aktivitetsboostarna i communityProcessor (barnskola 0,08 + streaming 0,05 inkluderade). */
-const ALLA_AKTIVITETER_RAW = 0.72
+/** Summan av aktivitetsboostarna i communityProcessor (BandyKul 0,12 + streaming 0,05 inkluderade). */
+const ALLA_AKTIVITETER_RAW = 0.76
 
 const INGA_AKTIVITETER: CommunityActivities = {
   kiosk: 'none', lottery: 'none', bandySchoolBasic: false, bandyplay: false, functionaries: false,
@@ -159,7 +159,7 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
     const game = makeGame(50, ALLA_AKTIVITETER)
     const result = processCommunity(game, makeFixture(game, 3, 1), 0, neutralStandings(game), 10)
     // cs=50 → dämpning 1.0, rykte 50 → faktor 1.0 och drag 0.
-    // Förväntat: seger +2 + aktiviteter 0.72, ingenting avdraget.
+    // Förväntat: seger +2 + aktiviteter 0.76, ingenting avdraget.
     expect(result.csBoost).toBeCloseTo(2 + ALLA_AKTIVITETER_RAW, 6)
   })
 })
@@ -192,7 +192,7 @@ describe('processCommunity — VÄG C: csBoost är oberoende av staleness', () =
     expect(sliten.csBoost).toBe(fersk.csBoost)
   })
 
-  it('aktivitetsboosten är den råa summan (0,72) × csUpkeepFactor, oavsett ålder', () => {
+  it('aktivitetsboosten är den råa summan (0,76) × csUpkeepFactor, oavsett ålder', () => {
     const game = aged(makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER), 20)
     const utan = processCommunity(makeGame(CS_UPKEEP_REP_CEIL, INGA_AKTIVITETER), null, 0, neutralStandings(game), 10)
     const med = processCommunity(game, null, 0, neutralStandings(game), 10)

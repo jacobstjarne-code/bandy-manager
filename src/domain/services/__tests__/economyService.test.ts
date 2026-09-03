@@ -11,6 +11,8 @@ import {
   FINANCE_LOG_MAX,
   BANDYPLAY_RUNNING_COST,
   BANDYPLAY_SPONSOR_BONUS_MAX,
+  BANDY_SCHOOL_BASIC_RUNNING_COST,
+  BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE,
 } from '../economyService'
 import type { FinanceEntry, LeaguePositionAverage } from '../economyService'
 import type { Club } from '../../entities/Club'
@@ -929,6 +931,31 @@ describe('calcRoundIncome — communityRoundIncome (per round regardless of home
     expect(home.communityRoundIncome).toBe(-500)
     expect(away.communityMatchIncome).toBe(0)
     expect(away.communityRoundIncome).toBe(-500)
+  })
+
+  it('en aktiv sponsor bär 25 procent av BandyKuls drift utan att göra skolan lönsam', () => {
+    const base = {
+      club: makeClub(), players: [],
+      fanMood: 50, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      communityActivities: {
+        kiosk: 'none' as const, lottery: 'none' as const, bandySchoolBasic: true,
+        bandyplay: false, functionaries: false, julmarknad: false,
+      },
+    }
+    const withoutSponsor = calcRoundIncome({ ...base, sponsors: [], isHomeMatch: true })
+    const withSponsor = calcRoundIncome({ ...base, sponsors: [makeSponsor()], isHomeMatch: true })
+    const withExpiredSponsor = calcRoundIncome({
+      ...base, sponsors: [makeSponsor({ contractRounds: 0 })], isHomeMatch: true,
+    })
+
+    const supportPerCost = BANDY_SCHOOL_BASIC_RUNNING_COST * BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE
+    expect(withSponsor.communityMatchIncome - withoutSponsor.communityMatchIncome).toBe(supportPerCost)
+    expect(withSponsor.communityRoundIncome - withoutSponsor.communityRoundIncome).toBe(supportPerCost)
+    expect(withSponsor.communityMatchIncome).toBeLessThan(0)
+    expect(withSponsor.communityRoundIncome).toBeLessThan(0)
+    expect(withExpiredSponsor.communityMatchIncome).toBe(withoutSponsor.communityMatchIncome)
+    expect(withExpiredSponsor.communityRoundIncome).toBe(withoutSponsor.communityRoundIncome)
   })
 
   it('communityRoundIncome is non-zero on away match (per-round activities apply regardless)', () => {

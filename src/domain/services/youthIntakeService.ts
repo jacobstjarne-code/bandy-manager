@@ -1,4 +1,5 @@
 import type { Club } from '../entities/Club'
+import type { CommunityActivities } from '../entities/Community'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats } from '../entities/Player'
 import type { YouthIntakeRecord } from '../entities/SaveGame'
 import { PlayerPosition, PlayerArchetype } from '../enums'
@@ -24,6 +25,8 @@ export interface YouthIntakeInput {
   season: number
   date: string
   seed?: number
+  /** Bara den hanterade klubbens aktiviteter; AI-klubbar saknar denna state. */
+  communityActivities?: CommunityActivities
 }
 
 export interface YouthIntakeResult {
@@ -31,6 +34,10 @@ export interface YouthIntakeResult {
   newPlayers: Player[]
   scoutTexts: Record<string, string>
 }
+
+/** BandyKul matar samma säsongsintag som youthRecruitment, men svagare än
+ * den avancerade bandyskolans permanenta +2. Ingen separat akademipipeline. */
+export const BANDY_SCHOOL_BASIC_YOUTH_RECRUITMENT_BONUS = 1
 
 const IDEAL_DISTRIBUTION: Record<PlayerPosition, number> = {
   [PlayerPosition.Goalkeeper]: 2,
@@ -296,8 +303,14 @@ function generateScoutText(tier: PotentialTier, archetype: PlayerArchetype): str
 }
 
 export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult {
-  const { club, existingPlayers, season, date, seed } = input
+  const { club, existingPlayers, season, date, seed, communityActivities } = input
   const rng = makeRng(seed ?? (season * 1000 + club.id.length * 7))
+  const effectiveYouthRecruitment = clamp(
+    club.youthRecruitment
+      + (communityActivities?.bandySchoolBasic ? BANDY_SCHOOL_BASIC_YOUTH_RECRUITMENT_BONUS : 0),
+    0,
+    100,
+  )
 
   // Spelare under 20 med academyClubId === club.id är kvar i akademin.
   // Räkna dem — begränsa nyintaget om akademin redan är full.
@@ -312,10 +325,10 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   // Determine base intake count
   let base: number
   let max: number
-  if (club.youthRecruitment >= 70) {
+  if (effectiveYouthRecruitment >= 70) {
     base = 4
     max = 5
-  } else if (club.youthRecruitment >= 50) {
+  } else if (effectiveYouthRecruitment >= 50) {
     base = 3
     max = 4
   } else {
@@ -323,7 +336,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
     max = 3
   }
 
-  const extra = rng.next() < (club.youthRecruitment % 10) / 10 ? 1 : 0
+  const extra = rng.next() < (effectiveYouthRecruitment % 10) / 10 ? 1 : 0
   const count = Math.min(base + extra, max, availableSlots)
 
   const emptyStats: PlayerSeasonStats = {
