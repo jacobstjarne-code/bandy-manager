@@ -60,7 +60,7 @@ import { MatchFlowFrame } from '../../components/match-flow/MatchFlowFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
-import { buildCeremonyOnlyStep, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 
 interface LocationState {
@@ -134,6 +134,9 @@ export function MatchLiveScreen() {
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
+  const recoverableFixture = !fixture && game
+    ? findRecoverableLiveFixture(game.fixtures)
+    : undefined
   const homeLineup = state?.homeLineup
   const awayLineup = state?.awayLineup
   const homeClubName = state?.homeClubName ?? ''
@@ -238,8 +241,18 @@ export function MatchLiveScreen() {
     // A-H6: fixture ÄR redan completed i ceremony-only-läget — det är förväntat,
     // inte ett övergivet/redan-visat läge att navigera bort ifrån.
     if (isCeremonyOnly) return
-    if (!fixture || !game) return
-    const liveFixture = game.fixtures.find(f => f.id === fixture.id)
+    if (!game) return
+    // En vanlig SPA-navigation bär fixture i location.state. En kall PWA-start,
+    // återöppnad flik eller direkt navigation gör inte det. Själva matchen och
+    // laguppställningarna sparades däremot av markMatchStarted, så recovery ska
+    // ägas av den durabla fixturen — inte av webbläsarhistoriken.
+    const liveFixture = fixture
+      ? game.fixtures.find(f => f.id === fixture.id)
+      : recoverableFixture
+    if (!liveFixture) {
+      navigate('/game/match', { replace: true })
+      return
+    }
     if (liveFixture?.status === 'completed') {
       navigate('/game', { replace: true })
       return
@@ -247,7 +260,7 @@ export function MatchLiveScreen() {
     // Övergiven match (started i tidigare session, aldrig slutförd — t.ex. reload mitt i):
     // återställ via assistenten, bryt soft-lock-loopen.
     if (liveFixture?.matchStartedAt && liveFixture.status === 'scheduled') {
-      simulateAbandonedMatch(fixture.id)
+      simulateAbandonedMatch(liveFixture.id)
       // advance()-flytten (Audit-syntes yta 5, 2026-07-07): till skillnad från matchDone-
       // effekten nedan (rad ~333, som redan kör advance(true) innan "TILL GRANSKNING"-
       // knappen ens blir klickbar) satte den här återhämtningsvägen ALDRIG roundSummary
@@ -1277,6 +1290,9 @@ export function MatchLiveScreen() {
   }
 
   if (!fixture || !homeLineup || !awayLineup) {
+    if (recoverableFixture) {
+      return <div role="status" style={{ padding: 20, color: 'var(--text-secondary)' }}>Återställer matchen…</div>
+    }
     return <div style={{ padding: 20, color: 'var(--text-secondary)' }}>Ingen matchdata tillgänglig.</div>
   }
 

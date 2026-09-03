@@ -151,7 +151,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
           className="anslag-text"
           dangerouslySetInnerHTML={{ __html: finalBody }}
         />
-        <div className="anslag-cta" onClick={onDismiss}>Tryck för att fortsätta</div>
+        <button type="button" className="anslag-cta" onClick={onDismiss}>Tryck för att fortsätta</button>
       </div>
     </Overlay>
   )

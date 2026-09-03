@@ -1594,11 +1594,20 @@ a {
 }
 
 .anslag-cta {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  font-family: inherit;
   font-size: 10px;
   letter-spacing: 2.5px;
   color: var(--text-light-secondary);
   text-transform: uppercase;
   text-align: right;
+  cursor: pointer;
   animation: gentle-pulse 3s ease-in-out infinite;
 }
 .anslag-cta::after {

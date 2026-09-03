@@ -4,6 +4,31 @@ import { FixtureStatus, MatchEventType } from '../../domain/enums'
 import type { FeedRow } from '../components/match/commentary/CommentaryFeedStalvallen'
 
 /**
+ * Hittar en live-match som startades i en tidigare sidinstans men aldrig
+ * slutfördes. Router-state är medvetet INTE en indata här: history.state kan
+ * saknas efter kall PWA-start, återöppnad flik eller en direkt navigation,
+ * medan fixture + båda laguppställningarna redan är durabelt sparade.
+ *
+ * Om en korrupt/äldre save mot förmodan innehåller flera kandidater väljer vi
+ * den tidigast startade deterministiskt. En kandidat utan laguppställningar är
+ * inte återställningsbar och får därför inte låtsas vara det.
+ */
+export function findRecoverableLiveFixture(fixtures: readonly Fixture[]): Fixture | undefined {
+  return fixtures
+    .filter(fixture =>
+      fixture.status === FixtureStatus.Scheduled &&
+      fixture.matchStartedAt !== undefined &&
+      fixture.homeLineup !== undefined &&
+      fixture.awayLineup !== undefined
+    )
+    .sort((a, b) =>
+      (a.matchStartedAt ?? Number.MAX_SAFE_INTEGER) - (b.matchStartedAt ?? Number.MAX_SAFE_INTEGER) ||
+      a.matchday - b.matchday ||
+      a.id.localeCompare(b.id)
+    )[0]
+}
+
+/**
  * Determines whether a match event should be aligned to the home side (left)
  * or away side (right) based on the event's clubId.
  *

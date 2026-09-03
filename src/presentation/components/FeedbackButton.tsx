@@ -9,9 +9,10 @@ import { useGameStore } from '../store/gameStore'
  * (testaren klistrar/skickar). Gör speltestdatan precis i stället för "det kändes
  * konstigt nån gång". RC-testchrome, ej spelyta.
  *
- * K-1 (dock-audit 2026-07-02): dold på MatchLive — raden landade ovanpå
- * interaktionspanelernas CTA (z-9999 över både scrim 499 och block-docken 500).
- * Matchen är en fokus-yta; mid-match-rapport nås ändå via paus-läget.
+ * K-1 (dock-audit 2026-07-02, mobil omverifierad 2026-09-03): dold genom
+ * HELA matchflödet. Den fixerade raden landade inte bara ovanpå live-docken
+ * utan också mitt över SPELA MATCHEN och Granskas slut-CTA på 390 px bredd.
+ * Rapportering finns kvar på övriga skärmar.
  */
 
 declare const __GIT_HASH__: string
@@ -22,13 +23,17 @@ function buildHash(): string {
   return typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : 'dev'
 }
 
+export function isFeedbackHiddenOnRoute(pathname: string): boolean {
+  return pathname.startsWith('/game/match') || pathname.startsWith('/game/review')
+}
+
 export function FeedbackButton() {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [copied, setCopied] = useState(false)
   const game = useGameStore(s => s.game)
   const location = useLocation()
-  const hiddenOnMatchLive = location.pathname.startsWith('/game/match/live')
+  const hiddenOnMatchFlow = isFeedbackHiddenOnRoute(location.pathname)
 
   function buildReport(): string {
     const route = location.pathname
@@ -56,7 +61,7 @@ export function FeedbackButton() {
     window.location.href = `mailto:${REPORT_EMAIL}?subject=${subject}&body=${body}`
   }
 
-  if (hiddenOnMatchLive) return null
+  if (hiddenOnMatchFlow) return null
 
   return (
     <>

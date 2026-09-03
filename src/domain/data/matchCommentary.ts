@@ -869,9 +869,18 @@ export const commentary = {
   ],
 }
 
-// Helper to fill in a template
+/** Svensk genitiv: namn som redan slutar på s, x eller z får inget extra s. */
+export function swedishGenitive(value: string): string {
+  const trimmed = value.trimEnd()
+  return /[sxz]$/i.test(trimmed) ? value : `${value}s`
+}
+
+// Helper to fill in a template. Genitiv-token (`{name}s`) behandlas först så
+// Söderfors blir Söderfors, medan Målilla blir Målillas.
 export function fillTemplate(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
+  return template
+    .replace(/\{(\w+)\}s\b/g, (_, key) => vars[key] === undefined ? `{${key}}s` : swedishGenitive(vars[key]))
+    .replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
 }
 
 // Pick a random item from an array deterministically, avoiding recent repeats per pool.
