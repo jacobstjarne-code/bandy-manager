@@ -34,6 +34,8 @@ import type { GameEvent, GameEventType, DecisionTier, DecisionMode } from '../en
  *
  * MÅSTE-MEDLEMSKAPET ÄR STÄNGT (Jacobs dom i domen, ordagrant:
  * "Medlemskap (Jacobs dom): kontraktsdeadline och licenskrav/handlingsplan").
+ * Utökad 2026-09-02 (DOM_BURNOUT_TAK, Jacobs MUST-TIER-BESLUT) med en tredje
+ * medlem, burnoutCeiling — samma logik: ett beslut som INTE går att skjuta.
  * Utöka ALDRIG listan på känsla — en ny måste-medlem är Jacobs beslut, inte
  * en klassificeringsfråga.
  *
@@ -48,6 +50,11 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   // ── MÅSTE (stängd lista, Jacobs dom) ────────────────────────────────────
   contractRequest: 'must',
   licenseHandlingsplan: 'must',
+  // DOM_BURNOUT_TAK_2026-09-02, MUST-TIER-BESLUT (Jacob 2026-09-02): tredje
+  // måste-medlemmen. Domen slår fast att burnoutCeiling är "ett beslut som
+  // INTE går att skjuta" — must-tier är koden som matchar den domen, inte
+  // en känsla-klassificering. Ersätter den tidigare 'month'-flaggningen.
+  burnoutCeiling: 'must',
 
   // ── DENNA MÅNAD ─────────────────────────────────────────────────────────
   // Sponsor
@@ -99,15 +106,6 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   // personlig, men det ENDA stället bågens andra halva kan besvaras — som
   // bakgrund hade den aldrig nått spelaren. Se rapporten.
   burnoutRelief: 'month',
-  // DOM_BURNOUT_TAK_2026-09-02 (A): domen kallar detta "samma icke-deferbara
-  // mekanik som andra måste-kort" — men måste-medlemskapet är EN STÄNGD LISTA
-  // (Jacobs HIGH 11-dom, se rubriken ovan: "kontraktsdeadline och licenskrav/
-  // handlingsplan", "Utöka ALDRIG listan på känsla"). Den nya domen namnger
-  // inte decisionTierService.ts eller en tredje måste-medlem explicit — bara
-  // 'month' till dess Jacob uttryckligen klassificerar den. FLAGGAT, inte
-  // kringgånget (samma mönster som communityActivityRenewal nedan följde för
-  // sitt eget måste-spörsmål). Se contentContract.ts:s burnoutCeiling-rad.
-  burnoutCeiling: 'month',
 
   // ── BAKGRUND ────────────────────────────────────────────────────────────
   // Press/media

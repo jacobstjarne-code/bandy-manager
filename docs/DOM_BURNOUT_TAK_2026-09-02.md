@@ -17,6 +17,8 @@ När burnout legat på MAX (zon 'hog' vid taket) i N omgångar fyrar ett beslut 
 
 Det är exakt framgångskurvans form: bägge sidor svider, valet är ditt.
 
+**MUST-TIER-BESLUT (Jacob 2026-09-02):** `burnoutCeiling` läggs på MUST-tier (icke-deferbart), inte `'month'` (skjutbar kadens) som defaulten var på tre ställen. Skäl: domen slår redan fast att det är "ett beslut som INTE går att skjuta" — must-tier är bara koden som matchar domen. Ett skjutbart tak-val är inte längre ett tvingande val, det är en påminnelse. → Code: byt de tre `'month'`-flaggorna till must-tier.
+
 ### C — återhämtningsvägen (med verkligt pris, och den måste FAKTISKT släppa)
 "Kliv tillbaka" öppnar en väg ner från 100 som kostar över tid: påtvingad lätt träning (mekaniken finns — `burnoutTrainingSlowdownUntilRound`), sämre resultat, tålamodskostnad, och — B-varianten infälld som pris — assistenten tar några omgångar (du tappar kontroll, laget driver). **KRITISKT: mätaren ska faktiskt SLÄPPA på den här vägen.** GPT bevisade att den inte gör det idag (100→97 på elva omgångar). C är inte bara "lägg till en väg" — det är att göra återhämtningen verklig OCH villkora den på uppoffringen. Utan att den släpper är valet meningslöst.
 

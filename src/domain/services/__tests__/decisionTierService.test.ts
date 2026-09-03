@@ -28,8 +28,10 @@ import {
 
 const EXPECTED_TIER: Record<GameEventType, DecisionTier> = {
   // MÅSTE — stängd lista (Jacobs dom): kontraktsdeadline + licenskrav.
+  // Utökad 2026-09-02 (DOM_BURNOUT_TAK, MUST-TIER-BESLUT) med burnoutCeiling.
   contractRequest: 'must',
   licenseHandlingsplan: 'must',
+  burnoutCeiling: 'must',
 
   // MÅNAD
   sponsorOffer: 'month',
@@ -64,9 +66,6 @@ const EXPECTED_TIER: Record<GameEventType, DecisionTier> = {
   // domen är INTE byggd (måste-listan är stängd, tier saknar per-instans-
   // åsidosättande) — se decisionTierService.ts.
   communityActivityRenewal: 'month',
-  // DOM_BURNOUT_TAK_2026-09-02: medvetet month tills den stängda måste-listan
-  // uttryckligen utökas; själva valet är fortfarande en brytpunkt nedan.
-  burnoutCeiling: 'month',
 
   // BAKGRUND
   pressConference: 'background',
@@ -187,9 +186,9 @@ describe('getDecisionTier — täcker varje GameEventType', () => {
     }
   })
 
-  it('måste-nivån innehåller EXAKT kontraktsdeadline och licenskrav (Jacobs dom, stängd lista)', () => {
+  it('måste-nivån innehåller EXAKT kontraktsdeadline, licenskrav och burnoutCeiling (Jacobs dom, stängd lista)', () => {
     const musts = GAME_EVENT_TYPE_IDS.filter(id => getDecisionTier(id as GameEventType) === 'must')
-    expect([...musts].sort()).toEqual(['contractRequest', 'licenseHandlingsplan'])
+    expect([...musts].sort()).toEqual(['burnoutCeiling', 'contractRequest', 'licenseHandlingsplan'])
   })
 
   it('isMustDecision läser typen, inte prioriteten', () => {
