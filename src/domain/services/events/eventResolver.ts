@@ -4,7 +4,7 @@ import { STALEABLE_ACTIVITY_KEYS } from '../communityRenewalService'
 import type { GameEvent } from '../../entities/GameEvent'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
-import { describeRippleChain, transferRejectMoraleWeight } from '../rippleEffectService'
+import { transferRejectMoraleWeight } from '../rippleEffectService'
 import { applyFinanceChange, appendFinanceLog } from '../economyService'
 import { startFacilityBuild } from '../facilityService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
@@ -400,18 +400,6 @@ export function resolveEvent(
   const { effect } = choice
   let updatedGame = game
 
-  // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): before/after-snapshot kring
-  // transferbudets tre utfall. Satt inuti respektive case (spelarnamnet
-  // behövs för subjectName), konsumerat efter switchen — se
-  // pilotTransferBidRippleChain-kommentaren i SaveGame.ts för varför den
-  // INTE är pendingRippleChains (renderas ingenstans ännu, medvetet).
-  let pilotTransferBidTrigger: 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered' | null = null
-  let pilotTransferBidPlayerName: string | undefined
-  // ÖVERLÄMNING 2 steg 3-underlag: bara avslaget bär en relatedPlayerId in i
-  // kedjan — det är utfallet vars enda konsekvens (spelarens morale) annars
-  // är osynlig. Accept/kräv mer behöver den inte (Kassan/tomt redan rätt).
-  let pilotTransferBidRelatedPlayerId: string | undefined
-
   switch (effect.type) {
     case 'acceptTransfer': {
       // 2.5-vakt-svepet (2026-08-17): bidId saknat → .find() ger undefined →
@@ -420,9 +408,6 @@ export function resolveEvent(
       const bid = (game.transferBids ?? []).find(b => b.id === effect.bidId)
       if (bid) {
         updatedGame = executeTransfer(game, bid)
-        const player = game.players.find(p => p.id === bid.playerId)
-        pilotTransferBidTrigger = 'transfer_bid_accepted'
-        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
       }
       break
     }
@@ -454,12 +439,6 @@ export function resolveEvent(
             )
           : updatedGame.players,
       }
-      {
-        const player = effect.targetPlayerId ? game.players.find(p => p.id === effect.targetPlayerId) : undefined
-        pilotTransferBidTrigger = 'transfer_bid_rejected'
-        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
-        pilotTransferBidRelatedPlayerId = effect.targetPlayerId
-      }
       break
     }
     case 'counterOffer': {
@@ -490,11 +469,6 @@ export function resolveEvent(
               : b,
           ),
         }
-      }
-      {
-        const player = currentBid ? game.players.find(p => p.id === currentBid.playerId) : undefined
-        pilotTransferBidTrigger = 'transfer_bid_countered'
-        pilotTransferBidPlayerName = player ? `${player.firstName} ${player.lastName}` : undefined
       }
       break
     }
@@ -2624,22 +2598,9 @@ export function resolveEvent(
     }
   }
 
-  // ÖVERLÄMNING 2 steg 1-pilot: se kommentaren vid deklarationen ovan.
-  if (pilotTransferBidTrigger) {
-    updatedGame = {
-      ...updatedGame,
-      pilotTransferBidRippleChain: describeRippleChain(
-        game, updatedGame, pilotTransferBidTrigger, pilotTransferBidPlayerName,
-        game.currentMatchday, game.currentSeason, pilotTransferBidRelatedPlayerId,
-      ),
-    }
-  }
-
   // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 — orsak/verkan som
-  // FÖRSTA rena liggarkonsumenten. Generellt anropsställe (alla spelar-
-  // fattade beslut denna funktion resolvar), skiljt från pilotTransferBid-
-  // blocket ovan (smalare, transferbudsspecifikt, orört — se
-  // orsakVerkanService.ts:s filhuvud). `matchday` = det GLOBALA
+  // FÖRSTA rena liggarkonsumenten. Generellt anropsställe för alla spelar-
+  // fattade beslut denna funktion resolvar. `matchday` = det GLOBALA
   // matchday-fältet (schemats regel: "ALDRIG rond-identitet"), inte
   // getCurrentLeagueRound (som narrativeBeatLog-skrivningen ovan medvetet
   // använder för ETT annat fält med andra semantik). Skriver ingen post om

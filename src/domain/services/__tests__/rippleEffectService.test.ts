@@ -349,24 +349,24 @@ describe('textvakt — reachable trigger-utfall har alltid en textrad (2026-08-1
     const calmDelta = Math.round(5 * transferRejectMoraleWeight(calmPlayer, calmBid, 2025))
     const before1 = makeGame({ players: [calmPlayer] })
     const after1 = { ...before1, players: [{ ...calmPlayer, morale: Math.max(0, calmPlayer.morale - calmDelta) }] }
-    assertAllStepsHaveText(describeRippleChain(before1, after1, 'transfer_bid_rejected', 'Test', 1, 2025, 'p1'))
+    assertAllStepsHaveText(describeRippleChain(before1, after1, 'decision', 'Test', 1, 2025, 'p1'))
 
     const hotPlayer = makePlayer({ id: 'p1', discipline: 5, marketValue: 300000, contractUntilSeason: 2026, morale: 70 })
     const hotBid = { id: 'b1', playerId: 'p1', buyingClubId: 'c2', sellingClubId: 'c1', offerAmount: 100000, offeredSalary: 20000, contractYears: 3, direction: 'incoming', status: 'pending', createdRound: 1, expiresRound: 3 } as TransferBid
     const hotDelta = Math.round(5 * transferRejectMoraleWeight(hotPlayer, hotBid, 2025))
     const before2 = makeGame({ players: [hotPlayer] })
     const after2 = { ...before2, players: [{ ...hotPlayer, morale: Math.max(0, hotPlayer.morale - hotDelta) }] }
-    assertAllStepsHaveText(describeRippleChain(before2, after2, 'transfer_bid_rejected', 'Test', 1, 2025, 'p1'))
+    assertAllStepsHaveText(describeRippleChain(before2, after2, 'decision', 'Test', 1, 2025, 'p1'))
   })
 
   it('transfer_bid_accepted: liten och stor affär', () => {
     const seller = makeClub({ id: 'c1', finances: 500000 })
     const before1 = makeGame({ clubs: [seller, makeClub({ id: 'c2', name: 'Köpare' })] })
     const after1 = { ...before1, clubs: [{ ...seller, finances: seller.finances + 20000 }, before1.clubs[1]] }
-    assertAllStepsHaveText(describeRippleChain(before1, after1, 'transfer_bid_accepted', 'Test', 1, 2025))
+    assertAllStepsHaveText(describeRippleChain(before1, after1, 'decision', 'Test', 1, 2025))
 
     const before2 = makeGame({ clubs: [seller, makeClub({ id: 'c2', name: 'Köpare' })] })
     const after2 = { ...before2, clubs: [{ ...seller, finances: seller.finances + 900000 }, before2.clubs[1]] }
-    assertAllStepsHaveText(describeRippleChain(before2, after2, 'transfer_bid_accepted', 'Test', 1, 2025))
+    assertAllStepsHaveText(describeRippleChain(before2, after2, 'decision', 'Test', 1, 2025))
   })
 })

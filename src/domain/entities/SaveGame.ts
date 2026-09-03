@@ -49,18 +49,10 @@ import type { DoctorIdentity } from '../data/injuryDoctorText'
 export interface RippleChainStep { label: string; dir: 'up' | 'down'; scope: 'club' | 'player'; magnitude: 'knappt' | 'tydligt' | 'kraftigt' }
 export interface RippleChain {
   trigger: 'star_injured' | 'big_derby_win' | 'mecenat_left'
-    // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): tre separata triggers, inte en
-    // — accept/avslag/kräv mer är olika beslut med olika förväntad följd,
-    // samma princip som star_injured/big_derby_win/mecenat_left redan följer
-    // (en trigger per skild orsak, inte en generisk "transfer_bid_resolved").
-    | 'transfer_bid_accepted' | 'transfer_bid_rejected' | 'transfer_bid_countered'
     // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 (orsakVerkanService.ts):
-    // EN generisk trigger, medvetet annorlunda situation än raden ovan — den
-    // riktiga identiteten (event.type) bärs som EventLedgerEntry.semanticKey,
-    // inte som denna RippleChains trigger. Det returnerade RippleChain-objektet
-    // är transient (bara .steps läses, aldrig lagrat/routat på trigger-namnet),
-    // så ett enda värde för "vilket beslut som helst" duplicerar inte den
-    // narrativa routingen de tre transferbuds-triggarna ovan gör.
+    // den riktiga beslutsidentiteten bärs som EventLedgerEntry.semanticKey.
+    // Det returnerade RippleChain-objektet är transient (bara .steps läses,
+    // aldrig lagrat/routat på trigger-namnet).
     | 'decision'
   subjectName?: string
   round: number
@@ -736,12 +728,6 @@ export interface SaveGame {
   // tidigare bort alla kedjor utom en per omgång; nu sparas alla, rangordnade
   // (index 0 = mest signifikant, se chainSignificance i roundProcessor.ts).
   pendingRippleChains?: RippleChain[]
-
-  // ÖVERLÄMNING 2 steg 1-pilot (2026-08-12): transferbudets ripple, satt av
-  // eventResolver.ts kring acceptTransfer/rejectTransfer/counterOffer. EGET
-  // fält (inte pendingRippleChains) — portalBeats.ts läser bara det fältet,
-  // så detta renderas ingenstans ännu. Rapport, inte leverans: se commit.
-  pilotTransferBidRippleChain?: RippleChain
 
   // Sprint 11 — Truppledarskap (NARR-005)
   leadershipActions?: Array<{

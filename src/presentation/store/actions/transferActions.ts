@@ -237,8 +237,8 @@ export function transferActions(get: Get, set: Set) {
      * bud med en egen, parallell reducer (kärnlogiken identisk med
      * eventResolver.ts:s acceptTransfer/rejectTransfer, men handrullad här).
      * Konsekvensen: Marknadsvägen saknade "kräv mer" helt och fick aldrig
-     * ripple-kvittot (pilotTransferBidRippleChain) som resolveEvent-vägen
-     * har sedan ÖVERLÄMNING 2 steg 1. Två skal, samma kärna, glidna isär.
+     * samma orsak/verkan-fångst som resolveEvent-vägen. Två skal, samma
+     * kärna, glidna isär.
      *
      * Nu: samma bidReceivedEvent(bid, game) som HÄNDELSE-kortet visar
      * syntetiseras här, injiceras temporärt i pendingEvents, och resolveEvent

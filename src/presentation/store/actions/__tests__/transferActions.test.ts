@@ -1,7 +1,7 @@
 // ÖVERLÄMNING 2 (2026-08-12): verifierar sammanslagningen — respondToIncomingBid
 // (Marknad) ska nu erbjuda samma tre utfall som resolveEvent (HÄNDELSE-kortet)
-// och sätta samma pilotTransferBidRippleChain. Se transferBidRipplePilot.test.ts
-// för den domän-nivå-verifieringen av själva kedjan (steg 1-3).
+// och skriva samma kanoniska orsak/verkan-post. Domännivåns tre utfall
+// verifieras i orsakVerkanService.test.ts.
 import { describe, it, expect } from 'vitest'
 import { transferActions } from '../transferActions'
 import { bidReceivedEvent } from '../../../../domain/services/events/eventFactories'
@@ -96,7 +96,7 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(event.choices.map(c => c.id).sort()).toEqual(['accept', 'counter', 'reject'])
   })
 
-  it('accept: sätter pilotTransferBidRippleChain, samma som resolveEvent-vägen', () => {
+  it('accept: skriver samma kanoniska Kassan-konsekvens som resolveEvent-vägen', () => {
     const bid = makeBid()
     const store = makeStore(makeGame({ transferBids: [bid] }))
     const actions = transferActions(store.get, store.set)
@@ -105,14 +105,16 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(result.success).toBe(true)
 
     const after = store.getGame()
-    expect(after?.pilotTransferBidRippleChain).toEqual({
-      trigger: 'transfer_bid_accepted', subjectName: 'Anders Berg', round: 14, season: 2025,
-      steps: [{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }],
+    expect(after?.eventLedger?.find(entry => entry.semanticKey === 'transferBidReceived')).toMatchObject({
+      type: 'decision',
+      subject: { kind: 'player', id: 'berg' },
+      consequences: [{ field: 'finances', dir: 'up', magnitude: 'kraftigt' }],
+      madeByPlayer: true,
     })
     expect(after?.players.find(p => p.id === 'berg')?.clubId).toBe('c2')
   })
 
-  it('avslag: sätter Moralen-steget (scope player)', () => {
+  it('avslag: skriver Moralen-konsekvensen med spelarankare', () => {
     const bid = makeBid()
     const store = makeStore(makeGame({ transferBids: [bid] }))
     const actions = transferActions(store.get, store.set)
@@ -121,10 +123,14 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(result.success).toBe(true)
 
     const after = store.getGame()
-    expect(after?.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Moralen', dir: 'down', scope: 'player', magnitude: 'knappt' }])
+    expect(after?.eventLedger?.find(entry => entry.semanticKey === 'transferBidReceived')).toMatchObject({
+      subject: { kind: 'player', id: 'berg' },
+      consequences: [{ field: 'playerMorale', dir: 'down', magnitude: 'knappt' }],
+      madeByPlayer: true,
+    })
   })
 
-  it('kräv mer: NU tillgängligt från Marknad-vägen (tidigare bara resolveEvent) — kedjan tom', () => {
+  it('kräv mer: tillgängligt från Marknad-vägen men fabricerar ingen konsekvenspost', () => {
     const bid = makeBid()
     const store = makeStore(makeGame({ transferBids: [bid] }))
     const actions = transferActions(store.get, store.set)
@@ -133,7 +139,7 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
     expect(result.success).toBe(true)
 
     const after = store.getGame()
-    expect(after?.pilotTransferBidRippleChain?.steps).toEqual([])
+    expect((after?.eventLedger ?? []).some(entry => entry.semanticKey === 'transferBidReceived')).toBe(false)
     expect(after?.transferBids?.find(b => b.id === 'bid1')?.offerAmount).toBeGreaterThan(250000)
   })
 

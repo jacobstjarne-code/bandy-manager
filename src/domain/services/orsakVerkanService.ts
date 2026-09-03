@@ -11,11 +11,9 @@ import { describeRippleChain } from './rippleEffectService'
  * systemtriggarna, bara ett nytt anropsställe: beslutsresolution
  * (eventResolver.ts har before/after redan där).
  *
- * "Ingen gammalt fält att retirera — den föds ren" (migreringsplanen).
- * pilotTransferBidRippleChain (SaveGame.ts, ÖVERLÄMNING 2 steg 1-pilot)
- * rörs INTE av detta — det är en smalare, transferbuds-specifik pilot som
- * lever kvar oförändrad parallellt, inte en föregångare den här filen
- * ersätter.
+ * Den tidigare transferbudspiloten `pilotTransferBidRippleChain` retirerades
+ * 2026-09-03 efter parity-kontroll: samma before/after-diff och samma tre
+ * utfall täcks här, medan bara liggaren har en levande konsument.
  */
 
 const FIELD_BY_LABEL: Record<string, LedgerConsequence['field']> = {

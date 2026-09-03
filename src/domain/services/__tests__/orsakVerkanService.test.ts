@@ -10,11 +10,9 @@ import type { Club } from '../../entities/Club'
 import { PlayerPosition, PlayerArchetype, TrainingType, TrainingIntensity, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, ClubExpectation, ClubStyle } from '../../enums'
 
 /**
- * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1. Samma bevisade
- * scenario som transferBidRipplePilot.test.ts (accept→Kassan, avslag→
- * Moralen, kräv mer→tom) — här verifieras att SAMMA resolution också
- * skriver (eller medvetet INTE skriver) en EventLedgerEntry, sida vid
- * sida med den orörda pilotTransferBidRippleChain.
+ * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1. Transferbudets tre
+ * bevisade utfall (accept→Kassan, avslag→Moralen, kräv mer→tom) verifieras
+ * direkt mot den kanoniska EventLedgerEntry-vägen.
  */
 
 const defaultTactic = {
@@ -102,7 +100,7 @@ describe('captureDecisionRipple', () => {
     expect(entry?.season).toBe(2025)
     expect(entry?.matchday).toBe(14)
     // subjectPlayerId prioriteras framför subjectClubId när bägge finns (samma
-    // konvention som pilotTransferBidTrigger — spelaren är beslutets kärna).
+    // konvention som transferbeslutet använder — spelaren är beslutets kärna).
     expect(entry?.subject).toEqual({ kind: 'player', id: 'berg' })
     expect(entry?.madeByPlayer).toBe(true)
     expect(entry?.consequences).toEqual([
@@ -221,17 +219,6 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
     expect(after.eventLedger ?? []).toHaveLength(0)
   })
 
-  it('pilotTransferBidRippleChain rörs inte av det nya skrivblocket — bägge lever parallellt', () => {
-    const bid = makeBid()
-    const game = makeGame({ transferBids: [bid] })
-    const event = bidReceivedEvent(bid, game)
-    const gameWithEvent = { ...game, pendingEvents: [event] }
-
-    const after = resolveEvent(gameWithEvent, event.id, 'accept', undefined, true)
-
-    expect(after.pilotTransferBidRippleChain?.steps).toEqual([{ label: 'Kassan', dir: 'up', scope: 'club', magnitude: 'kraftigt' }])
-    expect(after.eventLedger).toHaveLength(2) // Fas 2 (decision-kandidat) + Fas 1 (ripple) — se testet ovan
-  })
 })
 
 function makeChain(overrides: Partial<RippleChain> = {}): RippleChain {
