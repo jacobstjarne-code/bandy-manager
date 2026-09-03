@@ -101,6 +101,13 @@ export function formatRating(rating: number): string {
 
 /** "t.o.m. säsong 2028" — kanonisk text för kontraktets sista säsong. Rå säsongssiffra, inget offset. */
 export function formatContractUntil(contractUntilSeason: number): string {
+  // B1 (Designgranskning fresh-eyes 2026-09-03, blockerare): "t.o.m. säsong
+  // undefined" läckte till spelaren i PlayerCard.tsx + RenewContractModal.tsx
+  // när contractUntilSeason av någon anledning var undefined/NaN vid render
+  // (typen lovar number, men en trasig datakoppling kan ändå skicka in
+  // fel värde) — guard här stänger hela klassen på källan i stället för
+  // patch per anropsställe.
+  if (!Number.isFinite(contractUntilSeason)) return 'kontraktstid saknas'
   return `t.o.m. säsong ${contractUntilSeason}`
 }
 

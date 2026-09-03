@@ -17,7 +17,12 @@ interface RenewContractModalProps {
 }
 
 export function RenewContractModal({ player, currentSeason, minSalary, error, onClose, onConfirm }: RenewContractModalProps) {
-  const [newSalary, setNewSalary] = useState(player.salary)
+  // B3 (Designgranskning fresh-eyes 2026-09-03, blockerare): förvalet var
+  // rått player.salary, som kan hamna UNDER minSalary om den senare stigit
+  // sedan spelaren skrev sitt nuvarande kontrakt — förlängningen började då
+  // som en förslagen sänkning. Max av båda garanterar "aldrig under
+  // nuvarande, aldrig under lägsta accepterade".
+  const [newSalary, setNewSalary] = useState(Math.max(player.salary, minSalary))
   const [years, setYears] = useState(2)
 
   return (
@@ -44,11 +49,16 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
               </p>
             </div>
             <div className="transfers-form-group transfers-form-group--md">
-              <label className="transfers-label">Ny lön (kr/mån)</label>
+              {/* B3 (Designgranskning fresh-eyes 2026-09-03): fältet visade rå
+                  kr medan "Nuvarande"-raden ovan visar tkr/mån (DS §11: löner
+                  alltid tkr/mån) — två enheter i samma kort. newSalary-staten
+                  hålls fortfarande i kr internt (samma enhet som player.salary/
+                  onConfirm förväntar), bara in/ut-konverteringen är i tkr. */}
+              <label className="transfers-label">Ny lön (tkr/mån)</label>
               <input
                 type="number"
-                value={newSalary}
-                onChange={e => setNewSalary(Number(e.target.value))}
+                value={Math.round(newSalary / 1000)}
+                onChange={e => setNewSalary(Number(e.target.value) * 1000)}
                 className="transfers-input"
               />
             </div>

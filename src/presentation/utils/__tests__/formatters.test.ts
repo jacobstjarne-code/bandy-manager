@@ -62,6 +62,13 @@ describe('formatContractUntil', () => {
   it('visar den rå säsongssiffran utan offset (INGET +1 — det var PlayerCard.tsx-buggen)', () => {
     expect(formatContractUntil(2028)).toBe('t.o.m. säsong 2028')
   })
+
+  // B1 (Designgranskning fresh-eyes 2026-09-03, blockerare): "t.o.m. säsong
+  // undefined" läckte till spelaren när contractUntilSeason var undefined/NaN.
+  it('renderar aldrig "undefined" eller "NaN" — guardar mot icke-finita värden', () => {
+    expect(formatContractUntil(undefined as unknown as number)).not.toContain('undefined')
+    expect(formatContractUntil(NaN)).not.toContain('NaN')
+  })
 })
 
 describe('contractSeasonsRemaining', () => {

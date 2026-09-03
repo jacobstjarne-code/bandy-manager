@@ -47,8 +47,13 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
                 className="transfers-input" />
             </div>
             <div className="transfers-form-group">
-              <label className="transfers-label">Erbjuden lön (kr/mån)</label>
-              <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
+              {/* B3 (Designgranskning fresh-eyes 2026-09-03): fältet visade rå
+                  kr, DS §11 säger löner alltid tkr/mån (samma fix som
+                  RenewContractModal.tsx). offeredSalary hålls fortfarande i kr
+                  internt (samma enhet onConfirm förväntar), bara in/ut-
+                  konverteringen är i tkr. */}
+              <label className="transfers-label">Erbjuden lön (tkr/mån)</label>
+              <input type="number" value={Math.round(offeredSalary / 1000)} onChange={e => setOfferedSalary(Number(e.target.value) * 1000)} step={1}
                 className="transfers-input" />
             </div>
             <div className="transfers-form-group transfers-form-group--lg">

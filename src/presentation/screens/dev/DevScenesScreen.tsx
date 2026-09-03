@@ -1121,7 +1121,15 @@ const sponsorMotbudEvent = {
   choices: [
     { id: 'accept', label: `Acceptera (${sponsorMotbudOffer.weeklyIncome} kr/vecka)`, effect: { type: 'acceptSponsor' as const, sponsorData: JSON.stringify(sponsorMotbudOffer) } },
     { id: 'reject', label: 'Avslå', effect: { type: 'noOp' as const } },
-    { id: 'counter', label: '[Opus]', effect: { type: 'noOp' as const } },
+    // B2 (Designgranskning fresh-eyes 2026-09-03): stale '[Opus]'-placeholder
+    // i en dev-scenes-fixture lästes felaktigt som en läckande debug-knapp i
+    // produkt-UI. Verifierat: SponsorCounterModal.tsx (den RIKTIGA motbuds-
+    // ytan, öppnas via choiceId==='counter' i EventCardInline) har fullständig
+    // Opus-text sedan 2026-09-01 (c1588c02, MASTER_OPPET.md
+    // sponsor-motbud-reservation-walkaway), inget '[Opus]' kvar — bara denna
+    // äldre, enklare fixture hade stannat på placeholdern. "Kräv mer" är den
+    // riktiga, låsta knappetiketten, kopierad ordagrant.
+    { id: 'counter', label: 'Kräv mer', effect: { type: 'noOp' as const } },
   ],
 }
 const sponsorMotbudGame = {
@@ -1694,8 +1702,19 @@ const histC = [
   { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
 ]
 const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: 2, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
-const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000 })
-const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000 })
+// design-d3 (Designgranskning fresh-eyes 2026-09-03): boardGameB/C saknade
+// seasonSummaries — resolveBoardMeetingState (boardMeetingStateResolver.ts:87)
+// tvingar state='A' när seasonSummaries.length<=1, OAVSETT boardObjectiveHistory.
+// Fixture-artefakt bekräftad: båda scenerna visade samma A-titel ("Vi vet
+// rutinen nu.") trots att de hette "B (bra)"/"C (dålig)". Rättat med två
+// säsonger historik (kravet) + explicit boardPatience som faktiskt separerar
+// zonerna (default 70 hade gett BÅDA 'stabilt'→B, oavsett objektivhistorik).
+const boardSeasonSummaries = [
+  makeSeasonSummary({ finalPosition: 5, playoffResult: null }),
+  makeSeasonSummary({ finalPosition: 4, playoffResult: 'quarterfinal' }),
+]
+const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000, seasonSummaries: boardSeasonSummaries, boardPatience: 70 })
+const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000, seasonSummaries: boardSeasonSummaries, boardPatience: 25 })
 
 export function DevScenesScreen() {
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
