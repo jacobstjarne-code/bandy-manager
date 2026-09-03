@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import type { SaveGame } from '../../entities/SaveGame'
 import { checkReputationMilestones } from '../reputationMilestoneService'
+import { ClubExpectation } from '../../enums'
 
-function makeGame(position: number, communityStanding: number): SaveGame {
+// sluttest-be-blind-repmilestone (2026-09-03): checkReputationMilestones
+// läser nu boardExpectation. MidTable (ankare 6) satt här reproducerar de
+// gamla fasta pos<=3/pos>=10-trösklarna ordagrant, så testerna nedan
+// behöver ingen egen ändring.
+function makeGame(position: number, communityStanding: number, expectation: ClubExpectation = ClubExpectation.MidTable): SaveGame {
   return {
     managedClubId: 'managed',
     currentSeason: 2027,
     communityStanding,
-    clubs: [{ id: 'managed', reputation: 50, youthQuality: 50 }],
+    clubs: [{ id: 'managed', reputation: 50, youthQuality: 50, boardExpectation: expectation }],
     standings: [{ clubId: 'managed', position }],
     players: [],
     // Isolera de två ryktemilstolparna från den äldre grannklubbs-systern.
@@ -33,5 +38,10 @@ describe('reputationMilestoneService — communityStanding-ramper', () => {
   it('tabellpositionen är fortfarande den sportsliga grinden', () => {
     expect(checkReputationMilestones(makeGame(4, 90))).toEqual([])
     expect(checkReputationMilestones(makeGame(9, 10))).toEqual([])
+  })
+
+  it('samma plats 3 ger mediauppmärksamhet för Survive men inte för WinLeague — grinden är nu förväntansrelativ', () => {
+    expect(checkReputationMilestones(makeGame(3, 90, ClubExpectation.Survive))[0]?.trigger).toBe('mediaAttention')
+    expect(checkReputationMilestones(makeGame(3, 90, ClubExpectation.WinLeague))).toEqual([])
   })
 })

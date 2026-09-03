@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { getSeasonContext } from '../seasonContextService'
 import type { SaveGame } from '../../entities/SaveGame'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, ClubExpectation } from '../../enums'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -12,7 +12,11 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     currentSeason: 1,
     currentMatchday: 1,
     clubs: [
-      { id: 'managed', name: 'Managed BK', shortName: 'MBK' } as never,
+      // sluttest-be-blind-seasoncontext (2026-09-03): getSeasonContext läser nu
+      // boardExpectation — MidTable satt här (ankare 6) matchar de gamla fasta
+      // trösklarna (9/3) ordagrant, så befintliga tester nedan behöver ingen
+      // egen ändring.
+      { id: 'managed', name: 'Managed BK', shortName: 'MBK', boardExpectation: ClubExpectation.MidTable } as never,
     ],
     players: [],
     fixtures: [],
@@ -103,6 +107,45 @@ describe('getSeasonContext', () => {
       fixtures: makeCompletedLeagueFixtures(10),
       standings: [
         { clubId: 'managed', position: 2, played: 10, won: 8, drawn: 1, lost: 1, goalsFor: 30, goalsAgainst: 10, points: 17 },
+      ],
+    })
+    expect(getSeasonContext(game)).toBe('topRace')
+  })
+
+  it('position 2 for a WinLeague club is midTable, not topRace — gap is negative against a tighter anchor', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      clubs: [{ id: 'managed', name: 'Managed BK', shortName: 'MBK', boardExpectation: ClubExpectation.WinLeague } as never],
+      seasonSummaries: [{ season: 1 } as never],
+      fixtures: makeCompletedLeagueFixtures(10),
+      standings: [
+        { clubId: 'managed', position: 2, played: 10, won: 8, drawn: 1, lost: 1, goalsFor: 30, goalsAgainst: 10, points: 17 },
+      ],
+    })
+    expect(getSeasonContext(game)).toBe('midTable')
+  })
+
+  it('position 11 for a Survive club is midTable, not relegationFight — gap is near zero against a bottom anchor', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      clubs: [{ id: 'managed', name: 'Managed BK', shortName: 'MBK', boardExpectation: ClubExpectation.Survive } as never],
+      seasonSummaries: [{ season: 1 } as never],
+      fixtures: makeCompletedLeagueFixtures(10),
+      standings: [
+        { clubId: 'managed', position: 11, played: 10, won: 2, drawn: 1, lost: 7, goalsFor: 10, goalsAgainst: 25, points: 5 },
+      ],
+    })
+    expect(getSeasonContext(game)).toBe('midTable')
+  })
+
+  it('position 9 for a Survive club is topRace, not relegationFight — three steps better than an ankare-12 anchor reads as over-performing, not under', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      clubs: [{ id: 'managed', name: 'Managed BK', shortName: 'MBK', boardExpectation: ClubExpectation.Survive } as never],
+      seasonSummaries: [{ season: 1 } as never],
+      fixtures: makeCompletedLeagueFixtures(10),
+      standings: [
+        { clubId: 'managed', position: 9, played: 10, won: 2, drawn: 1, lost: 7, goalsFor: 10, goalsAgainst: 25, points: 5 },
       ],
     })
     expect(getSeasonContext(game)).toBe('topRace')

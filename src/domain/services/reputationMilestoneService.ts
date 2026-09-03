@@ -1,6 +1,7 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
 import { getCsNeighborContactAmount } from './communityStandingScaling'
+import { BOARD_EXPECTATION_ANCHOR_POSITION } from './boardService'
 
 export type ReputationTrigger =
   | 'academyNoticed'
@@ -25,6 +26,14 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
   const cs = game.communityStanding ?? 50
   const pos = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
   const season = game.currentSeason
+  // sluttest-be-blind-repmilestone (DOM 2026-09-03, Jacob): "en milstolpe
+  // väger olika beroende på vad som förväntades." Bara de två generiska
+  // ("historia värd att berätta", "ryktet bleknar") — ingen refererar en
+  // bokstavlig tabellfakta som skulle bli osann vid en annan förväntan,
+  // till skillnad från mediaService.ts:s "om guldet"/"nedflyttningshotet"
+  // som INTE rördes (kräver ny Opus-text för att bli förväntanssäkra).
+  const anchor = managedClub ? BOARD_EXPECTATION_ANCHOR_POSITION[managedClub.boardExpectation] : 6
+  const gap = anchor - pos
   const alreadySeen = new Set(game.resolvedEventIds ?? [])
 
   // P19-landslagstränaren (reputation > 65 + akademi > 60)
@@ -44,7 +53,7 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
 
   // Mediaintresse. Samma ramp som grannklubbsmilstolpen: cs 56–90 ger
   // gradvis +1→+3 rykte i stället för den gamla klippan cs 60/61 → 0/+3.
-  if (pos <= 3 && cs > 55) {
+  if (gap >= 3 && cs > 55) {
     const eid = `rep_media_${season}`
     if (!alreadySeen.has(eid)) {
       milestones.push({
@@ -98,7 +107,7 @@ export function checkReputationMilestones(game: SaveGame): ReputationMilestone[]
 
   // Ryktet sjunker. Spegel av samma befintliga ramp runt mittpunkten 50:
   // cs 44–10 ger gradvis −1→−3 i stället för klippan cs 40/39 → 0/−2.
-  if (pos >= 10 && cs < 45) {
+  if (gap <= -4 && cs < 45) {
     const eid = `rep_warning_${season}`
     if (!alreadySeen.has(eid)) {
       milestones.push({

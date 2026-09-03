@@ -1,5 +1,6 @@
 import type { SaveGame, TrainerArc, ArcPhase, ArcTransition } from '../entities/SaveGame'
 import { deriveUtfall } from './matchTypeAxes'
+import { BOARD_EXPECTATION_ANCHOR_POSITION } from './boardService'
 
 // ── Default arc for new game ────────────────────────────────────────────────
 
@@ -34,11 +35,32 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
   const arc: TrainerArc = { ...(game.trainerArc ?? createTrainerArc()) }
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   const pos = standing?.position ?? 8
-  const totalTeams = game.clubs.length
   const md = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((m, f) => Math.max(m, f.matchday), 0)
   const season = game.currentSeason
+  // sluttest-be-blind-trainerarc (DOM 2026-09-03, Jacob, "den viktigaste av
+  // tio"): fasta placeringströsklar ersatta med avstånd från förväntans
+  // ankare (samma BOARD_EXPECTATION_ANCHOR_POSITION som boardService.ts
+  // äger, aldrig en egen kopia). gap positivt = bättre än ankaret.
+  // Svit-triggers (consecutiveWins/Losses) rörda inte, per domen.
+  //
+  // Tröskelvärdena nedan (gap>=3/-4/2/-5/4/2/0/2) är de GAMLA absoluta
+  // trösklarna (pos<=3/>=10/<=4 osv) omräknade till gap vid MidTable-ankaret
+  // (6) — samma känsla som förut för en MidTable-klubb, nu generaliserad.
+  // Domens två illustrativa exempel ("Survive-sexa=triumf",
+  // "WinLeague-trea=ifrågasatt") är kvalitativa, inte kalibreringsdata: de
+  // har olika gap-magnitud (+6 resp. -2) och är inte tänkta att träffa
+  // SAMMA tröskel. Verifierat: Survive-sexa (gap+6) ger honeymoon här.
+  // WinLeague-trea (gap-2) träffar INTE questioned-tröskeln (-4) från
+  // newcomer-fasen — landar i grind, skilt från en MidTable-klubb på samma
+  // placering (som blir honeymoon, gap+3) men inte lika hårt dömd som
+  // domens prosa antyder. Om Jacob vill att WinLeague-trea ska ge
+  // 'questioned' redan efter 5 matcher krävs en tightare tröskel — egen
+  // kalibreringsfråga, inte löst av denna omskrivning.
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const anchor = managedClub ? BOARD_EXPECTATION_ANCHOR_POSITION[managedClub.boardExpectation] : 6
+  const gap = anchor - pos
 
   // Update win/loss streaks from last match
   const lastFixtures = game.fixtures
@@ -64,8 +86,8 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
   switch (arc.current) {
     case 'newcomer':
       if (md >= 5) {
-        if (pos <= 3) transition(arc, 'honeymoon', md, season, 'Topp 3 efter 5 matcher')
-        else if (pos >= 10) transition(arc, 'questioned', md, season, 'Botten efter 5 matcher')
+        if (gap >= 3) transition(arc, 'honeymoon', md, season, 'Tydligt över förväntan efter 5 matcher')
+        else if (gap <= -4) transition(arc, 'questioned', md, season, 'Tydligt under förväntan efter 5 matcher')
         else transition(arc, 'grind', md, season, 'Stabil start')
       }
       break
@@ -74,7 +96,7 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
       if (arc.consecutiveLosses >= 3) {
         transition(arc, 'questioned', md, season, `${arc.consecutiveLosses} raka förluster`)
       } else if (md >= 12) {
-        if (pos <= 4) transition(arc, 'established', md, season, 'Håller positionen')
+        if (gap >= 2) transition(arc, 'established', md, season, 'Håller sig över förväntan')
         else transition(arc, 'grind', md, season, 'Honeymoon över')
       }
       break
@@ -82,14 +104,14 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
     case 'grind':
       if (arc.consecutiveLosses >= 4) {
         transition(arc, 'crisis', md, season, `${arc.consecutiveLosses} raka förluster`)
-      } else if (arc.consecutiveLosses >= 3 || pos >= totalTeams - 1) {
+      } else if (arc.consecutiveLosses >= 3 || gap <= -5) {
         transition(arc, 'questioned', md, season, 'Dåliga resultat')
       } else if (arc.consecutiveWins >= 5) {
         transition(arc, 'honeymoon', md, season, `${arc.consecutiveWins} raka segrar`)
-      } else if (pos <= 2 && md >= 15) {
-        transition(arc, 'established', md, season, 'Toppkandidat')
-      } else if (pos <= 4 && md >= 12) {
-        transition(arc, 'established', md, season, 'Stabil topposition')
+      } else if (gap >= 4 && md >= 15) {
+        transition(arc, 'established', md, season, 'Klart över förväntan')
+      } else if (gap >= 2 && md >= 12) {
+        transition(arc, 'established', md, season, 'Stabilt över förväntan')
       } else if (md >= 18) {
         const recentFixtures = game.fixtures
           .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout &&
@@ -109,8 +131,8 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
         arc.boardWarningGiven = true
       } else if (arc.consecutiveWins >= 3) {
         transition(arc, 'redemption', md, season, `${arc.consecutiveWins} raka segrar`)
-      } else if (pos <= Math.ceil(totalTeams / 2) && md >= 18) {
-        transition(arc, 'grind', md, season, 'Stabiliserat')
+      } else if (gap >= 0 && md >= 18) {
+        transition(arc, 'grind', md, season, 'Stabiliserat, tillbaka på förväntad nivå')
       }
       break
 
@@ -122,7 +144,7 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
       break
 
     case 'redemption':
-      if (arc.consecutiveWins >= 4 || pos <= 4) {
+      if (arc.consecutiveWins >= 4 || gap >= 2) {
         transition(arc, 'established', md, season, 'Genomfört vändningen')
       } else if (arc.consecutiveLosses >= 3) {
         transition(arc, 'crisis', md, season, 'Vändningen höll inte')

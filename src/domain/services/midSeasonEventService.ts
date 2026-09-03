@@ -1,5 +1,20 @@
 import type { SaveGame, InboxItem, StandingRow } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
+import { BOARD_EXPECTATION_ANCHOR_POSITION } from './boardService'
+
+// sluttest-be-blind-midseason (DOM 2026-09-03, Jacob): "mittsäsongens
+// händelser berättar om tränarens ställning och ska läsa förväntan
+// (över/under)". Gäller bara de VÄRDERANDE triggarna (halvtidsdomen,
+// styrelseoro, fanfrustration) — samma gap-mönster som trainerArcService.ts,
+// samma delade BOARD_EXPECTATION_ANCHOR_POSITION. De rent FAKTISKA
+// tabelltriggarna (topp3-press, seriefeber, slutspelsjakt, titelkamp)
+// rörda inte: "laget är objektivt 2:a" är sant oavsett vad som förväntades,
+// bara omdömet om det är gott/dåligt hör hemma vid förväntan.
+function expectationGap(game: SaveGame, standing: StandingRow | undefined): number {
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const anchor = managedClub ? BOARD_EXPECTATION_ANCHOR_POSITION[managedClub.boardExpectation] : 6
+  return anchor - (standing?.position ?? anchor)
+}
 
 interface MidSeasonTrigger {
   matchday: number
@@ -26,11 +41,12 @@ const TRIGGERS: MidSeasonTrigger[] = [
       const topScorerStr = topScorer && topScorer.seasonStats.goals > 0
         ? `\n\nSkyttekung hittills: ${topScorer.firstName} ${topScorer.lastName} med ${topScorer.seasonStats.goals} mål.`
         : ''
-      const assessment = pos <= 3
+      const gap = expectationGap(g, s)
+      const assessment = gap >= 3
         ? 'Bättre start kan man knappt ha. Laget är med i toppen och hålls ihop av bra lagkänsla och resultat.'
-        : pos <= 6
+        : gap >= 0
         ? 'En godkänd inledning med marginaler åt båda håll. Andra halvan av serien avgör om det blir ett bra år.'
-        : pos <= 9
+        : gap >= -3
         ? 'Halva serien klar och laget har inte riktigt hittat sin form ännu. Andra halvan måste ge mer.'
         : 'Svag inledning — poängen räcker inte. Laget behöver ändra kurs om slutspelet ska bli aktuellt.'
       const clubName = managedClub?.shortName ?? managedClub?.name ?? 'Laget'
@@ -58,10 +74,10 @@ const TRIGGERS: MidSeasonTrigger[] = [
       isRead: false,
     }),
   },
-  // Round ~10, bottom 3 — board concern
+  // Round ~10, klart under förväntan — board concern
   {
     matchday: 10,
-    check: (_g, s) => (s?.position ?? 1) >= 10,
+    check: (g, s) => expectationGap(g, s) <= -4,
     generate: (g, _s) => ({
       id: `mse-bottom-${g.currentSeason}`,
       date: g.currentDate,
@@ -88,10 +104,10 @@ const TRIGGERS: MidSeasonTrigger[] = [
       isRead: false,
     }),
   },
-  // Round ~15, bottom 3 — fan frustration
+  // Round ~15, klart under förväntan — fan frustration
   {
     matchday: 15,
-    check: (_g, s) => (s?.position ?? 1) >= 10,
+    check: (g, s) => expectationGap(g, s) <= -4,
     generate: (g, _s) => ({
       id: `mse-fans-${g.currentSeason}`,
       date: g.currentDate,
