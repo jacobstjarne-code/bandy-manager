@@ -85,9 +85,9 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'Licensnämnden bevakar {KLUBB}',
     ],
     bodies: [
-      'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Två säsonger med underskott. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess.',
-      'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: två förlustsäsonger i rad är inte acceptabelt. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader.',
-      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Nästa förlustår kommer kosta poäng.',
+      'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Två säsonger med underskott. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess. Planen nämnden vill se är inte komplicerad: lönerna ner eller intäkterna upp, före nästa bokslut.',
+      'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: två förlustsäsonger i rad är inte acceptabelt. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader. Det som räknas är bokslutet — en lönelista kassan bär, eller sponsorer och publik som bär lönelistan.',
+      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Nästa förlustår kommer kosta poäng. Det enda nämnden lyssnar på är ett plus i bokslutet.',
     ],
   },
   point_deduction: {
@@ -97,9 +97,9 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'RF beslutar: Tre poäng från {KLUBB}',
     ],
     bodies: [
-      'Tre säsonger med underskott. Tre poäng. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad."',
-      'Brevet kom på en tisdag. Tre poängs avdrag inför nästa säsong. Inget mer att säga. Styrelsemöte på torsdag — det enda alla redan vet är att något måste bort. Frågan är vem.',
-      'Licensnämnden har genomfört sin tredje granskning av {KLUBB}. Beslutet är minskning av poäng inför nästa säsong med 3 enheter. Klubben har inte följt återhämtningsplanen. "Vi har gett er chanser. Det är slut nu."',
+      'Tre säsonger med underskott. Tre poäng. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad." Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
+      'Brevet kom på en tisdag. Tre poängs avdrag inför nästa säsong. Inget mer att säga. Styrelsemöte på torsdag — det enda alla redan vet är att något måste bort. Frågan är vem. Ett minus till, och det är inte en spelare som får gå. Det är licensen.',
+      'Licensnämnden har genomfört sin tredje granskning av {KLUBB}. Beslutet är minskning av poäng inför nästa säsong med 3 enheter. Klubben har inte följt återhämtningsplanen. "Vi har gett er chanser. Det är slut nu." Vänd bokslutet i år. Annars är nästa brev det sista.',
     ],
   },
   license_denied: {

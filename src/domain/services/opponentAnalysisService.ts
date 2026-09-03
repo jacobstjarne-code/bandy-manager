@@ -95,13 +95,13 @@ export const THREAT_REASON_LINES: Record<ThreatReasonKey, string[]> = {
     '{Efternamn} är riktigt hal. Får du tag i honom en gång ska du vara nöjd.',
     'Ni kommer inte kunna gå på {Efternamn}. Han är borta innan klubban är framme.',
     '{Efternamn} åker som om isen lutar åt hans håll. Håll er mellan honom och målet.',
-    'Det finns inget bra sätt att möta {Efternamn} en mot en. Var två.',
+    'Jaga inte {Efternamn}. Håll zonen tät och låt honom få bollen där han inte gör skada.',
   ],
   clinical: [
     '{Efternamn} dyker upp varsomhelst och gör mål på allt.',
     'Ger ni {Efternamn} ett halvt läge så ligger den inne.',
     '{Efternamn} rör sig inte mycket. Han står bara alltid rätt.',
-    'Släpp inte {Efternamn} ur sikte i straffområdet. Det är hela hans jobb.',
+    'Ha alltid någon i {Efternamn}s zon i straffområdet. Att stå rätt där är hela hans jobb.',
   ],
   relentless: [
     '{Efternamn} fiskar bollar hela matchen. Han ger sig aldrig på en förlorad situation.',

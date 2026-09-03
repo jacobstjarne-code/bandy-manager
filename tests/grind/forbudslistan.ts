@@ -253,6 +253,30 @@ export const FORBUDSLISTA: Rule[] = [
       },
     ],
   },
+  {
+    id: 'hur-en-spelare-bevakas',
+    claim: 'hur en spelare bevakas defensivt',
+    forbiddenField: 'fotbollslånord för man-mot-man-bevakning ("man-man", "åka efter", "var två på", "hänga på")',
+    correctField: 'zonspråk (BANDY_KANON §2: backen zonmarkerar, "det går inte att åka efter en spelare")',
+    files: [
+      {
+        path: 'src/domain/services/opponentAnalysisService.ts',
+        forbidden: [{
+          pattern: /\bman[- ]man\b|\båka efter\b|\bvar två på\b|\bhänga på\b/i,
+          maxAllowed: 0,
+          note: 'sluttest-b10-zonmarkering (TEXT LÅST 2026-09-03, Opus): B10-textriktlinjen — THREAT_REASON_LINES:s evasive[3]/clinical[3] talade tidigare man-mot-man ("Var två", "en mot en"), bandy zonmarkerar.',
+        }],
+      },
+      {
+        path: 'src/domain/data/matchCommentary.ts',
+        forbidden: [{
+          pattern: /\bman[- ]man\b|\båka efter\b|\bvar två på\b|\bhänga på\b/i,
+          maxAllowed: 0,
+          note: 'sluttest-b10-zonmarkering: samma fotbollslån får inte återkomma i matchtexten. Baseline 0 idag (ingen konkret rad flaggad av granskningen) — ett brott är alltså en genuin regression, inte gammal skuld.',
+        }],
+      },
+    ],
+  },
 ]
 
 /**

@@ -211,3 +211,38 @@ describe('buildLicenseInboxItem — bär LÅST zon-text, ingen siffra (Jacobs do
     }
   })
 })
+
+// sluttest-avskedsvarning-generisk (TEXT LÅST 2026-09-03, Opus): varningstexten
+// var helt generisk, nämnde ingen konkret spelarhandling. Sex avslutande
+// meningar tillagda ordagrant (tre per zon), en per body-variant — testar att
+// samtliga tre varianter i BÅDA zonerna bär sin konkreta mening.
+describe('sluttest-avskedsvarning-generisk — konkret handling i varje bodyvariant', () => {
+  const FIRST_WARNING_ENDINGS = [
+    'Planen nämnden vill se är inte komplicerad: lönerna ner eller intäkterna upp, före nästa bokslut.',
+    'Det som räknas är bokslutet — en lönelista kassan bär, eller sponsorer och publik som bär lönelistan.',
+    'Det enda nämnden lyssnar på är ett plus i bokslutet.',
+  ]
+  const POINT_DEDUCTION_ENDINGS = [
+    'Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
+    'Ett minus till, och det är inte en spelare som får gå. Det är licensen.',
+    'Vänd bokslutet i år. Annars är nästa brev det sista.',
+  ]
+
+  it('first_warning: varje seed (0,1,2) ger en body som slutar med sin låsta mening', () => {
+    for (let seed = 0; seed < 3; seed++) {
+      const game = makeGame({ finances: 80000, startFinances: 100000, licenseRiskScore: 20, licenseStatus: 'clear' })
+      const { action } = checkLicenseStatus(game, seed)
+      expect(action?.type).toBe('first_warning')
+      expect(FIRST_WARNING_ENDINGS.some(ending => action!.message.endsWith(ending))).toBe(true)
+    }
+  })
+
+  it('point_deduction: varje seed (0,1,2) ger en body som slutar med sin låsta mening', () => {
+    for (let seed = 0; seed < 3; seed++) {
+      const game = makeGame({ finances: 60000, startFinances: 100000, licenseRiskScore: 40, licenseStatus: 'first_warning' })
+      const { action } = checkLicenseStatus(game, seed)
+      expect(action?.type).toBe('point_deduction')
+      expect(POINT_DEDUCTION_ENDINGS.some(ending => action!.message.endsWith(ending))).toBe(true)
+    }
+  })
+})
