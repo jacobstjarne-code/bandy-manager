@@ -133,7 +133,7 @@ describe('generatePostAdvanceEvents — MEDIUM 15: ett besvarat erbjudande åter
  * MEDIUM 15, led 1 isolerat: resolutionen måste lämna ett spår i resolvedEventIds.
  * De fyra sponsorreturerna i resolveEvent gick förbi den kanoniska skrivvägen.
  */
-describe('resolveEvent — sponsorbesluten skriver resolvedEventIds', () => {
+describe('resolveEvent — sponsorbesluten använder gemensam finalisering', () => {
   const sponsorData = JSON.stringify({
     id: 'sponsor_8_123', name: 'Testbolaget', category: 'bygg',
     weeklyIncome: 4500, contractRounds: 10, signedRound: 8, riskMaturityRound: 14,
@@ -163,7 +163,63 @@ describe('resolveEvent — sponsorbesluten skriver resolvedEventIds', () => {
         const after = resolveEvent(gameWith(event), event.id, choiceId, () => 0.99, true)
         expect(after.resolvedEventIds ?? []).toContain(event.id)
         expect((after.pendingEvents ?? []).some(e => e.id === event.id)).toBe(false)
+        // Sponsorlistan/riskkontraktet är inte i sig ett ripple-bärande fält,
+        // och sponsorvalen har ingen deklarerad säsongsbeslutsbyggare. Att de
+        // går genom liggarvägen får därför inte fabricera en kanonpost.
+        expect(after.eventLedger ?? []).toHaveLength(0)
       })
     }
   }
+
+  it('spelarens konfliktaccept skriver exakt en orsak/verkan-post för den verkliga state-effekten', () => {
+    const event: GameEvent = {
+      ...offerEvent('sponsorOffer'),
+      terminateSponsorId: 'sponsor_rival',
+      communityStandingDelta: -8,
+    }
+    const game: SaveGame = {
+      ...gameWith(event),
+      communityStanding: 50,
+      eventLedger: [],
+      sponsors: [{
+        id: 'sponsor_rival', name: 'Rivalen AB', category: 'bygg',
+        weeklyIncome: 2500, contractRounds: 8, signedRound: 1,
+      }],
+    }
+
+    const after = resolveEvent(game, event.id, 'accept', () => 0.99, true)
+    const entries = (after.eventLedger ?? []).filter(entry => entry.semanticKey === 'sponsorOffer')
+
+    expect(after.communityStanding).toBe(42)
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).toMatchObject({
+      type: 'decision',
+      season: game.currentSeason,
+      matchday: game.currentMatchday,
+      madeByPlayer: true,
+      consequences: [{ field: 'communityStanding', dir: 'down', magnitude: 'tydligt' }],
+    })
+  })
+
+  it('auto-resolution tillämpar samma konfliktkostnad men skriver ingen spelarpost', () => {
+    const event: GameEvent = {
+      ...offerEvent('sponsorOffer'),
+      terminateSponsorId: 'sponsor_rival',
+      communityStandingDelta: -8,
+    }
+    const game: SaveGame = {
+      ...gameWith(event),
+      communityStanding: 50,
+      eventLedger: [],
+      sponsors: [{
+        id: 'sponsor_rival', name: 'Rivalen AB', category: 'bygg',
+        weeklyIncome: 2500, contractRounds: 8, signedRound: 1,
+      }],
+    }
+
+    const after = resolveEvent(game, event.id, 'accept', () => 0.99, false)
+
+    expect(after.communityStanding).toBe(42)
+    expect(after.eventLedger ?? []).toHaveLength(0)
+  })
 })

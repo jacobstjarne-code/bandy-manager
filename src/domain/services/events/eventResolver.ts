@@ -71,6 +71,58 @@ function recordResolvedId(game: SaveGame, eventId: string): string[] {
 }
 
 /**
+ * Gemensam liggarväg för beslut som matchar en uttryckligen deklarerad
+ * säsongsbeslutsbyggare. Hjälparen används både av den kanoniska svansen och
+ * av sponsorernas tidiga returer, så specialfallen inte kan glida förbi
+ * liggaren igen. BUILDERS-registret i seasonDecisionCaptureService är fortsatt
+ * ämnesgrinden: ett sponsorval utan godkänd byggare skapar ingen påhittad post.
+ */
+function appendSeasonDecisionLedgerEntry(
+  before: SaveGame,
+  after: SaveGame,
+  event: GameEvent,
+  choiceId: string,
+  madeByPlayer: boolean,
+): SaveGame {
+  if (!madeByPlayer) return after
+  const candidate = captureSystemDecision(before, after, event, choiceId)
+  if (!candidate) return after
+
+  return {
+    ...after,
+    eventLedger: logEvent(
+      after,
+      buildDecisionLedgerEntry(candidate, `${event.type}:${choiceId}`, after.currentMatchday),
+    ),
+  }
+}
+
+/**
+ * Gemensam orsak/verkan-väg för spelarfattade eventbeslut. En post skrivs bara
+ * när before/after-diffen passerar captureDecisionRipples trivialitetsgolv.
+ */
+function appendDecisionConsequenceLedgerEntry(
+  before: SaveGame,
+  after: SaveGame,
+  event: GameEvent,
+  madeByPlayer: boolean,
+): SaveGame {
+  if (!madeByPlayer) return after
+  const ledgerEntry = captureDecisionRipple(
+    before,
+    after,
+    event.type,
+    after.currentSeason,
+    after.currentMatchday,
+    event.relatedPlayerId,
+    event.relatedClubId,
+  )
+  return ledgerEntry
+    ? { ...after, eventLedger: logEvent(after, ledgerEntry) }
+    : after
+}
+
+/**
  * En gemensam patronrelationsväg för både top-level- och multiEffect-val.
  * Nollpunkten är inte bara en siffra: den avaktiverar patronen, sätter
  * cooldown-säsongen och köar avhoppskortet. Därför får multiEffect inte ha
@@ -197,6 +249,20 @@ export function resolveEvent(
   const financesBeforeEvent = game.clubs.find(c => c.id === game.managedClubId)?.finances
   const financeLogBeforeEvent = game.financeLog
 
+  // Sponsorvalen behöver av historiska skäl lösa sin special-state före den
+  // stora effect-switchen. Finaliseringen är däremot samma som för alla andra
+  // beslut: resolve-spår + deklarerat säsongsbeslut + faktisk orsak/verkan.
+  const finalizeSponsorResolution = (afterEffects: SaveGame): SaveGame => {
+    let resolvedGame: SaveGame = {
+      ...afterEffects,
+      pendingEvents: (afterEffects.pendingEvents ?? []).filter(e => e.id !== eventId),
+      resolvedChoices: recordResolvedChoice(afterEffects, event, choiceId, choice.label, madeByPlayer),
+      resolvedEventIds: recordResolvedId(afterEffects, eventId),
+    }
+    resolvedGame = appendSeasonDecisionLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer)
+    return appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, madeByPlayer)
+  }
+
   // Handle sponsor events by type (not effect)
   if (event.type === 'sponsorOffer') {
     // O1 (varsel-mallen, "sponsorn med ett problem"): konfliktvariantens
@@ -248,16 +314,13 @@ export function resolveEvent(
             season: game.currentSeason,
           }
         : game.riskySponsorContract
-      return {
+      return finalizeSponsorResolution({
         ...game,
-        pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
         sponsors,
         communityStanding,
         inbox,
         riskySponsorContract,
-        resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
-        resolvedEventIds: recordResolvedId(game, eventId),
-      }
+      })
     }
     const rejectedOffer = choiceId === 'reject' && rivalName && event.sponsorData
       ? (JSON.parse(event.sponsorData) as Sponsor)
@@ -272,13 +335,10 @@ export function resolveEvent(
           isRead: false,
         }]
       : game.inbox
-    return {
+    return finalizeSponsorResolution({
       ...game,
-      pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
       inbox,
-      resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
-      resolvedEventIds: recordResolvedId(game, eventId),
-    }
+    })
   }
 
   // 2B: Risky sponsor offer — accept adds sponsor AND stores risk contract
@@ -322,25 +382,19 @@ export function resolveEvent(
         triggeredSeason: sponsorData.triggeredSeason as number | undefined,
         expiresSeason: sponsorData.expiresSeason as number | undefined,
       }
-      return {
+      return finalizeSponsorResolution({
         ...game,
-        pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
         sponsors: [...(game.sponsors ?? []), sponsor],
         riskySponsorContract: {
           sponsorId: sponsor.id,
           riskMaturityRound: sponsorData.riskMaturityRound,
           season: game.currentSeason,
         },
-        resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
-        resolvedEventIds: recordResolvedId(game, eventId),
-      }
+      })
     }
-    return {
+    return finalizeSponsorResolution({
       ...game,
-      pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
-      resolvedChoices: recordResolvedChoice(game, event, choiceId, choice.label, madeByPlayer),
-      resolvedEventIds: recordResolvedId(game, eventId),
-    }
+    })
   }
 
   const { effect } = choice
@@ -2187,8 +2241,7 @@ export function resolveEvent(
   // AI-styrd säsong (eller rollover som auto-väljer default-choice) kunde
   // ändå bli kandidat, och årsboken skulle då hävda ett beslut spelaren
   // aldrig var med om att fatta. Gated nu på madeByPlayer.
-  const candidate = madeByPlayer ? captureSystemDecision(game, updatedGame, event, choiceId) : null
-  if (candidate) {
+  {
     // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET,
     // fullbordad LIGGARE-PRIO 4 (2026-09-03): fältet SaveGame.
     // seasonDecisionCandidates är borttaget, alla tre kandidatkällor (denna,
@@ -2202,10 +2255,7 @@ export function resolveEvent(
     // (seasonDecisionCaptureService.ts) måste kunna skilja t.ex.
     // criticalEconomy/sell_star från criticalEconomy/ask_mecenat, som delar
     // event.type men har olika meningar.
-    updatedGame = {
-      ...updatedGame,
-      eventLedger: logEvent(updatedGame, buildDecisionLedgerEntry(candidate, `${event.type}:${choiceId}`, updatedGame.currentMatchday)),
-    }
+    updatedGame = appendSeasonDecisionLedgerEntry(game, updatedGame, event, choiceId, madeByPlayer)
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────
@@ -2595,15 +2645,7 @@ export function resolveEvent(
   // använder för ETT annat fält med andra semantik). Skriver ingen post om
   // beslutet inte rörde något ripple-bärande fält (trivial-brus-golvet,
   // se captureDecisionRipple).
-  if (madeByPlayer) {
-    const ledgerEntry = captureDecisionRipple(
-      game, updatedGame, event.type, updatedGame.currentSeason, updatedGame.currentMatchday,
-      event.relatedPlayerId, event.relatedClubId,
-    )
-    if (ledgerEntry) {
-      updatedGame = { ...updatedGame, eventLedger: logEvent(updatedGame, ledgerEntry) }
-    }
-  }
+  updatedGame = appendDecisionConsequenceLedgerEntry(game, updatedGame, event, madeByPlayer)
 
   const financesAfterEvent = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)?.finances
   if (financesBeforeEvent !== undefined && financesAfterEvent !== undefined
