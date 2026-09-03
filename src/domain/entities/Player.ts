@@ -67,6 +67,13 @@ export interface Player {
   age: number
   nationality: string
   clubId: string
+  // tenure-falt-joinedclubseason (DOM 2026-09-03, Jacob): säsongen spelaren
+  // faktiskt gick med i clubId — världsgenerering (=startsäsong), transfer/
+  // friövergång (=säsongen övergången sker) eller akademiuppflyttning.
+  // Optional för äldre saves (backfyllda approximativt av migrationen, se
+  // saveGameMigration.ts). Konsumenter: "År i klubben" (PlayerCard.tsx) +
+  // O18 personraden (seasonGoalService.ts).
+  joinedClubSeason?: number
   academyClubId?: string
   isHomegrown: boolean
   position: PlayerPosition

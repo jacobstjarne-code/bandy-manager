@@ -370,6 +370,9 @@ export function executeTransfer(
     return {
       ...p,
       clubId: buyingClubId,
+      // tenure-falt-joinedclubseason (DOM 2026-09-03): transfer är ett av
+      // domens tre skrivställen.
+      joinedClubSeason: game.currentSeason,
       salary: offeredSalary,
       contractUntilSeason: game.currentSeason + contractYears,
     }

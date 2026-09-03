@@ -221,6 +221,14 @@ describe('deriveSeasonPersonChange — prioritetsordning', () => {
     expect(derivePersonChangeLine(change!)).toBe('Sven Lund la av efter 8 säsonger.')
   })
 
+  it('tenure-falt-joinedclubseason: seasonsAtClub vinner över karriärtotala seasons när den finns', () => {
+    const retired = [{ playerId: 'legend1', name: 'Sven Lund', seasons: 8, seasonsAtClub: 2, isLegend: true }]
+    const game = baseGame()
+    const change = deriveSeasonPersonChange(game, retired)
+    expect(change).toEqual({ kind: 'retired', playerId: 'legend1', name: 'Sven Lund', seasons: 2 })
+    expect(derivePersonChangeLine(change!)).toBe('Sven Lund la av efter 2 säsonger.')
+  })
+
   it('ingen kandidat — undefined, ingen påtvingad rad', () => {
     const game = baseGame()
     const change = deriveSeasonPersonChange(game, [])

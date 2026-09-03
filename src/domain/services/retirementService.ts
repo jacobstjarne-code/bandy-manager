@@ -5,7 +5,16 @@ export interface RetirementData {
   name: string
   age: number
   position: string
+  /** Totalt antal säsonger i KARRIÄREN (careerStats.seasonsPlayed) — visas i
+   *  SeasonSummaryScreen.tsx:s "Avslutade karriärer"-lista bredvid totalGoals/
+   *  totalGames, som också är karriärtotaler. Blanda inte ihop med
+   *  seasonsAtClub nedan. */
   seasons: number
+  /** tenure-falt-joinedclubseason (DOM 2026-09-03): säsonger i DENNA klubb
+   *  specifikt (currentSeason - player.joinedClubSeason), för O18-personraden
+   *  ("la av efter N säsonger" ska mena här, inte karriären totalt). undefined
+   *  för äldre saves innan migreringen backfyllt joinedClubSeason. */
+  seasonsAtClub?: number
   totalGoals: number
   totalAssists: number
   totalGames: number
@@ -124,11 +133,14 @@ function generateBestMoment(player: Player): string | undefined {
   return pool[Math.floor((player.age + goals * 3) % pool.length)](name)
 }
 
-export function generateRetirementData(player: Player, managedClubId: string): RetirementData {
+export function generateRetirementData(player: Player, managedClubId: string, currentSeason?: number): RetirementData {
   const seasons = player.careerStats?.seasonsPlayed ?? 1
   const goals = player.careerStats?.totalGoals ?? 0
   const assists = player.careerStats?.totalAssists ?? 0
   const games = player.careerStats?.totalGames ?? 0
+  const seasonsAtClub = currentSeason !== undefined && player.joinedClubSeason !== undefined
+    ? currentSeason - player.joinedClubSeason
+    : undefined
 
   return {
     playerId: player.id,
@@ -136,6 +148,7 @@ export function generateRetirementData(player: Player, managedClubId: string): R
     age: player.age,
     position: player.position,
     seasons,
+    seasonsAtClub,
     totalGoals: goals,
     totalAssists: assists,
     totalGames: games,

@@ -836,7 +836,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     if (retires) {
       retiredPlayerIds.add(player.id)
       if (player.clubId === game.managedClubId) {
-        const retData = generateRetirementData(player, game.managedClubId)
+        const retData = generateRetirementData(player, game.managedClubId, game.currentSeason)
         retiredManagedPlayers.push(retData)
         retirementMessages.push({
           id: `inbox_retirement_${player.id}_${nextSeason}`,
@@ -1641,6 +1641,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         age,
         nationality: 'svenska',
         clubId: club.id,
+        // tenure-falt-joinedclubseason (2026-09-03): nödsignering vid trupp-
+        // påfyllning är också ett "gick med i klubben"-ögonblick, samma
+        // princip som transfer/friövergång.
+        joinedClubSeason: nextSeason,
         isHomegrown: age <= 23,
         position: pos,
         archetype: PlayerArchetype.TwoWaySkater,

@@ -400,6 +400,14 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
       age,
       nationality: 'svenska',
       clubId: club.id,
+      // tenure-falt-joinedclubseason (DOM 2026-09-03): domens tre skrivställen
+      // (världsgenerering/transfer/akademiuppflyttning) missade denna generator
+      // — ungdomsintaget SKAPAR ett riktigt Player-objekt med clubId satt direkt,
+      // inte en mellanform som väntar på uppflyttning. Utan denna rad hade varje
+      // hemmaproducerad spelare saknat "år i klubben" fram till en separat
+      // uppflyttningshändelse. Naturlig utvidgning av domens avsikt, inte en
+      // ny mekanik.
+      joinedClubSeason: season,
       academyClubId: club.id,
       isHomegrown: true,
       position,

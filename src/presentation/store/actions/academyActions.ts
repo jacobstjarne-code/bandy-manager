@@ -266,6 +266,9 @@ export function academyActions(get: Get, set: Set) {
         age: youthPlayer.age,
         nationality: 'Svensk',
         clubId: game.managedClubId,
+        // tenure-falt-joinedclubseason (DOM 2026-09-03): akademiuppflyttning
+        // är ett av domens tre skrivställen.
+        joinedClubSeason: game.currentSeason,
         academyClubId: game.managedClubId,
         isHomegrown: true,
         position: youthPlayer.position,

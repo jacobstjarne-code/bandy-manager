@@ -116,6 +116,14 @@ describe('generateYouthIntake', () => {
     }
   })
 
+  it('tenure-falt-joinedclubseason: varje nyintaget spelare får joinedClubSeason satt till intagssäsongen', () => {
+    const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed: 7 })
+    expect(result.newPlayers.length).toBeGreaterThan(0)
+    for (const p of result.newPlayers) {
+      expect(p.joinedClubSeason).toBe(2026)
+    }
+  })
+
   it('BandyKul ger ett svagt säsongsintagslyft och är svagare än avancerade skolans +2', () => {
     const baseClub = makeClub({ youthRecruitment: 60 })
     const advancedClub = makeClub({ youthRecruitment: 62 })

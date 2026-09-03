@@ -77,9 +77,11 @@ export function processAITransfers(
       const fromClub = updatedClubs.find(c => c.id === target.clubId)
 
       // Execute transfer
+      // tenure-falt-joinedclubseason (DOM 2026-09-03): AI-klubbarnas motsvarighet
+      // till transferService.ts:s executeTransfer/friövergång — samma skrivväg.
       updatedPlayers = updatedPlayers.map(p =>
         p.id === target.id
-          ? { ...p, clubId: club.id, contractUntilSeason: season + 1 + Math.floor(rand() * 3) }
+          ? { ...p, clubId: club.id, joinedClubSeason: season, contractUntilSeason: season + 1 + Math.floor(rand() * 3) }
           : p
       )
 

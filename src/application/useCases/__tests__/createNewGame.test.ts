@@ -13,6 +13,13 @@ describe('createNewGame', () => {
     expect(game.players.length).toBe(192)
   })
 
+  it('tenure-falt-joinedclubseason: varje spelare från världsgenereringen har joinedClubSeason satt till startsäsongen', () => {
+    const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
+    for (const p of game.players) {
+      expect(p.joinedClubSeason).toBe(2025)
+    }
+  })
+
   it('returns SaveGame with 132 league fixtures plus cup fixtures', () => {
     const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
     const leagueFixtures = game.fixtures.filter(f => !f.isCup)

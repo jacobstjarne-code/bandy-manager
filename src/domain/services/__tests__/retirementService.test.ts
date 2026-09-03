@@ -85,3 +85,36 @@ describe('generateRetirementData — bestMoment föredrar en riktig hattrick-mil
     expect(data.bestMoment).not.toContain('undefined')
   })
 })
+
+/**
+ * tenure-falt-joinedclubseason (DOM 2026-09-03): seasonsAtClub ska skilja sig
+ * från seasons (karriärtotalt) för en spelare som var på en annan klubb
+ * innan — annars säger O18-personraden "la av efter 8 säsonger" om en
+ * veteran som bara varit HÄR i 2.
+ */
+describe('generateRetirementData — seasonsAtClub skiljer sig från karriärtotalt seasons', () => {
+  it('en sen övergång: 8 karriärsäsonger, bara 2 i denna klubb', () => {
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const lateArrival = {
+      ...player,
+      careerStats: { ...player.careerStats, seasonsPlayed: 8 },
+      joinedClubSeason: 2023,
+    }
+    const data = generateRetirementData(lateArrival, base.managedClubId, 2025)
+    expect(data.seasons).toBe(8)
+    expect(data.seasonsAtClub).toBe(2)
+  })
+
+  it('utan currentSeason-parametern (äldre anropsställen) är seasonsAtClub undefined, inte en gissning', () => {
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const data = generateRetirementData({ ...player, joinedClubSeason: 2023 }, base.managedClubId)
+    expect(data.seasonsAtClub).toBeUndefined()
+  })
+
+  it('utan joinedClubSeason (omigrerat legacy-fall) är seasonsAtClub undefined', () => {
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const withoutTenure = { ...player, joinedClubSeason: undefined }
+    const data = generateRetirementData(withoutTenure, base.managedClubId, 2025)
+    expect(data.seasonsAtClub).toBeUndefined()
+  })
+})

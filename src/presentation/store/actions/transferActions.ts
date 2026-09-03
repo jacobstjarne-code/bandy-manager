@@ -170,7 +170,9 @@ export function transferActions(get: Get, set: Set) {
       const agent = game.transferState.freeAgents.find(p => p.id === agentId)
       if (!agent) return { success: false, error: 'Spelaren hittades inte' }
 
-      const agentWithClub = { ...agent, clubId: game.managedClubId, contractUntilSeason: game.currentSeason + 2 }
+      // tenure-falt-joinedclubseason (DOM 2026-09-03): friövergång är ett av
+      // domens tre skrivställen.
+      const agentWithClub = { ...agent, clubId: game.managedClubId, joinedClubSeason: game.currentSeason, contractUntilSeason: game.currentSeason + 2 }
       const updatedPlayers = [...game.players, agentWithClub]
       const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
       const updatedClubs = game.clubs.map(c =>

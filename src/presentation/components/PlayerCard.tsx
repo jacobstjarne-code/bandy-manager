@@ -860,6 +860,15 @@ export function PlayerCard({
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>💰</span>
               <span style={{ color: 'var(--text-secondary)' }}>Lön: <strong>{formatSalary(player.salary)}</strong></span>
             </div>
+            {/* tenure-falt-joinedclubseason (DOM 2026-09-03) — år i klubben. */}
+            {player.joinedClubSeason !== undefined && currentSeason !== undefined && currentSeason >= player.joinedClubSeason && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>📅</span>
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  År i klubben: <strong>{currentSeason - player.joinedClubSeason}</strong>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

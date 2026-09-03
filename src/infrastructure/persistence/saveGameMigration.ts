@@ -757,6 +757,23 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
+  // tenure-falt-joinedclubseason (DOM 2026-09-03, Jacob): äldre saves saknar
+  // joinedClubSeason helt. Backfyllning är en APPROXIMATION (currentSeason -
+  // careerStats.seasonsPlayed), inte en rekonstruktion — den känner inte till
+  // klubbyten under karriären, bara hur länge spelaren TOTALT spelat. Tydligt
+  // kommenterat, per domen.
+  if (Array.isArray(data.players) && typeof data.currentSeason === 'number') {
+    const currentSeason = data.currentSeason
+    data.players = (data.players as Record<string, unknown>[]).map(p => {
+      if (p.joinedClubSeason !== undefined) return p
+      const careerStats = p.careerStats as { seasonsPlayed?: number } | undefined
+      const seasonsPlayed = typeof careerStats?.seasonsPlayed === 'number' ? careerStats.seasonsPlayed : 0
+      // Approximation, inte fakta — se filhuvudkommentaren ovan.
+      p.joinedClubSeason = currentSeason - seasonsPlayed
+      return p
+    })
+  }
+
   // SPEC_LIGGARE_MIGRERING_PRIORITERAD_2026-09-02, prio 1: gamla saves
   // måste få sina redan inträffade, strukturerat verifierbara klubbhändelser
   // in i kanon INNAN historikytorna slutar läsa dem ur de cappade/spridda

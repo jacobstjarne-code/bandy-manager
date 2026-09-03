@@ -248,6 +248,18 @@ describe('executeTransfer', () => {
     expect(movedPlayer.salary).toBe(15000)
   })
 
+  it('tenure-falt-joinedclubseason: sätter joinedClubSeason till innevarande säsong', () => {
+    const game = makeGame()
+    const bid: TransferBid = {
+      id: 'b1', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: 200000, offeredSalary: 15000, contractYears: 3,
+      direction: 'outgoing', status: 'accepted', createdRound: 3, expiresRound: 4,
+    }
+    const result = executeTransfer(game, bid)
+    const movedPlayer = result.players.find(p => p.id === 'p1')!
+    expect(movedPlayer.joinedClubSeason).toBe(game.currentSeason)
+  })
+
   it('updates finances correctly', () => {
     const game = makeGame()
     const bid: TransferBid = {

@@ -283,11 +283,14 @@ function countSeasonGamesPlayedByPlayer(game: SaveGame): Record<string, number> 
 
 export function deriveSeasonPersonChange(
   game: SaveGame,
-  retiredManagedPlayers: Array<{ playerId: string; name: string; seasons: number; isLegend: boolean }>,
+  retiredManagedPlayers: Array<{ playerId: string; name: string; seasons: number; seasonsAtClub?: number; isLegend: boolean }>,
 ): SeasonPersonChange | undefined {
   const legend = retiredManagedPlayers.find(p => p.isLegend)
   if (legend) {
-    return { kind: 'retired', playerId: legend.playerId, name: legend.name, seasons: legend.seasons }
+    // tenure-falt-joinedclubseason (DOM 2026-09-03): "la av efter N säsonger"
+    // ska mena säsonger I DENNA KLUBB, inte karriären totalt — seasonsAtClub
+    // när migreringen/skrivvägarna gett den, annars den gamla approximationen.
+    return { kind: 'retired', playerId: legend.playerId, name: legend.name, seasons: legend.seasonsAtClub ?? legend.seasons }
   }
 
   // Event-sourcad matchräkning (fixad 2026-08-25) — ersätter p.seasonStats.
