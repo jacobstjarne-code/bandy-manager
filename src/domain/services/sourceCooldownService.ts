@@ -17,7 +17,7 @@ export const SOURCE_COOLDOWN_ROUNDS: Record<SourceKey, number> = {
   // omgångar än så).
   burnout: 6,
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, 2026-08-31):
-  // förnyelsebeslutet. En dominant klubb har nio aktiviteter som alla slits
+  // förnyelsebeslutet. En dominant klubb har tio aktiviteter som alla slits
   // parallellt — utan en gemensam frekvensspärr hade tretmillen blivit en
   // kortskur, inte ett synligt val. 6 omgångar (samma takt som burnout) ger
   // som mest ~4 förnyelsebeslut per 26-omgångarssäsong.

@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
-import { applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
+import { BANDYPLAY_ACTIVATION_COST, applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
@@ -22,7 +22,8 @@ export function academyActions(get: Get, set: Set) {
       const costs: Record<string, Record<string, number>> = {
         kiosk:           { basic: 3000, upgraded: 8000 },
         lottery:         { basic: 1000, intensive: 5000 },
-        bandyplay:       { active: 0 },
+        bandySchoolBasic: { active: 0 },
+        bandyplay:        { active: BANDYPLAY_ACTIVATION_COST },
         functionaries:   { active: 2000 },
         julmarknad:      { active: 2000 },
         bandySchool:     { active: 5000 },
@@ -39,7 +40,7 @@ export function academyActions(get: Get, set: Set) {
       }
 
       const ca = game.communityActivities ?? {
-        kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
+        kiosk: 'none', lottery: 'none', bandySchoolBasic: false, bandyplay: false, functionaries: false, julmarknad: false,
         bandySchool: false, socialMedia: false, vipTent: false,
       }
 
@@ -72,7 +73,7 @@ export function academyActions(get: Get, set: Set) {
         return { success: false, error: 'Redan aktiv' }
       }
 
-      const boolKeys = ['bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent', 'pensionarskaffe', 'soppkvall', 'skolbesok']
+      const boolKeys = ['bandySchoolBasic', 'bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent', 'pensionarskaffe', 'soppkvall', 'skolbesok']
       const updatedCA = boolKeys.includes(key)
         ? { ...ca, [key]: true }
         : { ...ca, [key]: level }
@@ -102,7 +103,7 @@ export function academyActions(get: Get, set: Set) {
             amount: -cost,
             reason: 'event',
             label: `Föreningsaktivitet: ${({
-              kiosk: 'Bandykiosken', lottery: 'Föreningslotteriet', bandyplay: 'Bandyskola för barn',
+              kiosk: 'Bandykiosken', lottery: 'Föreningslotteriet', bandySchoolBasic: 'Bandyskola för barn', bandyplay: 'Bandyplay',
               functionaries: 'Funktionärer', julmarknad: 'Julmarknad', bandySchool: 'Bandyskola',
               socialMedia: 'Sociala medier', vipTent: 'VIP-tält', pensionarskaffe: 'Pensionärskaffe',
               soppkvall: 'Soppkväll', skolbesok: 'Skolbesök',

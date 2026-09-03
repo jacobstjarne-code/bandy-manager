@@ -781,7 +781,7 @@ export function resolveEvent(
       // vilken community-aktivitet som ska sättas — tyst no-op tidigare.
       if (!effect.communityKey) throw new Error("effect 'setCommunity' saknar obligatoriskt fält communityKey")
       const current: CommunityActivities = updatedGame.communityActivities ?? {
-        kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
+        kiosk: 'none', lottery: 'none', bandySchoolBasic: false, bandyplay: false, functionaries: false, julmarknad: false,
       }
       const val = effect.communityValue
       // Also apply money effect if amount is set
@@ -795,6 +795,8 @@ export function resolveEvent(
         updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), kiosk: val as 'none' | 'basic' | 'upgraded' } }
       } else if (effect.communityKey === 'lottery') {
         updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), lottery: val as 'none' | 'basic' | 'intensive' } }
+      } else if (effect.communityKey === 'bandySchoolBasic') {
+        updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), bandySchoolBasic: true } }
       } else if (effect.communityKey === 'bandyplay') {
         updatedGame = { ...updatedGame, communityActivities: { ...(updatedGame.communityActivities ?? current), bandyplay: true } }
       } else if (effect.communityKey === 'functionaries') {

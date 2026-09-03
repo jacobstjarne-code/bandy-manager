@@ -90,7 +90,8 @@ export function processCommunity(
   // SPAK_NYHET_2026-08-29.md §"VÄG C"): staleness rör INTE dessa konstanter.
   // Väg A multiplicerade varje konstant med sin egen staleness-multiplikator;
   // D038 mätte att det var tandlöst (att förnya köpte +0,3 CS för 318 tkr/säsong
-  // — staleness kan per konstruktion bara röra de 0,67 aktiviteterna ger, medan
+  // — staleness kunde då bara röra de 0,67 de nio aktiviteterna gav; nya
+  // Bandyplay lägger 0,05 men ändrar inte slutsatsen, medan
   // volontärbonusen nedan ensam bär upp till 1,5 CS/omgång). Konsekvensen av
   // staleness är flyttad till PUBLIKEN (getOrtFreshnessFactor →
   // computeAttendanceRate). csBoost känner inte längre till att staleness finns.
@@ -113,7 +114,7 @@ export function processCommunity(
   // Aktiviteternas flata csBoost. Konstanterna bor i ACTIVITY_CS_BOOST
   // (communityRenewalService.ts) sedan väg C — samma nio tal väger också
   // freshness-aggregeringen, och två kopior hade kunnat glida isär tyst.
-  // getActiveStaleableActivities har exakt samma aktiv-villkor som de nio
+  // getActiveStaleableActivities har exakt samma aktiv-villkor som de tio
   // if-satserna hade (kiosk/lottery är nivåfält, 'none' räknas inte).
   let upkeepBoost = 0
   for (const key of getActiveStaleableActivities(game.communityActivities)) {

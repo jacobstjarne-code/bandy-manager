@@ -180,7 +180,7 @@ export function generateCommunityActivitiesEvents(
   }
 
   // Bandyskola — round 2, one-time, only if not already active
-  if (currentRound === 2 && !ca?.bandyplay && !ca?.bandySchool) {
+  if (currentRound === 2 && !ca?.bandySchoolBasic && !ca?.bandySchool) {
     const eid = 'community_bandyplay'
     if (!alreadyQueued.has(eid)) {
       events.push({
@@ -197,7 +197,7 @@ export function generateCommunityActivitiesEvents(
             // trots att texten lovar en kostnad på 5 tkr — omkastat tecken,
             // spelaren fattade beslut på motsatt information mot vad koden
             // gjorde. -5000 matchar texten exakt.
-            effect: { type: 'setCommunity', amount: -5000, communityKey: 'bandyplay', communityValue: 'true' },
+            effect: { type: 'setCommunity', amount: -5000, communityKey: 'bandySchoolBasic', communityValue: 'true' },
           },
           {
             id: 'pass',

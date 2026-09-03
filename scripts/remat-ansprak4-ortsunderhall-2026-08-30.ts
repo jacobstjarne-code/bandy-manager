@@ -98,7 +98,8 @@ const HEROS_SEED = 91_000
 const ALLA_AKTIVITETER: CommunityActivities = {
   kiosk: 'upgraded',
   lottery: 'intensive',
-  bandyplay: true,
+  bandySchoolBasic: true,
+  bandyplay: false,
   functionaries: true,
   julmarknad: false, // säsongsfönstrad (omg 8-12), ingen CS-boost i communityProcessor
   bandySchool: true,
@@ -112,6 +113,7 @@ const ALLA_AKTIVITETER: CommunityActivities = {
 const INGA_AKTIVITETER: CommunityActivities = {
   kiosk: 'none',
   lottery: 'none',
+  bandySchoolBasic: false,
   bandyplay: false,
   functionaries: false,
   julmarknad: false,

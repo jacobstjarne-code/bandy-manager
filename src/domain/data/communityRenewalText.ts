@@ -29,7 +29,8 @@ import type { StaleableActivityKey } from '../entities/Community'
 export const ACTIVITY_LABEL: Record<StaleableActivityKey, string> = {
   kiosk: 'Bandykiosken',
   lottery: 'Föreningslotteriet',
-  bandyplay: 'Bandyskola för barn',
+  bandySchoolBasic: 'Bandyskola för barn',
+  bandyplay: 'Bandyplay',
   functionaries: 'Funktionärer',
   bandySchool: 'Bandyskola',
   socialMedia: 'Sociala medier',

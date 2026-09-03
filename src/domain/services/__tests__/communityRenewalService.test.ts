@@ -37,7 +37,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { CommunityActivities } from '../../entities/Community'
 
 const ALL_ON: CommunityActivities = {
-  kiosk: 'upgraded', lottery: 'intensive', bandyplay: true, functionaries: true,
+  kiosk: 'upgraded', lottery: 'intensive', bandySchoolBasic: true, bandyplay: true, functionaries: true,
   julmarknad: false, bandySchool: true, socialMedia: true, vipTent: true,
   pensionarskaffe: true, soppkvall: true, skolbesok: true,
 }
@@ -148,12 +148,12 @@ describe('staleness-klockan', () => {
     expect(since.soppkvall).toBe(4)
   })
 
-  it('isActivityActive behandlar kiosk/lottery-nivåer som de nio csBoost-villkoren gör', () => {
+  it('isActivityActive behandlar kiosk/lottery-nivåer som de tio csBoost-villkoren gör', () => {
     expect(isActivityActive({ ...ALL_ON, kiosk: 'none' }, 'kiosk')).toBe(false)
     expect(isActivityActive({ ...ALL_ON, kiosk: 'basic' }, 'kiosk')).toBe(true)
     expect(isActivityActive({ ...ALL_ON, lottery: 'none' }, 'lottery')).toBe(false)
     expect(isActivityActive(undefined, 'skolbesok')).toBe(false)
-    expect(getActiveStaleableActivities(ALL_ON)).toHaveLength(9)
+    expect(getActiveStaleableActivities(ALL_ON)).toHaveLength(10)
   })
 
   it('en klocka framåt i tiden ger full effekt, inte en negativ exponent', () => {
@@ -210,7 +210,7 @@ describe('generateCommunityRenewalEvent', () => {
 
   it('Opus-texten interpolerar aktivitet/säsonger/slitage/pris korrekt', () => {
     // 2026-08-31: communityRenewalText.ts levererad. bigClubGame(3, 100) gör
-    // ALLA nio aktiviteter lika slitna (samma seasonsActive) — kiosk vinner
+    // ALLA tio aktiviteter lika slitna (samma seasonsActive) — kiosk vinner
     // (stabil sortering, STALEABLE_ACTIVITY_KEYS:s första nyckel).
     const event = generateCommunityRenewalEvent(bigClubGame(3, 100), 5)!
     expect(event.title).toBe('Supportrarna tröttnar på Bandykiosken')
@@ -382,9 +382,9 @@ describe('getOrtFreshnessFactor — aggregeringen (väg C)', () => {
     expect(ACTIVITY_CS_BOOST.skolbesok).toBeGreaterThan(ACTIVITY_CS_BOOST.socialMedia)
   })
 
-  it('ACTIVITY_CS_BOOST summerar till 0,67 — D037:s mätta balans, oförändrad', () => {
+  it('ACTIVITY_CS_BOOST summerar till 0,72 — D037:s 0,67 plus Bandyplays 0,05', () => {
     const sum = STALEABLE_ACTIVITY_KEYS.reduce((s, k) => s + ACTIVITY_CS_BOOST[k], 0)
-    expect(sum).toBeCloseTo(0.67, 6)
+    expect(sum).toBeCloseTo(0.72, 6)
   })
 
   it('en enskild försummad aktivitet drar INTE hela klubben till golvet (inte min())', () => {

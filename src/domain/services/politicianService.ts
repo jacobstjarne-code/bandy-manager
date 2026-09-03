@@ -23,11 +23,11 @@ export function calculateKommunBidrag(
   // relBonus rörs INTE — de skalar med ungdomsengagemang/agenda/relation,
   // inte med CS, och domen pekar bara ut CS-skalningen.
   const communityMod = (communityStanding / 50) * getCsDiminishingFactor(communityStanding)  // 0-2 × dämpning
-  const activeYouth = (game.youthTeam?.players.length ?? 0) + (game.communityActivities?.bandyplay ? 15 : 0)
+  const activeYouth = (game.youthTeam?.players.length ?? 0) + (game.communityActivities?.bandySchoolBasic ? 15 : 0)
   const lokStod = activeYouth * 100
   let agendaBonus = 0
-  if (politician.agenda === 'youth' && game.communityActivities?.bandyplay) agendaBonus = 20000
-  if (politician.agenda === 'inclusion' && game.communityActivities?.bandyplay) agendaBonus = 15000
+  if (politician.agenda === 'youth' && game.communityActivities?.bandySchoolBasic) agendaBonus = 20000
+  if (politician.agenda === 'inclusion' && game.communityActivities?.bandySchoolBasic) agendaBonus = 15000
   if (politician.agenda === 'prestige' && (club.reputation ?? 50) > 65) agendaBonus = 10000
   if (politician.agenda === 'infrastructure' && (club.facilities ?? 50) > 60) agendaBonus = 15000
   const relBonus = politician.relationship > 70 ? 10000 : 0

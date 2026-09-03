@@ -9,6 +9,8 @@ import {
   computeLeaguePositionAverages,
   MIN_LEAGUE_GAMES_FOR_PERFORMANCE_FACTOR,
   FINANCE_LOG_MAX,
+  BANDYPLAY_RUNNING_COST,
+  BANDYPLAY_SPONSOR_BONUS_MAX,
 } from '../economyService'
 import type { FinanceEntry, LeaguePositionAverage } from '../economyService'
 import type { Club } from '../../entities/Club'
@@ -367,6 +369,45 @@ describe('calcRoundIncome — sponsors', () => {
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
     expect(result.sponsorIncome).toBe(0)
+  })
+
+  it('Bandyplay ger en additiv sponsorbonus under flaggskeppsskalan och släcks när streaming är av', () => {
+    const base = {
+      club: makeClub(), players: [], sponsors: [makeSponsor({ weeklyIncome: 5000 })],
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      sponsorNetworkMood: 50,
+    }
+    const off = calcRoundIncome({
+      ...base,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+    })
+    const on = calcRoundIncome({
+      ...base,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: true, functionaries: false, julmarknad: false },
+      streamingFreshnessMultiplier: 1,
+    })
+    expect(BANDYPLAY_SPONSOR_BONUS_MAX).toBeLessThan(0.05)
+    expect(off.sponsorIncome).toBe(5000)
+    expect(on.sponsorIncome - off.sponsorIncome).toBe(200)
+    expect(on.communityRoundIncome).toBe(-BANDYPLAY_RUNNING_COST)
+  })
+
+  it('Bandyplays sponsorbonus trappar med aktivitetens staleness utan att ändra 0,0086-vägen', () => {
+    const base = {
+      club: makeClub(), players: [], sponsors: [makeSponsor({ weeklyIncome: 5000 })],
+      communityActivities: { kiosk: 'none' as const, lottery: 'none' as const, bandyplay: true, functionaries: false, julmarknad: false },
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+      sponsorNetworkMood: 60,
+    }
+    const fresh = calcRoundIncome({ ...base, streamingFreshnessMultiplier: 1 })
+    const worn = calcRoundIncome({ ...base, streamingFreshnessMultiplier: 0.5 })
+    const off = calcRoundIncome({ ...base, communityActivities: { ...base.communityActivities, bandyplay: false } })
+    // Grundvägen är fortsatt exakt 1 + (60-50)*0,0086 = 1,086.
+    expect(off.sponsorIncome).toBe(5430)
+    expect(fresh.sponsorIncome).toBe(5630)
+    expect(worn.sponsorIncome).toBe(5530)
   })
 })
 
@@ -869,6 +910,25 @@ describe('calcRoundIncome — communityRoundIncome (per round regardless of home
       ...base, communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false, bandySchool: true },
     })
     expect(withSchool.communityRoundIncome - without.communityRoundIncome).toBe(1000)
+  })
+
+  it('barnskolans tidigare match- och omgångsekonomi är oförändrad efter rename', () => {
+    const base = {
+      club: makeClub(), players: [], sponsors: [],
+      fanMood: 50, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+    }
+    const activities = {
+      kiosk: 'none' as const, lottery: 'none' as const, bandySchoolBasic: true,
+      bandyplay: false, functionaries: false, julmarknad: false,
+    }
+    const home = calcRoundIncome({ ...base, isHomeMatch: true, communityActivities: activities })
+    const away = calcRoundIncome({ ...base, isHomeMatch: false, communityActivities: activities })
+    // rand=0,5: hemmadelen 375−1000, omgångsdelen 500−1000.
+    expect(home.communityMatchIncome).toBe(-625)
+    expect(home.communityRoundIncome).toBe(-500)
+    expect(away.communityMatchIncome).toBe(0)
+    expect(away.communityRoundIncome).toBe(-500)
   })
 
   it('communityRoundIncome is non-zero on away match (per-round activities apply regardless)', () => {

@@ -3,7 +3,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { formatFinanceAbs, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
-import { calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixture } from '../../../domain/services/economyService'
+import { BANDYPLAY_ACTIVATION_COST, calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixture } from '../../../domain/services/economyService'
 import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
 import { matchdayToLeagueRound } from '../../../domain/services/scheduleGenerator'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
@@ -13,6 +13,7 @@ import '../../styles/economy.css'
 const EMPTY_COMMUNITY = {
   kiosk: 'none' as const,
   lottery: 'none' as const,
+  bandySchoolBasic: false,
   bandyplay: false,
   functionaries: false,
   julmarknad: false,
@@ -169,6 +170,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     { lottery: ca?.lottery === 'intensive' ? 'intensive' : 'basic' },
     { lottery: 'none' },
   )
+  const bandySchoolBasicDelta = activityDelta({ bandySchoolBasic: true }, { bandySchoolBasic: false })
   const bandyplayDelta = activityDelta({ bandyplay: true }, { bandyplay: false })
   const functionariesDelta = activityDelta({ functionaries: true }, { functionaries: false })
   const bandySchoolDelta = activityDelta({ bandySchool: true }, { bandySchool: false })
@@ -200,12 +202,25 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     },
     {
       icon: '⛸️', name: 'Bandyskola för barn',
+      active: !!ca?.bandySchoolBasic,
+      status: ca?.bandySchoolBasic ? 'Aktiv' : 'Ej startad',
+      income: activityIncome(bandySchoolBasicDelta), incomeDelta: bandySchoolBasicDelta,
+      note: 'Går med förlust — deltagaravgifterna täcker inte driften. Bygden får sin bandyskola, klubben bär kostnaden.',
+      ...(!ca?.bandySchoolBasic
+        ? { actionKey: 'bandySchoolBasic', actionLevel: 'active', actionCost: 0, actionLabel: 'Starta — gratis' }
+        : {}),
+    },
+    {
+      icon: '📡', name: 'Bandyplay',
       active: !!ca?.bandyplay,
       status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
       income: activityIncome(bandyplayDelta), incomeDelta: bandyplayDelta,
-      note: 'Går med förlust — deltagaravgifterna täcker inte driften. Bygden får sin bandyskola, klubben bär kostnaden.',
+      note: 'Ligans sändningar når längre än läktaren. Fler ser bygden spela — det märks i orten, och sponsorerna får mer för pengarna när klubben syns i rutan.',
       ...(!ca?.bandyplay
-        ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Starta — gratis' }
+        ? {
+            actionKey: 'bandyplay', actionLevel: 'active', actionCost: BANDYPLAY_ACTIVATION_COST,
+            actionLabel: `Starta sändning — ${Math.round(BANDYPLAY_ACTIVATION_COST / 1000)} tkr`,
+          }
         : {}),
     },
     {

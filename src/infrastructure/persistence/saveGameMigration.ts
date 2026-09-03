@@ -122,11 +122,56 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
 
   // ── communityActivities: ensure newer optional flags exist ─────────────
+  // 2026-09-03: `bandyplay` betydde tidigare barnens bandyskola. När det
+  // riktiga Bandyplay (streaming) infördes fick skolan den entydiga nyckeln
+  // `bandySchoolBasic`. När den nya nyckeln saknas vet vi att saven är legacy:
+  // flytta värdet och starta streaming av. Nya saves har ALLTID den nya nyckeln,
+  // vilket gör att deras streamingvärde aldrig felmigreras vid nästa laddning.
+  let migratedLegacyBandyplay = false
   if (data.communityActivities && typeof data.communityActivities === 'object') {
     const ca = data.communityActivities as Record<string, unknown>
+    if (ca.bandySchoolBasic === undefined) {
+      ca.bandySchoolBasic = ca.bandyplay === true
+      ca.bandyplay = false
+      migratedLegacyBandyplay = true
+    }
     if (ca.socialMedia === undefined) ca.socialMedia = false
     if (ca.vipTent === undefined) ca.vipTent = false
     if (ca.bandySchool === undefined) ca.bandySchool = false
+  }
+
+  // En redan skapad staleness-klocka hör också till barnskolan. Den nya
+  // streamingaktiviteten får ingen historik bakåt i tiden.
+  if (migratedLegacyBandyplay && data.communityActivitiesSince && typeof data.communityActivitiesSince === 'object') {
+    const since = data.communityActivitiesSince as Record<string, unknown>
+    if (since.bandySchoolBasic === undefined && typeof since.bandyplay === 'number') {
+      since.bandySchoolBasic = since.bandyplay
+    }
+    delete since.bandyplay
+  }
+
+  // Gamla obesvarade round-2-kort måste fortsätta starta BANDYSKOLAN. Utan
+  // denna payload-migrering skulle texten lova barnverksamhet men den nya
+  // `bandyplay`-nyckeln slå på streaming när spelaren svarar efter uppdatering.
+  if (migratedLegacyBandyplay) {
+    for (const listKey of ['pendingEvents', 'deferredDecisions']) {
+      const events = data[listKey]
+      if (!Array.isArray(events)) continue
+      for (const event of events) {
+        if (!event || typeof event !== 'object' || (event as Record<string, unknown>).id !== 'community_bandyplay') continue
+        const choices = (event as Record<string, unknown>).choices
+        if (!Array.isArray(choices)) continue
+        for (const choice of choices) {
+          if (!choice || typeof choice !== 'object') continue
+          const effect = (choice as Record<string, unknown>).effect
+          if (!effect || typeof effect !== 'object') continue
+          const effectRecord = effect as Record<string, unknown>
+          if (effectRecord.type === 'setCommunity' && effectRecord.communityKey === 'bandyplay') {
+            effectRecord.communityKey = 'bandySchoolBasic'
+          }
+        }
+      }
+    }
   }
 
   // ── communityActivitiesSince: staleness-klockan (ANSPRÅK 4, spak 3) ────
@@ -141,7 +186,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     const ca = (data.communityActivities ?? {}) as Record<string, unknown>
     const season = typeof data.currentSeason === 'number' ? data.currentSeason : 1
     const since: Record<string, number> = {}
-    for (const key of ['bandyplay', 'functionaries', 'bandySchool', 'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok']) {
+    for (const key of ['bandySchoolBasic', 'bandyplay', 'functionaries', 'bandySchool', 'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok']) {
       if (ca[key] === true) since[key] = season
     }
     for (const key of ['kiosk', 'lottery']) {

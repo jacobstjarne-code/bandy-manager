@@ -5,7 +5,7 @@ const VOLUNTEER_ROLES = [
   { role: 'Kioskvakt', activity: 'kiosk', income: 800, csBoost: 2 },
   { role: 'Lotterikassör', activity: 'lottery', income: 600, csBoost: 2 },
   { role: 'Matchvärd', activity: 'functionaries', income: 0, csBoost: 4 },
-  { role: 'Bandyskoleledare', activity: 'bandyplay', income: 0, csBoost: 5 },
+  { role: 'Bandyskoleledare', activity: 'bandySchoolBasic', income: 0, csBoost: 5 },
   { role: 'Sociala medier', activity: 'socialMedia', income: 300, csBoost: 3 },
 ]
 

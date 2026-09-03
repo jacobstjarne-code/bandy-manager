@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
+import { BANDYPLAY_ACTIVATION_COST } from '../../../../domain/services/economyService'
 import { academyActions } from '../academyActions'
 
 function makeStore(initialGame: SaveGame) {
@@ -31,6 +32,23 @@ describe('spelardrivna ekonomiactions lämnar transaktionsspår', () => {
     expect(store.game()?.financeLog).toContainEqual(expect.objectContaining({
       amount: -1000,
       label: 'Föreningsaktivitet: Föreningslotteriet',
+    }))
+  })
+
+  it('startar Bandyplay med produktionskostnad och egen staleness-klocka', () => {
+    const initial = financedGame()
+    const before = initial.clubs.find(c => c.id === initial.managedClubId)!.finances
+    const store = makeStore(initial)
+    const result = academyActions(store.get, store.set).activateCommunity('bandyplay', 'active')
+    const after = store.game()!
+    expect(result.success).toBe(true)
+    expect(after.communityActivities?.bandyplay).toBe(true)
+    expect(after.communityActivities?.bandySchoolBasic).toBe(false)
+    expect(after.communityActivitiesSince?.bandyplay).toBe(after.currentSeason)
+    expect(after.clubs.find(c => c.id === after.managedClubId)!.finances).toBe(before - BANDYPLAY_ACTIVATION_COST)
+    expect(after.financeLog).toContainEqual(expect.objectContaining({
+      amount: -BANDYPLAY_ACTIVATION_COST,
+      label: 'Föreningsaktivitet: Bandyplay',
     }))
   })
 

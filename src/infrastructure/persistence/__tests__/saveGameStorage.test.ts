@@ -449,6 +449,45 @@ describe('migrateSaveGame', () => {
     const migrated = migrateSaveGame(oldSave)
     expect((migrated.communityActivities as any).socialMedia).toBe(false)
     expect((migrated.communityActivities as any).vipTent).toBe(false)
+    expect((migrated.communityActivities as any).bandySchoolBasic).toBe(false)
+    expect((migrated.communityActivities as any).bandyplay).toBe(false)
+  })
+
+  it('flyttar legacy-bandyplay till barnskolan och låter nya streaming börja av', () => {
+    const migrated = migrateSaveGame({
+      currentSeason: 7,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: true, functionaries: false, julmarknad: false },
+      communityActivitiesSince: { bandyplay: 4 },
+      players: [],
+    })
+    expect(migrated.communityActivities?.bandySchoolBasic).toBe(true)
+    expect(migrated.communityActivities?.bandyplay).toBe(false)
+    expect(migrated.communityActivitiesSince?.bandySchoolBasic).toBe(4)
+    expect(migrated.communityActivitiesSince?.bandyplay).toBeUndefined()
+  })
+
+  it('bevarar nya saves där bandySchoolBasic redan skiljer streaming från skolan', () => {
+    const migrated = migrateSaveGame({
+      currentSeason: 7,
+      communityActivities: { kiosk: 'none', lottery: 'none', bandySchoolBasic: false, bandyplay: true, functionaries: false, julmarknad: false },
+      communityActivitiesSince: { bandyplay: 7 },
+      players: [],
+    })
+    expect(migrated.communityActivities?.bandySchoolBasic).toBe(false)
+    expect(migrated.communityActivities?.bandyplay).toBe(true)
+    expect(migrated.communityActivitiesSince?.bandyplay).toBe(7)
+  })
+
+  it('migrerar ett obesvarat legacy-bandyskolekort så valet inte startar streaming', () => {
+    const migrated = migrateSaveGame({
+      communityActivities: { kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false },
+      pendingEvents: [{
+        id: 'community_bandyplay',
+        choices: [{ id: 'start', effect: { type: 'setCommunity', communityKey: 'bandyplay', communityValue: 'true' } }],
+      }],
+      players: [],
+    })
+    expect(migrated.pendingEvents[0].choices[0].effect.communityKey).toBe('bandySchoolBasic')
   })
 
   it('adds missing top-level fields', () => {

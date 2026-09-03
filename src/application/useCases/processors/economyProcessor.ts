@@ -14,7 +14,8 @@ import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
 import { FACILITY_NODE_DEFS } from '../../../domain/data/facilityNodes'
-import { getOrtFreshnessFactor } from '../../../domain/services/communityRenewalService'
+import { getOrtFreshnessFactor, getSeasonsActive } from '../../../domain/services/communityRenewalService'
+import { getActivityStalenessMultiplier } from '../../../domain/services/communityStandingScaling'
 
 export interface EconomyProcessorResult {
   updatedClubs: Club[]
@@ -96,6 +97,10 @@ export function processEconomy(
     // multipliceras in i publikandelen. Bara den hanterade klubben — AI-klubbar
     // nedan har en egen flat uppskattning och ingen staleness-klocka.
     freshnessFactor: getOrtFreshnessFactor(game, managedClub.reputation),
+    streamingFreshnessMultiplier: getActivityStalenessMultiplier(
+      getSeasonsActive(game.communityActivitiesSince, 'bandyplay', game.currentSeason),
+      managedClub.reputation,
+    ),
   })
 
   if (managedIncome.weeklyBase !== 0) {

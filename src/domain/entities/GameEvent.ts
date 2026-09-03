@@ -179,7 +179,7 @@ export interface EventEffect {
     | 'developmentRateDelta'
     | 'disciplineDelta'
     // ANSPRÅK 4, spak 3: nyhetsinvesteringen. Läser `communityKey` (vilken av
-    // de nio CS-aktiviteterna som förnyas) + `amount` (kostnaden, NEGATIV —
+    // de tio CS-aktiviteterna som förnyas) + `amount` (kostnaden, NEGATIV —
     // samma teckenkonvention som setCommunity/finance). Nollställer
     // aktivitetens staleness-klocka (communityActivitiesSince). Rör ALDRIG
     // communityStanding direkt — domens SKYDDAT-punkt: förnyelsen sänker inte

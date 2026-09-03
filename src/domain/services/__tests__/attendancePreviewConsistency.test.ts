@@ -99,11 +99,11 @@ describe('buildRoundIncomeParamsForNextFixture — isHomeMatch läser den VERKLI
 // finns för att omöjliggöra.
 describe('freshnessFactor trådas genom de delade byggfunktionerna (väg C)', () => {
   const ALL_ON = {
-    kiosk: 'upgraded' as const, lottery: 'intensive' as const, bandyplay: true,
+    kiosk: 'upgraded' as const, lottery: 'intensive' as const, bandySchoolBasic: true, bandyplay: true,
     functionaries: true, julmarknad: false, bandySchool: true, socialMedia: true,
     vipTent: true, pensionarskaffe: true, soppkvall: true, skolbesok: true,
   }
-  const KEYS = ['kiosk', 'lottery', 'bandyplay', 'functionaries', 'bandySchool',
+  const KEYS = ['kiosk', 'lottery', 'bandySchoolBasic', 'bandyplay', 'functionaries', 'bandySchool',
     'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok'] as const
 
   function wornBigClub(seasonsActive: number): SaveGame {
@@ -150,5 +150,12 @@ describe('freshnessFactor trådas genom de delade byggfunktionerna (väg C)', ()
     // EN SANNING: samma tal som publikvägen härleder.
     const fixture = worn.fixtures.find(f => f.homeClubId === worn.managedClubId)!
     expect(wornParams.freshnessFactor).toBe(buildAttendanceParams(worn, fixture)?.freshnessFactor)
+  })
+
+  it('bär streamingens egen staleness till sponsorvägen', () => {
+    const worn = wornBigClub(5)
+    const fresh = wornBigClub(0)
+    expect(buildRoundIncomeParamsForNextFixture(fresh).streamingFreshnessMultiplier).toBe(1)
+    expect(buildRoundIncomeParamsForNextFixture(worn).streamingFreshnessMultiplier).toBeLessThan(1)
   })
 })

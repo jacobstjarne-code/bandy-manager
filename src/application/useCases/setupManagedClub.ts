@@ -300,6 +300,7 @@ export function generateManagedClubEntourage(input: ManagedClubEntourageInput): 
   const communityActivities: CommunityActivities = {
     kiosk: 'none',
     lottery: 'none',
+    bandySchoolBasic: false,
     bandyplay: false,
     functionaries: false,
     julmarknad: false,

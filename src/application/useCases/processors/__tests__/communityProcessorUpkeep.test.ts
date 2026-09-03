@@ -26,15 +26,15 @@ import type { Fixture } from '../../../../domain/entities/Fixture'
 import type { CommunityActivities } from '../../../../domain/entities/Community'
 
 const ALLA_AKTIVITETER: CommunityActivities = {
-  kiosk: 'upgraded', lottery: 'intensive', bandyplay: true, functionaries: true,
+  kiosk: 'upgraded', lottery: 'intensive', bandySchoolBasic: true, bandyplay: true, functionaries: true,
   julmarknad: false, bandySchool: true, socialMedia: true, vipTent: true,
   pensionarskaffe: true, soppkvall: true, skolbesok: true,
 }
-/** Summan av aktivitetsboostarna i communityProcessor (0.08+0.05+0.08+0.05+0.08+0.03+0.10+0.08+0.12). */
-const ALLA_AKTIVITETER_RAW = 0.67
+/** Summan av aktivitetsboostarna i communityProcessor (barnskola 0,08 + streaming 0,05 inkluderade). */
+const ALLA_AKTIVITETER_RAW = 0.72
 
 const INGA_AKTIVITETER: CommunityActivities = {
-  kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false,
+  kiosk: 'none', lottery: 'none', bandySchoolBasic: false, bandyplay: false, functionaries: false,
   julmarknad: false, bandySchool: false, socialMedia: false, vipTent: false,
   pensionarskaffe: false, soppkvall: false, skolbesok: false,
 }
@@ -159,7 +159,7 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
     const game = makeGame(50, ALLA_AKTIVITETER)
     const result = processCommunity(game, makeFixture(game, 3, 1), 0, neutralStandings(game), 10)
     // cs=50 → dämpning 1.0, rykte 50 → faktor 1.0 och drag 0.
-    // Förväntat: seger +2 + aktiviteter 0.67, ingenting avdraget.
+    // Förväntat: seger +2 + aktiviteter 0.72, ingenting avdraget.
     expect(result.csBoost).toBeCloseTo(2 + ALLA_AKTIVITETER_RAW, 6)
   })
 })
@@ -167,7 +167,7 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
 // ── VÄG C (2026-08-31): staleness rör INTE längre csBoost ──────────────────
 //
 // DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Spak 3 byggdes först
-// som en multiplikator på var och en av de nio aktivitetskonstanterna (väg A,
+// som en multiplikator på var och en av de då nio aktivitetskonstanterna (väg A,
 // commit 12c58609). D038 mätte den som tandlös — att förnya köpte +0,3 CS för
 // 318 tkr/säsong — och Jacob flyttade konsekvensen till publiken. Testerna
 // nedan är REGRESSIONSSPÄRREN mot att staleness smyger tillbaka in i CS-vägen:
@@ -175,7 +175,7 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
 describe('processCommunity — VÄG C: csBoost är oberoende av staleness', () => {
   /** Samma spel, men ortsprogrammet har varit igång i N säsonger. */
   function aged(game: SaveGame, seasonsActive: number): SaveGame {
-    const keys = ['kiosk', 'lottery', 'bandyplay', 'functionaries', 'bandySchool',
+    const keys = ['kiosk', 'lottery', 'bandySchoolBasic', 'bandyplay', 'functionaries', 'bandySchool',
       'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok'] as const
     return {
       ...game,
@@ -192,7 +192,7 @@ describe('processCommunity — VÄG C: csBoost är oberoende av staleness', () =
     expect(sliten.csBoost).toBe(fersk.csBoost)
   })
 
-  it('aktivitetsboosten är den råa summan (0,67) × csUpkeepFactor, oavsett ålder', () => {
+  it('aktivitetsboosten är den råa summan (0,72) × csUpkeepFactor, oavsett ålder', () => {
     const game = aged(makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER), 20)
     const utan = processCommunity(makeGame(CS_UPKEEP_REP_CEIL, INGA_AKTIVITETER), null, 0, neutralStandings(game), 10)
     const med = processCommunity(game, null, 0, neutralStandings(game), 10)
@@ -202,7 +202,7 @@ describe('processCommunity — VÄG C: csBoost är oberoende av staleness', () =
   it('klockan backfylls fortfarande — freshness-vägen och förnyelsekortet behöver den', () => {
     const game = makeGame(CS_UPKEEP_REP_CEIL, ALLA_AKTIVITETER)
     const result = processCommunity({ ...game, communityActivitiesSince: undefined }, null, 0, neutralStandings(game), 10)
-    expect(Object.keys(result.updatedCommunityActivitiesSince)).toHaveLength(9)
+    expect(Object.keys(result.updatedCommunityActivitiesSince)).toHaveLength(10)
     for (const v of Object.values(result.updatedCommunityActivitiesSince)) {
       expect(v).toBe(game.currentSeason)
     }

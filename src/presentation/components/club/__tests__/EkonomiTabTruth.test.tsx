@@ -12,6 +12,7 @@ describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', (
         ...base.communityActivities!,
         kiosk: 'upgraded' as const,
         lottery: 'intensive' as const,
+        bandySchoolBasic: true,
         bandyplay: true,
         functionaries: true,
         bandySchool: true,
@@ -37,5 +38,7 @@ describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', (
     expect(html).not.toContain('~8 500 netto/match')
     expect(html).not.toContain('~1 500/match')
     expect(html).not.toContain('~4 000 besparing/match')
+    expect(html).toContain('Bandyplay')
+    expect(html).toContain('sponsorerna får mer för pengarna')
   })
 })

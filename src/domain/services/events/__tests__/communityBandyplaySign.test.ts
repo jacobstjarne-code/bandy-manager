@@ -32,5 +32,7 @@ describe('community_bandyplay — tecknet ska matcha texten (kostnad, inte vinst
     const clubAfter = game.clubs.find(c => c.id === game.managedClubId)!
 
     expect(clubAfter.finances).toBeLessThan(clubBefore.finances)
+    expect(game.communityActivities?.bandySchoolBasic).toBe(true)
+    expect(game.communityActivities?.bandyplay).toBe(false)
   })
 })

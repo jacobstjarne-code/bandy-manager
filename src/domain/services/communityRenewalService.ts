@@ -51,10 +51,10 @@ import {
   getDeclineChoiceLabel,
 } from '../data/communityRenewalText'
 
-/** De nio CS-bärande aktiviteterna, i samma ordning som communityProcessor.ts
+/** De tio CS-bärande aktiviteterna, i samma ordning som communityProcessor.ts
  *  summerar dem. `julmarknad`/`vipTent` saknas medvetet — de har ingen csBoost. */
 export const STALEABLE_ACTIVITY_KEYS: readonly StaleableActivityKey[] = [
-  'kiosk', 'lottery', 'bandyplay', 'functionaries', 'bandySchool',
+  'kiosk', 'lottery', 'bandySchoolBasic', 'bandyplay', 'functionaries', 'bandySchool',
   'socialMedia', 'pensionarskaffe', 'soppkvall', 'skolbesok',
 ] as const
 
@@ -64,12 +64,14 @@ export const STALEABLE_ACTIVITY_KEYS: readonly StaleableActivityKey[] = [
  * summerar dem, och `getOrtFreshnessFactor` nedan VÄGER med dem. Två kopior av
  * samma nio tal hade kunnat glida isär utan att något test märkte det
  * (CLAUDE.md, "EN SANNING, ETT STÄLLE"). Värdena är oförändrade från D037:s
- * mätta balans — summan är 0,67 CS/omgång med alla nio igång.
+ * mätta balans, plus Bandyplays beslutade 0,05 — summan är 0,72 CS/omgång
+ * med alla tio igång.
  */
 export const ACTIVITY_CS_BOOST: Record<StaleableActivityKey, number> = {
   kiosk: 0.08,
   lottery: 0.05,
-  bandyplay: 0.08,
+  bandySchoolBasic: 0.08,
+  bandyplay: 0.05,
   functionaries: 0.05,
   bandySchool: 0.08,
   socialMedia: 0.03,
@@ -173,7 +175,7 @@ export function getActivityStaleness(
  *    Hypotesen var att ett min()-lutande medel (potensmedel med p < 1) skulle
  *    göra en försummad aktivitet mer kännbar och därmed förnyelsen mer värd.
  *    Det gör tvärtom, och orsaken är strukturell: den klubb som ALDRIG förnyar
- *    har alla nio aktiviteter exakt lika gamla, så VARJE potensmedel returnerar
+ *    har alla tio aktiviteter exakt lika gamla, så VARJE potensmedel returnerar
  *    samma tal för den — dess färskhet är bit-identisk vid p = 1, 0,25, −1 och
  *    −4 (uppmätt 0,822 i alla fyra). Den klubb som förnyar har per konstruktion
  *    en trappa av åldrar, och just den träffas av ett min()-lutande medel.

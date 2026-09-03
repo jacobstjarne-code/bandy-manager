@@ -140,13 +140,15 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
         </div>
         {/* Samhällsaktiviteter — MASTER_OPPET.md sluttest-ortentab-falsk-kommentar
             (2026-09-01): påstods tidigare bara påverka bygdens puls, inte inkomst
-            — falskt, motsagt av economyService.ts:626-627/655-662. Alla tre
-            (bandyplay/functionaries/bandySchool) ger communityMatchIncome. */}
+            — falskt, motsagt av economyService.ts. Barnskolan, funktionärer
+            och den avancerade skolan ger communityMatchIncome eller
+            communityRoundIncome; Bandyplay påverkar sponsorintäkt och drift. */}
         <p className="h-label" style={{ marginBottom: 6 }}>ENGAGEMANG</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {/* EkonomiTab äger aktivering — read-only status här */}
           {([
-            { key: 'bandyplay' as const,     label: '⛸️ Bandyskola för barn', active: !!ca?.bandyplay },
+            { key: 'bandySchoolBasic' as const, label: '⛸️ Bandyskola för barn', active: !!ca?.bandySchoolBasic },
+            { key: 'bandyplay' as const,        label: '📡 Bandyplay', active: !!ca?.bandyplay },
             { key: 'functionaries' as const,  label: '🏋️ Funktionärer',         active: !!ca?.functionaries },
             { key: 'bandySchool' as const,    label: '🏫 Bandyskola avancerad', active: !!ca?.bandySchool },
           ]).map(({ key, label, active }) => (
@@ -434,7 +436,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             {(() => {
               const agendaActivityHints: Partial<Record<string, { key: string; label: string }[]>> = {
                 youth: [
-                  { key: 'bandyplay', label: 'Bandyskola (gratis)' },
+                  { key: 'bandySchoolBasic', label: 'Bandyskola (gratis)' },
                   { key: 'bandySchool', label: 'Bandyskola avancerad' },
                   { key: 'skolbesok', label: 'Skolbesök' },
                 ],

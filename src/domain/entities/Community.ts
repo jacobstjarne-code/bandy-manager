@@ -4,6 +4,9 @@ import type { PendingDemand } from './Demand'
 export interface CommunityActivities {
   kiosk: 'none' | 'basic' | 'upgraded'
   lottery: 'none' | 'basic' | 'intensive'
+  /** Barnverksamheten/BandyKul-modellen. Optional för äldre saves före migrering. */
+  bandySchoolBasic?: boolean
+  /** Bandyplay: ligans streaming/exponering, inte bandyskolan. */
   bandyplay: boolean
   functionaries: boolean
   julmarknad: boolean
@@ -28,6 +31,7 @@ export interface CommunityActivities {
 export type StaleableActivityKey =
   | 'kiosk'
   | 'lottery'
+  | 'bandySchoolBasic'
   | 'bandyplay'
   | 'functionaries'
   | 'bandySchool'

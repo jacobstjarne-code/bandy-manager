@@ -9,8 +9,8 @@ import { getRivalry } from '../data/rivalries'
 import { getJournalistAttendanceModifier } from './journalistVisibilityService'
 import { FixtureStatus, PlayerPosition } from '../enums'
 import { safeStandingPosition } from './standingsService'
-import { getOrtFreshnessFactor } from './communityRenewalService'
-import { getCsDiminishingFactor, getMatchRevenueRepDampFactor } from './communityStandingScaling'
+import { getOrtFreshnessFactor, getSeasonsActive } from './communityRenewalService'
+import { getActivityStalenessMultiplier, getCsDiminishingFactor, getMatchRevenueRepDampFactor } from './communityStandingScaling'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
@@ -212,8 +212,8 @@ export interface RoundIncomeBreakdown {
   weeklyBase: number             // 3000 + reputation × 50
   sponsorIncome: number          // active sponsors' weeklyIncome
   matchRevenue: number           // ticket/gate revenue for a home match (0 if away/no match)
-  communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
-  communityRoundIncome: number   // lottery/bandySchool/socialMedia per round, net
+  communityMatchIncome: number   // kiosk/vipTent/functionaries/bandySchoolBasic per home match, net
+  communityRoundIncome: number   // lottery/bandySchoolBasic/bandySchool/socialMedia/bandyplay per round, net
   volunteerIncome: number        // active volunteers, role-based income (avg 340/vol) per round
   kommunBidrag: number           // reputation × communityStanding-based bidrag (once at round 1)
   weeklyWages: number            // monthly salary total / 4
@@ -263,6 +263,10 @@ export interface CalcRoundIncomeParams {
    *  matchRevenue och den publikberoende communityMatchIncome. Utelämnad ⇒ 1
    *  (ingen påverkan). */
   freshnessFactor?: number
+  /** Bandyplay-streamingens egen staleness. Påverkar bara den additiva
+   * sponsorbonusen; aktivitetens produktionskostnad fortsätter tills den
+   * stängs av. Utelämnad ⇒ ny/färsk satsning (1). */
+  streamingFreshnessMultiplier?: number
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -397,6 +401,7 @@ export interface RoundIncomeParamsForNextFixture {
    *  klubben (economyProcessor.ts; AI-klubbar har en egen flat uppskattning),
    *  så den här är alltid den hanterade klubbens. */
   freshnessFactor: number
+  streamingFreshnessMultiplier: number
   volunteers: string[]
   volunteerRoster: Volunteer[]
   sponsorNetworkMood: number | undefined
@@ -445,6 +450,12 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
     ),
     isFirstRound: nextFixture?.matchday === 1,
     freshnessFactor: club ? getOrtFreshnessFactor(game, club.reputation) : 1,
+    streamingFreshnessMultiplier: club
+      ? getActivityStalenessMultiplier(
+          getSeasonsActive(game.communityActivitiesSince, 'bandyplay', game.currentSeason),
+          club.reputation,
+        )
+      : 1,
     volunteers: game.volunteers ?? [],
     volunteerRoster: generateVolunteerRoster(volunteerSeedNum, 4),
     sponsorNetworkMood: game.sponsorNetworkMood,
@@ -462,10 +473,11 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
  *
  * Community income is split into two parts:
  *   communityMatchIncome — events tied to a home match (kiosk, VIP-tält, etc.)
- *   communityRoundIncome — per-round regardless of home/away (lottery, bandySchool, socialMedia)
+ *   communityRoundIncome — per-round regardless of home/away (lottery, schools, socialMedia, Bandyplay production)
  *
- * bandyplay appears in both: per-match deltagaravgifter + per-round bandyskola-drift.
- * This matches the existing roundProcessor behaviour and is preserved intentionally.
+ * bandySchoolBasic appears in both: per-match deltagaravgifter + per-round
+ * bandyskola-drift. Bandyplay is streaming and affects sponsors plus a flat
+ * production cost — never a fabricated rights-income row.
  */
 // Lotteriets hemmabonus (Jacobs order: "Lotter säljs i bygden, mest på
 // match"): bara försäljningsdelen skalar upp på hemmamatch-omgångar — den
@@ -540,6 +552,14 @@ const KIOSK_RUNNING_COST_BASIC = 1500
 const KIOSK_RUNNING_COST_UPGRADED = 2500
 const VIP_RUNNING_COST = 2000
 
+/** SPEC_BANDYPLAY_STREAMING_OCH_BANDYSKOLA_2026-09-03, val C.
+ * 4 % ligger under den ratificerade flaggskepps-skalan (~5 %), medan 100 kr
+ * i produktion per omgång gör satsningen nära noll för en liten sponsorportfölj
+ * och svagt positiv först när klubben faktiskt har exponering att sälja. */
+export const BANDYPLAY_ACTIVATION_COST = 5000
+export const BANDYPLAY_RUNNING_COST = 100
+export const BANDYPLAY_SPONSOR_BONUS_MAX = 0.04
+
 // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom per nod —
 // RAPPORT_BYGGNODLOFTEN_2026-08-27.md): facilityNodes.ts's "Kiosk &
 // servering" lovade "Ekonomi ↑" utan att någon kod läste vilka noder som
@@ -555,7 +575,8 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     sponsorNetworkMood, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
     communityStanding, isFirstRound, legendSalaryCost, journalistAttendanceModifier,
-    weatherAttendanceModifier, matchAttendance, builtNodeIds, freshnessFactor } = params
+    weatherAttendanceModifier, matchAttendance, builtNodeIds, freshnessFactor,
+    streamingFreshnessMultiplier } = params
   const hasKioskNode = (builtNodeIds ?? []).includes('kiosk')
 
   // ── Wages ─────────────────────────────────────────────────────────────────
@@ -573,7 +594,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   // ── Sponsors ──────────────────────────────────────────────────────────────
   // 0.0086 ratificerat 2026-06-23 (Opus-balansbeslut): flaggskepp×3 ≈ +5% säsongsintäkt,
   // miss×3 ≈ −3.3% — kännbart men inneslutet. Mät-script: scripts/mat-sponsorgunst.ts.
-  const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.0086
+  const streamingSponsorBonus = communityActivities?.bandyplay
+    ? BANDYPLAY_SPONSOR_BONUS_MAX * Math.max(0, Math.min(1, streamingFreshnessMultiplier ?? 1))
+    : 0
+  const sponsorMoodMultiplier = 1 + ((sponsorNetworkMood ?? 50) - 50) * 0.0086 + streamingSponsorBonus
   const sponsorIncome = Math.round(sponsors
     .filter(s => s.contractRounds > 0)
     .reduce((sum, s) => sum + s.weeklyIncome, 0) * sponsorMoodMultiplier)
@@ -641,7 +665,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
         )
       }
       communityMatchIncome += communityActivities.functionaries ? 1000 : 0
-      communityMatchIncome += communityActivities.bandyplay
+      communityMatchIncome += communityActivities.bandySchoolBasic
         ? 250 + Math.round(rand() * 250) : 0
       if (communityActivities.vipTent) {
         communityMatchIncome += Math.max(
@@ -654,7 +678,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
       let runningCost = 0
       if (communityActivities.kiosk === 'upgraded') runningCost += KIOSK_RUNNING_COST_UPGRADED
       else if (communityActivities.kiosk === 'basic') runningCost += KIOSK_RUNNING_COST_BASIC
-      if (communityActivities.bandyplay) runningCost += 1000
+      if (communityActivities.bandySchoolBasic) runningCost += 1000
       if (communityActivities.vipTent) runningCost += VIP_RUNNING_COST
       communityMatchIncome -= runningCost
     }
@@ -669,9 +693,12 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     } else if (communityActivities.lottery === 'basic') {
       communityRoundIncome += Math.round((500 + Math.round(rand() * 750)) * lotteryHomeMult) - 500
     }
-    if (communityActivities.bandyplay) {
+    if (communityActivities.bandySchoolBasic) {
       // Per-round participant fees minus operational cost
       communityRoundIncome += (250 + Math.round(rand() * 500)) - 1000
+    }
+    if (communityActivities.bandyplay) {
+      communityRoundIncome -= BANDYPLAY_RUNNING_COST
     }
     if (communityActivities.socialMedia) {
       communityRoundIncome -= 500  // cost only; reputation bonus handled separately
