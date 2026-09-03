@@ -199,7 +199,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'community',
       requiredEra: ['survival'],
       question: `${leader} vill starta ett 50-50-lotteri vid hemmamatcherna. Halva potten till vinnaren, resten till att starta en ungdomsklack.`,
-      optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning', effectColor: 'success' },
+      optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning (chansning)', effectColor: 'success' },
       optionB: { label: 'Inte nu', effect: `${leader} besviken`, effectColor: 'muted' },
     },
   ]
@@ -377,8 +377,16 @@ export function resolveWeeklyDecision(
       return [{ type: 'boardPatience', delta: -4 }]
 
     case 'survival_emergency_lotto':
-      if (choice === 'A')
-        return [{ type: 'finances', delta: 5_000 }, { type: 'supporterMood', delta: 3 }]
+      // JACOBS BESLUT (DOM_O20_K3K5_KLASS_2026-09-02): lotteriet är ett
+      // hoppäventyr med låg insats, inte ett balanserat val — LITEN nedsida
+      // mot en stor uppsida (asymmetrisk chansning), inte en jämn avvägning.
+      // 80% ger den fulla potten, 20% ger bara en mindre arrangemangskostnad
+      // i stället för vinst — aldrig ett stort minus.
+      if (choice === 'A') {
+        const roll = mulberry32(game.currentMatchday * 9301 + decision.id.length * 37)()
+        if (roll < 0.8) return [{ type: 'finances', delta: 5_000 }, { type: 'supporterMood', delta: 3 }]
+        return [{ type: 'finances', delta: -1_000 }]
+      }
       return [{ type: 'supporterMood', delta: -2 }]
 
     default:
