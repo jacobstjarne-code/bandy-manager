@@ -349,6 +349,16 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | kf3-imminentskydd-vilande | Imminent-skyddet i beslutsbudgeten är scaffoldat men vilande — aktiveras först om GameEvent får `expiresRound` | stale | Code | BACKLOG.md:673 | decisionBudgetService.ts:160-172 castar runt att GameEvent saknar expiresRound — fältet finns inte, egen kommentar bekräftar |
 | kf3-beslutsbudget-playtest | KF3 playtest kvar: 4+ beslut samma omgång → 3 surfar, kortet visar kö, nästa omgång dräneras vid resolve | verifierad | Jacob | BACKLOG.md:673 | Jacob playtestar [Verifierat 2026-09-01 (Code): BACKLOG.md:673 avslutas fortfarande med "Jacobs playtest:"-kravet (4+ beslut samma omgång → 3 surfar/kö/dränering) utan någon efterföljande logg som bekräftar att detta faktiskt kördes i spel.] |
 
+## KF2. ÖVERLÄMNING 2 — TRE ÅTERSTÅENDE POSTER (2026-09-03 incoming-svep)
+
+`docs/sprints/OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md` inventerade 16 poster ur `docs/incoming/Överlämning 2/` (nu arkiverad, `_arkiv-2026-09/`). Omverifierat mot kod 2026-09-03: fyra av de sju då-öppna posterna är sedan dess byggda/stängda (entity-dedup-taggning på `PortalBeat.tsx`, D1 trait-emoji, Portal-orientering punkt 1, transfer-bid-ripplens konsument — retirerad, inte byggd, se `orsakVerkanService.ts`). Tre kvarstår genuint.
+
+| id | beskrivning | status | ägare | källa | nästa-åtgärd |
+|---|---|---|---|---|---|
+| overlamning2-portal-orientering-punkt2 | Portal-orienteringens punkt 2 — statefull övergångsfönster-copy ("har spelaren sett detta förut") — ej byggd, noll träffar i kod | verifierad | Code | OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md rad 33 + incoming-svep 2026-09-03 | Litet enligt ursprungsinventeringen ("en if-sats"), men den exakta copyn ligger i den arkiverade bundler-HTML:n (`Förslag - Portal-orientering (punkt 6)`) och är inte uppackad än — packa upp filen till läsbar text innan bygge, gissa inte copyn (mock-driven design, CLAUDE.md §4). |
+| overlamning2-treneracr-current-placering | `game.trainerArc.current`/`getArcMoodText()` — full svensk text per fas, fortfarande noll anropare utanför egen fil (text-utan-yta, §7) | verifierad | Design/Jacob | OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md rad 19 + incoming-svep 2026-09-03 (kod omgrep:ad, fortfarande 0 externa träffar på getArcMoodText/trainerArc.current) | Kräver ett Design-beslut om var texten hör hemma — in i `TranareTab.tsx` (risk för dubblering med `managerProfile`s befintliga narrativ) eller ett eget litet kort. Dödmärk, radera aldrig. |
+| overlamning2-weeklydecision-boardmeeting-konsolidering | `weeklyDecisionService` (egen resolver) och `boardMeetingStateResolver` är fortfarande genuint separata från den gemensamma `resolveEvent`-modellen | verifierad | Code | OVERLAMNING2_STEG0_INVENTERING_2026-08-22.md rad 20 + incoming-svep 2026-09-03 (`resolveWeeklyDecision` fortfarande egen import i gameFlowActions.ts, ingen resolveEvent-koppling) | Arkitekturbeslut som rör flera skärmar/stores ("Medel"-storlek), inte en mekanisk refaktor — inget beslut fattat om det ska göras. |
+
 ## D. PARKERADE
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |

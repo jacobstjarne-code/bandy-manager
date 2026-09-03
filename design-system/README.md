@@ -142,7 +142,7 @@ Fonts are system-only — no `fonts/` folder required. See **Font substitution**
 
 ### Casing
 
-- **SECTION LABELS: UPPERCASE with 2px letter-spacing, 8px size, emoji prefix.** e.g. `💰 EKONOMI`, `🏒 MATCHEN`, `👥 TRUPP`.
+- **SECTION LABELS: UPPERCASE with 2.5px letter-spacing, 9px size, emoji prefix.** e.g. `💰 EKONOMI`, `🏒 MATCHEN`, `👥 TRUPP`.
 - **CTA buttons: UPPERCASE with 1.5px letter-spacing** — only the big screen-closing `.btn-cta` ("SPELA OMGÅNG 1 →").
 - **Card titles, body, tags: Sentence case.** *"Nästa match"*, *"Förläng kontrakt"*, *"Välj trupp"*.
 - **"Bandy" is lowercase mid-sentence**, "Bandy Manager" is the product name.
@@ -444,7 +444,7 @@ None — the system uses `Georgia` and `system-ui`. Both ship with every OS. If 
 
 1. **CSS vars only.** Zero hardcoded hex in `.tsx` files (SVG-illustrations in `ClubBadge.tsx` excepted — those are brand colors per-club).
 2. **Two card classes only.** `.card-sharp` for data, `.card-round` for narrative. No inline `borderRadius`.
-3. **Section labels are always 8px / 2px-ls / uppercase with a prefix emoji.**
+3. **Section labels are always 9px / 2.5px-ls / uppercase with a prefix emoji.**
 4. **Tight spacing.** 10×12 card padding, 6 px grid gaps.
 5. **One primary per screen.** `.btn-primary` max once; everything else is `.btn-secondary`, `.btn-ghost`, `.btn-outline`.
 6. **CTAs use `.btn-cta` + `.btn .btn-primary`** — never styled inline.
