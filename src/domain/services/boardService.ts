@@ -73,6 +73,23 @@ export const BOARD_EXPECTATION_ANCHOR_POSITION: Record<ClubExpectation, number> 
 }
 
 /**
+ * Sportslig avskedsgrind. Survive-klubben får den nåd premissen lovar:
+ * en ensam dålig säsong eller en ensam utsliten relation räcker inte.
+ * Men när båda signalerna har hållit i sig finns en verklig konsekvens,
+ * så portalens ultimatum är inte ett tomt löfte.
+ */
+export function shouldFireManagerForSport(
+  expectation: ClubExpectation,
+  boardPatience: number,
+  consecutiveFailures: number,
+): boolean {
+  if (expectation === ClubExpectation.Survive) {
+    return boardPatience <= 15 && consecutiveFailures >= 3
+  }
+  return boardPatience <= 15 || consecutiveFailures >= 3
+}
+
+/**
  * Skutskär-auditens test 2 (boardVerdictConsistency.test.ts), Jacobs dom
  * 2026-08-24: satisfaction beräknades tidigare OBEROENDE ur position/
  * anchor-band (ett ögonblicksomdöme) medan portalens boardPatience-zon

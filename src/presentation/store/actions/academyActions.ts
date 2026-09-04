@@ -6,6 +6,7 @@ import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenew
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
 import { buildAcademyPromotionLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { getPromotionTiming } from '../../../domain/services/academyService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -207,14 +208,7 @@ export function academyActions(get: Get, set: Set) {
       const club = game.clubs.find(c => c.id === game.managedClubId)
       if (!club) return { success: false, error: 'Ingen klubb hittad' }
 
-      let timing: 'early' | 'good' | 'late'
-      if (youthPlayer.currentAbility < 25 || youthPlayer.confidence < 40) {
-        timing = 'early'
-      } else if (youthPlayer.currentAbility > 35 && youthPlayer.confidence > 70 && youthPlayer.age >= 17) {
-        timing = 'late'
-      } else {
-        timing = 'good'
-      }
+      const timing = getPromotionTiming(youthPlayer)
 
       // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
       // promotionRound skrivs vidare till clubMemoryService.ts:s MemoryEvent.matchday
@@ -416,12 +410,10 @@ export function academyActions(get: Get, set: Set) {
       if (player.age > 23) return { success: false, error: 'Lån är bara för spelare under 24 år' }
       if (player.isOnLoan) return { success: false, error: 'Spelaren är redan på lån' }
 
-      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday
-      // — transferProcessor.ts jämför LoanDeal.startRound/endRound direkt mot
-      // nextMatchday (matchday-skala).
-      const currentRound = game.fixtures
-        .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
-        .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
+      // Lånets klocka är kalenderns matchday, även när senaste spelade match
+      // var cup. SaveGame.currentMatchday är den kanoniska källan; att härleda
+      // från enbart ligafixturer kortade annars lån som tecknades under cupveckor.
+      const currentRound = game.currentMatchday
 
       const loanDeal: LoanDeal = {
         playerId,

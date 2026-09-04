@@ -51,6 +51,21 @@ interface EkonomiTabProps {
   onNavigateTab?: (tab: string) => void
 }
 
+export function sponsorSearchFeedback(
+  result: ReturnType<EkonomiTabProps['seekSponsor']>,
+): { success: boolean; text: string } {
+  if (result.success && result.sponsor) {
+    return {
+      success: true,
+      text: `${result.sponsor.name} tecknade avtal! +${formatFinanceAbs(result.sponsor.weeklyIncome)}/omg`,
+    }
+  }
+  return {
+    success: false,
+    text: result.error ?? 'Ingen intresserad just nu. (2,5 tkr avdraget)',
+  }
+}
+
 /**
  * @cites game.financeLog, entry.label, entry.round, entry.amount, fanMood, game.licenseStatus
  */
@@ -92,6 +107,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   ]
   const projectedIncome = variableCashflows.reduce((sum, amount) => sum + Math.max(0, amount), 0)
   const projectedCosts = income.weeklyWages + income.weeklyArenaCost + income.weeklyLegendCost + income.facilityUpkeep
+    + income.municipalLoanCost + income.busContractCost
     + variableCashflows.reduce((sum, amount) => sum + Math.max(0, -amount), 0)
   const weeklyWages = income.weeklyWages
   const netPerRound = income.netPerRound
@@ -240,7 +256,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       noAction: true,
     },
     {
-      icon: '🏫', name: 'Bandyskola',
+      icon: '🏫', name: 'Bandyskola → Akademi',
       active: !!ca?.bandySchool,
       status: ca?.bandySchool ? 'Aktiv' : 'Ej startad',
       income: activityIncome(bandySchoolDelta), incomeDelta: bandySchoolDelta,
@@ -394,13 +410,10 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
               </span>
               <button
                 className="btn btn-outline"
+                disabled={club.finances < 2500}
                 onClick={() => {
                   const result = seekSponsor()
-                  if (result.success && result.sponsor) {
-                    setSponsorFeedback({ success: true, text: `${result.sponsor.name} tecknade avtal! +${formatFinanceAbs(result.sponsor.weeklyIncome)}/omg` })
-                  } else {
-                    setSponsorFeedback({ success: false, text: 'Ingen intresserad just nu. (2,5 tkr avdraget)' })
-                  }
+                  setSponsorFeedback(sponsorSearchFeedback(result))
                   setTimeout(() => setSponsorFeedback(null), 4000)
                 }}
                 style={{ fontSize: 12, padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: 5 }}
@@ -430,7 +443,9 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: row.incomeDelta === undefined ? 'var(--text-muted)' : row.incomeDelta > 0 ? 'var(--success)' : row.incomeDelta < 0 ? 'var(--danger)' : 'var(--text-muted)' }}>
-                {row.income}
+                {!row.active && row.actionKey
+                  ? `Om du startar: ${row.income.replace('Nästa omg: ', '')}`
+                  : row.income}
               </span>
             </div>
             {row.note && (

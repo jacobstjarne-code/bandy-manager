@@ -478,6 +478,10 @@ export interface SaveGame {
   lastEconomicStressRound?: number
   /** Säsongen då det tvååriga exklusiva kioskavtalet åter kan omförhandlas. */
   kioskSupplyContractUntilSeason?: number
+  /** Bussavtalet från ekonomikrisens mikrobeslut. Originalspecen låser
+   *  kostnaden till 2 000 kr/omgång och bindningen till tre säsonger. */
+  busContractRoundCost?: number
+  busContractUntilSeason?: number
   pendingPressConference?: import('../entities/GameEvent').GameEvent
   pendingCSPress?: import('../entities/GameEvent').GameEvent
   lastCSPressMatchday?: number  // for C-B1 cooldown tracking
@@ -755,6 +759,10 @@ export interface SaveGame {
     resolvedMatchday?: number          // efterdyning — counter-oberoende stämpel vid resolution
     soldToSurvivePlayerName?: string   // endast sold_star — fångas FÖRE removePlayerId
   }
+  /** Kommunlånet från ekonomikrisens fas 3. Tre säsongers bindning;
+   *  årskostnaden kommer från den låsta originalspecens debtLoad=100 000. */
+  municipalLoanAnnualCost?: number
+  municipalLoanUntilSeason?: number
 
   // DREAM-014 — Tyst mode (extend preferredMatchMode handled here)
   // Uses preferredMatchMode: 'silent' (existing field extended)

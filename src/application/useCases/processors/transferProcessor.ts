@@ -299,24 +299,46 @@ export function processLoans(
   const inboxItems: InboxItem[] = []
 
   let loanUpdatedPlayers = [...availabilityUpdatedPlayers]
-  const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextMatchday <= d.endRound)
   const returnedLoanPlayerIds: string[] = []
+  const updatedLoanDeals: LoanDeal[] = []
 
-  for (const deal of activeLoanDeals) {
+  for (const deal of game.loanDeals ?? []) {
+    let updatedDeal = deal
+
+    // startRound är den senast färdigspelade matchdagen. Ett N-omgångarslån
+    // har därför N rapporttillfällen: startRound+1 till och med endRound.
+    if (nextMatchday > deal.startRound && nextMatchday <= deal.endRound) {
+      const played = localRand() > 0.25
+      const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
+      const goals = played && localRand() > 0.6 ? 1 : 0
+      const newMatchesPlayed = deal.matchesPlayed + (played ? 1 : 0)
+      updatedDeal = {
+        ...deal,
+        matchesPlayed: newMatchesPlayed,
+        averageRating: newMatchesPlayed > 0
+          ? Math.round(((deal.averageRating * deal.matchesPlayed + rating) / newMatchesPlayed) * 10) / 10
+          : rating,
+        // Lånen är högst åtta matchdagar. Behåll samtliga rapporter eftersom
+        // returens mål/assist summeras ur dem; en presentationscap här tappade
+        // annars de två första matcherna på det längsta lånet.
+        reports: [...deal.reports, { round: nextMatchday, played, rating, goals, assists: 0 }],
+      }
+    }
+
     if (nextMatchday >= deal.endRound) {
       returnedLoanPlayerIds.push(deal.playerId)
-      const participationRate = deal.totalMatches > 0 ? deal.matchesPlayed / deal.totalMatches : 0
+      const participationRate = updatedDeal.totalMatches > 0 ? updatedDeal.matchesPlayed / updatedDeal.totalMatches : 0
       const caBoost = participationRate >= 0.75 ? 3 + Math.floor(localRand() * 3)
         : participationRate >= 0.5 ? 1 + Math.floor(localRand() * 2) : 0
       // Merge loan stats into player's season stats on return
       let loanGoals = 0, loanAssists = 0
-      for (const r of deal.reports) { loanGoals += r.goals ?? 0; loanAssists += r.assists ?? 0 }
+      for (const r of updatedDeal.reports) { loanGoals += r.goals ?? 0; loanAssists += r.assists ?? 0 }
       loanUpdatedPlayers = loanUpdatedPlayers.map(p => {
         if (p.id !== deal.playerId) return p
         const prevStats = p.seasonStats
-        const combinedGames = prevStats.gamesPlayed + deal.matchesPlayed
+        const combinedGames = prevStats.gamesPlayed + updatedDeal.matchesPlayed
         const combinedRating = combinedGames > 0
-          ? (prevStats.averageRating * prevStats.gamesPlayed + deal.averageRating * deal.matchesPlayed) / combinedGames
+          ? (prevStats.averageRating * prevStats.gamesPlayed + updatedDeal.averageRating * updatedDeal.matchesPlayed) / combinedGames
           : prevStats.averageRating
         const updatedPlayer = {
           ...p,
@@ -331,7 +353,7 @@ export function processLoans(
           },
           careerStats: {
             ...p.careerStats,
-            totalGames: p.careerStats.totalGames + deal.matchesPlayed,
+            totalGames: p.careerStats.totalGames + updatedDeal.matchesPlayed,
             totalGoals: p.careerStats.totalGoals + loanGoals,
             totalAssists: p.careerStats.totalAssists + loanAssists,
           },
@@ -359,6 +381,8 @@ export function processLoans(
           isRead: false,
         })
       }
+    } else {
+      updatedLoanDeals.push(updatedDeal)
     }
   }
 
@@ -370,26 +394,6 @@ export function processLoans(
         return newIds.length > 0 ? { ...c, squadPlayerIds: [...c.squadPlayerIds, ...newIds] } : c
       })
     : clubs
-
-  const updatedLoanDeals: LoanDeal[] = (game.loanDeals ?? [])
-    .filter(d => !returnedLoanPlayerIds.includes(d.playerId))
-    .map(d => {
-      if (nextMatchday % 2 === 0 && nextMatchday < d.endRound) {
-        const played = localRand() > 0.25
-        const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
-        const goals = played && localRand() > 0.6 ? 1 : 0
-        const newMatchesPlayed = d.matchesPlayed + (played ? 1 : 0)
-        return {
-          ...d,
-          matchesPlayed: newMatchesPlayed,
-          averageRating: newMatchesPlayed > 0
-            ? Math.round(((d.averageRating * d.matchesPlayed + rating) / newMatchesPlayed) * 10) / 10
-            : rating,
-          reports: [...d.reports.slice(-5), { round: nextMatchday, played, rating, goals, assists: 0 }],
-        }
-      }
-      return d
-    })
 
   return { loanUpdatedPlayers, updatedClubs, updatedLoanDeals, inboxItems }
 }

@@ -143,13 +143,7 @@ describe('captureSystemDecision — ask_mecenat (criticalEconomy, form 1)', () =
 })
 
 describe('captureSystemDecision — take_loan (criticalEconomy, form 1, löpande kostnad)', () => {
-  // A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): kandidat kräver nu minst
-  // två av {namngiven person, irreversibelt, spänning}. take_loan har ingen
-  // namngiven person, är inte irreversibelt, och bara spänning=true — score
-  // 1, kvalificerar aldrig. Byggarens meningslogik finns kvar (text-utan-yta,
-  // inte superseterad — CLAUDE.md §7) ifall kriterierna justeras, men
-  // captureSystemDecision filtrerar bort den strukturellt nu.
-  it('economicCrisisState.outcome==="loan": kvalificerar INTE (score 1 av 3, under tröskeln)', () => {
+  it('economicCrisisState.outcome==="loan": den bindande treårsskulden kvalificerar som beslut', () => {
     const gameBefore = makeGame()
     const gameAfter: SaveGame = {
       ...gameBefore,
@@ -164,7 +158,11 @@ describe('captureSystemDecision — take_loan (criticalEconomy, form 1, löpande
       resolved: false, systemhandelse: true,
     }
     const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'take_loan')
-    expect(candidate).toBeNull()
+    expect(candidate).toMatchObject({
+      irreversible: true,
+      tension: true,
+      moneyAmount: 300_000,
+    })
   })
 
   it('economicCrisisState.outcome saknas/matchar inte "loan": null, ingen falsk mening', () => {
@@ -648,9 +646,8 @@ describe('buildDecisionLedgerEntry — Fas 2 dual-write', () => {
   })
 
   it('kandidat utan subject (t.ex. take_loan-formen — inget namedPerson) ⇒ subject undefined i liggarposten', () => {
-    // take_loan kvalificerar aldrig genom captureSystemDecision (score 1 av 3,
-    // se egen describe ovan) — konstruerad candidate direkt för att testa
-    // buildDecisionLedgerEntry:s hantering av "inget subject satt" isolerat.
+    // Konstruerad candidate direkt för att testa buildDecisionLedgerEntry:s
+    // hantering av "inget subject satt" isolerat.
     const candidate = { eventId: 'x', round: 10, season: 1, systemsAffectedCount: 1, irreversible: false, tension: true, moneyAmount: 300000, sentence: 'Du tog lånet. Det kostade er varje månad sedan dess.' }
     const entry = buildDecisionLedgerEntry(candidate, 'criticalEconomy', 10)
     expect(entry.subject).toBeUndefined()
@@ -811,9 +808,8 @@ describe('pickMostImportantDecisionText — samma vinnare som pickSeasonDecision
     const club = game.clubs.find(c => c.id === game.managedClubId)!
     const playerId = club.squadPlayerIds[0]
 
-    // Kandidat 1 (svagare): take_loan — kvalificerar aldrig (score 1/3), men
-    // lägg den ändå i liggaren för att bevisa att den korrekt IGNORERAS av
-    // rangordningen precis som captureSystemDecision redan filtrerar den.
+    // Kandidat 1 (svagare): anonym ekonomisk följd, direkt i liggaren för
+    // att isolera rangordningen.
     // Kandidat 2 (starkare, ska vinna): sell_star — subject+irreversible+tension.
     const event: GameEvent = {
       id: 'ev1', type: 'criticalEconomy', title: 't', body: 'b',

@@ -194,19 +194,25 @@ function opponentNameAt(game: SaveGame, season: number, matchday: number, manage
   return opponent?.shortName ?? opponent?.name ?? 'motståndet'
 }
 
-function playerMilestoneText(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): string | null {
+function playerMilestoneText(
+  game: SaveGame,
+  entry: EventLedgerEntry,
+  managedClubId: string,
+  playerName: string | undefined,
+): string | null {
+  if (!playerName) return null
   const code = getPlayerMilestoneCodeFromLedger(entry)
   if (!code) return null
   const opponent = opponentNameAt(game, entry.season, entry.matchday, managedClubId)
-  if (code === 'first_team_debut') return `A-lagsdebut mot ${opponent}. Nerverna satt — men benen höll.`
-  if (code === 'first_team_goal') return `Satte sitt första A-lagsmål mot ${opponent}. En dag att minnas.`
-  if (code === 'academy_promotion') return 'Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.'
+  if (code === 'first_team_debut') return `${playerName} — A-lagsdebut mot ${opponent}. Nerverna satt — men benen höll.`
+  if (code === 'first_team_goal') return `${playerName} — Satte sitt första A-lagsmål mot ${opponent}. En dag att minnas.`
+  if (code === 'academy_promotion') return `${playerName} — Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.`
   const hatTrick = code.match(/^hat_trick_(\d+)$/)
-  if (hatTrick) return `Hattrick mot ${opponent} — ${hatTrick[1]} mål. Stämningen exploderade på läktarna.`
+  if (hatTrick) return `${playerName} — Hattrick mot ${opponent} — ${hatTrick[1]} mål. Stämningen exploderade på läktarna.`
   const goals = code.match(/^career_goals_(\d+)$/)
-  if (goals) return `Mål nummer ${goals[1]} i karriären. En siffra att vara stolt över.`
+  if (goals) return `${playerName} — Mål nummer ${goals[1]} i karriären. En siffra att vara stolt över.`
   const games = code.match(/^career_games_(\d+)$/)
-  if (games) return `Match nummer ${games[1]} i A-laget. Lojalitet och uthållighet lönar sig.`
+  if (games) return `${playerName} — Match nummer ${games[1]} i A-laget. Lojalitet och uthållighet lönar sig.`
   return null
 }
 
@@ -263,7 +269,7 @@ function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, man
       }
     }
     case 'player_milestone': {
-      const text = playerMilestoneText(game, entry, managedClubId)
+      const text = playerMilestoneText(game, entry, managedClubId, playerName)
       if (!text) return null
       const code = getPlayerMilestoneCodeFromLedger(entry) ?? ''
       const emoji = code.startsWith('hat_trick_') ? '🎩'

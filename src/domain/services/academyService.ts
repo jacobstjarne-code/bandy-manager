@@ -24,6 +24,15 @@ function pickRand<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
 }
 
+/** En enda readiness-sanning för akademiytan och uppflyttningsactionen. */
+export function getPromotionTiming(
+  player: Pick<YouthPlayer, 'currentAbility' | 'confidence' | 'age' | 'readyForPromotion'>,
+): 'early' | 'good' | 'late' {
+  if (!player.readyForPromotion || player.currentAbility < 25 || player.confidence < 40) return 'early'
+  if (player.currentAbility > 35 && player.confidence > 70 && player.age >= 17) return 'late'
+  return 'good'
+}
+
 
 function archetypeForPosition(pos: PlayerPosition, rand: () => number): PlayerArchetype {
   const r = rand()

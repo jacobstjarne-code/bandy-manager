@@ -501,6 +501,7 @@ export function SeasonSummaryScreen() {
         {(() => {
           type TimelineItem = {
             round: number
+            roundLabel?: string
             icon: string
             headline: string
             body: string
@@ -524,6 +525,7 @@ export function SeasonSummaryScreen() {
             const relatedPlayer = m.relatedPlayerId ? game.players.find(p => p.id === m.relatedPlayerId) : null
             keyMomentItems.push({
               round: m.round,
+              roundLabel: m.roundLabel,
               icon,
               headline: m.headline,
               body: m.body,
@@ -602,12 +604,12 @@ export function SeasonSummaryScreen() {
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <div style={{
-                      width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                      minWidth: 28, height: 28, borderRadius: 14, padding: '0 7px', flexShrink: 0,
                       background: 'var(--bg-dark)', color: 'var(--text-light)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-body)',
                     }}>
-                      O{item.round}
+                      {item.roundLabel ?? `O${item.round}`}
                     </div>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>

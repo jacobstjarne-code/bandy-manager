@@ -271,7 +271,21 @@ describe('getClubMemory', () => {
     const milestone = getClubMemory(withoutDiary).seasons
       .flatMap(item => item.events)
       .find(event => event.type === 'player_milestone')
-    expect(milestone?.text).toBe('Satte sitt första A-lagsmål mot MOT. En dag att minnas.')
+    expect(milestone?.text).toBe('Erik Salonen — Satte sitt första A-lagsmål mot MOT. En dag att minnas.')
+  })
+
+  it('släpper inte igenom en spelarmilstolpe om liggarens subject inte kan namnges', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      eventLedger: [{
+        type: 'player_milestone', semanticKey: 'player_milestone:missing:s2:m5:first_team_goal',
+        season: 2, matchday: 5, significance: 40,
+        subject: { kind: 'player', id: 'missing' },
+      }],
+    } as Partial<SaveGame>)
+
+    expect(getClubMemory(game).seasons.flatMap(item => item.events)
+      .some(event => event.type === 'player_milestone')).toBe(false)
   })
 })
 

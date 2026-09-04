@@ -266,7 +266,9 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 1, // finances (löpande)
-        irreversible: false,
+        // Treårig skuld utan förtida återbetalningsväg: när spelaren väl
+        // tagit lånet går beslutet inte att backa inom bindningstiden.
+        irreversible: true,
         tension: true, // en löpande kostnad som äter av varje omgångs marginal
         moneyAmount: 300_000,
         sentence,

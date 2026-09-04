@@ -186,6 +186,7 @@ export interface EventEffect {
     // CS, den UTEBLIVNA förnyelsen låter staleness göra det.
     | 'renewCommunityActivity'
     | 'lockKioskSupplyContract'
+    | 'signBusContract'
   value?: number
   refereeId?: string
   amount?: number

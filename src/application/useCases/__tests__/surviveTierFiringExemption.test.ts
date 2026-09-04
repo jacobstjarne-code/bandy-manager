@@ -2,10 +2,9 @@
  * Survive-tierns eget avskedskontrakt (Jacobs dom 2026-08-25, efter fjärde
  * H4-mätningen — RAPPORT_SURVIVE_AVSKEDSMEKANIK_AVGRANSNING_2026-08-25.md):
  * "Att förlora är förväntat — det är premissen." En Survive-klubb ska inte
- * kunna sparkas på boardPatience<=15 eller consecutiveFailures>=3 (båda
- * sportsligt utfall) — men FORTFARANDE sparkas på licensnekan (rent
- * finansiellt, seasonEndProcessor.ts). Konkurs-vägen (postRoundFlagsProcessor.ts)
- * är per-omgång och testas inte här — den koden rörs inte av denna fix.
+ * kunna sparkas på ENBART boardPatience<=15 eller ENBART tre misslyckanden.
+ * Den sportsliga grinden kräver båda samtidigt; licensnekan och konkurs är
+ * fortfarande oberoende finansiella vägar.
  *
  * boardPatience: -500 (inte t.ex. 5) — handleSeasonEnd räknar OM
  * boardPatience/consecutiveFailures från faktisk tabellplacering
@@ -18,10 +17,7 @@
  * oavsett var club_heros faktiskt hamnar i den tie-broken tabellen —
  * samma trick som meritBufferPartialProtection.test.ts använder för att
  * isolera en effekt från tabellplaceringens brus.
- * consecutiveFailures testas inte separat (samma svårighet att forcera en
- * given tabellplacering utan att spela riktiga matcher) — koden delar
- * samma `!isSurviveTier &&`-grind för båda halvorna av villkoret, så
- * boardPatience-testet bevisar grinden fungerar för hela raden.
+ * Kombinationen och de separata signalerna testas direkt i boardService.test.
  */
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'

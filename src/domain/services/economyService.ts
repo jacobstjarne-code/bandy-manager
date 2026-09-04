@@ -220,6 +220,8 @@ export interface RoundIncomeBreakdown {
   weeklyArenaCost: number        // arenaCapacity × 5 per round
   weeklyLegendCost: number       // 500 kr/omgång per aktiv legend (youth_coach | scout)
   facilityUpkeep: number         // O5 kraft 2: summa upkeepCost för byggda noder (once at round 1)
+  municipalLoanCost: number      // kommunlånets årskostnad / 22 serieomgångar
+  busContractCost: number        // låst resekostnad per omgång under bussavtalet
   netPerRound: number            // sum of all income − wages − arena cost
 }
 
@@ -267,6 +269,8 @@ export interface CalcRoundIncomeParams {
    * sponsorbonusen; aktivitetens produktionskostnad fortsätter tills den
    * stängs av. Utelämnad ⇒ ny/färsk satsning (1). */
   streamingFreshnessMultiplier?: number
+  municipalLoanAnnualCost?: number
+  busContractRoundCost?: number
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -413,6 +417,8 @@ export interface RoundIncomeParamsForNextFixture {
   legendSalaryCost: number
   builtFacilityUpkeepCosts: number[]
   builtNodeIds: string[]
+  municipalLoanAnnualCost: number
+  busContractRoundCost: number
 }
 
 /**
@@ -468,6 +474,12 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
       .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500,
     builtFacilityUpkeepCosts: builtNodeIds.map(id => FACILITY_NODE_DEFS.find(def => def.id === id)?.upkeepCost ?? 0),
     builtNodeIds,
+    municipalLoanAnnualCost: game.currentSeason < (game.municipalLoanUntilSeason ?? 0)
+      ? (game.municipalLoanAnnualCost ?? 0)
+      : 0,
+    busContractRoundCost: game.currentSeason < (game.busContractUntilSeason ?? 0)
+      ? (game.busContractRoundCost ?? 0)
+      : 0,
   }
 }
 
@@ -759,9 +771,12 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     ? (params.builtFacilityUpkeepCosts ?? []).reduce((sum, c) => sum + c, 0)
     : 0
 
+  const municipalLoanCost = Math.round((params.municipalLoanAnnualCost ?? 0) / 22)
+  const busContractCost = params.busContractRoundCost ?? 0
+
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
     + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost
-    - weeklyLegendCost - facilityUpkeep
+    - weeklyLegendCost - facilityUpkeep - municipalLoanCost - busContractCost
 
   return {
     weeklyBase,
@@ -775,6 +790,8 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     weeklyArenaCost,
     weeklyLegendCost,
     facilityUpkeep,
+    municipalLoanCost,
+    busContractCost,
     netPerRound,
   }
 }

@@ -102,11 +102,20 @@ export function processYouth(
 
   // ── Academy events ────────────────────────────────────────────────────────
   if (game.youthTeam && nextMatchday >= 3 && nextMatchday <= 18) {
-    const conflictPlayers = updatedYouthTeam?.players.filter(p => p.schoolConflict) ?? []
+    const allKnownEventIds = [
+      ...(game.resolvedEventIds ?? []),
+      ...(game.pendingEvents ?? []).map(event => event.id),
+      ...(game.deferredDecisions ?? []).map(event => event.id),
+    ]
+    const conflictPlayers = updatedYouthTeam?.players.filter(player => {
+      if (!player.schoolConflict) return false
+      const seasonPrefix = `event_school_conflict_${player.id}_s${game.currentSeason}_`
+      return !allKnownEventIds.some(id => id.startsWith(seasonPrefix))
+    }) ?? []
     if (conflictPlayers.length > 0 && localRand() < 0.12) {
       const player = conflictPlayers[Math.floor(localRand() * conflictPlayers.length)]
       gameEvents.push({
-        id: `event_school_conflict_${player.id}_${nextMatchday}`,
+        id: `event_school_conflict_${player.id}_s${game.currentSeason}_m${nextMatchday}`,
         type: 'communityEvent',
         title: `Skolkonflikt — ${player.firstName} ${player.lastName}`,
         body: `${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,

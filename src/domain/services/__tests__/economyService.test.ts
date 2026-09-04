@@ -206,6 +206,31 @@ describe('appendFinanceLog', () => {
 // ── Group 3: calcRoundIncome — wages and base income ─────────────────────────
 
 describe('calcRoundIncome — wages and base income', () => {
+  it('kommunlånets årliga skuldlast dras jämnt över seriens 22 omgångar', () => {
+    const base = {
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+    }
+    const withoutLoan = calcRoundIncome(base)
+    const withLoan = calcRoundIncome({ ...base, municipalLoanAnnualCost: 100_000 })
+
+    expect(withLoan.municipalLoanCost).toBe(Math.round(100_000 / 22))
+    expect(withLoan.netPerRound).toBe(withoutLoan.netPerRound - withLoan.municipalLoanCost)
+  })
+
+  it('bussavtalets låsta resekostnad dras varje omgång', () => {
+    const base = {
+      club: makeClub(), players: [], sponsors: [], communityActivities: undefined,
+      fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
+      matchHasRivalry: false, standing: null, rand: deterministicRand,
+    }
+    const withoutContract = calcRoundIncome(base)
+    const withContract = calcRoundIncome({ ...base, busContractRoundCost: 2_000 })
+    expect(withContract.busContractCost).toBe(2_000)
+    expect(withContract.netPerRound).toBe(withoutContract.netPerRound - 2_000)
+  })
+
   it('weeklyBase = 3000 (WEEKLY_BASE_FLAT, omhärledd 2026-08-31 — se D033) + reputation × 50', () => {
     const club = makeClub({ reputation: 60 })
     const result = calcRoundIncome({

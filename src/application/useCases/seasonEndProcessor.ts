@@ -24,7 +24,7 @@ import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/pla
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
-import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE, selectBoardReasonLine } from '../../domain/services/boardService'
+import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE, selectBoardReasonLine, shouldFireManagerForSport } from '../../domain/services/boardService'
 import { deriveBoardLeagueContext, generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { pickMostImportantDecisionText } from '../../domain/services/seasonDecisionCaptureService'
 import { deriveUtfall } from '../../domain/services/matchTypeAxes'
@@ -1452,19 +1452,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Firing check — AFTER objectives so success/failure affects the decision
   //
-  // Survive-tierns eget avskedskontrakt (Jacobs dom 2026-08-25, efter fjärde
-  // H4-mätningen — RAPPORT_SURVIVE_AVSKEDSMEKANIK_AVGRANSNING_2026-08-25.md):
-  // "Att förlora är förväntat — det är premissen." boardPatience<=15 OCH
-  // consecutiveFailures>=3 är BÅDA sportsligt utfall (det senare byggs av
-  // finalPos>=relegationZoneStart — Survive-ankaret ÄR 12=nedflyttningszonen,
-  // så en Survive-klubb som presterar exakt som väntat annars ackumulerar
-  // consecutiveFailures nästan varje säsong). Stängs av för Survive. Två
-  // oberoende finansiella vägar kvarstår ORÖRDA och redan aktiva: licensnekan
-  // (rad ~1044 nedan, computeNetResult — ren kassaförändring) och per-omgångs-
-  // konkurs (postRoundFlagsProcessor.ts, finances<-2M). En Survive-klubb är
-  // alltså inte osparkbar — bara inte sparkbar på ENBART resultat.
-  const isSurviveTier = managedClubExpectation === ClubExpectation.Survive
-  if (!isSurviveTier && (newBoardPatience <= 15 || newConsecutiveFailures >= 3)) {
+  // Survive-tierns premiss ger nåd, inte immunitet: ett enskilt sportsligt
+  // mått räcker inte, men kollapsat tålamod OCH tre raka misslyckanden gör
+  // portalens ultimatum verkligt. Övriga tierer behåller sin endera-gräns.
+  const firedForSport = shouldFireManagerForSport(
+    managedClubExpectation,
+    newBoardPatience,
+    newConsecutiveFailures,
+  )
+  if (firedForSport) {
     managerFired = true
   }
 
@@ -1485,15 +1481,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // HÄR (samma svep som managerFired ovan) för SeasonSummary.boardTruth —
   // aldrig omderiverad senare av en läsare. Samma prioritetsordning som
   // GameOverScreen.tsx's tidigare (nu ersatta) live-läsning använde: raka
-  // förluster/tabellmiss (consecutiveFailures) före utsliten patience, båda
-  // avstängda för Survive-tiern (samma isSurviveTier-grind som ovan);
-  // licensnekan är den enda vägen kvar när ingen av de två sportsliga skälen
-  // stämmer (t.ex. en Survive-klubb, eller en klubb sparkad enbart på
-  // licensnämndens beslut).
+  // förluster/tabellmiss (consecutiveFailures) före utsliten patience.
+  // Licensnekan används bara när ingen sportslig avskedsgrind slog till.
   let firedReason: 'boardPatience' | 'consecutiveFailures' | 'licenseDenied' | undefined
   if (managerFired) {
-    if (!isSurviveTier && newConsecutiveFailures >= 3) firedReason = 'consecutiveFailures'
-    else if (!isSurviveTier && newBoardPatience <= 15) firedReason = 'boardPatience'
+    if (firedForSport && newConsecutiveFailures >= 3) firedReason = 'consecutiveFailures'
+    else if (firedForSport && newBoardPatience <= 15) firedReason = 'boardPatience'
     else firedReason = 'licenseDenied'
   }
 

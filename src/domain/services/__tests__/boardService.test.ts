@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, BOARD_REASON_LINES, boardGraceState, isUnderdogSeason, getBoardEscalationLevel, selectBoardReasonLine } from '../boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, seasonReputationDelta, computeBoardPatienceUpdate, updateRunningBoardPatience, generatePreSeasonMessage, deriveBoardAssessment, BOARD_EXPECTATION_LEVEL_LABEL, BOARD_REASON_LINES, boardGraceState, isUnderdogSeason, getBoardEscalationLevel, selectBoardReasonLine, shouldFireManagerForSport } from '../boardService'
 import { ClubExpectation } from '../../enums'
 import type { Club } from '../../entities/Club'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -393,6 +393,20 @@ describe('computeBoardPatienceUpdate — Survive (H4 Heros, 2026-08-25)', () => 
       const r = computeBoardPatienceUpdate(pos, TOTAL, 70, 0, SURVIVE)
       expect(r.newBoardPatience).toBeGreaterThanOrEqual(70)
     }
+  })
+})
+
+describe('shouldFireManagerForSport — Survive har nåd men inte immunitet', () => {
+  it('kräver både kollapsat tålamod och tre raka misslyckanden för Survive', () => {
+    expect(shouldFireManagerForSport(ClubExpectation.Survive, 15, 2)).toBe(false)
+    expect(shouldFireManagerForSport(ClubExpectation.Survive, 16, 3)).toBe(false)
+    expect(shouldFireManagerForSport(ClubExpectation.Survive, 15, 3)).toBe(true)
+  })
+
+  it('behåller endera-gränsen för övriga förväntningar', () => {
+    expect(shouldFireManagerForSport(ClubExpectation.AvoidBottom, 15, 0)).toBe(true)
+    expect(shouldFireManagerForSport(ClubExpectation.AvoidBottom, 80, 3)).toBe(true)
+    expect(shouldFireManagerForSport(ClubExpectation.AvoidBottom, 16, 2)).toBe(false)
   })
 })
 

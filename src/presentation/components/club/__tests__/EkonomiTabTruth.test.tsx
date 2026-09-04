@@ -1,9 +1,37 @@
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
-import { EkonomiTab } from '../EkonomiTab'
+import { EkonomiTab, sponsorSearchFeedback } from '../EkonomiTab'
 
 describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', () => {
+  it('bevarar actionens riktiga kassafel i stället för att påstå otur och avdrag', () => {
+    expect(sponsorSearchFeedback({ success: false, error: 'Inte tillräckligt med pengar (kräver 2,5 tkr)' })).toEqual({
+      success: false,
+      text: 'Inte tillräckligt med pengar (kräver 2,5 tkr)',
+    })
+  })
+
+  it('inaktiverar sponsorsökning när klubben saknar sökkostnaden', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
+    const game = {
+      ...base,
+      clubs: base.clubs.map(c => c.id === base.managedClubId ? { ...c, finances: -1 } : c),
+    }
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const html = renderToStaticMarkup(
+      <EkonomiTab
+        club={club}
+        game={game}
+        seekSponsor={() => ({ success: false, error: 'Inte tillräckligt med pengar (kräver 2,5 tkr)' })}
+        activateCommunity={() => ({ success: false })}
+        setTransferBudget={() => {}}
+        buyScoutRounds={() => {}}
+      />,
+    )
+
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>.*Ragga sponsor/s)
+  })
+
   it('visar full nästa-omgångsprognos och inga gamla fasta aktivitetslöften', () => {
     const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
     const game = {
@@ -76,5 +104,23 @@ describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', (
     expect(html).toContain('Bandyskola för barn')
     // Första prognosen är hemmamatch: 375−750 match + 500−750 omgång = −625.
     expect(html).toContain('Nästa omg: −625 kr')
+  })
+
+  it('märker inaktiva aktiviteters ekonomi som en hypotes och skiljer akademisatsningen från barnverksamheten', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const html = renderToStaticMarkup(
+      <EkonomiTab
+        club={club}
+        game={game}
+        seekSponsor={() => ({ success: false })}
+        activateCommunity={() => ({ success: false })}
+        setTransferBudget={() => {}}
+        buyScoutRounds={() => {}}
+      />,
+    )
+
+    expect(html).toContain('Om du startar:')
+    expect(html).toContain('Bandyskola → Akademi')
   })
 })

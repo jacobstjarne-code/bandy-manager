@@ -10,6 +10,12 @@ import { isFeedbackHiddenOnRoute } from '../FeedbackButton'
 
 describe('FeedbackButton — matchflödets mobila tap-ytor', () => {
   it.each([
+    '/',
+    '/saves',
+    '/new-game',
+    '/club-selection',
+    '/intro',
+    '/tilltrade',
     '/game/match',
     '/game/match/live',
     '/game/match/result',

@@ -164,12 +164,14 @@ function computeKeyMoments(
     // presenterad som ligaomgång, så ett derby i ligaomgång 4 fick prefixet
     // "Omgång 08" i årsboken medan portalen sa "Omgång 4". Nollutfyllnaden
     // följde med bort: en tävlingsmedveten etikett är inte alltid ett tal.
-    const roundLabel = getRoundLabel(f, game.playoffBracket).long
+    const fixtureRoundLabel = getRoundLabel(f, game.playoffBracket)
+    const roundLabel = fixtureRoundLabel.long
+    const roundBadgeLabel = fixtureRoundLabel.short
 
     // Big win (3+ goal margin)
     if (margin >= 3) {
       const fn = seededPick(BIG_WIN_POOL, seed)
-      moments.push({ round: f.matchday, type: 'bigWin', fixtureId: f.id,
+      moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'bigWin', fixtureId: f.id,
         headline: `Stor seger mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(margin, oppName)}`,
         score: margin * 10 + (isDerby ? 20 : 0) })
@@ -178,7 +180,7 @@ function computeKeyMoments(
     // Big loss (3+ goal margin)
     if (margin <= -3) {
       const fn = seededPick(BIG_LOSS_POOL, seed)
-      moments.push({ round: f.matchday, type: 'bigLoss', fixtureId: f.id,
+      moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'bigLoss', fixtureId: f.id,
         headline: `Tung förlust mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(Math.abs(margin), oppName)}`,
         score: Math.abs(margin) * 8 + (isDerby ? 20 : 0) })
@@ -188,13 +190,13 @@ function computeKeyMoments(
     if (isDerby && margin !== 0) {
       if (margin > 0) {
         const fn = seededPick(DERBY_WIN_POOL, seed)
-        moments.push({ round: f.matchday, type: 'derbyWin', fixtureId: f.id,
+        moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'derbyWin', fixtureId: f.id,
           headline: `Derbyvinst! ${rivalry!.name} (${scoreStr})`,
           body: `${roundLabel}: ${fn(oppName, scoreStr)}`,
           score: 35 + margin * 5 })
       } else {
         const fn = seededPick(DERBY_LOSS_POOL, seed)
-        moments.push({ round: f.matchday, type: 'derbyLoss', fixtureId: f.id,
+        moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'derbyLoss', fixtureId: f.id,
           headline: `Derbyförlust — ${rivalry!.name} (${scoreStr})`,
           body: `${roundLabel}: ${fn(oppName)}`,
           score: 25 })
@@ -215,7 +217,7 @@ function computeKeyMoments(
         const p = game.players.find(pl => pl.id === pid)
         const name = p ? `${p.firstName} ${p.lastName}` : 'Okänd'
         const fn = seededPick(HAT_TRICK_POOL, seed)
-        moments.push({ round: f.matchday, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
+        moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
           headline: `Hattrick — ${name} mot ${oppName}`,
           body: `${roundLabel}: ${fn(name, goals)}`,
           score: 30 + (goals - 3) * 10 })
@@ -232,7 +234,7 @@ function computeKeyMoments(
         const p = scorer.playerId ? game.players.find(pl => pl.id === scorer.playerId) : null
         const scorerName = p ? `${p.firstName} ${p.lastName}` : 'Avslutning'
         const fn = seededPick(LATE_WINNER_POOL, seed)
-        moments.push({ round: f.matchday, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
+        moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
           headline: `Sent avgörande mot ${oppName} (${scoreStr})`,
           body: `${roundLabel}: ${fn(scorerName)}`,
           score: 25 + (isDerby ? 20 : 0) })
@@ -242,7 +244,7 @@ function computeKeyMoments(
     // Comeback: we trailed (first goal was opponent's) but won
     if (isComeback(f, game.managedClubId, margin)) {
       const fn = seededPick(COMEBACK_POOL, seed)
-      moments.push({ round: f.matchday, type: 'comeback', fixtureId: f.id,
+      moments.push({ round: f.matchday, roundLabel: roundBadgeLabel, type: 'comeback', fixtureId: f.id,
         headline: `Comeback mot ${oppName} (${scoreStr})`,
         body: `${roundLabel}: ${fn(oppName)}`,
         score: 28 + margin * 5 })

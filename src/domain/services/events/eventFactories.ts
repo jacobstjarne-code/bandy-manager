@@ -674,15 +674,17 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
         { id: 'wait', label: 'Vänta — grabbarna får klara sig', effect: { type: 'moraleDelta', value: -2 } },
       ],
     },
-    {
-      id: 'economic_stress_bus',
-      title: 'Bussbolaget ringde',
-      body: 'Bussbolaget: "Vi höjer 8% från nästa månad. Vill ni skriva nytt 3-årsavtal med lägre höjning eller köra som vanligt?"',
-      choices: [
-        { id: 'sign', label: 'Skriv nytt avtal (−5k nu, billigare sen)', effect: { type: 'finance', value: -5000 } },
-        { id: 'shop', label: 'Fråga andra bolag — kan ta tid', effect: { type: 'noOp' } },
-      ],
-    },
+    ...(game.busContractUntilSeason != null && game.currentSeason < game.busContractUntilSeason
+      ? []
+      : [{
+          id: 'economic_stress_bus',
+          title: 'Bussbolaget ringde',
+          body: 'Bussbolaget: "Vi höjer 8% från nästa månad. Vill ni skriva nytt 3-årsavtal med lägre höjning eller köra som vanligt?"',
+          choices: [
+            { id: 'sign', label: 'Skriv nytt avtal (−5k nu, billigare sen)', effect: { type: 'signBusContract' as const, value: -5000, amount: 3 } },
+            { id: 'shop', label: 'Fråga andra bolag — kan ta tid', effect: { type: 'noOp' as const } },
+          ],
+        }]),
     ...(game.kioskSupplyContractUntilSeason != null && game.currentSeason < game.kioskSupplyContractUntilSeason
       ? []
       : [{

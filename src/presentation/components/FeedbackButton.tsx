@@ -24,7 +24,13 @@ function buildHash(): string {
 }
 
 export function isFeedbackHiddenOnRoute(pathname: string): boolean {
-  return pathname.startsWith('/game/match')
+  return pathname === '/'
+    || pathname === '/saves'
+    || pathname === '/new-game'
+    || pathname === '/club-selection'
+    || pathname === '/intro'
+    || pathname === '/tilltrade'
+    || pathname.startsWith('/game/match')
     || pathname.startsWith('/game/review')
     // Dev-galleriet ska vara en deterministisk bild av produktionens ytor.
     // En fixerad rapportknapp vars text innehåller den aktuella commit-hashen

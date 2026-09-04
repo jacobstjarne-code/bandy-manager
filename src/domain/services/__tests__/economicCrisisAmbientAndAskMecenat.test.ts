@@ -94,6 +94,15 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
     expect(event!.choices.map(c => c.id)).toEqual(['sell_star', 'take_loan'])
   })
 
+  it('kommunlånet sparar tre års verklig skuldlast', () => {
+    let game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    game = resolveEvent({ ...game, pendingEvents: [event!] }, event!.id, 'take_loan', undefined, true)
+
+    expect(game.municipalLoanAnnualCost).toBe(100_000)
+    expect(game.municipalLoanUntilSeason).toBe(game.currentSeason + 3)
+  })
+
   it('med en aktiv mecenat: ask_mecenat erbjuds och targetar den mecenaten', () => {
     const mec = makeMecenat({ happiness: 55 })
     const game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [mec] })

@@ -180,7 +180,10 @@ export interface SeasonSummary {
   }>
 
   keyMoments?: Array<{
+    /** `round` bevarar global matchday för kronologi. `roundLabel` är den
+     *  tävlingsmedvetna etikett spelaren ska se. */
     round: number
+    roundLabel?: string
     // 'storyline' (påståendesvepet #5, MASTER.md, 2026-08-24): resolvade
     // arc-berättelser (t.ex. contract_drama_resolved, en BITTER avresa)
     // hårdkodades tidigare till 'bigWin' — SeasonSummaryScreen.tsx:s

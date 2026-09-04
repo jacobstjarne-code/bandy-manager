@@ -1,10 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { simulateYouthMatch, generateYouthTeam } from '../academyService'
+import { getPromotionTiming, simulateYouthMatch, generateYouthTeam } from '../academyService'
 import { mulberry32 } from '../../utils/random'
 import type { Club } from '../../entities/Club'
 import type { YouthTeam } from '../../entities/Academy'
 
 const club = { id: 'club_x', youthQuality: 60, youthDevelopment: 60 } as unknown as Club
+
+describe('getPromotionTiming — samma readiness-sanning som Akademi', () => {
+  it('klassar en icke-redo spelare som tidig även när CA/confidence annars låg i good-intervallet', () => {
+    expect(getPromotionTiming({
+      currentAbility: 30,
+      confidence: 60,
+      age: 18,
+      readyForPromotion: false,
+    })).toBe('early')
+  })
+})
 
 /**
  * PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom: "bygg

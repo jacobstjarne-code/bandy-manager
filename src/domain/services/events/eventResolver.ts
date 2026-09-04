@@ -1560,6 +1560,18 @@ export function resolveEvent(
       }
       break
     }
+    case 'signBusContract': {
+      // SPRINT_04_EKONOMI låser avtalet till −5 000 kr nu,
+      // −2 000 kr per omgång och tre säsonger. Effekten sparar hela
+      // kontraktet; fabriken spärrar nya erbjudanden tills det löpt ut.
+      updatedGame = {
+        ...updatedGame,
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.value ?? 0),
+        busContractRoundCost: 2_000,
+        busContractUntilSeason: updatedGame.currentSeason + (effect.amount ?? 3),
+      }
+      break
+    }
     case 'moraleDelta': {
       // DEV-012: apply morale delta to all managed club players
       const delta = effect.value ?? 0
@@ -1666,6 +1678,10 @@ export function resolveEvent(
               ...(soldToSurvivePlayerName ? { soldToSurvivePlayerName } : {}),
             }
           : undefined,
+        ...(outcome === 'loan' ? {
+          municipalLoanAnnualCost: 100_000,
+          municipalLoanUntilSeason: updatedGame.currentSeason + 3,
+        } : {}),
       }
       if (effect.value) {
         updatedGame = {

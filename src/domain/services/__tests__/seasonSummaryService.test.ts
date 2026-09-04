@@ -775,5 +775,6 @@ describe('generateSeasonSummary — keyMoments använder matchday, inte roundNum
     expect(moment, JSON.stringify(summary.keyMoments)).toBeDefined()
     expect(moment!.round).toBe(8)
     expect(moment!.round).not.toBe(5)
+    expect(moment!.roundLabel).toBe('Omg 5')
   })
 })

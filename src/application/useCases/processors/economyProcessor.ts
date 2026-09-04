@@ -101,6 +101,12 @@ export function processEconomy(
       getSeasonsActive(game.communityActivitiesSince, 'bandyplay', game.currentSeason),
       managedClub.reputation,
     ),
+    municipalLoanAnnualCost: game.currentSeason < (game.municipalLoanUntilSeason ?? 0)
+      ? (game.municipalLoanAnnualCost ?? 0)
+      : 0,
+    busContractRoundCost: game.currentSeason < (game.busContractUntilSeason ?? 0)
+      ? (game.busContractRoundCost ?? 0)
+      : 0,
   })
 
   if (managedIncome.weeklyBase !== 0) {
@@ -128,6 +134,12 @@ export function processEconomy(
   if (managedIncome.facilityUpkeep !== 0) {
     const builtCount = (game.facilityState?.builtNodeIds ?? []).length
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.facilityUpkeep, reason: 'facility_upkeep', label: `Anläggningsdrift (${builtCount} byggda noder)` })
+  }
+  if (managedIncome.municipalLoanCost !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.municipalLoanCost, reason: 'event', label: 'Kommunlån' })
+  }
+  if (managedIncome.busContractCost !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.busContractCost, reason: 'event', label: 'Bussavtal' })
   }
   if (managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })

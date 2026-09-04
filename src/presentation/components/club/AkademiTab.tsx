@@ -20,7 +20,7 @@ interface AkademiTabProps {
 }
 
 /**
- * @cites youthTeam.results.opponentName, youthTeam.results.goalsFor, youthTeam.results.goalsAgainst, result.timing, deal.reports.played, deal.reports.rating, deal.reports.goals, roundNumber
+ * @cites youthTeam.results.opponentName, youthTeam.results.goalsFor, youthTeam.results.goalsAgainst, result.timing, deal.reports.played, deal.reports.rating, deal.reports.goals, currentMatchday
  */
 export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, assignMentor, removeMentor, loanOutPlayer, recallLoan }: AkademiTabProps) {
   const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
@@ -62,9 +62,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const activeLoanDeals = game.loanDeals ?? []
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
 
-  const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const currentRound = game.currentMatchday
 
   return (
     <div>
@@ -103,7 +101,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
           {[
             { label: 'Redo för uppkallning', players: readyPlayers, canPromote: true },
-            { label: 'Utvecklas', players: almostReady, canPromote: true },
+            { label: 'Utvecklas', players: almostReady, canPromote: false },
             { label: 'Tidiga talanger', players: notReady, canPromote: false },
           ].map(group => group.players.length > 0 && (
             <div key={group.label} style={{ marginBottom: 10 }}>
