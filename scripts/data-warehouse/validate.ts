@@ -11,7 +11,7 @@ import Database from 'better-sqlite3'
 import { writeFileSync, mkdirSync } from 'fs'
 import { simulateMatch } from '../../src/domain/services/matchEngine'
 import { ENGINE_VERSION } from '../../src/domain/services/matchCore'
-import { FORMATIONS } from '../../src/domain/entities/Formation'
+import { FORMATIONS, getHeightMode } from '../../src/domain/entities/Formation'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -122,7 +122,7 @@ function makeSquad(
   })
 
   const tactic = {
-    mentality: 'balanced', tempo: 'normal', press: 'medium',
+    mentality: 'balanced', tempo: 'normal',
     passingRisk: 'mixed', width: 'normal', attackingFocus: 'mixed',
     cornerStrategy: 'standard', penaltyKillStyle: 'active', formation,
   } as unknown as Tactic
@@ -341,9 +341,9 @@ function main() {
   // 10. Reproducibility: pick 5 matches and re-simulate
   const sampleMatches = db.prepare(`
     SELECT match_id, seed, home_ca, away_ca, home_formation, away_formation,
-           home_mentality, home_tempo, home_press, home_passing_risk,
+           home_mentality, home_tempo, home_height_mode, home_passing_risk,
            home_play_width, home_attack_focus, home_corner_strategy, home_pp_strategy,
-           away_mentality, away_tempo, away_press, away_passing_risk,
+           away_mentality, away_tempo, away_height_mode, away_passing_risk,
            away_play_width, away_attack_focus, away_corner_strategy, away_pp_strategy,
            weather_condition, weather_temperature, weather_ice_quality,
            home_goals, away_goals
@@ -351,9 +351,9 @@ function main() {
   `).all() as Array<{
     match_id: string; seed: number; home_ca: number; away_ca: number
     home_formation: string; away_formation: string
-    home_mentality: string; home_tempo: string; home_press: string; home_passing_risk: string
+    home_mentality: string; home_tempo: string; home_height_mode: string; home_passing_risk: string
     home_play_width: string; home_attack_focus: string; home_corner_strategy: string; home_pp_strategy: string
-    away_mentality: string; away_tempo: string; away_press: string; away_passing_risk: string
+    away_mentality: string; away_tempo: string; away_height_mode: string; away_passing_risk: string
     away_play_width: string; away_attack_focus: string; away_corner_strategy: string; away_pp_strategy: string
     weather_condition: string | null; weather_temperature: number | null; weather_ice_quality: string | null
     home_goals: number; away_goals: number
@@ -369,20 +369,24 @@ function main() {
 
     const homeFormation = row.home_formation as FormationType
     const awayFormation = row.away_formation as FormationType
+    if (row.home_height_mode !== getHeightMode(homeFormation) || row.away_height_mode !== getHeightMode(awayFormation)) {
+      reproDetails.push(`${row.match_id.slice(0, 8)}: ERROR lagrat heightMode motsäger formationen`)
+      continue
+    }
 
     const homeResult = makeSquad(homeId, row.home_ca, homeFormation, row.seed)
     const awayResult = makeSquad(awayId, row.away_ca, awayFormation, row.seed + 50000)
 
     const homeTactic: Tactic = {
       mentality: row.home_mentality as any, tempo: row.home_tempo as any,
-      press: row.home_press as any, passingRisk: row.home_passing_risk as any,
+      passingRisk: row.home_passing_risk as any,
       width: row.home_play_width as any, attackingFocus: row.home_attack_focus as any,
       cornerStrategy: row.home_corner_strategy as any, penaltyKillStyle: row.home_pp_strategy as any,
       formation: homeFormation,
     }
     const awayTactic: Tactic = {
       mentality: row.away_mentality as any, tempo: row.away_tempo as any,
-      press: row.away_press as any, passingRisk: row.away_passing_risk as any,
+      passingRisk: row.away_passing_risk as any,
       width: row.away_play_width as any, attackingFocus: row.away_attack_focus as any,
       cornerStrategy: row.away_corner_strategy as any, penaltyKillStyle: row.away_pp_strategy as any,
       formation: awayFormation,

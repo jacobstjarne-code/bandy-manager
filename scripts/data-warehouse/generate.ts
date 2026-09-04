@@ -12,7 +12,7 @@ import { randomUUID } from 'crypto'
 import { readFileSync, mkdirSync } from 'fs'
 import { simulateMatch } from '../../src/domain/services/matchEngine'
 import { ENGINE_VERSION } from '../../src/domain/services/matchCore'
-import { FORMATIONS } from '../../src/domain/entities/Formation'
+import { FORMATIONS, getHeightMode } from '../../src/domain/entities/Formation'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -36,16 +36,18 @@ const TOTAL_MATCHES = PILOT_MODE ? 50 : 1050
 
 // Formation weights for realistic bucket
 const REALISTIC_FORMATIONS: Array<{ f: FormationType; weight: number }> = [
-  { f: '5-3-2', weight: 0.50 },
-  { f: '4-3-3', weight: 0.30 },
-  { f: '3-3-4', weight: 0.20 },
+  { f: '532_tvatoppar', weight: 0.20 },
+  { f: '532_triangel', weight: 0.20 },
+  { f: '532_ytterben', weight: 0.20 },
+  { f: '532_hogahalvor', weight: 0.20 },
+  { f: '523_hog', weight: 0.10 },
+  { f: '541_hem', weight: 0.10 },
 ]
 
 // Tactic profiles
 type TacticProfile = {
   mentality: 'defensive' | 'balanced' | 'offensive'
   tempo: 'low' | 'normal' | 'high'
-  press: 'low' | 'medium' | 'high'
   passingRisk: 'safe' | 'mixed' | 'direct'
   width: 'narrow' | 'normal' | 'wide'
   attackingFocus: 'wings' | 'mixed' | 'central'
@@ -55,22 +57,22 @@ type TacticProfile = {
 
 const TACTIC_PROFILES: Record<string, TacticProfile> = {
   defensive: {
-    mentality: 'defensive', tempo: 'low', press: 'low',
+    mentality: 'defensive', tempo: 'low',
     passingRisk: 'direct', width: 'narrow', attackingFocus: 'wings',
     cornerStrategy: 'safe', penaltyKillStyle: 'passive',
   },
   balanced: {
-    mentality: 'balanced', tempo: 'normal', press: 'medium',
+    mentality: 'balanced', tempo: 'normal',
     passingRisk: 'mixed', width: 'normal', attackingFocus: 'mixed',
     cornerStrategy: 'standard', penaltyKillStyle: 'active',
   },
   pressing: {
-    mentality: 'offensive', tempo: 'high', press: 'high',
+    mentality: 'offensive', tempo: 'high',
     passingRisk: 'mixed', width: 'normal', attackingFocus: 'mixed',
     cornerStrategy: 'standard', penaltyKillStyle: 'aggressive',
   },
   attacking: {
-    mentality: 'offensive', tempo: 'high', press: 'medium',
+    mentality: 'offensive', tempo: 'high',
     passingRisk: 'direct', width: 'wide', attackingFocus: 'central',
     cornerStrategy: 'aggressive', penaltyKillStyle: 'active',
   },
@@ -80,13 +82,12 @@ const PROFILE_NAMES = Object.keys(TACTIC_PROFILES)
 // All tactic enum values
 const ALL_MENTALITIES = ['defensive', 'balanced', 'offensive'] as Tactic['mentality'][]
 const ALL_TEMPOS = ['low', 'normal', 'high'] as Tactic['tempo'][]
-const ALL_PRESSES = ['low', 'medium', 'high'] as Tactic['press'][]
 const ALL_PASSING_RISKS = ['safe', 'mixed', 'direct'] as Tactic['passingRisk'][]
 const ALL_WIDTHS = ['narrow', 'normal', 'wide'] as Tactic['width'][]
 const ALL_ATTACK_FOCUSES = ['wings', 'mixed', 'central'] as Tactic['attackingFocus'][]
 const ALL_CORNER_STRATEGIES = ['safe', 'standard', 'aggressive'] as Tactic['cornerStrategy'][]
 const ALL_PENALTY_KILLS = ['passive', 'active', 'aggressive'] as Tactic['penaltyKillStyle'][]
-const ALL_FORMATIONS: FormationType[] = ['5-3-2', '4-3-3', '3-3-4', '3-4-3', '2-3-2-3', '4-2-4']
+const ALL_FORMATIONS = Object.keys(FORMATIONS) as FormationType[]
 
 // Weather options
 const WEATHER_CONDITIONS = [
@@ -241,7 +242,6 @@ function makeSquad(
   const tactic = {
     mentality: 'balanced',
     tempo: 'normal',
-    press: 'medium',
     passingRisk: 'mixed',
     width: 'normal',
     attackingFocus: 'mixed',
@@ -281,7 +281,6 @@ function tacticFromProfile(profile: TacticProfile, formation: FormationType): Ta
   return {
     mentality: profile.mentality,
     tempo: profile.tempo,
-    press: profile.press,
     passingRisk: profile.passingRisk,
     width: profile.width,
     attackingFocus: profile.attackingFocus,
@@ -364,7 +363,6 @@ function generateVaried(matchIndex: number, bucketSeed: number): MatchConfig {
   const homeTactic: Tactic = {
     mentality: pickRandom(ALL_MENTALITIES, rng),
     tempo: pickRandom(ALL_TEMPOS, rng),
-    press: pickRandom(ALL_PRESSES, rng),
     passingRisk: pickRandom(ALL_PASSING_RISKS, rng),
     width: pickRandom(ALL_WIDTHS, rng),
     attackingFocus: pickRandom(ALL_ATTACK_FOCUSES, rng),
@@ -375,7 +373,6 @@ function generateVaried(matchIndex: number, bucketSeed: number): MatchConfig {
   const awayTactic: Tactic = {
     mentality: pickRandom(ALL_MENTALITIES, rng),
     tempo: pickRandom(ALL_TEMPOS, rng),
-    press: pickRandom(ALL_PRESSES, rng),
     passingRisk: pickRandom(ALL_PASSING_RISKS, rng),
     width: pickRandom(ALL_WIDTHS, rng),
     attackingFocus: pickRandom(ALL_ATTACK_FOCUSES, rng),
@@ -401,6 +398,8 @@ function generateEdge(matchIndex: number, bucketSeed: number): MatchConfig {
   const pattern = matchIndex % 4
 
   let homeCA: number, awayCA: number, homeTacticProfile: TacticProfile, awayTacticProfile: TacticProfile
+  let homeFormation: FormationType = '532_tvatoppar'
+  let awayFormation: FormationType = '532_tvatoppar'
 
   switch (pattern) {
     case 0: // Strong home vs weak away
@@ -413,10 +412,12 @@ function generateEdge(matchIndex: number, bucketSeed: number): MatchConfig {
       homeTacticProfile = TACTIC_PROFILES.defensive
       awayTacticProfile = TACTIC_PROFILES.attacking
       break
-    case 2: // Equal strength, maximal tactic contrast (pressing vs defensive)
+    case 2: // Equal strength, maximal height contrast (high forecheck vs low block)
       homeCA = 70; awayCA = 70
       homeTacticProfile = TACTIC_PROFILES.pressing
       awayTacticProfile = TACTIC_PROFILES.defensive
+      homeFormation = '523_hog'
+      awayFormation = '541_hem'
       break
     case 3: // Equal strength, both attacking
       homeCA = 70; awayCA = 70
@@ -428,9 +429,6 @@ function generateEdge(matchIndex: number, bucketSeed: number): MatchConfig {
       homeTacticProfile = TACTIC_PROFILES.balanced
       awayTacticProfile = TACTIC_PROFILES.balanced
   }
-
-  const homeFormation: FormationType = '5-3-2'
-  const awayFormation: FormationType = '5-3-2'
 
   return {
     homeCA, awayCA,
@@ -445,7 +443,7 @@ function generateEdge(matchIndex: number, bucketSeed: number): MatchConfig {
 
 function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
   const seed = matchIndex * 7919 + BUCKET_OFFSETS.control + bucketSeed
-  const formation: FormationType = '5-3-2'
+  const formation: FormationType = '532_tvatoppar'
   const BASE_CA = 70
   const BASE = tacticFromProfile(TACTIC_PROFILES.balanced, formation)
 
@@ -455,6 +453,8 @@ function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
 
   let homeTactic: Tactic = { ...BASE, formation }
   let awayTactic: Tactic = { ...BASE, formation }
+  let homeFormation: FormationType = formation
+  let awayFormation: FormationType = formation
 
   if (matchIndex === 49) {
     // Baseline match — everything balanced
@@ -467,11 +467,12 @@ function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
         awayTactic = { ...BASE, mentality: awayM, formation }
         break
       }
-      case 1: { // press
-        const homeP = ALL_PRESSES[Math.floor(idx / 3) % 3]
-        const awayP = ALL_PRESSES[idx % 3]
-        homeTactic = { ...BASE, press: homeP, formation }
-        awayTactic = { ...BASE, press: awayP, formation }
+      case 1: { // formation/heightMode — low, mid, high
+        const heightFormations: FormationType[] = ['541_hem', '532_tvatoppar', '523_hog']
+        homeFormation = heightFormations[Math.floor(idx / 3) % 3]
+        awayFormation = heightFormations[idx % 3]
+        homeTactic = { ...BASE, formation: homeFormation }
+        awayTactic = { ...BASE, formation: awayFormation }
         break
       }
       case 2: { // tempo
@@ -514,7 +515,7 @@ function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
 
   return {
     homeCA: BASE_CA, awayCA: BASE_CA,
-    homeFormation: formation, awayFormation: formation,
+    homeFormation, awayFormation,
     homeTactic, awayTactic,
     homeAdvantage: 0.0, // neutral ground for control
     weather: makeNeutralWeather(),
@@ -524,26 +525,28 @@ function generateControl(matchIndex: number, bucketSeed: number): MatchConfig {
 
 function generateLimits(matchIndex: number, bucketSeed: number): MatchConfig {
   const seed = matchIndex * 7919 + BUCKET_OFFSETS.limits + bucketSeed
-  const formation: FormationType = '5-3-2'
+  const formation: FormationType = '532_tvatoppar'
   const BASE_CA = 70
   const BASE = tacticFromProfile(TACTIC_PROFILES.balanced, formation)
 
   // 4 groups of 12-13 matches each, 3 seeds per pair
-  // Group 0 (0-11): press=low home vs press=high away
+  // Group 0 (0-11): low height home vs high height away
   // Group 1 (12-23): cornerStrategy=safe vs cornerStrategy=aggressive
   // Group 2 (24-36): narrow width vs wide width
   // Group 3 (37-49): passingRisk=safe vs passingRisk=direct
 
   let homeTactic: Tactic
   let awayTactic: Tactic
+  let homeFormation: FormationType = formation
+  let awayFormation: FormationType = formation
 
   if (matchIndex < 12) {
-    // press contrast — 4 pairs × 3 seeds
+    // height contrast — 4 pairs × 3 seeds
     const pairIdx = Math.floor(matchIndex / 3) % 4
-    const homePress = pairIdx % 2 === 0 ? ALL_PRESSES[0] : ALL_PRESSES[2]
-    const awayPress = pairIdx % 2 === 0 ? ALL_PRESSES[2] : ALL_PRESSES[0]
-    homeTactic = { ...BASE, press: homePress, formation }
-    awayTactic = { ...BASE, press: awayPress, formation }
+    homeFormation = pairIdx % 2 === 0 ? '541_hem' : '523_hog'
+    awayFormation = pairIdx % 2 === 0 ? '523_hog' : '541_hem'
+    homeTactic = { ...BASE, formation: homeFormation }
+    awayTactic = { ...BASE, formation: awayFormation }
   } else if (matchIndex < 24) {
     // cornerStrategy contrast
     const localIdx = matchIndex - 12
@@ -572,7 +575,7 @@ function generateLimits(matchIndex: number, bucketSeed: number): MatchConfig {
 
   return {
     homeCA: BASE_CA, awayCA: BASE_CA,
-    homeFormation: formation, awayFormation: formation,
+    homeFormation, awayFormation,
     homeTactic, awayTactic,
     homeAdvantage: 0.0, // neutral ground for limits
     weather: makeNeutralWeather(),
@@ -602,15 +605,24 @@ function main() {
   const schema = readFileSync(SCHEMA_PATH, 'utf8')
   db.exec(schema)
 
+  const matchColumns = db.prepare('PRAGMA table_info(matches)').all() as Array<{ name: string }>
+  const hasFormationV2Schema = matchColumns.some(column => column.name === 'home_height_mode')
+  if (!hasFormationV2Schema) {
+    db.close()
+    throw new Error(
+      'Data warehouse använder schema v1. Skapa en ny databas innan Formation V2-data genereras.',
+    )
+  }
+
   // Prepare statements
   const insertMatch = db.prepare(`
     INSERT INTO matches (
       match_id, engine_version, seed, run_timestamp, sampling_bucket,
       home_team_id, away_team_id, home_ca, away_ca,
       home_formation, away_formation,
-      home_mentality, home_tempo, home_press, home_passing_risk,
+      home_mentality, home_tempo, home_height_mode, home_passing_risk,
       home_play_width, home_attack_focus, home_corner_strategy, home_pp_strategy,
-      away_mentality, away_tempo, away_press, away_passing_risk,
+      away_mentality, away_tempo, away_height_mode, away_passing_risk,
       away_play_width, away_attack_focus, away_corner_strategy, away_pp_strategy,
       weather_condition, weather_temperature, weather_ice_quality,
       home_goals, away_goals, home_corners, away_corners,
@@ -748,7 +760,7 @@ function main() {
       // Home tactic
       config.homeTactic.mentality,
       config.homeTactic.tempo,
-      config.homeTactic.press,
+      getHeightMode(config.homeFormation),
       config.homeTactic.passingRisk,
       config.homeTactic.width,
       config.homeTactic.attackingFocus,
@@ -757,7 +769,7 @@ function main() {
       // Away tactic
       config.awayTactic.mentality,
       config.awayTactic.tempo,
-      config.awayTactic.press,
+      getHeightMode(config.awayFormation),
       config.awayTactic.passingRisk,
       config.awayTactic.width,
       config.awayTactic.attackingFocus,

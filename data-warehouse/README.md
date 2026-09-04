@@ -30,8 +30,8 @@ En rad per match. Alla taktiska fält och väderfält är normaliserade till egn
 | home_team_id / away_team_id | TEXT | Syntetiska team-ID:n |
 | home_ca / away_ca | INTEGER | Genomsnittlig `currentAbility` 0–100 per lag |
 | home_formation / away_formation | TEXT | En av sex formationer |
-| home_mentality … home_pp_strategy | TEXT | 8 taktiska dimensioner, hemmalag |
-| away_mentality … away_pp_strategy | TEXT | 8 taktiska dimensioner, bortalag |
+| home_mentality … home_pp_strategy | TEXT | 7 valbara dimensioner samt `home_height_mode`, härlett ur formationen |
+| away_mentality … away_pp_strategy | TEXT | 7 valbara dimensioner samt `away_height_mode`, härlett ur formationen |
 | weather_condition | TEXT | `clear` / `overcast` / `lightSnow` / `heavySnow` / `fog` / `thaw` (NULL = inget väder) |
 | weather_temperature | INTEGER | Grader Celsius (NULL om inget väder) |
 | weather_ice_quality | TEXT | `excellent` / `good` / `moderate` / `poor` (NULL om inget väder) |
@@ -62,20 +62,20 @@ En rad per signifikant händelse (mål, hörna, utvisning, straff, räddning, by
 
 | Bucket | Antal | Syfte |
 |--------|-------|-------|
-| **realistic** | 600 | CA draget ur triangulär fördelning (min 50, max 92, mode 70). Formationer viktat: 50% 5-3-2, 30% 4-3-3, 20% 3-3-4. En av fyra taktikprofiler per lag. |
-| **varied** | 250 | Full slump: CA 40–95, alla 6 formationer, alla 8 taktikdimensioner varieras oberoende. Explorerar hela parametrummet. |
+| **realistic** | 600 | CA draget ur triangulär fördelning (min 50, max 92, mode 70). De fyra 5-3-2-varianterna väger 20% var; 5-2-3 hög och 5-4-1 hem 10% var. En av fyra taktikprofiler per lag. |
+| **varied** | 250 | Full slump: CA 40–95, alla 6 formationer och alla 7 valbara taktikdimensioner varieras oberoende. Utforskar hela parametrummet. |
 | **edge** | 100 | 4 extremmönster × 25 matcher: stark hemma/svag borta, svag hemma/stark borta, lika CA med maximal taktikkontrast, båda attackerande. |
 | **control** | 50 | Lika CA (70), neutral plan (homeAdvantage=0), neutralt väder. Varierar en taktikdimension i taget — isolerar effekter. |
-| **limits** | 50 | Lika CA, neutral plan. Systematiska kontrastpar för dimensioner som auditrapporten flaggade som svåra att särskilja: press, hörnstrategi, bredd, passningsrisk. |
+| **limits** | 50 | Lika CA, neutral plan. Systematiska kontrastpar för höjdläge via formation (5-4-1 hem mot 5-2-3 hög), hörnstrategi, bredd och passningsrisk. |
 
 ### Taktikprofiler (realistic-bucket)
 
-| Profil | Mentality | Tempo | Press | Övrigt |
-|--------|-----------|-------|-------|--------|
-| defensive | defensive | low | low | narrow, wings, safe corner |
-| balanced | balanced | normal | medium | normal, mixed, standard corner |
-| pressing | offensive | high | high | normal, mixed, standard corner |
-| attacking | offensive | high | medium | wide, central, aggressive corner |
+| Profil | Mentality | Tempo | Övrigt |
+|--------|-----------|-------|--------|
+| defensive | defensive | low | narrow, wings, safe corner |
+| balanced | balanced | normal | normal, mixed, standard corner |
+| pressing | offensive | high | normal, mixed, standard corner |
+| attacking | offensive | high | wide, central, aggressive corner |
 
 ## Köra generate.ts
 
@@ -86,11 +86,11 @@ npm run warehouse:generate -- --pilot
 # Full körning — 1050 matcher
 npm run warehouse:generate
 
-# Kör mot tom DB (tar bort gammal fil först)
+# Formation V2 kräver en ny databas. Arkivera eller ta bort v1-filen först.
 rm data-warehouse/matches.db && npm run warehouse:generate
 ```
 
-Kräver ingen env-var. DB skapas automatiskt om den inte finns. Schema appliceras via `IF NOT EXISTS`-guards — kör generate.ts flera gånger appenderar inte dubbletter men ersätter inte heller existerande data.
+Kräver ingen env-var. DB skapas automatiskt om den inte finns. Generatorn avbryter tydligt om en v1-databas med det pensionerade pressfältet ligger kvar, så Formation V2-data aldrig blandas in i ett gammalt schema. Schema appliceras via `IF NOT EXISTS`-guards — kör generate.ts flera gånger appenderar inte dubbletter men ersätter inte heller existerande data.
 
 ## Köra validate.ts
 

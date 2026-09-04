@@ -1,5 +1,5 @@
 -- Bandy Manager Data Warehouse
--- Schema v1
+-- Schema v2 — Formationer V2: höjdläge härleds ur formation, separat pressfält pensionerat.
 -- Taktiska fält är normaliserade till kolumner (inte JSON) för att möjliggöra direkta SQL-analyser.
 -- match_profile exkluderas medvetet — tolkningar hör hemma i vyer, inte rådata.
 
@@ -18,20 +18,20 @@ CREATE TABLE IF NOT EXISTS matches (
   home_formation        TEXT NOT NULL,
   away_formation        TEXT NOT NULL,
 
-  -- Taktik hemmalag (8 dimensioner)
+  -- Taktik hemmalag (formation + 7 valbara dimensioner)
   home_mentality        TEXT NOT NULL,
   home_tempo            TEXT NOT NULL,
-  home_press            TEXT NOT NULL,
+  home_height_mode      TEXT NOT NULL CHECK(home_height_mode IN ('low','mid','high')),
   home_passing_risk     TEXT NOT NULL,
   home_play_width       TEXT NOT NULL,
   home_attack_focus     TEXT NOT NULL,
   home_corner_strategy  TEXT NOT NULL,
   home_pp_strategy      TEXT NOT NULL,
 
-  -- Taktik bortalag (8 dimensioner)
+  -- Taktik bortalag (formation + 7 valbara dimensioner)
   away_mentality        TEXT NOT NULL,
   away_tempo            TEXT NOT NULL,
-  away_press            TEXT NOT NULL,
+  away_height_mode      TEXT NOT NULL CHECK(away_height_mode IN ('low','mid','high')),
   away_passing_risk     TEXT NOT NULL,
   away_play_width       TEXT NOT NULL,
   away_attack_focus     TEXT NOT NULL,
