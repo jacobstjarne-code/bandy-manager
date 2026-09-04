@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveTurneringslageMode, getTurneringslageText } from '../turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../turneringslageService'
 import type { TurneringslageMode } from '../turneringslageService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { CupBracket } from '../../entities/Cup'
@@ -10,7 +10,11 @@ const MANAGED = 'club_1'
 const OPP = 'club_2'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
-  return { managedClubId: MANAGED, cupBracket: null, playoffBracket: null, ...overrides } as SaveGame
+  return {
+    managedClubId: MANAGED, cupBracket: null, playoffBracket: null,
+    clubs: [], fixtures: [], currentMatchday: 8,
+    ...overrides,
+  } as SaveGame
 }
 
 function cupBracketWith(matches: CupBracket['matches'], winnerId: string | null = null): CupBracket {
@@ -120,5 +124,81 @@ describe('getTurneringslageText', () => {
   ]
   it.each(slutspelModes)('slutspel, %s', (mode, text) => {
     expect(getTurneringslageText(mode, 'slutspel')).toBe(text)
+  })
+})
+
+// sluttest-53-cup-lucka — TEXT LÅST 2026-09-04 (Opus).
+describe('getAwaitingNextRoundInfo', () => {
+  it('liga/avsked/slutspel — alltid null, egen text bara för cup', () => {
+    expect(getAwaitingNextRoundInfo(makeGame(), 'liga')).toBeNull()
+    expect(getAwaitingNextRoundInfo(makeGame(), 'avsked')).toBeNull()
+    const playoffBracket = playoffBracketWith({ quarterFinals: [series(PlayoffRound.QuarterFinal, { winnerId: MANAGED, loserId: OPP })] })
+    expect(getAwaitingNextRoundInfo(makeGame({ playoffBracket }), 'slutspel')).toBeNull()
+  })
+
+  it('cup, ingen bracket alls → null', () => {
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: null }), 'cup')).toBeNull()
+  })
+
+  it('cup, ingen runda vunnen än (väntar på förstarundan) → null, inte cup-luckan', () => {
+    const bracket = cupBracketWith([])
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: bracket }), 'cup')).toBeNull()
+  })
+
+  it('cup, vunnen final / utslagen / vidare final — deriveTurneringslageMode täcker redan, ingen dubblering', () => {
+    const won = cupBracketWith([], MANAGED)
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: won }), 'cup')).toBeNull()
+
+    const eliminated = cupBracketWith([{ id: 'm1', round: 2, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: OPP }])
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: eliminated }), 'cup')).toBeNull()
+
+    const inFinal = cupBracketWith([
+      { id: 'm1', round: 3, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+      { id: 'm2', round: 4, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: OPP, winnerId: null },
+    ])
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: inFinal }), 'cup')).toBeNull()
+  })
+
+  it('cup, vunnit rond 1 men rond 2 inte lottad än — motståndare okänd', () => {
+    const bracket = cupBracketWith([
+      { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+    ])
+    expect(getAwaitingNextRoundInfo(makeGame({ cupBracket: bracket }), 'cup')).toEqual({
+      title: 'Cupen väntar',
+      body: 'Nästa rond lottas efter omgången. Ni är kvar — det är allt som går att säga just nu.',
+    })
+  })
+
+  it('cup, motståndare känd med satt datum — datum i body', () => {
+    const bracket = cupBracketWith([
+      { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+      { id: 'm2', round: 2, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: 'club_3' },
+    ])
+    const game = makeGame({
+      cupBracket: bracket,
+      clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
+      fixtures: [{ id: 'f2', matchday: 8, date: '2027-03-12' } as SaveGame['fixtures'][number]],
+    })
+    expect(getAwaitingNextRoundInfo(game, 'cup')).toEqual({
+      title: 'Nästa rond: IFK Testby',
+      body: '12 mars. Tills dess är det serien som räknas.',
+    })
+  })
+
+  it('cup, motståndare känd men fixture saknar datum — "om N omgångar" i body', () => {
+    const bracket = cupBracketWith([
+      { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+      { id: 'm2', round: 2, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: 'club_3' },
+    ])
+    const game = makeGame({
+      cupBracket: bracket,
+      currentMatchday: 5,
+      clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
+      fixtures: [{ id: 'f2', matchday: 8 } as SaveGame['fixtures'][number]],
+    })
+    expect(getAwaitingNextRoundInfo(game, 'cup')).toEqual({
+      title: 'Nästa rond: IFK Testby',
+      body: 'om 3 omgångar. Tills dess är det serien som räknas.',
+    })
   })
 })

@@ -1622,6 +1622,11 @@ function makeGranskaFixture(overrides: Partial<typeof granskaFixture> & {
 const granskaCupFixture = makeGranskaFixture({ isCup: true, isKnockout: true, roundNumber: 2, matchday: 16 })
 const granskaCupGame = makeGame([...makeLeagueFixtures(), granskaCupFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 16, communityStanding: 58,
+  // sluttest-53-cup-lucka (2026-09-04): cupBracket wired så Turneringsläge-
+  // kortets nya cup-lucka-gren (getAwaitingNextRoundInfo — vunnit kvarten,
+  // semin inte lottad än) har en levande baseline, samma mönster som
+  // granskaCupFinalGame redan gör för vunnen_final.
+  cupBracket: { season: 8, matches: [{ id: 'cup-r2-m0', round: 2, fixtureId: granskaCupFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: undefined, completed: false },
 })
 const granskaCupRoundSummary = { ...granskaRoundSummary, round: 16 }
 

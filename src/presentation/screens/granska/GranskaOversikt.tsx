@@ -27,7 +27,7 @@ import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/mana
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
 import { getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } from '../../../domain/services/orsakVerkanService'
-import { deriveTurneringslageMode, getTurneringslageText } from '../../../domain/services/turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../../../domain/services/turneringslageService'
 import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 
@@ -546,12 +546,25 @@ export function GranskaOversikt({
         // kapitelPunktKind alltid är null — ingen krock där.
         if (kapitelPunktKind && kapitelPunktKind !== 'avsked') return null
         const mode = deriveTurneringslageMode(game, axes.tavlingstyp)
-        if (!mode) return null
+        if (mode) {
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: 6 }}>TURNERINGSLÄGE</SectionLabel>
+              <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                {getTurneringslageText(mode, axes.tavlingstyp)}
+              </p>
+            </div>
+          )
+        }
+        // sluttest-53-cup-lucka: cupens lucka mellan ronder — eget innehåll,
+        // inte seriens turneringsläge-mall (se getAwaitingNextRoundInfo).
+        const awaiting = getAwaitingNextRoundInfo(game, axes.tavlingstyp)
+        if (!awaiting) return null
         return (
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>
-            <SectionLabel style={{ marginBottom: 6 }}>TURNERINGSLÄGE</SectionLabel>
+            <SectionLabel style={{ marginBottom: 6 }}>{awaiting.title.toUpperCase()}</SectionLabel>
             <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
-              {getTurneringslageText(mode, axes.tavlingstyp)}
+              {awaiting.body}
             </p>
           </div>
         )

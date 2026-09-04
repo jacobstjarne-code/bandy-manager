@@ -78,3 +78,57 @@ export function getTurneringslageText(mode: TurneringslageMode, tavlingstyp: Tav
   // 'ut_forstarunda' för slutspel eller något läge alls för liga/avsked.
   return '[Opus]'
 }
+
+export interface AwaitingNextRoundInfo {
+  title: string
+  body: string
+}
+
+/**
+ * sluttest-53-cup-lucka: Turneringslägets terminala sex lägen (ovan) täcker
+ * vinst/förlust/final — men mellan två cupronder, när managerad klubb vunnit
+ * sin runda men nästa runda inte är lottad/spelad än, returnerade
+ * `deriveTurneringslageMode` null (ingen rad alls, samma "live-lucka"-klass
+ * som steg 5 ursprungligen fixade för slutspel/cup-terminal). Egen text
+ * (TEXT LÅST 2026-09-04, Opus), inte seriens delade turneringsläge-mall —
+ * därför en egen returtyp (titel+body) i stället för en till post i
+ * CUP_TEXT/SLUTSPEL_TEXT. Slutspelets motsvarande lucka har redan täckning
+ * annanstans; bara cup saknade den.
+ */
+export function getAwaitingNextRoundInfo(game: SaveGame, tavlingstyp: Tavlingstyp): AwaitingNextRoundInfo | null {
+  if (tavlingstyp !== 'cup' || !game.cupBracket || !game.managedClubId) return null
+  const bracket = game.cupBracket
+  const managedClubId = game.managedClubId
+  const status = getManagedClubCupStatus(bracket, managedClubId)
+  if (status.won || status.eliminated || status.isInFinal) return null
+
+  const wonRounds = bracket.matches
+    .filter(m => m.winnerId === managedClubId)
+    .map(m => m.round)
+  if (wonRounds.length === 0) return null
+  const nextRound = Math.max(...wonRounds) + 1
+
+  const nextMatch = bracket.matches.find(
+    m => m.round === nextRound && (m.homeClubId === managedClubId || m.awayClubId === managedClubId),
+  )
+  if (!nextMatch) {
+    return {
+      title: 'Cupen väntar',
+      body: 'Nästa rond lottas efter omgången. Ni är kvar — det är allt som går att säga just nu.',
+    }
+  }
+
+  const opponentId = nextMatch.homeClubId === managedClubId ? nextMatch.awayClubId : nextMatch.homeClubId
+  const opponent = game.clubs.find(c => c.id === opponentId)
+  const fixture = game.fixtures.find(f => f.id === nextMatch.fixtureId)
+  const whenClause = fixture?.date
+    ? new Date(fixture.date).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
+    : fixture
+      ? `om ${Math.max(1, fixture.matchday - game.currentMatchday)} omgångar`
+      : 'snart'
+
+  return {
+    title: `Nästa rond: ${opponent?.name ?? 'Okänd motståndare'}`,
+    body: `${whenClause}. Tills dess är det serien som räknas.`,
+  }
+}
