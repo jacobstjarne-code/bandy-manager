@@ -24,7 +24,12 @@ function buildHash(): string {
 }
 
 export function isFeedbackHiddenOnRoute(pathname: string): boolean {
-  return pathname.startsWith('/game/match') || pathname.startsWith('/game/review')
+  return pathname.startsWith('/game/match')
+    || pathname.startsWith('/game/review')
+    // Dev-galleriet ska vara en deterministisk bild av produktionens ytor.
+    // En fixerad rapportknapp vars text innehåller den aktuella commit-hashen
+    // gör annars varje visuell baslinje stale vid varje deploy.
+    || pathname.startsWith('/dev')
 }
 
 export function FeedbackButton() {
@@ -67,6 +72,7 @@ export function FeedbackButton() {
     <>
       {/* Tappbar hash-rad (ersätter den statiska overlayn) */}
       <button
+        data-feedback-button
         onClick={() => setOpen(true)}
         style={{
           position: 'fixed', bottom: 64, left: 0, right: 0, zIndex: 9999,

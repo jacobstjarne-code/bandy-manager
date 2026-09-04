@@ -72,6 +72,7 @@ for (const [id, clickText, viewport] of BASELINE_SCENES) {
       await page.setViewportSize(viewport ?? WIDE_VIEWPORT)
       await page.goto(`/dev/scenes?scene=${id}&width=${width}`, { waitUntil: 'networkidle' })
       await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
+      await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
       if (clickText) {
         await page.locator(clickText).first().click()
         await page.waitForTimeout(300)
@@ -81,7 +82,6 @@ for (const [id, clickText, viewport] of BASELINE_SCENES) {
       // Neutraliserar [data-dev-nav]s sticky-positionering (se ROTORSAK ovan).
       // Skalet fortsätter ta sin normala plats i dokumentflödet — bara den
       // egenskap som orsakar stitch-läckage stängs av.
-      await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
       await expect(page.locator('[data-scene-content]')).toHaveScreenshot(`baseline-${width}-${id}.png`)
       // Entitets-dedup-grinden (AUDIT DEL 2, 2026-08-12) — se entityDedup.ts.
       await assertNoDuplicateEntityIds(page)

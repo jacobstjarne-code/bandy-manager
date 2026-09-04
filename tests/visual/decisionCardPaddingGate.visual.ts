@@ -17,6 +17,7 @@ test.describe('decisionCard-padding — inget kort i en redan padded förälder'
       if (extraHeight) await page.setViewportSize({ width: 390, height: extraHeight })
       await page.goto(`/dev/scenes?scene=${id}`, { waitUntil: 'networkidle' })
       await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
+      await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
       if (clickText) {
         await page.locator(clickText).first().click()
         await page.waitForTimeout(300)

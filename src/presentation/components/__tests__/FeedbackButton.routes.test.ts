@@ -14,6 +14,7 @@ describe('FeedbackButton — matchflödets mobila tap-ytor', () => {
     '/game/match/live',
     '/game/match/result',
     '/game/review',
+    '/dev/scenes',
   ])('är dold på %s', route => {
     expect(isFeedbackHiddenOnRoute(route)).toBe(true)
   })
