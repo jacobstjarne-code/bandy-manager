@@ -53,7 +53,7 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
     return (
       <div className="mecenat-overlay">
         <div className="mecenat-card">
-          <p className="mecenat-label">{settingEmoji} Mecenatens middag</p>
+          <p className="mecenat-label">{settingEmoji} Mecenaten</p>
           <h2 className="mecenat-title">{event.title}</h2>
           <p className="mecenat-body">{scene.settingDescription}</p>
           <button className="btn btn-primary mecenat-primary-btn" onClick={() => setStep({ kind: 'question', qIndex: 0 })}>
