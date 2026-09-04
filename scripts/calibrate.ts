@@ -110,6 +110,13 @@ let homeWins = 0
 let draws = 0
 let secondHalfGoals = 0
 const totalGoalHistogram = new Map<number, number>()
+let goalPairs = 0
+let extensions = 0
+let equalizersWithNextGoal = 0
+let equalizerExtensions = 0
+let responses = 0
+let quickResponses = 0
+const responseByPostGoalLead = new Map<number, { responses: number; total: number }>()
 
 for (let i = 0; i < N; i++) {
   const [homeCA, awayCA] = pickMatchupCA(i)
@@ -159,6 +166,47 @@ for (let i = 0; i < N; i++) {
       if (ev.isCornerGoal) cornerGoals++
     }
   }
+
+  // Momentum mäts på intilliggande mål, på samma sätt som ANALYS_MOMENTUM:
+  // samma lag gör nästa mål = utökning; motståndaren = svar. Resultatet gör
+  // c-m3 reproducerbar mot aktuell motor i stället för en gammal dataexport.
+  const goals = f.events
+    .filter(ev => ev.type === MatchEventType.Goal)
+    .sort((a, b) => a.minute - b.minute)
+  let homeGoals = 0
+  let awayGoals = 0
+  for (let goalIndex = 0; goalIndex < goals.length; goalIndex++) {
+    const goal = goals[goalIndex]
+    const scorerIsHome = goal.clubId === homeId
+    const previousScorerDiff = scorerIsHome
+      ? homeGoals - awayGoals
+      : awayGoals - homeGoals
+    if (scorerIsHome) homeGoals++
+    else awayGoals++
+    const postGoalScorerDiff = scorerIsHome
+      ? homeGoals - awayGoals
+      : awayGoals - homeGoals
+
+    const nextGoal = goals[goalIndex + 1]
+    if (!nextGoal) continue
+    const sameTeamScoresNext = nextGoal.clubId === goal.clubId
+    const bucket = responseByPostGoalLead.get(postGoalScorerDiff) ?? { responses: 0, total: 0 }
+    bucket.total++
+    goalPairs++
+    if (sameTeamScoresNext) {
+      extensions++
+    } else {
+      bucket.responses++
+      responses++
+      if (nextGoal.minute - goal.minute <= 5) quickResponses++
+    }
+    responseByPostGoalLead.set(postGoalScorerDiff, bucket)
+
+    if (previousScorerDiff === -1 && postGoalScorerDiff === 0) {
+      equalizersWithNextGoal++
+      if (sameTeamScoresNext) equalizerExtensions++
+    }
+  }
 }
 
 const totalGoalCount = totalGoals
@@ -168,6 +216,11 @@ const drawRate       = draws / N
 const cornerShare    = totalGoalCount > 0 ? cornerGoals / totalGoalCount : 0
 const shGoals        = secondHalfGoals
 const shShare        = totalGoalCount > 0 ? shGoals / totalGoalCount : 0
+const extensionRate  = goalPairs > 0 ? extensions / goalPairs : 0
+const equalizerMomentumRate = equalizersWithNextGoal > 0
+  ? equalizerExtensions / equalizersWithNextGoal
+  : 0
+const quickResponseRate = responses > 0 ? quickResponses / responses : 0
 
 // ── Report ─────────────────────────────────────────────────────────────────
 console.log(`\\n=== Kalibrering (${N} matcher, varierad lagstyrka) ===\\n`)
@@ -193,5 +246,15 @@ console.log(`Svans ${tailFrom}–${MATCH_TOTAL_GOAL_CAP}: ${Array.from({ length:
   const goals = tailFrom + index
   return `${goals}:${totalGoalHistogram.get(goals) ?? 0}`
 }).join(' · ')}`)
+
+console.log(`\nMomentum (${goalPairs} intilliggande målpar):`)
+console.log(`Utökningsgrad: ${(extensionRate * 100).toFixed(1)}% (verkligt herrmål 55,0%, mål 52–58%)`)
+console.log(`Kvitteraren gör nästa mål: ${(equalizerMomentumRate * 100).toFixed(1)}% (verkligt herrmål 51,0%)`)
+console.log(`Snabbt svar ≤5 min: ${(quickResponseRate * 100).toFixed(1)}% (verkligt herrmål 43,2%)`)
+console.log(`Svar efter målskyttens ledning: ${[...responseByPostGoalLead.entries()]
+  .filter(([, value]) => value.total >= Math.max(20, N / 100))
+  .sort(([a], [b]) => a - b)
+  .map(([lead, value]) => `${lead >= 0 ? '+' : ''}${lead}:${(value.responses / value.total * 100).toFixed(1)}% (n=${value.total})`)
+  .join(' · ')}`)
 
 console.log()

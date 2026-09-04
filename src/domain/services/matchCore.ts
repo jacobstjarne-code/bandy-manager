@@ -1,5 +1,5 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.2.1'
+export const MATCH_ENGINE_VERSION = '1.2.2'
 
 // Global goal-rate modifier. Multipliceras in i ALLA fem målvägar (attack,
 // transition, corner, freekick, penalty) för att bevara kalibrering när
@@ -195,11 +195,13 @@ export const PAUSE_LEAN_FACTOR: Record<'push' | 'calm', number> = {
 const EQUALIZE_MOMENTUM = 0.30     // attack-boost direkt efter kvittering
 const EQUALIZE_MOMENTUM_STEPS = 4  // avtar över 4 steg (~6 min)
 
-// Hot-hand burst (Fas 3, stil/disposition). Efter mål får laget en boost skalad
-// av dispositionsfaktorn (0 konservativt → 1 aggressivt). Vidgar klustringsspannet
-// monotont med taktisk aggressivitet, frikopplat från lagstyrka. Magnitud
-// kalibrerad mot verkligt spann 0,57–1,18 (Finding 054).
-const HOT_HAND_BOOST = 0.90   // max attack-boost (vid disposition=1)
+// Hot-hand burst (Fas 3 + C-M3). Efter mål får laget en liten generell boost
+// eftersom verkliga lag utökar oftare än motståndaren svarar. Dispositionen
+// vidgar sedan skillnaden mellan konservativa och aggressiva lag. Den tidigare
+// ställningsstyrda kombinationen trailingBoost + leadingBrake gav motsatt effekt:
+// motorn mean-reverterade oavsett vilket lag som hade initiativet.
+const HOT_HAND_BOOST = 0.90
+const HOT_HAND_BASELINE = 0.40
 const HOT_HAND_STEPS = 2      // avtar över 2 steg (~3 min)
 
 // Deterministic profile selection from seed — both halves receive the same
@@ -604,10 +606,9 @@ function* simulateMatchCore(
   let equalizeMomentumTimer = 0
   let prevScoreDiff = (input.initialHomeScore ?? 0) - (input.initialAwayScore ?? 0)
 
-  // Hot-hand burst (Fas 3, dispositionell): efter att ett lag gjort mål får det en
-  // kort, avtagande boost SKALAD AV sin dispositionsfaktor — aggressiva lag rider
-  // vidare på skuren, konservativa inte. Samma maskineri som comeback-momentum,
-  // men ingången är lagets identitet, inte matchens tillstånd.
+  // Hot-hand burst (Fas 3 + C-M3): efter att ett lag gjort mål får det en kort,
+  // generell boost som dispositionen sedan förstärker eller dämpar. Ingången är
+  // lagets initiativ och identitet, inte att motståndaren råkar ligga under.
   let homeHotTimer = 0, awayHotTimer = 0
   let prevHomeScoreHH = input.initialHomeScore ?? 0
   let prevAwayScoreHH = input.initialAwayScore ?? 0
@@ -916,11 +917,14 @@ function* simulateMatchCore(
     if (awayScore > prevAwayScoreHH) awayHotTimer = HOT_HAND_STEPS
     prevHomeScoreHH = homeScore
     prevAwayScoreHH = awayScore
-    // Centrerad kring balanserad (disposition 0,5): aggressivt → boost (rider skuren),
-    // konservativt → anti-hot (sprider målen), balanserad → 0 (aggregatet ~0,758
-    // bevaras, regressionsvakt). Vidgar spannet symmetriskt utan att flytta mitten.
-    const homeHotMult = homeHotTimer > 0 ? 1 + HOT_HAND_BOOST * (homeDisposition - DISPOSITION_CENTER) * (homeHotTimer / HOT_HAND_STEPS) : 1
-    const awayHotMult = awayHotTimer > 0 ? 1 + HOT_HAND_BOOST * (awayDisposition - DISPOSITION_CENTER) * (awayHotTimer / HOT_HAND_STEPS) : 1
+    // Baslinjen flyttar ligans generella momentum i rätt riktning; den centrerade
+    // dispositionsdelen bevarar stilskillnaden (aggressivt rider skuren längre,
+    // konservativt dämpar den).
+    const hotHandMultiplier = (disposition: number, timer: number): number => timer > 0
+      ? 1 + (HOT_HAND_BASELINE + HOT_HAND_BOOST * (disposition - DISPOSITION_CENTER)) * (timer / HOT_HAND_STEPS)
+      : 1
+    const homeHotMult = hotHandMultiplier(homeDisposition, homeHotTimer)
+    const awayHotMult = hotHandMultiplier(awayDisposition, awayHotTimer)
     if (homeHotTimer > 0) homeHotTimer--
     if (awayHotTimer > 0) awayHotTimer--
 
@@ -1022,19 +1026,13 @@ function* simulateMatchCore(
     const homePowerplayBoost  = awayActiveSuspensions > 0 ? 1.20 : 1.0
     const awayPowerplayBoost  = homeActiveSuspensions > 0 ? 1.20 : 1.0
 
-    // Trailing boost / leading brake in second half (Sprint 25f)
-    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.16 : 0
-    const leadingBrake  = (diff: number) => diff > 0 ? Math.min(diff, 3) * 0.12 : 0
-    const homeTrailBoost = trailingBoost(homeScore - awayScore)
-    const awayTrailBoost = trailingBoost(awayScore - homeScore)
-    const homeLeadBrake  = leadingBrake(homeScore - awayScore)
-    const awayLeadBrake  = leadingBrake(awayScore - homeScore)
-    // Hot-hand (dispositionell) appliceras hela matchen, även 1H.
+    // Hot-hand appliceras hela matchen, medan andrahalvleksläget fortsatt bär
+    // chasing/controlling. Ingen extra ställningsstyrd mean reversion ovanpå det.
     const effectiveHomeAttack = step >= 30
-      ? clamp(homeAttack * (1 + homeTrailBoost) * (1 - homeLeadBrake) * homeModeAttackMult * homeHotMult, 0, 1)
+      ? clamp(homeAttack * homeModeAttackMult * homeHotMult, 0, 1)
       : clamp(homeAttack * homeHotMult, 0, 1)
     const effectiveAwayAttack = step >= 30
-      ? clamp(awayAttack * (1 + awayTrailBoost) * (1 - awayLeadBrake) * awayModeAttackMult * awayHotMult, 0, 1)
+      ? clamp(awayAttack * awayModeAttackMult * awayHotMult, 0, 1)
       : clamp(awayAttack * awayHotMult, 0, 1)
 
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
