@@ -4,7 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
 import { PlayerPosition } from '../../../domain/enums'
-import { getScoutReportAge } from '../../../domain/services/scoutingService'
+import { getScoutReportAge, getAttributeBand, ATTRIBUTE_BAND_LABELS, ATTRIBUTE_BAND_BAR_WIDTH } from '../../../domain/services/scoutingService'
 import { getScoutablePlayers } from '../../../domain/services/talentScoutService'
 import { positionShort, positionLong, formatValue } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
@@ -282,22 +282,30 @@ export function ScoutingTab({
                       )}
                       {report.attributeProfile && (
                         <div className="transfers-attribute-profile">
+                          {/* transfer-scouting-falsk-precision (DOM 2026-09-04):
+                              osignerad spelare → band (svag/ok/stark), aldrig rå
+                              decimal. Stapelbredden är bandets representativa
+                              bredd, inte det faktiska medelvärdet — annars
+                              läcker precisionen tillbaka via grafiken. */}
                           {([
                             { label: 'Offensiv', value: report.attributeProfile.offensive },
                             { label: 'Defensiv', value: report.attributeProfile.defensive },
                             { label: 'Fysisk', value: report.attributeProfile.physical },
                             { label: 'Mental', value: report.attributeProfile.mental },
-                          ] as const).map(({ label, value }) => (
-                            <div key={label} className="transfers-attr-row">
-                              <div className="transfers-attr-label-row">
-                                <span className="transfers-attr-label">{label}</span>
-                                <span className="transfers-attr-value">{value}</span>
+                          ] as const).map(({ label, value }) => {
+                            const band = getAttributeBand(value)
+                            return (
+                              <div key={label} className="transfers-attr-row">
+                                <div className="transfers-attr-label-row">
+                                  <span className="transfers-attr-label">{label}</span>
+                                  <span className="transfers-attr-value">{ATTRIBUTE_BAND_LABELS[band]}</span>
+                                </div>
+                                <div className="transfers-attr-bar-bg">
+                                  <div className="transfers-attr-bar-fill" style={{ width: `${ATTRIBUTE_BAND_BAR_WIDTH[band]}%` }} />
+                                </div>
                               </div>
-                              <div className="transfers-attr-bar-bg">
-                                <div className="transfers-attr-bar-fill" style={{ width: `${value}%` }} />
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       )}
                     </div>

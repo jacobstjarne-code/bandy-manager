@@ -4,6 +4,7 @@ import {
   processScoutAssignment,
   generateScoutNotes,
   getScoutReportAge,
+  getAttributeBand,
 } from '../scoutingService'
 import { PlayerArchetype, PlayerPosition } from '../../enums'
 import type { Player } from '../../entities/Player'
@@ -183,6 +184,26 @@ describe('generateScoutNotes', () => {
       expect(notes).not.toContain('åkhalv')
       expect(notes).not.toContain('lyrhalv')
     })
+  })
+})
+
+// transfer-scouting-falsk-precision (DOM 2026-09-04) — empiriska terciler,
+// se kommentaren i scoutingService.ts.
+describe('getAttributeBand', () => {
+  it('under 40 är svag', () => {
+    expect(getAttributeBand(0)).toBe('svag')
+    expect(getAttributeBand(39)).toBe('svag')
+  })
+
+  it('40–50 (inklusive) är ok', () => {
+    expect(getAttributeBand(40)).toBe('ok')
+    expect(getAttributeBand(45)).toBe('ok')
+    expect(getAttributeBand(50)).toBe('ok')
+  })
+
+  it('över 50 är stark', () => {
+    expect(getAttributeBand(51)).toBe('stark')
+    expect(getAttributeBand(99)).toBe('stark')
   })
 })
 

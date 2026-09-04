@@ -92,6 +92,40 @@ export function getScoutReportAge(_report: ScoutReport, currentSeason: number, s
   return 'stale'
 }
 
+/**
+ * transfer-scouting-falsk-precision (DOM 2026-09-04, Jacob på Opus förslag):
+ * osignerade spelares attribut visas aldrig som rå decimal — "svag/ok/stark"
+ * (etiketterna låsta av Opus). Trösklarna nedan är EMPIRISKA terciler, inte
+ * en naiv 33/66-delning av 0–100-skalan: 8 seedade nygenererade rosters
+ * (createNewGame, 1536 spelare, 18432 individuella attributvärden) gav
+ * p33≈38 och p66≈50 — nästan identiskt oavsett om man mäter enskilda
+ * attribut eller scoutrapportens fyra sammansatta kategorier
+ * (offensive/defensive/physical/mental). Samma tröskelpar för båda,
+ * avrundat till hela tiotal.
+ */
+export type AttributeBand = 'svag' | 'ok' | 'stark'
+
+export function getAttributeBand(value: number): AttributeBand {
+  if (value < 40) return 'svag'
+  if (value <= 50) return 'ok'
+  return 'stark'
+}
+
+export const ATTRIBUTE_BAND_LABELS: Record<AttributeBand, string> = {
+  svag: 'Svag',
+  ok: 'Ok',
+  stark: 'Stark',
+}
+
+/** Representativ bredd per band för stapelgrafik — INTE värdets faktiska
+ *  medel, annars läcker precisionen bandet finns för att dölja tillbaka
+ *  genom bredden istället för siffran. */
+export const ATTRIBUTE_BAND_BAR_WIDTH: Record<AttributeBand, number> = {
+  svag: 30,
+  ok: 60,
+  stark: 90,
+}
+
 // B5 (2026-08-21, Opus): bandyvokabulär ur SvenskaFans-serien, se
 // docs/BANDYSPRAK_KALLASNING_2026-08-19.md. Alla värden är obestämda
 // substantivfraser i en-genus så att mallarnas alla fem slots

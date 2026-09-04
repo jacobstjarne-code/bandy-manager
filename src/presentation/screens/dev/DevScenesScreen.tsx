@@ -72,6 +72,7 @@ import { CupIntroScene } from '../scenes/CupIntroScene'
 import { SundayTrainingScene } from '../scenes/SundayTrainingScene'
 import { SeasonSignatureRevealScene } from '../scenes/SeasonSignatureRevealScene'
 import { ScoutingTab } from '../../components/transfers/ScoutingTab'
+import { startScoutAssignment, processScoutAssignment } from '../../../domain/services/scoutingService'
 import { IntroSequence } from '../IntroSequence'
 import { TilltradeScreen } from '../TilltradeScreen'
 import { NameInputScreen } from '../NameInputScreen'
@@ -949,6 +950,20 @@ const transfersOpenNoBidsGame = withTransferWindowOpen(factoryMidSeasonGame)
 const transfersOneBidGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 1)
 const transfersMultiBidsGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 3)
 
+// transfer-scouting-falsk-precision (2026-09-04): en riktig genererad
+// ScoutReport, samma väg spelet självt tar (processScoutAssignment) — så
+// band-etiketterna (svag/ok/stark) syns live i galleriet, inte bara i tester.
+const scoutingTargetPlayer = transfersOpenNoBidsGame.players.find(
+  p => p.clubId !== transfersOpenNoBidsGame.managedClubId,
+)!
+const scoutingDevReport = processScoutAssignment(
+  startScoutAssignment(scoutingTargetPlayer.id, scoutingTargetPlayer.clubId, '2026-11-01', true),
+  scoutingTargetPlayer,
+  75,
+  7,
+  transfersOpenNoBidsGame.currentSeason,
+)
+
 function ScoutingDevScene() {
   const [position, setPosition] = useState('ALL')
   const [maxAge, setMaxAge] = useState(24)
@@ -959,7 +974,7 @@ function ScoutingDevScene() {
   return (
     <ScoutingTab
       game={game}
-      scoutReports={{}}
+      scoutReports={{ [scoutingTargetPlayer.id]: scoutingDevReport }}
       scoutBudget={game.scoutBudget ?? 10}
       activeAssignment={game.activeScoutAssignment ?? null}
       windowOpen
