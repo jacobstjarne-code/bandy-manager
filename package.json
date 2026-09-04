@@ -20,7 +20,7 @@
     "mirror:check": "node scripts/generate-color-mirror.mjs --check",
     "audit:scenes": "node scripts/capture-scenes.mjs",
     "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots",
+    "test:visual:update": "playwright test tests/visual/scenes.visual.ts tests/visual/baseline.visual.ts --update-snapshots",
     "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
     "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts",
     "analyze:choice-entropy": "node_modules/.bin/vite-node scripts/analyze-choice-entropy.ts",

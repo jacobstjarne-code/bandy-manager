@@ -220,13 +220,14 @@ test('Klubbpärmen visar riktig dialog, klubb och kapitel', async ({ page }) => 
   await expect(dialog.getByRole('button', { name: 'Stäng' })).toBeVisible()
 })
 
-test('Avskedsceremonin visar spelaren, avskedet och båda valen', async ({ page }) => {
+test('Avskedsceremonin visar spelaren, avskedet och alla tre valen', async ({ page }) => {
   await page.goto('/dev/scenes?scene=ceremony-retirement&width=390', { waitUntil: 'networkidle' })
 
   await expect(page.getByText('🎖️ AVSKED', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Karl Lindström' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Erbjud en roll i ledarstaben' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Tacka av honom på isen' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Erbjud roll som ungdomstränare' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Erbjud roll som scout' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tack och lycka till' })).toBeVisible()
 })
 
 test('Granska nivå 3 visar det persisterade valet som belagt citat', async ({ page }) => {
