@@ -1,9 +1,10 @@
 /**
- * Kalibreringsskript — kör 200 matcher med varierad lagstyrka och jämför mot Bandygrytan-data.
- * Kör med: node_modules/.bin/vite-node scripts/calibrate.ts
+ * Kalibreringsskript — kör matcher med varierad lagstyrka och jämför mot Bandygrytan-data.
+ * Kör med: node_modules/.bin/vite-node scripts/calibrate.ts [--matches=10000]
  */
 
 import { simulateMatch } from '../src/domain/services/matchEngine'
+import { MATCH_TOTAL_GOAL_CAP } from '../src/domain/services/matchCore'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
@@ -100,12 +101,15 @@ const defaultTactic = {
 } as unknown as Tactic
 
 // ── Run simulations ───────────────────────────────────────────────────────────
-const N = 200
+const matchesArg = process.argv.find(arg => arg.startsWith('--matches='))
+const N = matchesArg ? Number.parseInt(matchesArg.split('=')[1], 10) : 200
+if (!Number.isFinite(N) || N <= 0) throw new Error('--matches måste vara ett positivt heltal')
 let totalGoals = 0
 let cornerGoals = 0
 let homeWins = 0
 let draws = 0
 let secondHalfGoals = 0
+const totalGoalHistogram = new Map<number, number>()
 
 for (let i = 0; i < N; i++) {
   const [homeCA, awayCA] = pickMatchupCA(i)
@@ -145,6 +149,7 @@ for (let i = 0; i < N; i++) {
   const f = result.fixture
   const gs = (f.homeScore ?? 0) + (f.awayScore ?? 0)
   totalGoals += gs
+  totalGoalHistogram.set(gs, (totalGoalHistogram.get(gs) ?? 0) + 1)
   if ((f.homeScore ?? 0) > (f.awayScore ?? 0)) homeWins++
   if ((f.homeScore ?? 0) === (f.awayScore ?? 0)) draws++
 
@@ -179,5 +184,14 @@ check('cornerGoalShare', cornerShare,    TARGETS.cornerGoalShare)
 check('homeWinRate',     homeWinRate,    TARGETS.homeWinRate)
 check('drawRate',        drawRate,       TARGETS.drawRate)
 check('secondHalfShare', shShare,        TARGETS.secondHalfShare)
+
+const capMatches = totalGoalHistogram.get(MATCH_TOTAL_GOAL_CAP) ?? 0
+console.log(`\nMatcher på exakt ${MATCH_TOTAL_GOAL_CAP} mål: ${capMatches}/${N} (${(capMatches / N * 100).toFixed(2)}%)`)
+console.log(`Högsta observerade målantal: ${Math.max(...totalGoalHistogram.keys())}`)
+const tailFrom = Math.max(0, MATCH_TOTAL_GOAL_CAP - 5)
+console.log(`Svans ${tailFrom}–${MATCH_TOTAL_GOAL_CAP}: ${Array.from({ length: MATCH_TOTAL_GOAL_CAP - tailFrom + 1 }, (_, index) => {
+  const goals = tailFrom + index
+  return `${goals}:${totalGoalHistogram.get(goals) ?? 0}`
+}).join(' · ')}`)
 
 console.log()

@@ -1,5 +1,5 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.2.0'
+export const MATCH_ENGINE_VERSION = '1.2.1'
 
 // Global goal-rate modifier. Multipliceras in i ALLA fem målvägar (attack,
 // transition, corner, freekick, penalty) för att bevara kalibrering när
@@ -27,15 +27,17 @@ const REFEREE_ATTITUDE_FOUL_STEP = 0.03
 // Två oberoende grindar i canScore(): båda måste vara uppfyllda
 // för att en målscen ska kunna konvertera.
 //
-// MATCH_TOTAL_GOAL_CAP — empirisk gräns. 99:e percentilen i Elitserien
-// herr (1 124 matcher) är 17 totalmål. Sätts något under 99:e percentilen
-// som kompromiss för spelupplevelse. Höjs i motor v1.2.0 baserat på data.
+// MATCH_TOTAL_GOAL_CAP — skyddsräcke utanför den normala fördelningen.
+// 99:e percentilen i Elitserien herr (1 124 matcher) är 17 totalmål, men ett
+// hårt tak på just 17 skapade en synlig hög där 2,54 % av 10 000 matcher
+// landade exakt på samma tal. 22 bevarar skyddet mot extrema resultat utan
+// att kapa den empiriska svansen vid dess 99:e percentil.
 //
 // MATCH_GOAL_DIFFERENCE_CAP — designval. Förhindrar att spelet producerar
 // matcher med målskillnad > 6, vilket bedöms försämra spelupplevelse i
 // Bandy Manager. Verkliga Elitseriematcher har >6 i marginal i 11,9 %
 // av fallen — detta är ett medvetet avkall. Bör testas via playtest.
-export const MATCH_TOTAL_GOAL_CAP    = 17  // empirisk 99:e percentil Elitserien (finding:049)
+export const MATCH_TOTAL_GOAL_CAP    = 22  // skyddsräcke ovanför empirisk p99
 export const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
 
 /**

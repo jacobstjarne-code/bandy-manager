@@ -31,10 +31,10 @@ describe('canScoreGate', () => {
   })
 
   it('respekterar default totalCap från matchCore utan att skicka in den explicit', () => {
-    // 8+8=16 < 17 (totalCap), och nytt diff blir bara 1 → diffCap binder inte här
-    expect(canScoreGate(8, 8, true)).toBe(true)
-    // 8+9=17 === totalCap → blockerad oavsett diff
-    expect(canScoreGate(8, 9, true)).toBe(false)
+    // 10+11=21 < 22 (totalCap), och nytt diff blir 0 → diffCap binder inte här
+    expect(canScoreGate(10, 11, true)).toBe(true)
+    // 11+11=22 === totalCap → blockerad oavsett diff
+    expect(canScoreGate(11, 11, true)).toBe(false)
   })
 
   it('respekterar default diffCap från matchCore utan att skicka in den explicit', () => {
