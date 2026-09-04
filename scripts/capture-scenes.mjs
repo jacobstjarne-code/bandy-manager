@@ -22,6 +22,7 @@ const SCENES = [
   ['sm-victory', 'SM-Final Victory (ceremoni)'],
   ['season-arc', 'SeasonArcCard (toppa)'],
   ['portal-cards', 'Portal Cards (mörk yta)'],
+  ['portal-midseason', 'Portal — mitt i säsongen (Simulera-baren synlig, design-b4)'],
   ['efterklang', 'Efterklang + economicScar-efterdyning'],
   ['squad', 'SquadScreen (DB-5 stripe + R2-3 chip + Q1)'],
   ['portal', 'PortalScreen (dashboard)'],

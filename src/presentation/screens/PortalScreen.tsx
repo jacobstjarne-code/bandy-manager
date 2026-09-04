@@ -428,7 +428,7 @@ export function PortalScreen() {
           ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
           --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
           redan etablerade för exakt den här bugklassen. */}
-      <div ref={ctaRef} style={{
+      <div ref={ctaRef} data-fixed-bottom-bar style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: 14,

@@ -117,6 +117,11 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed'
+  // design-b4-simulera-bar-fotkrock (2026-09-04): canSimulateRemaining kräver
+  // playedLeagueRounds>=12 + en schemalagd (ej cup) kommande match — ingen
+  // befintlig portal-scen hade den kombinationen (portalGame har bara
+  // completed fixtures). Återanvänder den redan verifierade factoryMidSeasonGame.
+  | 'portal-midseason'
   // AUDIT DEL 2 (2026-08-11): kontrollfall, Berg-budets dubbelrendering (dc3d771f)
   | 'portal-bid-single' | 'portal-bid-multi'
   // AUDIT DEL 3 (2026-08-11): baseline före ombyggnad, Club 'Klubben i korthet'
@@ -250,6 +255,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
   { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
   { id: 'portal-facility-completed', label: 'Portal — Bygget klart (navigerbart beat)' },
+  { id: 'portal-midseason', label: 'Portal — mitt i säsongen (Simulera-baren synlig)' },
   { id: 'portal-bid-single', label: 'Portal — 1 bud, det är det aktiva HÄNDELSE-kortet' },
   { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
   { id: 'club-fresh',       label: 'Club — säsong 1, inga öppna minnen' },
@@ -1859,6 +1865,7 @@ export function DevScenesScreen() {
       : scene === 'portal-full' ? portalFullGame
       : scene === 'portal-grind' ? portalGrindGame
       : scene === 'portal-facility-completed' ? portalFacilityCompletedGame
+      : scene === 'portal-midseason' ? factoryMidSeasonGame
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : scene === 'portal-month-decisions' ? portalMonthDecisionsGame
@@ -2060,7 +2067,7 @@ export function DevScenesScreen() {
           </div>
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
-          || scene === 'portal-facility-completed'
+          || scene === 'portal-facility-completed' || scene === 'portal-midseason'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
           || scene === 'portal-month-decisions' || scene === 'sponsor-motbud'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
