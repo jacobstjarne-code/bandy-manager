@@ -63,6 +63,33 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     expect(result.financeLog?.at(-1)?.amount).toBe(-1_080_000)
   })
 
+  it('hall-kommun-nej-onabart: relation ≥45 men communityStanding <50 — kommunen säger nej, bordläggs (inte bygge)', () => {
+    const trial: HallTrial = { stage: 'forhandling', support: 70, startedSeason: 2026, stageStartedRound: 8 }
+    const base = makeGame(trial)
+    const game = { ...base, localPolitician: { ...base.localPolitician!, relationship: 60 }, communityStanding: 49 }
+    const event = generateHallProcessEvent(game, 10, new Set())!
+
+    expect(event.id).toBe('hallprocess_fh1nej_s2026')
+    expect(event.title).toBe('Kommunen säger nej')
+    expect(event.choices).toHaveLength(1)
+    expect(event.choices[0].subtitle).toBe('Bordlagd till nästa säsong. Orten avgör.')
+
+    const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'noterat', undefined, true)
+    expect(result.facilityState?.hallTrial?.stage).toBe('bordlagd')
+    expect(result.facilityState?.hallTrial?.cooldownUntilSeason).toBe(2027)
+    expect(result.facilityState?.activeProject).toBeUndefined()
+    expect(result.pendingHallEcho?.text).toBe('Kommunen sa nej. Inte till hallen. Till oss.')
+  })
+
+  it('hall-kommun-nej-onabart: relation ≥45 och communityStanding 50 — ungdomstimmar-erbjudandet som förut', () => {
+    const trial: HallTrial = { stage: 'forhandling', support: 70, startedSeason: 2026, stageStartedRound: 8 }
+    const base = makeGame(trial)
+    const game = { ...base, localPolitician: { ...base.localPolitician!, relationship: 60 }, communityStanding: 50 }
+    const event = generateHallProcessEvent(game, 10, new Set())!
+
+    expect(event.id).toBe('hallprocess_fh1_s2026')
+  })
+
   it('låg kommunrelation når patronreservvägen med olika verkliga klubbkostnader', () => {
     const trial: HallTrial = { stage: 'forhandling', support: 70, startedSeason: 2026, stageStartedRound: 4 }
     const base = makeGame(trial)

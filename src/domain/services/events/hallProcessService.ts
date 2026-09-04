@@ -330,6 +330,7 @@ function buildForhandlingEvent(
   const s = game.currentSeason
   const { stageStartedRound } = trial
   const fh1Id = `hallprocess_fh1_s${s}`
+  const fh1NejId = `hallprocess_fh1nej_s${s}`
   const fh2Id = `hallprocess_fh2_s${s}`
   const fhNejId = `hallprocess_fhnej_s${s}`
   const politician = game.localPolitician
@@ -374,8 +375,31 @@ function buildForhandlingEvent(
   }
 
   // Kommunens villkor at +2
-  if (currentRound >= stageStartedRound + 2 && !alreadyQueued.has(fh1Id)) {
+  if (currentRound >= stageStartedRound + 2 && !alreadyQueued.has(fh1Id) && !alreadyQueued.has(fh1NejId)) {
     if (!politician || !municipalityWillFinance) return null
+
+    // hall-kommun-nej-onabart (DOM 2026-09-03): stödet (politician.relationship)
+    // styr FÖRANKRINGSRÖSTNINGEN, inte kommunens egen ja/nej — en klubb som
+    // klarat kraven har ALLTID relationen, så kommunens gate var teater. CS
+    // garanteras inte av kraven; nej blir nåbart exakt för den som försummat
+    // orten. TEXT LÅST (Opus), kopierad ordagrant.
+    const communityStanding = game.communityStanding ?? 50
+    if (communityStanding < 50) {
+      return {
+        id: fh1NejId,
+        type: 'hallProcess',
+        title: 'Kommunen säger nej',
+        body: 'Kommunalrådet ringer själv, vilket sällan är ett gott tecken. Pengarna hade gått att hitta. Men orten står inte bakom bygget, och en hall som bygden inte vill ha bygger ingen kommun. Frågan bordläggs. Bygg förtroendet på orten först, så tas den upp igen.',
+        choices: [{
+          id: 'noterat',
+          label: 'Noterat',
+          subtitle: 'Bordlagd till nästa säsong. Orten avgör.',
+          effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ stage: 'bordlagd', cooldownUntilSeason: s + 1 }) },
+        }],
+        resolved: false,
+      }
+    }
+
     const def = PROVNING_DECISIONS_FORHANDLING[0]
     const buildCost = matchhallClubCost('kommun')
     return {

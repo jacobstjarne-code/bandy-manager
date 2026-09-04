@@ -1495,8 +1495,10 @@ export function resolveEvent(
           // ID:t i resolvedEventIds) + ett kort kafferums-eko (samma pending+
           // expires-mönster som pendingVictoryEcho/pendingNationalTeamReturn).
           // Bara förankringens EGEN röstningsutgång (hallprocess_res_s-eventet)
-          // bär den här texten — förhandlingens kommun-nej (hallprocess_fhnej_s)
-          // har sin egen, andra text (ingen PROVNING_RESOLUTION-post finns för
+          // och kommunens nej vid förhandlingsbordet (hallprocess_fh1nej_s,
+          // hall-kommun-nej-onabart) bär kafferums-eko — förhandlingens ANDRA
+          // nej (hallprocess_fhnej_s, ingen patron att falla tillbaka på) har
+          // sin egen, andra text (ingen PROVNING_RESOLUTION-post finns för
           // den, rörs inte). nedlagd_egen hör bara till avbryta-valet.
           let resolutionText: string | undefined
           if (update.selfNedlagd) {
@@ -1504,6 +1506,8 @@ export function resolveEvent(
           } else if (eventId.startsWith('hallprocess_res_s')) {
             if (update.stage === 'bordlagd') resolutionText = PROVNING_RESOLUTION.bordlagd
             else if (update.stage === 'nedlagd') resolutionText = PROVNING_RESOLUTION.nedlagd_fall
+          } else if (eventId.startsWith('hallprocess_fh1nej_s')) {
+            resolutionText = PROVNING_RESOLUTION.kommun_nej
           }
           if (resolutionText) {
             const resInboxId = `inbox_hall_resolution_${eventId}`

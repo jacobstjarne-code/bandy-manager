@@ -55,6 +55,10 @@ export const PROVNING_RESOLUTION = {
   bordlagd: 'Medlemsmötet sköt på frågan. Den ligger kvar i en pärm i klubbhuset — och i bakhuvudet på alla.',
   nedlagd_fall: 'Hallfrågan föll. Birger bjöd på kaffe efteråt. Han var storsint nog att inte le.',
   nedlagd_egen: 'Du la ner frågan själv. Västra Sidan noterade det. Sånt glöms inte — på det bra sättet.',
+  // DOM 2026-09-03 (hall-kommun-nej-onabart): kommunens nej vid förhandlingsbordet
+  // (communityStanding < 50, se hallProcessService.ts buildForhandlingEvent) —
+  // kafferums-ekot, samma korta retrospektiva ton som övriga rader ovan.
+  kommun_nej: 'Kommunen sa nej. Inte till hallen. Till oss.',
 }
 
 // §B Förankringens tre decisions
