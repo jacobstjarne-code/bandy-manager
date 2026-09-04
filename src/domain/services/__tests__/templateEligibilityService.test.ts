@@ -15,6 +15,7 @@ function baseCtx(overrides: Partial<EligibilityContext> = {}): EligibilityContex
     result: 'win',
     isDerby: false,
     isFinal: false,
+    trailedAtHalf: false,
     ...overrides,
   }
 }
@@ -67,6 +68,14 @@ describe('isTemplateEligible', () => {
     // räcka — det här är exakt den "kvarts-/semifinal får finaltext"-läckan
     // som motiverade fältet.
     expect(isTemplateEligible(finalOnly, baseCtx({ competition: 'playoff', isFinal: false }))).toBe(false)
+  })
+
+  it('trailedAtHalf: "required" kräver underläge vid paus, "excluded" förbjuder det, "any"/utelämnat bryr sig inte', () => {
+    expect(isTemplateEligible({ trailedAtHalf: 'required' }, baseCtx({ trailedAtHalf: true }))).toBe(true)
+    expect(isTemplateEligible({ trailedAtHalf: 'required' }, baseCtx({ trailedAtHalf: false }))).toBe(false)
+    expect(isTemplateEligible({ trailedAtHalf: 'excluded' }, baseCtx({ trailedAtHalf: true }))).toBe(false)
+    expect(isTemplateEligible({ trailedAtHalf: 'excluded' }, baseCtx({ trailedAtHalf: false }))).toBe(true)
+    expect(isTemplateEligible({ trailedAtHalf: 'any' }, baseCtx({ trailedAtHalf: true }))).toBe(true)
   })
 
   it('flera villkor kombineras med AND — alla måste stämma', () => {

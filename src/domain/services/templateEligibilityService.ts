@@ -45,6 +45,14 @@ export type ResultEligibility = 'win' | 'loss' | 'draw' | 'any'
  *  nuvarande mallar i den här kodbasen sätter detta). 'any' = ingen
  *  derbyrestriktion. */
 export type DerbyEligibility = 'required' | 'excluded' | 'any'
+/**
+ * press-win-comeback-lacka (DOM 2026-09-03, Opus, sjätte axeln): 'required'
+ * = mallen förutsätter att laget LÅG UNDER VID PAUS och sen vann/kvitterade
+ * — win_comeback-taggade repliker ("Jag sa att en match aldrig är slut vid
+ * paus...") är annars läckbara via generic:'win'-bucketen efter en vinst
+ * som aldrig var ett underläge. 'excluded'/'any' som övriga axlar.
+ */
+export type TrailedAtHalfEligibility = 'required' | 'excluded' | 'any'
 
 /**
  * Eligibility-metadata en enskild mall (fråga, svar, citat, …) deklarerar.
@@ -67,6 +75,8 @@ export interface TemplateEligibility {
    *  Studenternas..."), som annars kunde visas efter en kvarts-/semifinal-
    *  vinst — samma bucket-läcka som cup_win/playoff_win, en nivå smalare. */
   finalOnly?: boolean
+  /** Se TrailedAtHalfEligibility. Utelämnat = 'any' (ingen restriktion). */
+  trailedAtHalf?: TrailedAtHalfEligibility
 }
 
 /**
@@ -82,6 +92,8 @@ export interface EligibilityContext {
   /** Var DEN HÄR matchen den faktiska finalen (SM-final/cupfinal)? Se
    *  TemplateEligibility.finalOnly. */
   isFinal: boolean
+  /** Låg laget under vid paus i DEN HÄR matchen? Se TrailedAtHalfEligibility. */
+  trailedAtHalf: boolean
 }
 
 /**
@@ -109,6 +121,8 @@ export function isTemplateEligible(
   if (eligibility.derby === 'required' && !ctx.isDerby) return false
   if (eligibility.derby === 'excluded' && ctx.isDerby) return false
   if (eligibility.finalOnly && !ctx.isFinal) return false
+  if (eligibility.trailedAtHalf === 'required' && !ctx.trailedAtHalf) return false
+  if (eligibility.trailedAtHalf === 'excluded' && ctx.trailedAtHalf) return false
   return true
 }
 

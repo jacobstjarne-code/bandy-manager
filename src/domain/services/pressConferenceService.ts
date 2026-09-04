@@ -636,6 +636,13 @@ const TAG_ELIGIBILITY: Partial<Record<string, TemplateEligibility>> = {
   // requireAway på frågenivå, men strukturellt korrekt att även spärra på
   // svarsnivå (samma disciplin som övriga rader, inte en genväg).
   draw_away_top: { homeAway: 'away' },
+  // press-win-comeback-lacka (DOM 2026-09-03, Opus, sjätte axeln): w_p5/cl10
+  // ("Jag sa att en match aldrig är slut vid paus...") förutsätter uttryck-
+  // ligen ett underläge vid paus som vändes. TAG_DEFS.win_comeback.matches
+  // avgör redan TAGG-tilldelningen (ctx.won && ctx.trailedAtHalf), men den
+  // grövre generic:'win'-bucketen kunde ändå läcka in repliken efter en
+  // vinst som aldrig var ett underläge. trailedAtHalf:'required' täpper det.
+  win_comeback: { trailedAtHalf: 'required' },
 }
 
 function getResponseEligibility(r: ManagerResponse): TemplateEligibility | undefined {
@@ -678,6 +685,7 @@ function buildEligibilityContext(ctx: PressContext): EligibilityContext {
     result: ctx.won ? 'win' : ctx.lost ? 'loss' : 'draw',
     isDerby: ctx.isDerby,
     isFinal: ctx.isFinal,
+    trailedAtHalf: ctx.trailedAtHalf,
   }
 }
 

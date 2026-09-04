@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { generatePressConference, PRESS_RESPONSE_COOLDOWN_PREFIX } from '../pressConferenceService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../services/worldGenerator'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, MatchEventType } from '../../enums'
 import type { Fixture } from '../../entities/Fixture'
 import type { Scandal } from '../scandalService'
 
@@ -153,6 +153,32 @@ describe('HIGH 7 — tävlingsspecifik text läcker inte längre via generic-buc
     const fixture = makeFixture(game, NON_RIVAL_OPPONENT, { homeScore: 2, awayScore: 1, isCup: true })
     const ids = allChoiceIds(game, fixture, 300)
     expect(ids.has('cl26')).toBe(true)
+  })
+})
+
+describe('press-win-comeback-lacka — win_comeback (w_p5/cl10) läcker inte längre efter en vinst utan underläge', () => {
+  it('en vanlig vinst UTAN underläge vid paus visar aldrig w_p5/cl10', () => {
+    const game = makeGame(MANAGED)
+    // Inga mål alls i första halvlek (events: []) — trailedAtHalf blir false,
+    // trots att matchen slutar som en vinst (samma generic:'win'-bucket som
+    // ett faktiskt comeback skulle hamna i).
+    const fixture = makeFixture(game, NON_RIVAL_OPPONENT, { homeScore: 2, awayScore: 1, events: [] })
+    const ids = allChoiceIds(game, fixture, 300)
+    expect(ids.size).toBeGreaterThan(0)
+    expect(ids.has('w_p5')).toBe(false)
+    expect(ids.has('cl10')).toBe(false)
+  })
+
+  it('en FAKTISK vändning (underläge vid paus, vinst i slutändan) KAN visa w_p5/cl10', () => {
+    const game = makeGame(MANAGED)
+    const fixture = makeFixture(game, NON_RIVAL_OPPONENT, {
+      homeScore: 2, awayScore: 1,
+      events: [
+        { minute: 20, type: MatchEventType.Goal, clubId: NON_RIVAL_OPPONENT, description: 'Mål' },
+      ],
+    })
+    const ids = allChoiceIds(game, fixture, 300)
+    expect(ids.has('w_p5') || ids.has('cl10')).toBe(true)
   })
 })
 
