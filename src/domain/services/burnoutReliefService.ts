@@ -214,7 +214,7 @@ export function getBurnoutTacticSuppression(profile: ManagerProfile | undefined,
  *  FÖRESLÅS-badgen som ska utebli. */
 export function suppressTacticRecommendation(analysis: OpponentAnalysis | undefined): OpponentAnalysis | undefined {
   if (!analysis) return analysis
-  return { ...analysis, suggestedMentality: undefined, suggestedPress: undefined }
+  return { ...analysis, suggestedMentality: undefined }
 }
 
 const BURNOUT_DELEGATE_SCORE_DELTA = -12

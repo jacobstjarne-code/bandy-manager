@@ -152,6 +152,16 @@ export enum TacticTempo {
   High = 'high',
 }
 
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: `press` togs bort som fält på `Tactic`
+ * — höjdläget bärs nu av formationen (getHeightMode, Formation.ts). Enumen
+ * lämnas kvar oanvänd (superseterad, inte borttagen) eftersom dussintals
+ * äldre testfixturer fortfarande konstruerar `TacticPress.X` som RUNTIME-
+ * värde (inte bara en typ) — dessa filer ligger utanför tsconfig.json:s
+ * `include` (test-exkludering) så tsc fångar inte referensen, men ett
+ * borttaget enum-VÄRDE kraschar dem ändå vid körning. Radera bara i en
+ * dedikerad, egen städning av de filerna — inte som sidoeffekt här.
+ */
 export enum TacticPress {
   Low = 'low',
   Medium = 'medium',

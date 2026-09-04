@@ -177,7 +177,6 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
           { label: 'Startspelare', value: `${startingIds.length} valda ✓`, color: 'var(--success)' },
           { label: 'Mentalitet', value: tacticLabel('mentality', tacticState.mentality) },
           { label: 'Tempo', value: tacticLabel('tempo', tacticState.tempo) },
-          { label: 'Press', value: tacticLabel('press', tacticState.press) },
           { label: 'Passning', value: tacticLabel('passingRisk', tacticState.passingRisk) },
           { label: 'Bredd', value: tacticLabel('width', tacticState.width) },
           { label: 'Anfallsfokus', value: tacticLabel('attackingFocus', tacticState.attackingFocus) },

@@ -22,7 +22,7 @@ import {
 } from '../burnoutReliefService'
 import type { ManagerProfile } from '../../entities/ManagerProfile'
 import type { OpponentAnalysis } from '../opponentAnalysisService'
-import { TacticMentality, TacticPress } from '../../enums'
+import { TacticMentality } from '../../enums'
 
 function makeProfile(burnoutScore: number): ManagerProfile {
   return {
@@ -107,15 +107,13 @@ describe('suppressTacticRecommendation', () => {
       level: 'detailed',
       keyPlayers: [{ playerId: 'p1', name: 'Test Testsson', position: 'Forward', estimatedCA: 70 }],
       suggestedMentality: TacticMentality.Attacking,
-      suggestedPress: TacticPress.High,
     } as OpponentAnalysis
   }
 
-  it('nollställer bara suggestedMentality/suggestedPress, resten orört', () => {
+  it('nollställer bara suggestedMentality, resten orört', () => {
     const analysis = makeAnalysis()
     const suppressed = suppressTacticRecommendation(analysis)
     expect(suppressed?.suggestedMentality).toBeUndefined()
-    expect(suppressed?.suggestedPress).toBeUndefined()
     expect(suppressed?.keyPlayers).toEqual(analysis.keyPlayers)
     expect(suppressed?.level).toBe('detailed')
   })

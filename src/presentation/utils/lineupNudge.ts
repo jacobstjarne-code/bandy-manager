@@ -133,7 +133,7 @@ export function buildCarryForwardLineup(
   const availableById = new Map(available.map(player => [player.id, player]))
   const startingPlayerIds = previous.startingPlayerIds.filter(id => availableById.has(id))
   const startingSet = new Set(startingPlayerIds)
-  const formation = currentTactic.formation ?? previous.tactic.formation ?? '5-3-2'
+  const formation = currentTactic.formation ?? previous.tactic.formation ?? '532_tvatoppar'
   const sameFormation = formation === previous.tactic.formation
   const previousSlots = previous.tactic.lineupSlots
 

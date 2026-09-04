@@ -1,16 +1,14 @@
-import { TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../domain/enums'
+import { TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../domain/enums'
 import type { Tactic, TacticChangeLogEntry } from '../../domain/entities/Club'
 import type { Fixture } from '../../domain/entities/Fixture'
 
 export interface TacticRow {
   label: string
   key: keyof Tactic
-  /** value kan vara ett värdeblock (B2, SLUTTEST_KO.md 2026-08-19): matchCore.ts
-   *  konsumerar `press` binärt (bara 'high' ger egen viktjustering, :673) — 'low'
-   *  och 'medium' är IDENTISKA i simuleringen. Ett block slår ihop dem till EN
-   *  synlig knapp, ärligt mot motorn, utan att röra Tactic-typen eller befintliga
-   *  saves (en tactic med press:'low' matchar fortfarande blockets knapp). Klick
-   *  normaliserar alltid till block[0]. */
+  /** DOM_FORMATIONER_V2_2026-09-04.md: värdeblocket (string[]) var bara för
+   *  'press', nu borttaget som eget fält (heightMode härleds ur formationen
+   *  i stället). Ingen kvarvarande rad använder array-formen — typen står
+   *  kvar bakåtkompatibel, inte aktivt använd. */
   options: { label: string; value: string | string[] }[]
 }
 
@@ -24,10 +22,6 @@ export const tacticRows: TacticRow[] = [
     { label: 'Lågt', value: TacticTempo.Low },
     { label: 'Normalt', value: TacticTempo.Normal },
     { label: 'Högt', value: TacticTempo.High },
-  ]},
-  { label: 'Press', key: 'press', options: [
-    { label: 'Medium', value: [TacticPress.Medium, TacticPress.Low] },
-    { label: 'Hög', value: TacticPress.High },
   ]},
   { label: 'Passning', key: 'passingRisk', options: [
     { label: 'Säker', value: TacticPassingRisk.Safe },

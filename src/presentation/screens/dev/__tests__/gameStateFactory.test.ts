@@ -73,7 +73,7 @@ describe('gameStateFactory — squad-overrides', () => {
 describe('gameStateFactory — withLineupSlots', () => {
   it('lämnar exakt emptyCount slots tomma, resten fyllda med spelare ur egna truppen', () => {
     const base = atRound(makeBaseGame({ seed: 3 }), 14)
-    const withEmpty = withLineupSlots(base, { emptyCount: 3, formation: '5-3-2' })
+    const withEmpty = withLineupSlots(base, { emptyCount: 3, formation: '532_tvatoppar' })
     const slots = withEmpty.managedClubPendingLineup?.tactic.lineupSlots ?? {}
     const filled = Object.values(slots).filter(v => v !== null)
     const empty = Object.values(slots).filter(v => v === null)
@@ -84,14 +84,14 @@ describe('gameStateFactory — withLineupSlots', () => {
 
   it('emptyCount=0 fyller alla 11 slots', () => {
     const base = atRound(makeBaseGame({ seed: 3 }), 14)
-    const full = withLineupSlots(base, { emptyCount: 0, formation: '5-3-2' })
+    const full = withLineupSlots(base, { emptyCount: 0, formation: '532_tvatoppar' })
     const slots = full.managedClubPendingLineup?.tactic.lineupSlots ?? {}
     expect(Object.values(slots).filter(v => v !== null).length).toBe(11)
   })
 
   it('inga skadade/avstängda spelare hamnar i startingPlayerIds', () => {
     const base = withInjuries(atRound(makeBaseGame({ seed: 3 }), 14), 2)
-    const withEmpty = withLineupSlots(base, { emptyCount: 3, formation: '5-3-2' })
+    const withEmpty = withLineupSlots(base, { emptyCount: 3, formation: '532_tvatoppar' })
     const injuredIds = new Set(base.players.filter(p => p.isInjured).map(p => p.id))
     expect(withEmpty.managedClubPendingLineup?.startingPlayerIds.some(id => injuredIds.has(id))).toBe(false)
   })

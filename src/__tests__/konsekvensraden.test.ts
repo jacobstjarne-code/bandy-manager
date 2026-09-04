@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import { getTacticConsequence } from '../domain/services/chemistryService'
 import { getPhaseConsequence } from '../presentation/components/squad/SeasonArcCard'
-import { TacticMentality, TacticPress } from '../domain/enums'
+import { TacticMentality } from '../domain/enums'
 import type { Tactic } from '../domain/entities/Club'
+import type { FormationType } from '../domain/entities/Formation'
 import type { OpponentAnalysis } from '../domain/services/opponentAnalysisService'
 import type { Player } from '../domain/entities/Player'
 
-function makeTactic(mentality: TacticMentality, press: TacticPress = TacticPress.Medium): Tactic {
-  return { mentality, press, lineupSlots: {} } as unknown as Tactic
+// DOM_FORMATIONER_V2_2026-09-04.md: press borttaget — heightMode härleds nu
+// ur formation. '523_hog' = high (gamla TacticPress.High), default '532_tvatoppar' = mid.
+function makeTactic(mentality: TacticMentality, formation: FormationType = '532_tvatoppar'): Tactic {
+  return { mentality, formation, lineupSlots: {} } as unknown as Tactic
 }
 
 function makeOpponent(weaknesses: string[], strengths: string[] = [], formation?: string): OpponentAnalysis {
@@ -55,7 +58,7 @@ describe('getTacticConsequence — Surface A', () => {
   })
 
   it('hög press + Svag halvlinje → pressrad', () => {
-    const t = makeTactic(TacticMentality.Balanced, TacticPress.High)
+    const t = makeTactic(TacticMentality.Balanced, '523_hog')
     const opp = makeOpponent(['Svag halvlinje'])
     const result = getTacticConsequence(t, [], {}, opp, 0)
     expect(result).toBe('Hög press mot deras svaga mittfält — där vinns matchen om någonstans.')

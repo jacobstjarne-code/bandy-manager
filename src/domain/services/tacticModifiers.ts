@@ -1,15 +1,28 @@
 import type { Tactic } from '../entities/Club'
+import { getHeightMode } from '../entities/Formation'
 import { clamp } from '../utils/clamp'
 import {
   TacticMentality,
   TacticTempo,
-  TacticPress,
   TacticPassingRisk,
   TacticWidth,
   TacticAttackingFocus,
   CornerStrategy,
   PenaltyKillStyle,
 } from '../enums'
+
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditionskostnad
+ * ("kraftödande ... kortare perioder", SvBF §2.4.2.2) — en per-omgångs-
+ * kostnad UTÖVER fatigueRate, för managerade startspelare när matchens
+ * formation är `523_hog`. Startvärde konservativt (samma storleksordning som
+ * BYGG_EXTRA_FITNESS_COST=4, periodisationService.ts, en annan kronisk
+ * kondition-pålaga) — magnituden är EXPLICIT INTE FÄRDIGKALIBRERAD, den
+ * väntar kalibreringsrundan C2 (godkänt-kriterium: hög press ska förlora
+ * mot balanserat minst lika ofta som den vinner över 22 omgångar, mätt över
+ * 10 000 seeds enligt docs/BANDYTAKTIK_KALLASNING_2026-09-04.md).
+ */
+export const FORMATION_523_EXTRA_FITNESS_COST = 3
 
 export interface TacticModifiers {
   offenseModifier: number    // 0.75–1.25
@@ -63,16 +76,19 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
       break
   }
 
-  // press
-  switch (tactic.press) {
-    case TacticPress.Low:
+  // heightMode (DOM_FORMATIONER_V2_2026-09-04.md) — härlett ur formationen,
+  // ersätter det gamla press-fältet. EXAKT samma tal som förr: low motsvarar
+  // gamla TacticPress.Low, mid gamla Medium, high gamla High. Inga nya
+  // magnituder uppfinns här.
+  switch (getHeightMode(tactic.formation)) {
+    case 'low':
       press -= 0.15
       fatigue -= 0.05
       break
-    case TacticPress.Medium:
+    case 'mid':
       discipline += 0.05
       break
-    case TacticPress.High:
+    case 'high':
       press += 0.15
       discipline += 0.15
       fatigue += 0.10
@@ -153,20 +169,10 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
       break
   }
 
-  // Formation modifiers
-  switch (tactic.formation) {
-    case '2-3-2-3':
-      offense += 0.05
-      defense -= 0.08
-      break
-    case '4-3-3':
-    case '4-2-4':
-      offense -= 0.03
-      defense += 0.05
-      break
-    default:
-      break
-  }
+  // DOM_FORMATIONER_V2_2026-09-04.md: formations-switchen (offense/defense
+  // per formationstyp) borttagen — noll källstöd, fotbollsriktning. De fyra
+  // 5-3-2-formerna verkar bara genom slot-kartan (positionspassning, kemi)
+  // och truppkraven, ingen egen multiplikator.
 
   return {
     offenseModifier: round3(clamp(offense, 0.75, 1.25)),

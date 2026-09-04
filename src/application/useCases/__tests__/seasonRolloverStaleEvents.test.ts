@@ -123,6 +123,28 @@ function findSeedReachingFinal(maxSeeds: number): FinalRunResult {
   throw new Error(`No seed among 0..${maxSeeds - 1} reached the SM-final — widen the search or check playoff generation`)
 }
 
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: den generella `findSeedReachingFinal`
+ * returnerar alltid FÖRSTA säsongen som når SM-final, oavsett om den råkar
+ * ha något i deferredDecisions vid rollovern — ett rent "reaches final"-
+ * villkor. Formationsomskrivningen (AI-klubbars activeTactic/heightMode
+ * ändrat) förskjuter match-RNG-utfallen tillräckligt för att FÖRSTA
+ * kvalificerande säsongen numera kan sakna kön helt, vilket gör "icke-
+ * vakuum-grinden" (rad 194, ursprungligen) meningslös för just den säsongen.
+ * Detta är INTE en regression i den faktiska rensningslogiken (den
+ * assertionen, `deferredDecisions ?? [] === []`, passerar oavsett) — bara i
+ * testscenariots eget krav på att kön ska ha varit icke-tom. Denna sökning
+ * fortsätter till en säsong som FAKTISKT har något i kön vid rollover-
+ * ögonblicket, så grinden mäter vad den påstår sig mäta.
+ */
+function findSeedReachingFinalWithDeferredQueue(maxSeeds: number): FinalRunResult {
+  for (let seed = 0; seed < maxSeeds; seed++) {
+    const result = driveToChampionRound(seed)
+    if (result && result.deferredAtChampionRound.length > 0) return result
+  }
+  throw new Error(`No seed among 0..${maxSeeds - 1} reached the SM-final with a non-empty deferredDecisions queue — widen the search`)
+}
+
 describe('season rollover — stale event cleanup (final → ceremoni → årsbok → premiär)', () => {
   it('finds a seed where the managed club reaches the SM-final (sanity check that the scenario is exercised)', () => {
     const run = findSeedReachingFinal(40)
@@ -150,7 +172,7 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
   })
 
   it('runs the full chain final → ceremoni → årsbok → premiär and carries no stale season-N event/deferred-decision into season N+1', () => {
-    const run = findSeedReachingFinal(40)
+    const run = findSeedReachingFinalWithDeferredQueue(200)
     let game = run.game
     const oldSeason = run.oldSeason
     let stepSeed = run.seed * 100_000 + 50_000

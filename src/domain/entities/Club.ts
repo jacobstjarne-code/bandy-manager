@@ -1,4 +1,4 @@
-import type { ClubExpectation, ClubStyle, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../enums'
+import type { ClubExpectation, ClubStyle, TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../enums'
 import type { FormationType } from './Formation'
 
 // KF4 (2026-06-21): EN styrelsemodell. Tidigare fanns club.board (ClubBoard-trippel,
@@ -19,10 +19,14 @@ export interface BoardMember {
   personality: BoardPersonality
 }
 
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: `press` borttaget som eget fält — sju
+ * axlar kvar. Höjdläget (tidigare press-effekten) bärs nu av formationen
+ * (se getHeightMode i Formation.ts), härlett vid behov, aldrig lagrat här.
+ */
 export interface Tactic {
   mentality: TacticMentality
   tempo: TacticTempo
-  press: TacticPress
   passingRisk: TacticPassingRisk
   width: TacticWidth
   attackingFocus: TacticAttackingFocus

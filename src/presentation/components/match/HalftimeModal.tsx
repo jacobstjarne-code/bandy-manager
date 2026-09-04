@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
-import { MatchEventType, TacticMentality, TacticTempo, TacticPress } from '../../../domain/enums'
+import { MatchEventType, TacticMentality, TacticTempo } from '../../../domain/enums'
 import { truncate, positionShort } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { PAUSSNACK, PAUSSNACK_EYEBROW, PAUSSNACK_PREVIEW_LABEL } from '../../../domain/data/matchLiveText'
@@ -27,10 +27,8 @@ interface HalftimeModalProps {
 
   htMentality: TacticMentality | null
   htTempo: TacticTempo | null
-  htPress: TacticPress | null
   onSetMentality: (v: TacticMentality) => void
   onSetTempo: (v: TacticTempo) => void
-  onSetPress: (v: TacticPress) => void
   tacticChanged: boolean
 
   htSubs: { outId: string; inId: string }[]
@@ -61,10 +59,8 @@ export function HalftimeModal({
   players,
   htMentality,
   htTempo,
-  htPress,
   onSetMentality,
   onSetTempo,
-  onSetPress,
   htSubs,
   onHtSubsChange,
   managedLineup,
@@ -137,7 +133,6 @@ export function HalftimeModal({
   const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
   const mentality = htMentality ?? currentTactic.mentality
   const tempo = htTempo ?? currentTactic.tempo
-  const press = htPress ?? currentTactic.press
 
   const scoreDiff = (() => {
     const hs = halftimeStep?.homeScore ?? 0
@@ -351,10 +346,6 @@ export function HalftimeModal({
               { val: TacticTempo.Normal, label: 'Normalt' },
               { val: TacticTempo.High, label: 'Högt' },
             ], tempo, v => onSetTempo(v as TacticTempo))}
-            {btnRow('Press', [
-              { val: [TacticPress.Medium, TacticPress.Low], label: 'Medium' },
-              { val: TacticPress.High, label: 'Hög' },
-            ], press, v => onSetPress(v as TacticPress))}
             <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 0 }}>
               💡 Rekommendation: {tacticRec}
             </p>
@@ -449,7 +440,7 @@ export function HalftimeModal({
         {/* CTA footer — fixed, always visible */}
         <div style={{ padding: '4px 20px 16px', flexShrink: 0 }}>
           <button
-            onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
+            onClick={htSubs.length > 0 || htMentality || htTempo ? onApplyTactic : onContinue}
             className="btn btn-cta btn-primary"
             style={{ width: '100%' }}
           >

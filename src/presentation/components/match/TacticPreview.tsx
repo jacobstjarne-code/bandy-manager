@@ -1,13 +1,13 @@
 import type { Tactic } from '../../../domain/entities/Club'
-import { TacticMentality, TacticPress, TacticWidth, TacticAttackingFocus, PlayerPosition } from '../../../domain/enums'
-import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
+import { TacticMentality, TacticWidth, TacticAttackingFocus, PlayerPosition } from '../../../domain/enums'
+import { FORMATIONS, getHeightMode, type FormationType } from '../../../domain/entities/Formation'
 
 interface TacticPreviewProps {
   tacticState: Tactic
 }
 
 function getBasePositions(formation: FormationType): { x: number; y: number; pos: PlayerPosition }[] {
-  const template = FORMATIONS[formation] ?? FORMATIONS['5-3-2']
+  const template = FORMATIONS[formation] ?? FORMATIONS['532_tvatoppar']
   return template.slots.map(slot => ({
     x: slot.x,
     y: 95 - slot.y * 0.9,  // invert: Formation 0=own goal→Preview 95(bottom), Formation 80→Preview 23(top)
@@ -16,11 +16,12 @@ function getBasePositions(formation: FormationType): { x: number; y: number; pos
 }
 
 function calcPositions(t: Tactic): { x: number; y: number; isGK: boolean }[] {
-  const formation = (t.formation ?? '5-3-2') as FormationType
+  const formation = (t.formation ?? '532_tvatoppar') as FormationType
   const base = getBasePositions(formation)
 
   const yShift = t.mentality === TacticMentality.Offensive ? -8 : t.mentality === TacticMentality.Defensive ? 8 : 0
-  const pressShift = t.press === TacticPress.High ? -5 : t.press === TacticPress.Low ? 5 : 0
+  const heightMode = getHeightMode(formation)
+  const pressShift = heightMode === 'high' ? -5 : heightMode === 'low' ? 5 : 0
   const wScale = t.width === TacticWidth.Wide ? 1.15 : t.width === TacticWidth.Narrow ? 0.75 : 1.0
   const af = t.attackingFocus
 

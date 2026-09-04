@@ -66,7 +66,6 @@ export function TacticBoardCard({
   // club.activeTactic. "Följ rådet" (O15) sätter dem, men bara på klick.
   const recommendations: Partial<Record<keyof Tactic, string>> = {}
   if (opponentAnalysis?.suggestedMentality) recommendations.mentality = opponentAnalysis.suggestedMentality
-  if (opponentAnalysis?.suggestedPress) recommendations.press = opponentAnalysis.suggestedPress
   // {coach} interpolerar mot assistentens namn (coach.name), inte initialer — Fables
   // textleverans 2026-07-07 namnger assistenten i varje varför-rad.
   const suggestionWhyLine = getSuggestionWhyLine(opponentAnalysis?.recommendation, coach.name)
@@ -78,8 +77,8 @@ export function TacticBoardCard({
     onTacticChange({ ...club.activeTactic, [key]: value })
   }
 
-  // O15: "Följ rådet" sätter BARA de föreslagna fälten (idag mentality + press) —
-  // aldrig alla åtta. Passivt tills tryck (Granska del 4-regeln): körs bara on-click.
+  // O15: "Följ rådet" sätter BARA de föreslagna fälten (idag mentality) —
+  // aldrig alla sju. Passivt tills tryck (Granska del 4-regeln): körs bara on-click.
   function applyRecommendations() {
     const next = { ...club.activeTactic }
     for (const [key, value] of activeSuggestions) {

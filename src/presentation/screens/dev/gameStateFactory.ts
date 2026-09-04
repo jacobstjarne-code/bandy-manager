@@ -225,7 +225,7 @@ export function withoutPendingLineup(game: SaveGame): SaveGame {
  * savedLineup saknas.
  */
 export function withLineupSlots(game: SaveGame, opts: { emptyCount: number; formation?: FormationType }): SaveGame {
-  const formation = opts.formation ?? '5-3-2'
+  const formation = opts.formation ?? '532_tvatoppar'
   const template = FORMATIONS[formation]
   const filledSlotCount = Math.max(0, template.slots.length - opts.emptyCount)
 

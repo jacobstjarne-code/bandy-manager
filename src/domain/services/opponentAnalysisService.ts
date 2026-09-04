@@ -2,7 +2,7 @@ import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
 import type { Fixture } from '../entities/Fixture'
 import type { StandingRow } from '../entities/SaveGame'
-import { PlayerPosition, TacticMentality, TacticPress } from '../enums'
+import { PlayerPosition, TacticMentality } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { deriveUtfall } from './matchTypeAxes'
 import { stringHashUnsigned } from '../utils/random'
@@ -21,12 +21,6 @@ export interface OpponentAnalysis {
    *  behöver tolka fritext. undefined = "Jämn motståndare" — ingen falsk föreslagen knapp
    *  när analysen faktiskt inte lutar. Se mapRecommendationToMentality() nedan. */
   suggestedMentality?: TacticMentality
-  /** SLUTTEST 2026-08-08 (punkt 5): samma mönster som suggestedMentality, för
-   *  TacticStep.tsx:s press-rekommendation. Se mapRecommendationToPress() nedan —
-   *  fanns ingen motsvarighet för press innan, TacticStep räknade själv ut ett eget
-   *  press-förslag ur recentForm/tablePosition, en SEPARAT signal som kunde
-   *  motsäga den varma remsans recommendation-text. */
-  suggestedPress?: TacticPress
   recentForm?: string
   tablePosition?: number
   keyPlayers: { playerId: string; name: string; position: string; estimatedCA: number }[]
@@ -148,25 +142,6 @@ export function mapRecommendationToMentality(recommendation: string | undefined)
   if (recommendation === 'Pressa högt och dominera mitten.') return TacticMentality.Offensive
   if (recommendation === 'Spela offensivt — deras försvar är sårbart.') return TacticMentality.Offensive
   if (recommendation === 'Prioritera defensiven — de har farliga forwards.') return TacticMentality.Defensive
-  return undefined
-}
-
-/**
- * SLUTTEST 2026-08-08 (punkt 5): enda källan för recommendation → TacticPress,
- * samma princip och samma tre riktade recommendation-strängar som
- * mapRecommendationToMentality ovan — "Jämn motståndare" ger avsiktligt
- * undefined, ingen påhittad rekommendation när analysen inte lutar.
- *
- * "Pressa högt och dominera mitten." säger det rakt ut i texten: high.
- * "Spela offensivt — deras försvar är sårbart." → high (utnyttja svagheten
- * aggressivt — samma parning TacticStep.tsx:s gamla, nu borttagna
- * recentForm/tablePosition-logik redan gjorde för sina två offensiva grenar).
- * "Prioritera defensiven — de har farliga forwards." → low (dra tillbaka).
- */
-export function mapRecommendationToPress(recommendation: string | undefined): TacticPress | undefined {
-  if (recommendation === 'Pressa högt och dominera mitten.') return TacticPress.High
-  if (recommendation === 'Spela offensivt — deras försvar är sårbart.') return TacticPress.High
-  if (recommendation === 'Prioritera defensiven — de har farliga forwards.') return TacticPress.Low
   return undefined
 }
 
@@ -303,13 +278,12 @@ export function generateDetailedAnalysis(
   return {
     ...basic,
     level: 'detailed',
-    formation: opponentClub.activeTactic.formation ?? '3-3-4',
+    formation: opponentClub.activeTactic.formation ?? '532_tvatoppar',
     style: styleLabel[opponentClub.preferredStyle] ?? opponentClub.preferredStyle,
     strengths,
     weaknesses,
     recommendation,
     suggestedMentality: mapRecommendationToMentality(recommendation),
-    suggestedPress: mapRecommendationToPress(recommendation),
     threatPlayer: selectThreatPlayer(available),
     keyPlayers: available
       .sort((a, b) => b.currentAbility - a.currentAbility)

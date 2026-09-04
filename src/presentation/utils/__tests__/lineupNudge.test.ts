@@ -24,7 +24,6 @@ import {
   PlayerArchetype,
   TacticMentality,
   TacticTempo,
-  TacticPress,
   TacticPassingRisk,
   TacticWidth,
   TacticAttackingFocus,
@@ -107,12 +106,11 @@ function makeFullSquad(): Player[] {
 
 const FIXTURE_ID_A = 'fixture_league_001'
 const FIXTURE_ID_B = 'fixture_league_002'
-const FORMATION = FORMATIONS['5-3-2']
+const FORMATION = FORMATIONS['532_tvatoppar']
 const BASE_TACTIC: Tactic = {
-  formation: '5-3-2',
+  formation: '532_tvatoppar',
   mentality: TacticMentality.Balanced,
   tempo: TacticTempo.Normal,
-  press: TacticPress.Medium,
   passingRisk: TacticPassingRisk.Mixed,
   width: TacticWidth.Normal,
   attackingFocus: TacticAttackingFocus.Mixed,

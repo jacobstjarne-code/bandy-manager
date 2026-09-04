@@ -6,7 +6,7 @@ import type { Weather } from '../../entities/Weather'
 import type { Rivalry } from '../../data/rivalries'
 import {
   PlayerPosition, PlayerArchetype, FixtureStatus,
-  TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus,
+  TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus,
   CornerStrategy, PenaltyKillStyle, WeatherCondition, IceQuality, MatchEventType,
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
@@ -20,13 +20,12 @@ import type { Tactic } from '../../entities/Club'
 const NEUTRAL_TACTIC: Tactic = {
   mentality: TacticMentality.Balanced,
   tempo: TacticTempo.Normal,
-  press: TacticPress.Medium,
   passingRisk: TacticPassingRisk.Mixed,
   width: TacticWidth.Normal,
   attackingFocus: TacticAttackingFocus.Mixed,
   cornerStrategy: CornerStrategy.Standard,
   penaltyKillStyle: PenaltyKillStyle.Active,
-  formation: '5-3-2',
+  formation: '532_tvatoppar',
 }
 
 const KNOWN_LABELS = ['hot_hand', 'derby', 'weather', 'second_half_mode', 'equalizer_momentum']

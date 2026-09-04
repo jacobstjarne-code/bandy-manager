@@ -6,7 +6,7 @@ import type { Weather } from '../../../domain/entities/Weather'
 import type { Moment } from '../../../domain/entities/Moment'
 import { FixtureStatus, MatchEventType, PlayerPosition } from '../../../domain/enums'
 import { computeWeatherTacticInteraction } from '../../../domain/services/matchSimulator'
-import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
+import { getTacticModifiers, FORMATION_523_EXTRA_FITNESS_COST } from '../../../domain/services/tacticModifiers'
 import { developPlayers } from '../../../domain/services/playerDevelopmentService'
 import { mulberry32, fixtureSeed } from '../../../domain/utils/random'
 import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
@@ -175,8 +175,14 @@ export function applyPlayerStateUpdates(
         weatherTacticFatigue = 1.0 + twi.extraFatigue
       }
       const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
+      // DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditions-
+      // kostnad, utöver fatigueRate (som redan höjs +10% av heightMode:'high').
+      // Startvärde konservativt — se FORMATION_523_EXTRA_FITNESS_COST.
+      const formation523ExtraCost = isManaged && managedClubForTactic?.activeTactic.formation === '523_hog'
+        ? FORMATION_523_EXTRA_FITNESS_COST
+        : 0
       const positionFatigueMult = positionFatigueNormMult.get(player.id) ?? 1.0
-      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue * positionFatigueMult) + byggExtraCost
+      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue * positionFatigueMult) + byggExtraCost + formation523ExtraCost
       // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), rotorsak 2: matchkostnaden
       // är oförändrad — men veckan MELLAN matcherna ger nu tillbaka något även
       // åt den som spelade. Tidigare var en startares omgång rent −15..−25,

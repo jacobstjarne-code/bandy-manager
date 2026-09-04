@@ -1,20 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { FORMATIONS, autoAssignFormation } from '../../entities/Formation'
 import { getPositionFit } from '../squadEvaluator'
-import { getTacticModifiers } from '../tacticModifiers'
 import type { Player } from '../../entities/Player'
-import type { Tactic } from '../../entities/Club'
 import {
   PlayerPosition,
   PlayerArchetype,
-  TacticMentality,
-  TacticTempo,
-  TacticPress,
-  TacticPassingRisk,
-  TacticWidth,
-  TacticAttackingFocus,
-  CornerStrategy,
-  PenaltyKillStyle,
 } from '../../enums'
 
 function makePlayer(overrides: Partial<Player> = {}): Player {
@@ -81,20 +71,6 @@ function makePlayer(overrides: Partial<Player> = {}): Player {
   }
 }
 
-function makeTactic(overrides: Partial<Tactic> = {}): Tactic {
-  return {
-    mentality: TacticMentality.Balanced,
-    tempo: TacticTempo.Normal,
-    press: TacticPress.Medium,
-    passingRisk: TacticPassingRisk.Mixed,
-    width: TacticWidth.Normal,
-    attackingFocus: TacticAttackingFocus.Mixed,
-    cornerStrategy: CornerStrategy.Standard,
-    penaltyKillStyle: PenaltyKillStyle.Active,
-    ...overrides,
-  }
-}
-
 describe('Formation templates', () => {
   it('each formation has exactly 11 slots', () => {
     for (const [type, template] of Object.entries(FORMATIONS)) {
@@ -109,20 +85,23 @@ describe('Formation templates', () => {
     }
   })
 
-  // O6-sidofyndet (SLUTTEST_KO.md, Jacobs dom 2026-08-19): fyrbackslinjen i
-  // 4-3-3/4-2-4 fick VB/VB/HB/HB efter O6:s huvudfix — pitch-vyn kunde inte
-  // skilja ytterback och den forna VCB/HCB-innerbacken åt. Tredje ordet
-  // (MB, "mittback") löser detta genom att en fyrbackslinje nu visar tre
-  // distinkta ord (VB/MB/HB) istället för två upprepade — inte fyra unika
-  // (MB/MB delar ord medvetet, samma mönster som CB i trebackslinjerna).
-  it('fyrbackslinjer (4-3-3, 4-2-4) har minst tre distinkta backetiketter, inte två', () => {
-    for (const type of ['4-3-3', '4-2-4'] as const) {
-      const backLine = FORMATIONS[type].slots.filter(s => s.position === PlayerPosition.Defender)
-      expect(backLine).toHaveLength(4)
-      const distinctLabels = new Set(backLine.map(s => s.label))
-      expect(distinctLabels.size, `${type}: förväntade 3 distinkta backetiketter (VB/MB/HB), fick ${[...distinctLabels]}`).toBe(3)
-      expect(distinctLabels.has('MB')).toBe(true)
+  // DOM_FORMATIONER_V2_2026-09-04.md: "femman bak konstant" — två backar,
+  // libero, två ytterhalvor i alla sex (utom höga halvor, samma personer,
+  // annan y). Verifierar antalet, inte y-positionen (som medvetet skiljer
+  // sig i 532_hogahalvor).
+  it('femman bak är konstant: två Defender + två Half i alla sex uppställningar', () => {
+    for (const [type, template] of Object.entries(FORMATIONS)) {
+      const defenders = template.slots.filter(s => s.position === PlayerPosition.Defender)
+      const halves = template.slots.filter(s => s.position === PlayerPosition.Half)
+      expect(defenders, `${type} ska ha tre Defender-slots (VB/LIB/HB)`).toHaveLength(3)
+      expect(halves, `${type} ska ha två Half-slots (ytterhalvor)`).toHaveLength(2)
     }
+  })
+
+  it('532_hogahalvor: samma slot-id:er för femman bak, men halvornas y flyttas högre', () => {
+    const base = FORMATIONS['532_tvatoppar'].slots.find(s => s.id === 'half-l')!
+    const hoga = FORMATIONS['532_hogahalvor'].slots.find(s => s.id === 'half-l')!
+    expect(hoga.y).toBeGreaterThan(base.y)
   })
 })
 
@@ -153,7 +132,7 @@ describe('getPositionFit', () => {
 
 describe('autoAssignFormation', () => {
   it('assigns GK to goalkeeper slot and forwards to forward slots', () => {
-    const template = FORMATIONS['3-3-4']
+    const template = FORMATIONS['532_tvatoppar']
     const gk = makePlayer({ id: 'gk1', position: PlayerPosition.Goalkeeper, currentAbility: 80 })
     const fwd1 = makePlayer({ id: 'fwd1', position: PlayerPosition.Forward, currentAbility: 75 })
     const fwd2 = makePlayer({ id: 'fwd2', position: PlayerPosition.Forward, currentAbility: 70 })
@@ -175,7 +154,7 @@ describe('autoAssignFormation', () => {
   })
 
   it('assigns higher CA player to slot when multiple candidates', () => {
-    const template = FORMATIONS['3-3-4']
+    const template = FORMATIONS['532_tvatoppar']
     const fwdBetter = makePlayer({ id: 'fwdA', position: PlayerPosition.Forward, currentAbility: 90 })
     const fwdWorse = makePlayer({ id: 'fwdB', position: PlayerPosition.Forward, currentAbility: 60 })
 
@@ -192,26 +171,7 @@ describe('autoAssignFormation', () => {
   })
 })
 
-describe('Formation tactic modifiers', () => {
-  it('2-3-2-3 gives offense bonus and defense penalty', () => {
-    const base = makeTactic({ formation: '3-3-4' })
-    const offensive = makeTactic({ formation: '2-3-2-3' })
-
-    const baseMods = getTacticModifiers(base)
-    const offMods = getTacticModifiers(offensive)
-
-    expect(offMods.offenseModifier).toBeGreaterThan(baseMods.offenseModifier)
-    expect(offMods.defenseModifier).toBeLessThan(baseMods.defenseModifier)
-  })
-
-  it('4-3-3 gives offense penalty and defense bonus', () => {
-    const base = makeTactic({ formation: '3-3-4' })
-    const defensive = makeTactic({ formation: '4-3-3' })
-
-    const baseMods = getTacticModifiers(base)
-    const defMods = getTacticModifiers(defensive)
-
-    expect(defMods.offenseModifier).toBeLessThan(baseMods.offenseModifier)
-    expect(defMods.defenseModifier).toBeGreaterThan(baseMods.defenseModifier)
-  })
-})
+// DOM_FORMATIONER_V2_2026-09-04.md: "Formation tactic modifiers"-blocket
+// (2-3-2-3/4-3-3 offense/defense-switchen) borttaget — mekaniken själv är
+// borttagen ur getTacticModifiers (noll källstöd). Se tacticModifiers.test.ts
+// för regressionstestet som bevisar de gamla talen är BORTA.

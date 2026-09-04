@@ -102,6 +102,7 @@ import type { MatchEvent } from '../entities/Fixture'
 import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition, CornerStrategy } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
+import { getHeightMode } from '../entities/Formation'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
 import { pickKlackEchoText } from '../data/klackEchoText'
@@ -571,7 +572,9 @@ function* simulateMatchCore(
     const factors: string[] = []
     if (tactic.tempo === 'high') factors.push('tempo_high')
     else if (tactic.tempo === 'low') factors.push('tempo_low')
-    if (tactic.press === 'high') factors.push('press_high')
+    // DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523, ny formation_541.
+    if (tactic.formation === '523_hog') factors.push('formation_523')
+    if (tactic.formation === '541_hem') factors.push('formation_541')
     if (tactic.width === 'wide') factors.push('width_wide')
     if (tactic.cornerStrategy === 'aggressive') factors.push('cornerStrategy_aggressive')
     if (tactic.passingRisk === 'direct') factors.push('passingRisk_direct')
@@ -724,7 +727,7 @@ function* simulateMatchCore(
 
     if (tactic.tempo === 'high')   { wAttack += 5; wCorner += 3; wFoul += 2 }
     else if (tactic.tempo === 'low') { wAttack -= 5; wLostball += 5 }
-    if (tactic.press === 'high')   { wFoul += 5; wTransition += 3 }
+    if (getHeightMode(tactic.formation) === 'high')   { wFoul += 5; wTransition += 3 }
     if (tactic.width === 'wide')   { wCorner += 5 }
     if (tactic.cornerStrategy === 'aggressive') { wCorner += 3 }
     if (tactic.passingRisk === 'direct') { wLostball += 5; wAttack += 3; wHalfchance -= 3 }

@@ -4,6 +4,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerArchetype } from '../../../domain/enums'
 import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { tacticRows } from '../../utils/tacticData'
+import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 
 interface TacticStepProps {
   tacticState: Tactic
@@ -51,7 +52,6 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
   // Offensivt läge" tre rader ner). En källa nu, ingen egen tolkning kvar här.
   const recommendations: Partial<Record<keyof Tactic, string>> = {}
   if (analysis?.suggestedMentality) recommendations.mentality = analysis.suggestedMentality
-  if (analysis?.suggestedPress) recommendations.press = analysis.suggestedPress
   recommendations.cornerStrategy = cornerSpec ? 'aggressive' : 'safe'
 
   // Per-key confirm/warn feedback
@@ -67,8 +67,6 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
       }
     }
     if (rec && current === rec && analysis) {
-      if (key === 'press' && rec === 'high') return { type: 'confirm', text: 'Matchar förslaget. Motståndaren tappar struktur i högt press.' }
-      if (key === 'press' && rec === 'low') return { type: 'confirm', text: 'Matchar förslaget. Defensivt läge mot stark motståndare.' }
       if (key === 'mentality' && rec === 'offensive') return { type: 'confirm', text: 'Matchar förslaget. Offensivt läge utnyttjar svag motståndare.' }
       if (key === 'mentality' && rec === 'defensive') return { type: 'confirm', text: 'Matchar förslaget. Stabilt mot topplag.' }
     }
@@ -79,7 +77,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
 
   // Opp-insight line
   const insightParts: string[] = []
-  if (analysis?.formation) insightParts.push(analysis.formation)
+  if (analysis?.formation) insightParts.push(FORMATIONS[analysis.formation as FormationType]?.label ?? analysis.formation)
   if (analysis?.strengths.length) insightParts.push(`stark: ${analysis.strengths[0].toLowerCase()}`)
   if (analysis?.weaknesses.length) insightParts.push(`svag: ${analysis.weaknesses[0].toLowerCase()}`)
   const insightText = insightParts.join(' · ') || (analysis?.recentForm ?? '—')

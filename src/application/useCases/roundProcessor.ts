@@ -110,7 +110,6 @@ function stripLineup(lineup: Lineup): Lineup {
     tactic: {
       mentality: lineup.tactic.mentality,
       tempo: lineup.tactic.tempo,
-      press: lineup.tactic.press,
       passingRisk: lineup.tactic.passingRisk,
       width: lineup.tactic.width,
       attackingFocus: lineup.tactic.attackingFocus,

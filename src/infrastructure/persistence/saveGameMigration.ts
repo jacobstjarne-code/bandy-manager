@@ -12,6 +12,43 @@ import { computeSeasonVerdictRating, expectationVerdictFromRating } from '../../
 import { buildExpectationVerdictSentence } from '../../domain/services/seasonSummaryService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
 import { backfillClubHistoryLedger } from '../../domain/services/clubHistoryLedgerService'
+import type { FormationType } from '../../domain/entities/Formation'
+
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
+ * `press` → ny formation, så spelaren behåller EFFEKTEN hen faktiskt hade
+ * (press var effekten, formationen kosmetik). Exporterad för regressionstest
+ * per rad i domens tabell.
+ *
+ * | Gammal press | Gammal formation           | Ny formation      |
+ * |---|---|---|
+ * | low    | (alla)                          | 541_hem           |
+ * | high   | (alla)                          | 523_hog           |
+ * | medium | 5-3-2, 3-3-4, 4-2-4             | 532_tvatoppar     |
+ * | medium | 4-3-3, 3-4-3                    | 532_triangel      |
+ * | medium | 2-3-2-3                         | 532_ytterben      |
+ *
+ * Saknad/okänd press behandlas som 'medium' (den gamla default-nivån);
+ * saknad/okänd formation faller i medium-grenen på 532_tvatoppar (den nya
+ * defaulten), samma "okänt → default" -princip som resten av migreringen.
+ */
+export function migrateFormationAndPress(oldFormation: unknown, oldPress: unknown): FormationType {
+  if (oldPress === 'low') return '541_hem'
+  if (oldPress === 'high') return '523_hog'
+  if (oldFormation === '4-3-3' || oldFormation === '3-4-3') return '532_triangel'
+  if (oldFormation === '2-3-2-3') return '532_ytterben'
+  return '532_tvatoppar'
+}
+
+function migrateTacticShape(tactic: Record<string, unknown> | undefined): void {
+  if (!tactic) return
+  // Redan migrerad (ingen press-nyckel kvar) — rör inte formationen igen,
+  // annars skulle en spelares MEDVETNA formationsbyte efter migrering
+  // återställas till migreringstabellens gissning vid varje omladdning.
+  if (!('press' in tactic)) return
+  tactic.formation = migrateFormationAndPress(tactic.formation, tactic.press)
+  delete tactic.press
+}
 
 // B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
 // (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
@@ -547,6 +584,32 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       delete c.board
       return c
     })
+  }
+
+  // ── DOM_FORMATIONER_V2_2026-09-04.md — formation+press → ny formation ────
+  // Körs på VARJE klubbs activeTactic (även AI-klubbar — de spelar också
+  // matcher, och deras tacticModifiers-effekt ska bevaras likadant) och på
+  // varje pågående fixtures homeLineup/awayLineup.tactic (sparad lineup för
+  // en schemalagd/påbörjad match bär sin egen tactic-kopia, separat från
+  // klubbens activeTactic — se TeamSelection).
+  if (Array.isArray(data.clubs)) {
+    data.clubs = (data.clubs as Record<string, unknown>[]).map(c => {
+      migrateTacticShape(c.activeTactic as Record<string, unknown> | undefined)
+      return c
+    })
+  }
+  if (Array.isArray(data.fixtures)) {
+    data.fixtures = (data.fixtures as Record<string, unknown>[]).map(f => {
+      const home = f.homeLineup as Record<string, unknown> | undefined
+      const away = f.awayLineup as Record<string, unknown> | undefined
+      migrateTacticShape(home?.tactic as Record<string, unknown> | undefined)
+      migrateTacticShape(away?.tactic as Record<string, unknown> | undefined)
+      return f
+    })
+  }
+  {
+    const pendingTactic = (data.managedClubPendingLineup as Record<string, unknown> | undefined)?.tactic as Record<string, unknown> | undefined
+    migrateTacticShape(pendingTactic)
   }
 
   // ── B11 T6 — Build seasonCalendar if missing (single source of truth) ────

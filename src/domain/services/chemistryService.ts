@@ -1,8 +1,9 @@
 import type { Player } from '../entities/Player'
 import type { FormationSlot } from '../entities/Formation'
+import { getHeightMode } from '../entities/Formation'
 import type { Tactic } from '../entities/Club'
 import type { OpponentAnalysis } from './opponentAnalysisService'
-import { TacticMentality, TacticPress } from '../enums'
+import { TacticMentality } from '../enums'
 import { findEmployerForJob } from '../data/localEmployers'
 
 export interface PairChemistry {
@@ -175,12 +176,6 @@ export function getTacticFeel(
   return `${mentalityPart}. Truppen är ny ihop — kemin får växa fram.`
 }
 
-function formationBias(formation: string | undefined): 'attack' | 'defense' | null {
-  if (formation === '2-3-2-3') return 'attack'
-  if (formation === '4-3-3' || formation === '4-2-4') return 'defense'
-  return null
-}
-
 // Wrapper around getTacticFeel that adds a motrelativ konsekvensrad when a clear
 // tactic/opponent edge exists. Falls back to getTacticFeel (silence rule) when
 // no edge is detectable. Seed picks deterministically between pool strings.
@@ -194,7 +189,7 @@ export function getTacticConsequence(
   if (opponent) {
     const isOffensive = tactic.mentality === TacticMentality.Offensive
     const isDefensive = tactic.mentality === TacticMentality.Defensive
-    const isHighPress = tactic.press === TacticPress.High
+    const isHighPress = getHeightMode(tactic.formation) === 'high'
     const hasWeakDefense = opponent.weaknesses.includes('Sårbart försvar')
     const hasWeakMidfield = opponent.weaknesses.includes('Svag halvlinje')
     const hasStrongAttack = opponent.strengths.includes('Stark anfallslinje')
@@ -215,16 +210,10 @@ export function getTacticConsequence(
     if (isOffensive && hasStrongAttack) {
       return 'Öppet mot deras anfall blir en målrik kväll åt båda håll. Säkert? Nej. Kul? Ja.'
     }
-    const ownBias = formationBias(tactic.formation)
-    const oppBias = formationBias(opponent.formation)
-    if (ownBias !== null && oppBias !== null && ownBias !== oppBias) {
-      const ownF = tactic.formation ?? ''
-      const oppF = opponent.formation ?? ''
-      if (ownBias === 'attack') {
-        return `${ownF} mot deras ${oppF}: fler ytor framåt — fler omställningar.`
-      }
-      return `${ownF} mot deras ${oppF}: tryggare bakåt — färre omställningar.`
-    }
+    // DOM_FORMATIONER_V2_2026-09-04.md: formationBias (attack/defense per
+    // formationstyp) borttagen — ingen av de sex nya formationerna bär en
+    // sådan bias (V2, inte nu: "att låta formerna väga i motorn via
+    // rollerna" väntar B12-mätning).
   }
   return getTacticFeel(tactic, players, chemistryStats)
 }

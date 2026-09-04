@@ -2,7 +2,6 @@ import type { SupporterRole } from '../entities/Community'
 import {
   TacticMentality,
   TacticTempo,
-  TacticPress,
   TacticPassingRisk,
   TacticWidth,
   TacticAttackingFocus,
@@ -32,12 +31,6 @@ export const TACTIC_TEMPO_LABELS: Record<TacticTempo, string> = {
   [TacticTempo.Low]: 'Lågt',
   [TacticTempo.Normal]: 'Normalt',
   [TacticTempo.High]: 'Högt',
-}
-
-export const TACTIC_PRESS_LABELS: Record<TacticPress, string> = {
-  [TacticPress.Low]: 'Lågt',
-  [TacticPress.Medium]: 'Medel',
-  [TacticPress.High]: 'Högt',
 }
 
 export const TACTIC_PASSING_RISK_LABELS: Record<TacticPassingRisk, string> = {

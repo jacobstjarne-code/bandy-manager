@@ -4,32 +4,33 @@ import type { Player } from '../../entities/Player'
 import type { Fixture, TeamSelection } from '../../entities/Fixture'
 import {
   PlayerPosition, PlayerArchetype, FixtureStatus,
-  TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus,
+  TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus,
   CornerStrategy, PenaltyKillStyle,
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
 
 // B12 steg 2, fält 2/4 (DOM_B12_STEG2_2026-08-19.md) — tacticalFactors: ren
-// etikettering av EXAKT de sex villkor buildSequenceWeights redan förgrenar
-// på (matchCore.ts). Testar att egna labels dyker upp för det lag som satt
-// dem, och ALDRIG för motståndaren som kör standardtaktik.
+// etikettering av EXAKT de sex (nu sex, oförändrat antal — press_high bytt
+// mot formation_523) villkor buildSequenceWeights redan förgrenar på
+// (matchCore.ts). DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523.
+// Testar att egna labels dyker upp för det lag som satt dem, och ALDRIG för
+// motståndaren som kör standardtaktik.
 
 const NEUTRAL_TACTIC: Tactic = {
   mentality: TacticMentality.Balanced,
   tempo: TacticTempo.Normal,
-  press: TacticPress.Medium,
   passingRisk: TacticPassingRisk.Mixed,
   width: TacticWidth.Normal,
   attackingFocus: TacticAttackingFocus.Mixed,
   cornerStrategy: CornerStrategy.Standard,
   penaltyKillStyle: PenaltyKillStyle.Active,
-  formation: '5-3-2',
+  formation: '532_tvatoppar',
 }
 
 const LOADED_TACTIC: Tactic = {
   ...NEUTRAL_TACTIC,
   tempo: TacticTempo.High,
-  press: TacticPress.High,
+  formation: '523_hog',
   width: TacticWidth.Wide,
   cornerStrategy: CornerStrategy.Aggressive,
   passingRisk: TacticPassingRisk.Direct,
@@ -111,7 +112,7 @@ describe('matchCore — tacticalFactors (B12 steg 2, fält 2/4)', () => {
         if (e.clubId === 'club1') {
           sawHomeEvent = true
           expect(e.tacticalFactors).toEqual(
-            expect.arrayContaining(['tempo_high', 'press_high', 'width_wide', 'cornerStrategy_aggressive', 'passingRisk_direct', 'mentality_offensive'])
+            expect.arrayContaining(['tempo_high', 'formation_523', 'width_wide', 'cornerStrategy_aggressive', 'passingRisk_direct', 'mentality_offensive'])
           )
           expect(e.tacticalFactors).toHaveLength(6)
         } else if (e.clubId === 'club2') {

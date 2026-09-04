@@ -3,10 +3,14 @@
  * (Jacob/Design) för delta-raden och ändringshistoriken. Dessa strängar är
  * ordagranna leveranser, inte Code-prosa — ett test som failar på en
  * ordalydelseändring är avsiktligt strikt.
+ *
+ * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget som eget Tactic-fält —
+ * sju dimensioner kvar (inte åtta), och press-blockets särskilda
+ * "Medium"-sammanslagning (optionLabel) är borta med det.
  */
 import { describe, it, expect } from 'vitest'
 import { diffTactics, getTacticDeltaLine, getTacticChangeHistoryLines } from '../tacticData'
-import { TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../../domain/enums'
+import { TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../../domain/enums'
 import type { Tactic, TacticChangeLogEntry } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 
@@ -14,7 +18,6 @@ function baseTactic(overrides: Partial<Tactic> = {}): Tactic {
   return {
     mentality: TacticMentality.Balanced,
     tempo: TacticTempo.Normal,
-    press: TacticPress.Medium,
     passingRisk: TacticPassingRisk.Mixed,
     width: TacticWidth.Normal,
     attackingFocus: TacticAttackingFocus.Mixed,
@@ -43,9 +46,9 @@ function fixtureWithTactic(tactic: Tactic, opts: Partial<Fixture> = {}): Fixture
 }
 
 describe('diffTactics', () => {
-  it('hittar bara de 8 dimensionerna, aldrig formation/lineupSlots', () => {
-    const from = baseTactic({ formation: '3-3-4' as never })
-    const to = baseTactic({ formation: '4-2-4' as never, tempo: TacticTempo.High })
+  it('hittar bara de 7 dimensionerna, aldrig formation/lineupSlots', () => {
+    const from = baseTactic({ formation: '532_tvatoppar' })
+    const to = baseTactic({ formation: '523_hog', tempo: TacticTempo.High })
     const diffs = diffTactics(from, to)
     expect(diffs).toEqual([{ key: 'tempo', value: TacticTempo.High }])
   })
@@ -79,23 +82,23 @@ describe('getTacticDeltaLine', () => {
 
   it('två ändringar — "X och Y ändrade"', () => {
     const last = fixtureWithTactic(baseTactic(), { season: 1 })
-    const current = baseTactic({ mentality: TacticMentality.Offensive, press: TacticPress.High })
+    const current = baseTactic({ mentality: TacticMentality.Offensive, width: TacticWidth.Wide })
     expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Skutskär'))
-      .toBe('Sedan Skutskär: Mentalitet och Press ändrade.')
+      .toBe('Sedan Skutskär: Mentalitet och Bredd ändrade.')
   })
 
   it('tre ändringar — "X, Y och Z ändrade"', () => {
     const last = fixtureWithTactic(baseTactic(), { season: 1 })
-    const current = baseTactic({ mentality: TacticMentality.Offensive, press: TacticPress.High, tempo: TacticTempo.High })
+    const current = baseTactic({ mentality: TacticMentality.Offensive, width: TacticWidth.Wide, tempo: TacticTempo.High })
     expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Skutskär'))
-      .toBe('Sedan Skutskär: Mentalitet, Tempo och Press ändrade.')
+      .toBe('Sedan Skutskär: Mentalitet, Tempo och Bredd ändrade.')
   })
 
   it('fyra eller fler ändringar — "har du gjort om planen"', () => {
     const last = fixtureWithTactic(baseTactic(), { season: 1 })
     const current = baseTactic({
-      mentality: TacticMentality.Offensive, press: TacticPress.High,
-      tempo: TacticTempo.High, width: TacticWidth.Wide,
+      mentality: TacticMentality.Offensive, width: TacticWidth.Wide,
+      tempo: TacticTempo.High, passingRisk: TacticPassingRisk.Direct,
     })
     expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Skutskär'))
       .toBe('Sedan Skutskär har du gjort om planen.')
@@ -111,9 +114,9 @@ describe('getTacticDeltaLine', () => {
 
   it('läser bortalag-lineupen när managed club var borta', () => {
     const last = fixtureWithTactic(baseTactic(), { season: 1, homeClubId: 'them', awayClubId: managedClubId, homeLineup: undefined, awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: baseTactic() } } as never)
-    const current = baseTactic({ press: TacticPress.High })
+    const current = baseTactic({ width: TacticWidth.Wide })
     expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Hemmalaget'))
-      .toBe('Sedan Hemmalaget: Press → Hög.')
+      .toBe('Sedan Hemmalaget: Bredd → Bred.')
   })
 })
 
@@ -124,12 +127,12 @@ describe('getTacticChangeHistoryLines', () => {
 
   it('nyast överst, en rad per matchday, flera ändringar på samma rad separerade med " · "', () => {
     const log: TacticChangeLogEntry[] = [
-      { matchday: 9, changes: [{ key: 'press', value: TacticPress.High }, { key: 'width', value: TacticWidth.Wide }] },
+      { matchday: 9, changes: [{ key: 'width', value: TacticWidth.Wide }, { key: 'passingRisk', value: TacticPassingRisk.Direct }] },
       { matchday: 14, changes: [{ key: 'tempo', value: TacticTempo.High }] },
     ]
     expect(getTacticChangeHistoryLines(log)).toEqual([
       'Omg 14 · Tempo → Högt',
-      'Omg 9 · Press → Hög · Bredd → Bred',
+      'Omg 9 · Bredd → Bred · Passning → Direkt',
       'Omg 1 · utgångsläge satt',
     ])
   })
@@ -137,28 +140,5 @@ describe('getTacticChangeHistoryLines', () => {
   it('riktig post på omgång 1 ersätter den syntetiska raden, dupliceras inte', () => {
     const log: TacticChangeLogEntry[] = [{ matchday: 1, changes: [{ key: 'mentality', value: TacticMentality.Offensive }] }]
     expect(getTacticChangeHistoryLines(log)).toEqual(['Omg 1 · Mentalitet → Offensiv'])
-  })
-})
-
-// B2 (SLUTTEST_KO.md, 2026-08-19): matchCore.ts konsumerar press binärt (bara
-// 'high' ger egen viktjustering, :673) — 'low'/'medium' är identiska i
-// simuleringen. tacticRows slår ihop dem till en synlig "Medium"-knapp utan att
-// röra TacticPress-typen eller befintliga saves (en tactic med press:'low' ska
-// fortfarande matcha och etiketteras rätt).
-describe('optionLabel (via getTacticDeltaLine) — press-blocket', () => {
-  const managedClubId = 'us'
-
-  it('press:low etiketteras "Medium", inte "Låg" (etiketten finns inte längre separat)', () => {
-    const last = fixtureWithTactic(baseTactic({ press: TacticPress.High }), { season: 1 })
-    const current = baseTactic({ press: TacticPress.Low })
-    expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Målilla'))
-      .toBe('Sedan Målilla: Press → Medium.')
-  })
-
-  it('press:medium etiketteras också "Medium" — samma knapp, samma text', () => {
-    const last = fixtureWithTactic(baseTactic({ press: TacticPress.High }), { season: 1 })
-    const current = baseTactic({ press: TacticPress.Medium })
-    expect(getTacticDeltaLine(current, last, managedClubId, 1, 'Målilla'))
-      .toBe('Sedan Målilla: Press → Medium.')
   })
 })

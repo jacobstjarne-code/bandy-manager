@@ -12,7 +12,7 @@ import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 import { FORMATIONS } from '../../../domain/entities/Formation'
-import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus, InboxItemType } from '../../../domain/enums'
+import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
@@ -23,6 +23,7 @@ import { SquadScreen } from '../SquadScreen'
 import { PortalScreen } from '../PortalScreen'
 import { HalfTimeSummaryScreen } from '../HalfTimeSummaryScreen'
 import { MatchScreen } from '../MatchScreen'
+import { MatchLaddningScene } from '../../components/match/MatchLaddningScene'
 import { MatchLiveScreen } from '../match/MatchLiveScreen'
 import { BottomNav } from '../../navigation/BottomNav'
 import { TranareTab } from '../../components/club/TranareTab'
@@ -145,6 +146,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // location.state satt via navigate(samma path, {state, replace:true}) i
   // en useEffect (se render-blocket) — inget nästlat Router-träd.
   | 'match-live'
+  | 'opponent-intro'
   // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_
   // 2026-08-17.md:s fyra baseline-scener, via fabriken (samma mönster som
   // season-a/b/c, inte en egen scen per override).
@@ -232,6 +234,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
+  { id: 'opponent-intro', label: 'Matchladdning — motståndarens ortbild' },
   { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
   { id: 'momentumbar',   label: 'MomentumBar (ärlig — kvitterings-läge)' },
   { id: 'tacticmodal',   label: 'TacticChangeModal (🟥 mörk panel)' },
@@ -325,7 +328,7 @@ const devClubs = [
     boardExpectation: 'playoff', fanExpectation: 'playoff',
     preferredStyle: 'balanced', hasArtificialIce: false,
     arenaCapacity: 500, arenaName: 'Edsbyns IP',
-    activeTactic: { formation: '2-2-5', mentality: 'balanced', tempo: 'normal', press: 'medium', passingRisk: 'safe', width: 'normal', attackingFocus: 'balanced', cornerStrategy: 'near_post', penaltyKillStyle: 'box' },
+    activeTactic: { formation: '532_tvatoppar', mentality: 'balanced', tempo: 'normal', passingRisk: 'safe', width: 'normal', attackingFocus: 'balanced', cornerStrategy: 'near_post', penaltyKillStyle: 'box' },
     squadPlayerIds: ['p1', 'p2', 'p3'],
   },
   {
@@ -335,7 +338,7 @@ const devClubs = [
     boardExpectation: 'midtable', fanExpectation: 'midtable',
     preferredStyle: 'defensive', hasArtificialIce: false,
     arenaCapacity: 420, arenaName: 'Sävstaås IP',
-    activeTactic: { formation: '2-3-4', mentality: 'defensive', tempo: 'slow', press: 'low', passingRisk: 'safe', width: 'narrow', attackingFocus: 'balanced', cornerStrategy: 'far_post', penaltyKillStyle: 'diamond' },
+    activeTactic: { formation: '541_hem', mentality: 'defensive', tempo: 'slow', passingRisk: 'safe', width: 'narrow', attackingFocus: 'balanced', cornerStrategy: 'far_post', penaltyKillStyle: 'diamond' },
     squadPlayerIds: [],
   },
 ]
@@ -808,7 +811,7 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 // defaultLineup (upptäckt via samma skärmdump-verifiering) — withoutPendingLineup
 // rensar den explicit så nudgeData faktiskt får chansen att beräknas.
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
-const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '5-3-2' })
+const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '532_tvatoppar' })
 
 // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen läser fixture/
 // homeLineup/awayLineup via react-router location.state (MatchScreen.tsx:s
@@ -817,7 +820,7 @@ const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGam
 // gameStateFactory.ts:s withLineupSlots() men för GODTYCKLIG klubb (inte bara
 // managedClubId) så samma funktion kan bygga BÅDA lagens elva ur en riktig,
 // validerad värld (factoryMidSeasonGame — samma bas som lineup-filled).
-function buildSimpleLineup(game: SaveGame, clubId: string, formation: keyof typeof FORMATIONS = '5-3-2'): TeamSelection {
+function buildSimpleLineup(game: SaveGame, clubId: string, formation: keyof typeof FORMATIONS = '532_tvatoppar'): TeamSelection {
   const template = FORMATIONS[formation]
   const available = game.players.filter(p => p.clubId === clubId && !p.isInjured && p.suspensionGamesRemaining === 0)
   const startingPlayerIds: string[] = []
@@ -975,12 +978,6 @@ function ScoutingDevScene() {
       onToggleShortlist={() => {}}
     />
   )
-}
-
-const tilltradeGame: SaveGame = {
-  ...makeBaseGame({ seed: 31 }),
-  onboardingComplete: false,
-  tilltradeStep: 1,
 }
 
 const retirementEvent: GameEvent = {
@@ -1214,7 +1211,7 @@ const taktikGame = (() => {
   const analysis = { ...baseAnalysis, recommendation: 'Pressa högt och dominera mitten.', suggestedMentality: 'offensive' as const, suggestedPress: 'high' as const }
   const managedClub = factoryMidSeasonGame.clubs.find(c => c.id === factoryMidSeasonGame.managedClubId)
   if (!managedClub) return { ...factoryMidSeasonGame, opponentAnalyses: { [oppId]: analysis } }
-  const mismatchedTactic = { ...managedClub.activeTactic, mentality: 'defensive' as const, press: 'low' as const }
+  const mismatchedTactic = { ...managedClub.activeTactic, mentality: 'defensive' as const }
   const clubs = factoryMidSeasonGame.clubs.map(c => c.id === managedClub.id ? { ...c, activeTactic: mismatchedTactic } : c)
   return { ...factoryMidSeasonGame, clubs, opponentAnalyses: { [oppId]: analysis } }
 })()
@@ -1326,7 +1323,7 @@ const granskaFixture = {
     // kräver homeLineup.tactic — saknades tidigare (bara lineup mockades ut).
     // Aggressive matchar redan befintlig hörnmål-händelse (minut 41, isCornerGoal).
     tactic: {
-      mentality: TacticMentality.Balanced, tempo: TacticTempo.Normal, press: TacticPress.Medium,
+      mentality: TacticMentality.Balanced, tempo: TacticTempo.Normal,
       passingRisk: TacticPassingRisk.Mixed, width: TacticWidth.Normal, attackingFocus: TacticAttackingFocus.Mixed,
       cornerStrategy: CornerStrategy.Aggressive, penaltyKillStyle: PenaltyKillStyle.Active,
     },
@@ -1737,6 +1734,15 @@ export function DevScenesScreen() {
     ? new URLSearchParams(window.location.search).get('scene')
     : null) as SceneId | null
   const [scene, setScene] = useState<SceneId>(initialScene ?? 'cup-victory')
+  const requestedArrivalClubId = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('club')
+    : null
+  const arrivalClubId = requestedArrivalClubId && [
+    'club_forsbacka', 'club_gagnef', 'club_karlsborg', 'club_malilla',
+    'club_rogle', 'club_slottsbron', 'club_soderfors',
+  ].includes(requestedArrivalClubId)
+    ? requestedArrivalClubId
+    : squadGame.managedClubId
   const [seededScene, setSeededScene] = useState<SceneId | null>(null)
   // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
   // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken
@@ -1805,7 +1811,9 @@ export function DevScenesScreen() {
       : scene === 'transfers-onebid' ? transfersOneBidGame
       : scene === 'transfers-multibids' ? transfersMultiBidsGame
       : scene === 'finalhelg' ? finalhelgGame
-      : scene === 'arrival' || scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
+      : scene === 'arrival' ? makeBaseGame({ seed: 31, clubId: arrivalClubId })
+      : scene === 'opponent-intro' ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
+      : scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
       : scene === 'trupp-kris' ? truppKrisGame
       : scene === 'lineup-empty' ? lineupEmptyGame
@@ -1844,7 +1852,11 @@ export function DevScenesScreen() {
       : scene === 'season-signature-reveal' ? seasonSignatureGame
       : scene === 'coffee-room' || scene === 'cup-intro' || scene === 'sunday-training' ? squadGame
       : scene === 'scouting' ? transfersOpenNoBidsGame
-      : scene === 'tilltrade' ? tilltradeGame
+      : scene === 'tilltrade' ? {
+          ...makeBaseGame({ seed: 31, clubId: arrivalClubId }),
+          onboardingComplete: false,
+          tilltradeStep: 1 as const,
+        }
       : scene === 'board-patience-minimal' ? boardPatienceWarningGame
       : scene === 'next-match-derby' ? nextMatchDerbyGame
       : scene === 'next-match-annandagen' ? nextMatchAnnandagenGame
@@ -1866,7 +1878,7 @@ export function DevScenesScreen() {
       : null
     useGameStore.setState({ game: g, roundSummary: roundSummaryForScene } as never)
     setSeededScene(scene)
-  }, [scene])
+  }, [scene, arrivalClubId])
 
   // Vid första mount och scenbyte: låt layout-effekten installera rätt store-
   // fixture innan någon produktskärm monteras. Effekten kör före paint, så
@@ -1980,9 +1992,9 @@ export function DevScenesScreen() {
         )}
 
         {(scene === 'miljoheader-karlsborg' || scene === 'miljoheader-rogle') && (() => {
-          // Fallback-rendering (bruksort-header.jpg finns inte än): säsongstonad gradient +
-          // klimateArchetype-tint + ClubBadge-vattenstämpel + dev-stämpel. Samma datum (djup
-          // vinter) för båda → skillnaden är ren per-klubb-tint (arctic mörk/blå vs scanian mild/ljus).
+          // Levererad gemensam bruksortsbild med säsongston, klimateArchetype-tint och
+          // ClubBadge-vattenstämpel. Samma datum (djup vinter) för båda gör att scenen
+          // isolerar den per-klubb-tint som fortfarande skiljer dem åt.
           const club = scene === 'miljoheader-karlsborg'
             ? { id: 'club_karlsborg', name: 'Karlsborg' }
             : { id: 'club_rogle', name: 'Rögle' }
@@ -2113,7 +2125,7 @@ export function DevScenesScreen() {
           </div>
         )}
         {scene === 'tilltrade' && (
-          <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ height: '844px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
             <TilltradeScreen />
           </div>
         )}
@@ -2223,10 +2235,30 @@ export function DevScenesScreen() {
           </div>
         )}
         {scene === 'arrival' && (
-          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
             <ArrivalScene />
           </div>
         )}
+        {scene === 'opponent-intro' && storeGame && (() => {
+          const opponent = storeGame.clubs.find(club => club.id === arrivalClubId)
+          const nextFixture = storeGame.fixtures.find(fixture =>
+            fixture.status === 'scheduled'
+            && ((fixture.homeClubId === storeGame.managedClubId && fixture.awayClubId === arrivalClubId)
+              || (fixture.awayClubId === storeGame.managedClubId && fixture.homeClubId === arrivalClubId)),
+          )
+          return opponent && nextFixture ? (
+            <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
+              <MatchLaddningScene
+                occasion="premiar"
+                isFinal={false}
+                game={storeGame}
+                opponent={opponent}
+                nextFixture={nextFixture}
+                onContinue={() => {}}
+              />
+            </div>
+          ) : null
+        })()}
         {scene === 'squad-trupp' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <SquadScreen />

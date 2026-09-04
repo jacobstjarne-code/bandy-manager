@@ -5,7 +5,7 @@ import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
 import { positionShort } from '../../../domain/format'
-import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS, TACTIC_PRESS_LABELS } from '../../../domain/data/enumLabels'
+import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS } from '../../../domain/data/enumLabels'
 import { PlayerDot } from './PlayerDot'
 import { BandyPitch } from '../BandyPitch'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
@@ -19,7 +19,8 @@ interface FormationViewProps {
   lineupConfirmedThisRound?: boolean
 }
 
-const FORMATION_OPTIONS: FormationType[] = ['3-3-4', '5-3-2', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
+// DOM_FORMATIONER_V2_2026-09-04.md: dömd ordning, #1 (532_tvatoppar) default.
+const FORMATION_OPTIONS: FormationType[] = ['532_tvatoppar', '532_triangel', '532_ytterben', '532_hogahalvor', '523_hog', '541_hem']
 
 export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
@@ -31,7 +32,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
     if (autoFillTimerRef.current) clearTimeout(autoFillTimerRef.current)
   }, [])
 
-  const formation = tactic.formation ?? '3-3-4'
+  const formation = tactic.formation ?? '532_tvatoppar'
   const template = FORMATIONS[formation]
   const rawLineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
 
@@ -181,10 +182,6 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
           Tempo: {TACTIC_TEMPO_LABELS[tactic.tempo]}
         </span>
-        <span className="h-micro" style={{ color: 'var(--border)' }}>·</span>
-        <span className="h-micro" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-          Press: {TACTIC_PRESS_LABELS[tactic.press]}
-        </span>
         <button
           onClick={() => navigate('/game/squad')}
           className="h-micro"
@@ -222,7 +219,14 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         </p>
       )}
 
-      {/* B1c: Formation selector with coach recommendation */}
+      {/* DOM_FORMATIONER_V2_2026-09-04.md / FORMATIONER_V2_TEXT_2026-09-04.md:
+          "Uppställning" — bandyns ord, inte "Formation". Text kopierad ordagrant. */}
+      <p className="h-label" style={{ marginBottom: 4 }}>Uppställning</p>
+      <p className="h-micro" style={{ color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.4 }}>
+        Femman bak är alltid femman bak. Det du väljer är hur de fem främre står — och hur högt laget försvarar.
+      </p>
+
+      {/* Formation selector with coach recommendation */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
         {FORMATION_OPTIONS.map(f => (
           <div key={f} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -242,7 +246,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
                 outlineOffset: 1,
               }}
             >
-              {f}
+              {FORMATIONS[f].label}
             </button>
             {recommended === f && (
               <span style={{ fontSize: 8, color: 'var(--success)', fontWeight: 700, letterSpacing: '0.5px' }}>
@@ -253,9 +257,22 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         ))}
       </div>
 
-      {/* B2c: Formation anatomy tags + coach quote */}
+      {/* Villkorade varningsrader, TEXT LÅST (FORMATIONER_V2_TEXT_2026-09-04.md §Taktikskärmen) */}
+      {formation === '523_hog' && (
+        // adherence-semantic-key: --warm är avsiktlig — en faktisk kostnadsvarning (kondition), inte dekoration.
+        <p className="h-micro" style={{ color: 'var(--warm)', marginBottom: 8 }}>
+          Kostar kondition varje omgång den används.
+        </p>
+      )}
+      {formation === '541_hem' && (
+        <p className="h-micro" style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>
+          Färre egna chanser. Färre av deras.
+        </p>
+      )}
+
+      {/* Formation anatomy tags + coach quote + truppkrav — TEXT LÅST, kopierat ordagrant */}
       <div style={{ marginBottom: 8 }}>
-        <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
           {meta.tags.map(tag => (
             <span key={tag} className="tag tag-ghost">{tag}</span>
           ))}
@@ -264,6 +281,9 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
           "{meta.coachQuote}"
         </p>
         <p className="h-micro" style={{ marginTop: 2 }}>— Coachen</p>
+        <p className="h-micro" style={{ marginTop: 6, color: 'var(--text-secondary)' }}>
+          Kräver: {meta.requires}
+        </p>
       </div>
 
       {/* Gemensamt planskal; kemi och spelarinteraktioner är FormationViews lager. */}

@@ -4,7 +4,8 @@ import { InboxItemType } from '../enums'
 import { WeatherCondition } from '../enums'
 import type { Weather } from '../entities/Weather'
 import type { Tactic } from '../entities/Club'
-import { TacticTempo, TacticPress } from '../enums'
+import { TacticTempo } from '../enums'
+import { getHeightMode } from '../entities/Formation'
 import { LONGTERM_ARC_LINES } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
@@ -136,7 +137,7 @@ export function checkForMatchInjury(
   const moraleMult = (playerMorale !== undefined && playerMorale < 40) ? 1.2 : 1.0
 
   // Aggressive tactic multiplier
-  const isAggressive = tactic?.tempo === TacticTempo.High && tactic?.press === TacticPress.High
+  const isAggressive = tactic?.tempo === TacticTempo.High && getHeightMode(tactic?.formation) === 'high'
   const tacticMult = isAggressive ? 1.25 : 1.0
 
   // Player injury proneness

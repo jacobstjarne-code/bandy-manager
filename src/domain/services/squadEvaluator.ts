@@ -77,7 +77,7 @@ function effectivePlayerModifier(player: Player, tactic: Tactic): number {
   if (!lineupSlots) return base
   const slotId = Object.entries(lineupSlots).find(([, pid]) => pid === player.id)?.[0]
   if (!slotId) return base
-  const formation = tactic.formation ?? '3-3-4'
+  const formation = tactic.formation ?? '532_tvatoppar'
   const slot = FORMATIONS[formation]?.slots.find(s => s.id === slotId)
   if (!slot) return base
   return base * getPositionFit(player.position, slot.position)

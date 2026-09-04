@@ -17,7 +17,7 @@ import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
-import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../../domain/enums'
+import { MatchEventType, TacticMentality, TacticTempo, PlayerPosition } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getRoundLabel } from '../../../domain/roundLabel'
 import { fixtureSeed } from '../../../domain/utils/random'
@@ -113,7 +113,7 @@ function interactionSeed(fixtureId: string, step: number, kind: InteractionRandK
 }
 
 /**
- * htTempo/htPress/htMentality här är egna React-statevariabler för
+ * htTempo/htMentality här är egna React-statevariabler för
  * paus-taktikreglagen (spelarens LIVE-inställning under matchen) — INTE
  * en proxy för "vilket paussnack valdes" (den kända, redan fixade bugklassen
  * — se pauseLean/effectiveLean nedan, som är den faktiska loggade sanningen).
@@ -122,7 +122,7 @@ function interactionSeed(fixtureId: string, step: number, kind: InteractionRandK
  * playoffBracket skickas vidare till ett underliggande visningskomponent,
  * inte för att avgöra vem som blev mästare. Alla tre deklarerade öppet.
  *
- * @cites pauseLean, effectiveLean, setHalftimeDecisionForLog, htTempo, htPress, htMentality, roundNumber, playoffBracket
+ * @cites pauseLean, effectiveLean, setHalftimeDecisionForLog, htTempo, htMentality, roundNumber, playoffBracket
  */
 export function MatchLiveScreen() {
   const location = useLocation()
@@ -197,7 +197,6 @@ export function MatchLiveScreen() {
 
   const [htMentality, setHtMentality] = useState<TacticMentality | null>(null)
   const [htTempo, setHtTempo] = useState<TacticTempo | null>(null)
-  const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
   const [showTacticQuick, setShowTacticQuick] = useState(false)
   const [tacticChangesUsed, setTacticChangesUsed] = useState(0)
@@ -1079,7 +1078,6 @@ export function MatchLiveScreen() {
       ...currentTactic,
       mentality: htMentality ?? currentTactic.mentality,
       tempo: htTempo ?? currentTactic.tempo,
-      press: htPress ?? currentTactic.press,
     }
 
     const applySubstitutions = (lineup: TeamSelection): TeamSelection => {
@@ -1760,10 +1758,8 @@ export function MatchLiveScreen() {
           players={game?.players ?? []}
           htMentality={htMentality}
           htTempo={htTempo}
-          htPress={htPress}
           onSetMentality={setHtMentality}
           onSetTempo={setHtTempo}
-          onSetPress={setHtPress}
           tacticChanged={tacticChanged}
           htSubs={htSubs}
           onHtSubsChange={setHtSubs}

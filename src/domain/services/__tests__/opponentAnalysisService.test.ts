@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { mapRecommendationToMentality, mapRecommendationToPress, getSuggestionWhyLine } from '../opponentAnalysisService'
-import { TacticMentality, TacticPress } from '../../enums'
+import { mapRecommendationToMentality, getSuggestionWhyLine } from '../opponentAnalysisService'
+import { TacticMentality } from '../../enums'
 
 // Yta 3 (Audit-syntes, 2026-07-07): recommendation → suggestedMentality-mappningen
 // för Analys→Taktik-bryggan. De fyra strängarna är ordagrant desamma som
@@ -29,31 +29,8 @@ describe('mapRecommendationToMentality', () => {
   })
 })
 
-// SLUTTEST 2026-08-08 (punkt 5): samma princip som mapRecommendationToMentality
-// ovan, för TacticStep.tsx:s press-rekommendation — enda källan, inte en
-// separat recentForm/tablePosition-beräkning i komponenten.
-describe('mapRecommendationToPress', () => {
-  it('mappar "Pressa högt och dominera mitten." till High', () => {
-    expect(mapRecommendationToPress('Pressa högt och dominera mitten.')).toBe(TacticPress.High)
-  })
-
-  it('mappar "Spela offensivt — deras försvar är sårbart." till High', () => {
-    expect(mapRecommendationToPress('Spela offensivt — deras försvar är sårbart.')).toBe(TacticPress.High)
-  })
-
-  it('mappar "Prioritera defensiven — de har farliga forwards." till Low', () => {
-    expect(mapRecommendationToPress('Prioritera defensiven — de har farliga forwards.')).toBe(TacticPress.Low)
-  })
-
-  it('ger undefined för "Jämn motståndare" — ingen falsk föreslagen knapp', () => {
-    expect(mapRecommendationToPress('Jämn motståndare. Spelplanen avgör.')).toBeUndefined()
-  })
-
-  it('ger undefined för okänd/saknad recommendation', () => {
-    expect(mapRecommendationToPress(undefined)).toBeUndefined()
-    expect(mapRecommendationToPress('Något helt annat.')).toBeUndefined()
-  })
-})
+// DOM_FORMATIONER_V2_2026-09-04.md: mapRecommendationToPress borttagen —
+// press finns inte längre som ett settbart fält att föreslå ett värde för.
 
 // Yta 3 textleverans (Fable, 2026-07-07): varför-raden. {coach} interpolerar mot
 // assistentens NAMN, inte initialer — testerna verifierar det uttryckligen.

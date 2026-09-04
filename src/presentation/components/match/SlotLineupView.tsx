@@ -38,7 +38,7 @@ const POSITION_GROUP_LABELS: Partial<Record<PlayerPosition, string>> = {
   [PlayerPosition.Forward]: 'FORWARDS',
 }
 
-const FORMATION_OPTIONS: FormationType[] = ['5-3-2', '3-3-4', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
+const FORMATION_OPTIONS: FormationType[] = ['532_tvatoppar', '532_triangel', '532_ytterben', '532_hogahalvor', '523_hog', '541_hem']
 
 export function SlotLineupView({
   tacticState,
@@ -52,7 +52,7 @@ export function SlotLineupView({
   const [pickerSlot, setPickerSlot] = useState<FormationSlot | null>(null)
   const [showFormationPicker, setShowFormationPicker] = useState(false)
 
-  const formation = (tacticState.formation ?? '5-3-2') as FormationType
+  const formation = (tacticState.formation ?? '532_tvatoppar') as FormationType
   const template = FORMATIONS[formation]
 
   // lineupSlots is the canonical mapping: slotId → playerId | null

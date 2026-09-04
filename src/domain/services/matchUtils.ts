@@ -1,6 +1,8 @@
 import type { Player } from '../entities/Player'
 import type { Fixture, MatchEvent, TeamSelection } from '../entities/Fixture'
 import type { Weather } from '../entities/Weather'
+import type { FormationType } from '../entities/Formation'
+import { getHeightMode } from '../entities/Formation'
 import { WeatherCondition, IceQuality, PlayerPosition, MatchEventType } from '../enums'
 import type { Rivalry } from '../data/rivalries'
 import { getRivalry } from '../data/rivalries'
@@ -112,11 +114,12 @@ export function computeWeatherEffects(w: Weather) {
 
 export function computeWeatherTacticInteraction(
   weather: Weather,
-  tactic: { tempo: string; passingRisk: string; width: string; press: string },
+  tactic: { tempo: string; passingRisk: string; width: string; formation?: FormationType },
 ): { extraBallControlPenalty: number; extraFatigue: number; extraInjuryRisk: number } {
   let extraBCP = 0
   let extraFatigue = 0
   let extraInjury = 0
+  const heightMode = getHeightMode(tactic.formation)
 
   if (weather.condition === WeatherCondition.HeavySnow) {
     if (tactic.passingRisk === 'direct') extraBCP += 10
@@ -129,7 +132,7 @@ export function computeWeatherTacticInteraction(
       extraFatigue += 0.20
       extraInjury += 0.15
     }
-    if (tactic.press === 'high') extraFatigue += 0.10
+    if (heightMode === 'high') extraFatigue += 0.10
     if (tactic.width === 'narrow') extraBCP -= 3
   }
 
@@ -141,7 +144,7 @@ export function computeWeatherTacticInteraction(
 
   if (weather.temperature < -15) {
     if (tactic.tempo === 'high') extraInjury += 0.10
-    if (tactic.press === 'high') extraFatigue += 0.10
+    if (heightMode === 'high') extraFatigue += 0.10
   }
 
   if (weather.iceQuality === IceQuality.Excellent) {

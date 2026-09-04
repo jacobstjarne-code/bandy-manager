@@ -24,12 +24,15 @@ const AI_FITNESS_FLOOR = 40
 const AI_ROTATION_CA_TOLERANCE = 8
 const AI_REPLACEMENT_MIN_FITNESS = 60
 
+// DOM_FORMATIONER_V2_2026-09-04.md: samma stil→formation-mappning som
+// worldGenerator.ts's buildTactic, för konsekvens (bevarar heightMode-hinken
+// per stil: Defensive→low, Balanced/Attacking/Technical→mid, Physical→high).
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
-  [ClubStyle.Defensive]: '4-3-3',
-  [ClubStyle.Balanced]: '5-3-2',
-  [ClubStyle.Attacking]: '2-3-2-3',
-  [ClubStyle.Physical]: '4-2-4',
-  [ClubStyle.Technical]: '3-4-3',
+  [ClubStyle.Defensive]: '541_hem',
+  [ClubStyle.Balanced]: '532_tvatoppar',
+  [ClubStyle.Attacking]: '532_ytterben',
+  [ClubStyle.Physical]: '523_hog',
+  [ClubStyle.Technical]: '532_triangel',
 }
 
 function createRegenPlayer(club: Club, index: number, rand: () => number): Player {
@@ -138,7 +141,7 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
       startingPlayerIds: starters.map(p => p.id),
       benchPlayerIds: bench.map(p => p.id),
       captainPlayerId: captain?.id,
-      tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '5-3-2' },
+      tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '532_tvatoppar' },
     },
     regenPlayers,
   }

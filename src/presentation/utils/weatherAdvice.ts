@@ -1,5 +1,7 @@
 import { WeatherCondition } from '../../domain/enums'
 import type { MatchWeather } from '../../domain/entities/Weather'
+import { getHeightMode } from '../../domain/entities/Formation'
+import type { FormationType } from '../../domain/entities/Formation'
 
 export interface WeatherAdviceItem {
   icon: string
@@ -8,13 +10,19 @@ export interface WeatherAdviceItem {
   isViolated: boolean
 }
 
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, heightMode härleds ur
+ * formation. Ingen produktionsanropare hittad (0 träffar) — orört sedan
+ * innan, uppdaterad ändå för att inte vara en landmina om den återupplivas.
+ */
 export function getDetailedWeatherAdvice(
   weather: MatchWeather | undefined,
-  tactic: { tempo: string; passingRisk: string; width: string; press: string; cornerStrategy: string }
+  tactic: { tempo: string; passingRisk: string; width: string; formation?: FormationType; cornerStrategy: string }
 ): WeatherAdviceItem[] {
   if (!weather) return []
   const w = weather.weather
   const items: WeatherAdviceItem[] = []
+  const heightMode = getHeightMode(tactic.formation)
 
   if (w.condition === WeatherCondition.HeavySnow) {
     items.push({
@@ -67,7 +75,7 @@ export function getDetailedWeatherAdvice(
         isViolated: false,
       })
     }
-    if (tactic.press === 'high') {
+    if (heightMode === 'high') {
       items.push({
         icon: '⚠️',
         text: 'Hög press på blöt is: +10% extra fatigue',
@@ -128,7 +136,7 @@ export function getDetailedWeatherAdvice(
         isViolated: true,
       })
     }
-    if (tactic.press === 'high') {
+    if (heightMode === 'high') {
       items.push({
         icon: '⚠️',
         text: 'Hög press i extrem kyla: +10% extra fatigue',
@@ -136,7 +144,7 @@ export function getDetailedWeatherAdvice(
         isViolated: true,
       })
     }
-    if (tactic.tempo !== 'high' && tactic.press !== 'high') {
+    if (tactic.tempo !== 'high' && heightMode !== 'high') {
       items.push({
         icon: '🥶',
         text: `Extrem kyla (${w.temperature}°) — din taktik hanterar kylan bra`,

@@ -9,7 +9,6 @@ import {
   ClubStyle,
   TacticMentality,
   TacticTempo,
-  TacticPress,
   TacticPassingRisk,
   TacticWidth,
   TacticAttackingFocus,
@@ -45,63 +44,69 @@ function makeRng(seed: number) {
 }
 
 
+/**
+ * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, formationen bär nu
+ * höjdläget. Varje stils gamla press-nivå bevaras som samma heightMode-hink
+ * via formationsvalet (Low→541_hem, Medium→en av de fyra 532_*, High→
+ * 523_hog) — samma princip som save-migreringstabellen ("behåll EFFEKTEN"),
+ * fast för nygenererade AI-klubbar snarare än gamla saves.
+ */
 function buildTactic(style: ClubStyle): Tactic {
   switch (style) {
     case ClubStyle.Defensive:
       return {
         mentality: TacticMentality.Defensive,
         tempo: TacticTempo.Low,
-        press: TacticPress.Low,
         passingRisk: TacticPassingRisk.Safe,
         width: TacticWidth.Narrow,
         attackingFocus: TacticAttackingFocus.Central,
         cornerStrategy: CornerStrategy.Safe,
         penaltyKillStyle: PenaltyKillStyle.Passive,
+        formation: '541_hem',
       }
     case ClubStyle.Balanced:
       return {
         mentality: TacticMentality.Balanced,
         tempo: TacticTempo.Normal,
-        press: TacticPress.Medium,
         passingRisk: TacticPassingRisk.Mixed,
         width: TacticWidth.Normal,
         attackingFocus: TacticAttackingFocus.Mixed,
         cornerStrategy: CornerStrategy.Standard,
         penaltyKillStyle: PenaltyKillStyle.Active,
-        formation: '3-3-4',
+        formation: '532_tvatoppar',
       }
     case ClubStyle.Attacking:
       return {
         mentality: TacticMentality.Offensive,
         tempo: TacticTempo.High,
-        press: TacticPress.Medium,
         passingRisk: TacticPassingRisk.Mixed,
         width: TacticWidth.Wide,
         attackingFocus: TacticAttackingFocus.Wings,
         cornerStrategy: CornerStrategy.Aggressive,
         penaltyKillStyle: PenaltyKillStyle.Active,
+        formation: '532_ytterben',
       }
     case ClubStyle.Physical:
       return {
         mentality: TacticMentality.Balanced,
         tempo: TacticTempo.Normal,
-        press: TacticPress.High,
         passingRisk: TacticPassingRisk.Direct,
         width: TacticWidth.Narrow,
         attackingFocus: TacticAttackingFocus.Central,
         cornerStrategy: CornerStrategy.Standard,
         penaltyKillStyle: PenaltyKillStyle.Aggressive,
+        formation: '523_hog',
       }
     case ClubStyle.Technical:
       return {
         mentality: TacticMentality.Balanced,
         tempo: TacticTempo.Normal,
-        press: TacticPress.Medium,
         passingRisk: TacticPassingRisk.Safe,
         width: TacticWidth.Normal,
         attackingFocus: TacticAttackingFocus.Mixed,
         cornerStrategy: CornerStrategy.Aggressive,
         penaltyKillStyle: PenaltyKillStyle.Active,
+        formation: '532_triangel',
       }
   }
 }

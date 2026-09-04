@@ -6,7 +6,6 @@ import {
   FixtureStatus,
   TacticMentality,
   TacticTempo,
-  TacticPress,
   TacticPassingRisk,
   TacticWidth,
   TacticAttackingFocus,
@@ -142,7 +141,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
       .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
     if (!pendingFixture) return null
     const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
-    const formationName = (managedClub?.activeTactic?.formation ?? '5-3-2') as FormationType
+    const formationName = (managedClub?.activeTactic?.formation ?? '532_tvatoppar') as FormationType
     const template = FORMATIONS[formationName]
     return buildNudgeLineup(available, template, pendingFixture.id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,14 +163,13 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     const base = savedLineup?.tactic ?? carryForwardLineup?.tactic ?? managedClub?.activeTactic ?? {
       mentality: TacticMentality.Balanced,
       tempo: TacticTempo.Normal,
-      press: TacticPress.Medium,
       passingRisk: TacticPassingRisk.Mixed,
       width: TacticWidth.Normal,
       attackingFocus: TacticAttackingFocus.Mixed,
       cornerStrategy: CornerStrategy.Standard,
       penaltyKillStyle: PenaltyKillStyle.Active,
     }
-    const baseWithFormation = { ...base, formation: base.formation ?? '5-3-2' }
+    const baseWithFormation = { ...base, formation: base.formation ?? '532_tvatoppar' }
     if (!savedLineup && nudgeData?.lineupSlots) {
       return { ...baseWithFormation, lineupSlots: nudgeData.lineupSlots }
     }
@@ -269,7 +267,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
   function applyAutoFill(starters: Player[], rest: Player[]) {
     const starterIds = starters.map(p => p.id)
     const bench = rest.slice(0, 5)
-    const formation = tacticState.formation ?? '5-3-2'
+    const formation = tacticState.formation ?? '532_tvatoppar'
     const template = FORMATIONS[formation]
     const newLineupSlots = autoAssignFormation(template, starters)
     const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
@@ -314,7 +312,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
   }
 
   const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
-    const formation = tacticState.formation ?? '5-3-2'
+    const formation = tacticState.formation ?? '532_tvatoppar'
     const slotExists = FORMATIONS[formation].slots.some(s => s.id === slotId)
     if (!slotExists) return
     const current = { ...(tacticState.lineupSlots ?? {}) }
@@ -377,7 +375,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
 
   function onFormationChange(newTactic: Tactic) {
     // Migrate: preserve players whose slotId exists in the new formation
-    const newFormation = newTactic.formation ?? '5-3-2'
+    const newFormation = newTactic.formation ?? '532_tvatoppar'
     const newSlotIds = new Set(FORMATIONS[newFormation].slots.map(s => s.id))
     const oldSlots = tacticState.lineupSlots ?? {}
     const migrated: Record<string, string | null> = {}

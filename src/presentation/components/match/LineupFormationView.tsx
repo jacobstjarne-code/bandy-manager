@@ -19,7 +19,7 @@ export function LineupFormationView({
   selectedSlotId,
   onSlotClick,
 }: LineupFormationViewProps) {
-  const formationType = tacticState.formation ?? '3-3-4'
+  const formationType = tacticState.formation ?? '532_tvatoppar'
   const template = FORMATIONS[formationType]
 
   const slotToPlayer: Record<string, string> = {}
