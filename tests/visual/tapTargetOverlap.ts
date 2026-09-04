@@ -90,6 +90,10 @@ export async function findTapTargetViolations(
     if (nav) candidates.add(nav)
 
     function isVisible(el: Element): boolean {
+      // En portalerad modal gör app-roten inert. Elementen bakom den kan
+      // fortfarande ha en bounding box, men de är inte längre träffytor och
+      // ska därför inte mätas mot navigationen som om de gick att trycka på.
+      if (el.closest('[inert]')) return false
       const cs = getComputedStyle(el)
       if (cs.display === 'none' || cs.visibility === 'hidden' || cs.pointerEvents === 'none') return false
       const r = el.getBoundingClientRect()

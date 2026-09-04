@@ -39,6 +39,10 @@ test.describe('tap-target-overlap — svep över alla scener', () => {
       await page.goto(`/dev/scenes?scene=${id}`, { waitUntil: 'networkidle' })
       await page.getByText('DEV GALLERY').waitFor({ timeout: 15000 })
       if (clickText) {
+        // Den klistrade dev-menyn kan annars ligga ovanpå scenens egna
+        // flikar efter Playwrights scrollIntoView. Testskalet ska inte fånga
+        // klick som i produktionsappen aldrig har en dev-meny ovanför sig.
+        await page.evaluate(() => document.documentElement.classList.add('capture-mode'))
         await page.locator(clickText).first().click()
         await page.waitForTimeout(300)
       }

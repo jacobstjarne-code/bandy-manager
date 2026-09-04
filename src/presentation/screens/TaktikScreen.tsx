@@ -88,7 +88,9 @@ export function TaktikScreen() {
         </p>
       </div>
 
-      <div style={{ padding: '8px 12px' }}>
+      {/* Den sticky Tillbaka-träffytan behöver 44 px fri tumyta mot
+          Standard/Avancerat-växeln direkt nedanför. */}
+      <div style={{ padding: '21px 12px 8px' }}>
         <TacticBoardCard
           club={club}
           players={players}
