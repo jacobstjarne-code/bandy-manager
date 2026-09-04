@@ -1231,11 +1231,11 @@ Låta `matchCore` skriva ner vad den redan vet vid varje chansskapande/bolltapp-
 
 | Händelse | Saknad punkt | Grupp |
 |---|---|---|
-| `politician_inclusion` | K5 — allt pekar uppåt, ingen kostnad | `O2` (dominans) |
-| `icamaxi_visit` → `send_player` | K5 | `O2` |
+| `politician_inclusion` | ~~K5 — allt pekar uppåt, ingen kostnad~~ MARKERAD 2026-09-04 (Code, DOM_O20_K3K5_KLASS_2026-09-02): `politicianEvents.ts` `start_program`-valet har nu en K5-kommentar (medvetet utan nedsida, goodwill-gest) | `O2` (dominans) |
+| `icamaxi_visit` → `send_player` | ~~K5~~ MARKERAD 2026-09-04 (Code): `sponsorEvents.ts` `send_player`-valet har nu en K5-kommentar | `O2` |
 | `supporter_away_trip_` → `subsidize` | K5 | `O2` |
 | `survival_emergency_lotto` | K5 | `O2` |
-| `q1` (mecenatDinner, bidrag) | K5 | `O2` |
+| `q1` (mecenatDinner, bidrag) | ~~K5~~ MARKERAD 2026-09-04 (Code): `mecenatDinnerService.ts` `q1`-frågan har nu en K5-kommentar | `O2` |
 | `politician_warning` (låg relation) → `board_contact` | K3 — ingen kr-summa, bara relationspoäng | `O5` (väntar) |
 | `gentjanst` → `no`-valet | K3 | `O5` |
 | `q2` (mecenatDinner, konkurrens) | K3 | `O5` |

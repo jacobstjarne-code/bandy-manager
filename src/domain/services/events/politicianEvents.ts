@@ -148,6 +148,9 @@ export function generatePoliticianEvents(
           body: `${politician.name} har fått bidrag från Allmänna arvsfonden och kontaktar dig.\n\n"Vi har pengar för integration genom idrott. Ni har plats, ungdomar och en förening som folk litar på. Kan ni ta emot en grupp på 10–15 ungdomar två kvällar i veckan?"`,
           choices: [
             {
+              // K5 (DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut): medvetet
+              // utan nedsida — en goodwill-gest, inte ett beslut, ska inte
+              // få en kostnad. Gratis-god förblir gratis-god.
               id: 'start_program',
               label: 'Starta programmet',
               subtitle: '💛 +5 fanMood · ⭐ +3 communityStanding · 💰 +6 000 kr/sä kommunbidrag',

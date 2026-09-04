@@ -132,6 +132,9 @@ export function generateDinnerScene(mec: Mecenat, _season: number): DinnerScene 
       ],
     },
     {
+      // K5 (DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut): båda svaren är
+      // medvetet utan nedsida — en goodwill-fråga, inte ett beslut, ska inte
+      // få en kostnad. Gratis-god förblir gratis-god.
       id: 'q1',
       text: `"Jag funderar faktiskt på att bidra till nya omklädningsrum nästa år", säger ${name}. "Men jag vill veta att ni menar allvar med satsningen."`,
       options: [

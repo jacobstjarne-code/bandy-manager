@@ -21,6 +21,9 @@ export function generateSponsorEvents(
         body: `ICA Maxi erbjuder 5 000 kr extra den här omgången om en spelare besöker butiken och träffar kunder.`,
         choices: [
           {
+            // K5 (DOM_O20_K3K5_KLASS_2026-09-02, Jacobs beslut): medvetet
+            // utan nedsida — en goodwill-gest, inte ett beslut, ska inte
+            // få en kostnad. Gratis-god förblir gratis-god.
             id: 'send_player',
             label: 'Skicka en spelare till butiken',
             subtitle: '💰 +5 tkr · ⭐ +2 communityStanding',
