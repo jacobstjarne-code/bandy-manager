@@ -118,15 +118,25 @@ export function SeasonContractDemandsScreen() {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button
                     onClick={() => toggle(demand.playerId, 'met')}
-                    className={isMet ? 'btn btn-primary' : 'btn btn-outline'}
-                    style={{ flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600 }}
+                    aria-pressed={isMet}
+                    className="btn btn-outline"
+                    style={{
+                      flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
+                      background: isMet ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : undefined,
+                      boxShadow: isMet ? 'inset 0 0 0 1px var(--accent)' : undefined,
+                    }}
                   >
                     Möt kravet
                   </button>
                   <button
                     onClick={() => toggle(demand.playerId, 'skipped')}
-                    className={!isMet ? 'btn btn-primary' : 'btn btn-outline'}
-                    style={{ flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600 }}
+                    aria-pressed={!isMet}
+                    className="btn btn-outline"
+                    style={{
+                      flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
+                      background: !isMet ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : undefined,
+                      boxShadow: !isMet ? 'inset 0 0 0 1px var(--accent)' : undefined,
+                    }}
                   >
                     Behåll nuvarande lön
                   </button>
