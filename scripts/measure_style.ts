@@ -12,7 +12,7 @@ function rng(s:number){s=((s*1664525+1013904223)|0)>>>0;return s/0xffffffff}
 function clusterCount(mins:number[]):number{const s=[...mins].sort((a,b)=>a-b);let cl=0,i=0;while(i<s.length){let j=i+1;while(j<s.length&&s[j]-s[i]<=5)j++;if(j-i>=2){cl++;i=j}else i++}return cl}
 
 // Spelets faktiska taktik-dimensioner, spänd över omställning↔hörnberoende
-const base={mentality:'balanced',tempo:'normal',press:'medium',width:'normal',attackingFocus:'mixed',cornerStrategy:'standard',passingRisk:'safe',penaltyKillStyle:'active'}
+const base={mentality:'balanced',tempo:'normal',formation:'532_tvatoppar',width:'normal',attackingFocus:'mixed',cornerStrategy:'standard',passingRisk:'safe',penaltyKillStyle:'active'}
 const profiles:{namn:string,t:any}[]=[
   {namn:'Omställning/öppet (max)', t:{...base,mentality:'offensive',tempo:'high',passingRisk:'direct',attackingFocus:'central',cornerStrategy:'safe',width:'narrow'}},
   {namn:'Offensiv',               t:{...base,mentality:'offensive',tempo:'high',attackingFocus:'central',cornerStrategy:'safe'}},

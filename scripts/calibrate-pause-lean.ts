@@ -51,7 +51,7 @@ function makeSquad(clubId: string, ca = 55): Player[] {
   return [P.Goalkeeper, P.Defender, P.Defender, P.Defender, P.Half, P.Half, P.Half, P.Forward, P.Forward, P.Forward, P.Forward, P.Goalkeeper, P.Defender, P.Half, P.Forward, P.Forward].map(pos => makePlayer(clubId, pos, ca))
 }
 const defaultTactic = {
-  mentality: 'balanced' as const, tempo: 'normal' as const, press: 'medium' as const,
+  mentality: 'balanced' as const, tempo: 'normal' as const, formation: '532_tvatoppar' as const,
   width: 'normal' as const, attackingFocus: 'mixed' as const, cornerStrategy: 'standard' as const,
   passingRisk: 'safe' as const, penaltyKillStyle: 'active' as const,
 } as unknown as Tactic

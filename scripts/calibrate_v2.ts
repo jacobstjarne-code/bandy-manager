@@ -1017,7 +1017,7 @@ function makeSquad(clubId: string, ca = 55): Player[] {
 }
 
 const defaultTactic = {
-  mentality: 'balanced' as const, tempo: 'normal' as const, press: 'medium' as const,
+  mentality: 'balanced' as const, tempo: 'normal' as const, formation: '532_tvatoppar' as const,
   width: 'normal' as const, attackingFocus: 'mixed' as const,
   cornerStrategy: 'standard' as const, passingRisk: 'safe' as const, penaltyKillStyle: 'active' as const,
 } as unknown as Tactic

@@ -41,7 +41,7 @@ function makeSquad(clubId: string, ca = 55): Player[] {
     PlayerPosition.Goalkeeper, PlayerPosition.Defender, PlayerPosition.Half, PlayerPosition.Forward, PlayerPosition.Forward]
   return pos.map(p => makePlayer(clubId, p, ca))
 }
-const T = (o: any) => ({ mentality:'balanced', tempo:'normal', press:'medium', width:'normal',
+const T = (o: any) => ({ mentality:'balanced', tempo:'normal', formation:'532_tvatoppar', width:'normal',
   attackingFocus:'mixed', cornerStrategy:'standard', passingRisk:'safe', penaltyKillStyle:'active', ...o })
 
 // CA-spridning matchande CLUB_TEMPLATES
