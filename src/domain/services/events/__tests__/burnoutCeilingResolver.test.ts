@@ -75,6 +75,7 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     expect(game.eventLedger).toContainEqual({
       type: 'decision',
       clubId: 'club_forsbacka',
+      managerId: game.id,
       semanticKey: 'burnoutCeiling:step_back',
       season: 3,
       matchday: 20,
@@ -84,6 +85,19 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
       systemsAffectedCount: 4,
       madeByPlayer: true,
     })
+  })
+
+  it('takvalet konsumerar ett redan köat lättnadskort från samma episod', () => {
+    let game = baseGame({ currentMatchday: 20, currentSeason: 3 })
+    game = { ...game, managerProfile: { ...game.managerProfile!, burnoutScore: 100 } }
+    const ceiling = ceilingEvent('event_burnout_ceiling_3_20')
+    const relief = multiEffectEvent('event_burnout_relief_3_19', [{ type: 'reduceBurnout', amount: -10 }])
+    game = { ...game, pendingEvents: [ceiling, relief], deferredDecisions: [relief] }
+
+    game = resolveEvent(game, ceiling.id, 'step_back', undefined, true)
+
+    expect(game.pendingEvents.some(candidate => candidate.type === 'burnoutRelief')).toBe(false)
+    expect(game.deferredDecisions.some(candidate => candidate.type === 'burnoutRelief')).toBe(false)
   })
 
   it("push_through: burnoutScar='hardened', diary-post skriven, INGET mekaniskt pris (ingen recovery, ingen slowdown, boardPatience orörd)", () => {

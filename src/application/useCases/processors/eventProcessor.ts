@@ -144,12 +144,19 @@ export function processGameEvents(
   // budget gate + source cooldown, samma mönster som mecenatens middag ovan.
   // Aldrig i 'frisk'-zonen (ingen effekt att lätta på), aldrig oftare än
   // var 6:e omgång (SOURCE_COOLDOWN_ROUNDS.burnout) så länge zonen håller i sig.
-  const burnoutZone = getBurnoutZone(game.managerProfile?.burnoutScore ?? 0)
+  const managerProfile = game.managerProfile
+  const burnoutZone = getBurnoutZone(managerProfile?.burnoutScore ?? 0)
   const burnoutReliefQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
     .some(event => event.type === 'burnoutRelief' && !event.resolved)
+  const burnoutCeilingQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+    .some(event => event.type === 'burnoutCeiling' && !event.resolved)
+  const burnoutCeilingShouldQueue = !!managerProfile &&
+    !burnoutCeilingQueued &&
+    shouldTriggerBurnoutCeilingChoice(managerProfile)
   if (
     (burnoutZone === 'markbar' || burnoutZone === 'hog') &&
     !burnoutReliefQueued &&
+    !burnoutCeilingShouldQueue &&
     canAddDecision(game, nextMatchday) &&
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
@@ -157,7 +164,7 @@ export function processGameEvents(
       nextMatchday,
       game.currentSeason,
       burnoutZone,
-      !!game.managerProfile && isBurnoutRelapse(game.managerProfile, game.currentSeason, game.eventLedger),
+      !!managerProfile && isBurnoutRelapse(managerProfile, game.currentSeason, game.eventLedger),
     ))
   }
 
@@ -166,13 +173,11 @@ export function processGameEvents(
   // ett riktigt måste-kort gates bara på sitt eget domänvillkor, inte på
   // budgeten övriga event delar) — episoden gates enbart av
   // shouldTriggerBurnoutCeilingChoice:s egen "redan erbjuden"-stämpel.
-  const burnoutCeilingQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
-    .some(event => event.type === 'burnoutCeiling' && !event.resolved)
-  if (game.managerProfile && !burnoutCeilingQueued && shouldTriggerBurnoutCeilingChoice(game.managerProfile)) {
+  if (burnoutCeilingShouldQueue) {
     gameEvents.push(generateBurnoutCeilingEvent(
       nextMatchday,
       game.currentSeason,
-      game.managerProfile.burnoutScar,
+      managerProfile?.burnoutScar,
     ))
   }
 

@@ -2494,6 +2494,22 @@ export function resolveEvent(
   // in en ligarond-stämplad post i samma array hade återskapat exakt den
   // skalbugg-klass Fas 3 jagade (två numreringssystem i samma fält).
   if (madeByPlayer && event.type === 'burnoutCeiling') {
+    // Burnout-taket avslutar den vanliga lättnadsfasen i samma episod. Äldre
+    // relief-kort från samma säsong får därför inte överleva takvalet och
+    // dyka upp som om brytpunkten aldrig hade hänt. Producenten förhindrar
+    // nya dubbelköer; detta rensar saves där korten redan hann köas ihop.
+    const sameEpisodeReliefPrefix = `event_burnout_relief_${updatedGame.currentSeason}_`
+    const keepEvent = (candidate: GameEvent) => !(
+      candidate.type === 'burnoutRelief' &&
+      !candidate.resolved &&
+      candidate.id.startsWith(sameEpisodeReliefPrefix)
+    )
+    updatedGame = {
+      ...updatedGame,
+      pendingEvents: (updatedGame.pendingEvents ?? []).filter(keepEvent),
+      deferredDecisions: (updatedGame.deferredDecisions ?? []).filter(keepEvent),
+    }
+
     const scar: 'hardened' | 'stepped_back' = choiceId === 'step_back' ? 'stepped_back' : 'hardened'
     const alreadyScarred = (updatedGame.managerProfile?.diary ?? []).some(
       e => e.type === 'burnout_scar' && e.season === updatedGame.currentSeason && e.matchday === updatedGame.currentMatchday)

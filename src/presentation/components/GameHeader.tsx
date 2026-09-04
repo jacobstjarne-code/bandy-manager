@@ -14,6 +14,7 @@ import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persi
 import { exportSaveRecoveryReportAsJson } from '../../infrastructure/persistence/saveRecoveryMetrics'
 import { playoffRoundName } from '../../domain/roundLabel'
 import type { PlayoffBracket } from '../../domain/entities/Playoff'
+import type { SaveGame } from '../../domain/entities/SaveGame'
 
 /**
  * sidofynd-gameheader-playoffbracket-legacy-save (Codex dagsrapport 2026-09-03
@@ -26,6 +27,23 @@ import type { PlayoffBracket } from '../../domain/entities/Playoff'
  */
 export function isInPlayoffBracket(bracket: PlayoffBracket | null | undefined): boolean {
   return bracket != null && bracket.status !== PlayoffStatus.Completed
+}
+
+/** Headern på Granska beskriver den match som faktiskt granskas, även efter
+ * att just den matchen har avslutat hela bracketen. Live-läget används bara
+ * när det inte finns en historisk fixture att prioritera. */
+export function getPlayoffHeaderLabel(game: SaveGame, reviewedFixtureId?: string | null): string | null {
+  if (reviewedFixtureId) {
+    const reviewed = getPlayoffFixtureContext(game, reviewedFixtureId)
+    if (reviewed) return `${playoffRoundName(reviewed.round)} · match ${reviewed.gameNumber}`
+  }
+
+  if (!isInPlayoffBracket(game.playoffBracket)) return null
+  const playoffCtx = getPlayoffSeriesContext(game)
+  if (!playoffCtx) return 'Slutspel'
+  const critLabel = CRIT_LABEL[playoffCtx.criticality]
+  const suffix = critLabel ?? `match ${playoffCtx.nextGame}`
+  return `${playoffRoundName(playoffCtx.round)} · ${suffix}`
 }
 
 // C1 (5c9a7a8, 2026-08-24) — "senast bekräftad sparningstid" i UI.
@@ -165,24 +183,10 @@ export function GameHeader() {
   // texten byggd av en gemensam källa. Kritikalitet (Matchpuck/Avgörande)
   // ersätter den gamla "match N"-suffixen när serien faktiskt är kritisk —
   // annars visas matchnumret som förut.
-  const bracket = game.playoffBracket
-  const isInPlayoff = isInPlayoffBracket(bracket)
-  const playoffCtx = isInPlayoff ? getPlayoffSeriesContext(game) : null
-  const reviewedPlayoffFixture = location.pathname === '/game/review' && game.lastCompletedFixtureId
-    ? getPlayoffFixtureContext(game, game.lastCompletedFixtureId)
+  const reviewedFixtureId = location.pathname === '/game/review'
+    ? game.lastCompletedFixtureId
     : null
-  let playoffLabel: string | null = null
-  if (isInPlayoff) {
-    if (reviewedPlayoffFixture) {
-      playoffLabel = `${playoffRoundName(reviewedPlayoffFixture.round)} · match ${reviewedPlayoffFixture.gameNumber}`
-    } else if (playoffCtx) {
-      const critLabel = CRIT_LABEL[playoffCtx.criticality]
-      const suffix = critLabel ?? `match ${playoffCtx.nextGame}`
-      playoffLabel = `${playoffRoundName(playoffCtx.round)} · ${suffix}`
-    } else {
-      playoffLabel = 'Slutspel'
-    }
-  }
+  const playoffLabel = getPlayoffHeaderLabel(game, reviewedFixtureId)
 
   const roundChipLabel = playoffLabel ?? (currentRound > 0 ? `Omg ${currentRound}` : null)
 

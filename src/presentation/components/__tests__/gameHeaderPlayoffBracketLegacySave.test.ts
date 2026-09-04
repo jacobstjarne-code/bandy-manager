@@ -10,9 +10,10 @@
  * spelgång idag, men kollen i sig var falsk trygghet. Fixat med `!= null`.
  */
 import { describe, it, expect } from 'vitest'
-import { isInPlayoffBracket } from '../GameHeader'
-import { PlayoffStatus } from '../../../domain/enums'
+import { getPlayoffHeaderLabel, isInPlayoffBracket } from '../GameHeader'
+import { PlayoffRound, PlayoffStatus } from '../../../domain/enums'
 import type { PlayoffBracket } from '../../../domain/entities/Playoff'
+import { createNewGame } from '../../../application/useCases/createNewGame'
 
 describe('GameHeader — isInPlayoffBracket', () => {
   it('undefined (den saknade-fält-legacy-saven) ger false, kraschar inte', () => {
@@ -32,5 +33,30 @@ describe('GameHeader — isInPlayoffBracket', () => {
   it('ett avslutat bracket (status = Completed) ger false', () => {
     const bracket = { status: PlayoffStatus.Completed } as PlayoffBracket
     expect(isInPlayoffBracket(bracket)).toBe(false)
+  })
+
+  it('Granska behåller semifinalens matchnummer efter att uttågsmatchen avslutat bracketen', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', seed: 1 })
+    const fixtureId = 'playoff_sf_3'
+    game.playoffBracket = {
+      season: game.currentSeason,
+      status: PlayoffStatus.Completed,
+      quarterFinals: [],
+      semiFinals: [{
+        id: 'sf_1',
+        round: PlayoffRound.SemiFinal,
+        homeClubId: game.managedClubId,
+        awayClubId: 'club_vastanfors',
+        fixtures: ['playoff_sf_1', 'playoff_sf_2', fixtureId],
+        homeWins: 0,
+        awayWins: 3,
+        winnerId: 'club_vastanfors',
+        loserId: game.managedClubId,
+      }],
+      final: null,
+      champion: 'club_vastanfors',
+    }
+
+    expect(getPlayoffHeaderLabel(game, fixtureId)).toBe('Semifinal · match 3')
   })
 })

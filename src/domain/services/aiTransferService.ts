@@ -26,6 +26,7 @@ export function processAITransfers(
 ): AITransferResult {
   const rand = mulberry32(seed)
   const transfers: AITransferResult['transfers'] = []
+  const movedPlayerIds = new Set<string>()
   let updatedPlayers = [...players]
   let updatedClubs = clubs.map(c => ({ ...c }))
 
@@ -48,6 +49,7 @@ export function processAITransfers(
 
       // Find available free agents or players from other AI clubs with large squads
       const candidates = updatedPlayers.filter(p => {
+        if (movedPlayerIds.has(p.id)) return false
         if (p.clubId === managedClubId) return false
         if (p.clubId === club.id) return false
         if (p.age > 32) return false
@@ -110,6 +112,7 @@ export function processAITransfers(
         toClubName: club.name,
         fee,
       })
+      movedPlayerIds.add(target.id)
     }
   }
 
