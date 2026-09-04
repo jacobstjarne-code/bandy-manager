@@ -122,7 +122,7 @@ export default function FacilityScreen() {
         {!facilityState.activeProject && !isSeason1 && (
           <button
             onClick={() => { setMode(m => m === 'valj' ? 'betrakta' : 'valj'); setSelectedNodeId(null); setError(null) }}
-            className={`btn ${mode === 'valj' ? 'btn-copper' : 'btn-outline'}`}
+            className={`btn ${mode === 'valj' ? 'btn-primary' : 'btn-outline'}`}
             style={{ marginLeft: 'auto', fontSize: 12, padding: '5px 12px' }}
           >
             {mode === 'valj' ? 'Avbryt' : 'Bygg ut'}

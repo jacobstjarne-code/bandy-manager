@@ -103,7 +103,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
                   <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{y.firstName} {y.lastName}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{y.age} år · {positionLong(y.position)} · styrka ~{y.currentAbility}</div>
                 </div>
-                <button className="btn btn-copper" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => promoteYouthPlayer(y.id)}>
+                <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => promoteYouthPlayer(y.id)}>
                   Kalla upp
                 </button>
               </div>

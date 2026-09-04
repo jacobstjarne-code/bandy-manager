@@ -218,7 +218,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
                   </div>
                 </div>
                 <button
-                  className="btn btn-copper"
+                  className="btn btn-primary"
                   style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}
                   onClick={() => promoteYouthPlayer(y.id)}
                 >

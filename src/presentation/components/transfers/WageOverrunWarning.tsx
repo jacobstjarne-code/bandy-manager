@@ -56,7 +56,7 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
           </button>
           <button
             onClick={onConfirm}
-            className="btn btn-copper transfers-warning-action"
+            className="btn btn-primary transfers-warning-action"
           >
             {confirmLabel}
           </button>

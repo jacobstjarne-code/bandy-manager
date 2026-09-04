@@ -72,7 +72,7 @@ export function TabBar({ tabs, activeId, onSelect, variant = 'segment' }: TabBar
             role="tab"
             aria-selected={activeId === tab.id}
             onClick={() => onSelect(tab.id)}
-            className={`btn ${activeId === tab.id ? 'btn-copper' : 'btn-ghost'} tab-bar-btn`}
+            className={`btn ${activeId === tab.id ? 'btn-primary' : 'btn-ghost'} tab-bar-btn`}
           >
             {tab.label}
             {tab.dot && (

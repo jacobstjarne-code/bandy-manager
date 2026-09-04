@@ -95,7 +95,7 @@ export function NameInputScreen() {
         <button
           onClick={tryAdvance}
           disabled={!managerName.trim()}
-          className="btn btn-copper"
+          className="btn btn-primary"
           style={{
             width: '100%', padding: '16px 24px', fontSize: 14,
             letterSpacing: '3px', textTransform: 'uppercase',

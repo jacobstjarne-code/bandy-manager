@@ -72,7 +72,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
                   <button
                     key={y}
                     onClick={() => setContractYears(y)}
-                    className={`btn ${contractYears === y ? 'btn-copper' : 'btn-outline'} transfers-year-btn`}
+                    className={`btn ${contractYears === y ? 'btn-primary' : 'btn-outline'} transfers-year-btn`}
                   >
                     {y} år
                   </button>

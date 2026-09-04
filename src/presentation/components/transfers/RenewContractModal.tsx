@@ -71,7 +71,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
                   <button
                     key={y}
                     onClick={() => setYears(y)}
-                    className={`btn ${years === y ? 'btn-copper' : 'btn-outline'} transfers-year-btn`}
+                    className={`btn ${years === y ? 'btn-primary' : 'btn-outline'} transfers-year-btn`}
                   >
                     {y} år
                   </button>

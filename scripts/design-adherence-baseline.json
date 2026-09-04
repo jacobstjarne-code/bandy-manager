@@ -10,7 +10,6 @@
     "src/presentation/components/portal/secondary/BoardObjectivesList.tsx|return [`${current} kr`, `${target} kr`]",
     "src/presentation/components/portal/secondary/BoardObjectivesList.tsx|return `${value} kr`",
     "src/presentation/components/transfers/BidModal.tsx|<label className=\"transfers-label\">Budsumma (kr)</label>",
-    "src/presentation/components/transfers/BidModal.tsx|{managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className=\"transfers-error-text\">Budet skulle föra kassan under −100 000 kr</p>}",
     "src/presentation/components/transfers/ScoutingTab.tsx|<label className=\"transfers-label\">Max lön (kr/mån)</label>",
     "src/presentation/components/transfers/ScoutingTab.tsx|<option value={12000}>12 000 kr</option>",
     "src/presentation/components/transfers/ScoutingTab.tsx|<option value={16000}>16 000 kr</option>",
@@ -349,5 +348,22 @@
     "src/presentation/screens/NameInputScreen.tsx|opacity: isNameValid(managerName) ? 1 : 0.35,",
     "src/presentation/screens/SaveManagerScreen.tsx|opacity: switchingId && !isSwitching ? 0.5 : 1,",
     "src/presentation/screens/SeasonSummaryScreen.tsx|opacity: sharing ? 0.5 : 1,"
+  ],
+  "rule16_duplicate_class": [
+    "src/presentation/styles/club-memory.css|.club-memory-record-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; } — byte-identisk med .club-memory-legend-meta (rad 227)",
+    "src/presentation/styles/club-memory.css|.club-memory-records { margin-top: 28px; padding-top: 16px; border-top: 2px solid var(--border-dark); } — byte-identisk med .club-memory-legends (rad 197)",
+    "src/presentation/styles/club-memory.css|.club-memory-records-header { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px; } — byte-identisk med .club-memory-legends-header (rad 203)",
+    "src/presentation/styles/economy.css|.eco-community-inner { display: flex; justify-content: space-between; align-items: center; } — byte-identisk med .eco-row (rad 4)",
+    "src/presentation/styles/stalvallen-match.css|.commentary-row-event { display: flex; align-items: flex-start; gap: 10px; padding: 10px 18px; border-bottom: 1px solid rgba(196, 122, 58, 0.08); animation: fadeInUp 250ms ease-out both; } — byte-identisk med .commentary-row-atmosphere (rad 458)",
+    "src/presentation/styles/stalvallen-portal.css|.portal-anniversarymark-helper { font-family: var(--font-body); font-size: 10.5px; color: var(--text-light-secondary); text-align: center; opacity: 0.75; line-height: 1.4; } — byte-identisk med .portal-phasemark-helper (rad 415)",
+    "src/presentation/styles/stalvallen-portal.css|.portal-anniversarymark-quote { font-family: var(--font-display); font-style: italic; font-size: 14.5px; color: var(--text-light); text-align: center; line-height: 1.4; margin-bottom: 6px; } — byte-identisk med .portal-phasemark-quote (rad 405)",
+    "src/presentation/styles/stalvallen-portal.css|.portal-spectatormark-helper { font-family: var(--font-body); font-size: 10.5px; color: var(--text-light-secondary); text-align: center; opacity: 0.75; line-height: 1.4; } — byte-identisk med .portal-phasemark-helper (rad 415)",
+    "src/presentation/styles/stalvallen-portal.css|.portal-spectatormark-quote { font-family: var(--font-display); font-style: italic; font-size: 14.5px; color: var(--text-light); text-align: center; line-height: 1.4; margin-bottom: 6px; } — byte-identisk med .portal-phasemark-quote (rad 405)",
+    "src/presentation/styles/transfers.css|.transfers-response-time { font-size: 11px; color: var(--text-muted); font-weight: 600; } — byte-identisk med .transfers-scout-label (rad 363)",
+    "src/presentation/styles/transfers.css|.transfers-scout-dots { display: inline-flex; align-items: center; } — byte-identisk med .transfers-wage-warning-text (rad 576)",
+    "src/presentation/styles/transfers.css|.transfers-talent-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; } — byte-identisk med .transfers-report-meta (rad 447)",
+    "src/presentation/styles/transfers.css|.transfers-talent-notes { font-size: 11px; color: var(--text-muted); font-style: italic; } — byte-identisk med .transfers-report-notes (rad 453)",
+    "src/presentation/styles/transfers.css|.transfers-talent-row { padding: 10px 14px; display: flex; align-items: flex-start; gap: 10px; } — byte-identisk med .transfers-report-row (rad 421)",
+    "src/styles/global.css|.portal-cooldown-dots { display: inline-flex; gap: 4px; } — byte-identisk med .portal-active-budget (rad 1686)"
   ]
 }

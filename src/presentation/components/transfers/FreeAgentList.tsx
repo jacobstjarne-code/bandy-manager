@@ -54,7 +54,7 @@ export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: 
             <button
               onClick={() => windowOpen && onSign(agent.id)}
               disabled={!windowOpen}
-              className={`btn ${windowOpen ? 'btn-copper' : 'btn-ghost'} transfers-btn-sm`}
+              className={`btn ${windowOpen ? 'btn-primary' : 'btn-ghost'} transfers-btn-sm`}
             >
               Värva
             </button>

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Designregler 11–15 — exakt ratchet för sådant som går att grep-verifiera.
+ * Designregler 11–16 — exakt ratchet för sådant som går att grep-verifiera.
  *
  * Regeln är inte att gammal skuld är godkänd. Baslinjen gör den synlig och
  * hindrar nya träffar även om en äldre träff samtidigt försvinner (till skillnad
@@ -39,6 +39,7 @@ const findings = new Map([
   ['rule13_semantic_color', []],
   ['rule14_graph_anchor', []],
   ['rule15_disabled_state', []],
+  ['rule16_duplicate_class', []],
 ])
 
 function normalize(value) {
@@ -151,6 +152,35 @@ for (const file of CSS_FILES) {
   }
 }
 
+// 16 · Ny CSS-klass med byte-identisk vilostate-deklaration mot en befintlig
+// klass. Samma felklass som `.btn-copper`/`.btn-primary` (OPUS-REGLER #4 i
+// CLAUDE.md) — upptäcktes fyra månader efter att dubbletten skapades.
+// Jämför bara ENKLA klassselektorer (`.namn {`), inte kombinerade/pseudo-
+// selektorer — de fångas redan av andra mekanismer (t.ex. rule15 för
+// `:disabled`). Kräver ≥2 deklarationer i kroppen — ett ensamt `flex: 1;`
+// eller `margin-bottom: 8px;` är ett vanligt CSS-idiom som råkar sammanfalla
+// i en stor stilmall, inte en copy-paste-dubblett; `.btn-copper` var tre
+// deklarationer (bakgrund+färg+skugga), en hel visuell behandling. Andra
+// träffen på en identisk kropp är avvikelsen.
+for (const file of CSS_FILES) {
+  const source = readFileSync(file, 'utf8')
+  const lines = source.split('\n')
+  const seenBodies = new Map()
+  for (const match of source.matchAll(/^\.([a-zA-Z][a-zA-Z0-9_-]*)\s*\{([\s\S]*?)\n\}/gm)) {
+    const className = match[1]
+    const body = normalize(match[2])
+    if (!body || body.split(';').filter(Boolean).length < 2) continue
+    const lineNumber = source.slice(0, match.index ?? 0).split('\n').length
+    if (isExempt(lines, lineNumber - 1)) continue
+    const prior = seenBodies.get(body)
+    if (prior && prior.className !== className) {
+      add('rule16_duplicate_class', file, lineNumber, `.${className} { ${body} } — byte-identisk med .${prior.className} (rad ${prior.lineNumber})`)
+    } else if (!prior) {
+      seenBodies.set(body, { className, lineNumber })
+    }
+  }
+}
+
 const current = Object.fromEntries(
   [...findings].map(([rule, rows]) => [rule, [...new Set(rows.map(row => row.fingerprint))].sort()]),
 )
@@ -182,7 +212,7 @@ for (const [rule, rows] of findings) {
 
 if (!hadError) {
   const total = Object.values(current).reduce((sum, rows) => sum + rows.length, 0)
-  console.log(`design-adherence: inga nya avvikelser mot regler 11–15 (${total} synliga baslinjeträffar) ✓`)
+  console.log(`design-adherence: inga nya avvikelser mot regler 11–16 (${total} synliga baslinjeträffar) ✓`)
 }
 
 process.exit(hadError ? 1 : 0)

@@ -128,7 +128,7 @@ export function FeedbackButton() {
               }}
             />
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={copyReport} className="btn btn-copper" style={{ flex: 1, fontSize: 13 }}>
+              <button onClick={copyReport} className="btn btn-primary" style={{ flex: 1, fontSize: 13 }}>
                 {copied ? '✓ Kopierat' : 'Kopiera'}
               </button>
               <button onClick={mailReport} className="btn btn-outline" style={{ flex: 1, fontSize: 13 }}>

@@ -166,7 +166,7 @@ export function ScoutingTab({
                 }
               }}
               disabled={scoutBudget < 2}
-              className={`btn ${scoutBudget >= 2 ? 'btn-copper' : 'btn-ghost'} transfers-spaning-cta`}
+              className={`btn ${scoutBudget >= 2 ? 'btn-primary' : 'btn-ghost'} transfers-spaning-cta`}
             >
               Starta spaning
             </button>

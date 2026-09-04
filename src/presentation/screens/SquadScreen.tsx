@@ -724,7 +724,7 @@ export function SquadScreen() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`btn ${filter === tab.key ? 'btn-copper' : 'btn-ghost'}`}
+              className={`btn ${filter === tab.key ? 'btn-primary' : 'btn-ghost'}`}
               style={{ flexShrink: 0, padding: '6px 12px', fontSize: 11 }}
             >
               {tab.label}

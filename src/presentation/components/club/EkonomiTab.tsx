@@ -549,7 +549,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatFinance(Math.round(sliderMax / 10000) * 10000)}</span>
                   </div>
                   <button
-                    className={savedFeedback ? 'btn btn-outline' : 'btn btn-copper'}
+                    className={savedFeedback ? 'btn btn-outline' : 'btn btn-primary'}
                     onClick={() => {
                       setTransferBudget(currentTransferBudget)
                       setSavedFeedback(true)
