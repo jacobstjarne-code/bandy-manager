@@ -132,7 +132,11 @@ export const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
  * dem. Samma form (title/body, {Namn}/{Efternamn} via resolveSubjectName),
  * samma regel: kopierat ordagrant, aldrig omskrivet.
  */
-export type LedgerOnlySource = 'referee_feud' | 'referee_trust' | 'mecenat_withdrawal' | 'patron_emerge' | 'patron_withdrawal'
+// liggare-k9-doda-typer (TEXT LÅST, Opus 2026-09-04): transfer_signed/
+// transfer_sold — producenter byggda (transferProcessor.ts), mallarna kom
+// senare samma dag. {Motpart} = resolveSubjectName(subject2), fallback när
+// subject2 saknas.
+export type LedgerOnlySource = 'referee_feud' | 'referee_trust' | 'mecenat_withdrawal' | 'patron_emerge' | 'patron_withdrawal' | 'transfer_signed' | 'transfer_sold'
 
 export const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate> = {
   referee_feud: (ctx) => ({
@@ -154,5 +158,17 @@ export const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate
   patron_withdrawal: (ctx) => ({
     title: `${ctx.subjectName ?? 'Grundpelaren'} drar sig tillbaka`,
     body: 'Grundpelaren finns inte längre. Det syns inte på läktaren första veckan. Sen syns det överallt.',
+  }),
+  transfer_signed: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Spelaren'} skrev på`,
+    body: ctx.subject2Name
+      ? `Från ${ctx.subject2Name}. Ett namn på ett papper i klubbstugan och en förväntan som ännu inte kostat något. Det kommer den att göra, åt ena eller andra hållet.`
+      : 'Ett namn på ett papper i klubbstugan och en förväntan som ännu inte kostat något. Det kommer den att göra, åt ena eller andra hållet.',
+  }),
+  transfer_sold: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Spelaren'} såld`,
+    body: ctx.subject2Name
+      ? `Till ${ctx.subject2Name}. Pengarna räknades på en gång. Det som saknas räknas i mars.`
+      : 'Pengarna räknades på en gång. Det som saknas räknas i mars.',
   }),
 }

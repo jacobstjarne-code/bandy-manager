@@ -18,6 +18,20 @@ const BUD_WITHDRAWN_POOL = [
   (klubb: string, namn: string) => `Budet på ${namn} gick ut. ${klubb} har gått vidare.`,
 ] as const
 
+/**
+ * liggare-k9-doda-typer (2026-09-03, konsumentkartan §11, Opus dom):
+ * "significance 35 (+15 om avgift över truppens medianlön×12)" — samma
+ * yardstick för både transfer_signed (vi köper) och transfer_sold (vi
+ * säljer): en affär är stor i förhållande till VÅR egen lönenivå, inte i
+ * absoluta kronor (en småklubb och en storklubb har olika normalläge).
+ */
+function transferLedgerSignificance(offerAmount: number, managedSquad: Player[]): number {
+  const salaries = managedSquad.map(p => p.salary).filter(s => typeof s === 'number' && s > 0).sort((a, b) => a - b)
+  if (salaries.length === 0) return 35
+  const medianAnnual = salaries[Math.floor(salaries.length / 2)] * 12
+  return offerAmount > medianAnnual ? 50 : 35
+}
+
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
   newBids: TransferBid[]
@@ -426,7 +440,7 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
       matchday: nextMatchday,
       subject: { kind: 'player', id: bid.playerId },
       subject2: { kind: 'club', id: bid.sellingClubId },
-      significance: 45,
+      significance: transferLedgerSignificance(bid.offerAmount, players.filter(p => p.clubId === game.managedClubId)),
       madeByPlayer: true,
     })
 
@@ -489,6 +503,19 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
     const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
     if (!wasPending) continue
     const soldPlayer = players.find(p => p.id === bid.playerId)
+    // liggare-k9-doda-typer (2026-09-03): transfer_sold saknade helt en
+    // producent (transfer_signed hade en sen tidigare, olika significance-
+    // formel) — konsumentkartans §11-dom, samma formel för båda hållen.
+    ledgerEntries.push({
+      type: 'transfer_sold',
+      semanticKey: `transfer_sold:${bid.id}`,
+      season: game.currentSeason,
+      matchday: nextMatchday,
+      subject: { kind: 'player', id: bid.playerId },
+      subject2: { kind: 'club', id: bid.buyingClubId },
+      significance: transferLedgerSignificance(bid.offerAmount, players.filter(p => p.clubId === game.managedClubId)),
+      madeByPlayer: true,
+    })
     const isFavorite = soldPlayer && game.supporterGroup?.favoritePlayerId === bid.playerId
     if (isFavorite) {
       sponsorNetworkMoodDelta -= 5

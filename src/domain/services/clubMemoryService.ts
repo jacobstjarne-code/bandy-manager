@@ -19,6 +19,15 @@ import { MOMENT_VIEW_TEMPLATES } from '../data/momentViewTemplates'
 import { LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
 import type { LedgerOnlySource } from '../data/momentViewTemplates'
 import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
+import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
+
+/** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
+ *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
+ *  bara säsongens TYNGSTA beslut når idag årsboken (topp-1), alla andra
+ *  glöms. Egen, högre tröskel än SIGNIFICANCE_THRESHOLD (30) eftersom ett
+ *  medelmåttigt beslut inte är ett Krönika-minne — det är precis vad topp-1-
+ *  urvalet redan sållar bort med rätta. */
+const DECISION_MEMORY_THRESHOLD = 70
 
 /**
  * liggare-k1 (2026-09-03): MemoryEventType speglade tidigare bara EventLedgerType's
@@ -114,9 +123,25 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'mecenat_withdrawal',
   'patron_emerge',
   'patron_withdrawal',
+  // liggare-k9 (2026-09-04): TEXT LÅST samma dag som producenterna byggdes.
+  'transfer_signed',
+  'transfer_sold',
+  // liggare-k7 (2026-09-03): tröskeln är INTE SIGNIFICANCE_THRESHOLD (30) —
+  // se DECISION_MEMORY_THRESHOLD (70), kollad i switchens 'decision'-gren.
+  'decision',
 ])
 
 function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): boolean {
+  // liggare-k9/k1-fynd (2026-09-04): transfer_signed/transfer_sold OCH de
+  // redan befintliga transfer_story/rival_sale sätter alla subject2 till
+  // MOTPARTEN (säljande/köpande/rivalklubben), aldrig den managerade —
+  // subject2-clubben-checken nedan hade annars uteslutit alla fyra
+  // ovillkorat (subject2.id === managedClubId är per konstruktion alltid
+  // falskt för dem — samma bugklass som k7 redan löste för subjektlösa
+  // decision-poster). Liggaren är enkel-klubbs-perspektiv — alla fyra
+  // konstrueras bara av vår egen transferProcessor, aldrig för en AI-affär.
+  if (entry.type === 'transfer_signed' || entry.type === 'transfer_sold'
+    || entry.type === 'transfer_story' || entry.type === 'rival_sale') return true
   if (entry.subject?.kind === 'club') return entry.subject.id === managedClubId
   if (entry.subject2?.kind === 'club') return entry.subject2.id === managedClubId
   // liggare-k1 (2026-09-03): patron/mecenat/referee är inherent klubbskopade
@@ -125,6 +150,11 @@ function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry
   // eller meningsfull för dem, till skillnad från spelare som kan tillhöra
   // en annan klubb.
   if (entry.subject?.kind === 'patron' || entry.subject?.kind === 'mecenat' || entry.subject?.kind === 'referee') return true
+  // liggare-k7 (2026-09-03): decision-poster saknar ofta subject helt (t.ex.
+  // 'criticalEconomy:take_loan' — inget spelar-/klubbmål). Liggaren är
+  // enkel-klubbs-perspektiv (bara den managerade klubbens beslut loggas
+  // någonsin) — ett subjektlöst beslut är per definition ändå "mitt".
+  if (entry.type === 'decision' && !entry.subject) return true
   if (entry.subject?.kind !== 'player') return false
 
   const player = game.players.find(item => item.id === entry.subject!.id)
@@ -227,6 +257,21 @@ function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, man
       return {
         type: 'player_milestone', season: entry.season, matchday: entry.matchday,
         text, emoji, significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'decision': {
+      // liggare-k7-beslutsminne (2026-09-03): bara säsongens topp-1 (via
+      // pickMostImportantDecisionText) når idag årsboken — allt annat
+      // glöms. Krönikan visar nu VARJE beslut som klarar tröskeln, en egen
+      // rad per, oavsett om det blev säsongens vinnare eller inte.
+      if (entry.significance < DECISION_MEMORY_THRESHOLD) return null
+      const sentence = composeSeasonDecisionSentence(entry, game)
+      if (!sentence) return null // "hellre ingen mening än falsk" — samma disciplin som årsbokens fallback
+      return {
+        type: 'decision', season: entry.season, matchday: entry.matchday,
+        text: sentence, emoji: momentFamily('decision'), significance: entry.significance,
+        subjectPlayerId: playerId,
+        subjectClubId: entry.subject?.kind === 'club' ? entry.subject.id : undefined,
       }
     }
     default: {

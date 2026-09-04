@@ -12,6 +12,10 @@ import { getRoundLabel } from '../roundLabel'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
 import { getBurnoutSeasonMemory } from './burnoutReliefService'
+import { MOMENT_VIEW_TEMPLATES, LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
+import type { LedgerOnlySource } from '../data/momentViewTemplates'
+import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
+import type { MomentSource } from '../entities/Moment'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -258,6 +262,58 @@ function computeKeyMoments(
     .slice(0, 5)
     .sort((a, b) => a.round - b.round)
     .map(({ score: _s, ...rest }) => rest)
+}
+
+type KeyMomentEntry = NonNullable<SeasonSummary['keyMoments']>[number]
+
+/**
+ * liggare-k6-arsbok-liggarposter (2026-09-03): upp till två liggarposter
+ * (icke-decision, högst significance) som INTE redan har en rad samma
+ * omgång (`existing`) — dedup mot fixture-/arc-moments är per `round`, en
+ * enkel men tillräcklig heuristik för "redan representerad" (en stor
+ * derbyseger som redan syns som `derbyWin` behöver ingen andra rad för
+ * `derby_win`-liggarposten samma match).
+ *
+ * `type: 'storyline'` återanvänds medvetet (samma neutrala ikon-val som
+ * arc-upplösningar redan gör, se kommentaren vid arcMoments — en
+ * systemhändelse ska inte tvinga fram en ny type-medlem eller ett nytt
+ * ikonval i SeasonSummaryScreen.tsx för detta pass).
+ */
+// Liggaren är redan enkel-klubbs-perspektiv (bara den managerade klubbens
+// händelser loggas någonsin, se clubMemoryService.ts:s motsvarande
+// kommentar) — ingen ledgerEntryBelongsToManagedClub-filtrering behövs här.
+function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): KeyMomentEntry[] {
+  const usedRounds = new Set(existing.map(m => m.round))
+  const isCandidateType = (type: string): type is MomentSource | LedgerOnlySource =>
+    (MOMENT_LEDGER_TYPES as string[]).includes(type) || type in LEDGER_ONLY_VIEW_TEMPLATES
+
+  const candidates = (game.eventLedger ?? [])
+    .filter(e => e.season === game.currentSeason && isCandidateType(e.type) && !usedRounds.has(e.matchday))
+    .sort((a, b) => b.significance - a.significance)
+    .slice(0, 2)
+
+  return candidates.map(entry => {
+    const ctx = {
+      subjectName: resolveSubjectName(game, entry.subject),
+      subject2Name: resolveSubjectName(game, entry.subject2),
+      matchday: entry.matchday,
+      season: entry.season,
+      significance: entry.significance,
+      eraLabel: entry.eraLabel,
+      transferRole: entry.transferRole,
+      matchCategory: entry.matchCategory,
+    }
+    const { title, body } = (MOMENT_LEDGER_TYPES as string[]).includes(entry.type)
+      ? MOMENT_VIEW_TEMPLATES[entry.type as MomentSource](ctx)
+      : LEDGER_ONLY_VIEW_TEMPLATES[entry.type as LedgerOnlySource](ctx)
+    return {
+      round: entry.matchday,
+      type: 'storyline' as const,
+      headline: title,
+      body,
+      relatedPlayerId: entry.subject?.kind === 'player' ? entry.subject.id : undefined,
+    }
+  })
 }
 
 export type { SeasonSummary }
@@ -810,8 +866,19 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     body: arc.description,
     relatedPlayerId: arc.playerId,
   }))
-  const allMoments = [...baseKeyMoments, ...arcMoments]
-  const keyMoments = allMoments.slice(0, 7)
+  // liggare-k6-arsbok-liggarposter (2026-09-03, konsumentkartan §9 #6, Opus
+  // dom): "säsongens tyngsta systemhändelser... når inte årsboken. Den vet
+  // inte att de hände." keyMoments var uteslutande fixture-/arc-härledda —
+  // en epokväxling (era_shift, 85), en patron som lämnade, en domarfejd,
+  // kunde vara säsongens VIKTIGASTE händelse och ändå aldrig synas här.
+  // Upp till två liggarposter (icke-decision, högst significance, ej redan
+  // representerade av en fixture-/arc-rad samma omgång) läggs till OVANPÅ
+  // fixture/arc-basen — safety-taket höjs 7→9 för att rymma dem, snarare än
+  // att låta dem konkurrera ut en trivial storseger om basen redan är full.
+  const ledgerKeyMoments = computeLedgerKeyMoments(game, [...baseKeyMoments, ...arcMoments])
+  const allMoments = [...baseKeyMoments, ...arcMoments, ...ledgerKeyMoments]
+    .sort((a, b) => a.round - b.round)
+  const keyMoments = allMoments.slice(0, 9)
 
   // DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerProfile.diary fryst
   // till denna säsongs rader, se SeasonSummary.managerSeason för fullmotiveringen.

@@ -335,12 +335,101 @@ describe('liggare-k1 — Krönikan läser nu hela unionen, inte bara sex typer',
     expect(event!.emoji).toBe('🤝')
   })
 
-  it('okänd/oproducerad typ (t.ex. patron_change) ger fortfarande null, inte en tom mall', () => {
+  it('en typ utan vymall (t.ex. season_finish, k9: fixture-härledd, inte ledger-dispatchad) ger fortfarande null, inte en tom mall', () => {
     const game = makeMinimalGame({
-      eventLedger: [ledgerEntry({ type: 'patron_change', significance: 90 })],
+      eventLedger: [ledgerEntry({ type: 'season_finish', significance: 90 })],
     })
     const result = getClubMemory(game)
-    expect(result.seasons[0].events.find(e => e.type === 'patron_change')).toBeUndefined()
+    expect(result.seasons[0].events.find(e => e.type === 'season_finish')).toBeUndefined()
+  })
+})
+
+describe('liggare-k9 — transfer_signed/transfer_sold TEXT LÅST + ledgerEntryBelongsToManagedClub-fynd (subject2 är motparten, inte managed)', () => {
+  it('transfer_signed renderar med motpartens namn', () => {
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'seller', name: 'Säljarklubben' }] as never,
+      players: [{ id: 'p1', firstName: 'Arne', lastName: 'Berg', clubId: MANAGED_CLUB_ID }] as never,
+      eventLedger: [{
+        type: 'transfer_signed', semanticKey: 'transfer_signed:x', season: 1, matchday: 5, significance: 35,
+        subject: { kind: 'player', id: 'p1' }, subject2: { kind: 'club', id: 'seller' },
+      }],
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons[0].events.find(e => e.type === 'transfer_signed')
+    expect(event).toBeDefined()
+    expect(event!.text).toBe('Från Säljarklubben. Ett namn på ett papper i klubbstugan och en förväntan som ännu inte kostat något. Det kommer den att göra, åt ena eller andra hållet.')
+  })
+
+  it('transfer_sold: subject2 är KÖPARKLUBBEN (inte managed) — hade tidigare uteslutits ovillkorat av subject2-clubben-checken, ska nu synas', () => {
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'buyer', name: 'Köparklubben' }] as never,
+      players: [{ id: 'p1', firstName: 'Björn', lastName: 'Ek', clubId: 'buyer' }] as never,
+      eventLedger: [{
+        type: 'transfer_sold', semanticKey: 'transfer_sold:x', season: 1, matchday: 5, significance: 35,
+        subject: { kind: 'player', id: 'p1' }, subject2: { kind: 'club', id: 'buyer' },
+      }],
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons[0].events.find(e => e.type === 'transfer_sold')
+    expect(event).toBeDefined()
+    expect(event!.text).toBe('Till Köparklubben. Pengarna räknades på en gång. Det som saknas räknas i mars.')
+  })
+
+  it('rival_sale (redan produktionskod sedan tidigare) visas nu i Krönikan — subject2 är rivalklubben, inte managed', () => {
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'rival', name: 'Rivalklubben' }] as never,
+      players: [{ id: 'p1', firstName: 'Karl', lastName: 'Nord', clubId: 'rival' }] as never,
+      eventLedger: [{
+        type: 'rival_sale', semanticKey: 'rival-1', season: 1, matchday: 5, significance: 75,
+        subject: { kind: 'player', id: 'p1' }, subject2: { kind: 'club', id: 'rival' },
+      }],
+    })
+    const result = getClubMemory(game)
+    expect(result.seasons[0].events.find(e => e.type === 'rival_sale')).toBeDefined()
+  })
+})
+
+describe('liggare-k7-beslutsminne — beslut ≥70 blir egna Krönika-rader, inte bara säsongens topp-1', () => {
+  it('ett beslut med significance ≥ 70 och känd semanticKey ger en rad', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{
+        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: 1, matchday: 9, significance: 75,
+      }],
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons[0].events.find(e => e.type === 'decision')
+    expect(event).toBeDefined()
+    expect(event!.emoji).toBe('📋')
+  })
+
+  it('ett beslut under tröskeln (70) syns inte, trots att SIGNIFICANCE_THRESHOLD (30) annars räcker för andra typer', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{
+        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: 1, matchday: 9, significance: 55,
+      }],
+    })
+    const result = getClubMemory(game)
+    expect(result.seasons[0].events.find(e => e.type === 'decision')).toBeUndefined()
+  })
+
+  it('okänd semanticKey (ingen mening att komponera) ger null — hellre ingen rad än en falsk', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{
+        type: 'decision', semanticKey: 'nagotHelt:okant', season: 1, matchday: 9, significance: 90,
+      }],
+    })
+    const result = getClubMemory(game)
+    expect(result.seasons[0].events.find(e => e.type === 'decision')).toBeUndefined()
+  })
+
+  it('subjektlöst beslut filtreras inte bort av ledgerEntryBelongsToManagedClub', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{
+        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: 1, matchday: 9, significance: 80,
+      }],
+    })
+    const result = getClubMemory(game)
+    expect(result.seasons[0].events.find(e => e.type === 'decision')).toBeDefined()
   })
 })
 

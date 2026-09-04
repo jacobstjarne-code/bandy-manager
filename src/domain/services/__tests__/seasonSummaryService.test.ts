@@ -319,6 +319,55 @@ describe('generateSeasonSummary — resolvade arc-berättelser får INTE type:bi
   })
 })
 
+describe('liggare-k6-arsbok-liggarposter — säsongens tyngsta systemhändelser når nu keyMoments', () => {
+  it('en era_shift (significance 85), tidigare osynlig för årsboken, blir en keyMoments-rad', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const gameWithLedger = {
+      ...game,
+      eventLedger: [{
+        type: 'era_shift', semanticKey: 'era-1', season: game.currentSeason, matchday: 12,
+        significance: 85, eraLabel: 'establishment' as const,
+      }],
+    }
+    const summary = generateSeasonSummary(gameWithLedger as never)
+    const eraMoment = (summary.keyMoments ?? []).find(m => m.round === 12)
+    expect(eraMoment, JSON.stringify(summary.keyMoments)).toBeDefined()
+    expect(eraMoment!.type).toBe('storyline')
+    expect(eraMoment!.headline).toBe('Klubben reser sig')
+  })
+
+  it('en decision-post räknas INTE med, trots hög significance — k6 gäller uttryckligen icke-decision', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const gameWithLedger = {
+      ...game,
+      eventLedger: [{
+        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: game.currentSeason, matchday: 12, significance: 95,
+      }],
+    }
+    const summary = generateSeasonSummary(gameWithLedger as never)
+    expect((summary.keyMoments ?? []).find(m => m.round === 12)).toBeUndefined()
+  })
+
+  it('en liggarpost samma omgång som en redan befintlig keyMoment räknas som "redan representerad" och läggs inte till dubbelt', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const storyline = {
+      id: 'story_dup', type: 'contract_drama_resolved' as const, season: game.currentSeason, matchday: 9,
+      playerId: player.id, description: 'x', displayText: 'x', resolved: true,
+    }
+    const gameWithBoth = {
+      ...game,
+      storylines: [storyline],
+      eventLedger: [
+        buildStorylineResolutionLedgerEntry(storyline, game.currentMatchday)!,
+        { type: 'era_shift' as const, semanticKey: 'era-dup', season: game.currentSeason, matchday: 9, significance: 85, eraLabel: 'establishment' as const },
+      ],
+    }
+    const summary = generateSeasonSummary(gameWithBoth as never)
+    expect((summary.keyMoments ?? []).filter(m => m.round === 9)).toHaveLength(1)
+  })
+})
+
 /**
  * topScorer/topAssister/topRated/youngPlayer-refaktorn (2026-08-25, Jacobs
  * order). Samma "sålt efter bedriften"-uppställning som keyMoments-testet

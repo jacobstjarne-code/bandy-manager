@@ -160,7 +160,7 @@ export type EventLedgerType =
   | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
   | 'big_win' | 'big_loss' | 'player_milestone' | 'academy_promotion'
   | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
-  | 'patron_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'
+  | 'storyline_resolution' | 'scandal' | 'national_team_callup'
   | 'decision'
   // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Skärpning 3 (Opus dom,
   // femte verklighetskollen) — Moments otäckta källor (Moment.ts's
@@ -169,13 +169,16 @@ export type EventLedgerType =
   | 'rival_sale' | 'sponsor_positive' | 'sponsor_negative'
   | 'mecenat_costshare' | 'transfer_story' | 'season_highlight' | 'era_shift'
   // Fas 4+ (2026-09-02, Opus dom) — mecenat_left-ripplens tredje och sista
-  // systemtrigger. `patron_change` fel entitet (Patron ≠ Mecenat),
-  // `mecenat_costshare` fel händelse (kostnadsdelning, inte avhopp) — ingen
-  // befintlig medlem täckte "en mecenat lämnade", därav ny medlem.
+  // systemtrigger. `patron_change` (se DOM 2026-09-03 nedan) fel entitet
+  // (Patron ≠ Mecenat), `mecenat_costshare` fel händelse (kostnadsdelning,
+  // inte avhopp) — ingen befintlig medlem täckte "en mecenat lämnade",
+  // därav ny medlem.
   | 'mecenat_withdrawal'
   // DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron→liggaren.
-  // `patron_change` fanns redan men konstruerades ALDRIG någonstans (varken
-  // i det gamla MemoryEventType eller här) — för generisk för att bära både
+  // `patron_change` (RETIRERAD DOM 2026-09-03, liggare-k9: TA BORT ur
+  // unionen — ersatt av emerge/withdrawal, konsumentkartans §11) fanns
+  // redan men konstruerades ALDRIG någonstans (varken i det gamla
+  // MemoryEventType eller här) — för generisk för att bära både
   // anskaffning och uttåg (samma polaritetsdelning som sponsor_positive/
   // negative och transfer_signed/sold), lämnad orörd. patron_withdrawal är
   // medvetet skild från mecenat_withdrawal — grundpelarens uttåg är en egen,
