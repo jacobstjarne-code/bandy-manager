@@ -15,6 +15,27 @@ import { useState } from 'react'
  */
 export type IllustrationMode = 'fullbleed' | 'band' | 'header'
 
+const CLUB_INTRO_ILLUSTRATION_BY_ID: Record<string, string> = {
+  club_forsbacka: 'intro-forsbacka',
+  club_gagnef: 'intro-gagnef',
+  club_karlsborg: 'intro-karlsborg',
+  club_malilla: 'intro-malilla',
+  club_rogle: 'intro-rogle',
+  club_slottsbron: 'intro-slottsbron',
+  club_soderfors: 'intro-soderfors',
+}
+
+/** Klubbens egen ankomstbild när den finns, annars den generiska introbilden. */
+export function getClubIntroIllustrationSrc(clubId: string): string {
+  const assetName = getClubIntroIllustrationAssetName(clubId) ?? 'intro'
+  return `/assets/illustrations/${assetName}.jpg`
+}
+
+/** Returnerar bara en levererad klubbspecifik bild; används när fallbacken är typografisk. */
+export function getClubIntroIllustrationAssetName(clubId: string): string | undefined {
+  return CLUB_INTRO_ILLUSTRATION_BY_ID[clubId]
+}
+
 interface Props {
   mode: IllustrationMode
   /** asset-namn → /assets/illustrations/{name}.jpg + placeholder-etikett */
@@ -25,6 +46,8 @@ interface Props {
   /** innehåll (text) som renderas över scrimen */
   children?: React.ReactNode
   style?: React.CSSProperties
+  /** valfri motivfokus när en levererad bild behöver annan beskärning än lägets standard */
+  objectPosition?: string
   /** yta band/header fadar ned mot (default portal-mörk; t.ex. --bg-portal-surface i anslag-kort) */
   fadeTo?: string
 }
@@ -78,7 +101,7 @@ export function IllustrationPlaceholder({ name, style }: { name: string; style?:
   )
 }
 
-export function IllustrationScene({ mode, name, src, alt, children, style, fadeTo = 'var(--bg-portal)' }: Props) {
+export function IllustrationScene({ mode, name, src, alt, children, style, objectPosition, fadeTo = 'var(--bg-portal)' }: Props) {
   const [failed, setFailed] = useState(false)
   const resolvedSrc = src ?? `/assets/illustrations/${name}.jpg`
   const showImage = !!resolvedSrc && !failed
@@ -90,7 +113,7 @@ export function IllustrationScene({ mode, name, src, alt, children, style, fadeT
           src={resolvedSrc}
           alt={alt ?? name}
           onError={() => setFailed(true)}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: OBJECT_POS[mode] }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: objectPosition ?? OBJECT_POS[mode] }}
         />
       ) : (
         <IllustrationPlaceholder name={name} />

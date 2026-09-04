@@ -23,6 +23,8 @@ export interface EconomyProcessorResult {
   clearAnnandagsGratisentreVal?: boolean  // P1: true when gratisentré income was applied
 }
 
+export type EconomyProcessingScope = 'all' | 'ai-only' | 'managed-only'
+
 /**
  * Processes all round income/expenses for managed club and AI clubs,
  * applies cup prize money, and returns updated clubs + finance log entries.
@@ -44,17 +46,17 @@ export function processEconomy(
   nextMatchday: number,
   prizeMoneyByClub: Record<string, number>,
   localRand: () => number,
-  options?: { skipSideEffects?: boolean },
+  options?: { scope?: EconomyProcessingScope },
 ): EconomyProcessorResult {
-  if (options?.skipSideEffects) {
-    return { roundFinanceLog: [], updatedClubs: game.clubs }
-  }
+  const scope = options?.scope ?? 'all'
+  const processManaged = scope !== 'ai-only'
+  const processAi = scope !== 'managed-only'
   const roundFinanceLog: FinanceEntry[] = []
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)!
   const managedClubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === game.managedClubId)
   const managedHomeMatch = simulatedFixtures.find(
-    f => f.homeClubId === game.managedClubId && f.status === FixtureStatus.Completed,
+    f => f.homeClubId === game.managedClubId && f.status === FixtureStatus.Completed && !f.isWalkover,
   )
   const isHomeMatch = !!managedHomeMatch
   const legendSalaryCost = ((game.clubLegends ?? [])
@@ -109,52 +111,52 @@ export function processEconomy(
       : 0,
   })
 
-  if (managedIncome.weeklyBase !== 0) {
+  if (processManaged && managedIncome.weeklyBase !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.weeklyBase, reason: 'weekly_base', label: 'Grundintäkt (reputation)' })
   }
-  if (managedIncome.sponsorIncome !== 0) {
+  if (processManaged && managedIncome.sponsorIncome !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.sponsorIncome, reason: 'sponsorship', label: 'Sponsorintäkter' })
   }
-  if (managedIncome.matchRevenue !== 0) {
+  if (processManaged && managedIncome.matchRevenue !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.matchRevenue, reason: 'match_revenue', label: `Matchintäkt${isHomeMatch ? ' (hemma)' : ''}` })
   }
-  if (managedIncome.communityMatchIncome !== 0) {
+  if (processManaged && managedIncome.communityMatchIncome !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.communityMatchIncome, reason: 'community_round', label: 'Föreningsaktiviteter (match)' })
   }
-  if (managedIncome.communityRoundIncome !== 0) {
+  if (processManaged && managedIncome.communityRoundIncome !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.communityRoundIncome, reason: 'community_round', label: 'Föreningsaktiviteter (omgång)' })
   }
-  if (managedIncome.volunteerIncome !== 0) {
+  if (processManaged && managedIncome.volunteerIncome !== 0) {
     const volunteerCount = (game.volunteers ?? []).length
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.volunteerIncome, reason: 'community_round', label: `Frivilligas bidrag (${volunteerCount} st)` })
   }
-  if (managedIncome.kommunBidrag !== 0) {
+  if (processManaged && managedIncome.kommunBidrag !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.kommunBidrag, reason: 'kommunbidrag', label: `Kommunbidrag (säsongsstart)` })
   }
-  if (managedIncome.facilityUpkeep !== 0) {
+  if (processManaged && managedIncome.facilityUpkeep !== 0) {
     const builtCount = (game.facilityState?.builtNodeIds ?? []).length
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.facilityUpkeep, reason: 'facility_upkeep', label: `Anläggningsdrift (${builtCount} byggda noder)` })
   }
-  if (managedIncome.municipalLoanCost !== 0) {
+  if (processManaged && managedIncome.municipalLoanCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.municipalLoanCost, reason: 'event', label: 'Kommunlån' })
   }
-  if (managedIncome.busContractCost !== 0) {
+  if (processManaged && managedIncome.busContractCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.busContractCost, reason: 'event', label: 'Bussavtal' })
   }
-  if (managedIncome.weeklyWages !== 0) {
+  if (processManaged && managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
   }
-  if (managedIncome.weeklyArenaCost !== 0) {
+  if (processManaged && managedIncome.weeklyArenaCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyArenaCost, reason: 'arena_maintenance', label: 'Arena-underhåll' })
   }
-  if (managedIncome.weeklyLegendCost !== 0) {
+  if (processManaged && managedIncome.weeklyLegendCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyLegendCost, reason: 'wages', label: 'Legendlöner' })
   }
 
   // P1 — Annandagen val C (gratisentré): nollsätt biljettintäkt och justera net
   let netForManagedClub = managedIncome.netPerRound
   let clearAnnandagsGratisentreVal = false
-  if (game.pendingAnnandagsGratisentreVal && managedHomeMatch?.isAnnandagen && isHomeMatch) {
+  if (processManaged && game.pendingAnnandagsGratisentreVal && managedHomeMatch?.isAnnandagen && isHomeMatch) {
     netForManagedClub -= managedIncome.matchRevenue
     clearAnnandagsGratisentreVal = true
     if (managedIncome.matchRevenue !== 0) {
@@ -168,27 +170,32 @@ export function processEconomy(
     }
   }
 
-  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, netForManagedClub)
+  let updatedClubs = processManaged
+    ? applyFinanceChange(game.clubs, game.managedClubId, netForManagedClub)
+    : game.clubs
 
   // AI clubs: simplified flat estimate
-  for (const c of game.clubs) {
-    if (c.id === game.managedClubId) continue
-    const clubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === c.id)
-    const homeMatch = simulatedFixtures.find(
-      f => f.homeClubId === c.id && f.status === FixtureStatus.Completed,
-    )
-    const totalWages = clubPlayers.reduce((sum, p) => sum + p.salary, 0)
-    const weeklyWages = Math.round(totalWages / 4)
-    const weeklySponsorship = Math.round(c.reputation * 60)
-    const aiMatchRevenue = homeMatch
-      ? Math.round(c.reputation * 600 + localRand() * 10000)
-      : 0
-    updatedClubs = applyFinanceChange(updatedClubs, c.id, weeklySponsorship + aiMatchRevenue - weeklyWages)
+  if (processAi) {
+    for (const c of game.clubs) {
+      if (c.id === game.managedClubId) continue
+      const clubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === c.id)
+      const homeMatch = simulatedFixtures.find(
+        f => f.homeClubId === c.id && f.status === FixtureStatus.Completed,
+      )
+      const totalWages = clubPlayers.reduce((sum, p) => sum + p.salary, 0)
+      const weeklyWages = Math.round(totalWages / 4)
+      const weeklySponsorship = Math.round(c.reputation * 60)
+      const aiMatchRevenue = homeMatch
+        ? Math.round(c.reputation * 600 + localRand() * 10000)
+        : 0
+      updatedClubs = applyFinanceChange(updatedClubs, c.id, weeklySponsorship + aiMatchRevenue - weeklyWages)
+    }
   }
 
   // Cup prize money
   for (const [clubId, amount] of Object.entries(prizeMoneyByClub)) {
-    if (amount > 0) {
+    const belongsToManaged = clubId === game.managedClubId
+    if (amount > 0 && ((belongsToManaged && processManaged) || (!belongsToManaged && processAi))) {
       updatedClubs = applyFinanceChange(updatedClubs, clubId, amount)
       if (clubId === game.managedClubId) {
         roundFinanceLog.push({ round: nextMatchday, amount, reason: 'cup_prize', label: 'Cupvinstpengar' })
@@ -218,7 +225,7 @@ export function processEconomy(
   // vid noll spelade matcher är alla klubbar på 0 poäng och tie-breaken ger
   // en alfabetisk skuggplacering, inte en verklig.
   const TOP_TABLE_REPUTATION_THRESHOLD = 3
-  if (game.communityActivities?.socialMedia && nextMatchday % 5 === 0) {
+  if (processManaged && game.communityActivities?.socialMedia && nextMatchday % 5 === 0) {
     const managedStanding = standings.find(s => s.clubId === game.managedClubId)
     const isNearTopOfTable = !!managedStanding
       && managedStanding.played > 0

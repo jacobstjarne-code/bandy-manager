@@ -51,6 +51,16 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
     expect(events.some(event => event.id === 'patron_intro_2026')).toBe(false)
   })
 
+  it('stämplar relationen som introducerad först när introkortet har avgjorts', () => {
+    const base = withPatron(80, 2026)
+    const event = generatePatronEvents(base, 3, new Set(), () => 0)
+      .find(candidate => candidate.id === 'patron_intro_2026')!
+
+    expect(base.patron.introducedSeason).toBeUndefined()
+    const resolved = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'welcome', undefined, true)
+    expect(resolved.patron?.introducedSeason).toBe(2026)
+  })
+
   it('krismötet ger de +30 relation som kortet anger och behåller patronen', () => {
     const base = withPatron(20)
     const event = generatePatronEvents(base, 8, new Set(), () => 0)

@@ -28,7 +28,7 @@ describe('Bandygalan — gala_winner storyline', () => {
       stat: 'Styrka 70',
     }
 
-    const { storylines } = generateGalaInbox([nomination], game)
+    const { storylines, ledgerEntries } = generateGalaInbox([nomination], game)
 
     expect(storylines).toEqual([expect.objectContaining({
       id: `story_gala_arets_spelare_${game.currentSeason}`,
@@ -40,6 +40,12 @@ describe('Bandygalan — gala_winner storyline', () => {
       description: `${player.firstName} ${player.lastName} vann Årets spelare på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
       displayText: `${player.firstName} ${player.lastName} vann Årets spelare på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
       resolved: true,
+    })])
+    expect(ledgerEntries).toEqual([expect.objectContaining({
+      type: 'player_milestone',
+      semanticKey: `player_milestone:${player.id}:s${game.currentSeason}:m${game.currentMatchday}:arets_spelare`,
+      clubId: player.clubId,
+      subject: { kind: 'player', id: player.id },
     })])
   })
 
@@ -77,5 +83,11 @@ describe('Bandygalan — gala_winner storyline', () => {
       subject: { kind: 'player', id: winner.id },
       subject2: { kind: 'club', id: game.managedClubId },
     })])
+    expect(result.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'player_milestone',
+      semanticKey: `player_milestone:${winner.id}:s${game.currentSeason}:m${game.currentMatchday}:arets_spelare`,
+      clubId: game.managedClubId,
+      subject: { kind: 'player', id: winner.id },
+    }))
   })
 })

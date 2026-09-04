@@ -5,7 +5,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import { pickEfterklang } from '../domain/services/portal/pickEfterklang'
+import { markLedgerPostTold } from '../domain/services/ledgerToldService'
 import { FixtureStatus } from '../domain/enums'
+import type { EventLedgerEntry } from '../domain/entities/Narrative'
 import type { SaveGame } from '../domain/entities/SaveGame'
 
 const MANAGED = 'club_managed'
@@ -225,5 +227,124 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
       bandyLetters: [{ season: 3, senderName: 'Gösta i klacken' }] as never,
     })
     expect(find(game, 'followUp')?.premiss).toBe('Gösta i klacken skrev till dig tidigare i säsongen.')
+  })
+})
+
+describe('pickEfterklang — Berättarens agenda', () => {
+  const rivalSalePost: EventLedgerEntry = {
+    type: 'rival_sale',
+    semanticKey: 'rival_sale:p1:club_x:s3:m9',
+    clubId: MANAGED,
+    season: 3,
+    matchday: 9,
+    subject: { kind: 'player', id: 'p1' },
+    subject2: { kind: 'club', id: 'club_x' },
+    significance: 75,
+  }
+
+  const economyPost: EventLedgerEntry = {
+    type: 'decision',
+    semanticKey: 'criticalEconomy:take_loan',
+    clubId: MANAGED,
+    managerId: 'test',
+    season: 3,
+    matchday: 9,
+    significance: 100,
+    irreversible: true,
+    tension: true,
+  }
+
+  function canonicalGame(overrides: Partial<SaveGame> = {}): SaveGame {
+    return makeGame({
+      clubs: [
+        { id: MANAGED, name: 'Forsbacka IF', shortName: 'Forsbacka' },
+        { id: 'club_x', name: 'Söderfors IF', shortName: 'Söderfors' },
+      ] as never,
+      players: [{ id: 'p1', firstName: 'Jari', lastName: 'Niemi', clubId: 'club_x' }] as never,
+      eventLedger: [],
+      ledgerTold: {},
+      ...overrides,
+    })
+  }
+
+  it('bygger rivalförsäljningen ur clubId-avgränsad liggare utan legacyfickan', () => {
+    const memory = pickEfterklang(canonicalGame({ eventLedger: [rivalSalePost] }), 8)
+      .find(item => item.type === 'rivalSale')
+
+    expect(memory).toMatchObject({
+      premiss: 'Ni sålde Jari Niemi till Söderfors IF.',
+      objectName: 'Jari Niemi',
+      soldPlayerName: 'Jari Niemi',
+      buyerClubName: 'Söderfors IF',
+      sourcePostKey: expect.any(String),
+    })
+    expect(memory?.sourcePost).toBe(rivalSalePost)
+    expect(memory?.threadEntries[0]).toMatchObject({ season: 3, matchday: 9 })
+  })
+
+  it('läcker inte en annan klubbs liggarpost till Efterklang', () => {
+    const otherClubPost = { ...rivalSalePost, clubId: 'club_other' }
+    const memories = pickEfterklang(canonicalGame({ eventLedger: [otherClubPost] }), 8)
+
+    expect(memories.some(item => item.type === 'rivalSale')).toBe(false)
+  })
+
+  it('hämtar årsdagen ur agendans kanon även utan activeAnniversaries', () => {
+    const oldPost = { ...rivalSalePost, season: 2, matchday: 10 }
+    const memory = pickEfterklang(canonicalGame({ eventLedger: [oldPost] }), 8)
+      .find(item => item.type === 'anniversary')
+
+    expect(memory?.premiss).toMatch(/^Ett år sedan /)
+    expect(memory?.sourcePost).toBe(oldPost)
+    expect(memory?.threadEntries[0]).toMatchObject({ season: 2, matchday: 10 })
+    expect(pickEfterklang(canonicalGame({ eventLedger: [oldPost] }), 8)
+      .filter(item => item.sourcePostKey === memory?.sourcePostKey)).toHaveLength(1)
+  })
+
+  it('hämtar ett löst ekonomiskt val ur agendan utan economicCrisisState', () => {
+    const memory = pickEfterklang(canonicalGame({ eventLedger: [economyPost] }), 8)
+      .find(item => item.type === 'economicScar')
+
+    expect(memory?.premiss).toBe('Kommunlånet löper fortfarande.')
+    expect(memory?.sourcePost).toBe(economyPost)
+  })
+
+  it('håller en kvitterad tråd stabil samma matchdag men släpper fram nytt ämne nästa', () => {
+    const game = canonicalGame({ eventLedger: [rivalSalePost, economyPost] })
+    const first = pickEfterklang(game, 1)[0]
+    expect(first.type).toBe('rivalSale')
+
+    const ledgerTold = markLedgerPostTold(game.ledgerTold, rivalSalePost, 'efterklang', {
+      season: 3,
+      matchday: 10,
+    })
+    const sameDay = pickEfterklang({ ...game, ledgerTold }, 1)[0]
+    expect(sameDay.type).toBe('rivalSale')
+
+    const nextDay = pickEfterklang({ ...game, currentMatchday: 11, ledgerTold }, 1)[0]
+    expect(nextDay.type).toBe('economicScar')
+  })
+
+  it('kopplar journalistens livepresentation till den kanoniska resolutionen', () => {
+    const resolution: EventLedgerEntry = {
+      type: 'storyline_resolution',
+      semanticKey: 'storyline_resolution:journalist_feud:journalist-feud-s3',
+      clubId: MANAGED,
+      season: 3,
+      matchday: 9,
+      subject: { kind: 'club', id: MANAGED },
+      significance: 40,
+    }
+    const game = canonicalGame({
+      eventLedger: [resolution],
+      journalist: {
+        name: 'Britta Sandström', relationship: 20, pressRefusals: 3,
+        memory: [{ season: 3, matchday: 9, event: 'refused_press', sentiment: -5 }],
+      } as never,
+    })
+    const memory = pickEfterklang(game, 8).find(item => item.type === 'journalist')
+
+    expect(memory?.sourcePost).toBe(resolution)
+    expect(memory?.sourcePostKey).toBeDefined()
   })
 })

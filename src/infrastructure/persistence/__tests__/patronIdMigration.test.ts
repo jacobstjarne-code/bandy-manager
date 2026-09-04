@@ -34,4 +34,16 @@ describe('migrateSaveGame — patron.id', () => {
     expect(() => migrateSaveGame(raw)).not.toThrow()
     expect(migrateSaveGame(raw).patron).toBeUndefined()
   })
+
+  it('backfyller introduktionen från durabel eventhistorik men inte från enbart isActive', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
+    const unresolved = JSON.parse(JSON.stringify(game)) as Record<string, unknown>
+    unresolved.patron = { id: 'p', name: 'P', business: 'B', influence: 50, happiness: 60, contribution: 1, isActive: true }
+    unresolved.resolvedEventIds = []
+    expect(migrateSaveGame(unresolved).patron?.introducedSeason).toBeUndefined()
+
+    const resolved = JSON.parse(JSON.stringify(unresolved)) as Record<string, unknown>
+    resolved.resolvedEventIds = [`patron_intro_${game.currentSeason}`]
+    expect(migrateSaveGame(resolved).patron?.introducedSeason).toBe(game.currentSeason)
+  })
 })

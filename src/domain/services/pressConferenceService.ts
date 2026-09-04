@@ -12,6 +12,10 @@ import {
 import { isOnCooldown } from './narrativeLogService'
 import { recentlySurfaced, RECENCY_WINDOW_BY_CHANNEL } from './narrativeCoordinatorService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
+import { currentChronology, type CurrentChronology } from './currentChronology'
+import { resolveSubjectName } from './momentLedgerService'
+import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
+import { getScandalPressTopic } from './scandalService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -826,6 +830,93 @@ function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journal
   return eligible.length > 0 ? eligible[Math.floor(rand() * eligible.length)] : null
 }
 
+const PRESS_LEDGER_MIN_WEIGHT = 70
+const PRESS_LEDGER_MAX_AGE = 3
+
+function soldPlayerScoresEveryWeek(
+  game: SaveGame,
+  item: AgendaItem,
+  chronology: CurrentChronology,
+): boolean {
+  if (item.post.subject?.kind !== 'player') return false
+  const player = game.players.find(candidate => candidate.id === item.post.subject!.id)
+  if (!player || player.clubId === game.managedClubId) return false
+
+  const recentClubFixtures = game.fixtures
+    .filter(candidate =>
+      candidate.status === 'completed'
+      && candidate.season === chronology.season
+      && candidate.matchday > item.post.matchday
+      && candidate.matchday <= chronology.matchday
+      && (candidate.homeClubId === player.clubId || candidate.awayClubId === player.clubId)
+    )
+    .sort((a, b) => b.matchday - a.matchday)
+    .slice(0, 2)
+
+  return recentClubFixtures.length === 2 && recentClubFixtures.every(candidate =>
+    candidate.events.some(event =>
+      event.type === MatchEventType.Goal
+      && event.playerId === player.id
+      && event.clubId === player.clubId
+    )
+  )
+}
+
+function buildLedgerPressQuestion(
+  game: SaveGame,
+  item: AgendaItem,
+  chronology: CurrentChronology,
+): string | null {
+  const name = resolveSubjectName(game, item.post.subject)
+  switch (item.post.type) {
+    case 'referee_feud':
+      return name
+        ? `Det sägs att ni och ${name} inte kommer överens. Är det domaren eller er som är problemet?`
+        : null
+    case 'patron_withdrawal':
+    case 'mecenat_withdrawal':
+      return name ? `${name} har dragit sig tillbaka. Hur klarar klubben sig utan de pengarna?` : null
+    case 'patron_emerge':
+      return name ? `Vem är ${name}, egentligen — och vad vill han ha tillbaka?` : null
+    case 'era_shift':
+      return 'Det pratas om en ny epok i klubben. Är det ni eller tabellen som bestämmer det?'
+    case 'star_injury':
+      return name ? `${name} är borta länge. Vem bär laget nu?` : null
+    case 'transfer_sold':
+      return name && soldPlayerScoresEveryWeek(game, item, chronology)
+        ? `${name} gör mål varje vecka — för någon annan. Ångrar ni försäljningen?`
+        : null
+    case 'scandal': {
+      const topic = getScandalPressTopic(game, item.post.semanticKey)
+      return topic ? `Vi måste fråga om ${topic}. Vad hände egentligen?` : null
+    }
+    default:
+      return null
+  }
+}
+
+function selectLedgerPressQuestion(
+  game: SaveGame,
+  fixture: Fixture,
+): { text: string; postKey: string } | null {
+  const chronology = currentChronology({
+    ...game,
+    currentMatchday: Math.max(game.currentMatchday, fixture.matchday),
+  })
+  const agenda = agendaForSurface(redaktoren(game, chronology), 'press')
+
+  for (const item of agenda) {
+    const age = chronology.matchday - item.post.matchday
+    if (item.post.season !== chronology.season || age < 0 || age > PRESS_LEDGER_MAX_AGE) continue
+    if (item.scoresBySurface.press.total < PRESS_LEDGER_MIN_WEIGHT) continue
+    if (item.toldBefore.some(mark => mark.surface === 'press')) continue
+    const text = buildLedgerPressQuestion(game, item, chronology)
+    if (text) return { text, postKey: item.postKey }
+  }
+
+  return null
+}
+
 // ── generatePressConference ────────────────────────────────────────────────────
 
 /**
@@ -1036,6 +1127,16 @@ export function generatePressConference(
     }
   }
 
+  // SPEC_BERATTAREN steg 7: högst en kanonisk liggarfråga, vald efter alla
+  // äldre ad hoc-överstyrningar så agendan verkligen är pressens redaktion.
+  // Svarspoolen behålls från den giltiga matchfrågan; svarsmekanik och
+  // journalistrelation ändras därför inte.
+  const ledgerQuestion = selectLedgerPressQuestion(game, fixture)
+  if (ledgerQuestion) {
+    question = { text: ledgerQuestion.text, preferIds: question.preferIds }
+    storylinePressKey = undefined
+  }
+
   // Fill template placeholders
   if (question.text.includes('{arenaName}')) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
@@ -1107,6 +1208,7 @@ export function generatePressConference(
     // beräknad efter alla överstyrningar/platshållarfyllning ovan — inte
     // bara det initiala slumpvalet.
     pressQuestionKey: `press_q_${question.text}`,
+    pressLedgerPostKey: ledgerQuestion?.postKey,
     // HIGH 7 (audit 2026-08-29): cooldown-nycklarna för DE ERBJUDNA svaren
     // (inte bara det spelaren till slut klickar) — se GameEvent.pressResponseKeys.
     // Callern (roundProcessor.ts) loggar dem som narrativeBeatLog-poster NÄR

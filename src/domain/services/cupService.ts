@@ -248,6 +248,15 @@ export function getCupRoundLabel(round: number): string {
   return 'FINAL'
 }
 
+const CUP_WIN_PRIZES: Record<number, number> = { 1: 10000, 2: 30000, 3: 50000, 4: 150000 }
+const CUP_RUNNER_UP_PRIZE = 50000
+
+/** Den kanoniska cupersättningen för ett avgjort lagresultat. */
+export function getCupPrizeMoney(round: number, isWinner: boolean): number {
+  if (isWinner) return CUP_WIN_PRIZES[round] ?? 0
+  return round === 4 ? CUP_RUNNER_UP_PRIZE : 0
+}
+
 export function getManagedClubCupStatus(
   bracket: CupBracket,
   managedClubId: string,

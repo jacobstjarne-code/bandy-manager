@@ -45,6 +45,13 @@ import { safeStandingPosition } from '../../domain/services/standingsService'
 import { getCsPoliticianGrantBonus } from '../../domain/services/communityStandingScaling'
 import { fixtureSeed, mulberry32, seededPick } from '../../domain/utils/random'
 import { isPlayerInMatchSquad } from '../../domain/services/matchSquadService'
+import type { EventLedgerEntry, NarrativeSurface } from '../../domain/entities/Narrative'
+import { currentChronology } from '../../domain/services/currentChronology'
+import {
+  ledgerPostKey,
+  markLedgerPostTold as markLedgerPostToldInRegistry,
+} from '../../domain/services/ledgerToldService'
+import type { NarrativePostReference } from '../../domain/attention/types'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -201,6 +208,8 @@ interface GameState {
   triggerJournalistScene: () => void
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').PortalPhase) => void
   recordPortalShown: (cardIds: string[], storySlotKind?: string) => void
+  markLedgerPostTold: (post: EventLedgerEntry, surface: NarrativeSurface) => void
+  markNarrativePushDelivered: (reference: NarrativePostReference) => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
@@ -1273,6 +1282,39 @@ export const useGameStore = create<GameState>()(
           if (staleUnchanged && currentUnchanged) return state
           const currentStorySlotType = storySlotKind ?? state.game.currentStorySlotType
           return { game: { ...state.game, cardStaleTracking: next, currentStorySlotType } }
+        })
+      },
+
+      markLedgerPostTold: (post, surface) => {
+        set(state => {
+          if (!state.game) return state
+          const ledgerTold = markLedgerPostToldInRegistry(
+            state.game.ledgerTold,
+            post,
+            surface,
+            currentChronology(state.game),
+          )
+          if (ledgerTold === state.game.ledgerTold) return state
+          return { game: { ...state.game, ledgerTold } }
+        })
+      },
+
+      markNarrativePushDelivered: (reference) => {
+        set(state => {
+          if (!state.game) return state
+          const deliveredPostKey = ledgerPostKey(reference.post)
+          const stillCanonical = (state.game.eventLedger ?? []).some(post =>
+            ledgerPostKey(post) === deliveredPostKey
+          )
+          if (!stillCanonical) return state
+          const ledgerTold = markLedgerPostToldInRegistry(
+            state.game.ledgerTold,
+            reference.post,
+            'push',
+            reference.chronology,
+          )
+          if (ledgerTold === state.game.ledgerTold) return state
+          return { game: { ...state.game, ledgerTold } }
         })
       },
 

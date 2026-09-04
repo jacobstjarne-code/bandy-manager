@@ -28,6 +28,7 @@ export function GranskaScreen() {
   const roundSummary = useGameStore(s => s.roundSummary)
   const clearRoundSummary = useGameStore(s => s.clearRoundSummary)
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const [visible, setVisible] = useState(false)
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
   const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({})
@@ -58,6 +59,10 @@ export function GranskaScreen() {
     const t = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(t)
   }, [])
+
+  // Notifieringsdomen 2026-09-04: permission-frågan får tidigast visas
+  // efter en faktiskt läst första Granska och när nästa lag ännu är öppet.
+  useEffect(() => { markScreenVisited('review') }, [markScreenVisited])
 
   // advance()-flytten (Audit-syntes yta 5, 2026-07-07): denna effekt processade
   // tidigare omgången själv (advance(true)) som en sidoeffekt av att skärmen

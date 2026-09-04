@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
-import { BANDYPLAY_ACTIVATION_COST, applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
+import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS, applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
@@ -20,22 +20,7 @@ export function academyActions(get: Get, set: Set) {
       const club = game.clubs.find(c => c.id === game.managedClubId)
       if (!club) return { success: false, error: 'Ingen klubb hittad' }
 
-      const costs: Record<string, Record<string, number>> = {
-        kiosk:           { basic: 3000, upgraded: 8000 },
-        lottery:         { basic: 1000, intensive: 5000 },
-        bandySchoolBasic: { active: 0 },
-        bandyplay:        { active: BANDYPLAY_ACTIVATION_COST },
-        functionaries:   { active: 2000 },
-        julmarknad:      { active: 2000 },
-        bandySchool:     { active: 5000 },
-        socialMedia:     { active: 2000 },
-        vipTent:         { active: 10000 },
-        pensionarskaffe: { active: 0 },
-        soppkvall:       { active: 1000 },
-        skolbesok:       { active: 0 },
-      }
-
-      const cost = costs[key]?.[level] ?? 0
+      const cost = COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[level] ?? 0
       if (club.finances < cost) {
         return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(cost / 1000)} tkr)` }
       }

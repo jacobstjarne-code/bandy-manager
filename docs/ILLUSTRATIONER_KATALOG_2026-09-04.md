@@ -1,0 +1,381 @@
+# ILLUSTRATIONER — KATALOG OCH PROMPTAR (komplett, 2026-09-04)
+
+**Av:** Opus · **Regler:** `DOM_ILLUSTRATIONERNA_2026-08-18.md` + tillägg 2026-09-04 · **Ledger:** MASTER `fable-scen-konst` · **Generering:** Jacob, Gemini/Nano Banana, **samma seed genom hela serien**.
+Det här är det enda stället promptarna bor. Alla 28 är fullständiga och körbara som de står. Det som redan är genererat har ✅ — prompten står kvar för omtag.
+
+---
+
+## 0. Gemensamt för varje prompt
+
+**Stilsträngen, alltid först, oförändrad:**
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
+*Ljusvarianter byter sista meningen och lägger en ljusrad (se resp. prompt). Använda: Gagnef sol, Forsbacka måne, Skutskär gryning, Hälleforsnäs dag, Sommaren (enda icke-vintern).*
+
+**Komposition, alltid:** "seen from slightly below so the horizon sits in the upper third"; motivet i övre mitten; "the lower third is … in shadow, empty" (scrimen äter 62 %). Fullbleed 9:16. Klubbhuset, där det finns, är **en länga med fönsterrad och en varm lampa över dörren** — konstanten.
+
+**Bandytecken (vida bilder, ett–två):** strålkastarstolpar, lågt brett mål lutat mot väggen, sopmaskin/traktor med kvast, **snövallar runt planen** (aldrig staket), planen som "huge flat field under untouched fresh snow, no markings, continuing out of frame". Aldrig ordet rink, aldrig linjer, planen aldrig hel i bild. Röd/orange boll får förekomma.
+
+**Negativa, bas (varje prompt):** no text, no logos, no faces in focus, no field markings, no lines, no hockey rink, no boards, no plexiglass, no photographic realism.
+
+**Interiörer (§3, §4):** rummet strax före eller efter människorna, aldrig med dem. Möblerna berättar. Samma palett; lampan i rummet är kopparen.
+
+**Arbetsregel:** 90 % rätt → korrigera med bildredigering ("… keep everything else exactly as it is"). Omtag bara vid fel grundkomposition. Titta under scrimen i appen innan du dömer.
+
+**Filer:** `public/assets/illustrations/<namn>.jpg`. Wiring i §5.
+
+---
+
+## 1. De tolv orterna — Ankomsten per klubb, `intro_<slug>.jpg`
+
+| # | Ort | Bild | Ljus | Status |
+|---|---|---|---|---|
+| 1 | Rögle | nära | skymning | ✅ |
+| 2 | Karlsborg | vid | eftermiddagsmörker | ✅ |
+| 3 | Målilla | nära | stjärnnatt | ✅ |
+| 4 | Slottsbron | vid | dimma, öppet vatten | ✅ (omtag + snö) |
+| 5 | Söderfors | nära | skymning | ✅ |
+| 6 | Gagnef | vid | låg sol | ✅ (kullar, snövallar, plan ur bild) |
+| 7 | Forsbacka | nära | månljus | prompt levererad — körd? |
+| 8 | Skutskär | vid | gryning | ✅ |
+| 9 | Hälleforsnäs | nära | dag (Jacobs val) | klippa-korrigering |
+| 10 | Västanfors | vid | skymning | ej körd |
+| 11 | Lesjöfors | nära | köldhål | ej körd |
+| 12 | Heros | vid | dimma över sjön | ej körd |
+
+### 1. Rögle — nära, skymning · `intro_rogle.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
+
+A small clubhouse on flat open farmland near the Swedish west coast on a winter evening, seen from slightly below so the horizon sits in the upper third of the frame. No forest — a wide, level horizon under a huge sky, a few bare wind-bent willows leaning the same direction. Thin patchy snow on wet dark ground, not deep snow. One warm lamp lit above the clubhouse door, light spilling onto a gravel yard. Beside the clubhouse, a low utilitarian machine shed with a stack of white pipes and a faint plume of vapor — an artificial-ice plant, humming. Far off at the horizon, the pale grey line of the sea and a cold sea haze. In the far distance to the right, the small glow of a larger indoor arena, other sport, other town. The clubhouse and pipes occupy the upper-middle of the image. The lower third of the image is empty dark ground in deep shadow. Nobody visible. No text, no logos, no faces.
+
+Negativa: no ice rink, no hockey boards, no plexiglass, no deep forest, no mountains, no pine trees, no crowd.
+
+*Rögle:* platt kust, tunn blöt snö, pilar i västanvind, havet som rand, kylrören ("konstfrusen är allt"), hockeyarenans sken (underdog). *Risk:* motivet lågt — lägg "seen from slightly below" om huset hamnar under 50 %.
+
+### 2. Karlsborg — vid, eftermiddagsmörker · `intro_karlsborg.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
+
+A small clubhouse beside a large paper mill on the coast of northern Sweden in deep midwinter afternoon darkness, seen from slightly below so the horizon sits in the upper third of the frame and the sky is compressed. Deep snow everywhere, plowed into high snow walls along a narrow track. The mill behind: tall stacks pouring thick white steam into a near-black sky, a few sodium-orange industrial lights on its dark bulk. Beyond the mill, the flat frozen mouth of a river meeting sea ice, dim and pale. A dense wall of dark spruce forest closes the left edge. One warm lamp lit above the clubhouse door. In the middle distance, a single small figure seen from behind pushing a wide snow broom across a faint pale surface — not the subject, just a mark of routine. The clubhouse, lamp and mill occupy the upper-middle of the image. The lower third is deep snow in shadow, empty. Nobody's face visible. No text, no logos, no faces.
+
+Negativa: no ice rink, no hockey boards, no plexiglass, no open farmland, no sea horizon in the middle, no aurora.
+
+*Karlsborg:* brukets skorstenar och ånga, djup plogad snö, granvägg, sopfiguren = "isen sopas ofta". *Om ångan tar över:* "one tall stack with a thin steady plume".
+
+### 3. Målilla — nära, stjärnnatt · `intro_malilla.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Bitterly cold, perfectly clear Nordic winter night.
+
+A small clubhouse at the edge of a small-town square in the Swedish highland interior on a bitterly cold, perfectly clear winter night, seen from slightly below so the horizon sits in the upper third of the frame. A vast black sky dense with sharp stars, no clouds, no moon. In the square, a tall old public thermometer on an iron post, its red column sunk almost to the bottom — no legible numbers, no scale. Everything coated in thick hoarfrost: the clubhouse eaves, a few slender bare birches, a wooden fence, a parked bicycle. Thin low ground mist glittering just above the frozen ground. Absolutely still air — no steam, no wind. One warm lamp lit above the clubhouse door, its light very small against the cold. A single lit window in a low wooden house across the square. Nobody visible. The clubhouse and thermometer occupy the upper-middle of the image. The lower third is frozen ground and frost in deep shadow, empty. No text, no logos, no faces.
+
+Negativa: no sea, no factory, no chimneys, no steam, no plowed snow walls, no dense forest, no clouds, no text or numbers on the thermometer.
+
+*Målilla:* termometern på torget (köldrekordsplatsen), rimfrost, klar himmel, stillhet. *Risk:* siffror på termometern — "plain red-column thermometer with no scale".
+
+### 4. Slottsbron — vid, dimma · `intro_slottsbron.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic texture or detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Heavy atmosphere, visible grain, soft edges. Nordic winter dusk.
+
+A wide view of a lakeside sports ground in western Sweden on a raw grey evening, seen from a distance and slightly below so the horizon sits in the upper third. In the middle distance, a long low red wooden clubhouse with a row of small windows and one warm lamp above the door, the light spreading soft in damp air. Beside it, four tall floodlight poles standing dark and unlit over a huge flat field the size of two football pitches under untouched fresh snow, no markings visible, bordered by low uneven banks of swept snow, continuing out of frame to the right. A low, wide goal frame leans against the clubhouse wall. A small tractor with a broom attachment parked in the snow. Beyond the field, the vast inland lake — dark grey, open, unfrozen — and a thick fog bank erasing the far shore. Far left, an old brick mill with a single tall chimney, no smoke, one window lit. Bent frozen reeds at the waterline. Patchy old snow on brown ground. Nobody visible. The lower third is dark ground in shadow, empty. No text, no logos, no faces.
+
+Negativa: no ice on the lake, no hockey rink, no boards, no plexiglass, no stars, no smoke, no fence, no field markings, no photographic realism.
+
+*Slottsbron:* öppet vatten (isen har inte kommit), dimma som äter horisonten, tyst bruk, snö i fläckar. *Första versionen* var fotorealistisk med ett dass-hus — därför längan, avståndet och bandytecknen.
+
+### 5. Söderfors — nära, skymning · `intro_soderfors.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Heavy atmosphere, visible grain, soft edges. Nordic winter dusk.
+
+An old narrow iron footbridge leading from the foreground across a river onto a small island in central Sweden on a still winter evening. The bridge deck runs up from the bottom of the frame into the middle distance, its railings dusted with snow, dark and unlit near the viewer. At the far end of the bridge, on the island, a long low red wooden clubhouse with a row of small windows and one warm lamp lit above the door — the destination. Beside it, a single tall floodlight pole, unlit. Behind the clubhouse, the dark solid shape of an old brick forge building, and in front of it a large old iron anchor standing upright as a monument in the snow. The river below the bridge: ice forming along both banks in pale sheets, a black open channel still running down the middle. A few bare birches on the island. Calm, no wind, the sky a deep even blue-grey fading to dark. Nobody visible. The clubhouse and lamp sit in the upper-middle of the image; the bridge deck in the lower third is in deep shadow. No text, no logos, no faces.
+
+Negativa: no sea, no lake, no factory chimneys, no smoke, no dense forest, no field markings, no stars, no photographic realism.
+
+*Söderfors:* bron ("vägen till plan går alltid över en bro"), ön, den svarta rännan (tidig is på smala armar), ankaret och smedjan. *Risk:* ankaret för stort — "a modest old anchor, weathered, half-buried in snow".
+
+### 6. Gagnef — vid, låg sol · `intro_gagnef.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black shadows, cold pale ice blue, warm copper light sources — here joined by low bright winter sunlight, pale and cold, not golden, casting long blue shadows across snow. Visible grain, soft edges. Bright, still Nordic winter afternoon, sun low and clear.
+
+A wide view of a broad valley in central Sweden where two frozen rivers meet, seen from a rise and slightly below the horizon line so the horizon sits in the upper third. Gentle rolling forested hills all around — no sharp peaks. Fresh deep snow everywhere, lit pale on the sunward side, deep blue in the shadows. In the middle distance, a long low red wooden clubhouse with white window trim and a row of small windows, one warm lamp lit above the door even in daylight. Beside it, tall floodlight poles standing over a large flat field under smooth untouched snow, no markings, bordered by low uneven banks of swept snow, the field continuing past the right edge of the image, its far end not visible. A low wide goal frame at the near end. A small tractor with a broom parked at the edge. Right beside the field, parallel ski tracks run off across the snow toward the river, and far along them two small figures on skis, seen from behind, tiny in the landscape. On the valley slopes, scattered red wooden farmhouses with white corners and snow-heavy roofs, smoke rising straight up from a chimney or two. Far off, a plain white church tower. Nobody visible up close. The clubhouse and field occupy the upper-middle of the image. The lower third is snow in deep blue shadow, empty. No text, no logos, no faces.
+
+Negativa: no dusk, no dark sky, no fog, no sea, no factory, no mountains, no alpine peaks, no fence, no field markings, no lines, no hockey rink, no photographic realism.
+
+*Gagnef:* älvarna som möts, skidspår bredvid planen ("skidor och skridskor sida vid sida"), Dalahus med vita knutar, kyrktornet, det ljusa. Korrigerad tre gånger: kullar i stället för alper, snövallar i stället för staket, planen ur bild.
+
+### 7. Forsbacka — nära, månljus · `intro_forsbacka.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources — here under strong cold moonlight, silver-blue, with hard dark shadows. Visible grain, soft edges. Clear, still, bitterly cold Nordic winter night, full moon high and out of frame.
+
+A long low red wooden clubhouse with a row of small windows standing among tall straight pine trunks at the edge of a frozen forest lake in central Sweden, seen from slightly below so the horizon sits in the upper third. The pines throw long hard shadows across moonlit snow. One warm lamp lit above the clubhouse door — the only warm light in a blue world. A low, wide goal frame leans against the clubhouse wall under the eaves. Beyond the trees, the lake: wide natural ice glowing pale under the moon, smooth and empty, no markings, stretching out of frame. At the lake's outlet to the right, a stretch of black open water where a river leaves the lake, with frost mist rising off it and hanging low. On a rise across the water, the dark silhouette of a large old manor house, one window lit. Nobody visible. The clubhouse and lamp occupy the upper-middle of the image. The lower third is snow in deep pine shadow, empty. No text, no logos, no faces.
+
+Negativa: no sun, no dusk colours, no fog covering the scene, no factory, no chimneys, no field markings, no fence, no hockey rink, no visible moon disc, no photographic realism.
+
+*Forsbacka:* furorna runt huset, naturisen som glöder ("när isen ligger är det magiskt"), köldhålet vid utloppet, disponentvillan. *Risk:* månskivan ritas — "remove the moon from the sky, keep the moonlight".
+
+### 8. Skutskär — vid, gryning · `intro_skutskar.jpg` ✅
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources — here under the first grey-pink light of a northern winter dawn, sun still below the horizon, long soft shadows. Visible grain, soft edges. Cold, still Nordic winter dawn.
+
+A wide view of a sports ground on flat land at a river mouth on the Swedish east coast, seen from a distance and slightly below so the horizon sits in the upper third. Beyond the ground, the frozen river opens into the sea: pale sea ice reaching to the horizon, broken by a dark channel where the river current keeps the water open. On the far side of the river, a large pulp mill — long dark buildings and one tall chimney with a thin straight plume, a few lights still on from the night shift. In the middle distance, a long low red wooden clubhouse with a row of small windows and one warm lamp above the door. Beside it, a huge flat field under smooth untouched snow, no markings, continuing out of frame to the right, bordered by low uneven banks of swept snow. Along one side of the field, a very small plain wooden grandstand of three or four benched rows, clearly hand-built by volunteers, snow on the seats. Tall floodlight poles, dark. A small tractor with a broom. Sparse birches and low pines, wind-bent toward the land. Nobody visible. The clubhouse and grandstand occupy the upper-middle of the image. The lower third is snow and frozen shoreline in blue shadow, empty. No text, no logos, no faces.
+
+Negativa: no sun disc, no dusk colours, no fog, no farmland, no mountains, no field markings, no lines, no fence, no hockey rink, no photographic realism.
+
+*Skutskär:* älvmynningen i havsis, bruket på andra sidan vattnet, den handbyggda läktaren ("byggd med egna händer 1961").
+
+### 9. Hälleforsnäs — nära, dag · `intro_halleforsnas.jpg` (korrigering pågår)
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Grey-blue overcast Nordic winter day, flat light, still.
+
+A long low red wooden clubhouse with a row of small windows standing at the edge of a frozen mill pond in central Sweden, seen from slightly below so the horizon sits in the upper third. The ground is flat all the way to the water — no rocks, no cliff, a low snowy shoreline. One warm lamp lit above the door even in daylight. On the clubhouse wall, a small notice board with a few pinned papers, illegible. Beside the door, a low wide goal frame leans against the wall under the eaves. In front, the pond: natural ice, swept clean in a wide pale area with low ridges of swept snow along its edges, a wooden broom left leaning at one corner, a single small red ball lying on the ice, the ice continuing out of frame to the left. Across the pond, the old ironworks: dark red brick buildings with arched windows, one tall brick chimney with no smoke, everything unlit and still under snow. Along the far shore, a row of small identical red workers' cottages with white trim, two or three windows lit. A few bare oaks with heavy snow. Nobody visible. The clubhouse and the ironworks silhouette occupy the upper-middle of the image. The lower third is snow and dark open water at the shoreline in shadow, empty. No text, no logos, no faces.
+
+Negativa: no cliff, no rocks, no mountains, no smoke, no steam, no working factory lights, no sea, no dense spruce forest, no field markings, no fence, no hockey rink, no photographic realism.
+
+*Hälleforsnäs:* det tysta bruket (skorsten utan rök), bruksbostäder i rad, ekarna, naturisen. Första versionen fick en uppfunnen klippa och en kvadratisk is — korrigeras: "Remove the large rock cliff on the left entirely. Replace it with a low flat snowy shoreline so the swept ice continues to the left and runs out of the frame. Keep everything else exactly as it is."
+
+### 10. Västanfors — vid, skymning · `intro_vastanfors.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
+
+A wide view of an old outdoor sports ground in a mining and steel town in central Sweden at dusk, seen from a distance and slightly below so the horizon sits in the upper third. In the middle distance, a long low red wooden clubhouse with a row of small windows and one warm lamp above the door, clearly old — worn paint, a low stone foundation. Beside it, a small weathered wooden grandstand with a curved roof, decades old, and tall floodlight poles just switched on. A huge flat field under smooth untouched snow, no markings, bordered by low banks of swept snow, continuing out of frame to the right. Behind the town, on a wooded ridge, the black silhouette of a mine headframe — an open steel tower with a wheel at the top — and beside it the dark bulk of a closed steelworks, no smoke, no lights. Low forested hills all around, snow-heavy pines. A few red wooden houses with lit windows down a slope. Nobody visible. The clubhouse and grandstand occupy the upper-middle of the image. The lower third is snow in deep shadow, empty. No text, no logos, no faces.
+
+Negativa: no smoke, no working factory, no sea, no lake in the foreground, no open water, no field markings, no fence, no hockey rink, no photographic realism.
+
+*Västanfors:* gruvlaven på åsen (Bergslagens siluett), stålverket tyst, den gamla läktaren och det slitna huset ("landets äldsta landbana, konstfrusen sedan 1935"). *Risk:* laven blir kraftverk — "a mine headframe, an open steel tower with a wheel at the top".
+
+### 11. Lesjöfors — nära, köldhål · `intro_lesjofors.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk, bitterly cold, still.
+
+A long low red wooden clubhouse with a row of small windows at the bottom of a narrow forested valley in western Sweden, seen from slightly below so the horizon sits in the upper third — the horizon here is the dark tree-line of the steep valley sides, not sky. One warm lamp above the door. Dense white cold fog lies in the valley bottom, waist-high, so the ground and the lower part of the clubhouse dissolve into it while the roof, the windows and the lamp stay sharp above the fog. Everything above the fog is coated in thick hoarfrost. Beside the clubhouse, a low wide goal frame leaning against the wall, half in the fog. Behind, the long low shape of a small factory with a few lit windows and, stacked by its wall on pallets, coils of steel springs in neat rows. A single bare rowan tree. The steep valley sides rise on both edges, black spruce under snow, closing the picture in. Nobody visible. The clubhouse and lamp occupy the upper-middle of the image. The lower third is fog and shadow, empty. No text, no logos, no faces.
+
+Negativa: no stars, no clear sky, no open landscape, no sea, no lake, no chimneys with smoke, no field markings, no fence, no hockey rink, no photographic realism.
+
+*Lesjöfors:* köldhålet som dimma i dalbotten (inversionen), den smala instängda dalgången, fjäderfabriken med spiralfjädrar på pall, byalaget — allt nära. *Risk:* dimman äter huset — "roof, windows and lamp stay sharp above the fog".
+
+### 12. Heros — vid, dimma över sjön · `intro_heros.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
+
+A wide view of a sports ground on the shore of a long narrow lake in central Sweden at dusk, seen from a distance and slightly below so the horizon sits in the upper third. The lake is frozen, and thin fog drifts across the ice in low bands, so the far shore comes and goes. On the far shore, half-hidden in the fog, a working steelworks — long dark buildings and, from open doors and a tall stack, a soft warm orange industrial glow diffused through the mist, not fire. In the middle distance, a long low red wooden clubhouse with a row of small windows and one warm lamp above the door. Beside it, tall floodlight poles standing over a huge flat field under smooth untouched snow, no markings, bordered by low banks of swept snow, continuing out of frame to the left. A small tractor with a broom. Damp heavy snow on everything, dripping icicles under the eaves. A few birches. Nobody visible. The clubhouse and field occupy the upper-middle of the image. The lower third is wet snow and frozen shoreline in shadow, empty. No text, no logos, no faces.
+
+Negativa: no open water, no waves, no clear sky, no stars, no mountains, no sea horizon, no fire, no field markings, no fence, no hockey rink, no photographic realism.
+
+*Heros:* Norra Barken med dimma över isen, stålverket som glöder varmt i dimman (enda orten där bruket lyser), fuktig luft som istappar. Spelets svåraste klubb — vacker, inte eländig.
+
+---
+
+## 2. Momenten — ögonblick, inte orter
+
+Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö, ingen siluett som säger var). De bär *när* och *hur det känns*. Klubbhuset får finnas men är inte motivet.
+
+| Moment | Fil | Status | Yta |
+|---|---|---|---|
+| intro (generisk) | `intro.jpg` | ✅ fallback | Ankomsten |
+| annandagen | `annandagen.jpg` | ✅ (ny version i incoming) | Annandagsmatchen |
+| final | `final.jpg` | ✅ | SM-finalen |
+| kafferum | `kafferum.jpg` | ✅ (incoming) | Kafferummet |
+| nedflyttning | `nedflyttning.jpg` | ✅ (incoming) | Nedflyttning |
+| säsongsslut | `sasongsslut.jpg` | ✅ (incoming) | Årsboken |
+| premiär | `premiar.jpg` | prompt | Premiärmatchen |
+| derby | `derby.jpg` | prompt | Derbyt, förmatch |
+| cup | `cup.jpg` | prompt | Cupmatch + cupintro |
+| nyår | `nyar.jpg` | prompt | Nyårsövergången |
+| **cupguld** | `cupguld.jpg` | prompt | Cupfinal vunnen |
+| **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
+| **bygget klart** | `bygget_klart.jpg` | prompt | Anläggning färdig |
+| **avskedet** | `avsked.jpg` | prompt | Sparkad |
+| **året utan klubb** | `aret_utan_klubb.jpg` | prompt | "Se hur det går utan dig" |
+| **game over** | `game_over.jpg` | prompt | Konkurs / licensnekad |
+
+De fyra första nya var Eriks beställning — Erik eller Gemini, Jacobs kall, en gång.
+
+### Premiär — den första matchen · `premiar.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic early-winter afternoon, first snow, light fading.
+
+A wide view of an outdoor sports ground on the first match day of winter, seen from slightly below so the horizon sits in the upper third. Fresh thin snow, the first of the season, on brown grass at the edges. A huge flat pale surface of new ice, freshly laid and swept, continuing out of frame, bordered by low banks of snow. Tall floodlight poles just coming on, one still flickering. Along one side, a low line of people seen from behind — a small crowd in dark winter coats and knitted hats, close together, breath visible, a few thermos flasks — waiting. A long low red wooden clubhouse behind them with every window lit. Nobody's face visible. The crowd and the lit clubhouse occupy the upper-middle of the image. The lower third is dark ground in shadow, empty. No text, no logos, no faces.
+
+Negativa: no deep snow, no factory, no lake, no players on the ice, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* förväntan. Första gången på ett år. Ingen spelar än.
+
+### Derby — förmatchen · `derby.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night under floodlights.
+
+A packed standing crowd along the long side of an outdoor ice ground at night, seen from behind and slightly below so the crowd fills the middle of the frame and the floodlit pale ice is a bright band above them. Two groups, pressed close, divided by nothing but a gap: on the left, scarves and flags in one dark colour; on the right, another. Hand-painted banners held up on poles, plain cloth, no text visible. Breath and cold smoke rising in the floodlight beams. A few raised arms. The clubhouse roof and lamp just visible beyond the far side. Nobody's face visible. The lower third is the dark backs of the nearest people, in shadow. No text, no logos, no faces.
+
+Negativa: no readable text on banners, no specific club colours, no flares or fire, no players, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* laddning. Två läger, ingen sarg emellan. Färgerna ospecifika så bilden funkar för alla derbyn.
+
+### Cup — cupkvällen · `cup.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, midweek, deep cold.
+
+A small outdoor ice ground at night lit by four floodlight poles, seen from a distance and slightly below so the light-cones and the pale ice sit in the upper-middle and the surrounding darkness fills the rest. Very few people — a thin scattered line of spectators along one side, a bus parked with its lights on, exhaust rising. Snow banks piled high around the ice from a hard winter. The long low red clubhouse with two windows lit. Everything outside the floodlights is black. Nobody's face visible. The lower third is darkness and snow in shadow, empty. No text, no logos, no faces.
+
+Negativa: no crowd, no daylight, no factory, no lake, no players, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* en onsdag i januari. Ljusön i mörkret, bussen som väntar. Cupen är derbyts motsats. Används också som cupintro.
+
+### Nyår — övergången · `nyar.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter midnight, clear and still.
+
+A small town under snow at midnight seen from a rise, slightly below the horizon so the rooftops and a church tower sit in the upper third against a deep black sky. Over the town, a few small fireworks — sparse, muted gold and pale blue, not a display, just what a small town sends up. Below, the empty outdoor ice ground of the club, pale under snow, floodlights off, the clubhouse dark except one window. Smoke from a few chimneys rising straight up. Footprints in the snow leading toward the lit window. Nobody visible. The lower third is snow in shadow, empty. No text, no logos, no faces.
+
+Negativa: no large fireworks display, no crowd, no daylight, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* halvvägs. Ett fönster tänt i klubbhuset — någon är där ändå.
+
+### Cupguld — efteråt · `cupguld.jpg` (interiör)
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, late winter night.
+
+The inside of a small wooden clubhouse late at night after a match, seen from the doorway. A long plain table with the remains of a celebration: many mismatched coffee cups, a thermos, a half-eaten cake on a tray, a few beer bottles, crumpled napkins. In the middle of the table, a modest silver cup — a small trophy, not grand — with a knitted club scarf draped over its handle. Coats and scarves hung on hooks along the wall, some fallen to the floor. One bare ceiling bulb lit, copper-warm; a single window shows black night and snow on the sill. Chairs pushed back, one tipped over. Nobody in the room. The table and trophy occupy the upper-middle of the image; the lower third is the worn floorboards in shadow. No text, no logos, no faces.
+
+Negativa: no people, no large trophy, no confetti, no modern interior, no readable text, no photographic realism.
+
+*Känslan:* de har gått hem. Bägaren står kvar mellan kaffekopparna. Cupguld är stort för en bruksort och litet för alla andra — bilden ska veta det.
+
+### Sommaren — mellan säsongerna · `sommaren.jpg` (enda icke-vintern)
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black shadows, cold pale blue sky, warm copper light — here the palette opens to soft summer green and pale straw yellow, still muted, still grainy. Visible grain, soft edges. Nordic midsummer evening, long light, sun low.
+
+A wide view of the outdoor sports ground in July, seen from slightly below so the horizon sits in the upper third. Where the ice was, a vast flat meadow of long uncut grass and wildflowers, the shape of the field still faintly visible as a lighter rectangle. Tall floodlight poles standing over grass, dark and idle. The long low red wooden clubhouse with its windows open, one warm lamp above the door lit against the pale evening. Two bicycles leaning against the wall. On the small grandstand, a ladder and a tin of paint — someone is repainting the benches, but has gone for the day. Swallows in the sky. A low wide goal frame lying on its side in the grass. Nobody visible. The clubhouse and poles occupy the upper-middle of the image. The lower third is long grass in shadow, empty. No text, no logos, no faces.
+
+Negativa: no snow, no ice, no people, no cars, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* det som inte händer. Bandyn är en vintersport och sommaren är väntan — gräset där isen låg, målburen på sidan, färgburken någon ställde ner. Enda bilden utanför vintern, medvetet.
+
+### Bygget klart — anläggningen står · `bygget_klart.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources — under the first pink-grey light of a winter dawn. Visible grain, soft edges. Cold Nordic winter dawn.
+
+A wide view of the outdoor sports ground at dawn, seen from slightly below so the horizon sits in the upper third. Beside the long low red clubhouse, something new: a small wooden building or stand in fresh unpainted timber, pale yellow against the red, not yet weathered, snow on its roof — clearly finished this week. A few construction leftovers in the snow: a pallet, a coil of cable, a wheelbarrow tipped up. The huge flat field under untouched snow beyond, no markings, continuing out of frame. Floodlight poles dark. One warm lamp above the clubhouse door, another new lamp on the new building, both lit. Footprints in the snow between the two doors. Nobody visible. The new building and the clubhouse occupy the upper-middle of the image. The lower third is snow in blue shadow, empty. No text, no logos, no faces.
+
+Negativa: no cranes, no workers, no scaffolding, no text, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* det nya bredvid det gamla, färskt virke mot faluröd. Generisk nog för alla noder (värmestuga, läktare, kiosk, hall är för stor — hallen får ingen bild i v1).
+
+### Avskedet — sparkad · `avsked.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, still.
+
+The long low red wooden clubhouse at night, seen from slightly below so the roofline sits in the upper third. For the first time in the series, the lamp above the door is OFF. All windows dark except one at the far end. In the foreground snow, a single line of footprints leads away from the door toward the bottom edge of the frame and out of the picture. At the edge of the yard, a small parked car with its headlights on, exhaust rising, door open, interior light glowing copper — the only warm light. A cardboard box on the passenger seat, visible through the open door. The floodlight poles dark behind. Nobody visible. The dark clubhouse occupies the upper-middle of the image. The lower third is the footprints and snow in deep shadow. No text, no logos, no faces.
+
+Negativa: no people, no daylight, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* lampan släckt. Det är hela bilden — konstanten bruten. Bilen med lådan säger resten.
+
+### Året utan klubb — "Se hur det går utan dig" · `aret_utan_klubb.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter afternoon, grey, still.
+
+An outdoor ice ground seen from high up in a small wooden grandstand, from behind a single figure sitting alone on the top bench in a dark winter coat and knitted hat, hands in pockets — seen from behind, no face. Far below and beyond, the pale ice and tiny figures of players in a match, too far to make out. A sparse crowd standing along the far side. Snow on the empty benches around the figure. The long low red clubhouse across the ground with its lamp lit. A thermos beside the figure on the bench. Grey overcast sky. The ice and the far clubhouse occupy the upper-middle of the image; the empty benches in the lower third are in shadow. No text, no logos, no faces.
+
+Negativa: no face, no other spectators near the figure, no readable text, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* på läktaren, inte på bänken. Laget spelar utan dig. Ensam på översta raden med en termos — mer säger inte den bilden, och den ska inte.
+
+### Game Over — konkurs eller licensnekad · `game_over.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter day, flat grey light, wind.
+
+The long low red wooden clubhouse in winter daylight, seen from slightly below so the roofline sits in the upper third, but wrong: the lamp above the door dark, a heavy chain and padlock through the door handles, a sheet of paper pinned to the door and curling in the wind, illegible. Snow drifted unswept against the door and up the steps — nobody has been here for weeks. The huge field beyond under deep untouched snow, the low goal frame half-buried, the floodlight poles dark, one with a broken lamp hanging. A single crow on the roof ridge. Wind lifting loose snow off the drifts. Nobody visible. The chained door occupies the upper-middle of the image. The lower third is drifted snow in shadow, empty. No text, no logos, no faces.
+
+Negativa: no people, no cars, no readable text on the paper, no fire, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* ingen har sopat. Det är konkursen och licensnekan i en bild — inte dramatik, bara att ingen kom. Samma bild för båda Game Over-vägarna.
+
+---
+
+## 3. De tysta ytorna — interiörer
+
+| Yta | Fil | Status |
+|---|---|---|
+| kafferum | `kafferum.jpg` | ✅ |
+| hallprövning | `hallprovning.jpg` | prompt |
+| ultimatum | `ultimatum.jpg` | prompt |
+| mecenatmiddag | `mecenatmiddag.jpg` | prompt |
+| **presskonferens** | `presskonferens.jpg` | prompt |
+| **Valet** | `valet.jpg` | prompt (exteriör) |
+| **akademin** | `akademi.jpg` | prompt (exteriör) |
+| cupintro | — | använder `cup.jpg` |
+
+### Hallprövning — mötesrummet i kommunhuset · `hallprovning.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, winter evening.
+
+A plain municipal meeting room after a meeting has ended, seen from the doorway. A long pale wooden table with chairs pushed back at odd angles, a few left neatly, one turned fully away. On the table: a large rolled drawing partly unrolled — the outline of a rectangular building on a site plan, no text legible — coffee cups, a water jug, a stack of papers. A single ceiling lamp lit, copper-warm, over the table; the rest of the room in blue shadow. Through a window at the far end, snow falling past a streetlight. A coat forgotten on a chair. Nobody in the room. The table and lamp occupy the upper-middle of the image; the lower third is the dark floor in shadow, empty. No text, no logos, no faces.
+
+Negativa: no people, no readable text, no modern glass office, no photographic realism.
+
+*Känslan:* det är avgjort, eller bordlagt — stolarna säger vilket.
+
+### Ultimatum — styrelserummet · `ultimatum.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, late winter night.
+
+A small club boardroom in an old wooden clubhouse, seen from the manager's end of the table. A dark oval table, five chairs on the far side all pushed in and empty, one chair on the near side pulled out. On the table in front of the empty near chair: a single sheet of paper face down and a pen. A wall of old framed team photographs behind the far chairs, faces too small and dim to read. One green-shaded desk lamp lit at the far end, copper-warm; a bare window to the left shows black night and frost. A clock on the wall, hands not legible. Nobody in the room. The far chairs and photographs occupy the upper-middle of the image; the lower third is the dark table edge and floor in shadow. No text, no logos, no faces.
+
+Negativa: no people, no readable text or clock time, no modern office, no photographic realism.
+
+*Känslan:* de har gått. Papperet ligger kvar med texten ner.
+
+### Mecenatmiddag — herrgårdens matsal · `mecenatmiddag.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, winter evening.
+
+The dining room of an old ironmaster's manor, seen from the doorway before the guests arrive. A long table laid for six under a low chandelier with real candles, copper-warm, the only light. Heavy dark furniture, a tiled stove, a tall window with deep sills where snow has piled against the glass and a black winter evening beyond. On the wall, a large dim oil painting of a landscape — no faces. At the head of the table, one chair grander than the others. A decanter catching the candlelight. Nobody in the room. The table and chandelier occupy the upper-middle of the image; the lower third is the dark parquet floor in shadow, empty. No text, no logos, no faces.
+
+Negativa: no people, no modern furniture, no bright light, no photographic realism.
+
+*Känslan:* generositet med ett pris. Stolen vid bordsändan är inte din.
+
+### Presskonferensen — rummet före · `presskonferens.jpg`
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, winter evening after a match.
+
+A small plain room in a wooden clubhouse set up for a press conference, seen from the back row. At the front, a folding table with a knitted club scarf laid along its front edge, two old microphones on stands, a glass of water, a notepad. Behind the table, one empty chair. Facing it, three rows of mismatched chairs, only four or five occupied — seen from behind, dark coats, one with a camera bag, one with a notebook — no faces. A single fluorescent tube and one copper-warm desk lamp on the table. A window with black night and frost. A radiator with mittens drying on it. The table and empty chair occupy the upper-middle of the image; the lower third is the backs of the nearest chairs in shadow. No text, no logos, no faces.
+
+Negativa: no faces, no large press corps, no TV cameras, no readable text, no modern media room, no photographic realism.
+
+*Känslan:* fyra journalister och en tom stol. Lokalpressen på en bruksort. Vantar på elementet.
+
+### Valet — tomten · `valet.jpg` (exteriör)
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter afternoon, grey, still.
+
+An empty snow-covered plot beside the long low red wooden clubhouse, seen from slightly below so the clubhouse roofline sits in the upper third. In the snow, a rectangle marked out with wooden survey stakes and orange marking tape strung between them, half-buried. A set of footprints walking the perimeter of the rectangle and stopping at one corner. A rolled drawing leaning against the clubhouse wall by the door. The lamp above the door lit. The floodlight poles beyond, dark. The huge field under snow behind, continuing out of frame. Nobody visible. The staked rectangle and the clubhouse occupy the upper-middle of the image. The lower third is snow in shadow, empty. No text, no logos, no faces.
+
+Negativa: no building on the plot yet, no machinery, no people, no readable text, no field markings, no hockey rink, no photographic realism.
+
+*Känslan:* en rektangel i snön. Det är valet — vad som ska stå där. Fotspåren har gått runt och stannat.
+
+### Akademin — P19 tränar · `akademi.jpg` (exteriör)
+
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk, floodlights on.
+
+A wide view of the outdoor ice ground at dusk under floodlights, seen from a distance and slightly below so the horizon sits in the upper third. On the pale ice, a scatter of small figures — teenagers in mismatched training clothes, seen from far and from behind, tiny, in loose groups, a few orange balls on the ice. Along the snow bank at the edge, a row of bicycles leaning together, ten or twelve, some fallen over. On the bank, small piles of school bags. The long low red clubhouse with every window lit and the lamp above the door. A single adult figure standing at the edge with a clipboard, seen from behind. Nobody's face visible. The lit ice and the bicycles occupy the upper-middle of the image. The lower third is snow in shadow, empty. No text, no logos, no faces.
+
+Negativa: no faces, no field markings, no hockey rink, no boards, no adults playing, no photographic realism.
+
+*Känslan:* cyklarna i snövallen. Det är akademin — ungdomarna som kom hit själva efter skolan. GPT: "jag brydde mig om Patrik, Johan och Oliver". Den bilden.
+
+---
+
+## 4. Wiring (Code) — efter att Jacob dömt bilderna i appen
+
+1. `IllustrationScene` får `intro` per klubb: `intro_<slug>.jpg` på `managedClubId`, fallback `intro.jpg`.
+2. Nya moment-id:n med exakt EN yta var: `premiar` (premiärmatchens förmatch), `derby` (derbyförmatch), `cup` (cupmatch + cupintro), `nyar` (nyårsövergången), `cupguld` (cupfinal vunnen, efterceremoni), `sommaren` (sommarvyn), `bygget_klart` (anläggning färdig-kortet), `avsked` (sparkad-skärmen), `aret_utan_klubb` (året-utan-klubb-vyn), `game_over` (konkurs + licensnekad), `kafferum`, `nedflyttning`, `sasongsslut`, `hallprovning`, `ultimatum`, `mecenatmiddag`, `presskonferens`, `valet`, `akademi` (Akademi-flikens hero). Ingen bild utan yta; ingen yta med två bilder.
+3. Incoming-filer konverteras till jpg, döps enligt katalogen, flyttas till `public/assets/illustrations/`; incoming-kopian arkiveras.
+4. Scrim-test per bild i dev-scenerna.
+5. `designAudit`: tillåten asset-lista = katalogens filnamn; nya jpg utan katalogpost flaggas.
+
+## 5. Räkning
+
+Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment med prompter. Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 16 körda, 19 med prompter klara att köra.**
+
+Ordning om du kör dem i följd: orterna klart först (Västanfors, Lesjöfors, Heros), sedan de fyra momenten som avgör om Erik ritar, sedan avskedet och året utan klubb (de bär karriärens vändpunkter), sedan interiörerna.

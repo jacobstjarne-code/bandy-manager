@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { getStureLine, getTreasurerLine } from '../../domain/data/arrivalDialogue'
 import { BoardObjectivesList } from '../components/portal/secondary/BoardObjectivesList'
-import { IllustrationScene } from '../components/illustration/IllustrationScene'
+import { getClubIntroIllustrationSrc, IllustrationScene } from '../components/illustration/IllustrationScene'
 import type { BoardObjective } from '../../domain/entities/Community'
 import type { BoardMember } from '../../domain/entities/Club'
 
@@ -84,9 +84,14 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
 
   return (
     <div className="arrival-scene" onClick={phase !== 'cta' ? advancePhase : undefined}>
-      {/* Fullbleed säsongsstart-illustration (intro.jpg) som scen-bakgrund — fallback-gradient
-          + stämpel tills bilden droppas. Scrim ger textläsbarhet; lamp-overlay + innehåll ovanpå. */}
-      <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+      {/* Klubbens egen fullbleed-bild när den finns; övriga klubbar använder intro.jpg. */}
+      <IllustrationScene
+        mode="fullbleed"
+        name="intro"
+        src={getClubIntroIllustrationSrc(clubId)}
+        alt=""
+        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+      />
       <div className="arrival-scrim" />
       <div className="arrival-lamp-overlay" />
 

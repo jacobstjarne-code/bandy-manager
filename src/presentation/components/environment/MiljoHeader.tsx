@@ -15,9 +15,9 @@ import { ClubBadge } from '../ClubBadge'
  *    scanian_coast mildast/ljusast, osv. Härlett ur befintliga cold-tokens (token-rent).
  *  - väder (snabb modulation): partikel/fönsterljus — hook finns, byggs med bilden.
  *
- * Bilden (public/assets/illustrations/bruksort-header.jpg, §1: public/ ej src/) finns inte
- * än → fallback: motivlös säsongstonad gradient + ClubBadge-vattenstämpel + dev-only stämpel
- * "⌧ bruksort-header saknas". Aldrig SVG-proxy.
+ * Bilden ligger i public/assets/illustrations/bruksort-header.jpg (§1: public/ ej src/).
+ * Om filen saknas eller inte kan läsas återstår den avsiktliga fallbacken: motivlös
+ * säsongstonad gradient + ClubBadge-vattenstämpel + dev-only-stämpel. Aldrig SVG-proxy.
  */
 const IMG_SRC = '/assets/illustrations/bruksort-header.jpg'
 const PAPER = 'var(--bg)' // ljust pappers-kropp som bandet fadar ned mot
@@ -62,7 +62,7 @@ export function MiljoHeader({ date, club, mode = 'portal', children }: Props) {
 
   return (
     <div style={{ position: 'relative', height, overflow: 'hidden', background: skyToPaper }}>
-      {/* Bilden (tål höjd-beskärning via object-position — behåll nedre 2/3); döljs tills den droppas */}
+      {/* Bilden tål höjd-beskärning via object-position; döljs om laddningen misslyckas. */}
       <img
         src={IMG_SRC}
         alt=""
@@ -82,7 +82,7 @@ export function MiljoHeader({ date, club, mode = 'portal', children }: Props) {
       {hasImage && <div style={{ position: 'absolute', inset: 0, background: skyToPaper, mixBlendMode: 'multiply', opacity: 0.55, pointerEvents: 'none' }} />}
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '38%', background: `linear-gradient(180deg, transparent 0%, ${PAPER} 100%)`, pointerEvents: 'none' }} />
 
-      {/* ClubBadge-vattenstämpel (billigt per-klubb-id på tomt tillstånd) */}
+      {/* ClubBadge-vattenstämpel ger klubbidentitet ovanpå den gemensamma ortsbilden. */}
       {club && (
         <div style={{ position: 'absolute', right: 14, top: mode === 'portal' ? 18 : 12, opacity: hasImage ? 0.5 : 0.16, pointerEvents: 'none' }}>
           <ClubBadge clubId={club.id} name={club.name} size={mode === 'portal' ? 56 : 40} />
@@ -101,7 +101,7 @@ export function MiljoHeader({ date, club, mode = 'portal', children }: Props) {
         </div>
       )}
 
-      {/* Dev-only: gör det uppenbart att basbilden saknas (aldrig i prod) */}
+      {/* Dev-only: gör det uppenbart om basbilden saknas (aldrig i prod). */}
       {!hasImage && import.meta.env.DEV && (
         <div style={{
           position: 'absolute', bottom: '42%', left: 0, right: 0, textAlign: 'center',

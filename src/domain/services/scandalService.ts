@@ -379,6 +379,37 @@ function resolvePolitician(
   }
 }
 
+/**
+ * SPEC_BERATTAREN steg 7: pressens `{ämne}` återanvänder en redan skriven
+ * skandalrubrik. Funktionen väljer deterministiskt en rubrik som inte kräver
+ * en politiker när det går, så redaktören inte skapar en andra copybank.
+ */
+export function getScandalPressTopic(game: SaveGame, scandalId: string): string | undefined {
+  const scandal = [...(game.activeScandals ?? []), ...(game.scandalHistory ?? [])]
+    .find(item => item.id === scandalId)
+  if (!scandal || scandal.type === 'small_absurdity') return undefined
+
+  const club = game.clubs.find(item => item.id === scandal.affectedClubId)
+  if (!club) return undefined
+  const secondaryClub = scandal.secondaryClubId
+    ? game.clubs.find(item => item.id === scandal.secondaryClubId)
+    : undefined
+  const text = SCANDAL_TEXT[scandal.type]
+  const titlePool = scandal.type === 'municipal_scandal'
+    && scandal.variant === 'positive'
+    && text.titlesPositive
+    ? text.titlesPositive
+    : text.titles
+  const title = titlePool.find(candidate =>
+    !candidate.includes('{POLITIKER}') && !candidate.includes('{PARTI}')
+  ) ?? titlePool[0]
+  const politician = scandal.type === 'municipal_scandal'
+    ? resolvePolitician(game, scandal.affectedClubId, () => 0)
+    : undefined
+
+  return fillTemplate(title, club, secondaryClub, politician)
+}
+
 // ── Apply effect ───────────────────────────────────────────────────────────
 
 export function applyScandalEffect(

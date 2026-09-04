@@ -54,10 +54,10 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
 
   it('en stjärnskada omgång 6 är fortfarande läsbar omgång 20 (efter många fler moments)', () => {
     const injury = makeMoment({ id: 'injury_r6', matchday: 6, season: 1, source: 'star_injury' })
-    let ledger = appendMomentsToLedger([], [injury])
+    let ledger = appendMomentsToLedger([], [injury], 'club_test')
     // 14 fler moments (omgång 7 t.o.m. 20) — mer än cap-5 skulle överlevt
     for (let matchday = 7; matchday <= 20; matchday++) {
-      ledger = appendMomentsToLedger(ledger, [makeMoment({ id: `m_r${matchday}`, matchday, season: 1 })])
+      ledger = appendMomentsToLedger(ledger, [makeMoment({ id: `m_r${matchday}`, matchday, season: 1 })], 'club_test')
     }
     const game = makeMinimalGame({ currentMatchday: 20, eventLedger: ledger })
     const found = (game.eventLedger ?? []).find(e => e.semanticKey === 'injury_r6')
@@ -139,6 +139,17 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(entry.subject2).toEqual({ kind: 'club', id: 'c_buyer' })
   })
 
+  it('mecenat_costshare bevarar mecenaten som person och spelaren som andra part', () => {
+    const m = makeMoment({
+      source: 'mecenat_costshare',
+      subjectMecenatId: 'mec_1',
+      subjectPlayerId: 'p1',
+    })
+    const entry = buildMomentLedgerEntry(m)
+    expect(entry.subject).toEqual({ kind: 'mecenat', id: 'mec_1' })
+    expect(entry.subject2).toEqual({ kind: 'player', id: 'p1' })
+  })
+
   it('rival_sale (spelare + rivalklubb) → subject + subject2', () => {
     const m = makeMoment({ source: 'rival_sale', subjectPlayerId: 'p1', subjectClubId: 'c_rival' })
     const entry = buildMomentLedgerEntry(m)
@@ -175,11 +186,12 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
       type: 'decision', semanticKey: 'd1', season: 1, matchday: 10, significance: 50,
     }
     const ledger = appendMomentsToLedger(
-      [decisionEntry],
+      [{ ...decisionEntry, clubId: 'club_test' }],
       [
         makeMoment({ id: 'old', matchday: 3, season: 1 }),
         makeMoment({ id: 'new', matchday: 12, season: 1 }),
       ],
+      'club_test',
     )
     const game = makeMinimalGame({ eventLedger: ledger })
     const recent = getRecentMomentsFromLedger(game, 5)
@@ -188,7 +200,7 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
 
   it('getRecentMomentsFromLedger begränsar till limit', () => {
     const moments = Array.from({ length: 8 }, (_, i) => makeMoment({ id: `m${i}`, matchday: i + 1 }))
-    const game = makeMinimalGame({ eventLedger: appendMomentsToLedger([], moments) })
+    const game = makeMinimalGame({ eventLedger: appendMomentsToLedger([], moments, 'club_test') })
     expect(getRecentMomentsFromLedger(game, 5)).toHaveLength(5)
   })
 
@@ -240,6 +252,21 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     }
 
     expect(appendMomentsAndEntriesToLedger([], [moment], [ripple])).toHaveLength(2)
+  })
+
+  it('stämplar managerägda batchposter när manageridentiteten skickas med', () => {
+    const decision: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'decision:test', season: 3, matchday: 8, significance: 50,
+    }
+    const clubEvent: EventLedgerEntry = {
+      type: 'big_win', semanticKey: 'big_win:test', season: 3, matchday: 8, significance: 50,
+    }
+
+    const ledger = appendMomentsAndEntriesToLedger([], [], [decision, clubEvent], 'club_test', 'save_test')
+
+    expect(ledger[0]).toMatchObject({ clubId: 'club_test', managerId: 'save_test' })
+    expect(ledger[1]).toMatchObject({ clubId: 'club_test' })
+    expect(ledger[1].managerId).toBeUndefined()
   })
 
   it('resolveSubjectName slår upp spelare/klubb/mecenat ur id, returnerar undefined för okänt', () => {

@@ -222,6 +222,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     averageAttendance: undefined,
     previousAverageAttendance: undefined,
     recentMoments: [],
+    ledgerTold: {},
     referees: generateReferees(),
     refereeRelations: [],
     currentSeasonSignature: createSeasonSignature({ clubs: clubsFixed, scandalHistory: [], currentSeason: season } as unknown as import('../../domain/entities/SaveGame').SaveGame, mulberry32((input.seed ?? 42) + season * 1337 + 99)),

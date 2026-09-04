@@ -271,6 +271,14 @@ export interface SeasonSummary {
    *  en säsong utan tungt beslut." Färdig mening, ingen mall kvar att fylla. */
   mostImportantDecision?: string
 
+  /** SPEC_BERATTAREN steg 4 — agendans högst viktade person-/relationspost,
+   *  fryst som Opus färdiga mening. ledgerPostKey gör att den faktiska
+   *  årsboksvisningen kan skriva ett idempotent told-kvitto mot kanon. */
+  seasonPerson?: {
+    text: string
+    ledgerPostKey: string
+  }
+
   /** A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4 i
    *  BANDY_MANAGER_AUDIT_5_SASONGER_KUL_STICKINESS_VISUELL_2026-08-29.md):
    *  en gemensam sanningsmodell för säsongen — uttalat mål, utfall,

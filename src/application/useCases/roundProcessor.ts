@@ -97,6 +97,8 @@ import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTa
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
+import { ledgerPostKey, markLedgerPostTold } from '../../domain/services/ledgerToldService'
+import { currentChronology } from '../../domain/services/currentChronology'
 
 export type { AdvanceResult }
 
@@ -1001,7 +1003,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
     cupResult.prizeMoneyByClub,
     localRand,
-    { skipSideEffects: isSecondPassForManagedMatch },
+    {
+      scope: hasManagedCupPending
+        ? 'ai-only'
+        : isSecondPassForManagedMatch
+          ? 'managed-only'
+          : 'all',
+    },
   )
   const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs, clearAnnandagsGratisentreVal } = economyResult
 
@@ -1488,7 +1496,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ('patronWithdrawn') som den befintliga happiness-baserade avgångsvägen
   // återanvänds för resolutionen — ETT ställe sätter patronWithdrawnSeason.
   let patronWithdrawnSeasonAfterCsEviction = eventResult.patronWithdrawnSeason
-  if (updatedPatron?.isActive && (game.communityStanding ?? 50) < PATRON_EMERGE_CS) {
+  if (
+    updatedPatron?.isActive &&
+    updatedPatron.introducedSeason !== undefined &&
+    (game.communityStanding ?? 50) < PATRON_EMERGE_CS
+  ) {
     const evictionId = `patron_cs_eviction_${game.currentSeason}`
     const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === evictionId) ||
       game.inbox.some(i => i.id === evictionId) ||
@@ -1723,6 +1735,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       allNewMomentsThisRound,
       roundLedgerEntries,
       game.managedClubId,
+      game.id,
     ),
     currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
@@ -1906,6 +1919,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const survivingEvents = allNewEvents.filter(event => keptSet.has(event))
     allNewEvents.length = 0
     allNewEvents.push(...survivingEvents)
+  }
+
+  // SPEC_BERATTAREN steg 7: först här vet vi att presskortet faktiskt blev
+  // kvar som synlig yta. Kvittera då den exakta kanoniska post som gav
+  // liggarfrågan; en bortbudgeterad presskonferens räknas aldrig som frågad.
+  if (updatedGame.pendingPressConference?.pressLedgerPostKey) {
+    const pressPost = (updatedGame.eventLedger ?? []).find(post =>
+      ledgerPostKey(post) === updatedGame.pendingPressConference?.pressLedgerPostKey
+    )
+    if (pressPost) {
+      updatedGame = {
+        ...updatedGame,
+        ledgerTold: markLedgerPostTold(
+          updatedGame.ledgerTold,
+          pressPost,
+          'press',
+          currentChronology(updatedGame),
+        ),
+      }
+    }
   }
 
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen

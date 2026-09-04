@@ -8,7 +8,9 @@ import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 import { OrtenMap } from './OrtenMap'
-import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
+import { generateVolunteerRoster, getActiveVolunteerBonus, getVolunteerProfile } from '../../../domain/services/volunteerService'
+import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS } from '../../../domain/services/economyService'
+import { ACTIVITY_CS_BOOST } from '../../../domain/services/communityRenewalService'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SUPPORTER_ROLE_LABELS } from '../../../domain/data/enumLabels'
 import { BarChart3, ClipboardList, FilePenLine } from 'lucide-react'
@@ -178,10 +180,20 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             const isActive = current !== 'none'
             return (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                  {levels[0].label}
-                  {isActive && <span style={{ color: 'var(--success)', marginLeft: 4, fontSize: 10 }}>✓</span>}
-                </span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: 12, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                    {levels[0].label}
+                    {isActive && <span style={{ color: 'var(--success)', marginLeft: 4, fontSize: 10 }}>✓</span>}
+                  </span>
+                  {!isActive && nextLevel && (
+                    <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+                      {(COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[nextLevel.id] ?? 0) === 0
+                        ? 'Gratis'
+                        : `${((COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[nextLevel.id] ?? 0) / 1000).toFixed(1)} tkr`}
+                      {' · '}+{ACTIVITY_CS_BOOST[key].toFixed(2)} puls/omg · avtar över säsonger
+                    </p>
+                  )}
+                </div>
                 {nextLevel && (
                   <button
                     className="btn btn-ghost"
@@ -293,7 +305,9 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
                 const moraleColor = morale >= 60 ? 'var(--success)' : morale >= 35 ? 'var(--accent)' : 'var(--danger)'
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, padding: '2px 0' }}>
-                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', minWidth: 0, overflowWrap: 'anywhere' }}>{name}</span>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', minWidth: 0, overflowWrap: 'anywhere' }}>
+                      {name} · {getVolunteerProfile(name).role}
+                    </span>
                     <span style={{ fontSize: 10, color: moraleColor, flexShrink: 0 }}>{morale}</span>
                   </div>
                 )
@@ -311,7 +325,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               <div>
                 <p style={{ fontSize: 12, fontWeight: 600 }}>{v.name}</p>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                  {v.role} · {v.csBoost} puls/omg{v.weeklyContrib > 0 ? ` · +${Math.round(v.weeklyContrib / 1000)} tkr` : ''}
+                  {v.role} · +{(v.csBoost / 10).toFixed(1)} puls/omg{v.weeklyContrib > 0 ? ` · +${(v.weeklyContrib / 1000).toFixed(1)} tkr` : ''}
                 </p>
               </div>
               <button

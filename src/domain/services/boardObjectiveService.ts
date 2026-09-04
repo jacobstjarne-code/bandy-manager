@@ -302,7 +302,7 @@ function buildObjectiveByType(
   switch (type) {
     case 'balanceBudget': return balanceBudget(owner, season)
     case 'growFinances': return growFinances(owner, season)
-    case 'investSurplus': return investSurplus(owner, season)
+    case 'investSurplus': return club.finances > SURPLUS_CEILING ? investSurplus(owner, season) : null
     case 'playHomegrown': return playHomegrown(owner, season)
     case 'improveYouth': return improveYouth(owner, season)
     case 'growFanbase': return growFanbase(owner, season)

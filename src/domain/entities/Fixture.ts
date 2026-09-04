@@ -128,6 +128,7 @@ export interface Fixture {
   venueCity?: string         // stad för neutral venue
   isCupFinalhelgen?: boolean // true for cup semi + final weekend fixtures
   isAnnandagen?: boolean     // true for the Boxing Day (Dec 26) match
+  isWalkover?: boolean       // avgjord utan spel; ingen publik-/matchintäkt
   isNyarsbandy?: boolean     // true for the New Year's Day (Jan 1) match
   isWindowDeadlineDay?: boolean  // true for the transfer window deadline day (Jan 31)
 

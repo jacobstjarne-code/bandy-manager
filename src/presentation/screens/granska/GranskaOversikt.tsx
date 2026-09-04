@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
@@ -30,6 +31,8 @@ import { getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } f
 import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../../../domain/services/turneringslageService'
 import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
+import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
+import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 
 const TRAINING_LABEL: Record<string, string> = {
@@ -242,6 +245,11 @@ export function GranskaOversikt({
   rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport, axes,
 }: GranskaOversiktProps) {
   const navigate = useNavigate()
+  const markLedgerPostTold = useGameStore(state => state.markLedgerPostTold)
+  const [reviewCallback] = useState(() => fixture ? selectReviewCallback(game, fixture) : null)
+  useEffect(() => {
+    if (reviewCallback?.post) markLedgerPostTold(reviewCallback.post, 'review')
+  }, [markLedgerPostTold, reviewCallback])
   const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
   const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'
   const latestTraining = (game.trainingHistory ?? []).slice(-1)[0]
@@ -461,6 +469,18 @@ export function GranskaOversikt({
       <GroupDivider label="Resultatet" style={{ marginTop: 2 }} />
       {/* Result hero — tappbar → Analys (händelsetidslinje + insikter) */}
       {resultatHeroCard}
+
+      {reviewCallback && (
+        <div
+          data-granska-section="callback"
+          className="card-sharp"
+          style={{ margin: '0 0 3px', padding: '12px 14px', borderLeft: '3px solid var(--accent)', ...fadeIn(0.5) }}
+        >
+          <p className="h-quote" style={{ margin: 0, color: 'var(--text-primary)', fontSize: 14, lineHeight: 1.45 }}>
+            {reviewCallback.text}
+          </p>
+        </div>
+      )}
 
       {/* Kapitelpunkt — efter resultatblocket, före Turneringsläge/statistik.
           data-granska-section: matchtypsmatrisgrinden (post 20) läser detta

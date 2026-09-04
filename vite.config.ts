@@ -37,12 +37,14 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
+        id: '/',
         name: 'Bandy Manager',
         short_name: 'Bandy Mgr',
         description: 'Upplev atmosfären av svensk elitbandy',
         theme_color: '#0D1B2A',
         background_color: '#0D1B2A',
         display: 'standalone',
+        scope: '/',
         start_url: '/',
         orientation: 'portrait',
         icons: [
@@ -53,6 +55,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        importScripts: ['notification-sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // 2026-07-21: huvudbunten passerade workbox default (2 MiB) — spelets
         // textmängd (domain/data) växer med varje sprint, bundeln med den.
@@ -65,6 +68,7 @@ export default defineConfig({
             handler: 'CacheFirst',
           },
         ],
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

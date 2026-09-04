@@ -244,6 +244,21 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.fanMood === undefined) data.fanMood = 50
   if (data.boardPatience === undefined) data.boardPatience = 70
   if (data.consecutiveFailures === undefined) data.consecutiveFailures = 0
+  if (data.patron && typeof data.patron === 'object') {
+    const patron = data.patron as Record<string, unknown>
+    if (patron.introducedSeason === undefined) {
+      const resolvedIds = Array.isArray(data.resolvedEventIds) ? data.resolvedEventIds : []
+      const wasIntroduced = resolvedIds.some(id =>
+        typeof id === 'string' && (id.startsWith('patron_intro_') || id.startsWith('patron_emerge_'))
+      )
+      const emergedInLedger = Array.isArray(data.eventLedger) && data.eventLedger.some(entry =>
+        !!entry && typeof entry === 'object' && (entry as Record<string, unknown>).type === 'patron_emerge'
+      )
+      if ((wasIntroduced || emergedInLedger) && typeof data.currentSeason === 'number') {
+        patron.introducedSeason = data.currentSeason
+      }
+    }
+  }
   if (data.pendingEvents === undefined) data.pendingEvents = []
   if (data.pendingDecisions === undefined) data.pendingDecisions = []
   if (data.deferredDecisions === undefined) data.deferredDecisions = []
@@ -851,6 +866,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // fickorna. Funktionen är idempotent; prio 3:s lösta storylines ingår nu,
   // medan aktiva storylines och journalistens cache/livevärde lämnas orörda.
   data.eventLedger = backfillClubHistoryLedger(data as unknown as SaveGame)
+
+  // SPEC_BERATTAREN_2026-09-04 §4. Registret innehåller bara
+  // presentationskvitton; gamla saves har per definition inga sådana.
+  // Behåll ett befintligt objekt orört — ytorna skriver via den typade
+  // ledgerToldService-vägen och pensioneras en i taget.
+  if (!data.ledgerTold || typeof data.ledgerTold !== 'object' || Array.isArray(data.ledgerTold)) {
+    data.ledgerTold = {}
+  }
 
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION

@@ -1,9 +1,16 @@
 import type { SaveGame } from '../../entities/SaveGame'
+import type { EventLedgerEntry } from '../../entities/Narrative'
 import { EFTERKLANG_ECHO, ECONOMIC_SCAR_AFTERMATH, type EfterklangType } from '../../data/efterklangText'
 import { mulberry32 } from '../../utils/random'
 import { FixtureStatus } from '../../enums'
 import { getNextManagedFixture } from './triggers/matchTriggers'
 import { matchdayToLeagueRound } from '../scheduleGenerator'
+import { buildMemoryEventFromLedger } from '../clubMemoryService'
+import { currentChronology } from '../currentChronology'
+import { toldMarksFor } from '../ledgerToldService'
+import { resolveSubjectName } from '../momentLedgerService'
+import { agendaForSurface, redaktoren } from '../redaktorenService'
+import { getStorylineTypeFromLedger } from '../storylineLedgerService'
 
 const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   refused_press: 'Refuserade pressen',
@@ -47,6 +54,16 @@ export interface EfterklangMemory {
   /** rivalSale type only — B1 */
   soldPlayerName?: string
   buyerClubName?: string
+  /** Kanonisk källa när tråden valts ur Berättarens agenda. Ephemeral vydata,
+   * aldrig en ny minneslagring. PortalScreen använder den för told-kvittot. */
+  sourcePost?: EventLedgerEntry
+  sourcePostKey?: string
+}
+
+interface EfterklangCandidate {
+  type: EfterklangType
+  score: number
+  memory: EfterklangMemory
 }
 
 function pickEcho(type: EfterklangType, seed: number): string {
@@ -59,7 +76,7 @@ function interpolate(text: string, vars: Record<string, string>): string {
 }
 
 /**
- * @cites game.activeAnniversaries, game.klackEcho.currentWeight, game.journalist.memory, game.bandyLetters, game.boardObjectiveHistory, game.nemesisTracker, game.economicCrisisState, game.lastRivalSaleInfo, game.lastRivalSaleMatchday
+ * @cites game.ledgerTold, game.activeAnniversaries, game.klackEcho.currentWeight, game.journalist.memory, game.bandyLetters, game.boardObjectiveHistory, game.nemesisTracker, game.economicCrisisState, game.lastRivalSaleInfo, game.lastRivalSaleMatchday
  */
 export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // A3: gate på spelade ligamatcher (inte currentMatchday) — visa inte efterklang för tidigt
@@ -71,29 +88,60 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   const round = game.currentMatchday
   const season = game.currentSeason
   const seed = season * 7919 + round * 31
+  const chronology = currentChronology(game)
+  const agenda = agendaForSurface(redaktoren(game, chronology), 'efterklang')
 
-  const candidates: Array<{ type: EfterklangType; score: number; memory: EfterklangMemory }> = []
+  const candidates: EfterklangCandidate[] = []
 
-  // Anniversary
-  const anniversaries = (game.activeAnniversaries ?? [])
-    .filter(a => a.significance >= 70)
-    .sort((a, b) => b.significance - a.significance)
-  if (anniversaries.length > 0) {
-    const ann = anniversaries[0]
+  // Anniversary — canonical agenda first. activeAnniversaries remains only as
+  // a retire-last fallback for legacy/non-ledger memories.
+  const anniversaryItem = agenda.find(item =>
+    item.freshnessQueue === 'anniversary'
+    && buildMemoryEventFromLedger(game, item.post, game.managedClubId) !== null
+  )
+  if (anniversaryItem) {
+    const ledgerMemory = buildMemoryEventFromLedger(game, anniversaryItem.post, game.managedClubId)!
+    const yearsAgo = season - anniversaryItem.post.season
     const echo = interpolate(pickEcho('anniversary', seed), {})
-    const name = ann.originalEventText.length > 28 ? ann.originalEventText.slice(0, 26) + '…' : ann.originalEventText
-    // B4 — premiss: "{N} år sedan {händelse}." (delta 1 → "Ett år sedan …")
-    const annEvent = ann.originalEventText.length > 30 ? ann.originalEventText.slice(0, 29) + '…' : ann.originalEventText
-    const premiss = ann.yearsAgo === 1 ? `Ett år sedan ${annEvent}.` : `${ann.yearsAgo} år sedan ${annEvent}.`
+    const name = ledgerMemory.text.length > 28 ? ledgerMemory.text.slice(0, 26) + '…' : ledgerMemory.text
+    const eventText = ledgerMemory.text.length > 30 ? ledgerMemory.text.slice(0, 29) + '…' : ledgerMemory.text
+    const premiss = yearsAgo === 1 ? `Ett år sedan ${eventText}.` : `${yearsAgo} år sedan ${eventText}.`
     candidates.push({
       type: 'anniversary',
-      score: ann.significance * (ann.echoSize === 'big' ? 1.3 : 1.0),
+      score: anniversaryItem.scoresBySurface.efterklang.total,
       memory: {
-        type: 'anniversary', primaryText: ann.originalEventText, premiss, echo,
+        type: 'anniversary', primaryText: ledgerMemory.text, premiss, echo,
         objectName: name,
-        threadEntries: [{ matchday: round, season, text: ann.originalEventText }],
+        threadEntries: [{
+          matchday: anniversaryItem.post.matchday,
+          season: anniversaryItem.post.season,
+          text: ledgerMemory.text,
+        }],
+        sourcePost: anniversaryItem.post,
+        sourcePostKey: anniversaryItem.postKey,
       },
     })
+  } else {
+    const anniversaries = (game.activeAnniversaries ?? [])
+      .filter(a => a.significance >= 70)
+      .sort((a, b) => b.significance - a.significance)
+    const ann = anniversaries[0]
+    if (ann) {
+      const echo = interpolate(pickEcho('anniversary', seed), {})
+      const name = ann.originalEventText.length > 28 ? ann.originalEventText.slice(0, 26) + '…' : ann.originalEventText
+      // B4 — premiss: "{N} år sedan {händelse}." (delta 1 → "Ett år sedan …")
+      const annEvent = ann.originalEventText.length > 30 ? ann.originalEventText.slice(0, 29) + '…' : ann.originalEventText
+      const premiss = ann.yearsAgo === 1 ? `Ett år sedan ${annEvent}.` : `${ann.yearsAgo} år sedan ${annEvent}.`
+      candidates.push({
+        type: 'anniversary',
+        score: ann.significance * (ann.echoSize === 'big' ? 1.3 : 1.0),
+        memory: {
+          type: 'anniversary', primaryText: ann.originalEventText, premiss, echo,
+          objectName: name,
+          threadEntries: [{ matchday: round, season, text: ann.originalEventText }],
+        },
+      })
+    }
   }
 
   // Klack echo
@@ -149,9 +197,14 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const stem = interpolate(JOURNALIST_PREMISS_STEM[ev] ?? '{journalist} hörde av sig', { journalist: name })
     const canAppendOpp = !!opp && (ev === 'good_answer' || ev === 'bad_answer' || ev === 'refused_press')
     const premiss = canAppendOpp ? `${stem} efter ${opp}, ${premissLabel}.` : `${stem}, ${premissLabel}.`
+    const journalistAgendaItem = agenda.find(item => {
+      const type = getStorylineTypeFromLedger(item.post)
+      return type === 'journalist_feud' || type === 'journalist_redemption'
+    })
     candidates.push({
       type: 'journalist',
-      score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
+      score: journalistAgendaItem?.scoresBySurface.efterklang.total
+        ?? 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
       memory: {
         type: 'journalist',
         primaryText: name,
@@ -169,6 +222,8 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
         })),
         journalistName: name,
         hasJournalistSparkline: hasSparkline,
+        sourcePost: journalistAgendaItem?.post,
+        sourcePostKey: journalistAgendaItem?.postKey,
       },
     })
   }
@@ -235,9 +290,39 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     })
   }
 
-  // Economic scar
+  // Economic scar — resolved player decisions come from the agenda. Active
+  // crisis state and natural recovery remain live-state fallbacks because no
+  // canonical resolution post exists for them yet.
   const crisis = game.economicCrisisState
-  if (crisis) {
+  const economicDecisionItem = agenda.find(item =>
+    item.post.type === 'decision'
+    && /^criticalEconomy:(sell_star|take_loan|ask_mecenat)$/.test(item.post.semanticKey)
+  )
+  if (economicDecisionItem) {
+    const outcome = economicDecisionItem.post.semanticKey.slice('criticalEconomy:'.length) as 'sold_star' | 'take_loan' | 'ask_mecenat'
+    const resolutionType = outcome === 'take_loan' ? 'loan' : outcome === 'ask_mecenat' ? 'mecenat' : 'sold_star'
+    const aftermath = ECONOMIC_SCAR_AFTERMATH[resolutionType]
+    const soldPlayerName = resolveSubjectName(game, economicDecisionItem.post.subject)
+      ?? crisis?.soldToSurvivePlayerName
+      ?? ''
+    const echo = aftermath.echoes[Math.floor(mulberry32(seed + 6)() * aftermath.echoes.length)]
+    const premiss = interpolate(aftermath.premiss, { spelare: soldPlayerName })
+    candidates.push({
+      type: 'economicScar',
+      score: economicDecisionItem.scoresBySurface.efterklang.total,
+      memory: {
+        type: 'economicScar', primaryText: '', premiss, echo,
+        objectName: 'Budgetkrisen',
+        threadEntries: [{
+          matchday: economicDecisionItem.post.matchday,
+          season: economicDecisionItem.post.season,
+          text: echo,
+        }],
+        sourcePost: economicDecisionItem.post,
+        sourcePostKey: economicDecisionItem.postKey,
+      },
+    })
+  } else if (crisis) {
     if (crisis.phase !== 'resolved') {
       // A. Aktiv kris — oförändrad. 'decision' = sharpest, annars dämpat.
       const echo = pickEcho('economicScar', seed + 6)
@@ -272,8 +357,39 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     }
   }
 
-  // Rival sale — only surface if recent enough (within 10 rounds)
-  if (game.lastRivalSaleMatchday !== undefined) {
+  // Rival sale — canonical ledger post first. The old recency pocket is kept
+  // only for legacy saves until the agenda path has a post.
+  const rivalSaleItem = agenda.find(item => item.post.type === 'rival_sale')
+  if (rivalSaleItem) {
+    const soldPlayerName = resolveSubjectName(game, rivalSaleItem.post.subject)
+      ?? game.lastRivalSaleInfo?.soldPlayerName
+    const buyerClubName = resolveSubjectName(game, rivalSaleItem.post.subject2)
+      ?? game.lastRivalSaleInfo?.buyerClubName
+    const echo = interpolate(pickEcho('rivalSale', seed + 7), {
+      spelare: soldPlayerName ?? 'en spelare',
+      rival: buyerClubName ?? 'rivalen',
+    })
+    const premiss = soldPlayerName && buyerClubName
+      ? `Ni sålde ${soldPlayerName} till ${buyerClubName}.`
+      : 'Ni sålde en nyckelspelare till en rival.'
+    candidates.push({
+      type: 'rivalSale',
+      score: rivalSaleItem.scoresBySurface.efterklang.total,
+      memory: {
+        type: 'rivalSale', primaryText: '', premiss, echo,
+        objectName: soldPlayerName ?? 'Rivalförsäljning',
+        threadEntries: [{
+          matchday: rivalSaleItem.post.matchday,
+          season: rivalSaleItem.post.season,
+          text: echo,
+        }],
+        soldPlayerName,
+        buyerClubName,
+        sourcePost: rivalSaleItem.post,
+        sourcePostKey: rivalSaleItem.postKey,
+      },
+    })
+  } else if (game.lastRivalSaleMatchday !== undefined) {
     const recency = round - game.lastRivalSaleMatchday
     if (recency >= 0 && recency <= 10) {
       const fallbackEchoes = [
@@ -300,9 +416,32 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     }
   }
 
-  // Top-max by score, unique types (guaranteed since candidates are built one per type)
-  return candidates
-    .sort((a, b) => b.score - a.score)
-    .slice(0, max)
-    .map(c => c.memory)
+  // A told receipt must not make a visible thread swap underneath the player.
+  // Pin canonical threads already shown on this matchday, then fill remaining
+  // slots from the newly ranked mix. One thread per presentation type.
+  const ranked = candidates.slice().sort((a, b) => b.score - a.score)
+  const shownNow = ranked.filter(candidate =>
+    candidate.memory.sourcePost
+    && toldMarksFor(game.ledgerTold, candidate.memory.sourcePost).some(mark =>
+      mark.surface === 'efterklang'
+      && mark.season === chronology.season
+      && mark.matchday === chronology.matchday
+    )
+  )
+  const ordered = [
+    ...shownNow,
+    ...ranked.filter(candidate => !shownNow.includes(candidate)),
+  ]
+  const selected: EfterklangMemory[] = []
+  const seenTypes = new Set<EfterklangType>()
+  const seenPostKeys = new Set<string>()
+  for (const candidate of ordered) {
+    if (seenTypes.has(candidate.type)) continue
+    if (candidate.memory.sourcePostKey && seenPostKeys.has(candidate.memory.sourcePostKey)) continue
+    selected.push(candidate.memory)
+    seenTypes.add(candidate.type)
+    if (candidate.memory.sourcePostKey) seenPostKeys.add(candidate.memory.sourcePostKey)
+    if (selected.length >= max) break
+  }
+  return selected
 }

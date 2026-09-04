@@ -16,7 +16,7 @@ vi.mock('../../components/EventOverlay', () => ({ EventOverlay: () => null }))
 // IndexedDB-vägen (den har sin egen täckning i saveGameStorage-testerna).
 vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }))
 
-const { GameShell, routeOwnsLedgerChrome } = await import('../GameShell')
+const { GameShell, routeOwnsLedgerChrome, shouldHideBottomNavigation } = await import('../GameShell')
 
 /**
  * Skutskär-auditens test 20 (52009671, 2026-08-20): "Deep-link rehydration:
@@ -163,5 +163,12 @@ describe('GameShell — MatchFlowFrame äger rondflödets chrome', () => {
   it('behåller GameShell-chrome för den äldre historiska rapportöppningen', () => {
     expect(routeOwnsLedgerChrome('/game/match', { showReport: true })).toBe(false)
     expect(routeOwnsLedgerChrome('/game/review', null)).toBe(false)
+  })
+})
+
+describe('GameShell — ceremonier kan inte överlappas av BottomNav', () => {
+  it('döljer navet för cupfinalsegern men inte för kafferumsmodalen', () => {
+    expect(shouldHideBottomNavigation('scene', 'cup_final_victory', '/game/dashboard')).toBe(true)
+    expect(shouldHideBottomNavigation('scene', 'coffee_room', '/game/dashboard')).toBe(false)
   })
 })

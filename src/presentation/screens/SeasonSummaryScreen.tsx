@@ -18,9 +18,31 @@ import type { SeasonEliminationContext } from '../../domain/data/seasonSummaryEl
 import { ScoreBlock } from '../components/primitives/ScoreBlock'
 import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
-import { seasonVerdictText } from '../../domain/services/boardService'
+import { RELEGATION_ZONE_SIZE, seasonVerdictText } from '../../domain/services/boardService'
 import { BookOpen, Share2 } from 'lucide-react'
 import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
+import { ledgerPostKey } from '../../domain/services/ledgerToldService'
+
+function YearbookPersonCard({ summary }: { summary: SeasonSummary }) {
+  const { game, markLedgerPostTold } = useGameStore()
+  const post = game?.eventLedger?.find(entry => ledgerPostKey(entry) === summary.seasonPerson?.ledgerPostKey)
+
+  useEffect(() => {
+    if (!post) return
+    markLedgerPostTold(post, 'yearbook')
+  }, [post, markLedgerPostTold])
+
+  if (!summary.seasonPerson) return null
+  return (
+    <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+      <SectionLabel style={{ marginBottom: 6 }}>👤 SÄSONGENS PERSON</SectionLabel>
+      <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+        {summary.seasonPerson.text}
+      </p>
+    </div>
+  )
+}
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -49,6 +71,11 @@ export function shouldShowTruppenChapter(summary: Pick<SeasonSummary, 'topScorer
   const hasAward = !!(summary.topScorer || summary.topAssister || summary.topRated || summary.mostImproved || summary.youngPlayer)
   const hasCup = !!(summary.cupResult && summary.cupResult !== 'eliminated')
   return hasAward || hasCup
+}
+
+/** Bilden är ett utfallsminne, inte en allmän mörk stämning: bara tabellens faktiska nedflyttningszon. */
+export function isRelegationZoneFinish(finalPosition: number, totalTeams: number): boolean {
+  return totalTeams > 0 && finalPosition >= totalTeams - RELEGATION_ZONE_SIZE + 1
 }
 
 function ChapterDivider({ label }: { label: string }) {
@@ -116,6 +143,13 @@ export function SeasonSummaryScreen() {
 
   const isHistorical = !!params.season
   const isChampion = summary.playoffResult === 'champion'
+  // Ligan är förstahandskälla. Historiska exporter/dev-fixturer kan sakna den;
+  // då är den frysta sluttabellen säkrare än ett ofullständigt klubburval.
+  const totalTeams = game.league?.teamIds?.length
+    || summary.standingsSnapshot?.length
+    || game.standings?.length
+    || game.clubs.length
+  const showRelegationIllustration = isRelegationZoneFinish(summary.finalPosition, totalTeams)
 
   // AUDIT DEL 2 A3, uppföljning (2026-08-09): reversibel dedup mellan DIN
   // SÄSONG och DINA VAL läser samma liggarstyrda resolution-projektion.
@@ -172,7 +206,6 @@ export function SeasonSummaryScreen() {
   }
 
   function verdictText(s: SeasonSummary): string {
-    const totalTeams = game?.clubs.length ?? 12
     return seasonVerdictText(s.boardExpectation, s.finalPosition, totalTeams)
   }
 
@@ -277,6 +310,15 @@ export function SeasonSummaryScreen() {
       background: 'var(--bg)',
     }}>
       <div style={{ padding: '0 16px 180px' }}>
+
+        {showRelegationIllustration && (
+          <IllustrationScene
+            mode="header"
+            name="nedflyttning"
+            alt="Tom bandyplan efter en säsong i nedflyttningszonen"
+            style={{ margin: '0 -16px 16px' }}
+          />
+        )}
 
         {/* HEADER */}
         <div style={{
@@ -882,6 +924,8 @@ export function SeasonSummaryScreen() {
             </p>
           </div>
         )}
+
+        {summary.seasonPerson && <YearbookPersonCard summary={summary} />}
 
         {/* DINA VAL */}
         {(() => {

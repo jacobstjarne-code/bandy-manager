@@ -16,6 +16,9 @@ import { MOMENT_VIEW_TEMPLATES, LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momen
 import type { LedgerOnlySource } from '../data/momentViewTemplates'
 import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 import type { MomentSource } from '../entities/Moment'
+import { currentChronology } from './currentChronology'
+import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
+import { getStorylineTypeFromLedger } from './storylineLedgerService'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -270,7 +273,7 @@ type KeyMomentEntry = NonNullable<SeasonSummary['keyMoments']>[number]
 
 /**
  * liggare-k6-arsbok-liggarposter (2026-09-03): upp till två liggarposter
- * (icke-decision, högst significance) som INTE redan har en rad samma
+ * (icke-decision, högst vikt i årsboksagendan) som INTE redan har en rad samma
  * omgång (`existing`) — dedup mot fixture-/arc-moments är per `round`, en
  * enkel men tillräcklig heuristik för "redan representerad" (en stor
  * derbyseger som redan syns som `derbyWin` behöver ingen andra rad för
@@ -281,22 +284,20 @@ type KeyMomentEntry = NonNullable<SeasonSummary['keyMoments']>[number]
  * systemhändelse ska inte tvinga fram en ny type-medlem eller ett nytt
  * ikonval i SeasonSummaryScreen.tsx för detta pass).
  */
-// Liggaren är redan enkel-klubbs-perspektiv (bara den managerade klubbens
-// händelser loggas någonsin, se clubMemoryService.ts:s motsvarande
-// kommentar) — ingen ledgerEntryBelongsToManagedClub-filtrering behövs här.
+// Redaktören läser via readClubLedger och bär därmed den gemensamma strikta
+// clubId-gränsen. Årsboken får aldrig återinföra den gamla subject-heuristiken.
 function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): KeyMomentEntry[] {
   const usedRounds = new Set(existing.map(m => m.round))
   const isCandidateType = (type: string): type is MomentSource | LedgerOnlySource =>
     (MOMENT_LEDGER_TYPES as string[]).includes(type) || type in LEDGER_ONLY_VIEW_TEMPLATES
 
-  const candidates = (game.eventLedger ?? [])
+  const candidates = agendaForSurface(redaktoren(game, currentChronology(game)), 'yearbook')
+    .map(item => item.post)
     .filter(e =>
       e.season === game.currentSeason
-      && (!e.clubId || e.clubId === game.managedClubId)
       && isCandidateType(e.type)
       && !usedRounds.has(e.matchday)
     )
-    .sort((a, b) => b.significance - a.significance)
     .slice(0, 2)
 
   return candidates.map(entry => {
@@ -321,6 +322,75 @@ function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): Ke
       relatedPlayerId: entry.subject?.kind === 'player' ? entry.subject.id : undefined,
     }
   })
+}
+
+const YEARBOOK_PERSON_TYPES: ReadonlySet<string> = new Set([
+  'patron_emerge',
+  'mecenat_costshare',
+  'mecenat_withdrawal',
+  'patron_withdrawal',
+  'player_milestone',
+  'academy_promotion',
+  'national_team_callup',
+  'retirement',
+  'transfer_sold',
+  'referee_feud',
+  'referee_trust',
+] as const)
+
+function yearbookPersonText(game: SaveGame, item: AgendaItem): string | null {
+  const { post } = item
+  const storylineType = getStorylineTypeFromLedger(post)
+  if (post.type === 'storyline_resolution') {
+    if (storylineType !== 'journalist_feud' && storylineType !== 'journalist_redemption') return null
+    const name = game.journalist?.name
+    return name ? `${name}, med anteckningsblocket. Hen skrev historien om er — och ni gav hen den.` : null
+  }
+  if (!YEARBOOK_PERSON_TYPES.has(post.type)) return null
+
+  const expectedSubjectKind = post.type === 'patron_emerge' || post.type === 'patron_withdrawal'
+    ? 'patron'
+    : post.type === 'mecenat_costshare' || post.type === 'mecenat_withdrawal'
+      ? 'mecenat'
+      : post.type === 'referee_feud' || post.type === 'referee_trust'
+        ? 'referee'
+        : 'player'
+  if (post.subject?.kind !== expectedSubjectKind) return null
+  const name = resolveSubjectName(game, post.subject)
+  if (!name) return null
+
+  switch (post.type) {
+    case 'patron_emerge':
+    case 'mecenat_costshare':
+      return `${name}. Utan honom hade det inte gått i år. Det vet han också.`
+    case 'mecenat_withdrawal':
+    case 'patron_withdrawal':
+      return `${name} lämnade. Det märktes mest på det som inte längre kom.`
+    case 'player_milestone':
+    case 'academy_promotion':
+    case 'national_team_callup':
+      return `${name}. Året då han blev den han skulle bli.`
+    case 'retirement':
+    case 'transfer_sold':
+      return `${name} är borta nu. Orten räknar fortfarande med honom.`
+    case 'referee_feud':
+    case 'referee_trust':
+      return `${name} i svart. Ni pratade mer om honom än om något annat lag.`
+    default:
+      return null
+  }
+}
+
+/** SPEC_BERATTAREN §5/§7: beslut och person väljs oberoende. */
+export function selectYearbookPerson(game: SaveGame): SeasonSummary['seasonPerson'] {
+  const ranked = agendaForSurface(redaktoren(game, currentChronology(game)), 'yearbook')
+  for (const item of ranked) {
+    if (item.post.season !== game.currentSeason) continue
+    if (item.family !== 'people' && item.family !== 'relations_money') continue
+    const text = yearbookPersonText(game, item)
+    if (text) return { text, ledgerPostKey: item.postKey }
+  }
+  return undefined
 }
 
 export type { SeasonSummary }
@@ -961,6 +1031,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     standingsSnapshot,
     storyTriggers,
     keyMoments: keyMoments.length > 0 ? keyMoments : undefined,
+    seasonPerson: selectYearbookPerson(game),
     communityStandingStart: game.communityStanding ?? 50,
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],

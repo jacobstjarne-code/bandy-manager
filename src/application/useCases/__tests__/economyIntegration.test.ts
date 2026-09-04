@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { advanceToNextEvent } from '../advanceToNextEvent'
+import { completeManagedFixture } from '../completeManagedFixture'
 import { executeTransfer } from '../../../domain/services/transferService'
 import { applyFinanceChange, FINANCE_LOG_MAX } from '../../../domain/services/economyService'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -27,7 +28,22 @@ describe('economyIntegration — financeLog accumulation', () => {
   it('financeLog grows across multiple rounds', () => {
     let game = makeGame()
     const after1 = advanceToNextEvent(game, 1).game
-    const after2 = advanceToNextEvent(after1, 2).game
+    const secondAdvance = advanceToNextEvent(after1, 2)
+    const pendingManaged = secondAdvance.game.fixtures.find(f =>
+      f.matchday === secondAdvance.roundPlayed &&
+      f.status === 'scheduled' &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    const after2 = pendingManaged
+      ? completeManagedFixture(secondAdvance.game, {
+          ...pendingManaged,
+          status: 'completed',
+          homeScore: 1,
+          awayScore: 1,
+          attendance: 500,
+          events: [],
+        })
+      : secondAdvance.game
     expect((after2.financeLog ?? []).length).toBeGreaterThan((after1.financeLog ?? []).length)
   })
 

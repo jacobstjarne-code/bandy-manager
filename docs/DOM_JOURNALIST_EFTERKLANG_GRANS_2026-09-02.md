@@ -28,3 +28,7 @@ Ingen av dem kräver en egen tung dom. `DOM_STORYLINES_GRANS` + prio-1-2-migreri
 
 ## ÄGARSKAP
 Code: (1) bekräfta journalist.memory-cache + relationship STANNAR (ej förliggare), (2) stäng `c-sy1-pilot2-journalistmemory` mot storyline-resolution-skrivningen (`DOM_STORYLINES_GRANS`), (3) Efterklang blir projektion automatiskt när prio-1-2-källor migrerats — ingen egen åtgärd. Opus: prio-3 är HÄRMED KLAR (storylines dömd, journalist+Efterklang stängda mot befintliga domar). Jacob: inget beslut — allt följer redan fattade gränser.
+
+## Implementationsnot 2026-09-04
+
+Den senare `SPEC_BERATTAREN` gjorde projektionen explicit som steg 6. `pickEfterklang` rankar nu canonical årsdagar, ekonomiska beslut, rivalförsäljningar och journalistens feud/redemption genom den gemensamma agendan och kvitterar faktisk visning. Domen ovan består: `journalist.memory` är fortsatt presentationscache och `relationship` fortsatt livevärde; de har inte flyttats till liggaren. Klack, brev och nemesisstate ligger av samma skäl kvar tills en säker kanonisk källa finns.

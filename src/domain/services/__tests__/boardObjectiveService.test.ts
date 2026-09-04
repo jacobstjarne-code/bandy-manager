@@ -35,18 +35,17 @@ function makeClub(overrides: Partial<Club> = {}): Club {
   } as Club
 }
 
-// Styrelseobjektiv-tiern (Jacobs dom 2026-08-25): "objektiven HÄRLEDS ur
-// ClubExpectation. Skala inte kostnaden — byt uppsättningen." investSurplus
-// var tidigare finance-gated för VILKEN klubb som helst (O5 kraft 3,
-// 2026-08-23) — nu bara tilldelad ChallengeTop-tiern, oavsett kassa. Testerna
-// nedan uppdaterade till att spegla detta: finances-nivån avgör inte längre
-// OM investSurplus erbjuds, bara evaluateObjectives status GIVET att den
-// redan är tilldelad (de testerna, längre ner i filen, är oförändrade).
-describe('generateBoardObjectives — investSurplus tilldelas av tier, inte finances (styrelseobjektiv-tiern 2026-08-25)', () => {
+describe('generateBoardObjectives — investSurplus kräver både rätt tier och ett verkligt överskott', () => {
   const kassör = makeKassor()
 
-  it('ChallengeTop-klubb får investSurplus oavsett kassans nivå', () => {
+  it('ChallengeTop-klubb under två miljoner får inte ett sakligt falskt överskottskrav', () => {
     const club = makeClub({ boardExpectation: ClubExpectation.ChallengeTop, finances: 1_000 })
+    const objectives = generateBoardObjectives(club, { currentSeason: 2025, players: [], clubs: [club] }, [kassör], () => 0.9)
+    expect(objectives.some(o => o.id === 'investSurplus')).toBe(false)
+  })
+
+  it('ChallengeTop-klubb över två miljoner får investSurplus', () => {
+    const club = makeClub({ boardExpectation: ClubExpectation.ChallengeTop, finances: SURPLUS_CEILING + 1 })
     const objectives = generateBoardObjectives(club, { currentSeason: 2025, players: [], clubs: [club] }, [kassör], () => 0.9)
     expect(objectives.some(o => o.id === 'investSurplus')).toBe(true)
   })
@@ -265,8 +264,8 @@ describe('generateBoardObjectives — tier-uppsättningarna (styrelseobjektiv-ti
   // ovan innehåller aldrig beatRival (getRivalClubId('c1') → null, korrekt
   // gracefully-hoppad). ChallengeTop/WinLeague testas här mot BARA de två
   // rival-oberoende objektiven; en riktig rival-klubb testas separat nedan.
-  it('ChallengeTop: cupRun + investSurplus (beatRival kräver en riktig rival, se separat test)', () => {
-    expect(idsFor(ClubExpectation.ChallengeTop)).toEqual(['cupRun', 'investSurplus'].sort())
+  it('ChallengeTop utan överskottskassa: cupRun (beatRival kräver en riktig rival)', () => {
+    expect(idsFor(ClubExpectation.ChallengeTop)).toEqual(['cupRun'])
   })
 
   it('WinLeague: topHalf + cupRun — Jacobs egna exempel, ordagrant (beatRival kräver en riktig rival, se separat test)', () => {

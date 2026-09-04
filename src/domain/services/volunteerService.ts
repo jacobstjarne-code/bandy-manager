@@ -1,6 +1,8 @@
 // Volunteer pool system — generates a roster of local helpers
 // Uses the existing game.volunteers string[] as stored volunteer names
 
+import { stringHashUnsigned } from '../utils/random'
+
 const VOLUNTEER_ROLES = [
   { role: 'Kioskvakt', activity: 'kiosk', income: 800, csBoost: 2 },
   { role: 'Lotterikassör', activity: 'lottery', income: 600, csBoost: 2 },
@@ -20,6 +22,22 @@ export interface Volunteer {
   activity: string
 }
 
+/**
+ * Namnet är den befintliga save-modellens stabila identitet. Profilen härleds
+ * på ett enda ställe, så även startvolontärer som inte råkar ligga i årets
+ * rekryteringspool får en verklig och reproducerbar roll.
+ */
+export function getVolunteerProfile(name: string): Volunteer {
+  const roleData = VOLUNTEER_ROLES[stringHashUnsigned(name) % VOLUNTEER_ROLES.length]
+  return {
+    name,
+    role: roleData.role,
+    weeklyContrib: roleData.income,
+    csBoost: roleData.csBoost,
+    activity: roleData.activity,
+  }
+}
+
 export function generateVolunteerRoster(seed: number, count = 5): Volunteer[] {
   // Simple deterministic generation from seed
   const result: Volunteer[] = []
@@ -32,14 +50,8 @@ export function generateVolunteerRoster(seed: number, count = 5): Volunteer[] {
   for (let i = 0; i < count; i++) {
     const firstName = FIRST_NAMES[Math.floor(next() * FIRST_NAMES.length)]
     const lastName = LAST_NAMES[Math.floor(next() * LAST_NAMES.length)]
-    const roleData = VOLUNTEER_ROLES[Math.floor(next() * VOLUNTEER_ROLES.length)]
-    result.push({
-      name: `${firstName} ${lastName}`,
-      role: roleData.role,
-      weeklyContrib: roleData.income,
-      csBoost: roleData.csBoost,
-      activity: roleData.activity,
-    })
+    next() // bevara den etablerade seedsekvensen för efterföljande namn
+    result.push(getVolunteerProfile(`${firstName} ${lastName}`))
   }
   return result
 }
@@ -49,16 +61,15 @@ export function getActiveVolunteerBonus(
   roster?: Volunteer[],
 ): { weeklyIncome: number; csBoostPerRound: number } {
   if (roster && roster.length > 0) {
-    const active = roster.filter(v => volunteerNames.includes(v.name))
+    const active = volunteerNames.map(name => roster.find(v => v.name === name) ?? getVolunteerProfile(name))
     return {
       weeklyIncome: active.reduce((sum, v) => sum + v.weeklyContrib, 0),
       csBoostPerRound: Math.min(1.5, active.reduce((sum, v) => sum + v.csBoost / 10, 0)),
     }
   }
-  // Flat fallback: corrected averages from VOLUNTEER_ROLES (income 340, csBoost 0.32)
-  const count = volunteerNames.length
+  const active = volunteerNames.map(getVolunteerProfile)
   return {
-    weeklyIncome: count * 340,
-    csBoostPerRound: Math.min(1.5, count * 0.32),
+    weeklyIncome: active.reduce((sum, v) => sum + v.weeklyContrib, 0),
+    csBoostPerRound: Math.min(1.5, active.reduce((sum, v) => sum + v.csBoost / 10, 0)),
   }
 }

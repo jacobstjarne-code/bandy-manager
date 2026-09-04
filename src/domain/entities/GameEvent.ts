@@ -370,6 +370,11 @@ export interface GameEvent {
    *  slumpvalet i generatePressConference — auditens "samma frågor snabbt"
    *  och "gamla svar följer med". */
   pressQuestionKey?: string
+  /** SPEC_BERATTAREN steg 7: identiteten på den kanoniska liggarpost som
+   * gav pressens högst enda liggarfråga. Rundprocessorn använder nyckeln för
+   * att skriva `surface: press` först när presskortet faktiskt överlever
+   * surfacing-budgeten. Ingen kopierad post eller ny minneslagring. */
+  pressLedgerPostKey?: string
   /** HIGH 7 (audit 2026-08-29, docs/incoming/
    *  BANDY_MANAGER_AUDIT_5_SASONGER_KUL_STICKINESS_VISUELL_2026-08-29.md):
    *  cooldown-nycklarna för de manager-svar som ERBJÖDS i den här

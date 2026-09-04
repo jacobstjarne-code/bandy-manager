@@ -142,6 +142,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
           <IllustrationScene
             mode="band"
             name={ANSLAG_BAND_IMAGE[anslagKey]}
+            objectPosition={anslagKey === 'league_midwinter' ? 'center 52%' : undefined}
             fadeTo="var(--bg-portal-surface)"
             style={{ height: 140, margin: '-28px -24px 20px', borderRadius: 'var(--radius-md) var(--radius-md) 0 0' }}
           />

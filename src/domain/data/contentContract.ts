@@ -8,14 +8,14 @@
  * (17, Narrative.ts), `ArcType` (6, Narrative.ts — 8 vid O11:s leverans,
  * 'ledare_crisis' borttagen 2026-08-24 och 'veteran_final_season' borttagen
  * 2026-09-02, se BACKLOG.md
- * "Två läsare, en sanning"), `PORTAL_BEATS` (17 id:n, portalBeats.ts — den
+ * "Två läsare, en sanning"), `PORTAL_BEATS` (18 id:n, portalBeats.ts — den
  * enda som redan ÄR en array, inte bara en typ).
  * 51+17+6+17 = 91 distinkta narrativa former.
  * Samma arbete som `U5`:s semanticKey-kartläggning, byggda ihop per domens
  * egen instruktion ("gör dem tillsammans, inte två gånger") — U5 var klar
  * (`4e341891`) innan detta pass startade.
  *
- * TÄCKNINGSLÄGE (uppdaterat 2026-09-02): 91 rader, en per nuvarande canonical
+ * TÄCKNINGSLÄGE (uppdaterat 2026-09-04): 92 rader, en per nuvarande canonical
  * id ur de fyra källorna. Samtliga 91 har alla sex fälten verifierade mot
  * producent, state-effekt och återkallningsyta (`filled: true`); inga
  * TODO-rader återstår. `contentContract.test.ts` låser mängd och struktur,
@@ -209,7 +209,7 @@ export const _arcTypeIdsCoverAllTypes: AssertNoMissingIds<ArcType, typeof ARC_TY
 // jämför INTE mot PORTAL_BEATS.length automatiskt av samma skäl — en
 // avsiktlig, synlig lista, inte en beräknad.
 const PORTAL_BEAT_IDS_ALL = [
-  'board_failure', 'ripple_consequence', 'callback_streak', 'callback_derby_memory', 'callback_snub',
+  'board_failure', 'ripple_consequence', 'callback_manager_return', 'callback_streak', 'callback_derby_memory', 'callback_snub',
   'callback_sale', 'callback_nemesis', 'callback_legend_mentor', 'callback_legend_debut',
   'callback_legend_record', 'season_opener', 'first_win', 'first_derby', 'halftime',
   'transfer_window_open', 'last_league_round', 'facility_completed',
@@ -933,6 +933,16 @@ const ARC_FILLED: Partial<Record<ArcType, Omit<ContentContractEntry, 'id' | 'sou
 }
 
 const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
+  callback_manager_return: {
+    trigger: 'Exakt nästa scheduled managed fixture möter en klubb i managerProfile.clubSpells vars period är avslutad. Den nuvarande öppna klubbperioden måste ha börjat samma säsong som fixturen, och ingen tidigare completed fixture under perioden får ha mött den klubben; när äldre fixtures har rullats bort gör systemet därför inget förstapåstående.',
+    stateEffect: 'Ambient callback utan numerisk effekt. Den visar den låsta raden ”Första gången tillbaka. Läktaren minns, åt båda hållen.” och ändrar varken klubbperiod, rivalitet, match eller publikvärden.',
+    systems: ['managerProfile.clubSpells', 'nästa scheduled managed fixture', 'completed fixture-historik i nuvarande klubbperiod', 'PortalBeat-prioritering och shownBeats'],
+    lifespan: 'Kan visas från att den första verifierbara returen blir exakt nästa match tills matchen spelas eller beatet stängs. Nyckeln callback_manager_return_{formerClubId}_s{currentSpell.fromSeason} gör återkomsten unik för den gamla klubben och den nya klubbperioden.',
+    semanticKey: 'callback_manager_return_{formerClubId}_s{currentSpell.fromSeason}',
+    cooldownSeasons: 0,
+    recallSurface: 'Samma rena getManagerReturnContext används i Granska efter matchen. Portalen berättar inför avslag; Granska bekräftar samma faktiska första möte utan en andra historikmodell.',
+    notes: 'SPEC_BERATTAREN §5 och DOM_LIGGARE_CLUBID §4. Tystnad vid bortrollad historik är avsiktlig: spelet får inte kalla en senare retur för den första när underlaget inte längre kan bevisa det.',
+  },
   board_failure: {
     trigger: `boardObjectives.some(status==='failed') (portalBeats.ts:134)`,
     stateEffect: 'Ingen mekanisk state-effekt — ren text/severity-eskalering (1→2→3) baserad på boardPatience. Ambient-liknande i mekanik, men severity 3 renderas som kris-band.',

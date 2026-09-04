@@ -207,15 +207,26 @@ export function backfillClubHistoryLedger(game: SaveGame): EventLedgerEntry[] {
         .filter((clubId): clubId is string => typeof clubId === 'string'),
     )]
     if (summaryClubs.length === 1) return summaryClubs[0]
+    const spellClubs = [...new Set(
+      (game.managerProfile?.clubSpells ?? [])
+        .filter(spell => season >= spell.fromSeason && (spell.toSeason === undefined || season <= spell.toSeason))
+        .map(spell => spell.clubId),
+    )]
+    if (spellClubs.length === 1) return spellClubs[0]
     if (season === game.currentSeason) return game.managedClubId
     return undefined
   }
   const existing = (game.eventLedger ?? [])
     .filter(entry => entry && typeof entry.semanticKey === 'string')
     .map(entry => {
-      if (entry.clubId) return entry
+      const withManager = !entry.managerId && (entry.type === 'decision' || entry.type === 'manager_burnout')
+        ? { ...entry, managerId: game.id }
+        : entry
+      if (withManager.clubId) return withManager
       const clubId = clubForSeason(entry.season)
-      return clubId ? { ...entry, clubId } : entry
+      return clubId
+        ? { ...withManager, clubId }
+        : { ...withManager, clubId: game.managedClubId, clubIdInferred: true }
     })
   const additions: EventLedgerEntry[] = []
   const managedClubId = game.managedClubId
@@ -263,6 +274,23 @@ export function backfillClubHistoryLedger(game: SaveGame): EventLedgerEntry[] {
       const ledgerEntry = buildPlayerMilestoneLedgerEntry(player.id, managedClubId, diaryEntry)
       if (ledgerEntry) additions.push(ledgerEntry)
     }
+  }
+
+  for (const summary of game.seasonSummaries ?? []) {
+    const goal = summary.personalGoal
+    if (goal?.type !== 'playerCarry' || !goal.referenceId || !summary.clubId) continue
+    additions.push({
+      type: 'player_milestone',
+      semanticKey: `player_milestone:${goal.referenceId}:s${summary.season}:m0:manager_personal_goal`,
+      clubId: summary.clubId,
+      managerId: game.id,
+      season: summary.season,
+      matchday: 0,
+      subject: { kind: 'player', id: goal.referenceId },
+      subject2: { kind: 'club', id: summary.clubId },
+      significance: 40,
+      madeByPlayer: true,
+    })
   }
 
   const scandals = [...(game.scandalHistory ?? []), ...(game.activeScandals ?? [])]

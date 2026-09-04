@@ -579,6 +579,22 @@ export const BANDYPLAY_SPONSOR_BONUS_MAX = 0.04
 export const BANDY_SCHOOL_BASIC_RUNNING_COST = 1000
 export const BANDY_SCHOOL_BASIC_SPONSOR_COST_SHARE = 0.25
 
+/** En enda prislista för alla direkta ortsaktiveringar. */
+export const COMMUNITY_ACTIVITY_ACTIVATION_COSTS: Record<string, Record<string, number>> = {
+  kiosk: { basic: 3000, upgraded: 8000 },
+  lottery: { basic: 1000, intensive: 5000 },
+  bandySchoolBasic: { active: 0 },
+  bandyplay: { active: BANDYPLAY_ACTIVATION_COST },
+  functionaries: { active: 2000 },
+  julmarknad: { active: 2000 },
+  bandySchool: { active: 5000 },
+  socialMedia: { active: 2000 },
+  vipTent: { active: 10000 },
+  pensionarskaffe: { active: 0 },
+  soppkvall: { active: 1000 },
+  skolbesok: { active: 0 },
+}
+
 // Påståendekartan, byggnodernas löften (2026-08-27, Jacobs dom per nod —
 // RAPPORT_BYGGNODLOFTEN_2026-08-27.md): facilityNodes.ts's "Kiosk &
 // servering" lovade "Ekonomi ↑" utan att någon kod läste vilka noder som

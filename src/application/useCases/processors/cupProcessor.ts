@@ -5,6 +5,7 @@ import { FixtureStatus, InboxItemType } from '../../../domain/enums'
 import {
   updateCupBracketAfterRound,
   generateNextCupRound,
+  getCupPrizeMoney,
   getCupRoundName,
 } from '../../../domain/services/cupService'
 import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
@@ -175,9 +176,6 @@ export function processCupRound(
   // ── Prize money ─────────────────────────────────────────────────────────────
   // Apply to ALL completed cup fixtures this round (including live-played ones whose bracket was
   // already updated by matchActions — prize money is NOT applied there, only here).
-  const CUP_PRIZES: Record<number, number> = { 1: 10000, 2: 30000, 3: 50000, 4: 150000 }
-  const RUNNER_UP_PRIZE = 50000
-
   const completedCupThisRound = simulatedFixtures.filter(
     f => f.status === FixtureStatus.Completed && f.isCup,
   )
@@ -188,8 +186,8 @@ export function processCupRound(
 
     const winnerId: string = match.winnerId
     const loserId = fixture.homeClubId === winnerId ? fixture.awayClubId : fixture.homeClubId
-    const winPrize = CUP_PRIZES[match.round] ?? 0
-    const losePrize = match.round === 4 ? RUNNER_UP_PRIZE : 0
+    const winPrize = getCupPrizeMoney(match.round, true)
+    const losePrize = getCupPrizeMoney(match.round, false)
 
     result.prizeMoneyByClub[winnerId] = (result.prizeMoneyByClub[winnerId] ?? 0) + winPrize
     if (losePrize > 0) {

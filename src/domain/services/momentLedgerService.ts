@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Moment, MomentSource } from '../entities/Moment'
 import type { EventLedgerEntry } from '../entities/Narrative'
+import { readClubLedger } from './eventLedgerService'
 
 /**
  * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 4, Skärpning 3 (Opus
@@ -41,14 +42,19 @@ export const MOMENT_LEDGER_TYPES: MomentSource[] = Object.keys(MOMENT_LEDGER_SIG
  * bara bär en (derby_win bär t.ex. bara rivalklubben, ingen spelare).
  */
 export function buildMomentLedgerEntry(moment: Moment): EventLedgerEntry {
-  const hasBoth = !!moment.subjectPlayerId && !!moment.subjectClubId
-  const subject: EventLedgerEntry['subject'] = moment.subjectPlayerId
+  const isMecenatCostshare = moment.source === 'mecenat_costshare' && !!moment.subjectMecenatId
+  const hasBoth = !!moment.subjectPlayerId && (!!moment.subjectClubId || isMecenatCostshare)
+  const subject: EventLedgerEntry['subject'] = isMecenatCostshare
+    ? { kind: 'mecenat', id: moment.subjectMecenatId! }
+    : moment.subjectPlayerId
     ? { kind: 'player', id: moment.subjectPlayerId }
     : moment.subjectClubId
     ? { kind: 'club', id: moment.subjectClubId }
     : undefined
   const subject2: EventLedgerEntry['subject2'] = hasBoth
-    ? { kind: 'club', id: moment.subjectClubId! }
+    ? isMecenatCostshare
+      ? { kind: 'player', id: moment.subjectPlayerId! }
+      : { kind: 'club', id: moment.subjectClubId! }
     : undefined
 
   return {
@@ -97,9 +103,16 @@ export function appendMomentsAndEntriesToLedger(
   moments: Moment[],
   entries: EventLedgerEntry[],
   clubId?: string,
+  managerId?: string,
 ): EventLedgerEntry[] {
-  const stamp = (entry: EventLedgerEntry): EventLedgerEntry =>
-    clubId && !entry.clubId ? { ...entry, clubId } : entry
+  const stamp = (entry: EventLedgerEntry): EventLedgerEntry => {
+    const withClub = clubId && !entry.clubId ? { ...entry, clubId } : entry
+    return managerId
+      && !withClub.managerId
+      && (withClub.type === 'decision' || withClub.type === 'manager_burnout')
+      ? { ...withClub, managerId }
+      : withClub
+  }
   const remainingEntries = entries.map(stamp)
   const momentEntries = moments.map(buildMomentLedgerEntry).map(stamp).map(momentEntry => {
     const entryIndex = remainingEntries.findIndex(entry => sameLedgerEvent(momentEntry, entry))
@@ -127,10 +140,10 @@ export function appendMomentsAndEntriesToLedger(
 export type MomentLedgerEntry = EventLedgerEntry & { type: MomentSource }
 
 export function getRecentMomentsFromLedger(game: SaveGame, limit = 5): MomentLedgerEntry[] {
-  return (game.eventLedger ?? [])
+  return readClubLedger(game)
     .filter((e): e is MomentLedgerEntry =>
       MOMENT_LEDGER_TYPES.includes(e.type as MomentSource)
-      && (!e.clubId || e.clubId === game.managedClubId))
+    )
     .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
     .slice(0, limit)
 }

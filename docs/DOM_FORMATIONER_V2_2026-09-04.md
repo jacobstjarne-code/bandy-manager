@@ -1,5 +1,7 @@
 # DOM — FORMATIONERNA V2: SEX UPPSTÄLLNINGAR PÅ BANDYNS EGEN AXEL
 
+**Status:** BYGGD 2026-09-04 (Code, commit 18ff34e3), verifierad tsc/447 filer/4 312 tester/build/fyra grindar/browser. Kvar: 5-2-3:s konditionskostnad (konservativ konstant) mäts i C2; tre scripts utanför tsconfig uppdateras före mätningen (MASTER `formationer-v2-scripts-utanfor-tsconfig`).
+
 **Datum:** 2026-09-04 · **Dömt av:** Jacob (väg 1, sex formationer) · **Skrivet av:** Opus · **Bygger:** Code · **Mäter:** kalibreringsrundan C2
 **Källor:** `BANDYTAKTIK_KALLASNING_2026-09-04.md` (SvBF spelarutvecklingsplan 2020 §2.4; GIH 2023; SvenskaFans 2013), `docs/kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md`, `BANDY_KANON.md` §2–§4, `tacticModifiers.ts`, `TEXT_REVIEW_formations_2026-04-20.md` (ersätts).
 **Reverserar:** DOM 2026-04-20 ("formationen är matchmotor-neutral, taggar är anatomi") — medvetet. Taggar förblir anatomi. Neutraliteten ersätts av EN källbelagd effekt.
@@ -15,7 +17,7 @@ Sju axlar kvar på taktikskärmen. Sex formationer, som idag. Motorn rörs på e
 | # | Namn (UI) | Id | Form | Höjdläge | Kräver av truppen | Källa |
 |---|---|---|---|---|---|---|
 | 1 | **5-3-2 två toppar** | `532_tvatoppar` | Platt trea på mitten, två anfallare brett. Styrspel. **Default.** | mellan | 2 FWD, 3 MID | SvBF §2.4.2.1 ("de flesta lag spelar med tre mittfältare"), "två centrala toppforwards" |
-| 2 | **5-3-2 triangel** | `532_triangel` | En spets, två mittfältare höga bakom. | mellan | 1 FWD (spets), 2 MID som går högt, 1 MID | SvBF §2.4.2.2 ("en triangel längst fram") |
+| 2 | **5-3-2 triangel** | `532_triangel` | En spets, två mittfältare höga bakom. | mellan | 1 FWD (spets) + 1 FWD i triangelns bas, 2 MID som går högt, 1 MID — *rättat 2026-09-04: domens ursprungliga rad var en spelare kort för elva (Codes fynd vid bygget); implementerat med en andra FWD-slot* | SvBF §2.4.2.2 ("en triangel längst fram") |
 | 3 | **5-3-2 ytterben** | `532_ytterben` | En defensiv mittfältare, två offensiva ytterben. Hammarbys SM-form. | mellan | 2 snabba MID, 1 läsande MID, 2 FWD | Brodén/Liw (SvenskaFans del 1, 6) |
 | 4 | **5-3-2 höga halvor** | `532_hogahalvor` | Ytterhalvorna går med i anfallet; bortre halven faller in som extra libero. | mellan | 2 HALF med lungor | SvBF §2.4.2.1 (ytterhalvor "deltar ofta i offensiven", motsatt sida "extra libero"), Einarsson (del 5) |
 | 5 | **5-2-3 hög** | `523_hog` | Forechecking. En mittfältare upp, press på utkastet. | **hög** | 3 FWD eller 2 FWD + 1 MID som kan | SvBF §2.4.2.2 ("5-2-3 uppställning … väldigt kraftödande … kortare perioder") |

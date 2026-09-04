@@ -18,6 +18,7 @@ import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { SceneHeader } from './shared/SceneHeader'
 import { CoffeeExchange } from './shared/CoffeeExchange'
 import { SceneCTA } from './shared/SceneCTA'
+import { IllustrationScene } from '../../components/illustration/IllustrationScene'
 
 interface Props {
   game: SaveGame
@@ -55,7 +56,14 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
         flexDirection: 'column',
       }}
     >
-      <div style={{ padding: '18px 24px 0' }}>
+      <IllustrationScene
+        mode="fullbleed"
+        name="kafferummet"
+        alt=""
+        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+      />
+
+      <div style={{ padding: '18px 24px 0', position: 'relative', zIndex: 1 }}>
         <SceneHeader
           genre="I DETTA ÖGONBLICK"
           title={scene.meta.title}
@@ -64,16 +72,24 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
         />
       </div>
 
-      <div
-        style={{
-          padding: '8px 20px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18,
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
+      <div style={{
+        margin: '4px 16px 0',
+        position: 'relative',
+        zIndex: 1,
+        background: 'color-mix(in srgb, var(--bg-scene-deep) 88%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--accent) 24%, transparent)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: '0 18px 50px rgba(0,0,0,0.34)',
+        backdropFilter: 'blur(4px)',
+      }}>
+        <div
+          style={{
+            padding: '18px 18px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+          }}
+        >
         {scene.exchanges.map((ex, i) => (
           <div key={i} style={{ display: 'contents' }}>
             <CoffeeExchange exchange={ex} delay={i * 400} />
@@ -223,10 +239,11 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
             </div>
           </div>
         )}
-      </div>
+        </div>
 
-      <div style={{ padding: '16px 20px 24px', position: 'relative', zIndex: 1 }}>
-        <SceneCTA label={footerLabel} onClick={footerAction} />
+        <div style={{ padding: '0 18px 18px' }}>
+          <SceneCTA label={footerLabel} onClick={footerAction} />
+        </div>
       </div>
     </div>
   )

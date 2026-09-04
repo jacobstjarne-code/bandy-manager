@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { logEvent } from '../eventLedgerService'
+import { logEvent, readManagerLedger } from '../eventLedgerService'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../worldGenerator'
 import type { EventLedgerEntry } from '../../entities/Narrative'
@@ -60,7 +60,17 @@ describe('logEvent', () => {
       madeByPlayer: true,
     }
     const updated = logEvent(game, full)
-    expect(updated[0]).toEqual({ ...full, clubId: game.managedClubId })
+    expect(updated[0]).toEqual({ ...full, clubId: game.managedClubId, managerId: game.id })
+  })
+
+  it('stämplar bara managerägda beslut och burnout centralt', () => {
+    const game = makeGame()
+    const burnout = logEvent(game, { ...minimalEntry, type: 'manager_burnout' })[0]
+    const clubEvent = logEvent(game, minimalEntry)[0]
+
+    expect(burnout.managerId).toBe(game.id)
+    expect(clubEvent.managerId).toBeUndefined()
+    expect(readManagerLedger({ id: game.id, eventLedger: [burnout, clubEvent] })).toEqual([burnout])
   })
 
   it('bevarar en explicit ursprungsklubb vid historisk import', () => {

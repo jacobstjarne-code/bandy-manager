@@ -46,7 +46,12 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
   it('communityStanding under PATRON_EMERGE_CS med aktiv patron: patronen lämnar, patronWithdrawnSeason sätts', () => {
     let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
     game = withAutoLineup(game)
-    game = { ...game, communityStanding: 40, patron: makePatron({ isActive: true }) }
+    game = {
+      ...game,
+      communityStanding: 40,
+      patron: makePatron({ isActive: true, introducedSeason: game.currentSeason }),
+      resolvedEventIds: [`patron_intro_${game.currentSeason}`],
+    }
 
     const result = advanceToNextEvent(game, 1)
 
@@ -62,6 +67,17 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
       subject: { kind: 'patron', id: 'patron_test_testsson' },
       significance: 95,
     })
+  })
+
+  it('en startpatron kan inte lämna innan spelaren ens har fått introduktionen', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
+    game = withAutoLineup(game)
+    game = { ...game, communityStanding: 40, patron: makePatron({ isActive: true }), resolvedEventIds: [] }
+
+    const result = advanceToNextEvent(game, 1)
+
+    expect(result.game.patron?.isActive).toBe(true)
+    expect(result.pendingEvents.some(e => e.id.startsWith('patron_cs_eviction_'))).toBe(false)
   })
 
   it('communityStanding över tröskeln: patronen påverkas inte', () => {

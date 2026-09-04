@@ -182,7 +182,7 @@ describe('liggare-k2-arsdagar-ur-liggaren — steg 2 för hela unionen, inte bar
       patron: { name: 'Bengt Karlsson', id: 'patron-1', business: 'Test AB', influence: 50, happiness: 0, contribution: 10000, isActive: false, goodwill: 0 } as never,
       eventLedger: [{
         type: 'patron_withdrawal', semanticKey: 'patron_withdrawal_1', season: 1, matchday: 10,
-        significance: 95, subject: { kind: 'patron', id: 'patron-1' },
+        clubId: MANAGED_CLUB_ID, significance: 95, subject: { kind: 'patron', id: 'patron-1' },
       }],
     })
     const result = findActiveAnniversaries(game)
@@ -199,7 +199,7 @@ describe('liggare-k2-arsdagar-ur-liggaren — steg 2 för hela unionen, inte bar
       clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' } as never],
       eventLedger: [{
         type: 'derby_win', semanticKey: 'derby-1', season: 1, matchday: 8,
-        significance: 65, subject: { kind: 'club', id: MANAGED_CLUB_ID },
+        clubId: MANAGED_CLUB_ID, significance: 65, subject: { kind: 'club', id: MANAGED_CLUB_ID },
       }],
     })
     const result = findActiveAnniversaries(game)

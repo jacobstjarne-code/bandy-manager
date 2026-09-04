@@ -14,7 +14,12 @@ import type { SaveGame } from '../../entities/SaveGame'
 function makeGame(expectation: ClubExpectation, position: number, matchday: number): SaveGame {
   const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
   const managedId = base.managedClubId
-  const fixtures = base.fixtures.map((f, i) => i === 0 ? { ...f, status: 'completed' as const, matchday } : f)
+  const fixtureIndex = base.fixtures.findIndex(f =>
+    f.homeClubId === managedId || f.awayClubId === managedId
+  )
+  const fixtures = base.fixtures.map((f, i) => i === fixtureIndex
+    ? { ...f, status: 'completed' as const, matchday, roundNumber: matchday }
+    : f)
   return {
     ...base,
     clubs: base.clubs.map(c => c.id === managedId ? { ...c, boardExpectation: expectation } : c),
@@ -46,5 +51,20 @@ describe('midSeasonEventService — halvtidsdomen läser boardExpectation', () =
     // WinLeague-klubb (ankare 1) på plats 10: gap = 1-10 = -9, djupt under förväntan — oro.
     const titleContenderEvents = checkMidSeasonEvents(makeGame(ClubExpectation.WinLeague, 10, 10))
     expect(titleContenderEvents.find(e => e.id.startsWith('mse-bottom'))).toBeDefined()
+  })
+
+  it('cupdagar flyttar inte fram en text som lovar tio spelade serieomgångar', () => {
+    const game = makeGame(ClubExpectation.MidTable, 2, 6)
+    const withLateCup = {
+      ...game,
+      fixtures: game.fixtures.concat({
+        id: 'late-cup', leagueId: 'cup', season: game.currentSeason,
+        roundNumber: 2, matchday: 10, homeClubId: game.managedClubId,
+        awayClubId: 'club_other', status: 'completed', isCup: true,
+        homeScore: 2, awayScore: 1, events: [],
+      } as never),
+    }
+
+    expect(checkMidSeasonEvents(withLateCup).some(e => e.id.startsWith('mse-top3'))).toBe(false)
   })
 })

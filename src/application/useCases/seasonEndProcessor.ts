@@ -1512,11 +1512,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // ── Bandygalan ────────────────────────────────────────────────────────────
   const galaNominations = generateNominations(game)
   let galaStorylinesForSeason: StorylineEntry[] = []
+  let galaLedgerEntriesForSeason: EventLedgerEntry[] = []
   if (galaNominations.length > 0) {
     seasonEndPendingEvents.push(generateGalaEvent(game, galaNominations))
-    const { inboxItems: galaInbox, storylines: galaStorylines } = generateGalaInbox(galaNominations, game)
+    const {
+      inboxItems: galaInbox,
+      storylines: galaStorylines,
+      ledgerEntries: galaLedgerEntries,
+    } = generateGalaInbox(galaNominations, game)
     newInboxItems.push(...galaInbox)
     galaStorylinesForSeason = galaStorylines
+    galaLedgerEntriesForSeason = galaLedgerEntries
   }
 
   // ── NARR-001: Mecenat retirement check ───────────────────────────────────
@@ -1714,7 +1720,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // squadPlayerIds/reputation härifrån hade fått föråldrad data. clubsAfterLicense
   // är redan fullt beräknad vid denna punkt (sista skrivning rad ~1226, före
   // denna rad) — enrads-bytet lägger ingen ny beräkning, bara rätt källa.
-  const seasonEndGameView = { ...game, clubs: clubsAfterLicense }
+  // Berättaren steg 4: pensioneringarna skapas tidigare i samma rollover.
+  // Lägg dem i den kanoniska vy som årsboken rankar, annars kan årets
+  // viktigaste person försvinna just för att han slutade denna säsong.
+  const seasonEndLedger = appendMomentsAndEntriesToLedger(
+    game.eventLedger ?? [],
+    [],
+    [...retirementLedgerEntries, ...galaLedgerEntriesForSeason],
+    game.managedClubId,
+    game.id,
+  )
+  const seasonEndGameView = { ...game, clubs: clubsAfterLicense, eventLedger: seasonEndLedger }
   const activeGoal = game.activeSeasonGoal?.chosenSeason === game.currentSeason ? game.activeSeasonGoal : undefined
   const personalGoal = activeGoal
     ? evaluateSeasonGoal(seasonEndGameView, activeGoal, { contractExpiredIds, retiredPlayerIds })
@@ -2248,10 +2264,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
       .slice(0, 5),
     eventLedger: appendMomentsAndEntriesToLedger(
-      game.eventLedger ?? [],
+      seasonEndLedger,
       seasonHighlightMoments,
-      retirementLedgerEntries,
+      [],
       game.managedClubId,
+      game.id,
     ),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [

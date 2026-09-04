@@ -197,7 +197,7 @@ export function matchActions(get: Get, set: Set) {
       const managedIsHome = fixture.homeClubId === game.managedClubId
       const homeScore = managedIsHome ? 0 : 5
       const awayScore = managedIsHome ? 5 : 0
-      const completed = { ...fixture, homeScore, awayScore, events: [], status: FixtureStatus.Completed }
+      const completed = { ...fixture, homeScore, awayScore, events: [], status: FixtureStatus.Completed, isWalkover: true }
 
       const opp = game.clubs.find(c => c.id === (managedIsHome ? fixture.awayClubId : fixture.homeClubId))
       const walkoverItem: InboxItem = {

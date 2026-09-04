@@ -23,6 +23,7 @@ import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
 import { isMatchResultEntry } from '../entities/Narrative'
 import { getRivalry } from '../data/rivalries'
+import { readClubLedger } from './eventLedgerService'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -156,32 +157,6 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'big_loss',
 ])
 
-/**
- * Liggaren följer managerkarriären och kan innehålla flera klubbar.
- * `clubId` är därför den kanoniska avgränsningen; subject/subject2 kan vara
- * en motpart och kan inte användas som klubbägare. Poster utan clubId är
- * gamla sparfiler. Migreringen försöker stämpla dem från säsongssummeringen,
- * och den här fallbacken behåller det tidigare enkelklubbsbeteendet när
- * ursprunget inte går att avgöra utan att fabricera data.
- */
-function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): boolean {
-  // Nya poster bär ursprungsklubben explicit. Det är den enda säkra
-  // avgränsningen efter ett klubbyte; subject/subject2 kan vara motparten.
-  // Poster utan clubId är legacy och går vidare genom den äldre
-  // identitetskontrollen nedan.
-  if (entry.clubId) return entry.clubId === managedClubId
-  if (entry.type === 'transfer_sold' || entry.type === 'rival_sale') return true
-  if (entry.subject?.kind !== 'player') return true
-
-  const player = game.players.find(item => item.id === entry.subject!.id)
-  if (player) {
-    return player.clubId === managedClubId
-      || player.academyClubId === managedClubId
-      || (player.seasonHistory ?? []).some(item => item.clubId === managedClubId && item.season === entry.season)
-  }
-  return (game.clubLegends ?? []).some(legend => legend.playerId === entry.subject!.id)
-}
-
 function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
   const fixture = game.fixtures.find(item =>
     item.season === season
@@ -216,7 +191,7 @@ function playerMilestoneText(
   return null
 }
 
-function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): MemoryEvent | null {
+export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): MemoryEvent | null {
   const playerId = entry.subject?.kind === 'player' ? entry.subject.id : undefined
   const player = playerId ? game.players.find(item => item.id === playerId) : undefined
   const playerName = player
@@ -385,9 +360,8 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
   // De sex migrerade ClubMemory-källorna läses nu ur kanon. Fickorna ovan
   // fortsätter finnas för sina övriga roller, men får inte längre återskapa
   // samma historiska händelse parallellt.
-  for (const entry of game.eventLedger ?? []) {
+  for (const entry of readClubLedger(game, managedClubId)) {
     if (entry.season !== season || !LEDGER_CLUB_MEMORY_TYPES.has(entry.type)) continue
-    if (!ledgerEntryBelongsToManagedClub(game, entry, managedClubId)) continue
     const event = buildMemoryEventFromLedger(game, entry, managedClubId)
     if (event) events.push(event)
   }
@@ -444,19 +418,7 @@ export function findActiveAnniversaries(game: SaveGame): ActiveAnniversary[] {
   const allEvents = getClubMemory(game).seasons.flatMap(s => s.events)
 
   return allEvents
-    .filter(e => {
-      // Måste matcha matchday inom +/- 1 (slacka pga schemavariation)
-      if (Math.abs(e.matchday - currentMatchday) > 1) return false
-
-      // 1 år — significance >= 30
-      const yearsAgo = game.currentSeason - e.season
-      if (yearsAgo < 1) return false
-      if (yearsAgo === 1) return e.significance >= 30
-
-      // 2+ år bakåt — endast för significance >= 95 (SM-guld, SM-final-förlust, etc)
-      if (e.significance >= 95) return yearsAgo <= MAX_SEASONS
-      return false
-    })
+    .filter(e => isActiveAnniversaryCandidate(e, game.currentSeason, currentMatchday))
     .map(e => ({
       eventId: buildEventId(e),
       originalSeason: e.season,
@@ -474,6 +436,22 @@ export function findActiveAnniversaries(game: SaveGame): ActiveAnniversary[] {
       subjectClubId: e.subjectClubId,
       originalEventText: e.text,
     }))
+}
+
+/**
+ * k2:s enda årsdagsregel, exporterad så Redaktörens andra
+ * färskhetskö inte kan driva isär från den befintliga årsdagsytan.
+ */
+export function isActiveAnniversaryCandidate(
+  event: Pick<MemoryEvent, 'season' | 'matchday' | 'significance'>,
+  currentSeason: number,
+  currentMatchday: number,
+): boolean {
+  if (Math.abs(event.matchday - currentMatchday) > 1) return false
+  const yearsAgo = currentSeason - event.season
+  if (yearsAgo < 1) return false
+  if (yearsAgo === 1) return event.significance >= 30
+  return event.significance >= 95 && yearsAgo <= MAX_SEASONS
 }
 
 // ── Main aggregator ──────────────────────────────────────────────────────────

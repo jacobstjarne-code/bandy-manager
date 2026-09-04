@@ -97,4 +97,24 @@ describe('passSeasonTransition (5.1 Sommaren — återinträdesguard)', () => {
 
     expect(useGameStore.getState().game?.activeSeasonGoal).toBeUndefined()
   })
+
+  it('personligt spelarmål stämplas som managerägd liggarpost, idempotent', () => {
+    const game = makeGame()
+    const player = game.players.find(candidate => candidate.clubId === game.managedClubId)!
+    useGameStore.setState({ game })
+
+    useGameStore.getState().passSeasonTransition({ type: 'playerCarry', referenceId: player.id })
+    useGameStore.getState().passSeasonTransition({ type: 'playerCarry', referenceId: player.id })
+
+    const entries = useGameStore.getState().game?.eventLedger?.filter(entry =>
+      entry.semanticKey.endsWith(':manager_personal_goal'),
+    )
+    expect(entries).toEqual([expect.objectContaining({
+      type: 'player_milestone',
+      clubId: game.managedClubId,
+      managerId: game.id,
+      subject: { kind: 'player', id: player.id },
+      madeByPlayer: true,
+    })])
+  })
 })

@@ -6,6 +6,8 @@
 
 **Heros ska sparkas i ~60 % av sexsäsongskarriärer.** Inte 100 %. Hundra procent är inte hard mode, det är en skriptad förlust — och sex fixar har inte rubbat det, vilket betyder att felet inte ligger i någon enskild konstant utan i hur flera system staplar. Målet är ett tal att kalibrera mot, inte ett löfte om exakt sextio.
 
+**BASLINJEN FLYTTAD 2026-09-04 kväll (systemauditen, MASTER `survive-avsked-undantag`):** `Survive`-tier hade absolut immunitet mot sportsligt avsked — avskedskontrollen kördes bara för andra tiers. Heros, Söderfors, Lesjöfors (alla Survive) kunde därför bara förlora via licensnekan eller konkurs. Konsekvens: **"100 % avsked" var 100 % licensnekan**, och H4-klippan vid CS 70/71 är sannolikt en LICENSKLIPPA (ekonomi → riskScore → denied), inte en tålamodsklippa. Codex öppnade samma dag en sportslig väg för Survive (tre raka misslyckade säsonger + patience ≤ 15; Jacob kvitterar). Rundan måste därför: (a) köra baslinjen OM med den nya gaten, (b) separera avskedsorsak i mätningen — licens / sportsligt / konkurs — och rapportera per orsak, (c) läsa A-spåret som TVÅ kedjor: licenskedjan (ackumulator, ryktesskala, ekonomi) och tålamodskedjan (den nya gaten, boardPatience, meritbuffert). GPT:s tre SVÅR-karriärer utan avsked (Heros, Slottsbron, Rögle 11–11–9) är bevis på den gamla gaten, inte på balansen.
+
 ## Varför en runda och inte fjorton domar
 
 MASTER bar ~20 rader märkta "vänta Jacobs magnituddom" — licens-ryktesskalan, ackumulatorn, boardPatience-skalan, meritbufferten, golv-andelen, förnyelsepriset, H4-klippan, midtable-mislabelingen, Heros-frågorna, motorns targets. Ingen kan dömas isolerat: de är samma systems parametrar, och att flytta en flyttar de andra. De har stått som "Jacob" för att ingen ville äga dem. Nu ägs de av rundan.
@@ -37,7 +39,7 @@ MASTER bar ~20 rader märkta "vänta Jacobs magnituddom" — licens-ryktesskalan
 
 Godkänt för C2: ett paket av tre+ offensiva axlar ska FÖRLORA mot ett balanserat upplägg av samma trupp över 22 omgångar minst lika ofta som det vinner (ingen dominant standardtaktik i serien), samtidigt som det förblir det starkaste valet i enskilda matcher där kontexten stöder det (utvilad trupp, svagare motstånd, matchinledning). Mot topp-motstånd ska det straffas hårdare än idag. Mät med `analyze-stress`/kalibreringsskripten över 10 000 seeds, fyra motståndsnivåer, två väderlägen.
 
-**D. Ekonomins två öppna tal.** Golv-andelen 50 % (`askadare-golvandel-generellt`) och förnyelsepriset (`fornyelse-pris-slutdom`, Opus rek: låt stå). Mäts i rundan eftersom de påverkar A för små klubbar; ändras bara om mätningen kräver det.
+**D. Ekonomins två öppna tal.** Golv-andelen 50 % (`askadare-golvandel-generellt`) och förnyelsepriset (`fornyelse-pris-slutdom`, Opus rek: låt stå). Mäts i rundan eftersom de påverkar A för små klubbar; ändras bara om mätningen kräver det. **D2 (tillagt 2026-09-04, GPT:s akademitest):** tvåsäsongssolvens med akademi på Satsning (5 tkr/omg) + normala beslut + sponsorer + mecenat — GPT gick 340→60→−258 tkr i Hälleforsnäs. Godkänt: antingen solvent över två säsonger för en MEDEL-klubb, eller så utlöser den kritiska ekonomivägen synligt innan kassan passerar −100 tkr. Mät för LÄTT/MEDEL/SVÅR. Om Satsning är oförsvarbar för MEDEL är det priset som ska ner eller utfallet upp — inte årsbokens text.
 
 ## Metod
 

@@ -1109,6 +1109,8 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Historik (2026-09-01):** Codex (utanför agentregistret, ingen pausbroms) + Code i samma `boardService.ts`/`eventResolver.ts` okommitterat; 124 filer exponerade innan frys-och-committa; result-truth-passets fyra Code-fixar blandades oisolerbart med Codex bredare `deriveUtfall`-migrering. Löst med filbaserade lanes (Codex i domän, Code i store+grind, Opus i domar/text) + committa-innan-nästa. Codex prioriterar brett-mekaniskt arbete bättre än Opus — lanes är hur man drar nytta av det utan kollision, inte ett argument för färre agenter.
 
+**Igen (2026-09-04):** Code (k9, grönt isolerat) och Codex (slutprovets åtgärdspass, grönt isolerat) skrev i samma filer — `eventLedgerService.ts`, `clubMemoryService.ts` — ocommitterat samtidigt. Lanes höll inte, för båda jobbade legitimt i liggaren. Code stannade rätt på rött; Codex committade inte för att Codes ändringar låg i vägen. Båda väntade på den andra. Regeln utöver lanes: när två agenter är klara i samma filer SEKVENSERAR Jacob (den vars pass gör trädet grönt landar först, den andra rebasar) — agenter ska inte vänta ut varandra.
+
 ## 52. Avstämning är första handlingen på en rapport, inte den sista — en status som bara bor i chatten är förlorad
 
 **Mönster:** En dom/status/schema uttalas i chatten och förs aldrig in på kartan (DOMLOGG/MASTER_OPPET/disk). Kartan driver stale mot vad som faktiskt hänt. Jacob fångar det, gång på gång, i stället för att systemet håller sig sant själv.

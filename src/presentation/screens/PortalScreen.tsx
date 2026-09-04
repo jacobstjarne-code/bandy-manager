@@ -34,12 +34,15 @@ import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 import { getNextActionCue } from '../utils/nextActionCue'
 import { selectAtmosphereMarks, type AtmosphereMarkKind } from '../../domain/services/portal/atmosphereResolver'
 import { playoffRoundName } from '../../domain/roundLabel'
+import { ClubNotificationPrompt } from '../components/ClubNotificationPrompt'
+import { selectPortalMemory } from '../../domain/services/portal/portalMemoryService'
+import { pickEfterklang } from '../../domain/services/portal/pickEfterklang'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
 
 export function PortalScreen() {
-  const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown } = useGameStore()
+  const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown, markLedgerPostTold } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
   const [isAdvancing, setIsAdvancing] = useState(false)
@@ -68,6 +71,14 @@ export function PortalScreen() {
     () => (game ? buildPortal(game, seed) : null),
     [game, seed],
   )
+  const portalMemory = useMemo(
+    () => (game && layout?.secondary.some(card => card.id === 'memory_card') ? selectPortalMemory(game) : null),
+    [game, layout],
+  )
+  const efterklangMemories = useMemo(
+    () => (game && layout?.secondary.some(card => card.id === 'efterklang') ? pickEfterklang(game, 2) : []),
+    [game, layout],
+  )
 
   // Registrera visade kort för stale-bias-beräkning nästa omgång
   useEffect(() => {
@@ -80,6 +91,17 @@ export function PortalScreen() {
     ]
     recordPortalShown(shownIds, layout.storySlot?.kind)
   }, [layout, recordPortalShown])
+
+  useEffect(() => {
+    if (!portalMemory) return
+    markLedgerPostTold(portalMemory.post, 'portal')
+  }, [portalMemory, markLedgerPostTold])
+
+  useEffect(() => {
+    for (const memory of efterklangMemories) {
+      if (memory.sourcePost) markLedgerPostTold(memory.sourcePost, 'efterklang')
+    }
+  }, [efterklangMemories, markLedgerPostTold])
 
   // Sätt CSS-vars för seasonal tone
   useEffect(() => {
@@ -396,6 +418,7 @@ export function PortalScreen() {
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />
         <PortalInboxCounter game={game} />
+        <ClubNotificationPrompt game={game} />
       </div>
 
       {/* STICKY CTA — alltid synlig ovanför BottomNav.

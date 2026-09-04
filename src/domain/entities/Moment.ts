@@ -32,6 +32,10 @@ export interface Moment {
   body: string            // 2-3 rader prosa, narrativt
   subjectPlayerId?: string
   subjectClubId?: string
+  /** `mecenat_costshare`: den namngivna mecenaten är händelsens primära
+   *  person; spelaren ovan är affärens andra part. Fältet stannar i Moments
+   *  övergångsmodell och mappas till liggarens polymorfa subject. */
+  subjectMecenatId?: string
   // MIGRATIONSPLAN_HANDELSELIGGAREN Skärpning 4 (2026-09-02, Opus dom):
   // body-konstruktionen för dessa tre källor branchar på ett klassificerande
   // värde (olika MENING per gren, inte bara ett namn i samma mening) — måste

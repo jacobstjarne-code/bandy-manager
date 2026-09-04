@@ -235,8 +235,16 @@ export interface EventLedgerEntry {
    * managerkarriären och kan därför inte behandlas som enkel-klubbsdata när
    * spelaren byter jobb. Valfritt endast för äldre sparfiler; alla nya
    * skrivvägar stämplas centralt av logEvent/appendMomentsAndEntriesToLedger.
-   */
+  */
   clubId?: string
+  /** Legacy-backfillens sista utväg när ursprungsklubben inte kan beläggas. */
+  clubIdInferred?: boolean
+  /**
+   * Den managerkarriär som äger händelsen när posten beskriver ett val,
+   * managerns eget öde eller ett personligt spelaruppdrag. Frånvaro betyder
+   * att posten tillhör klubben/världen, inte att nuvarande manager antas.
+   */
+  managerId?: string
 
   // ── NÄR ──
   season: number
@@ -321,6 +329,27 @@ export interface EventLedgerEntry {
    */
   result?: MatchResultPayload
 }
+
+/**
+ * SPEC_BERATTAREN_2026-09-04 §4 — alla berättande ytor delar samma
+ * kvitto. Push är en yta i Berättaren, inte en separat redaktion.
+ */
+export type NarrativeSurface =
+  | 'portal'
+  | 'efterklang'
+  | 'press'
+  | 'yearbook'
+  | 'review'
+  | 'coffee_room'
+  | 'push'
+
+export interface LedgerToldMark {
+  surface: NarrativeSurface
+  season: number
+  matchday: number
+}
+
+export type LedgerToldRegistry = Record<string, LedgerToldMark[]>
 
 export interface MatchResultPayload {
   goalsFor: number

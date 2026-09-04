@@ -1,6 +1,7 @@
 import type { PlayoffBracket } from '../../domain/entities/Playoff'
 import type { CupBracket } from '../../domain/entities/Cup'
 import type { Club } from '../../domain/entities/Club'
+import { getCupRoundLabel } from '../../domain/services/cupService'
 
 /**
  * @cites bracket.quarterFinals[].winnerId, bracket.semiFinals[].winnerId, homeClubId, awayClubId
@@ -19,12 +20,12 @@ export function getFinalJourney(bracket: PlayoffBracket, clubId: string, clubs: 
 
 export function getCupJourney(bracket: CupBracket, clubId: string, clubs: Club[]): string {
   return bracket.matches
-    .filter(m => m.winnerId === clubId)
+    .filter(m => m.winnerId === clubId && !m.isBye)
     .sort((a, b) => a.round - b.round)
     .map(m => {
       const oppId = m.homeClubId === clubId ? m.awayClubId : m.homeClubId
       const opp = clubs.find(c => c.id === oppId)?.name ?? '?'
-      const roundName = m.round === 1 ? 'KF' : m.round === 2 ? 'SF' : 'Final'
+      const roundName = getCupRoundLabel(m.round)
       return `${roundName}: Slog ${opp}`
     })
     .join('\n')

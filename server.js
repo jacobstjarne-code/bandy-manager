@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import cors from 'cors'
+import { createAttentionRouter } from './server/attention/routes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -49,6 +50,11 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
 })
 app.use(globalLimiter)
+
+// Attention Engine/Web Push. Routern ligger före SPA-fallbacken; servern
+// behöver en hållbar store-adapter och en extern scheduler i produktion.
+const attention = createAttentionRouter()
+app.use('/api', attention.router)
 
 // ── Health check ────────────────────────────────
 app.get('/api/health', (req, res) => {

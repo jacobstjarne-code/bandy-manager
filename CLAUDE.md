@@ -31,6 +31,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 - Direkt till koden, grep på relevanta termer
 
 **B. SPEC-SKRIVANDE (ny feature) — OBLIGATORISKT:**
+- **LIGGARKONTRAKT (sedan 2026-09-04, omspårningen):** varje spec för ett system som skapar händelser svarar på tre frågor innan den är byggbar — (1) vilka `EventLedgerType` skriver systemet, (2) vilken YTA läser dem (namngiven, via `redaktoren()`/agendan — aldrig en egen ficka eller projektion), (3) hur känns återfall igen (`semanticKeyStem`/prior-check). Ett system utan poster kan inte minnas; en post utan läsare är ett falskt löfte; en yta som läser vid sidan av redaktören är en parallell sanning (LESSONS #54, RAPPORT_OMSPARNING_SYSTEM). Nya fält på `EventLedgerEntry` kräver egen dom (som `result`, `clubId`, `subjectSnapshot`).
 - **PRE-SPEC CROSS-CHECK (Princip 2 nedan):** grep efter befintlig implementation INNAN du skriver:
   ```bash
   grep -rn "huvudkoncept\|relaterat_koncept" src/domain/services \

@@ -15,6 +15,7 @@ import { deriveMatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { seasonStartYear } from '../../../domain/utils/seasonYear'
 import { BoardObjectivesList } from '../../components/portal/secondary/BoardObjectivesList'
+import { IllustrationScene } from '../../components/illustration/IllustrationScene'
 import { getSeasonGoalOffers, type SeasonGoalOffer } from '../../../domain/services/seasonGoalService'
 import { BOARD_EXPECTATION_LEVEL_LABEL } from '../../../domain/services/boardService'
 import type { BoardAssessment, BoardLeagueMovement } from '../../../domain/entities/SaveGame'
@@ -116,13 +117,14 @@ export function SeasonTransitionScene() {
 
   return (
     <div style={{ background: 'var(--bg-dark)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* 1. Kapitel-header — svalt, stilla, tittar bakåt */}
-      <div style={{
-        background: 'radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--accent) 26%, var(--bg-dark)), var(--bg-dark) 70%)',
-        padding: '24px 18px 20px', position: 'relative', overflow: 'hidden',
-      }}>
+      {/* 1. Kapitelbild — säsongsslutet öppnar Sommaren som ett eget ögonblick. */}
+      <IllustrationScene mode="fullbleed" name="varsol" alt="">
         <div style={{ position: 'absolute', inset: 0, background: NOISE_OVERLAY }} />
-        <div style={{ position: 'relative', textAlign: 'center' }}>
+        <div style={{
+          position: 'relative', height: '100%', padding: '24px 18px 40px',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          textAlign: 'center', boxSizing: 'border-box',
+        }}>
           <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--copper)', marginBottom: 9, fontFamily: 'var(--font-body)' }}>
             ☀ Sommaren {seasonStartYear(game.currentSeason)}
           </div>
@@ -133,7 +135,7 @@ export function SeasonTransitionScene() {
             {sommarLine}
           </div>
         </div>
-      </div>
+      </IllustrationScene>
 
       {/* 2. Paper-kropp — tre andetag, sakliga mål */}
       <div style={{ padding: 13, display: 'flex', flexDirection: 'column', gap: 11, background: 'var(--bg)' }}>

@@ -5,6 +5,7 @@ import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
 import { SaveConflictModal } from '../components/SaveConflictModal'
 import { SaveRecoveryBanner } from '../components/SaveRecoveryBanner'
 import { RuleVersionNotice } from '../components/RuleVersionNotice'
+import { AttentionBridge } from '../components/AttentionBridge'
 
 const DevScenesScreen = import.meta.env.DEV
   ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
@@ -140,6 +141,7 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <NavigateSetter />
+      <AttentionBridge />
       <Routes>
         <Route path="/" element={<IntroSequence />} />
         <Route path="/saves" element={<SaveManagerScreen />} />

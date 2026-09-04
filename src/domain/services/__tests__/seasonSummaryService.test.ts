@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import { advanceToNextEvent } from '../../../application/useCases/advanceToNextEvent'
-import { deriveBoardLeagueContext, generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend } from '../seasonSummaryService'
+import { deriveBoardLeagueContext, generateSeasonSummary, getClubPositionTrend, getBoardRelationshipTrend, selectYearbookPerson } from '../seasonSummaryService'
 import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
@@ -352,7 +352,7 @@ describe('liggare-k6-arsbok-liggarposter — säsongens tyngsta systemhändelser
       ...game,
       eventLedger: [{
         type: 'era_shift', semanticKey: 'era-1', season: game.currentSeason, matchday: 12,
-        significance: 85, eraLabel: 'establishment' as const,
+        clubId: game.managedClubId, significance: 85, eraLabel: 'establishment' as const,
       }],
     }
     const summary = generateSeasonSummary(gameWithLedger as never)
@@ -367,7 +367,8 @@ describe('liggare-k6-arsbok-liggarposter — säsongens tyngsta systemhändelser
     const gameWithLedger = {
       ...game,
       eventLedger: [{
-        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: game.currentSeason, matchday: 12, significance: 95,
+        type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: game.currentSeason, matchday: 12,
+        clubId: game.managedClubId, significance: 95,
       }],
     }
     const summary = generateSeasonSummary(gameWithLedger as never)
@@ -386,11 +387,130 @@ describe('liggare-k6-arsbok-liggarposter — säsongens tyngsta systemhändelser
       storylines: [storyline],
       eventLedger: [
         buildStorylineResolutionLedgerEntry(storyline, game.currentMatchday)!,
-        { type: 'era_shift' as const, semanticKey: 'era-dup', season: game.currentSeason, matchday: 9, significance: 85, eraLabel: 'establishment' as const },
+        { type: 'era_shift' as const, semanticKey: 'era-dup', season: game.currentSeason, matchday: 9, clubId: game.managedClubId, significance: 85, eraLabel: 'establishment' as const },
       ],
     }
     const summary = generateSeasonSummary(gameWithBoth as never)
     expect((summary.keyMoments ?? []).filter(m => m.round === 9)).toHaveLength(1)
+  })
+
+
+  it('väljer k6-poster med redaktörens relationsvikt, inte rå significance', () => {
+    const created = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 41 })
+    const game = { ...created, currentMatchday: 12 }
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const opponent = game.clubs.find(c => c.id !== game.managedClubId)!
+    const eventLedger = [
+      {
+        type: 'derby_win' as const, semanticKey: 'raw-high-match', season: game.currentSeason,
+        matchday: 1, clubId: game.managedClubId,
+        subject: { kind: 'club' as const, id: opponent.id }, significance: 100,
+      },
+      {
+        type: 'star_injury' as const, semanticKey: 'weighted-person', season: game.currentSeason,
+        matchday: 2, clubId: game.managedClubId,
+        subject: { kind: 'player' as const, id: player.id }, significance: 60,
+      },
+      {
+        type: 'era_shift' as const, semanticKey: 'middle-system', season: game.currentSeason,
+        matchday: 3, clubId: game.managedClubId,
+        significance: 82, eraLabel: 'establishment' as const,
+      },
+    ]
+
+    const summary = generateSeasonSummary({ ...game, eventLedger } as never)
+    const ledgerRounds = (summary.keyMoments ?? []).map(moment => moment.round)
+
+    expect(ledgerRounds).toContain(2)
+    expect(ledgerRounds).toContain(3)
+    expect(ledgerRounds).not.toContain(1)
+  })
+})
+
+describe('Berättaren steg 4 — Säsongens person', () => {
+  function personGame() {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 71 })
+    return { ...game, currentMatchday: 12 }
+  }
+
+  it.each([
+    ['patron_emerge', 'patron', 'Hedin. Utan honom hade det inte gått i år. Det vet han också.'],
+    ['mecenat_withdrawal', 'mecenat', 'Mecenaten lämnade. Det märktes mest på det som inte längre kom.'],
+    ['player_milestone', 'player', 'Spelaren Test. Året då han blev den han skulle bli.'],
+    ['retirement', 'player', 'Spelaren Test är borta nu. Orten räknar fortfarande med honom.'],
+    ['referee_feud', 'referee', 'Domaren Test i svart. Ni pratade mer om honom än om något annat lag.'],
+  ] as const)('använder låst text för %s', (type, kind, expected) => {
+    const base = personGame()
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const referee = base.referees![0]
+    const mecenat = base.mecenater?.[0] ?? { id: 'mecenat_test', name: 'Mecenaten' }
+    const game = {
+      ...base,
+      players: base.players.map(p => p.id === player.id ? { ...p, firstName: 'Spelaren', lastName: 'Test' } : p),
+      referees: base.referees!.map(r => r.id === referee.id ? { ...r, firstName: 'Domaren', lastName: 'Test' } : r),
+      mecenater: [{ ...mecenat, name: 'Mecenaten' }],
+      patron: { ...base.patron!, id: 'patron_test', name: 'Hedin' },
+      eventLedger: [{
+        type,
+        semanticKey: `${type}:test`,
+        clubId: base.managedClubId,
+        season: base.currentSeason,
+        matchday: base.currentMatchday,
+        subject: {
+          kind,
+          id: kind === 'player' ? player.id
+            : kind === 'referee' ? referee.id
+              : kind === 'mecenat' ? mecenat.id
+                : 'patron_test',
+        },
+        significance: 70,
+      }],
+    }
+
+    expect(selectYearbookPerson(game as never)?.text).toBe(expected)
+  })
+
+  it('använder journalistens låsta rad för journalistens lösta storyline', () => {
+    const base = personGame()
+    const game = {
+      ...base,
+      journalist: { ...base.journalist!, name: 'Ingrid Holm' },
+      eventLedger: [{
+        type: 'storyline_resolution' as const,
+        semanticKey: 'storyline_resolution:journalist_redemption:story-journalist-s3',
+        clubId: base.managedClubId,
+        season: base.currentSeason,
+        matchday: base.currentMatchday,
+        subject: { kind: 'club' as const, id: base.managedClubId },
+        significance: 80,
+      }],
+    }
+
+    expect(selectYearbookPerson(game as never)?.text).toBe(
+      'Ingrid Holm, med anteckningsblocket. Hen skrev historien om er — och ni gav hen den.',
+    )
+  })
+
+  it('väljer relationen före högre rå personpost och ignorerar andra klubbens post', () => {
+    const base = personGame()
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const game = {
+      ...base,
+      patron: { ...base.patron!, id: 'patron_test', name: 'Hedin' },
+      eventLedger: [{
+        type: 'player_milestone' as const, semanticKey: 'other-club', clubId: 'club_other',
+        season: base.currentSeason, matchday: base.currentMatchday,
+        subject: { kind: 'player' as const, id: player.id }, significance: 100,
+      }, {
+        type: 'patron_emerge' as const, semanticKey: 'our-patron', clubId: base.managedClubId,
+        season: base.currentSeason, matchday: base.currentMatchday,
+        subject: { kind: 'patron' as const, id: 'patron_test' }, significance: 70,
+      }],
+    }
+
+    const selected = selectYearbookPerson(game as never)
+    expect(selected?.text).toContain('Hedin')
+    expect(selected?.ledgerPostKey).toContain('our-patron')
   })
 })
 

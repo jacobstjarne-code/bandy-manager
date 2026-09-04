@@ -58,6 +58,8 @@ import { LandslagsFranvaroSecondary } from '../../../presentation/components/por
 import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
 import { MonthDecisionsSecondary } from '../../../presentation/components/portal/secondary/MonthDecisionsSecondary'
 import { MustDeadlineWarning } from '../../../presentation/components/portal/secondary/MustDeadlineWarning'
+import { MemorySecondary } from '../../../presentation/components/portal/secondary/MemorySecondary'
+import { selectPortalMemory } from './portalMemoryService'
 import { selectDashboardDecisions, getUpcomingMustDeadlines } from '../decisionTierService'
 import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
 import { BurnoutReliefMark } from '../../../presentation/components/portal/BurnoutReliefMark'
@@ -243,6 +245,16 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 18,
     triggers: [alwaysTrue],
     Component: EkonomiSecondary,
+  },
+  {
+    // SPEC_BERATTAREN §5, steg 3: minnet konkurrerar som ett vanligt
+    // secondary-kort men vinner aldrig över ett väntande beslut. Endgame-
+    // kureringen tar bort det eftersom id:t inte finns i keep-listan.
+    id: 'memory_card',
+    tier: 'secondary',
+    weight: 55,
+    triggers: [(game) => selectPortalMemory(game) !== null],
+    Component: MemorySecondary,
   },
   {
     id: 'coffee_room_card',

@@ -4,7 +4,7 @@ import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
 import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
-import { generateVolunteerRoster } from '../../../domain/services/volunteerService'
+import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 import { getCsDiminishingFactor, csUpkeepFactor, csExpectationDrag } from '../../../domain/services/communityStandingScaling'
 import { backfillActivitiesSince, getActiveStaleableActivities, ACTIVITY_CS_BOOST } from '../../../domain/services/communityRenewalService'
 import type { CommunityActivitiesSince } from '../../../domain/entities/Community'
@@ -127,11 +127,7 @@ export function processCommunity(
   if (activeVolunteers.length > 0) {
     const seedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
     const roster = generateVolunteerRoster(seedNum, 4)
-    const rosterCsBoost = activeVolunteers.reduce((sum, name) => {
-      const v = roster.find(r => r.name === name)
-      return sum + (v ? v.csBoost / 10 : 0.32)
-    }, 0)
-    upkeepBoost += Math.min(1.5, rosterCsBoost)
+    upkeepBoost += getActiveVolunteerBonus(activeVolunteers, roster).csBoostPerRound
   }
 
   // ANSPRÅK 4, knapp 1 (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): samma insats

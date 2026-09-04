@@ -501,12 +501,33 @@ export function gameFlowActions(get: Get, set: Set) {
     passSeasonTransition: (goal?: { type: SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }) => {
       const { game } = get()
       if (!game) return
+      const goalKey = goal?.type === 'playerCarry' && goal.referenceId
+        ? `player_milestone:${goal.referenceId}:s${game.currentSeason}:m${game.currentMatchday}:manager_personal_goal`
+        : null
+      const alreadyLogged = goalKey
+        ? (game.eventLedger ?? []).some(entry => entry.semanticKey === goalKey)
+        : false
+      const eventLedger = goalKey && goal?.referenceId && !alreadyLogged
+        ? logEvent(game, {
+            type: 'player_milestone',
+            semanticKey: goalKey,
+            clubId: game.managedClubId,
+            managerId: game.id,
+            season: game.currentSeason,
+            matchday: game.currentMatchday,
+            subject: { kind: 'player', id: goal.referenceId },
+            subject2: { kind: 'club', id: game.managedClubId },
+            significance: 40,
+            madeByPlayer: true,
+          })
+        : game.eventLedger
       set({
         game: {
           ...game,
           seasonGoalChosenForSeason: game.currentSeason,
           pendingSeasonTransitionEvents: [],
           activeSeasonGoal: goal ? { ...goal, chosenSeason: game.currentSeason } : undefined,
+          eventLedger,
         },
       })
     },

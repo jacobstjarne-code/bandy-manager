@@ -17,8 +17,33 @@ import type { EventLedgerEntry } from '../entities/Narrative'
  * färdigformad av anroparen.
  */
 export function logEvent(game: SaveGame, entry: EventLedgerEntry): EventLedgerEntry[] {
+  const withClub = entry.clubId ? entry : { ...entry, clubId: game.managedClubId }
+  const withManager = (withClub.type === 'decision' || withClub.type === 'manager_burnout')
+    && !withClub.managerId
+    ? { ...withClub, managerId: game.id }
+    : withClub
   return [
     ...(game.eventLedger ?? []),
-    entry.clubId ? entry : { ...entry, clubId: game.managedClubId },
+    withManager,
   ]
+}
+
+/**
+ * DOM_LIGGARE_CLUBID_2026-09-04 §2 — klubbens kanoniska läsväg.
+ * Subject kan vara en spelare, motpart eller domare och får aldrig användas
+ * för att gissa vem som äger posten. Legacy-poster stämplas av migreringen.
+ */
+export function readClubLedger(
+  game: Pick<SaveGame, 'eventLedger' | 'managedClubId'>,
+  clubId = game.managedClubId,
+): EventLedgerEntry[] {
+  return (game.eventLedger ?? []).filter(entry => entry.clubId === clubId)
+}
+
+/** Managerperspektivet följer karriären över klubbgränser. */
+export function readManagerLedger(
+  game: Pick<SaveGame, 'eventLedger' | 'id'>,
+  managerId = game.id,
+): EventLedgerEntry[] {
+  return (game.eventLedger ?? []).filter(entry => entry.managerId === managerId)
 }

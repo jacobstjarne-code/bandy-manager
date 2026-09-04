@@ -12,7 +12,7 @@ import { SCENE_TEXT, STAKE_TEXT, FINAL_LAGPRESENTATION_QUOTES, type LaddningOcca
 import { FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
-import { IllustrationPlaceholder } from '../illustration/IllustrationScene'
+import { getClubIntroIllustrationAssetName, IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 // Assets confirmed in repo; others fall back to IllustrationPlaceholder.
@@ -108,7 +108,11 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
     ? seededPick(STAKE_TEXT[seasonCtx], seed + 13)
     : null
 
+  // Final och annandag har egna tillfällesbilder. För övriga laddningsscener
+  // får den faktiska motståndarklubben bära sin ortbild när en sådan är
+  // levererad. Saknas den ligger den medvetna typografiska fonden kvar.
   const assetName = OCCASION_ASSET[occasion]
+    ?? (opponent ? getClubIntroIllustrationAssetName(opponent.id) : undefined)
   const isHome = nextFixture.homeClubId === game.managedClubId
   const plats = isHome ? 'Hemma' : 'Borta'
 

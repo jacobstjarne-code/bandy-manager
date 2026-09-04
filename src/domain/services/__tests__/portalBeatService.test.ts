@@ -230,6 +230,60 @@ describe('callback_sale — första verkliga mötet efter exakt försäljning', 
   })
 })
 
+describe('callback_manager_return — första matchen tillbaka', () => {
+  const beat = PORTAL_BEATS.find(candidate => candidate.id === 'callback_manager_return')!
+
+  it('visas före första mötet med en tidigare klubb och får en klubbperiodsunik nyckel', () => {
+    const base = makeGame({ currentSeason: 5 })
+    const formerClub = base.clubs.find(club => club.id !== base.managedClubId)!
+    const next = {
+      ...base.fixtures[0], id: 'first_return', status: 'scheduled' as const,
+      homeClubId: base.managedClubId, awayClubId: formerClub.id, season: 5, matchday: 3,
+    }
+    const game = {
+      ...base,
+      fixtures: [next],
+      managerProfile: {
+        ...base.managerProfile!,
+        clubSpells: [
+          { clubId: formerClub.id, clubName: formerClub.name, fromSeason: 2, toSeason: 5, endedBy: 'fired' as const },
+          { clubId: base.managedClubId, clubName: 'Ny klubb', fromSeason: 5 },
+        ],
+      },
+    }
+
+    expect(beat.trigger(game)).toBe(true)
+    expect(beat.text).toBe('Första gången tillbaka. Läktaren minns, åt båda hållen.')
+    expect(getBeatKey(beat, game.currentSeason, game))
+      .toBe(`callback_manager_return_${formerClub.id}_s5`)
+
+    const earlier = { ...next, id: 'return_already_played', status: 'completed' as const, matchday: 2 }
+    expect(beat.trigger({ ...game, fixtures: [earlier, next] })).toBe(false)
+  })
+
+  it('gissar inte första gången när den nuvarande klubbperioden började en tidigare säsong', () => {
+    const base = makeGame({ currentSeason: 6 })
+    const formerClub = base.clubs.find(club => club.id !== base.managedClubId)!
+    const next = {
+      ...base.fixtures[0], id: 'unknown_return', status: 'scheduled' as const,
+      homeClubId: base.managedClubId, awayClubId: formerClub.id, season: 6, matchday: 3,
+    }
+    const game = {
+      ...base,
+      fixtures: [next],
+      managerProfile: {
+        ...base.managerProfile!,
+        clubSpells: [
+          { clubId: formerClub.id, clubName: formerClub.name, fromSeason: 2, toSeason: 5, endedBy: 'fired' as const },
+          { clubId: base.managedClubId, clubName: 'Ny klubb', fromSeason: 5 },
+        ],
+      },
+    }
+
+    expect(beat.trigger(game)).toBe(false)
+  })
+})
+
 describe('callback_nemesis — samma klubbnycklade nemesis på alla ytor', () => {
   const beat = PORTAL_BEATS.find(candidate => candidate.id === 'callback_nemesis')!
 

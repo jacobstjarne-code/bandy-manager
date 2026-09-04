@@ -4,7 +4,7 @@ import { useGameStore } from '../store/gameStore'
 import { useLineupEditor } from '../hooks/useLineupEditor'
 import { LineupStep } from '../components/match/LineupStep'
 import { CornerInteraction } from '../components/match/CornerInteraction'
-import { IllustrationScene } from '../components/illustration/IllustrationScene'
+import { getClubIntroIllustrationSrc, IllustrationScene } from '../components/illustration/IllustrationScene'
 import { CoachFraming } from '../components/CoachFraming'
 import {
   buildCornerInteractionData,
@@ -129,6 +129,7 @@ export function TilltradeScreen() {
   const lastName = coach.name.split(' ')[1] ?? ''
   const coachInitials = `${firstName[0] ?? ''}${lastName[0] ?? ''}`
   const clubInitial = managedClub?.name?.[0]?.toUpperCase() ?? '?'
+  const introIllustrationSrc = getClubIntroIllustrationSrc(game?.managedClubId ?? '')
 
   async function finish() {
     await markOnboardingComplete()
@@ -161,7 +162,7 @@ export function TilltradeScreen() {
   if (step === 1 || step === 4) {
     return (
       <div className="arrival-scene">
-        <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+        <IllustrationScene mode="fullbleed" name="intro" src={introIllustrationSrc} alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
         <div className="arrival-scrim" />
         <div className="arrival-lamp-overlay" />
 
@@ -251,7 +252,7 @@ export function TilltradeScreen() {
   /* ── F2 / F3: steg-header + innehåll ─────────────────────────── */
   return (
     <div className="arrival-scene">
-      <IllustrationScene mode="fullbleed" name="intro" alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+      <IllustrationScene mode="fullbleed" name="intro" src={introIllustrationSrc} alt="" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
       <div className="arrival-scrim" />
       <div className="arrival-lamp-overlay" />
 

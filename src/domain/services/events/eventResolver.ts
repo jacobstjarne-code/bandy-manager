@@ -891,6 +891,7 @@ export function resolveEvent(
             contribution: p.contribution ?? 0,
             wantsStyle: p.wantsStyle ?? undefined,
             isActive: true,
+            introducedSeason: updatedGame.currentSeason,
             hasBeenWarned: false,
             backstory: p.backstory ?? undefined,
             goodwill: 80,
@@ -2214,6 +2215,13 @@ export function resolveEvent(
   // sina anropare, men mostRecentRound kom härifrån på ligarond-skala).
   // Standardiserat till updatedGame.currentMatchday (global) — den globala
   // skalan liggarens EventLedgerEntry.matchday redan kräver.
+  if (eventId.startsWith('patron_intro_') && updatedGame.patron) {
+    updatedGame = {
+      ...updatedGame,
+      patron: { ...updatedGame.patron, introducedSeason: updatedGame.currentSeason },
+    }
+  }
+
   updatedGame = {
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),

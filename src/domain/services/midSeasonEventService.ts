@@ -153,13 +153,24 @@ const TRIGGERS: MidSeasonTrigger[] = [
  * Returns inbox items to add (0 or 1 typically).
  */
 export function checkMidSeasonEvents(game: SaveGame): InboxItem[] {
-  const lastMatchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
+  // Triggrarnas texter talar om spelade serieomgångar. Den globala
+  // matchday-klockan innehåller även cupdagar och kunde därför säga "efter
+  // tio omgångar" redan efter sex ligamatcher. Läs den hanterade klubbens
+  // senast faktiskt avslutade ligaomgång i stället.
+  const lastLeagueRound = Math.max(0, ...game.fixtures
+    .filter(f =>
+      f.status === 'completed' &&
+      !f.isCup &&
+      !f.isKnockout &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    .map(f => f.roundNumber))
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   const results: InboxItem[] = []
 
   for (const trigger of TRIGGERS) {
     // Fire on the trigger matchday or 1 round late (in case it was skipped) — never early
-    if (lastMatchday < trigger.matchday || lastMatchday > trigger.matchday + 1) continue
+    if (lastLeagueRound < trigger.matchday || lastLeagueRound > trigger.matchday + 1) continue
 
     // Check not already sent
     const candidate = trigger.generate(game, standing)

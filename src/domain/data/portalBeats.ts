@@ -17,6 +17,7 @@ import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from './facilit
 import { FACILITY_NODE_DEFS } from './facilityNodes'
 import { getFirstUnseenCompletedFacility, facilityCompletedBeatKey } from '../services/facilityService'
 import { getTransferWindowStatus } from '../services/transferWindowService'
+import { getManagerReturnContext, managerReturnKey } from '../services/managerReturnService'
 
 export interface PortalBeat {
   id: string
@@ -243,6 +244,24 @@ export const PORTAL_BEATS: PortalBeat[] = [
     keyFn: (g) => {
       const c = g.pendingRippleChains?.[0]
       return `ripple_${c?.trigger ?? 'unknown'}_${c?.round ?? 0}_s${c?.season ?? 0}`
+    },
+    oncePerSeason: false,
+  },
+
+  // ── Callback: första återkomsten till en tidigare klubb ──────────────────
+  {
+    id: 'callback_manager_return',
+    emoji: '↩️',
+    kicker: 'Rivalen',
+    severity: () => 1,
+    trigger: (g) => firesBeforeNextFixture(g, fixture =>
+      getManagerReturnContext(g, fixture) !== null,
+    ),
+    text: 'Första gången tillbaka. Läktaren minns, åt båda hållen.',
+    keyFn: (g) => {
+      const fixture = nextManagedFixture(g)
+      const context = fixture ? getManagerReturnContext(g, fixture) : null
+      return context ? managerReturnKey(context) : 'callback_manager_return_unknown'
     },
     oncePerSeason: false,
   },

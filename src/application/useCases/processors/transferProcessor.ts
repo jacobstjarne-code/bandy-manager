@@ -486,6 +486,7 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
           season: game.currentSeason,
           title: `${activeMec.name} täcker 20%`,
           body: `${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}` : 'Affären'} blev lite billigare. ${share.toLocaleString('sv-SE')} kr tillbaka i kassan.`,
+          subjectMecenatId: activeMec.id,
           subjectPlayerId: boughtPlayer?.id,
         })
       }

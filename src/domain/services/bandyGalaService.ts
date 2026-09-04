@@ -1,4 +1,4 @@
-import type { SaveGame, StorylineEntry } from '../entities/SaveGame'
+import type { EventLedgerEntry, SaveGame, StorylineEntry } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import { InboxItemType } from '../enums'
 import type { InboxItem } from '../entities/SaveGame'
@@ -165,9 +165,10 @@ export function generateGalaEvent(
 export function generateGalaInbox(
   nominations: GalaNomination[],
   game: SaveGame,
-): { inboxItems: InboxItem[]; storylines: StorylineEntry[] } {
+): { inboxItems: InboxItem[]; storylines: StorylineEntry[]; ledgerEntries: EventLedgerEntry[] } {
   const inboxItems: InboxItem[] = []
   const storylines: StorylineEntry[] = []
+  const ledgerEntries: EventLedgerEntry[] = []
   // StorylineEntry.matchday is a historical league-round anchor. The gala is
   // generated at rollover, so freeze the current canonical league round rather
   // than the larger global calendar matchday used to schedule cup/off-day slots.
@@ -177,6 +178,19 @@ export function generateGalaInbox(
     const player = game.players.find(p => p.id === nom.playerId)
     if (!player) continue
     const isManaged = player.clubId === game.managedClubId
+
+    if (nom.award === 'arets_spelare') {
+      ledgerEntries.push({
+        type: 'player_milestone',
+        semanticKey: `player_milestone:${player.id}:s${game.currentSeason}:m${game.currentMatchday}:arets_spelare`,
+        clubId: player.clubId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        subject: { kind: 'player', id: player.id },
+        subject2: { kind: 'club', id: player.clubId },
+        significance: 75,
+      })
+    }
 
     if (isManaged) {
       inboxItems.push({
@@ -205,5 +219,5 @@ export function generateGalaInbox(
     }
   }
 
-  return { inboxItems, storylines }
+  return { inboxItems, storylines, ledgerEntries }
 }

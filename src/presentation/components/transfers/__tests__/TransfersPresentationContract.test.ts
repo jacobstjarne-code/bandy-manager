@@ -31,8 +31,8 @@ describe('transferdomänens presentationskontrakt', () => {
 
     expect(occurrences).toHaveLength(1)
     expect(occurrences[0].path).toBe('src/presentation/components/transfers/ScoutingTab.tsx')
-    expect(source(occurrences[0].path).slice(occurrences[0].index, occurrences[0].index + 60))
-      .toContain('width: `${value}%`')
+    expect(source(occurrences[0].path).slice(occurrences[0].index, occurrences[0].index + 100))
+      .toContain('width: `${ATTRIBUTE_BAND_BAR_WIDTH[band]}%`')
   })
 
   it('använder inte auditens chrome-emoji i renderad transferkod', () => {

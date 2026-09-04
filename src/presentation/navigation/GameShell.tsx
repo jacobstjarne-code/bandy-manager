@@ -52,6 +52,26 @@ export function routeOwnsLedgerChrome(pathname: string, state: unknown): boolean
   return !(state && typeof state === 'object' && 'showReport' in state && state.showReport === true)
 }
 
+const CEREMONY_PATHS = new Set([
+  '/game/playoff-intro',
+  '/game/qf-summary',
+  '/game/sim-summary',
+  '/game/hamf-time-summary',
+  '/game/champion',
+  '/game/season-summary',
+  '/game/season-transition',
+  '/game/game-over',
+])
+
+export function shouldHideBottomNavigation(
+  attentionKind: string,
+  sceneId: string | undefined,
+  pathname: string,
+): boolean {
+  const sceneActive = attentionKind === 'scene' && sceneId !== 'coffee_room'
+  return sceneActive || CEREMONY_PATHS.has(pathname) || pathname.startsWith('/game/season-summary/')
+}
+
 export function GameShell() {
   const game = useGameStore(s => s.game)
   const hasHydrated = useHasHydrated()
@@ -83,12 +103,10 @@ export function GameShell() {
   if (game.managerFired) return <Navigate to="/game/game-over" replace />
 
   const attention = getCurrentAttention(game)
-  // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
-  // cup_final_victory keeps the nav visible (M10): header is visible, nav should match (FIX-M10)
-  const sceneActive = attention.kind === 'scene' &&
-    game.pendingScene?.sceneId !== 'coffee_room' &&
-    game.pendingScene?.sceneId !== 'cup_final_victory'
-
+  // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41).
+  // Segersscener är däremot ceremonier: ett synligt nav låg ovanpå cupscenens
+  // sista CTA på 390×844 och tog emot trycket. Samma scenregel gäller nu cup
+  // och SM; headerns närvaro avgör inte om en bottenkontroll får överlappa.
   // NAV-PRINCIP (2026-06-15): navet är spelarens fasta referenspunkt (topp+botten).
   // Det ska INTE hoppa in/ut på vanliga vyer — det SPÄRRAS (useNavigationLock:
   // syns men går ej att trampa, med skäl) under match/live. Det DÖLJS bara på de
@@ -96,19 +114,11 @@ export function GameShell() {
   // främmande list på guldögonblicket. Taktik/facility togs medvetet UR listan —
   // de är vanliga push-vyer, inte ceremonier; navet stannar (tillbaka-pil får
   // samexistera). Single source of truth — BottomNav speglar samma lista.
-  const CEREMONY_PATHS = new Set([
-    '/game/playoff-intro',
-    '/game/qf-summary',
-    '/game/sim-summary',
-    '/game/hamf-time-summary',
-    '/game/champion',
-    '/game/season-summary',
-    '/game/season-transition',
-    '/game/game-over',
-  ])
-  const hideBottomNav = sceneActive ||
-    CEREMONY_PATHS.has(location.pathname) ||
-    location.pathname.startsWith('/game/season-summary/')
+  const hideBottomNav = shouldHideBottomNavigation(
+    attention.kind,
+    game.pendingScene?.sceneId,
+    location.pathname,
+  )
 
   // EventOverlay visas INTE när en scen väntar — scenen har prioritet
   // EventOverlay visas INTE under live-match, match-setup, resultat eller granskning

@@ -27,12 +27,12 @@ import type { AssistantCoach } from './AssistantCoach'
 import type { PendingScene, SceneId } from './Scene'
 
 /** En enda källa för save-schemats version, både vid skapande och migrering. */
-export const CURRENT_SAVE_VERSION = '0.3.8'
+export const CURRENT_SAVE_VERSION = '0.3.10'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState } from './Community'
-import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry } from './Narrative'
+import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry, LedgerToldRegistry } from './Narrative'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 
 // ── Legibel konsekvens — domino-kedje-typer (används av rippleEffectService + portalBeats) ──
@@ -78,7 +78,7 @@ export interface ResolvedChoice {
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, CommunityActivitiesSince, StaleableActivityKey, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityFinancingMode, BoardObjective, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest, FacilityGren, FacilityConsequence, NodeFinancing, FacilityNodeDef, FacilityNodeView, FacilityNodeStatus, FacilityState }
 export type { BoardMember, BoardRole, BoardPersonality }
-export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry }
+export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord, NarrativeLogEntry, EventLedgerType, LedgerConsequence, EventLedgerEntry, LedgerToldRegistry }
 export type { StandingRow }
 export type { InboxItem }
 export type { TransferOffer, TransferState }
@@ -586,6 +586,11 @@ export interface SaveGame {
   // roundProcessor/seasonEndProcessor). narrativeBeatLog subsumerades ALDRIG
   // (Fas 3 struken, se migreringsplanen) — eget lager, egen norm.
   eventLedger?: EventLedgerEntry[]
+
+  // SPEC_BERATTAREN_2026-09-04 §4 — ett gemensamt, textfritt kvitto på
+  // vilka liggarposter som redan berättats på vilken yta. Gamla ytspecifika
+  // register lever kvar tills respektive konsument migrerats (retire-last).
+  ledgerTold?: LedgerToldRegistry
 
   // O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
   // "säsongens viktigaste beslut" — tidigare en egen kandidatlista här
