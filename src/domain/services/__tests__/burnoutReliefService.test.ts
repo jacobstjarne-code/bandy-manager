@@ -19,6 +19,7 @@ import {
   BURNOUT_RELAPSE_QUOTE_PREFIX,
   BURNOUT_OPPONENT_READ_PREFIX,
   BURNOUT_OPPONENT_READ,
+  getBurnoutSeasonMemory,
 } from '../burnoutReliefService'
 import type { ManagerProfile } from '../../entities/ManagerProfile'
 import type { OpponentAnalysis } from '../opponentAnalysisService'
@@ -203,6 +204,40 @@ describe('generateBurnoutReliefEvent', () => {
     const a = generateBurnoutReliefEvent(10, 3, 'hog')
     const b = generateBurnoutReliefEvent(11, 3, 'hog')
     expect(a.id).not.toBe(b.id)
+  })
+})
+
+describe('getBurnoutSeasonMemory — årsboken redigerar en episod', () => {
+  it('grupperar ett upprepat standardval till en sann rad', () => {
+    const memory = getBurnoutSeasonMemory([
+      { type: 'decision', semanticKey: 'burnoutRelief:delegate', season: 2027, matchday: 8, significance: 70, madeByPlayer: true },
+      { type: 'decision', semanticKey: 'burnoutRelief:delegate', season: 2027, matchday: 12, significance: 70, madeByPlayer: true },
+      { type: 'decision', semanticKey: 'burnoutRelief:delegate', season: 2027, matchday: 18, significance: 70, madeByPlayer: true },
+    ], 2027)
+
+    expect(memory).toEqual([{
+      season: 2027,
+      matchday: 8,
+      type: 'burnout_choice',
+      text: 'Du lät assistenten ta pressen — 3 gånger den säsongen.',
+    }])
+  })
+
+  it('håller episoden till markering, första val, tydlig lättnad och avslut', () => {
+    const memory = getBurnoutSeasonMemory([
+      { type: 'manager_burnout', semanticKey: 'manager_burnout:mark:markbar', season: 2027, matchday: 5, significance: 45 },
+      { type: 'manager_burnout', semanticKey: 'manager_burnout:mark:hog', season: 2027, matchday: 7, significance: 75 },
+      { type: 'decision', semanticKey: 'burnoutRelief:train', season: 2027, matchday: 8, significance: 70, madeByPlayer: true },
+      { type: 'manager_burnout', semanticKey: 'manager_burnout:relief:markbar', season: 2027, matchday: 9, significance: 45 },
+      { type: 'manager_burnout', semanticKey: 'manager_burnout:relief:frisk', season: 2027, matchday: 10, significance: 45 },
+      { type: 'manager_burnout', semanticKey: 'manager_burnout:close:frisk', season: 2027, matchday: 11, significance: 55 },
+    ], 2027)
+
+    expect(memory).toHaveLength(4)
+    expect(memory.map(entry => entry.type)).toEqual([
+      'burnout_peak', 'burnout_choice', 'burnout_relief', 'burnout_close',
+    ])
+    expect(memory[0].text).toBe('Den säsongen tog nästan slut på dig.')
   })
 })
 

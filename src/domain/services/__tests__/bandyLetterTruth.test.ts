@@ -31,6 +31,18 @@ describe('bandyLetter — O11:s text/state-kontrakt', () => {
     }
   })
 
+  it('förstamatch-brevet placerar avsändaren i barndomen det nämnda året', () => {
+    const base = game()
+    const event = Array.from({ length: 9 }, (_, i) => generateBandyLetterEvent(base, 10 + i))
+      .find(candidate => candidate?.body.includes('Jag såg min första'))!
+    const age = event.choices[0].effect.senderAge!
+    const year = Number(event.body.match(/med min far (\d{4})/)?.[1])
+    const ageAtMemory = year - (base.currentSeason - age)
+
+    expect(ageAtMemory).toBeGreaterThanOrEqual(6)
+    expect(ageAtMemory).toBeLessThanOrEqual(12)
+  })
+
   it('ett redan defererat canonical brev kan inte genereras igen samma säsong', () => {
     const base = game()
     const first = generateBandyLetterEvent(base, 10)!

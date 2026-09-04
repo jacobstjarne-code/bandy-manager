@@ -30,6 +30,7 @@ import { getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } f
 import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../../../domain/services/turneringslageService'
 import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
+import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -396,12 +397,7 @@ export function GranskaOversikt({
   // spelas i augusti, ligasäsongen fortsätter direkt efteråt, så den behåller
   // pekaren (nextFixture finns naturligt ändå). Avsked ✓ (matrisen).
   const nastaMatchPekareLine = visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) && (() => {
-    const nextFixture = game.fixtures
-      .filter(f =>
-        f.status !== 'completed' &&
-        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-      )
-      .sort((a, b) => a.matchday - b.matchday)[0]
+    const nextFixture = getNextManagedFixture(game)
     if (!nextFixture) return null
 
     const isNextHome = nextFixture.homeClubId === game.managedClubId

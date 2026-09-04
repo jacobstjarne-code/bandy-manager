@@ -75,19 +75,24 @@ export function getBurnoutSeasonMemory(
   entries: readonly EventLedgerEntry[] | undefined,
   season: number,
 ): ManagerNarrativeEntry[] {
-  return (entries ?? [])
+  const rawEntries = (entries ?? [])
     .filter(entry => entry.season === season && (
       entry.type === 'manager_burnout' ||
       (entry.type === 'decision' && entry.semanticKey.startsWith('burnoutRelief:'))
     ))
     .sort((a, b) => a.matchday - b.matchday)
-    .reduce<ManagerNarrativeEntry[]>((memory, entry) => {
-      if (entry.type === 'decision') {
-        const text = BURNOUT_DECISION_MEMORY[entry.semanticKey]
-        if (text) memory.push({ season, matchday: entry.matchday, type: 'burnout_choice', text })
-        return memory
-      }
 
+  const decisionGroups = new Map<string, { count: number; firstMatchday: number }>()
+  for (const entry of rawEntries) {
+    if (entry.type !== 'decision') continue
+    const group = decisionGroups.get(entry.semanticKey)
+    if (group) group.count += 1
+    else decisionGroups.set(entry.semanticKey, { count: 1, firstMatchday: entry.matchday })
+  }
+
+  const beats = rawEntries
+    .filter(entry => entry.type === 'manager_burnout')
+    .reduce<ManagerNarrativeEntry[]>((memory, entry) => {
       const [, beat, zone] = entry.semanticKey.split(':')
       if (beat === 'mark') {
         memory.push({
@@ -110,6 +115,35 @@ export function getBurnoutSeasonMemory(
       }
       return memory
     }, [])
+
+  // Årsboken redigerar episoden, inte råposterna. En markering, en verklig
+  // lättnad och ett avslut räcker för bågen; dubletter av samma beat skulle
+  // annars återge lagringen snarare än säsongen.
+  const mark = beats
+    .filter(entry => entry.type === 'burnout_peak')
+    .sort((a, b) => (b.text.includes('nästan slut') ? 1 : 0) - (a.text.includes('nästan slut') ? 1 : 0) || a.matchday - b.matchday)[0]
+  const relief = beats.find(entry => entry.type === 'burnout_relief')
+  const close = beats.filter(entry => entry.type === 'burnout_close').at(-1)
+
+  // Första spelarvalet representerar handlingen i episoden. Om samma val
+  // återkom grupperas det med den låsta sanningsmeningen i stället för att
+  // skrivas ut som identiska rader.
+  const firstDecision = [...decisionGroups.entries()]
+    .sort(([, a], [, b]) => a.firstMatchday - b.firstMatchday)[0]
+  const choice = firstDecision && (() => {
+    const [semanticKey, group] = firstDecision
+    const baseText = BURNOUT_DECISION_MEMORY[semanticKey]
+    if (!baseText) return undefined
+    const text = group.count > 1
+      ? `${baseText.replace(/\.$/, '')} — ${group.count} gånger den säsongen.`
+      : baseText
+    return { season, matchday: group.firstMatchday, type: 'burnout_choice' as const, text }
+  })()
+
+  return [mark, choice, relief, close]
+    .filter((entry): entry is ManagerNarrativeEntry => entry !== undefined)
+    .sort((a, b) => a.matchday - b.matchday)
+    .slice(0, 4)
 }
 
 /**

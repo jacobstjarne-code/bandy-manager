@@ -50,7 +50,14 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
   const lastName = pickRng(SENDER_LAST_NAMES, seed + 3)
   const origin = pickRng(SENDER_ORIGINS, seed + 5)
   const age = 68 + (seed % 18) // 68-85 år
-  const memYear = 1970 + (seed % 40) // 1970-2009
+  // Förstamatch-mallen beskriver ett barndomsminne. Minnesåret måste därför
+  // härledas ur avsändarens ålder, inte lottas oberoende (vilket kunde göra
+  // en 77-åring till 59 vid "första matchen med far"). Övriga mallar gör
+  // inget barndomsanspråk och behåller sitt bredare historiska intervall.
+  const childhoodAge = 6 + (seed % 7) // 6-12 år
+  const memYear = templateIdx === 0
+    ? game.currentSeason - age + childhoodAge
+    : 1970 + (seed % 40) // 1970-2009
 
   const templates = [
     {
