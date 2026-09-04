@@ -2,6 +2,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { SeasonSignatureId } from '../../../domain/entities/SeasonSignature'
 import { SIGNATURE_REVEAL_DATA } from '../../../domain/data/scenes/seasonSignatureReveal'
 import { SceneCTA } from './shared/SceneCTA'
+import { Bandage, BriefcaseBusiness, Newspaper, Snowflake, Sparkles, type LucideIcon } from 'lucide-react'
 
 interface Props {
   game: SaveGame
@@ -22,12 +23,21 @@ const ATMOSPHERE_GRADIENTS: Record<SeasonSignatureId, string> = {
     'radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--gold) 12%, transparent) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(184,136,76,0.08) 0%, transparent 60%)',
 }
 
+const SIGNATURE_ICONS: Record<Exclude<SeasonSignatureId, 'calm_season'>, LucideIcon> = {
+  cold_winter: Snowflake,
+  scandal_season: Newspaper,
+  hot_transfer_market: BriefcaseBusiness,
+  injury_curve: Bandage,
+  dream_round: Sparkles,
+}
+
 export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
   const sig = game.currentSeasonSignature
   if (!sig || sig.id === 'calm_season') return null
 
   const data = SIGNATURE_REVEAL_DATA[sig.id]
   const atmosphereGradient = ATMOSPHERE_GRADIENTS[sig.id]
+  const SignatureIcon = SIGNATURE_ICONS[sig.id]
 
   return (
     <div style={{
@@ -59,17 +69,17 @@ export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
         ⬩ I DETTA ÖGONBLICK ⬩
       </div>
 
-      {/* Emoji */}
+      {/* Signaturmotiv — Lucide i hero-storlek; emoji hör bara hemma som kategori. */}
       <div style={{
-        textAlign: 'center',
-        fontSize: 64,
+        display: 'flex',
+        justifyContent: 'center',
         padding: '24px 0 12px',
         opacity: 0.95,
         position: 'relative',
         zIndex: 1,
         filter: 'drop-shadow(0 0 18px color-mix(in srgb, var(--gold) 18%, transparent))',
       }}>
-        {data.emoji}
+        <SignatureIcon aria-hidden="true" size={58} strokeWidth={1.35} color="var(--accent)" />
       </div>
 
       {/* Title */}
