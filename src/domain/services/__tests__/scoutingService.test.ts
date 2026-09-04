@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   startScoutAssignment,
+  getScoutAssignmentRounds,
   processScoutAssignment,
   generateScoutNotes,
   getScoutReportAge,
@@ -53,6 +54,12 @@ function makePlayer(overrides: Partial<Player> = {}): Player {
 }
 
 describe('startScoutAssignment', () => {
+  it('uses one shared timing rule for UI and assignments', () => {
+    expect(getScoutAssignmentRounds(false, true)).toBe(0)
+    expect(getScoutAssignmentRounds(true, false)).toBe(1)
+    expect(getScoutAssignmentRounds(false, false)).toBe(2)
+  })
+
   it('sets roundsRemaining=1 for same region', () => {
     const a = startScoutAssignment('p1', 'club_a', '2025-11-01', true)
     expect(a.roundsRemaining).toBe(1)

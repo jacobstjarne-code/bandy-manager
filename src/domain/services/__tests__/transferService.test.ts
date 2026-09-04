@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex, weightedPickIndexByWeights, computeMoraleBidWeight, computeMoraleAcceptanceBonus, playerAcceptsTransfer, getCounterOfferAmount } from '../transferService'
+import { generateIncomingBids, resolveOutgoingBid, executeTransfer, createOutgoingBid, computeBidChance, computePositionFactor, weightedPickIndex, weightedPickIndexByWeights, computeMoraleBidWeight, computeMoraleAcceptanceBonus, playerAcceptsTransfer, getCounterOfferAmount, getTransferBudgetSummary } from '../transferService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
@@ -302,6 +302,25 @@ describe('executeTransfer', () => {
 })
 
 describe('createOutgoingBid', () => {
+  it('binder aktiva bud och exponerar total, bunden och tillgänglig budget', () => {
+    const pending: TransferBid = {
+      id: 'pending', playerId: 'p2', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: 350000, offeredSalary: 12000, contractYears: 3,
+      direction: 'outgoing', status: 'pending', createdRound: 3, expiresRound: 6,
+    }
+    const game = makeGame({ transferBids: [pending] })
+
+    expect(getTransferBudgetSummary(game)).toEqual({
+      total: 500000,
+      committed: 350000,
+      available: 150000,
+    })
+    expect(createOutgoingBid(game, 'p1', 200000, 12000, 3, 5)).toMatchObject({
+      success: false,
+      error: expect.stringContaining('tillgänglig transferbudget'),
+    })
+  })
+
   it('fails when window is closed', () => {
     const game = makeGame({ currentDate: '2025-03-01' })
     const result = createOutgoingBid(game, 'p1', 200000, 12000, 3, 5)

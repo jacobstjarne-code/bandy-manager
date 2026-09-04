@@ -1,6 +1,6 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
 import { processScoutAssignment, startScoutAssignment } from '../../../domain/services/scoutingService'
-import { createOutgoingBid, getCounterOfferAmount } from '../../../domain/services/transferService'
+import { createOutgoingBid, getCounterOfferAmount, getTransferBudgetSummary } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
@@ -142,7 +142,8 @@ export function transferActions(get: Get, set: Set) {
       const counterAmount = getCounterOfferAmount(bid, game).amount
       const club = game.clubs.find(c => c.id === game.managedClubId)
       if (!club) return { success: false, error: 'Ingen klubb hittad' }
-      if (club.transferBudget < counterAmount) return { success: false, error: 'Otillräcklig transferbudget' }
+      const budget = getTransferBudgetSummary(game, bid.id)
+      if (budget.available < counterAmount) return { success: false, error: 'Otillräcklig tillgänglig transferbudget' }
       if (club.finances - counterAmount < -100000) return { success: false, error: 'Budet skulle föra kassan under −100 000 kr' }
 
       set({

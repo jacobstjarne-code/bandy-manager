@@ -30,6 +30,10 @@ function noise(rand: () => number, margin: number): number {
   return Math.round((rand() * 2 - 1) * margin)
 }
 
+export function getScoutAssignmentRounds(sameRegion: boolean, hasPlayedAgainst = false): 0 | 1 | 2 {
+  return hasPlayedAgainst ? 0 : sameRegion ? 1 : 2
+}
+
 export function startScoutAssignment(
   playerId: string,
   clubId: string,
@@ -37,7 +41,7 @@ export function startScoutAssignment(
   sameRegion: boolean,
   hasPlayedAgainst = false,
 ): ScoutAssignment {
-  const rounds = hasPlayedAgainst ? 0 : sameRegion ? 1 : 2
+  const rounds = getScoutAssignmentRounds(sameRegion, hasPlayedAgainst)
   return {
     targetPlayerId: playerId,
     targetClubId: clubId,

@@ -7,7 +7,7 @@ import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import type { TransferBid } from '../../domain/entities/GameEvent'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
-import { getCounterOfferAmount } from '../../domain/services/transferService'
+import { getCounterOfferAmount, getTransferBudgetSummary } from '../../domain/services/transferService'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../domain/services/economyService'
 import { getContractSalaryRange } from '../../domain/services/contractNegotiationService'
 import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
@@ -104,6 +104,7 @@ export function TransfersScreen() {
     .filter(f => f.status === 'completed')
     .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
   const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
+  const transferBudget = getTransferBudgetSummary(game)
 
   const availablePlayersForDot = game.players.filter(p =>
     p.clubId !== game.managedClubId &&
@@ -259,6 +260,12 @@ export function TransfersScreen() {
         <span className={`transfers-scout-count ${scoutBudget > 3 ? '' : 'transfers-scout-count--low'}`}>
           {scoutBudget}/10
         </span>
+      </div>
+
+      <div className="card-sharp transfers-budget-summary" aria-label="Transferbudget">
+        <span><small>Total</small><strong>{formatValue(transferBudget.total)}</strong></span>
+        <span><small>Bunden</small><strong>{formatValue(transferBudget.committed)}</strong></span>
+        <span><small>Tillgänglig</small><strong>{formatValue(transferBudget.available)}</strong></span>
       </div>
 
       <TabBar
@@ -527,6 +534,7 @@ export function TransfersScreen() {
             onClose={() => setBiddingPlayerId(null)}
             onConfirm={handleBid}
             rivalry={bidRivalry}
+            availableTransferBudget={transferBudget.available}
           />
         )
       })()}

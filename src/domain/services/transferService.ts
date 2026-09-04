@@ -15,6 +15,34 @@ function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
 }
 
+export interface TransferBudgetSummary {
+  total: number
+  committed: number
+  available: number
+}
+
+/**
+ * Ett aktivt utgående bud binder pengar tills det avgörs. Samma summering
+ * används av domänvalideringen och transferytan så spelaren aldrig kan lägga
+ * tre var för sig giltiga bud som tillsammans överskrider budgeten.
+ */
+export function getTransferBudgetSummary(
+  game: Pick<SaveGame, 'clubs' | 'managedClubId' | 'transferBids'>,
+  excludeBidId?: string,
+): TransferBudgetSummary {
+  const total = game.clubs.find(club => club.id === game.managedClubId)?.transferBudget ?? 0
+  const committed = (game.transferBids ?? [])
+    .filter(bid =>
+      bid.id !== excludeBidId &&
+      bid.buyingClubId === game.managedClubId &&
+      bid.direction === 'outgoing' &&
+      bid.status === 'pending',
+    )
+    .reduce((sum, bid) => sum + bid.offerAmount, 0)
+
+  return { total, committed, available: Math.max(0, total - committed) }
+}
+
 // DOM_FRAMGANGSKURVAN_2026-08-27, anspråk 2 — "Framgång kostar folk". Jacobs dom:
 // budfrekvensen ska skala med klubbens renommé OCH föregående säsongs slutplacering,
 // inte ligga på en flat 15%. En nykrönt mästare ska tappa spelare oftare än ett
@@ -266,8 +294,9 @@ export function createOutgoingBid(
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub) return { success: false, error: 'Ingen managed klubb' }
 
-  if (managedClub.transferBudget < offerAmount) {
-    return { success: false, error: `Otillräcklig transferbudget (${managedClub.transferBudget.toLocaleString('sv-SE')} kr)` }
+  const budget = getTransferBudgetSummary(game)
+  if (budget.available < offerAmount) {
+    return { success: false, error: `Otillräcklig tillgänglig transferbudget (${budget.available.toLocaleString('sv-SE')} kr)` }
   }
 
   // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): "vad spelarna

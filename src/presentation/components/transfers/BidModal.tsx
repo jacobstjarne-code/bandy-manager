@@ -16,9 +16,10 @@ interface BidModalProps {
   rivalry?: { name: string; intensity: number } | null
   mode?: 'transfer' | 'freeAgent'
   salaryRange?: { min: number; max: number }
+  availableTransferBudget?: number
 }
 
-export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange }: BidModalProps) {
+export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget }: BidModalProps) {
   const isFreeAgent = mode === 'freeAgent'
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
   const [offerAmount, setOfferAmount] = useState(isFreeAgent ? 0 : suggestedBid)
@@ -26,7 +27,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
     isFreeAgent && salaryRange ? salaryRange.max : Math.round(player.salary / 500) * 500,
   )
   const [contractYears, setContractYears] = useState(3)
-  const canAfford = isFreeAgent || (managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000)
+  const availableBudget = availableTransferBudget ?? managedClub.transferBudget
+  const canAfford = isFreeAgent || (availableBudget >= offerAmount && managedClub.finances - offerAmount >= -100000)
 
   return (
     <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
@@ -46,7 +48,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
             <div className="transfers-info-box">
               {isFreeAgent && salaryRange
                 ? `Lönekrav: ${Math.round(salaryRange.min / 1000)}–${Math.round(salaryRange.max / 1000)} tkr/mån`
-                : `Marknadsvärde: ${formatValue(player.marketValue ?? 0)} · Transferbudget: ${formatValue(managedClub.transferBudget)}`}
+                : `Marknadsvärde: ${formatValue(player.marketValue ?? 0)} · Tillgängligt: ${formatValue(availableBudget)}`}
             </div>
             {!isFreeAgent && (
               <div className="transfers-form-group">
@@ -87,8 +89,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
                 })()}
               </div>
             )}
-            {!isFreeAgent && managedClub.transferBudget < offerAmount && <p className="transfers-error-text">Otillräcklig transferbudget</p>}
-            {!isFreeAgent && managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 tkr</p>}
+            {!isFreeAgent && availableBudget < offerAmount && <p className="transfers-error-text">Otillräcklig tillgänglig transferbudget</p>}
+            {!isFreeAgent && availableBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 tkr</p>}
           </div>
         </div>
         <button

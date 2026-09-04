@@ -104,6 +104,8 @@ export const FACILITY_NODE_DEFS: FacilityNodeDef[] = [
     // Påståendekartan, byggnodernas löften (2026-08-27): "Försäljnings-
     // intäkter" var tidigare oviart — nu WIRAD (economyService.ts,
     // KIOSK_NODE_SALES_BONUS_MULT), byggd nod höjer kiosk-sqrt-raten 25%.
+    // Persisted facility id. This is the physical kiosk node and is unrelated
+    // to CommunityActivities.kiosk, which tracks volunteer-run operations.
     id: 'kiosk',
     gren: 'verksamhet',
     label: 'Kiosk & servering',

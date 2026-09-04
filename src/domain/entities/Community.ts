@@ -2,6 +2,7 @@ import type { BoardPersonality } from './Club'
 import type { PendingDemand } from './Demand'
 
 export interface CommunityActivities {
+  /** Volunteer-run kiosk operation. Not the persisted facility node `kiosk`. */
   kiosk: 'none' | 'basic' | 'upgraded'
   lottery: 'none' | 'basic' | 'intensive'
   /** Barnverksamheten/BandyKul-modellen. Optional för äldre saves före migrering. */
@@ -75,6 +76,8 @@ export interface Patron {
   favoriteRelation?: string
   wantsStyle?: string
   isActive: boolean
+  /** Säsongen då relationen faktiskt presenterades och accepterades i UI. */
+  introducedSeason?: number
   hasBeenWarned?: boolean
   personality?: PatronPersonality
   // 3.2 (SLUTTEST_KO.md, 2026-08-17): döpt om från `patience` — kolliderade

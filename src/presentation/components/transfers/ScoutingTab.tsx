@@ -4,7 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
 import { PlayerPosition } from '../../../domain/enums'
-import { getScoutReportAge, getAttributeBand, ATTRIBUTE_BAND_LABELS, ATTRIBUTE_BAND_BAR_WIDTH } from '../../../domain/services/scoutingService'
+import { getScoutAssignmentRounds, getScoutReportAge, getAttributeBand, ATTRIBUTE_BAND_LABELS, ATTRIBUTE_BAND_BAR_WIDTH } from '../../../domain/services/scoutingService'
 import { getScoutablePlayers } from '../../../domain/services/talentScoutService'
 import { positionShort, positionLong, formatValue } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
@@ -78,7 +78,7 @@ export function ScoutingTab({
     })
 
   // Pre-compute scout cost per player (same logic as handleScout in TransfersScreen)
-  function scoutCost(player: Player): 'direkt' | '1 omgång' {
+  function scoutCost(player: Player): 'direkt' | '1 omgång' | '2 omgångar' {
     const targetClub = game.clubs.find(c => c.id === player.clubId)
     const sameRegion = !!managedClub && !!targetClub && managedClub.region === targetClub.region
     const hasPlayedAgainst = game.fixtures.some(f =>
@@ -86,7 +86,8 @@ export function ScoutingTab({
       ((f.homeClubId === game.managedClubId && f.awayClubId === player.clubId) ||
        (f.awayClubId === game.managedClubId && f.homeClubId === player.clubId))
     )
-    return sameRegion || hasPlayedAgainst ? 'direkt' : '1 omgång'
+    const rounds = getScoutAssignmentRounds(sameRegion, hasPlayedAgainst)
+    return rounds === 0 ? 'direkt' : rounds === 1 ? '1 omgång' : '2 omgångar'
   }
 
   return (
