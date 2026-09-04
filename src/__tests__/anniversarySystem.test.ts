@@ -2,6 +2,7 @@ import { findActiveAnniversaries, buildEventId } from '../domain/services/clubMe
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
 import { FixtureStatus } from '../domain/enums'
+import { pickAnniversaryMarkCopy } from '../domain/data/anniversaryMarkText'
 
 const MANAGED_CLUB_ID = 'club_test'
 
@@ -203,6 +204,29 @@ describe('liggare-k2-arsdagar-ur-liggaren — steg 2 för hela unionen, inte bar
     })
     const result = findActiveAnniversaries(game)
     expect(result.find(a => a.type === 'derby_win')).toBeDefined()
+  })
+})
+
+describe('årsdagens sanningsgrind', () => {
+  it('tolkar inte ett stort neutralt patronminne som en serieseger', () => {
+    const game = makeMinimalGame()
+    const echo = {
+      eventId: 'patron-1',
+      originalSeason: 1,
+      yearsAgo: 1,
+      matchday: 8,
+      type: 'patron_withdrawal' as const,
+      outcome: 'neutral' as const,
+      significance: 95,
+      echoSize: 'big' as const,
+      originalEventText: 'Grundpelaren lämnade klubben.',
+    }
+
+    const copy = pickAnniversaryMarkCopy(echo, game)
+
+    expect(copy.quote).toBe('Grundpelaren lämnade klubben.')
+    expect(copy.quote).not.toContain('Serieettan')
+    expect(copy.quote).not.toContain('vann serien')
   })
 })
 

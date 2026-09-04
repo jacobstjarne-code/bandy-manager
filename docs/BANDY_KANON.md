@@ -52,23 +52,25 @@ Roller värda att ha rätt, för scouttext, matchreferat och narrativ:
 
 - **Målvakten** motar på linjen (till skillnad från fotbollsmålvakten som plockar inlägg). Läser spelet, placeringssäker, allt mer skridskoåkning. Köldtålighet är en verklig egenskap. På frislag kan hen medvetet ställa en ihålig mur för att locka fram ett dåligt skott.
 - **Backen** zonmarkerar, aldrig man-man ("det går inte att åka efter en spelare"). Snacket med libero och halvor är en uttalad arbetsuppgift.
-- **Liberon** städar bakom — raka djupledsbollar är hens ansvar; frilägen från kanten är halvens eller backens. En bandylibero har **inga** offensiva uppgifter; uppspelsansvaret ligger på backarna. Utsatt position: efter en match med många insläppta är liberon lätt att skylla på, och helt fel är det inte.
+- **Liberon** städar bakom — raka djupledsbollar är hens ansvar; frilägen från kanten är halvens eller backens. En bandylibero har inget offensivt ansvar framåt — men är ofta vändpunkten i uppspelet: "många lag vänder idag spelet i bakplan via back eller libero" (SvBF spelarutvecklingsplan §2.4.1.2). Utsatt position: efter en match med många insläppta är liberon lätt att skylla på, och helt fel är det inte.
 - **Halven är två saker samtidigt** — ytterback i försvar, yttermittfältare i anfall. En halv som spelats som mittfältare är inte felplacerad, det är en annan sorts halv. Arketyper publiken känner igen: åkhalv och lyrhalv.
 - **Anfallaren.** Viktigaste egenskapen är tålamod, inte avslut — "man åker och väntar på bollen". Huvuduppgiften är att dra isär motståndarna och öppna ytor åt mittfältarna, inte i första hand att göra mål själv. Återhämtning sker i ögonblicket laget vunnit bollen, inte i defensiven.
+
+**Belastningen skiljer rollerna — mätt, inte tyckt** (Persson m.fl. 2020, Johansson m.fl. 2021, Andersson m.fl. 2022, van den Tillaar m.fl. 2023; se `BANDYTAKTIK_KALLASNING` §6): defensiva roller (libero, back, halv) spelar längst och täcker längst total sträcka — halven åker längst av alla; offensiva roller har högre medelhastighet, mer tid i höga farter och byts oftare. Det är Liws "mittfältaren kan inte vila på planen" i siffror. Sen matchtrötthet minskar högfartsarbetet men inte de explosiva topparna — trötta spelare kan fortfarande explodera, de håller bara inte farten mellan. I isolerade sprint-/styrketester skiljer positionerna sig däremot knappt (forwards något högre VO2max, i övrigt inget säkert): **rollen skapar belastningsskillnaden, inte medfödda positionsstereotyper.** För spelet: byten ska främst röra mittfält och anfall; femman baks trötthet är lång och sammanhängande; trötthetskurvan ska inte vara en generell fartneddragning; och attributmallar ska inte låsa positioner hårt.
 
 ---
 
 ## 3. Formationerna
 
-Spelet har sex formationer: 5-3-2, 3-3-4, 4-3-3, 3-4-3, 2-3-2-3, 4-2-4. De är byggda på bandy-anatomi — libero, halvor, forwards, ytterforwards, halvlinje — och deras coach-citat är bandy-idiomatiska. Fullständiga slots, tags och citat: `docs/textgranskning/TEXT_REVIEW_formations_2026-04-20.md`.
+**DÖMT 2026-09-04 (`DOM_FORMATIONER_V2_2026-09-04.md`, Jacob): sex uppställningar på bandyns egen axel, femman bak i alla.** Ersätter de sex med varierande försvarslinje (5-3-2, 3-3-4, 4-3-3, 3-4-3, 2-3-2-3, 4-2-4). Byggs av Code; tills bygget står gäller texten under "Nuläge i koden" nedan.
 
-Två saker som är avgjorda och inte ska öppnas igen:
+De sex: **5-3-2 två toppar** (default, styrspel), **5-3-2 triangel** (en spets, två höga mittfältare), **5-3-2 ytterben** (en defensiv mittfältare, två offensiva — Hammarbys SM-form), **5-3-2 höga halvor** (ytterhalvorna med i anfallet, bortre halven extra libero), **5-2-3 hög** (forechecking, kraftödande, kortvarig), **5-4-1 hem** (ta hem, tjocka). Namn och tags är anatomi, aldrig effekt. Text: `FORMATIONER_V2_TEXT_2026-09-04.md`.
 
-**Formation påverkar INTE matchmotorn.** Den är kosmetisk (hur spelarna visas), position-matchning (saknas en efterfrågad position går en annan upp med CA-rabatt) och kemi (via slots x/y). Match-effekter styrs separat av taktik-axlarna nedan.
+**Formationen bär höjdläget — och bara det.** `press`-axeln försvinner som reglage; 5-4-1 = låg, 5-3-2 = mellan, 5-2-3 = hög, med dagens press-tal oförändrade. 5-2-3 kostar dessutom kondition per omgång (källan: "väldigt kraftödande, kortare perioder"), magnitud ur kalibreringsrundan C2. De fyra 5-3-2-formerna har ingen egen multiplikator — de verkar genom slot-kartan, positionspassningen och kemin. Rollen skapar skillnaden (Andersson 2022, van den Tillaar 2023). Fotbollsswitchen i `tacticModifiers` (fyra bak = tryggare) tas bort: ingen källa stödjer den.
 
-**Tags reflekterar anatomi, inte effekter.** `4 FORWARDS`, `KRÄVER LIBERO`, `STARK MITTLINJE` är sanna (de speglar slots). `+OFFENSIV`, `+HÖRNOR` vore lögn — mentality respektive cornerStrategy gör det, inte formationen. Den tagg-buggen rättades 2026-04-20; raden `c-fm1-formationer-fotboll` är stängd som stale mot den domen (`DOM_FORMATIONER_BANDY_KANON_2026-09-02.md`).
+**Nuläge i koden tills V2 står:** spelet har sex formationer med varierande försvarslinje, byggda på bandy-anatomi (libero, halvor, forwards) med bandy-idiomatiska coach-citat (`TEXT_REVIEW_formations_2026-04-20.md`). Formationen påverkar motorn LITE och åt fotbollshållet — `2-3-2-3` offense +0.05/defense −0.08, `4-3-3`/`4-2-4` offense −0.03/defense +0.05 (rättat 2026-09-04; tidigare stod "påverkar INTE", vilket var fel). Utöver det kosmetik, position-matchning (CA-rabatt vid saknad position) och kemi. Tags reflekterar anatomi, inte effekter (`+OFFENSIV` vore lögn — mentality gör det); den tagg-buggen rättades 2026-04-20 och regeln står i V2.
 
-Det som INTE är avgjort står under Öppna frågor: källäsningen argumenterar att en varierande försvarslinje (5-3-2 vs 4-3-3 vs 3-3-4) är just det fotbollslån ingen bandytränare skulle känna igen, eftersom alla lag spelar fem bak. Det är en loggad designfråga, inte en defekt.
+**Vad förbundet självt säger (SvBF spelarutvecklingsplan 2020, §2.4.2 — `BANDYTAKTIK_KALLASNING_2026-09-04.md`):** "de flesta lag spelar med tre mittfältare"; positionerna är målvakt, libero + två backar, två ytterhalvor, tre mittfältare, två anfallare — 5-3-2. Den enda formationsvariation förbundet beskriver är **5-2-3 vid forechecking** — en mittfältare går upp, femman bak rörs inte — "väldigt kraftödande och används normalt under kortare perioder av matcher". Under styrspel varierar frontens form: "en triangel längst fram eller två centrala toppforwards". GIH 2023 beskriver samma två system, 5-3-2 och 5-2-3/5-4-1, som fasbeskrivningar av ett rörligt lag. Ingen källa i någon nivå ger en formation en egen anfalls- eller försvarsbonus. Det är grunden V2 står på.
 
 ---
 
@@ -81,7 +83,9 @@ Bandyns egna spelsätts-observationer, som spelet delvis fångar och delvis inte
 - **Styrspel** är den defensiva grundtanken: målet står mitt på kortlinjen, så försvaret håller motståndaren ut mot kanten. Anfallarens defensiva uppgift är att inleda styrspelet.
 - **Vända hem** (spela bakåt) är publikens vanligaste missuppfattning — de ogillar det, tränaren vet att det ofta är rätt. Perfekt för klackreaktioner.
 - **Högt press är sällsynt**, inte ett av tre likvärdiga val. I bandyn är det en situationsbunden avvikelse (matchinledning, motståndare med utvisning), inte en spelstil. Spelets taktikskärm ger Låg/Medium/Hög som jämbördiga — en känd förenkling.
-- **Den verkliga stilaxeln: spela eller åk.** Den enda fundamentala skillnad tränare beskriver mellan lag — passa bollen och flytta motståndaren (Sandviken) kontra åka. Den korrelerar inte med tabellplacering, och sitter ofta i klubbens tradition och tröja. Spelet har åtta taktikdimensioner och ingen är denna. Kandidat att knyta till ort via `clubExtendedInfo` (loggad, ej beordrad).
+- **Den verkliga stilaxeln: spela eller åk.** Den enda fundamentala skillnad tränare beskriver mellan lag — passa bollen och flytta motståndaren (Sandviken) kontra åka. Den korrelerar inte med tabellplacering, och sitter ofta i klubbens tradition och tröja. Spelet har åtta taktikdimensioner och ingen är denna. Kandidat att knyta till ort via `clubExtendedInfo` (loggad, ej beordrad). Mekanismen bakom, enligt förbundet: "det är passningsspelet som bestämmer spelets tempo och karaktär — en passning gör spelet mycket snabbare än om bollen transporteras av en spelare" (§2.4.1.1).
+
+**Förbundets egna taktikbegrepp (SvBF 2020, Definitioner + §2.4.2.2) — det är dessa en bandytränare ställer om:** *utgångsläge/höjdläge* (var försvaret startar, första och sista spelare) · *brytområde/brytzon* (den förutbestämda ytan där stoppspelarna — ytterhalvor och backar — ska bryta) · *styrning/styrspel* med ett *riktmärke* ("typ hörnflaggan") · *överflyttning* (hela laget mot bollsidan, motsatt ytterhalv blir extra libero) · *tjocka / ta hem* (många spelare på liten yta långt ner — en verklig trend senaste åren, som gjort knackskottet vanligare) · *spelvändning* ("ett hundratal" per elitmatch; "många mål tillverkas väldigt kort tid efter att laget erövrat bollen"; målet är att vinna minst en spelare per passning). Av spelets åtta axlar är hörnor och utvisningsspel bandyns egna; press/tempo/passningar är rätt sorts variabler i fel form; bredd och anfallsfokus saknar tydlig bandymotsvarighet. Det som saknas helt: frontens form, brytzon, kompakthet i djupled, spela/åka.
 
 ---
 
@@ -135,7 +139,7 @@ Vad communityStanding driver mekaniskt: det är den dominerande publik-termen i 
 
 Det kanon inte ska släta över:
 
-1. **Formationsaxeln (STÅENDE designfråga).** Ska formationsvalet göras om till bandyns egen axel — två eller tre mittfältare, och hur de fem främre fördelas — i stället för en varierande försvarslinje? Källäsningens post 1, den enda som rör byggd mekanik och `BEVARA`-listan. Tagg-frågan är stängd; strukturfrågan är ett eget beslut, inte taget.
+1. **Formationsaxeln — DÖMD 2026-09-04.** Väg 1, sex uppställningar med femman bak, formationen bär höjdläget, `press`-reglaget bort, fotbollsswitchen bort, 5-2-3 kostar kondition (C2). `DOM_FORMATIONER_V2_2026-09-04.md` + `FORMATIONER_V2_TEXT_2026-09-04.md`. Kvar som logg: byggs av Code; §3 uppdateras till "byggd" när det står.
 
 2. **`CLAUDE_REFERENCE.md`:s stale kort-rad — RÄTTAD 2026-09-03.** Raden påstod "Inga gula kort"; nu omskriven mot `REGLER.md` §3 (bandy har gult/rött i verkligheten, spelet väljer bara att inte visa dem). Kvar som logg, inte öppen åtgärd.
 
@@ -147,8 +151,8 @@ Det kanon inte ska släta över:
 
 ## Källor
 
-`docs/kunskapsbas/REGLER.md` (auktoritativ regelkälla), `docs/kunskapsbas/DATA.md`, `docs/textgranskning/TEXT_REVIEW_formations_2026-04-20.md`, `docs/BANDYSPRAK_KALLASNING_2026-08-19.md`, `CLAUDE_REFERENCE.md`, `DOM_FORMATIONER_BANDY_KANON_2026-09-02.md`, matchmotor-kalibreringen (`bandygrytan_detailed.json`), Bandy-Brain (`docs/findings/`).
+`docs/kunskapsbas/REGLER.md` (auktoritativ regelkälla), `docs/kunskapsbas/DATA.md`, `docs/textgranskning/TEXT_REVIEW_formations_2026-04-20.md`, `docs/BANDYSPRAK_KALLASNING_2026-08-19.md`, `docs/BANDYTAKTIK_KALLASNING_2026-09-04.md` (SvBF spelarutvecklingsplan 2020 §2.4 + §6 kompletterande källor), `docs/kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md` (GPT:s källindex: GIH 2023, Persson m.fl. 2020, Johansson m.fl. 2021, Andersson m.fl. 2022, van den Tillaar m.fl. 2023, Bykov & Kurikov 2025, FIB-regler), `docs/kallor/` (arkiverade PDF:er: SvenskaFans sju delar, SvBF 2020), `CLAUDE_REFERENCE.md`, `DOM_FORMATIONER_BANDY_KANON_2026-09-02.md`, matchmotor-kalibreringen (`bandygrytan_detailed.json`), Bandy-Brain (`docs/findings/`).
 
 ---
 
-*v1 är syntes-skelettet: allt som gick att grunda på disk idag. Två öppna frågor kvar: formationsaxeln (Jacobs designkall) och djupare CS-trösklar (framtida syntes). Nästa revision fyller Jacobs domänkunskap där §-texten är tunn.*
+*v1 är syntes-skelettet: allt som gick att grunda på disk idag. En öppen fråga kvar: djupare CS-trösklar (framtida syntes). Formationsaxeln dömd 2026-09-04. Nästa revision fyller Jacobs domänkunskap där §-texten är tunn.*

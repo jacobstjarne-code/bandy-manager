@@ -224,6 +224,33 @@ describe('O13 — klubbytet behåller världen', () => {
     expect(switched.firedAtSeason).toBeUndefined()
   })
 
+  it('stämplar äldre liggarposter med gamla klubben och rensar klubbens landslags-UI', () => {
+    const base = newGame(810)
+    const target = base.clubs.find(c => c.id !== base.managedClubId)!
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const withOldClubState: SaveGame = {
+      ...base,
+      eventLedger: [{
+        type: 'decision', semanticKey: 'old-choice', season: base.currentSeason,
+        matchday: 4, significance: 70,
+      }],
+      activeNationalTeamCamp: { startRound: 4, endRound: 5, playerIds: [player.id] },
+      lastNationalSnub: { playerId: player.id, season: base.currentSeason, round: 4 },
+      pendingNationalTeamReturn: { text: 'Gamla klubbens återkomst' },
+      nationalTeamReturnExpires: 6,
+      pendingCallupModal: { playerIds: [player.id], names: [`${player.firstName} ${player.lastName}`], bonusTkr: 5 },
+    }
+
+    const switched = switchManagedClub(withOldClubState, target.id)
+
+    expect(switched.eventLedger?.[0].clubId).toBe(base.managedClubId)
+    expect(switched.activeNationalTeamCamp).toBeUndefined()
+    expect(switched.lastNationalSnub).toBeUndefined()
+    expect(switched.pendingNationalTeamReturn).toBeUndefined()
+    expect(switched.nationalTeamReturnExpires).toBeUndefined()
+    expect(switched.pendingCallupModal).toBeUndefined()
+  })
+
   it('samma seed + samma klubb ⇒ samma nya klubbfolk (determinism)', () => {
     const base = newGame(909)
     const target = base.clubs.find(c => c.id !== base.managedClubId)!

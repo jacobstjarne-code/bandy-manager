@@ -48,6 +48,7 @@ describe('gameStore — direkta ekonomiactions loggas', () => {
     expect(result.success).toBe(true)
     expect(game.eventLedger).toContainEqual({
       type: 'decision',
+      clubId: 'club_forsbacka',
       semanticKey: 'facility_varmestuga_s2025',
       season: 2025,
       matchday: game.currentMatchday,

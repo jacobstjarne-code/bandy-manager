@@ -17,5 +17,8 @@ import type { EventLedgerEntry } from '../entities/Narrative'
  * färdigformad av anroparen.
  */
 export function logEvent(game: SaveGame, entry: EventLedgerEntry): EventLedgerEntry[] {
-  return [...(game.eventLedger ?? []), entry]
+  return [
+    ...(game.eventLedger ?? []),
+    entry.clubId ? entry : { ...entry, clubId: game.managedClubId },
+  ]
 }

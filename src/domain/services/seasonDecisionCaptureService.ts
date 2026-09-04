@@ -811,7 +811,11 @@ export function composeSeasonDecisionSentence(entry: EventLedgerEntry, game: Sav
  * misslyckas) — annars SEASON_DECISION_NONE_TEXT, aldrig en tom mening.
  */
 export function pickMostImportantDecisionText(game: SaveGame, season: number): string {
-  const remaining = (game.eventLedger ?? []).filter(e => e.type === 'decision' && e.season === season)
+  const remaining = (game.eventLedger ?? []).filter(e =>
+    e.type === 'decision'
+    && e.season === season
+    && (!e.clubId || e.clubId === game.managedClubId)
+  )
   while (remaining.length > 0) {
     const winner = pickSeasonDecisionFromLedger(remaining)
     if (!winner) break

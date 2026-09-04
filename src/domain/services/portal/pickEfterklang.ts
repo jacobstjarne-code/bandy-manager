@@ -221,7 +221,9 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const echo = interpolate(pickEcho('nemesis', seed + 5), {
       motståndare: opponentClub?.name ?? n.name,
     })
-    const premiss = `${n.goalsAgainstUs} mål mot er den här säsongen.`  // B4 (goalsAgainstUs alltid ≥ 2)
+    // goalsAgainstUs är en karriärackumulator och nollställs inte vid
+    // rollover. Säg därför inte att summan gäller innevarande säsong.
+    const premiss = `${n.goalsAgainstUs} mål mot er.`
     candidates.push({
       type: 'nemesis',
       score: 45 + n.goalsAgainstUs * 5,

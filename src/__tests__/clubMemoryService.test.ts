@@ -389,6 +389,121 @@ describe('liggare-k9 — transfer_signed/transfer_sold TEXT LÅST + ledgerEntryB
   })
 })
 
+describe('liggare-k9-fynd — ledgerEntryBelongsToManagedClub strukturell omskrivning (2026-09-04)', () => {
+  it('visar inte en gammal klubbs post efter att managern bytt klubb', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{
+        type: 'era_shift', semanticKey: 'old-club-era', season: 1, matchday: 5,
+        significance: 85, eraLabel: 'establishment', clubId: 'club_old',
+      }],
+    })
+    expect(getClubMemory(game).seasons[0].events.find(e => e.type === 'era_shift')).toBeUndefined()
+  })
+
+  it('derby_win: verklig produktionskod (roundProcessor.ts) sätter subject till RIVALKLUBBEN, inte managed — hade uteslutits ovillkorat före omskrivningen', () => {
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'rival', name: 'Rivalen' }] as never,
+      eventLedger: [{
+        type: 'derby_win', semanticKey: 'derby-2', season: 1, matchday: 5, significance: 65,
+        subject: { kind: 'club', id: 'rival' },
+      }],
+    })
+    expect(getClubMemory(game).seasons[0].events.find(e => e.type === 'derby_win')).toBeDefined()
+  })
+
+  it('era_shift utan subject alls (verklig produktionskod, roundProcessor.ts) visas nu', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{ type: 'era_shift', semanticKey: 'era-2', season: 1, matchday: 5, significance: 85, eraLabel: 'establishment' }],
+    })
+    expect(getClubMemory(game).seasons[0].events.find(e => e.type === 'era_shift')).toBeDefined()
+  })
+
+  it('season_highlight utan subject alls (verklig produktionskod, seasonEndProcessor.ts) visas nu', () => {
+    const game = makeMinimalGame({
+      eventLedger: [{ type: 'season_highlight', semanticKey: 'sh-1', season: 1, matchday: 20, significance: 55, matchCategory: 'big_win' }],
+    })
+    expect(getClubMemory(game).seasons[0].events.find(e => e.type === 'season_highlight')).toBeDefined()
+  })
+})
+
+describe('liggare-k9-doda-typer — de fem match-resultat-typerna (DOM 2026-09-04, nytt result-fält)', () => {
+  it('buildMatchResultLedgerEntry + Krönikans dispatch ger IDENTISK text som den levande fixture-vägen (big_win)', async () => {
+    const { buildMatchResultLedgerEntry, buildEventFromFixture } = await import('../domain/services/clubMemoryEventBuilders')
+    const fixture = {
+      id: 'fx1', season: 1, matchday: 5, roundNumber: 5, homeClubId: MANAGED_CLUB_ID, awayClubId: 'opp',
+      homeScore: 6, awayScore: 1, status: 'completed', isCup: false, events: [],
+    } as never
+    const liveEvent = buildEventFromFixture(fixture, MANAGED_CLUB_ID)
+    const ledgerEntry = buildMatchResultLedgerEntry(fixture, MANAGED_CLUB_ID)
+    expect(ledgerEntry?.type).toBe('big_win')
+    expect(ledgerEntry?.result).toEqual({ goalsFor: 6, goalsAgainst: 1, opponentClubId: 'opp', home: true, competition: 'league', stage: expect.any(String) })
+
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'opp', name: 'Opponent' }] as never,
+      eventLedger: [ledgerEntry!],
+    })
+    const dispatchedEvent = getClubMemory(game).seasons[0].events.find(e => e.type === 'big_win')
+    expect(dispatchedEvent?.text).toBe(liveEvent?.text)
+    expect(dispatchedEvent?.significance).toBe(liveEvent?.significance)
+  })
+
+  it('sm_final: identisk text mellan fixture-vägen och ledger-vägen', async () => {
+    const { buildMatchResultLedgerEntry, buildEventFromFixture } = await import('../domain/services/clubMemoryEventBuilders')
+    const fixture = {
+      id: 'fx2', season: 1, matchday: 38, roundNumber: 1, homeClubId: MANAGED_CLUB_ID, awayClubId: 'opp',
+      homeScore: 4, awayScore: 2, status: 'completed', isCup: false, isFinaldag: true, events: [],
+    } as never
+    const liveEvent = buildEventFromFixture(fixture, MANAGED_CLUB_ID)
+    const ledgerEntry = buildMatchResultLedgerEntry(fixture, MANAGED_CLUB_ID)
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'opp', name: 'Opponent' }] as never,
+      eventLedger: [ledgerEntry!],
+    })
+    const dispatchedEvent = getClubMemory(game).seasons[0].events.find(e => e.type === 'sm_final')
+    expect(dispatchedEvent?.text).toBe(liveEvent?.text)
+    expect(dispatchedEvent?.text).toBe('SM-guld! Vann finalen 4–2.')
+  })
+
+  it('samma match producerad BÅDE via fixture-vägen OCH ledger-vägen (innevarande säsong, innan retire-last) dedupas till EN rad — inte två identiska', async () => {
+    const { buildMatchResultLedgerEntry } = await import('../domain/services/clubMemoryEventBuilders')
+    const fixture = {
+      id: 'fx-dup', season: 1, matchday: 5, roundNumber: 5, homeClubId: MANAGED_CLUB_ID, awayClubId: 'opp',
+      homeScore: 6, awayScore: 1, status: 'completed', isCup: false, events: [],
+    } as never
+    const ledgerEntry = buildMatchResultLedgerEntry(fixture, MANAGED_CLUB_ID)
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' }, { id: 'opp', name: 'Opponent' }] as never,
+      fixtures: [fixture],
+      eventLedger: [ledgerEntry!],
+    })
+    const bigWinEvents = getClubMemory(game).seasons[0].events.filter(e => e.type === 'big_win')
+    expect(bigWinEvents).toHaveLength(1)
+  })
+
+  it('en icke-kvalificerande match (liten segermarginal, ingen final/cup/derby) skriver ingen liggarpost', async () => {
+    const { buildMatchResultLedgerEntry } = await import('../domain/services/clubMemoryEventBuilders')
+    const fixture = {
+      id: 'fx3', season: 1, matchday: 5, roundNumber: 5, homeClubId: MANAGED_CLUB_ID, awayClubId: 'opp',
+      homeScore: 2, awayScore: 1, status: 'completed', isCup: false, events: [],
+    } as never
+    expect(buildMatchResultLedgerEntry(fixture, MANAGED_CLUB_ID)).toBeNull()
+  })
+})
+
+describe('liggare-k9-doda-typer — season_finish läser nu seasonSummaries, inte bara seasonStartSnapshot', () => {
+  it('en säsong äldre än currentSeason-1 hittar sin placering via seasonSummaries (tidigare alltid undefined)', () => {
+    const game = makeMinimalGame({
+      currentSeason: 4,
+      seasonSummaries: [
+        { season: 2, clubId: MANAGED_CLUB_ID, finalPosition: 3 },
+      ] as never,
+    })
+    const result = getClubMemory(game)
+    const season2 = result.seasons.find(s => s.season === 2)
+    expect(season2?.finishPosition).toBe(3)
+  })
+})
+
 describe('liggare-k7-beslutsminne — beslut ≥70 blir egna Krönika-rader, inte bara säsongens topp-1', () => {
   it('ett beslut med significance ≥ 70 och känd semanticKey ger en rad', () => {
     const game = makeMinimalGame({

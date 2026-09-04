@@ -66,6 +66,7 @@ import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignif
 import type { RippleChain } from '../../domain/entities/SaveGame'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
 import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanService'
+import { buildMatchResultLedgerEntry } from '../../domain/services/clubMemoryEventBuilders'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 import {
   annandagsbandyInbox,
@@ -752,6 +753,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         })
       }
     }
+  }
+
+  // liggare-k9-doda-typer (DOM 2026-09-04, Opus): match-resultat-liggarposten
+  // (sm_final/cup_final/derby_result/big_win/big_loss) skrivs här, vid
+  // matchslut för den managerade klubben — samma ställe redan känner till
+  // `justCompletedManagedFixture`. Resultatet (`result`-payloaden) överlever
+  // `game.fixtures`-nollställningen vid rollover (k10), till skillnad från
+  // dagens fixture-härledda Krönika-rad.
+  if (justCompletedManagedFixture) {
+    const matchResultLedgerEntry = buildMatchResultLedgerEntry(justCompletedManagedFixture, game.managedClubId)
+    if (matchResultLedgerEntry) roundLedgerEntries.push(matchResultLedgerEntry)
   }
 
   // C-B2: detect notable result for klack echo (after match completes)
@@ -1707,7 +1719,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // härifrån nu (getRecentMomentsFromLedger), se momentLedgerService.ts.
     // Ripple och Moment kan beskriva samma systemhändelse. De fogas då till
     // EN kanonisk post med både Moment-metadata och ripple-konsekvenser.
-    eventLedger: appendMomentsAndEntriesToLedger(game.eventLedger ?? [], allNewMomentsThisRound, roundLedgerEntries),
+    eventLedger: appendMomentsAndEntriesToLedger(
+      game.eventLedger ?? [],
+      allNewMomentsThisRound,
+      roundLedgerEntries,
+      game.managedClubId,
+    ),
     currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
     scandalHistory: scandalResult.updatedScandalHistory,

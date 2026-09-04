@@ -5,6 +5,7 @@ import {
   buildEventFromFixture,
   buildEventFromNarrativeLog,
   buildEventFromStoryline,
+  deriveMatchMemoryText,
 } from './clubMemoryEventBuilders'
 import type { MomentSource } from '../entities/Moment'
 import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
@@ -20,6 +21,8 @@ import { LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
 import type { LedgerOnlySource } from '../data/momentViewTemplates'
 import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
+import { isMatchResultEntry } from '../entities/Narrative'
+import { getRivalry } from '../data/rivalries'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -82,9 +85,23 @@ export function scoreEvent(event: MemoryEvent): number {
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
 
+/**
+ * liggare-k9-doda-typer (Code-fynd 2026-09-04): läste tidigare bara
+ * `seasonStartSnapshot.finalPosition` — täcker ENDAST currentSeason-1, så
+ * season_finish "glömdes" för allt äldre än föregående säsong redan innan
+ * någon fixture-gallringsfråga ens kom in i bilden. `game.seasonSummaries`
+ * ackumuleras för alltid (till skillnad från `game.fixtures`, som
+ * nollställs varje rollover — k10) och bär `finalPosition` per säsong
+ * sedan innan. season_finish behöver därför INGEN ny liggarpost eller
+ * `result`-payload (till skillnad från de fem match-resultat-typerna) —
+ * bara en bättre datakälla för samma befintliga fixture-väg.
+ */
 function finishPositionForSeason(game: SaveGame, season: number): number | undefined {
   if (season === game.currentSeason) return undefined
-  // Only the previous season's position is stored (seasonStartSnapshot is set at season end)
+  const summary = (game.seasonSummaries ?? []).find(s => s.season === season)
+  if (summary) return summary.finalPosition
+  // Fallback för säsonger utan sparad summary (t.ex. äldre saves från
+  // innan seasonSummaries fanns) — samma smalare källa som tidigare.
   if (season === game.currentSeason - 1 && game.seasonStartSnapshot) {
     return game.seasonStartSnapshot.finalPosition
   }
@@ -129,33 +146,32 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   // liggare-k7 (2026-09-03): tröskeln är INTE SIGNIFICANCE_THRESHOLD (30) —
   // se DECISION_MEMORY_THRESHOLD (70), kollad i switchens 'decision'-gren.
   'decision',
+  // liggare-k9 (DOM 2026-09-04): match-resultat-typerna, nu producerade vid
+  // matchslut (roundProcessor.ts) med `result`-payload. season_finish är
+  // MEDVETET UTANFÖR — se isMatchResultEntry i Narrative.ts.
+  'sm_final',
+  'cup_final',
+  'derby_result',
+  'big_win',
+  'big_loss',
 ])
 
+/**
+ * Liggaren följer managerkarriären och kan innehålla flera klubbar.
+ * `clubId` är därför den kanoniska avgränsningen; subject/subject2 kan vara
+ * en motpart och kan inte användas som klubbägare. Poster utan clubId är
+ * gamla sparfiler. Migreringen försöker stämpla dem från säsongssummeringen,
+ * och den här fallbacken behåller det tidigare enkelklubbsbeteendet när
+ * ursprunget inte går att avgöra utan att fabricera data.
+ */
 function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): boolean {
-  // liggare-k9/k1-fynd (2026-09-04): transfer_signed/transfer_sold OCH de
-  // redan befintliga transfer_story/rival_sale sätter alla subject2 till
-  // MOTPARTEN (säljande/köpande/rivalklubben), aldrig den managerade —
-  // subject2-clubben-checken nedan hade annars uteslutit alla fyra
-  // ovillkorat (subject2.id === managedClubId är per konstruktion alltid
-  // falskt för dem — samma bugklass som k7 redan löste för subjektlösa
-  // decision-poster). Liggaren är enkel-klubbs-perspektiv — alla fyra
-  // konstrueras bara av vår egen transferProcessor, aldrig för en AI-affär.
-  if (entry.type === 'transfer_signed' || entry.type === 'transfer_sold'
-    || entry.type === 'transfer_story' || entry.type === 'rival_sale') return true
-  if (entry.subject?.kind === 'club') return entry.subject.id === managedClubId
-  if (entry.subject2?.kind === 'club') return entry.subject2.id === managedClubId
-  // liggare-k1 (2026-09-03): patron/mecenat/referee är inherent klubbskopade
-  // entiteter i schemat (Patron/Mecenat/Referee saknar clubId — game.patron
-  // är EN entitet, inte per klubb) — ingen cross-club-filtrering är möjlig
-  // eller meningsfull för dem, till skillnad från spelare som kan tillhöra
-  // en annan klubb.
-  if (entry.subject?.kind === 'patron' || entry.subject?.kind === 'mecenat' || entry.subject?.kind === 'referee') return true
-  // liggare-k7 (2026-09-03): decision-poster saknar ofta subject helt (t.ex.
-  // 'criticalEconomy:take_loan' — inget spelar-/klubbmål). Liggaren är
-  // enkel-klubbs-perspektiv (bara den managerade klubbens beslut loggas
-  // någonsin) — ett subjektlöst beslut är per definition ändå "mitt".
-  if (entry.type === 'decision' && !entry.subject) return true
-  if (entry.subject?.kind !== 'player') return false
+  // Nya poster bär ursprungsklubben explicit. Det är den enda säkra
+  // avgränsningen efter ett klubbyte; subject/subject2 kan vara motparten.
+  // Poster utan clubId är legacy och går vidare genom den äldre
+  // identitetskontrollen nedan.
+  if (entry.clubId) return entry.clubId === managedClubId
+  if (entry.type === 'transfer_sold' || entry.type === 'rival_sale') return true
+  if (entry.subject?.kind !== 'player') return true
 
   const player = game.players.find(item => item.id === entry.subject!.id)
   if (player) {
@@ -272,6 +288,33 @@ function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, man
         text: sentence, emoji: momentFamily('decision'), significance: entry.significance,
         subjectPlayerId: playerId,
         subjectClubId: entry.subject?.kind === 'club' ? entry.subject.id : undefined,
+      }
+    }
+    case 'sm_final':
+    case 'cup_final':
+    case 'derby_result':
+    case 'big_win':
+    case 'big_loss': {
+      // liggare-k9-doda-typer (DOM 2026-09-04): samma text som den levande
+      // fixture-vägen (deriveMatchMemoryText, clubMemoryEventBuilders.ts) —
+      // "samma ord, annan källa". decider (straff/förlängning) tappas
+      // medvetet här (finns inte i result-payloaden), se dokumentationen på
+      // MatchMemoryTextInput.decider.
+      if (!isMatchResultEntry(entry)) return null
+      const { goalsFor, goalsAgainst, opponentClubId } = entry.result
+      const rivalry = getRivalry(managedClubId, opponentClubId)
+      const derived = deriveMatchMemoryText({
+        myScore: goalsFor, theirScore: goalsAgainst,
+        won: entry.outcome === 'won', lost: entry.outcome === 'lost', decider: '',
+        isFinaldag: entry.type === 'sm_final',
+        isCupFinal: entry.type === 'cup_final',
+        rivalryFirstName: entry.type === 'derby_result' && rivalry ? rivalry.name.split(' ')[0] : undefined,
+      })
+      if (!derived) return null
+      return {
+        type: derived.type, season: entry.season, matchday: entry.matchday,
+        text: derived.text, emoji: derived.emoji, significance: derived.significance,
+        outcome: derived.outcome, subjectClubId: opponentClubId,
       }
     }
     default: {

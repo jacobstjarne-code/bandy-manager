@@ -23,7 +23,7 @@ export function processNarrative(
   game: SaveGame,
   justCompletedManagedFixture: Fixture | null,
   nextMatchday: number,
-  newDate: string,
+  _newDate: string,
   localRand: () => number,
 ): NarrativeResult {
   const inboxItems: InboxItem[] = []
@@ -219,39 +219,6 @@ export function processNarrative(
           isRead: false,
           kind: 'nemesis',
         } as InboxItem)
-      }
-    }
-  }
-
-  // ── Pre-derby context (upcoming derby preview) ─────────────────────────
-  if (justCompletedManagedFixture) {
-    const upcomingRivalry = game.fixtures
-      .filter(f => f.status === FixtureStatus.Scheduled &&
-        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-      .sort((a, b) => a.matchday - b.matchday)[0]
-
-    if (upcomingRivalry) {
-      const rivalry = getRivalry(upcomingRivalry.homeClubId, upcomingRivalry.awayClubId)
-      if (rivalry) {
-        const opponentId = upcomingRivalry.homeClubId === game.managedClubId
-          ? upcomingRivalry.awayClubId : upcomingRivalry.homeClubId
-        const rival = game.clubs.find(c => c.id === opponentId)
-        const previewId = `inbox_derby_preview_${opponentId}_s${game.currentSeason}`
-        const alreadySent = inboxItems.some(i => i.id === previewId) || game.inbox.some(i => i.id === previewId)
-        if (!alreadySent && rival) {
-          const h2h = rivalryHistory[opponentId]
-          const historyStr = h2h && h2h.wins + h2h.losses + h2h.draws >= 2
-            ? ` H2H: ${h2h.wins}V–${h2h.draws}O–${h2h.losses}F.`
-            : ''
-          inboxItems.push({
-            id: previewId,
-            date: newDate,
-            type: InboxItemType.Derby,
-            title: `Derby: ${rivalry.name} väntar`,
-            body: `${rival.name} är nästa motståndare.${historyStr} Stämningen är hög i stan — derbyt avgör mer än två poäng.`,
-            isRead: false,
-          } as InboxItem)
-        }
       }
     }
   }

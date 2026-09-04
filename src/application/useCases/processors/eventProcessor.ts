@@ -166,8 +166,14 @@ export function processGameEvents(
   // ett riktigt måste-kort gates bara på sitt eget domänvillkor, inte på
   // budgeten övriga event delar) — episoden gates enbart av
   // shouldTriggerBurnoutCeilingChoice:s egen "redan erbjuden"-stämpel.
-  if (game.managerProfile && shouldTriggerBurnoutCeilingChoice(game.managerProfile)) {
-    gameEvents.push(generateBurnoutCeilingEvent(nextMatchday, game.currentSeason))
+  const burnoutCeilingQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+    .some(event => event.type === 'burnoutCeiling' && !event.resolved)
+  if (game.managerProfile && !burnoutCeilingQueued && shouldTriggerBurnoutCeilingChoice(game.managerProfile)) {
+    gameEvents.push(generateBurnoutCeilingEvent(
+      nextMatchday,
+      game.currentSeason,
+      game.managerProfile.burnoutScar,
+    ))
   }
 
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):

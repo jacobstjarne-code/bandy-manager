@@ -1,7 +1,7 @@
 import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
 import { storylineResolutionSignificance } from './storylineLedgerService'
-import type { ClubLegend, StorylineEntry } from '../entities/Narrative'
+import type { ClubLegend, StorylineEntry, EventLedgerEntry } from '../entities/Narrative'
 import { FixtureStatus } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { getRoundLabel } from '../roundLabel'
@@ -9,6 +9,90 @@ import type { MemoryEvent, MemoryEventType } from './clubMemoryService'
 import { deriveUtfall } from './matchTypeAxes'
 
 // ── Fixture → MemoryEvent ────────────────────────────────────────────────────
+
+/**
+ * liggare-k9-doda-typer (DOM 2026-09-04, Opus): de fem match-resultat-
+ * typerna (sm_final/cup_final/derby_result/big_win/big_loss) behöver samma
+ * text OAVSETT om källan är en LEVANDE fixture (denna säsong) eller en
+ * `EventLedgerEntry.result`-payload (efter rollover, när fixturen är borta)
+ * — "samma ord, annan källa". Denna funktion är den ENDA platsen texten
+ * skrivs; `buildEventFromFixture` och `buildMatchResultText` i
+ * clubMemoryService.ts går båda genom den, aldrig en egen kopia.
+ */
+export interface MatchMemoryTextInput {
+  myScore: number
+  theirScore: number
+  won: boolean
+  lost: boolean
+  /** '' | ' efter straffar' | ' efter förlängning' — bara känt för LEVANDE
+   *  fixtures (penaltyResult/overtimeResult finns inte i `result`-payloaden,
+   *  se DOM 2026-09-04:s schema). Ledger-återgenererad text tappar denna
+   *  nyansen för straff-/förlängningsavgjorda finaler — en medveten, liten
+   *  förenkling, inte en bugg. */
+  decider: string
+  isFinaldag: boolean
+  isCupFinal: boolean
+  /** Rivalens förnamn (`rivalry.name.split(' ')[0]`) — bara satt när en rivalitet finns. */
+  rivalryFirstName?: string
+}
+
+export interface MatchMemoryText {
+  type: MemoryEventType
+  text: string
+  emoji: string
+  significance: number
+  outcome: 'won' | 'lost' | 'neutral'
+}
+
+export function deriveMatchMemoryText(input: MatchMemoryTextInput): MatchMemoryText | null {
+  const { myScore, theirScore, won, lost, decider, isFinaldag, isCupFinal, rivalryFirstName } = input
+  const margin = myScore - theirScore
+  const outcome: 'won' | 'lost' | 'neutral' = won ? 'won' : lost ? 'lost' : 'neutral'
+
+  if (isFinaldag) {
+    const significance = won ? 95 : 85
+    const text = won
+      ? `SM-guld! Vann finalen${decider} ${myScore}–${theirScore}.`
+      : `SM-finalförlust${decider} ${myScore}–${theirScore}. Silvermedalj.`
+    return { type: 'sm_final', text, emoji: won ? '🥇' : '🥈', significance, outcome }
+  }
+
+  if (isCupFinal) {
+    const significance = won ? 80 : 70
+    const text = won
+      ? `Cupfinalen vanns${decider} ${myScore}–${theirScore}. Cupen hemma!`
+      : `Cupfinalen förlorades${decider} ${myScore}–${theirScore}.`
+    return { type: 'cup_final', text, emoji: won ? '🏆' : '🥈', significance, outcome }
+  }
+
+  if (rivalryFirstName !== undefined) {
+    if (won && margin >= 3) {
+      return {
+        type: 'derby_result',
+        text: `Derby vunnet med ${margin} mål (${myScore}–${theirScore}) mot ${rivalryFirstName}.`,
+        emoji: '⚔️', significance: 55, outcome,
+      }
+    }
+    if (lost) {
+      return { type: 'derby_result', text: `Derbyförlust${decider} ${myScore}–${theirScore}.`, emoji: '⚔️', significance: 35, outcome }
+    }
+    if (won && decider) {
+      return { type: 'derby_result', text: `Derby vunnet${decider} ${myScore}–${theirScore}.`, emoji: '⚔️', significance: 45, outcome }
+    }
+    return null
+  }
+
+  if (margin >= 4) {
+    const sig = margin >= 6 ? 65 : 40
+    return { type: 'big_win', text: `Storseger ${myScore}–${theirScore}.`, emoji: '💥', significance: sig, outcome }
+  }
+  if (margin <= -4) {
+    const sig = Math.abs(margin) >= 6 ? 55 : 30
+    return { type: 'big_loss', text: `Storseger ${theirScore}–${myScore} mot oss.`, emoji: '📉', significance: sig, outcome }
+  }
+
+  return null
+}
 
 export function buildEventFromFixture(
   fixture: Fixture,
@@ -22,14 +106,20 @@ export function buildEventFromFixture(
 
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
   const theirScore = isHome ? fixture.awayScore : fixture.homeScore
-  const margin = myScore - theirScore
   const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
   const utfall = deriveUtfall(fixture, managedClubId)
   const won = utfall === 'vunnet'
   const lost = utfall === 'forlorat'
   const decider = fixture.penaltyResult ? ' efter straffar' : fixture.overtimeResult ? ' efter förlängning' : ''
+  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
 
-  const outcome: 'won' | 'lost' | 'neutral' = won ? 'won' : lost ? 'lost' : 'neutral'
+  const derived = deriveMatchMemoryText({
+    myScore, theirScore, won, lost, decider,
+    isFinaldag: !!fixture.isFinaldag,
+    isCupFinal: !!fixture.isCup && fixture.roundNumber === 4,
+    rivalryFirstName: rivalry ? rivalry.name.split(' ')[0] : undefined,
+  })
+  if (!derived) return null
 
   // HIGH 5 (2026-08-29): raden i klubbminnet visade `Omg {matchday}` — global
   // spelordning presenterad som ligaomgång, så ett derby i ligaomgång 4 stod
@@ -39,92 +129,70 @@ export function buildEventFromFixture(
   // tal, och SM-finalen har ändå sin egen sm_final-typ med egen text.
   const roundLabel = getRoundLabel(fixture).long
 
-  // SM-final
-  if (fixture.isFinaldag) {
-    const type: MemoryEventType = 'sm_final'
-    const significance = won ? 95 : 85
-    const text = won
-      ? `SM-guld! Vann finalen${decider} ${myScore}–${theirScore}.`
-      : `SM-finalförlust${decider} ${myScore}–${theirScore}. Silvermedalj.`
-    return {
-      type, season: fixture.season, matchday: fixture.matchday, roundLabel,
-      text, emoji: won ? '🥇' : '🥈', significance,
-      outcome,
-      subjectClubId: opponentId,
-    }
+  return {
+    type: derived.type, season: fixture.season, matchday: fixture.matchday, roundLabel,
+    text: derived.text, emoji: derived.emoji, significance: derived.significance,
+    outcome: derived.outcome,
+    subjectClubId: opponentId,
   }
+}
 
-  // Cup-final: only roundNumber === 4 is the actual final (round 3 = semi, falls through to big_win/loss)
-  if (fixture.isCup && fixture.roundNumber === 4) {
-    const type: MemoryEventType = 'cup_final'
-    const significance = won ? 80 : 70
-    const text = won
-      ? `Cupfinalen vanns${decider} ${myScore}–${theirScore}. Cupen hemma!`
-      : `Cupfinalen förlorades${decider} ${myScore}–${theirScore}.`
-    return {
-      type, season: fixture.season, matchday: fixture.matchday, roundLabel,
-      text, emoji: won ? '🏆' : '🥈', significance,
-      outcome,
-      subjectClubId: opponentId,
-    }
-  }
+/**
+ * liggare-k9-doda-typer (DOM 2026-09-04, Opus): liggarposten för de fem
+ * match-resultat-typerna — skrivs vid matchslut (roundProcessor.ts, samma
+ * ställe `justCompletedManagedFixture` redan känns till), så resultatet
+ * överlever `game.fixtures`-nollställningen vid rollover (k10). Klassning/
+ * significance/outcome delar samma `deriveMatchMemoryText` som den levande
+ * fixture-vägen — bara `result`-payloaden i stället för `text`/`emoji`.
+ */
+export function buildMatchResultLedgerEntry(
+  fixture: Fixture,
+  managedClubId: string,
+): EventLedgerEntry | null {
+  if (fixture.status !== FixtureStatus.Completed) return null
 
-  // Derby
+  const isHome = fixture.homeClubId === managedClubId
+  const isAway = fixture.awayClubId === managedClubId
+  if (!isHome && !isAway) return null
+
+  const myScore = isHome ? fixture.homeScore : fixture.awayScore
+  const theirScore = isHome ? fixture.awayScore : fixture.homeScore
+  const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
+  const utfall = deriveUtfall(fixture, managedClubId)
+  const won = utfall === 'vunnet'
+  const lost = utfall === 'forlorat'
+  const decider = fixture.penaltyResult ? ' efter straffar' : fixture.overtimeResult ? ' efter förlängning' : ''
   const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
-  if (rivalry) {
-    if (won && margin >= 3) {
-      return {
-        type: 'derby_result', season: fixture.season, matchday: fixture.matchday, roundLabel,
-        text: `Derby vunnet med ${margin} mål (${myScore}–${theirScore}) mot ${rivalry.name.split(' ')[0]}.`,
-        emoji: '⚔️', significance: 55,
-        outcome,
-        subjectClubId: opponentId,
-      }
-    }
-    if (lost) {
-      return {
-        type: 'derby_result', season: fixture.season, matchday: fixture.matchday, roundLabel,
-        text: `Derbyförlust${decider} ${myScore}–${theirScore}.`,
-        emoji: '⚔️', significance: 35,
-        outcome,
-        subjectClubId: opponentId,
-      }
-    }
-    if (won && decider) {
-      return {
-        type: 'derby_result', season: fixture.season, matchday: fixture.matchday, roundLabel,
-        text: `Derby vunnet${decider} ${myScore}–${theirScore}.`,
-        emoji: '⚔️', significance: 45,
-        outcome,
-        subjectClubId: opponentId,
-      }
-    }
-    return null
-  }
 
-  // Big win / big loss
-  if (margin >= 4) {
-    const sig = margin >= 6 ? 65 : 40
-    return {
-      type: 'big_win', season: fixture.season, matchday: fixture.matchday, roundLabel,
-      text: `Storseger ${myScore}–${theirScore}.`,
-      emoji: '💥', significance: sig,
-      outcome,
-      subjectClubId: opponentId,
-    }
-  }
-  if (margin <= -4) {
-    const sig = Math.abs(margin) >= 6 ? 55 : 30
-    return {
-      type: 'big_loss', season: fixture.season, matchday: fixture.matchday, roundLabel,
-      text: `Storseger ${theirScore}–${myScore} mot oss.`,
-      emoji: '📉', significance: sig,
-      outcome,
-      subjectClubId: opponentId,
-    }
-  }
+  const derived = deriveMatchMemoryText({
+    myScore, theirScore, won, lost, decider,
+    isFinaldag: !!fixture.isFinaldag,
+    isCupFinal: !!fixture.isCup && fixture.roundNumber === 4,
+    rivalryFirstName: rivalry ? rivalry.name.split(' ')[0] : undefined,
+  })
+  if (!derived) return null
 
-  return null
+  const competition: 'league' | 'cup' | 'playoff' | 'final' = fixture.isFinaldag
+    ? 'final'
+    : fixture.isCup
+    ? 'cup'
+    : fixture.isKnockout
+    ? 'playoff'
+    : 'league'
+
+  return {
+    type: derived.type,
+    semanticKey: `match_result:${fixture.id}`,
+    season: fixture.season,
+    matchday: fixture.matchday,
+    subject: { kind: 'club', id: opponentId },
+    outcome: derived.outcome,
+    significance: derived.significance,
+    result: {
+      goalsFor: myScore, goalsAgainst: theirScore, opponentClubId: opponentId,
+      home: isHome, competition, stage: getRoundLabel(fixture).long,
+    },
+  }
 }
 
 // ── Player.diary → MemoryEvent ────────────────────────────────────────

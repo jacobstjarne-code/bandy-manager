@@ -28,7 +28,7 @@ describe('logEvent', () => {
     const updated = logEvent(game, minimalEntry)
     expect(game.eventLedger).toBeUndefined()
     expect(updated).toHaveLength(1)
-    expect(updated[0]).toEqual(minimalEntry)
+    expect(updated[0]).toEqual({ ...minimalEntry, clubId: game.managedClubId })
   })
 
   it('bygger vidare på en befintlig liggare', () => {
@@ -36,7 +36,7 @@ describe('logEvent', () => {
     const second: EventLedgerEntry = { ...minimalEntry, type: 'big_win', semanticKey: 'big_win', matchday: 20 }
     game = { ...game, eventLedger: logEvent(game, second) }
     expect(game.eventLedger).toHaveLength(2)
-    expect(game.eventLedger?.[1]).toEqual(second)
+    expect(game.eventLedger?.[1]).toEqual({ ...second, clubId: game.managedClubId })
   })
 
   it('bär hela fältschemat (subject/outcome/consequences/beslutsnatur/madeByPlayer) utan att tappa något', () => {
@@ -60,7 +60,13 @@ describe('logEvent', () => {
       madeByPlayer: true,
     }
     const updated = logEvent(game, full)
-    expect(updated[0]).toEqual(full)
+    expect(updated[0]).toEqual({ ...full, clubId: game.managedClubId })
+  })
+
+  it('bevarar en explicit ursprungsklubb vid historisk import', () => {
+    const game = makeGame()
+    const updated = logEvent(game, { ...minimalEntry, clubId: 'club_old' })
+    expect(updated[0].clubId).toBe('club_old')
   })
 
   it('game.eventLedger är valfritt — en färsk spel har ingen liggare alls', () => {

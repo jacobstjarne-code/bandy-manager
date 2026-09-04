@@ -2249,7 +2249,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     recentMoments: [...seasonHighlightMoments, ...(game.recentMoments ?? [])]
       .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
       .slice(0, 5),
-    eventLedger: appendMomentsAndEntriesToLedger(game.eventLedger ?? [], seasonHighlightMoments, retirementLedgerEntries),
+    eventLedger: appendMomentsAndEntriesToLedger(
+      game.eventLedger ?? [],
+      seasonHighlightMoments,
+      retirementLedgerEntries,
+      game.managedClubId,
+    ),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),

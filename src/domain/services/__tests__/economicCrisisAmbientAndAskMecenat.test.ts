@@ -160,6 +160,28 @@ describe('ask_mecenat (fas 3) — generationsgrind + tie-break', () => {
   })
 })
 
+describe('fas 2 — beslutet konsumeras', () => {
+  it('presenterad plan kan inte återgenerera samma huvudsponsorkort', () => {
+    let game = makeGame({
+      economicCrisisState: {
+        startedSeason: 1,
+        startedMatchday: 1,
+        phase: 'awareness',
+        eventsFired: ['awareness'],
+      },
+    })
+    const { event } = checkEconomicCrisis(game, 4)
+    expect(event?.id).toBe(`event_crisis_pressure_${game.currentSeason}`)
+    game = resolveEvent({ ...game, pendingEvents: [event!] }, event!.id, 'present_plan', undefined, true)
+
+    expect(game.pendingEvents).toEqual([])
+    expect(game.economicCrisisState?.phase).toBe('pressure')
+    expect(game.economicCrisisState?.eventsFired).toContain('pressure')
+    expect(game.resolvedEventIds).toContain(event!.id)
+    expect(checkEconomicCrisis(game, 5).event).toBeNull()
+  })
+})
+
 // A-H10 invariant sweep: kör alla tre kriskort-faser under sämsta möjliga
 // spelläge (noll mecenater, noll sponsorer, ingen aktiv spelare i truppen) och
 // bekräfta att INGEN fas ger ett event som Granska skulle klassa 'critical'

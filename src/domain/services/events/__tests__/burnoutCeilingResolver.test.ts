@@ -74,6 +74,7 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     expect(game.boardPatience).toBe(60)
     expect(game.eventLedger).toContainEqual({
       type: 'decision',
+      clubId: 'club_forsbacka',
       semanticKey: 'burnoutCeiling:step_back',
       season: 3,
       matchday: 20,

@@ -199,7 +199,24 @@ function appendUnique(existing: EventLedgerEntry[], additions: EventLedgerEntry[
  * ligger uttryckligen kvar i sina egna lager.
  */
 export function backfillClubHistoryLedger(game: SaveGame): EventLedgerEntry[] {
-  const existing = (game.eventLedger ?? []).filter(entry => entry && typeof entry.semanticKey === 'string')
+  const clubForSeason = (season: number): string | undefined => {
+    const summaryClubs = [...new Set(
+      (game.seasonSummaries ?? [])
+        .filter(summary => summary.season === season)
+        .map(summary => summary.clubId)
+        .filter((clubId): clubId is string => typeof clubId === 'string'),
+    )]
+    if (summaryClubs.length === 1) return summaryClubs[0]
+    if (season === game.currentSeason) return game.managedClubId
+    return undefined
+  }
+  const existing = (game.eventLedger ?? [])
+    .filter(entry => entry && typeof entry.semanticKey === 'string')
+    .map(entry => {
+      if (entry.clubId) return entry
+      const clubId = clubForSeason(entry.season)
+      return clubId ? { ...entry, clubId } : entry
+    })
   const additions: EventLedgerEntry[] = []
   const managedClubId = game.managedClubId
   if (typeof managedClubId !== 'string') return existing
@@ -282,6 +299,8 @@ export function backfillClubHistoryLedger(game: SaveGame): EventLedgerEntry[] {
 
   return appendUnique(
     existing,
-    additions.filter(entry => CLUB_HISTORY_TYPES.has(entry.type)),
+    additions
+      .filter(entry => CLUB_HISTORY_TYPES.has(entry.type))
+      .map(entry => entry.clubId ? entry : { ...entry, clubId: managedClubId }),
   )
 }

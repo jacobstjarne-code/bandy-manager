@@ -1120,3 +1120,61 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** "jag för in det sen", "det bor i chatten", ett schema/dom en agent bygger mot som inte finns på disk. Jacob frågar "har du stämt av mot kartorna?" — frågan i sig är signalen att avstämningen släpade. Kontrollen är load-bearing (Jacob fångar) i stället för självbärande (systemet håller sig sant).
 
 **Historik (2026-08-31/09-01):** DOMLOGG drev stale mot Codes byggen tre gånger (motbud, ekonomi, board-tröghet); `EventLedgerEntry`-schemat levde bara i chatten medan Code byggde mot det; MASTER_OPPET släpade mot fyllda texter + de tre nya fundamentdokumenten. Varje gång fångade Jacob det, inte systemet. §6 i `DOMLOGG_2026-08-31.md` bär samma lärdom för STÄNGNINGSDOMAR specifikt; denna generaliserar den till all status och gör avstämningen till FÖRSTA handlingen, inte en påmind efterhandssyssla.
+
+**Fjärde instansen av #50 (2026-09-04):** `clubMemoryService.test.ts` handbygger en `fixtures`-array med flera säsonger i EN array. Spelet nollställer `game.fixtures` vid varje rollover (`seasonEndProcessor.ts:2003`), så tillståndet kan inte uppstå. Testet var grönt; Krönikans fem-säsongers matchminne hade ALDRIG fungerat i verklig spelning. Upptäckt först när konsumentkartan frågade "gallras fixtures?". Regel som följer: ett minnestest ska bygga sitt state via samma väg som spelet (rollover, liggare), inte via en array någon skrev för hand.
+
+---
+
+## 53. Dumpordning är inte spelordning — en dev-scen bevisar inget om produkten förrän koden bakom är läst
+
+**Mönster:** En designgranskning av `/dev/scenes`-dumpen (111 states i nummerordning) rapporterar produktfel: årsboken säger "En stark säsong" för både guld och sparkad; Rivalitet och Nemesis visar samma klubb; klubbpärmen "slår till som regelbok mitt i introt". Kodläsning visar att inget av det är produktbeteende: fixturerna varierade inte `narrativeSummary` (produktionens generator är redan utfallsberoende), fixturen hade samma klubb i båda fälten, och scen 095 är pärm-overlayns dev-scen — dumpen ligger i filordning, granskaren läste den som spelordning.
+
+**Rotorsak:** En dumpad dev-scen är ett arkiv, inte ett flöde, och dess fixturer är handskrivna. En skärmbild kan inte skilja "produkten gör fel" från "fixturen är förenklad" från "filnumret råkade komma efter". Granskaren gör inget fel — verktyget kan inte se skillnaden. Felet uppstår när fyndet filas som verifierat.
+
+**Fix:** Designgranskningar av dev-dumpar föds `rapporterad`, aldrig `verifierad`. Code läser koden och fixturen bakom varje fynd och dömer PRODUKT eller FIXTUR före något bygge. Fixtur-fynd rättas i fixturen (så dumpen blir sann) och stängs mot produkten. Och: när dumpen har luckor mot verkliga speltillstånd (ingen mitt-i-säsongen-scen, ingen flersäsongs-Krönika) är det dumpen som ska byggas ut, inte fyndet som ska gissas.
+
+**Känn igen:** ett fynd formulerat som berättelse ("spelet minns inte", "manualen bromsar") med bara skärmbilder som bevis. Tre scener i följd med samma text. Ett flödespastående där stegen är filnummer.
+
+**Historik (2026-09-03/04):** Claude Designs 111-state-granskning: fem av tio "fel" var korrekt beteende eller fixtur (d3 båda halvorna, p3, p5, d6), och flödesgranskningens klubbpärm-fynd var dumpordning. Alla fanns filade som `rapporterad` och kodlästes innan något byggdes — disciplinen höll, men bara för att den var regel, inte för att fynden såg fel ut.
+
+---
+
+## 54. Skriv-utan-läs — en producent utan konsument är kunskap ingen berättar
+
+**Mönster:** Tre bågar byggs på en dag (domarrelation, patron, mecenat-uttåg). Alla skriver korrekta poster till händelseliggaren. Ingen yta läser dem. Spelaren märker aldrig att bågen finns. Samtidigt: orsak/verkan-konsumenten — skälet liggaren började byggas — har ingen produktionsanropare; Portalen, spelets mest besökta yta, läser inte liggaren alls; `era_shift` på significance 85 försvinner efter fem senare händelser för att den läsare som ser den är recency-cappad och den andra inte känner typen.
+
+**Rotorsak:** Inventeringar och migreringar räknar PRODUCENTER ("skrivs typen?"). Ingen räknar KONSUMENTER ("läses den, var, i vilket steg?"). Steg 1 i trestegsmodellen (frys) känns som leverans; steg 2–3 (minns, talar) är vad spelaren faktiskt möter. En unionsmedlem utan producent är ett falskt löfte (samma klass som text utan yta, #41); en producent utan konsument är det också, fast åt andra hållet.
+
+**Fix:** Konsumentkarta som stående artefakt: varje liggartyp mot varje läsande yta och trestegssteg. Ny typ i unionen kräver namngiven konsument i samma spec — annars parkeras typen, inte konsumenten. Skriv en läsare, inte två: `significance` ska välja mellan typer, inte bara tröskla inom en allowlist. Producent-svep = Codes grep; konsument-analys = Opus dom.
+
+**Känn igen:** "bågen är byggd" = poster skrivs. Fråga: var läses den upp, och när? En `EventLedgerType` som bara förekommer i unionsdefinitionen och i en `logEvent`. En funktion med suffix `getLatest…` som bara anropas från sitt test.
+
+**Historik (2026-09-03/04):** `RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md` + RAW: 34 typer, 9 aldrig producerade, 5 producerade men aldrig lästa (exakt veckans tre bågar), Portalen/boardService/kafferummet blinda, `getLatestDecisionConsequence` föräldralös. Elva köpunkter, nio byggda av Code på ett dygn — fixen var billig; det dyra var att ingen frågat.
+
+---
+
+## 55. Ett filter med ett dolt antagande utesluter tyst — testa filtret per typ mot riktig producent-output
+
+**Mönster:** `ledgerEntryBelongsToManagedClub` antog att `subject2.kind === 'club'` betyder "subject2 ÄR den managerade klubben". För `transfer_signed`, `transfer_sold`, `transfer_story` och `rival_sale` är subject2 alltid MOTPARTEN. Alla fyra uteslöts ovillkorat ur Krönikan — två av dem med produktionsdata sedan länge. Inget fel, inget test rött, inget i UI som saknades synligt: bara färre minnen än det borde varit.
+
+**Rotorsak:** Filtret skrevs för de typer som fanns då (där antagandet höll) och lästes aldrig om när nya typer med annan subject-semantik lades till. Ett filter som returnerar `false` ger tystnad, inte fel — samma familj som #45 (no-op utan klagan) och #20 (tracking dör tyst). Skillnaden: här är det inte en saknad gren utan en gren som är FEL för en delmängd.
+
+**Fix:** Ett filter över en union testas per medlem, med poster byggda av den RIKTIGA producenten (transferProcessor, inte en handskriven entry), och testet assärterar inklusion för varje typ som ska vara med. Subject-semantik (vem är subject, vem är subject2, per typ) dokumenteras i unionens definition, inte antas i läsaren. När en typ läggs till unionen: kör alla filter över den.
+
+**Känn igen:** ett filter med `kind === …`-grenar som skrevs före de senaste typerna kom. En typ som produceras (grep visar `logEvent`) men aldrig syns i någon yta trots att läsaren "stöder den". Fråga: vad returnerar filtret för EN post av VARJE typ, byggd av producenten?
+
+**Historik (2026-09-04):** Codes sidofynd under k9 (konsumentkartan). Fixad + 3 regressionstester. Samma pass hittade även att filtret uteslöt subjektlösa `decision`-poster (t.ex. `take_loan`) — samma antagande ("det finns alltid ett subject"), annan typ.
+
+---
+
+## 56. "Hittas inte" efter tre generiska sökningar är ett statuspåstående, inte ett faktum — gå till domänarkiven
+
+**Mönster:** Opus sökte bandytaktik-källor med tre allmänna webbsökningar, fick fotboll och innebandy tillbaka, och skrev i källäsningen att "sökmotorer hittar dem inte" — med uppmaning till Jacob att själv leta. Samma dag hittade GPT, med samma verktygsklass, ett examensarbete (DiVA), fyra peer-reviewade studier (PMC/DOI), en rysk matchanalys och FIB:s regler, och arkiverade dessutom de sju SvenskaFans-artiklarna som PDF trots 403.
+
+**Rotorsak:** "finns inte" var ett statuspåstående om världen byggt på en otillräcklig sökning — samma klass som #35 och #49 (statuspåståenden om koden utan läsning), bara riktat utåt. Generiska sökmotorer straffar en underrepresenterad sport; domänarkiven (DiVA, PMC, DOI, förbundets egna PDF:er, tidskrifternas sök) gör det inte. Och att en sajt svarar 403 på en fetch betyder inte att den inte går att arkivera — en renderad sida går att spara som bild-PDF.
+
+**Fix:** Innan "hittas inte" skrivs: (1) minst en sökning i ett domänarkiv (DiVA för svenska uppsatser, PMC/PubMed/DOI för idrottsvetenskap, förbundets webb för PDF:er), (2) minst en sökning på engelska termen ("bandy" + "match-play", "elite", "physical demands"), (3) författarnamn ur redan funna källor som nästa sökfråga. Skriv sedan "hittades inte i X, Y, Z" — aldrig "finns inte". Arkivering: fetch blockerad → spara renderad sida som PDF, inte ge upp.
+
+**Känn igen:** en källäsning som slutar med "Jacob: om du känner till…". Ett "sökmotorer hittar dem inte" efter färre än fem sökningar, alla generiska. En rekommendation att Jacob gör en sökning eller ett arkiv Opus/GPT kan göra själv (#32:s klass — spelaren ska inte vara kurir).
+
+**Historik (2026-09-04):** BANDYTAKTIK_KALLASNING §"Vad som INTE hittades" (Opus, förmiddag) mot `kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md` (GPT, samma dag). Jacob: "gpt gjorde jobbet när du latade ut." Korrekt. Källorna ändrade kanon §2–§3 och kalibreringsdomens trötthetsform.

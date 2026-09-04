@@ -68,8 +68,14 @@ export function buildMomentLedgerEntry(moment: Moment): EventLedgerEntry {
 }
 
 /** Fold flera Moments in i en befintlig liggararray i en sväng — samma append-only-disciplin som eventLedgerService.logEvent, bara flera poster åt gången. */
-export function appendMomentsToLedger(ledger: EventLedgerEntry[], moments: Moment[]): EventLedgerEntry[] {
-  return moments.length === 0 ? ledger : [...ledger, ...moments.map(buildMomentLedgerEntry)]
+export function appendMomentsToLedger(
+  ledger: EventLedgerEntry[],
+  moments: Moment[],
+  clubId?: string,
+): EventLedgerEntry[] {
+  return moments.length === 0
+    ? ledger
+    : [...ledger, ...moments.map(buildMomentLedgerEntry).map(entry => clubId ? { ...entry, clubId } : entry)]
 }
 
 function sameLedgerEvent(a: EventLedgerEntry, b: EventLedgerEntry): boolean {
@@ -90,9 +96,12 @@ export function appendMomentsAndEntriesToLedger(
   ledger: EventLedgerEntry[],
   moments: Moment[],
   entries: EventLedgerEntry[],
+  clubId?: string,
 ): EventLedgerEntry[] {
-  const remainingEntries = [...entries]
-  const momentEntries = moments.map(buildMomentLedgerEntry).map(momentEntry => {
+  const stamp = (entry: EventLedgerEntry): EventLedgerEntry =>
+    clubId && !entry.clubId ? { ...entry, clubId } : entry
+  const remainingEntries = entries.map(stamp)
+  const momentEntries = moments.map(buildMomentLedgerEntry).map(stamp).map(momentEntry => {
     const entryIndex = remainingEntries.findIndex(entry => sameLedgerEvent(momentEntry, entry))
     if (entryIndex < 0) return momentEntry
 
@@ -119,7 +128,9 @@ export type MomentLedgerEntry = EventLedgerEntry & { type: MomentSource }
 
 export function getRecentMomentsFromLedger(game: SaveGame, limit = 5): MomentLedgerEntry[] {
   return (game.eventLedger ?? [])
-    .filter((e): e is MomentLedgerEntry => MOMENT_LEDGER_TYPES.includes(e.type as MomentSource))
+    .filter((e): e is MomentLedgerEntry =>
+      MOMENT_LEDGER_TYPES.includes(e.type as MomentSource)
+      && (!e.clubId || e.clubId === game.managedClubId))
     .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
     .slice(0, limit)
 }

@@ -54,6 +54,18 @@ export function pickAnniversaryMarkCopy(
   echo: ActiveAnniversary,
   game: SaveGame,
 ): AnniversaryMarkCopy {
+  // Ett stort neutralt minne utan spelarsubjekt är inte automatiskt en
+  // serieseger. Sedan liggaren breddades kan det också vara exempelvis ett
+  // patronuttåg eller ett epokskifte. Använd då den redan verifierade,
+  // frysta händelsetexten i stället för att fabricera en titel.
+  if (echo.outcome === 'neutral' && !echo.subjectPlayerId && echo.type !== 'season_finish') {
+    return {
+      eyebrow: `⬩ ${yearLabel(echo.yearsAgo)} ⬩`,
+      quote: echo.originalEventText,
+      helper: '',
+    }
+  }
+
   const pool =
     echo.outcome === 'won' ? WON_MARKS :
     echo.outcome === 'lost' ? LOST_MARKS :

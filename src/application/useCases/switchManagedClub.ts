@@ -160,6 +160,13 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     firedReason: undefined,
     careerBreak: undefined,
 
+    // Liggaren följer karriären, men varje post måste behålla klubben den
+    // skapades för. Äldre poster saknar clubId; vid själva klubbytet vet vi
+    // säkert att samtliga sådana poster tillhör klubben vi just lämnar.
+    eventLedger: (game.eventLedger ?? []).map(entry =>
+      entry.clubId ? entry : { ...entry, clubId: oldClubId }
+    ),
+
     // ── KLUBB: nollställd och omgenererad ────────────────────────────────
     clubs,
     managedClubPendingLineup: buildDefaultLineup(newClubId, game.players, managedClub),
@@ -230,6 +237,15 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     wageBudgetWarningSent: false,
     economicCrisisState: undefined,
     financeLog: [],
+
+    // Landslagslägret är världshändelse, men modal/återkomst/snubb är
+    // klubbens presentation och ekonomiska följd. Inget av det får landa
+    // hos den nya arbetsgivaren efter ett klubbyte.
+    activeNationalTeamCamp: undefined,
+    lastNationalSnub: undefined,
+    pendingNationalTeamReturn: undefined,
+    nationalTeamReturnExpires: undefined,
+    pendingCallupModal: undefined,
 
     // Klubbminnet: rekord, legendarer, brev, skoluppgifter, mentorband och
     // rivalitetsstatistik tillhör klubben, inte managern. Den gamla klubbens

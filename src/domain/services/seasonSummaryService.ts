@@ -288,7 +288,12 @@ function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): Ke
     (MOMENT_LEDGER_TYPES as string[]).includes(type) || type in LEDGER_ONLY_VIEW_TEMPLATES
 
   const candidates = (game.eventLedger ?? [])
-    .filter(e => e.season === game.currentSeason && isCandidateType(e.type) && !usedRounds.has(e.matchday))
+    .filter(e =>
+      e.season === game.currentSeason
+      && (!e.clubId || e.clubId === game.managedClubId)
+      && isCandidateType(e.type)
+      && !usedRounds.has(e.matchday)
+    )
     .sort((a, b) => b.significance - a.significance)
     .slice(0, 2)
 

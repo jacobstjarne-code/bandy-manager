@@ -7,6 +7,7 @@ import { useGameStore } from '../../store/gameStore'
 import { positionShort, positionLong } from '../../utils/formatters'
 import { AlertTriangle } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
+import { Overlay } from '../primitives/Overlay'
 
 /**
  * FatigueFloorConfirm — A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1.
@@ -85,25 +86,23 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
     .slice(0, 3)
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 'var(--z-modal)',
+    <Overlay
+      onClose={onCancel}
+      ariaLabel="Bekräfta trött startelva"
+      variant="sheet"
+      maxWidth={430}
+      backdropPadding="0 12px"
+      backdropStyle={{
         background: 'color-mix(in srgb, var(--bg-deepdark) 82%, transparent)',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        padding: 12,
+        paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
       }}
-      onClick={onCancel}
+      contentStyle={{ background: 'transparent', border: 0 }}
     >
       <div
         className="card-round"
         style={{
           width: '100%',
-          maxWidth: 430,
-          maxHeight: '86%',
+          maxHeight: 'calc(100dvh - 24px - var(--safe-bottom, 0px))',
           overflowY: 'auto',
           background: 'var(--bg-elevated)',
           padding: '18px 18px 16px',
@@ -111,7 +110,6 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           flexDirection: 'column',
           gap: 14,
         }}
-        onClick={e => e.stopPropagation()}
       >
         {/* (a) Varna synligt */}
         <div>
@@ -249,6 +247,6 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   )
 }

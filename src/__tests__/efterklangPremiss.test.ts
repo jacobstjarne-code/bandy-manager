@@ -65,7 +65,7 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
   const find = (game: SaveGame, type: string) =>
     pickEfterklang(game, 8).find(m => m.type === type)
 
-  it('nemesis: "{N} mål mot er den här säsongen." (när nemesisen är nästa motståndare)', () => {
+  it('nemesis: karriärsumman märks inte felaktigt som innevarande säsong', () => {
     // Fynd 9: nemesis-efterklang gatas på att nemesisen ÄR nästa motståndare.
     const nextVsNemesis = {
       id: 'next', season: 3, roundNumber: 7, matchday: 11,
@@ -76,7 +76,7 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
       nemesisTracker: { club_x: { playerId: 'p1', name: 'Theo Dahlqvist', clubId: 'club_x', goalsAgainstUs: 3 } } as never,
       fixtures: [...leagueFixtures(6), nextVsNemesis] as never,
     })
-    expect(find(game, 'nemesis')?.premiss).toBe('3 mål mot er den här säsongen.')
+    expect(find(game, 'nemesis')?.premiss).toBe('3 mål mot er.')
   })
 
   it('nemesis visas INTE när nästa motståndare är någon annan (fynd 9)', () => {

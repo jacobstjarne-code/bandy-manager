@@ -230,6 +230,14 @@ export interface EventLedgerEntry {
   /** narrativeBeatLogs nyckel, bärs vidare redan nu så Fas 3 inte behöver bakåtfylla. */
   semanticKey: string
 
+  /**
+   * Klubben som händelsen inträffade för. Liggaren följer hela
+   * managerkarriären och kan därför inte behandlas som enkel-klubbsdata när
+   * spelaren byter jobb. Valfritt endast för äldre sparfiler; alla nya
+   * skrivvägar stämplas centralt av logEvent/appendMomentsAndEntriesToLedger.
+   */
+  clubId?: string
+
   // ── NÄR ──
   season: number
   /** Kronologi, ALDRIG rond-identitet i UI (roundLabel-regeln). */
@@ -302,6 +310,39 @@ export interface EventLedgerEntry {
   eraLabel?: ClubEra                      // era_shift
   transferRole?: TransferRole             // transfer_story
   matchCategory?: MatchHighlightCategory  // season_highlight — Code-fynd, flaggat till Opus
+
+  /**
+   * liggare-k9-doda-typer (DOM 2026-09-04, Opus): matchresultatet ÄR rå
+   * sanning (det hände, siffrorna är fakta) — och när `game.fixtures`
+   * nollställs varje rollover (k10) är denna post den ENDA plats där
+   * resultatet överlever bortom innevarande säsong. Satt bara på de fem
+   * match-resultat-typerna (se `isMatchResultEntry` nedan) — aldrig en
+   * generisk payload-påse för andra typer.
+   */
+  result?: MatchResultPayload
+}
+
+export interface MatchResultPayload {
+  goalsFor: number
+  goalsAgainst: number
+  opponentClubId: string
+  home: boolean
+  competition: 'league' | 'cup' | 'playoff' | 'final'
+  stage?: string
+}
+
+const MATCH_RESULT_LEDGER_TYPES = new Set<EventLedgerType>(['cup_final', 'sm_final', 'derby_result', 'big_win', 'big_loss'])
+
+/**
+ * Typvakt — DOM 2026-09-04:s "bara tillåten på de fem matchtyperna".
+ * `season_finish` är MEDVETET UTANFÖR (Code-fynd 2026-09-04): dess data
+ * (slutplacering) förloras aldrig — `game.seasonSummaries[].finalPosition`
+ * ackumuleras för alltid (till skillnad från `game.fixtures`, som nollställs
+ * varje rollover), så season_finish behöver aldrig `result`. Se
+ * clubMemoryService.ts's `finishPositionForSeason`.
+ */
+export function isMatchResultEntry(entry: EventLedgerEntry): entry is EventLedgerEntry & { result: MatchResultPayload } {
+  return MATCH_RESULT_LEDGER_TYPES.has(entry.type) && entry.result !== undefined
 }
 
 export interface BandyLetter {
