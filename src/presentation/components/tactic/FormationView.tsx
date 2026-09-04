@@ -10,7 +10,21 @@ import { PlayerDot } from './PlayerDot'
 import { BandyPitch } from '../BandyPitch'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
-import { prioritizeByFitnessFloor } from '../../utils/lineupNudge'
+import { prioritizeByFitnessFloor, SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
+import { getSelectionScore, getPositionFit } from '../../../domain/services/squadEvaluator'
+
+// taktik-fyll-elvan-tre-lagen (Playtest Taktik 2026-09-03 MEDIUM 2, Jacobs
+// dom 2026-09-03): "Fyll bästa elvan" prioriterade bara styrka och kunde
+// starta spelare på 20–35 % kondition trots A3-golvet. Tre lägen, alla
+// golv-medvetna (SPELKLARHET_FITNESS_FLOOR respekteras av samtliga).
+type AutoFillMode = 'strongest' | 'rested' | 'matchfit'
+
+const AUTOFILL_MODE_LABELS: Record<AutoFillMode, string> = {
+  strongest: 'Starkast',
+  rested: 'Mest utvilad',
+  matchfit: 'Bäst för dagens match',
+}
+
 interface FormationViewProps {
   tactic: Tactic
   players: Player[]  // entire squad
@@ -25,6 +39,8 @@ const FORMATION_OPTIONS: FormationType[] = ['532_tvatoppar', '532_triangel', '53
 export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
+  // Default = Bäst för dagens match (Jacobs dom 2026-09-03).
+  const [autoFillMode, setAutoFillMode] = useState<AutoFillMode>('matchfit')
   const autoFillTimerRef = useRef<number | null>(null)
   const navigate = useNavigate()
 
@@ -61,6 +77,16 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
   )
   const benchPlayers = players.filter(p => !starterIds.has(p.id) && !p.isInjured && p.suspensionGamesRemaining === 0)
 
+  // Mest utvilad: sortera på kondition (över golvet, sedan CA) istf ren CA.
+  // Golv-partitionen (över/under SPELKLARHET_FITNESS_FLOOR) är densamma som
+  // prioritizeByFitnessFloor — bara ORDNINGEN inom respektive block byts.
+  function sortByRest(pool: Player[]): Player[] {
+    const byRestThenCA = (a: Player, b: Player) => b.fitness - a.fitness || getSelectionScore(b) - getSelectionScore(a)
+    const above = pool.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).sort(byRestThenCA)
+    const below = pool.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR).sort(byRestThenCA)
+    return [...above, ...below]
+  }
+
   function handleAutoFill() {
     // A3-residualen (2026-08-31, Jacobs körorder): denna var kandidaturvalets
     // TREDJE, oberoende kopia — saknade både vilofiltret (restGamesRemaining,
@@ -73,7 +99,13 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
       p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0,
     )
     const placedIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
-    const sorted = prioritizeByFitnessFloor(available.filter(p => !placedIds.has(p.id)))
+    const candidates = available.filter(p => !placedIds.has(p.id))
+    // taktik-fyll-elvan-tre-lagen: Starkast och Bäst för dagens match delar
+    // samma golv-medvetna CA-sortering för EXAKT positionsmatch (positions-
+    // passningen är redan 1 där) — de skiljer sig bara i FALLBACK-steget
+    // nedan, där matchfit väger in positionspassning för spelare utan exakt
+    // matchning. Exakt viktning mäts i kalibreringsrundan C2 — enkel start.
+    const sorted = autoFillMode === 'rested' ? sortByRest(candidates) : prioritizeByFitnessFloor(candidates)
 
     const newLineupSlots = { ...lineupSlots }
     const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])
@@ -87,11 +119,21 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         sorted.splice(matchIdx, 1)
         continue
       }
-      // Fallback: any available player
-      if (sorted.length > 0) {
-        newLineupSlots[slot.id] = sorted[0].id
-        sorted.shift()
+      if (sorted.length === 0) continue
+      if (autoFillMode === 'matchfit') {
+        let bestIdx = 0
+        let bestScore = -Infinity
+        sorted.forEach((p, idx) => {
+          const score = getSelectionScore(p) * getPositionFit(p.position, slot.position)
+          if (score > bestScore) { bestScore = score; bestIdx = idx }
+        })
+        newLineupSlots[slot.id] = sorted[bestIdx].id
+        sorted.splice(bestIdx, 1)
+        continue
       }
+      // Fallback: bästa (i den redan valda sorteringsordningen) tillgängliga
+      newLineupSlots[slot.id] = sorted[0].id
+      sorted.shift()
     }
 
     onChange({ ...tactic, lineupSlots: newLineupSlots })
@@ -193,6 +235,20 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         >
           ändras i lineup
         </button>
+      </div>
+
+      {/* taktik-fyll-elvan-tre-lagen: lägesväljare för autofyll-knappen */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
+        {(['strongest', 'rested', 'matchfit'] as const).map(m => (
+          <button
+            key={m}
+            onClick={() => setAutoFillMode(m)}
+            className={`btn ${autoFillMode === m ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ padding: '3px 8px', fontSize: 10 }}
+          >
+            {AUTOFILL_MODE_LABELS[m]}
+          </button>
+        ))}
       </div>
 
       {/* Auto-fill button */}
