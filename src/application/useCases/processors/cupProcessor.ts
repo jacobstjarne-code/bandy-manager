@@ -46,13 +46,25 @@ export function processCupRound(
   if (firstManagedRound > 1) {
     const directQualId = `inbox_cup_directqual_${game.currentSeason}`
     if (!game.inbox.some(i => i.id === directQualId)) {
-      const standing = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? '?'
+      // cupprocessor-standing-kvarlamnad (DOM 2026-09-03): cupbye-texten körs
+      // innan ligan spelat en enda omgång, så game.standings har alfabetiskt
+      // skräp (samma klass av läst-före-initiering som trainerArcs). Citera
+      // bara en live-position när den faktiskt betyder något (spelade matcher);
+      // annars förra säsongens placering, eller en rykte-baserad fallback.
+      const liveStanding = game.standings.find(s => s.clubId === game.managedClubId)
+      const lastSeasonPosition = [...game.seasonSummaries]
+        .filter(s => s.clubId === game.managedClubId)
+        .sort((a, b) => b.season - a.season)[0]?.finalPosition
+      const rankingClause =
+        liveStanding && liveStanding.played > 0 ? `Baserat på er ranking (${liveStanding.position}:a) är`
+        : lastSeasonPosition ? `Baserat på förra säsongens placering (${lastSeasonPosition}:a) är`
+        : 'Som etablerad klubb är'
       result.cupInboxItems.push({
         id: directQualId,
         date: currentDate,
         type: InboxItemType.BoardFeedback,
         title: 'Svenska Cupen',
-        body: `Baserat på er ranking (${standing}:a) är ni direktkvalificerade till ${getCupRoundName(firstManagedRound)}.`,
+        body: `${rankingClause} ni direktkvalificerade till ${getCupRoundName(firstManagedRound)}.`,
         isRead: false,
       } as InboxItem)
     }

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+<link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+<script src="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:#141110;-webkit-font-smoothing:antialiased;}
+  a{color:#C47A3A;text-decoration:none;} a:hover{color:#8B4820;}
+  .phone{width:390px;border-radius:26px;overflow:hidden;border:1px solid #3D3A32;box-shadow:0 20px 50px rgba(0,0,0,0.5);background:var(--bg);flex:0 0 auto;}
+  .ledgerrow{position:relative;padding:0 0 16px 26px;}
+  .ledgerrow::before{content:"";position:absolute;left:5px;top:15px;bottom:-1px;width:2px;background:var(--border);}
+  .ledgerrow:last-child::before{display:none;}
+  .dot{position:absolute;left:0;top:4px;width:12px;height:12px;border-radius:50%;background:var(--bg-surface);border:2px solid var(--accent);}
+  .dot.gold{background:var(--accent);box-shadow:0 0 0 3px rgba(196,122,58,0.2);}
+  @media(max-width:900px){.stage{flex-direction:column;align-items:center;}}
+</style>
+</helmet>
+<div style="font-family:system-ui,sans-serif;color:#e8ddcb;background:#141110;min-height:100vh;padding:0 0 90px;">
+
+  <!-- HEADER -->
+  <div style="max-width:940px;margin:0 auto;padding:60px 28px 26px;border-bottom:2px solid #C47A3A;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C47A3A;font-weight:600;margin-bottom:14px;">Redesign · två skärmar</div>
+    <h1 style="font-family:Georgia,serif;font-weight:800;font-size:42px;line-height:1.05;margin:0 0 16px;color:#faf6ef;">Resultatets ögonblick<br>&amp; Klubbminnet</h1>
+    <p style="font-size:15px;line-height:1.62;color:#c9bda9;max-width:660px;margin:0;">De två dragen med störst känslohävstång, ritade i ert eget system. Den första ger veckans resultat den ton det förtjänar. Den andra gör er nya <strong style="color:#e8ddcb;">ledger</strong> synlig — minnet över händelser, matcher, system och säsonger blir en yta spelaren kan känna, inte bara en datastruktur under huven. Mockuperna använder DS-klasserna (<code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">card-sharp</code>, <code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">btn-cta</code>, <code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">h-display</code>, taggar, tokens) rakt av.</p>
+  </div>
+
+  <!-- ═══ SKÄRM 1: RESULTATET ═══ -->
+  <div style="max-width:940px;margin:0 auto;padding:44px 28px 0;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;"><span style="font-family:Georgia,serif;font-size:34px;font-weight:800;color:#3D3A32;">01</span><h2 style="font-family:Georgia,serif;font-size:26px;color:#faf6ef;margin:0;">Granska — resultatets ögonblick</h2></div>
+    <p style="font-size:13.5px;line-height:1.6;color:#9a8f7d;max-width:660px;margin:0 0 30px;">Ersätter den bleka 4–2:an högst upp i ett tomt fält. Första vyn <em>ägs</em> av resultatet: väder-tonad läder, en Georgia-siffra som slår in, en enda klack-rad. Sen — och först då — lugnar det ner sig till protokollet. Detta är exakt samma hero-score-behandling som ceremonierna redan bevisat funkar; nu får veckomatchen låna den.</p>
+  </div>
+
+  <div class="stage" style="display:flex;gap:40px;max-width:940px;margin:0 auto;padding:0 28px;align-items:flex-start;">
+    <!-- PHONE 1 -->
+    <div class="phone">
+      <!-- game header -->
+      <div style="background:var(--bg-leather);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--accent);">
+        <div style="width:22px;height:22px;border-radius:5px;background:radial-gradient(circle at 40% 35%, #2f6b4a, #17402c);"></div>
+        <div style="text-align:center;"><div style="font-family:Georgia,serif;font-size:12px;font-weight:700;color:var(--text-light);">Edsbyn BK</div><div style="font-size:8px;letter-spacing:1.5px;color:var(--text-light-secondary);">2026/27 · OMG 20</div></div>
+        <div style="color:var(--text-light-secondary);font-size:14px;">◔</div>
+      </div>
+      <!-- HERO leather, snow-tinted -->
+      <div style="background:var(--match-bg-snow);background-image:radial-gradient(120% 80% at 50% 0%, rgba(212,184,96,0.08), transparent 60%);padding:26px 20px 24px;text-align:center;position:relative;">
+        <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--match-gold);opacity:0.8;margin-bottom:20px;">⬩ &nbsp;Slutsignal&nbsp; ⬩</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px;">
+          <div style="text-align:center;width:74px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%, #2f6b4a, #17402c);margin:0 auto 7px;"></div>
+            <div style="font-family:Georgia,serif;font-size:12px;font-weight:700;color:var(--text-light);">EBK</div>
+            <div style="font-size:8px;letter-spacing:1px;color:var(--match-positive);text-transform:uppercase;margin-top:2px;">Hemma</div>
+          </div>
+          <div style="font-family:Georgia,serif;font-weight:800;font-size:66px;line-height:1;color:var(--match-gold);letter-spacing:-1px;">4<span style="opacity:0.45;font-size:40px;vertical-align:middle;margin:0 6px;">–</span>2</div>
+          <div style="text-align:center;width:74px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%, #7a3550, #45182c);margin:0 auto 7px;"></div>
+            <div style="font-family:Georgia,serif;font-size:12px;font-weight:700;color:var(--text-light);">BGF</div>
+            <div style="font-size:8px;letter-spacing:1px;color:var(--text-light-secondary);text-transform:uppercase;margin-top:2px;">Borta</div>
+          </div>
+        </div>
+        <div style="display:inline-block;margin:8px 0 16px;padding:3px 12px;border-radius:99px;background:rgba(160,200,144,0.14);border:1px solid rgba(160,200,144,0.35);color:var(--match-positive);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Seger</div>
+        <div style="font-family:Georgia,serif;font-style:italic;font-size:14px;line-height:1.5;color:var(--text-light);max-width:280px;margin:0 auto;">&ldquo;Domaren blåser av. Klacken sjunger i kylan.&rdquo;</div>
+        <!-- ice shimmer divider -->
+        <div style="height:2px;margin:20px -20px -24px;background:linear-gradient(90deg,transparent,rgba(126,179,212,0.5),transparent);"></div>
+      </div>
+      <!-- PROTOKOLLET -->
+      <div style="padding:16px 14px 20px;background:var(--bg);">
+        <div class="h-label">📋 &nbsp;Protokollet · Studenternas IP</div>
+        <div class="card-sharp" style="padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Målskyttar</div>
+            <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">476 åskådare</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-primary);padding:3px 0;"><span>K. Lindström <span style="color:var(--text-muted);">×2</span></span><span style="font-family:Georgia,serif;color:var(--text-secondary);">12′ · 58′</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-primary);padding:3px 0;border-top:1px solid var(--border);"><span>O. Johansson</span><span style="font-family:Georgia,serif;color:var(--text-secondary);">31′</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-primary);padding:3px 0;border-top:1px solid var(--border);"><span>M. Pettersson</span><span style="font-family:Georgia,serif;color:var(--text-secondary);">74′</span></div>
+        </div>
+        <div class="card-sharp" style="padding:9px 12px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:Georgia,serif;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;">8.4</div>
+          <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text-primary);">Matchens spelare</div><div style="font-size:10px;color:var(--text-secondary);">Karl Lindström — två mål, bar laget hem.</div></div>
+          <span class="tag tag-copper" style="font-size:9px;">⭐ Betyg</span>
+        </div>
+        <button class="btn btn-cta btn-primary" style="border:none;color:#fff;">Till granskning →</button>
+      </div>
+    </div>
+
+    <!-- RATIONALE 1 -->
+    <div style="flex:1;min-width:240px;padding-top:6px;">
+      <div style="margin-bottom:20px;"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Vad som händer i ögat</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Blicken landar på siffran — stor, gyllene, på väder-tonad läder — innan något annat finns. &ldquo;Seger&rdquo; och klack-raden bekräftar känslan på en halv sekund. Först under is-strecket börjar hjärnan läsa data.</p></div>
+      <div style="margin-bottom:20px;"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Rörelsen (valfri, ett beat)</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Vid inträdet: en halv sekunds svärta, sen slår siffran in med <code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">fadeInUpScale</code> och en enda amber-puls (samma som goal-flash). Ingenting mer — protokollet fadar lugnt in under.</p></div>
+      <div><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Vad det löser</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Audit D1 (hero-score-kontrast) + flödets största känslomiss. Väder-tonen (<code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">--match-bg-snow</code>) läser matchens humör; förlust byter till <code style="background:#2a241e;padding:1px 5px;border-radius:3px;color:#e0b483;">--danger</code>-dämpad ton och en kylig klack-rad istället.</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ SKÄRM 2: KLUBBMINNET ═══ -->
+  <div style="max-width:940px;margin:0 auto;padding:64px 28px 0;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;"><span style="font-family:Georgia,serif;font-size:34px;font-weight:800;color:#3D3A32;">02</span><h2 style="font-family:Georgia,serif;font-size:26px;color:#faf6ef;margin:0;">Klubbminnet — ledgern som känsla</h2></div>
+    <p style="font-size:13.5px;line-height:1.6;color:#9a8f7d;max-width:680px;margin:0 0 30px;">Er ledger vet redan vad som hänt över matcher, händelser, system och säsonger. Det här är ytan som <em>visar</em> det — som ett 70-tals protokollblock där klubbens liv står inskrivet, rad för rad, med perforeringen i marginalen. Det är svaret på flödets tes: en säsong som minns dig. Ligger som ny flik i Klubb (säsong 2+), precis där designsystemet redan reserverat &ldquo;Klubbminnet&rdquo;.</p>
+  </div>
+
+  <div class="stage" style="display:flex;gap:40px;max-width:940px;margin:0 auto;padding:0 28px;align-items:flex-start;">
+    <!-- PHONE 2 -->
+    <div class="phone">
+      <div style="background:var(--bg-leather);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--accent);">
+        <div style="width:22px;height:22px;border-radius:5px;background:radial-gradient(circle at 40% 35%, #2f6b4a, #17402c);"></div>
+        <div style="text-align:center;"><div style="font-family:Georgia,serif;font-size:12px;font-weight:700;color:var(--text-light);">Edsbyn BK</div><div style="font-size:8px;letter-spacing:1.5px;color:var(--text-light-secondary);">2029/30 · EPOK · ÅR 6</div></div>
+        <div style="color:var(--text-light-secondary);font-size:14px;">☰</div>
+      </div>
+      <!-- klubb tabs -->
+      <div style="display:flex;gap:4px;padding:8px 12px 0;background:var(--bg);">
+        <div style="flex:1;text-align:center;font-size:10px;font-weight:600;color:var(--text-muted);padding:6px 0;">Träning</div>
+        <div style="flex:1;text-align:center;font-size:10px;font-weight:600;color:var(--text-muted);padding:6px 0;">Ekonomi</div>
+        <div style="flex:1;text-align:center;font-size:10px;font-weight:600;color:var(--text-muted);padding:6px 0;">Orten</div>
+        <div style="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--accent-dark);padding:6px 0;border-bottom:2px solid var(--accent);">Minnet</div>
+      </div>
+      <div style="padding:16px 14px 20px;background:var(--bg);">
+        <div class="h-label" style="margin-bottom:2px;">🏠 &nbsp;Klubbminnet</div>
+        <h3 style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--text-primary);margin:0 0 3px;">Sex säsonger inskrivna</h3>
+        <p class="h-quote" style="margin:0 0 16px;">Det som orten minns när du är borta.</p>
+
+        <!-- defining memory (hero) -->
+        <div class="card-round" style="background:var(--bg-dark);padding:14px 16px;margin-bottom:16px;border:1px solid var(--bg-leather);">
+          <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--match-gold);margin-bottom:8px;">⬩ Ortens minne ⬩</div>
+          <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--text-light);line-height:1.35;margin-bottom:6px;">Guldet 2026/27</div>
+          <div style="font-family:Georgia,serif;font-style:italic;font-size:12.5px;color:var(--text-light-secondary);line-height:1.5;">&ldquo;Tvåtusen i kylan, en pokal som får plats i klubbhuset. Den står där än.&rdquo;</div>
+        </div>
+
+        <!-- SÄSONG 2026/27 -->
+        <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px;">
+          <span style="font-family:Georgia,serif;font-size:13px;font-weight:700;color:var(--text-primary);">Säsong 2026/27</span>
+          <span class="tag tag-fill" style="font-size:8px;background:var(--accent);">🏆 SM-guld</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="padding-left:2px;">
+          <div class="ledgerrow"><span class="dot gold"></span>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:1px;">⚔️ Slutspel · Mars</div>
+            <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">SM-final mot Lesjöfors. <span style="font-family:Georgia;color:var(--accent-dark);font-weight:700;">1–0</span> efter tilläggstid.</div>
+          </div>
+          <div class="ledgerrow"><span class="dot"></span>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:1px;">🔥 Derby · Omg 14</div>
+            <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">Slaget om Värmland vänt i slutminuten. Orten pratade om den i veckor.</div>
+          </div>
+          <div class="ledgerrow"><span class="dot"></span>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:1px;">🏟️ Anläggning · Nov</div>
+            <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">Värmestugan byggd. Folk stannar kvar efter matcherna nu.</div>
+          </div>
+        </div>
+
+        <!-- SÄSONG 2025/26 -->
+        <div style="display:flex;align-items:center;gap:8px;margin:14px 0 12px;">
+          <span style="font-family:Georgia,serif;font-size:13px;font-weight:700;color:var(--text-primary);">Säsong 2025/26</span>
+          <span class="tag tag-ice" style="font-size:8px;">📊 3:e</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="padding-left:2px;">
+          <div class="ledgerrow"><span class="dot"></span>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:1px;">👤 Mecenat · Jan</div>
+            <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">Annika Berg gick in med kapital. Kassan andades ut.</div>
+          </div>
+          <div class="ledgerrow"><span class="dot"></span>
+            <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:1px;">📋 Avsked · Mars</div>
+            <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">Karl Lindström la av. 143 matcher, 58 mål. En ikon.</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:8px;"><span style="font-size:11px;color:var(--accent-dark);font-weight:600;">Visa alla sex säsonger ›</span></div>
+      </div>
+    </div>
+
+    <!-- RATIONALE 2 -->
+    <div style="flex:1;min-width:240px;padding-top:6px;">
+      <div style="margin-bottom:20px;"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Direkt ur ledgern</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Varje rad <em>är</em> en ledger-post: matcher (derby, final), system (anläggning byggd), händelser (mecenat, avsked), säsonger (placering, guld). Ni har redan datat — det här är bara att läsa det uppåt istället för nedåt.</p></div>
+      <div style="margin-bottom:20px;"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Protokollblocket (Princip 3)</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Perforerings-rälsen i marginalen, Georgia-datum, emoji som kategori-stämpel, koppar-prick för guld-poster. Inte 1800-talssigill — 70-tals föreningsliggare. Nostalgin har ett jobb: att göra minnet fysiskt.</p></div>
+      <div style="margin-bottom:20px;"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Kopplar tillbaka i flödet</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Samma ledger matar den utfallsvarierade årsboks-copyn (D3): &ldquo;Ortens minne&rdquo;-kortet skrivs ur säsongens faktiska toppost. En guldsäsong och en sparkad-säsong kan aldrig mer läsa likadant — för minnet vet skillnaden.</p></div>
+      <div><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C47A3A;font-weight:700;margin-bottom:6px;">Framåtkroken</div>
+      <p style="font-size:14px;line-height:1.6;color:#d4c8b4;margin:0;">Karriäruppehållet (081, &ldquo;laget spelade vidare utan dig&rdquo;) blir tio gånger starkare när minnet finns: du kan se vad orten mindes — och vad efterträdaren la till.</p></div>
+    </div>
+  </div>
+
+  <!-- INTEGRATIONSNOT -->
+  <div style="max-width:940px;margin:0 auto;padding:56px 28px 20px;">
+    <div style="background:#0E0D0B;border:1px solid #3D3A32;border-radius:12px;padding:24px 26px;">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#C47A3A;font-weight:600;margin-bottom:14px;">Så hänger det ihop</div>
+      <p style="font-size:14px;line-height:1.65;color:#ddd0bc;margin:0 0 12px;">De två skärmarna är samma tanke i två skalor. <strong style="color:#faf6ef;">Resultatet</strong> ger <em>ögonblicket</em> dess ton — en match, en siffra, en känsla. <strong style="color:#faf6ef;">Klubbminnet</strong> ger <em>tiden</em> dess tyngd — de ögonblick som blev värda att skriva ner. Ledgern är bryggan: den fångar resultatets ögonblick när det händer, och lämnar tillbaka det som minne säsonger senare.</p>
+      <p style="font-size:14px;line-height:1.65;color:#c9bda9;margin:0;">Ingen ny färg, inget nytt typsnitt, inga nya komponenter — allt är byggt på tokens och klasser ni redan har. Det som är nytt är att systemet nu <em>känner efter</em> vid de beat som räknas.</p>
+    </div>
+    <p style="font-size:11px;color:#6f665a;margin:18px 2px 0;text-align:center;">Mockuper i Bandy Manager Design System · byggda på befintliga tokens/klasser · systerdokument till design- och flödesgranskningen.</p>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
