@@ -320,6 +320,7 @@ const SCENES: { id: SceneId; label: string }[] = [
 
 const HOME_ID = 'dev-managed'
 const AWAY_ID = 'dev-opponent'
+const SECOND_RIVAL_ID = 'dev-second-rival'
 
 const devClubs = [
   {
@@ -340,6 +341,16 @@ const devClubs = [
     preferredStyle: 'defensive', hasArtificialIce: false,
     arenaCapacity: 420, arenaName: 'Sävstaås IP',
     activeTactic: { formation: '541_hem', mentality: 'defensive', tempo: 'slow', passingRisk: 'safe', width: 'narrow', attackingFocus: 'balanced', cornerStrategy: 'far_post', penaltyKillStyle: 'diamond' },
+    squadPlayerIds: [],
+  },
+  {
+    id: SECOND_RIVAL_ID, name: 'Karlsborg', shortName: 'KBG', region: 'Västergötland',
+    reputation: 61, finances: 55000, wageBudget: 18000, transferBudget: 9000,
+    youthQuality: 58, youthRecruitment: 54, youthDevelopment: 57, facilities: 56,
+    boardExpectation: 'midtable', fanExpectation: 'midtable',
+    preferredStyle: 'technical', hasArtificialIce: true,
+    arenaCapacity: 380, arenaName: 'Karlsborgs IP',
+    activeTactic: { formation: '532_triangel', mentality: 'balanced', tempo: 'normal', passingRisk: 'mixed', width: 'normal', attackingFocus: 'central', cornerStrategy: 'standard', penaltyKillStyle: 'box' },
     squadPlayerIds: [],
   },
 ]
@@ -478,7 +489,10 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
       id: 'mgr-dev', firstName: 'Jacob', lastName: 'Stjärne',
       age: 45, hometown: 'Uppsala',
       burnoutScore: 42, burnoutHistory: [28, 31, 35, 38, 40, 42],
-      coachRivalries: [{ clubId: AWAY_ID, h2hWins: 3, h2hDraws: 2, h2hLosses: 4, personality: 'kall', intensity: 6 }],
+      coachRivalries: [
+        { clubId: AWAY_ID, h2hWins: 3, h2hDraws: 2, h2hLosses: 4, personality: 'kall', intensity: 6 },
+        { clubId: SECOND_RIVAL_ID, h2hWins: 5, h2hDraws: 1, h2hLosses: 2, personality: 'het', intensity: 4 },
+      ],
       contractUntilSeason: 10, seasonsAtClub: 8, monthlySalary: 32,
       careerWins: 62, careerDraws: 24, careerLosses: 44,
       personalityType: 'ambitious', trait: 'ironman',
