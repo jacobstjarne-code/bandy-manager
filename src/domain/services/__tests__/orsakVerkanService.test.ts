@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { captureDecisionRipple, getLatestDecisionConsequence, buildSystemRippleLedgerEntry } from '../orsakVerkanService'
+import { captureDecisionRipple, getLatestDecisionConsequence, buildSystemRippleLedgerEntry, getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } from '../orsakVerkanService'
 import { resolveEvent } from '../events/eventResolver'
 import { bidReceivedEvent } from '../events/eventFactories'
 import type { SaveGame, RippleChain } from '../../entities/SaveGame'
@@ -151,6 +151,31 @@ describe('getLatestDecisionConsequence', () => {
   it('undefined när game.eventLedger saknas helt', () => {
     const game = makeGame()
     expect(getLatestDecisionConsequence(game, 2025, 14)).toBeUndefined()
+  })
+})
+
+describe('liggare-k4-orsak-verkan-yta — getDecisionConsequenceSinceLastMatch + describeRippleChainForGranska', () => {
+  const a: EventLedgerEntry = { type: 'decision', semanticKey: 'a', season: 2025, matchday: 10, significance: 40 }
+  const b: EventLedgerEntry = { type: 'decision', semanticKey: 'b', season: 2025, matchday: 12, significance: 50 }
+  const c: EventLedgerEntry = { type: 'decision', semanticKey: 'c', season: 2025, matchday: 14, significance: 60 }
+
+  it('returnerar senaste decision INOM intervallet (sedan förra matchen, exklusive matchdagen själv)', () => {
+    const game = { ...makeGame(), eventLedger: [a, b, c] }
+    // förra matchen omg 10, denna match omg 14 — b (omg 12) ska hittas, inte a (för tidig) eller c (för sen, == uptoMatchday)
+    expect(getDecisionConsequenceSinceLastMatch(game, 2025, 10, 14)).toEqual(b)
+  })
+
+  it('undefined när inget beslut ligger i intervallet', () => {
+    const game = { ...makeGame(), eventLedger: [a] }
+    expect(getDecisionConsequenceSinceLastMatch(game, 2025, 10, 14)).toBeUndefined()
+  })
+
+  it('describeRippleChainForGranska formaterar exakt Opus egen exempelmening', () => {
+    const text = describeRippleChainForGranska([
+      { field: 'finances', dir: 'down', magnitude: 'tydligt' },
+      { field: 'supporterMood', dir: 'up', magnitude: 'knappt' },
+    ])
+    expect(text).toBe('Kassan tydligt ner, Klacken knappt upp')
   })
 })
 

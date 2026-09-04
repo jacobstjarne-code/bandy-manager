@@ -55,6 +55,13 @@ export interface EventProcessorResult {
   mecenatWithdrawnSeason: number | undefined
   // Beslutsekonomi
   lastEventQueueRound: number | undefined
+  /** liggare-k5-patron-withdrawal-producentbugg (2026-09-03): patron_withdrawal
+   *  via kravsuppföljningen (denna väg) byggde ledgerEntry i
+   *  applyPatronHappinessTransition men skrev den aldrig — bara
+   *  eventResolver-vägen (spelarinitierad) gjorde det. Vidarebefordras här så
+   *  roundProcessor kan pusha den till roundLedgerEntries precis som
+   *  star_injury/mecenat gör. */
+  patronLedgerEntry?: EventLedgerEntry
 }
 
 
@@ -435,6 +442,7 @@ export function processGameEvents(
   // misslyckande så triggern hittar den stale texten; rensas bara vid uppfyllt.
   let updatedPatron = game.patron
   let patronWithdrawnSeason = game.patronWithdrawnSeason
+  let patronLedgerEntry: EventLedgerEntry | undefined
   if (updatedPatron?.isActive) {
     if (updatedPatron.pendingDemand) {
       if (nextMatchday >= updatedPatron.pendingDemand.deadlineRound) {
@@ -453,6 +461,7 @@ export function processGameEvents(
         } : undefined
         patronWithdrawnSeason = transition.patronWithdrawnSeason
         if (transition.withdrawalEvent) gameEvents.push(transition.withdrawalEvent)
+        patronLedgerEntry = transition.ledgerEntry
       }
     } else if (localRand() < 0.2) {
       const seed = (updatedPatron.name?.length ?? 5) * 7 + nextMatchday * 13 + game.currentSeason * 31
@@ -486,6 +495,7 @@ export function processGameEvents(
     patronWithdrawnSeason,
     mecenatWithdrawnSeason,
     lastEventQueueRound,
+    patronLedgerEntry,
   }
 }
 

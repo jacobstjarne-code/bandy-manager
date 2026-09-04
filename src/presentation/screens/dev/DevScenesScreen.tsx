@@ -1367,6 +1367,16 @@ const granskaPendingEvents = [
 const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...granskaOtherFixtures], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 20, communityStanding: 58,
   pendingEvents: granskaPendingEvents,
+  // liggare-k4-orsak-verkan-yta (2026-09-03): reproducerar DET DU VALDE-kortet
+  // — ett beslut mellan förra matchen (omg 14, makeLeagueFixtures) och denna
+  // (omg 20, granskaFixture).
+  eventLedger: [{
+    type: 'decision', semanticKey: 'dev-decision-k4', season: 8, matchday: 17, significance: 55,
+    consequences: [
+      { field: 'finances', dir: 'down', magnitude: 'tydligt' },
+      { field: 'supporterMood', dir: 'up', magnitude: 'knappt' },
+    ],
+  }],
 })
 const granskaLevel3Game = {
   ...granskaGame,

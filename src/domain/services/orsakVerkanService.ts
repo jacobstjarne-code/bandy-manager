@@ -144,3 +144,42 @@ export function getLatestDecisionConsequence(game: SaveGame, currentSeason: numb
     .filter(e => e.type === 'decision' && e.season === currentSeason && e.matchday === currentMatchday)
     .at(-1)
 }
+
+/**
+ * liggare-k4-orsak-verkan-yta (2026-09-03, Opus dom): getLatestDecisionConsequence
+ * ovan hade ingen produktionsanropare — "liggarens första konsument" (DOM_
+ * ORSAK_VERKAN_SCOPING Fas 1) byggdes i tjänstelagret och nådde aldrig en
+ * yta. Domens placering: Granska-ögonblicket, "Det du valde i omgång N: ...",
+ * för ett beslut som resolvats SEDAN FÖRRA MATCHEN — inte bara exakt en
+ * omgång, eftersom cupveckor/portaltid kan lägga flera omgångar mellan två
+ * matcher. `sinceMatchday` = föregående spelade matchs matchday (exklusiv),
+ * `uptoMatchday` = den granskade matchens matchday (exklusiv, matchens EGNA
+ * händelser är inte ett "beslut"). Senaste post i intervallet (samma
+ * färskhetskonvention som getLatestDecisionConsequence — `.at(-1)`).
+ */
+export function getDecisionConsequenceSinceLastMatch(
+  game: SaveGame,
+  season: number,
+  sinceMatchday: number,
+  uptoMatchday: number,
+): EventLedgerEntry | undefined {
+  return (game.eventLedger ?? [])
+    .filter(e => e.type === 'decision' && e.season === season && e.matchday > sinceMatchday && e.matchday < uptoMatchday)
+    .at(-1)
+}
+
+const LABEL_BY_FIELD: Record<LedgerConsequence['field'], string> = Object.fromEntries(
+  Object.entries(FIELD_BY_LABEL).map(([label, field]) => [field, label]),
+) as Record<LedgerConsequence['field'], string>
+
+/**
+ * Ordagrant Opus' egen exempelformulering ("Kassan tydligt ner, Klacken
+ * knappt upp") — etiketterna (FIELD_BY_LABEL) och magnitud-orden (knappt/
+ * tydligt/kraftigt, RippleChainStep's egen skala) är redan låst vokabulär,
+ * ingen ny text uppfinns här, bara mekanisk återkombination.
+ */
+export function describeRippleChainForGranska(consequences: LedgerConsequence[]): string {
+  return consequences
+    .map(c => `${LABEL_BY_FIELD[c.field]} ${c.magnitude} ${c.dir === 'up' ? 'upp' : 'ner'}`)
+    .join(', ')
+}

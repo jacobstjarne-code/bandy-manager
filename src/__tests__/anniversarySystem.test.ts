@@ -173,6 +173,39 @@ describe('findActiveAnniversaries', () => {
   })
 })
 
+describe('liggare-k2-arsdagar-ur-liggaren — steg 2 för hela unionen, inte bara Krönikans sex', () => {
+  it('en tidigare tyst typ (patron_withdrawal, significance 95) får en årsdag två säsonger bakåt (k1s breddning av getClubMemory kaskadar hit automatiskt)', () => {
+    const game = makeMinimalGame({
+      currentSeason: 3,
+      currentMatchday: 10,
+      patron: { name: 'Bengt Karlsson', id: 'patron-1', business: 'Test AB', influence: 50, happiness: 0, contribution: 10000, isActive: false, goodwill: 0 } as never,
+      eventLedger: [{
+        type: 'patron_withdrawal', semanticKey: 'patron_withdrawal_1', season: 1, matchday: 10,
+        significance: 95, subject: { kind: 'patron', id: 'patron-1' },
+      }],
+    })
+    const result = findActiveAnniversaries(game)
+    const anniv = result.find(a => a.type === 'patron_withdrawal')
+    expect(anniv).toBeDefined()
+    expect(anniv?.yearsAgo).toBe(2)
+    expect(anniv?.echoSize).toBe('big')
+  })
+
+  it('en Moment-typ (derby_win, significance 65) får en 1-års-årsdag — tidigare exkluderad av den gamla sex-typers-allowlisten', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      currentMatchday: 8,
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' } as never],
+      eventLedger: [{
+        type: 'derby_win', semanticKey: 'derby-1', season: 1, matchday: 8,
+        significance: 65, subject: { kind: 'club', id: MANAGED_CLUB_ID },
+      }],
+    })
+    const result = findActiveAnniversaries(game)
+    expect(result.find(a => a.type === 'derby_win')).toBeDefined()
+  })
+})
+
 describe('buildEventId', () => {
   it('constructs deterministic id from event fields', () => {
     const event = {

@@ -1031,6 +1031,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let updatedPatron = eventResult.updatedPatron
   let mecenatWithdrawnSeason = eventResult.mecenatWithdrawnSeason
   newInboxItems.push(...eventResult.inboxItems)
+  // liggare-k5 (2026-09-03): kravsuppföljningens patron_withdrawal nådde
+  // aldrig liggaren — bara eventResolver-vägen (spelarinitierad) gjorde det.
+  if (eventResult.patronLedgerEntry) roundLedgerEntries.push(eventResult.patronLedgerEntry)
 
   // Legibel konsekvens: mecenat_left ripple (VILANDE i eventProcessor, wiras här)
   //

@@ -1,6 +1,7 @@
-import { getClubMemory, scoreEvent } from '../domain/services/clubMemoryService'
+import { getClubMemory, scoreEvent, momentKind, momentFamily } from '../domain/services/clubMemoryService'
 import type { MemoryEvent } from '../domain/services/clubMemoryService'
 import type { SaveGame } from '../domain/entities/SaveGame'
+import type { EventLedgerEntry } from '../domain/entities/Narrative'
 import { backfillClubHistoryLedger } from '../domain/services/clubHistoryLedgerService'
 
 const MANAGED_CLUB_ID = 'club_test'
@@ -300,5 +301,78 @@ describe('scoreEvent', () => {
   it('returns significance for retirement', () => {
     const e = makeEvent({ type: 'retirement', significance: 90 })
     expect(scoreEvent(e)).toBe(90)
+  })
+})
+
+describe('liggare-k1 — Krönikan läser nu hela unionen, inte bara sex typer', () => {
+  function ledgerEntry(overrides: Partial<EventLedgerEntry>): EventLedgerEntry {
+    return {
+      type: 'derby_win', semanticKey: 'k1-test', season: 1, matchday: 5, significance: 65,
+      ...overrides,
+    }
+  }
+
+  it('en Moment-typ (derby_win), tidigare bara synlig i "Det som hänt", ger nu en Krönika-rad', () => {
+    const game = makeMinimalGame({
+      clubs: [{ id: MANAGED_CLUB_ID, name: 'Test BK' } as never],
+      eventLedger: [ledgerEntry({ type: 'derby_win', subject: { kind: 'club', id: MANAGED_CLUB_ID } })],
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons[0].events.find(e => e.type === 'derby_win')
+    expect(event).toBeDefined()
+    expect(event!.text).toContain('Klacken')
+  })
+
+  it('en tyst typ (patron_withdrawal) — fryst sedan 2026-09-02, aldrig talad — ger nu en Krönika-rad (k3 TEXT LÅST)', () => {
+    const game = makeMinimalGame({
+      patron: { name: 'Bengt Karlsson', id: 'patron-1', business: 'Test AB', influence: 50, happiness: 0, contribution: 10000, isActive: false, goodwill: 0 } as never,
+      eventLedger: [ledgerEntry({ type: 'patron_withdrawal', semanticKey: 'patron_withdrawal_1', significance: 95, subject: { kind: 'patron', id: 'patron-1' } })],
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons[0].events.find(e => e.type === 'patron_withdrawal')
+    expect(event).toBeDefined()
+    expect(event!.text).toBe('Grundpelaren finns inte längre. Det syns inte på läktaren första veckan. Sen syns det överallt.')
+    expect(event!.emoji).toBe('🤝')
+  })
+
+  it('okänd/oproducerad typ (t.ex. patron_change) ger fortfarande null, inte en tom mall', () => {
+    const game = makeMinimalGame({
+      eventLedger: [ledgerEntry({ type: 'patron_change', significance: 90 })],
+    })
+    const result = getClubMemory(game)
+    expect(result.seasons[0].events.find(e => e.type === 'patron_change')).toBeUndefined()
+  })
+})
+
+describe('momentKind — breddad till hela EventLedgerType-unionen', () => {
+  it('statiska fall matchar konsumentkartans §10-tabell', () => {
+    expect(momentKind('referee_trust')).toBe('triumph')
+    expect(momentKind('referee_feud')).toBe('tension')
+    expect(momentKind('mecenat_withdrawal')).toBe('scar')
+    expect(momentKind('patron_emerge')).toBe('triumph')
+    expect(momentKind('academy_promotion')).toBe('triumph')
+    expect(momentKind('retirement')).toBe('neutral')
+  })
+
+  it('decision: neutral som default, tension bara vid irreversible+tension samtidigt', () => {
+    expect(momentKind('decision')).toBe('neutral')
+    expect(momentKind('decision', { irreversible: true, tension: false, semanticKey: 'x' })).toBe('neutral')
+    expect(momentKind('decision', { irreversible: true, tension: true, semanticKey: 'x' })).toBe('tension')
+  })
+
+  it('manager_burnout: scar vid mark, triumph vid close', () => {
+    expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:mark:hog' })).toBe('scar')
+    expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:close:frisk' })).toBe('triumph')
+    expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:relief:markbar' })).toBe('neutral')
+  })
+})
+
+describe('momentFamily — fem stämplar för hela unionen', () => {
+  it('mappar exempel ur varje familj', () => {
+    expect(momentFamily('derby_win')).toBe('⚔️')
+    expect(momentFamily('facility_built')).toBe('🏟️')
+    expect(momentFamily('player_milestone')).toBe('👤')
+    expect(momentFamily('patron_emerge')).toBe('🤝')
+    expect(momentFamily('decision')).toBe('📋')
   })
 })

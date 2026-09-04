@@ -114,6 +114,26 @@ describe('processGameEvents — kravmotor integration (Patron)', () => {
     expect(result.updatedPatron?.goodwill).toBe(55) // 70 - 15
   })
 
+  it('liggare-k5: nollpunktsövergång via kravsuppföljning ger exakt en patron_withdrawal-post (producentbugg fixad 2026-09-03)', () => {
+    const game = withActivePatron(base)
+    const pendingGame: SaveGame = {
+      ...game,
+      patron: {
+        ...game.patron!,
+        happiness: 10, // -15 vid ouppfyllt krav → 0, nollpunktsövergången
+        pendingDemand: { category: 'league_position', description: '[Opus]', createdRound: 1, deadlineRound: 5 },
+        demands: ['[Opus]'],
+        goodwill: 70,
+      },
+      standings: game.standings.map(s => s.clubId === game.managedClubId ? { ...s, position: game.standings.length } : s),
+    }
+    const result = processGameEvents(pendingGame, [], null, 5, () => 0.99)
+    expect(result.updatedPatron?.isActive).toBe(false)
+    expect(result.patronLedgerEntry).toBeDefined()
+    expect(result.patronLedgerEntry?.type).toBe('patron_withdrawal')
+    expect(result.patronLedgerEntry?.significance).toBe(95)
+  })
+
   it('uppfyllt krav: demands rensas', () => {
     const game = withActivePatron(base)
     const pendingGame: SaveGame = {

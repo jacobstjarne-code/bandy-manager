@@ -26,6 +26,7 @@ import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_T
 import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/managerKvittoText'
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
+import { getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } from '../../../domain/services/orsakVerkanService'
 import { deriveTurneringslageMode, getTurneringslageText } from '../../../domain/services/turneringslageService'
 import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
@@ -1024,6 +1025,27 @@ export function GranskaOversikt({
         return (
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.5) }}>
             <SectionLabel style={{ marginBottom: 6 }}>DITT VAL</SectionLabel>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{text}</p>
+          </div>
+        )
+      })()}
+
+      {/* liggare-k4-orsak-verkan-yta (2026-09-03, Opus dom): orsak/verkan-
+          konsumenten (getLatestDecisionConsequence, byggd Fas 1) hade ingen
+          produktionsanropare — liggarens första löfte nådde aldrig en yta.
+          Samma DITT VAL-kort-mönster som cornerStrategy ovan. */}
+      {visasFor('dittVal', axes.tavlingstyp, axes.skede) && fixture && (() => {
+        const managedClubId = isHome ? fixture.homeClubId : fixture.awayClubId
+        const previousMatchday = [...game.fixtures]
+          .filter(f => f.status === 'completed' && f.season === fixture.season && f.matchday < fixture.matchday
+            && (f.homeClubId === managedClubId || f.awayClubId === managedClubId))
+          .sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0
+        const decision = getDecisionConsequenceSinceLastMatch(game, fixture.season, previousMatchday, fixture.matchday)
+        if (!decision?.consequences?.length) return null
+        const text = `Det du valde i omgång ${decision.matchday}: ${describeRippleChainForGranska(decision.consequences)}.`
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.7) }}>
+            <SectionLabel style={{ marginBottom: 6 }}>DET DU VALDE</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{text}</p>
           </div>
         )

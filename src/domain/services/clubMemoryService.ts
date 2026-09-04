@@ -1,5 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
-import type { ClubLegend, AllTimeRecords } from '../entities/Narrative'
+import type { ClubLegend, AllTimeRecords, EventLedgerType } from '../entities/Narrative'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import {
   buildEventFromFixture,
@@ -15,12 +15,20 @@ import {
   getPlayerMilestoneCodeFromLedger,
 } from './clubHistoryLedgerService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
+import { MOMENT_VIEW_TEMPLATES } from '../data/momentViewTemplates'
+import { LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
+import type { LedgerOnlySource } from '../data/momentViewTemplates'
+import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 
-export type MemoryEventType =
-  | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
-  | 'big_win' | 'big_loss' | 'player_milestone' | 'academy_promotion'
-  | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
-  | 'patron_change' | 'storyline_resolution' | 'scandal' | 'national_team_callup'
+/**
+ * liggare-k1 (2026-09-03): MemoryEventType speglade tidigare bara EventLedgerType's
+ * FÖRSTA sexton medlemmar för hand — de 18 som tillkommit sedan (elva Moment-
+ * typer, fem tysta, decision, manager_burnout) hade fått läggas till manuellt
+ * här också, och gjorde inte det (RAPPORT_LIGGARE_KONSUMENTKARTA_RAW_2026-09-03.md
+ * Tabell 1). En sanning, ett ställe (CLAUDE.md OPUS-REGLER #4): alias mot
+ * EventLedgerType i stället för en parallell union som kan glida isär igen.
+ */
+export type MemoryEventType = EventLedgerType
 
 export interface MemoryEvent {
   type: MemoryEventType
@@ -85,6 +93,14 @@ function seasonFinishEvent(season: number, pos: number): MemoryEvent {
   }
 }
 
+// liggare-k1 (2026-09-03): breddad från sex till tjugotre — de elva Moment-
+// typerna (tidigare bara lästa av den separata "Det som hänt"-läsaren,
+// momentLedgerService.getRecentMomentsFromLedger, aldrig av Krönikan) och de
+// fem tysta typerna (referee_feud/trust, mecenat_withdrawal, patron_emerge/
+// withdrawal — frysta sedan 2026-09-02, aldrig talade förrän nu, mallar
+// LÅSTA i momentViewTemplates.ts §k3). storyline_resolution/decision/
+// manager_burnout MEDVETET utanför — egna, redan byggda talvägar (se Tier A
+// i konsumentkartan). De nio producentlösa typerna likaså — k9:s domän.
 const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'academy_promotion',
   'national_team_callup',
@@ -92,11 +108,23 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'facility_built',
   'scandal',
   'player_milestone',
+  ...MOMENT_LEDGER_TYPES,
+  'referee_feud',
+  'referee_trust',
+  'mecenat_withdrawal',
+  'patron_emerge',
+  'patron_withdrawal',
 ])
 
 function ledgerEntryBelongsToManagedClub(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): boolean {
   if (entry.subject?.kind === 'club') return entry.subject.id === managedClubId
   if (entry.subject2?.kind === 'club') return entry.subject2.id === managedClubId
+  // liggare-k1 (2026-09-03): patron/mecenat/referee är inherent klubbskopade
+  // entiteter i schemat (Patron/Mecenat/Referee saknar clubId — game.patron
+  // är EN entitet, inte per klubb) — ingen cross-club-filtrering är möjlig
+  // eller meningsfull för dem, till skillnad från spelare som kan tillhöra
+  // en annan klubb.
+  if (entry.subject?.kind === 'patron' || entry.subject?.kind === 'mecenat' || entry.subject?.kind === 'referee') return true
   if (entry.subject?.kind !== 'player') return false
 
   const player = game.players.find(item => item.id === entry.subject!.id)
@@ -201,8 +229,36 @@ function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, man
         text, emoji, significance: entry.significance, subjectPlayerId: playerId,
       }
     }
-    default:
-      return null
+    default: {
+      // liggare-k1 (2026-09-03): de elva Moment-typerna + de fem tysta typerna
+      // dispatchar hit i stället för att falla på 'default: return null'.
+      // Samma mallkälla "Det som hänt" redan använder (MOMENT_VIEW_TEMPLATES)
+      // plus den nya LEDGER_ONLY_VIEW_TEMPLATES (k3, TEXT LÅST) — Krönikan
+      // skriver ALDRIG egen text, bara dispatchar till befintlig källa.
+      const ctx = {
+        subjectName: resolveSubjectName(game, entry.subject),
+        subject2Name: resolveSubjectName(game, entry.subject2),
+        matchday: entry.matchday,
+        season: entry.season,
+        significance: entry.significance,
+        eraLabel: entry.eraLabel,
+        transferRole: entry.transferRole,
+        matchCategory: entry.matchCategory,
+      }
+      const isMomentSource = (MOMENT_LEDGER_TYPES as string[]).includes(entry.type)
+      const isLedgerOnlySource = entry.type in LEDGER_ONLY_VIEW_TEMPLATES
+      if (!isMomentSource && !isLedgerOnlySource) return null
+      const { body } = isMomentSource
+        ? MOMENT_VIEW_TEMPLATES[entry.type as MomentSource](ctx)
+        : LEDGER_ONLY_VIEW_TEMPLATES[entry.type as LedgerOnlySource](ctx)
+      return {
+        type: entry.type, season: entry.season, matchday: entry.matchday,
+        text: body, emoji: momentFamily(entry.type),
+        significance: entry.significance,
+        subjectPlayerId: entry.subject?.kind === 'player' ? entry.subject.id : undefined,
+        subjectClubId: entry.subject?.kind === 'club' ? entry.subject.id : undefined,
+      }
+    }
   }
 }
 
@@ -380,22 +436,66 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
 
 export type ActiveMemoryKind = 'triumph' | 'scar' | 'tension' | 'neutral'
 
-export function momentKind(source: MomentSource): ActiveMemoryKind {
-  switch (source) {
-    case 'derby_win':
-    case 'sponsor_positive':
-    case 'era_shift':
-    case 'season_highlight':
-      return 'triumph'
-    case 'star_injury':
-    case 'rival_sale':
-    case 'captain_crisis':
-    case 'sponsor_negative':
-    case 'transfer_story':
-      return 'scar'
-    case 'nemesis_signed':
-      return 'tension'
-    default:
-      return 'neutral'
+// liggare-k1/k3 (2026-09-03, konsumentkartan §10, Opus dom): breddad från
+// MomentSource (11) till hela EventLedgerType-unionen (34) — statisk tabell
+// för de typer vars kind inte beror på ett sekundärt fält. De tre dynamiska
+// undantagen (storyline_resolution/decision/manager_burnout) löses via
+// `entry`-parametern nedan, inte i tabellen — deras kind beror på ETT
+// klassificerande fält på posten (storyline-typens namn/irreversible+tension/
+// beat), inte bara `type` ensamt.
+const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
+  derby_win: 'triumph', sponsor_positive: 'triumph', era_shift: 'triumph', season_highlight: 'triumph',
+  academy_promotion: 'triumph', national_team_callup: 'triumph', facility_built: 'triumph',
+  referee_trust: 'triumph', patron_emerge: 'triumph',
+  star_injury: 'scar', rival_sale: 'scar', captain_crisis: 'scar', sponsor_negative: 'scar',
+  transfer_story: 'scar', scandal: 'scar', mecenat_withdrawal: 'scar', patron_withdrawal: 'scar',
+  nemesis_signed: 'tension', referee_feud: 'tension',
+  mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
+}
+
+/**
+ * `entry` krävs bara för de tre dynamiska typerna (storyline_resolution/
+ * decision/manager_burnout) — övriga läser den statiska tabellen och
+ * ignorerar parametern. Given okänt/oklassat `type`: 'neutral' (aldrig en
+ * gissning uppåt mot triumph/scar).
+ */
+export function momentKind(
+  type: EventLedgerType,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey'>,
+): ActiveMemoryKind {
+  if (type === 'decision') {
+    return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
   }
+  if (type === 'storyline_resolution') {
+    const key = entry?.semanticKey ?? ''
+    if (/underdog|gala_winner|breakthrough|vindicated|rallied|hero/.test(key)) return 'triumph'
+    return 'neutral'
+  }
+  if (type === 'manager_burnout') {
+    const key = entry?.semanticKey ?? ''
+    if (key.includes(':mark:')) return 'scar'
+    if (key.includes(':close:')) return 'triumph'
+    return 'neutral'
+  }
+  return STATIC_MOMENT_KIND[type] ?? 'neutral'
+}
+
+export type MemoryFamily = '⚔️' | '🏟️' | '👤' | '🤝' | '📋'
+
+// liggare-k1/k3 (2026-09-03, §10): "mappa TYP→FAMILJ, inte typ→egen emoji"
+// (redesign-klubbminnet-omdesign) — fem stämplar, inte trettiofyra.
+const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
+  derby_win: '⚔️', season_highlight: '⚔️', season_finish: '⚔️', cup_final: '⚔️', sm_final: '⚔️',
+  derby_result: '⚔️', big_win: '⚔️', big_loss: '⚔️',
+  facility_built: '🏟️',
+  player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
+  star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
+  rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤',
+  patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
+  sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
+  decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',
+}
+
+export function momentFamily(type: EventLedgerType): MemoryFamily {
+  return MOMENT_FAMILY[type] ?? '📋'
 }

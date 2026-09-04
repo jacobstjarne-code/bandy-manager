@@ -120,3 +120,39 @@ export const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
     body: `${ctx.subjectName ?? 'Han'} bytte tröja mot ${ctx.subject2Name ?? 'rivalen'}. Klacken förlåter inte den sortens affär i första taget.`,
   }),
 }
+
+/**
+ * liggare-k3-vymallar-tysta (TEXT LÅST, Opus 2026-09-03,
+ * RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md §10). Fem EventLedgerType-
+ * medlemmar som fryses (steg 1) men aldrig talas (steg 3) — se
+ * clubMemoryService.ts's LEDGER_CLUB_MEMORY_TYPES/buildMemoryEventFromLedger
+ * för konsumenten. Egen tabell, inte en utvidgning av MOMENT_VIEW_TEMPLATES:
+ * dessa fem går aldrig genom Moment.ts's dual-write-pipeline (ingen
+ * MOMENT_LEDGER_SIGNIFICANCE-post), så MomentSource ska inte breddas för
+ * dem. Samma form (title/body, {Namn}/{Efternamn} via resolveSubjectName),
+ * samma regel: kopierat ordagrant, aldrig omskrivet.
+ */
+export type LedgerOnlySource = 'referee_feud' | 'referee_trust' | 'mecenat_withdrawal' | 'patron_emerge' | 'patron_withdrawal'
+
+export const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate> = {
+  referee_feud: (ctx) => ({
+    title: `Fejd med ${ctx.subjectName ?? 'domaren'}`,
+    body: 'Vi har protesterat en gång för mycket, och han har märkt det. Från och med nu tolkas varje tveksam situation åt fel håll — i huvudet på båda.',
+  }),
+  referee_trust: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Domaren'} och vi förstår varandra`,
+    body: 'Ett par matcher med respekt i stället för protester. Han hör bänken utan att bli irriterad, och det märks i tveksamma lägen. Sånt är värt mer än ett frislag.',
+  }),
+  mecenat_withdrawal: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Mecenaten'} lämnade`,
+    body: 'Pengarna var en sak. Att ha någon som ställde upp när det knakade var en annan. Kassan märker det direkt; orten om ett tag.',
+  }),
+  patron_emerge: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Någon'} kliver fram`,
+    body: 'Ingen presskonferens, ingen skylt på arenan. Bara någon som bestämt sig för att klubben ska finnas kvar, och har råd att mena det.',
+  }),
+  patron_withdrawal: (ctx) => ({
+    title: `${ctx.subjectName ?? 'Grundpelaren'} drar sig tillbaka`,
+    body: 'Grundpelaren finns inte längre. Det syns inte på läktaren första veckan. Sen syns det överallt.',
+  }),
+}
