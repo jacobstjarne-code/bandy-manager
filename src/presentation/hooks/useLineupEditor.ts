@@ -17,6 +17,7 @@ import type { SaveGame } from '../../domain/entities/SaveGame'
 import { FORMATIONS, autoAssignFormation, type FormationType } from '../../domain/entities/Formation'
 import { POSITION_ORDER } from '../utils/formatters'
 import type { Player } from '../../domain/entities/Player'
+import { isPlayerInMatchSquad } from '../../domain/services/matchSquadService'
 
 export interface GroupedPlayers {
   position: PlayerPosition
@@ -84,11 +85,11 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
   const managedClubId = game?.managedClubId ?? ''
 
   const squadPlayers = useMemo(() => {
-    if (!game) return []
+    if (!game || !managedClub) return []
     return game.players
-      .filter(p => p.clubId === managedClubId)
+      .filter(p => isPlayerInMatchSquad(p, managedClub))
       .sort((a, b) => POSITION_ORDER[a.position] - POSITION_ORDER[b.position])
-  }, [game, managedClubId])
+  }, [game, managedClub])
 
   // A3 krav 1 — parkerad, ej applicerad, tvingad autofyllning (se handleAutoFill).
   const [pendingForcedAutoFill, setPendingForcedAutoFill] = useState<

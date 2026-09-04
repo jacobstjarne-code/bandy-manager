@@ -42,4 +42,21 @@ describe('coworker bond — ankare och ködedup', () => {
 
     expect(generated.some(event => event.id === coworkerBondEventId(player1.id, player2.id))).toBe(false)
   })
+
+  it('skapar högst ett arbetsplatsbeat i samma omgång även med tre kollegor', () => {
+    const base = coworkerGame()
+    const managed = base.players.filter(p => p.clubId === base.managedClubId)
+    const colleagueIds = new Set(managed.slice(0, 3).map(p => p.id))
+    const game = {
+      ...base,
+      players: base.players.map(p => colleagueIds.has(p.id)
+        ? { ...p, isFullTimePro: false, dayJob: { title: 'Lärare', flexibility: 70, weeklyIncome: 1000 } }
+        : p),
+    }
+
+    const generated = generatePostAdvanceEvents(game, [], 4, () => 0)
+    const coworkerEvents = generated.filter(event => event.id.startsWith('event_bond_'))
+
+    expect(coworkerEvents).toHaveLength(1)
+  })
 })

@@ -44,6 +44,7 @@ import { computeCardStaleTracking } from '../../domain/services/portal/portalBui
 import { safeStandingPosition } from '../../domain/services/standingsService'
 import { getCsPoliticianGrantBonus } from '../../domain/services/communityStandingScaling'
 import { fixtureSeed, mulberry32, seededPick } from '../../domain/utils/random'
+import { isPlayerInMatchSquad } from '../../domain/services/matchSquadService'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -1410,6 +1411,8 @@ export const useHasPendingLineup = () => {
   const players = game.players
   const starters = lineup.startingPlayerIds.map(id => players.find(p => p.id === id)).filter(Boolean)
   if (starters.length !== 11) return false
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  if (!club || starters.some(player => !isPlayerInMatchSquad(player!, club))) return false
   // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): restGamesRemaining läggs till
   // samma redundanta gate som isInjured/suspensionGamesRemaining redan har
   // här — setLineup.ts avvisar redan detta vid commit, denna check speglar
@@ -1474,6 +1477,8 @@ export const useCanAdvance = () => {
     .map(id => game.players.find(p => p.id === id))
     .filter(Boolean)
   if (starters.length !== 11) return false
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  if (!club || starters.some(player => !isPlayerInMatchSquad(player!, club))) return false
   return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0 || (p!.restGamesRemaining ?? 0) > 0)
 }
 

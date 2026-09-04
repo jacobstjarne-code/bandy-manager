@@ -12,6 +12,7 @@ import { applyFinanceChange } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE, FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER } from '../../../domain/data/transferResponseText'
 import { seededPick } from '../../../domain/utils/random'
+import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
 
 const BUD_WITHDRAWN_POOL = [
   (klubb: string, namn: string) => `${klubb} drog tillbaka budet på ${namn}. De tröttnade på att vänta.`,
@@ -305,9 +306,14 @@ export function processLoans(
   for (const deal of game.loanDeals ?? []) {
     let updatedDeal = deal
 
-    // startRound är den senast färdigspelade matchdagen. Ett N-omgångarslån
-    // har därför N rapporttillfällen: startRound+1 till och med endRound.
-    if (nextMatchday > deal.startRound && nextMatchday <= deal.endRound) {
+    // Ett lån gäller N faktiska processade matchtillfällen, inte N steg på
+    // kalenderns numeriska matchday-skala. Cupkalendern kan hoppa 0→4; det är
+    // fortfarande ett tillfälle och ska bara förbruka en låneomgång.
+    const alreadyProcessedThisMatchday = deal.reports.some(report => report.round === nextMatchday)
+    const shouldProcessOpportunity = nextMatchday > deal.startRound
+      && !alreadyProcessedThisMatchday
+      && getLoanRoundsRemaining(deal) > 0
+    if (shouldProcessOpportunity) {
       const played = localRand() > 0.25
       const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
       const goals = played && localRand() > 0.6 ? 1 : 0
@@ -322,10 +328,11 @@ export function processLoans(
         // returens mål/assist summeras ur dem; en presentationscap här tappade
         // annars de två första matcherna på det längsta lånet.
         reports: [...deal.reports, { round: nextMatchday, played, rating, goals, assists: 0 }],
+        remainingRounds: getLoanRoundsRemaining(deal) - 1,
       }
     }
 
-    if (nextMatchday >= deal.endRound) {
+    if (getLoanRoundsRemaining(updatedDeal) === 0) {
       returnedLoanPlayerIds.push(deal.playerId)
       const participationRate = updatedDeal.totalMatches > 0 ? updatedDeal.matchesPlayed / updatedDeal.totalMatches : 0
       const caBoost = participationRate >= 0.75 ? 3 + Math.floor(localRand() * 3)

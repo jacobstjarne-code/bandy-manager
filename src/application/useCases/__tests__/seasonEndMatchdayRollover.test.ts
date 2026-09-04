@@ -8,6 +8,28 @@ import type { Player } from '../../../domain/entities/Player'
 import type { YouthPlayer } from '../../../domain/entities/Academy'
 
 describe('season rollover — absoluta matchday-fält', () => {
+  it('stänger ett kvarvarande P19-mentorskap när den aktiva listan nollställs', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 11 })
+    const senior = base.players.find(p => p.clubId === base.managedClubId)!
+    const youth = base.youthTeam!.players[0]
+    const rolled = handleSeasonEnd({
+      ...base,
+      mentorships: [{ seniorPlayerId: senior.id, youthPlayerId: youth.id, startRound: 2, isActive: true }],
+      mentorshipHistory: [{
+        seniorPlayerId: senior.id,
+        youthPlayerId: youth.id,
+        seniorName: `${senior.firstName} ${senior.lastName}`,
+        youthName: `${youth.firstName} ${youth.lastName}`,
+        startRound: 2,
+      }],
+    }, 11).game
+
+    expect(rolled.mentorships).toEqual([])
+    expect(rolled.mentorshipHistory).toEqual([
+      expect.objectContaining({ youthPlayerId: youth.id, endSeason: base.currentSeason, outcome: 'ended' }),
+    ])
+  })
+
   it('bevarar återstående burnouttid på nästa säsongs nollpunkt', () => {
     expect(rebaseFutureMatchday(26, 22)).toBe(4)
     expect(rebaseFutureMatchday(22, 22)).toBe(0)

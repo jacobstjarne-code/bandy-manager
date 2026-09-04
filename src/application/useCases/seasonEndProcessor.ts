@@ -2202,12 +2202,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     academyUpgradeSeason: game.academyUpgradeSeason === nextSeason ? undefined : game.academyUpgradeSeason,
     mentorships: [],
     mentorshipHistory: (() => {
-      // Close open records: graduated = youth player now in main players array
+      // Alla aktiva mentorskap avslutas vid rollover. Historikposten får inte
+      // lämnas öppen bara för att adepten fortfarande låg kvar i P19.
       const mainPlayerIds = new Set(game.players.map(p => p.id))
       return (game.mentorshipHistory ?? []).map(r =>
-        !r.endSeason && mainPlayerIds.has(r.youthPlayerId)
-          ? { ...r, endSeason: game.currentSeason, outcome: 'graduated' as const }
-          : r
+        !r.endSeason
+          ? {
+              ...r,
+              endSeason: game.currentSeason,
+              outcome: mainPlayerIds.has(r.youthPlayerId) ? 'graduated' as const : 'ended' as const,
+            }
+          : r,
       )
     })(),
     loanDeals: [],

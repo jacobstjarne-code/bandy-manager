@@ -5,6 +5,7 @@ import { SectionCard } from '../SectionCard'
 import { positionShort } from '../../utils/formatters'
 import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } from '../../../domain/data/mentorshipStrings'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
+import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
 
 const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -20,7 +21,7 @@ interface AkademiTabProps {
 }
 
 /**
- * @cites youthTeam.results.opponentName, youthTeam.results.goalsFor, youthTeam.results.goalsAgainst, result.timing, deal.reports.played, deal.reports.rating, deal.reports.goals, currentMatchday
+ * @cites youthTeam.results.opponentName, youthTeam.results.goalsFor, youthTeam.results.goalsAgainst, result.timing, deal.reports.played, deal.reports.rating, deal.reports.goals
  */
 export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, assignMentor, removeMentor, loanOutPlayer, recallLoan }: AkademiTabProps) {
   const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
@@ -61,8 +62,6 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
   const activeLoanDeals = game.loanDeals ?? []
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
-
-  const currentRound = game.currentMatchday
 
   return (
     <div>
@@ -329,7 +328,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
             {activeLoanDeals.map(deal => {
               const loanPlayer = game.players.find(p => p.id === deal.playerId)
               if (!loanPlayer) return null
-              const roundsLeft = deal.endRound - currentRound
+              const roundsLeft = getLoanRoundsRemaining(deal)
               const lastReport = deal.reports[deal.reports.length - 1]
               return (
                 <div key={deal.playerId} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>

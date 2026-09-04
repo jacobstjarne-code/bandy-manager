@@ -65,6 +65,9 @@ export interface Mentorship {
 export interface MentorshipRecord {
   seniorPlayerId: string
   youthPlayerId: string
+  /** Namnsnapshots gör historiken renderbar även efter transfer/age-out. */
+  seniorName?: string
+  youthName?: string
   startRound: number
   endSeason?: number
   outcome?: 'graduated' | 'ended'
@@ -82,7 +85,13 @@ export interface LoanDeal {
   playerId: string
   destinationClubName: string
   startRound: number
+  /**
+   * Historisk, beräknad slutpunkt för äldre saves och diagnostik. Lånets
+   * verkliga varaktighet styrs av remainingRounds, inte kalenderns matchday.
+   */
   endRound: number
+  /** Återstående processade matchtillfällen hos låneklubben. */
+  remainingRounds: number
   salaryShare: number         // 0.5 = 50% of salary covered by loan club
   matchesPlayed: number
   totalMatches: number

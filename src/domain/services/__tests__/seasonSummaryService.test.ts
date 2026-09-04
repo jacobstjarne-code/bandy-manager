@@ -319,6 +319,32 @@ describe('generateSeasonSummary — resolvade arc-berättelser får INTE type:bi
   })
 })
 
+describe('generateSeasonSummary — dedup över samtliga momentkällor', () => {
+  it('visar en identisk arc-rad samma matchday högst en gång', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 31 })
+    const duplicateText = '💔 Derby-förlust mot Slottsbron'
+    const storylines = [1, 2].map(index => ({
+      id: `story_dup_${index}`,
+      type: 'derby_echo_resolved' as const,
+      season: game.currentSeason,
+      matchday: 12,
+      description: duplicateText,
+      displayText: duplicateText,
+      resolved: true,
+    }))
+
+    const eventLedger = storylines
+      .map(storyline => buildStorylineResolutionLedgerEntry(storyline, game.currentMatchday))
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+    const summary = generateSeasonSummary({ ...game, storylines, eventLedger } as never)
+    const duplicates = (summary.keyMoments ?? []).filter(moment =>
+      moment.round === 12 && moment.headline === duplicateText,
+    )
+
+    expect(duplicates).toHaveLength(1)
+  })
+})
+
 describe('liggare-k6-arsbok-liggarposter — säsongens tyngsta systemhändelser når nu keyMoments', () => {
   it('en era_shift (significance 85), tidigare osynlig för årsboken, blir en keyMoments-rad', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })

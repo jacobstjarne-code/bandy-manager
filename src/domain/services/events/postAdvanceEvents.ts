@@ -354,7 +354,8 @@ export function generatePostAdvanceEvents(
       !p.isFullTimePro &&
       p.dayJob
     )
-    for (let i = 0; i < nonProPlayers.length && events.length < 2; i++) {
+    let coworkerBondAdded = false
+    for (let i = 0; i < nonProPlayers.length && !coworkerBondAdded; i++) {
       for (let j = i + 1; j < nonProPlayers.length; j++) {
         const emp1 = findEmployerForJob(game.managedClubId, nonProPlayers[i].dayJob!.title)
         const emp2 = findEmployerForJob(game.managedClubId, nonProPlayers[j].dayJob!.title)
@@ -362,6 +363,7 @@ export function generatePostAdvanceEvents(
           const eid = coworkerBondEventId(nonProPlayers[i].id, nonProPlayers[j].id)
           if (!alreadyQueued.has(eid)) {
             events.push(generateCoworkerBondEvent(nonProPlayers[i], nonProPlayers[j], emp1.name))
+            coworkerBondAdded = true
             break
           }
         }

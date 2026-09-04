@@ -221,6 +221,29 @@ describe('setLineup', () => {
     }
   })
 
+  it('avvisar en utlånad spelare även om clubId fortfarande pekar på ägarklubben', () => {
+    const game = makeGame()
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
+    const loanedId = startingPlayerIds[0]
+    const modifiedGame = {
+      ...game,
+      players: game.players.map(p => p.id === loanedId ? { ...p, isOnLoan: true } : p),
+      clubs: game.clubs.map(c => c.id === game.managedClubId
+        ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== loanedId) }
+        : c),
+    }
+
+    const result = setLineup({
+      game: modifiedGame,
+      clubId: game.managedClubId,
+      startingPlayerIds,
+      benchPlayerIds,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.error).toContain('matchtruppen')
+  })
+
   it('valid lineup is stored in game.managedClubPendingLineup', () => {
     const game = makeGame()
     const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')

@@ -883,7 +883,17 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   // fixture/arc-basen — safety-taket höjs 7→9 för att rymma dem, snarare än
   // att låta dem konkurrera ut en trivial storseger om basen redan är full.
   const ledgerKeyMoments = computeLedgerKeyMoments(game, [...baseKeyMoments, ...arcMoments])
+  const seenMomentRows = new Set<string>()
   const allMoments = [...baseKeyMoments, ...arcMoments, ...ledgerKeyMoments]
+    .filter(moment => {
+      // Samma storyline kan nå sammanslagningen via fler beständiga källor.
+      // Exakt samma rubrik samma matchday är en och samma årsboksrad; andra
+      // händelser samma dag bevaras.
+      const key = `${moment.round}:${moment.headline.trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv-SE')}`
+      if (seenMomentRows.has(key)) return false
+      seenMomentRows.add(key)
+      return true
+    })
     .sort((a, b) => a.round - b.round)
   const keyMoments = allMoments.slice(0, 9)
 

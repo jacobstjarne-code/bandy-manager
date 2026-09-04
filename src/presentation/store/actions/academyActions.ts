@@ -378,7 +378,15 @@ export function academyActions(get: Get, set: Set) {
         .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
       const mentorship = { seniorPlayerId, youthPlayerId, startRound: currentRound, isActive: true }
-      const historyRecord: MentorshipRecord = { seniorPlayerId, youthPlayerId, startRound: currentRound }
+      const youthPlayer = game.youthTeam?.players.find(p => p.id === youthPlayerId)
+        ?? game.players.find(p => p.id === youthPlayerId)
+      const historyRecord: MentorshipRecord = {
+        seniorPlayerId,
+        youthPlayerId,
+        seniorName: `${seniorPlayer.firstName} ${seniorPlayer.lastName}`,
+        youthName: youthPlayer ? `${youthPlayer.firstName} ${youthPlayer.lastName}` : undefined,
+        startRound: currentRound,
+      }
       set({ game: { ...game,
         mentorships: [...(game.mentorships ?? []), mentorship],
         mentorshipHistory: [...(game.mentorshipHistory ?? []), historyRecord],
@@ -420,6 +428,7 @@ export function academyActions(get: Get, set: Set) {
         destinationClubName,
         startRound: currentRound,
         endRound: currentRound + rounds,
+        remainingRounds: rounds,
         salaryShare: 0.5,
         matchesPlayed: 0,
         totalMatches: rounds,

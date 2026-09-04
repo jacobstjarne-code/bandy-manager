@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getPromotionTiming, simulateYouthMatch, generateYouthTeam } from '../academyService'
+import { carryOverYouthTeam, getPromotionTiming, simulateYouthMatch, generateYouthTeam } from '../academyService'
 import { mulberry32 } from '../../utils/random'
 import type { Club } from '../../entities/Club'
 import type { YouthTeam } from '../../entities/Academy'
@@ -59,5 +59,24 @@ describe('simulateYouthMatch — roundsReadyForPromotion', () => {
     const tracked = result.updatedPlayers[0]
     expect(tracked.readyForPromotion).toBe(false)
     expect(tracked.roundsReadyForPromotion).toBe(0)
+  })
+})
+
+describe('carryOverYouthTeam — readiness över sommaren', () => {
+  it('räknar om readiness med samma regel och bevarar en giltig readiness-svit', () => {
+    const base = generateYouthTeam(club, 'developing', 2025, 7)
+    const trackedId = base.players[0].id
+    const team: YouthTeam = {
+      ...base,
+      players: base.players.map((p, i) => i === 0
+        ? { ...p, age: 17, currentAbility: 26, potentialAbility: 60, confidence: 70, readyForPromotion: true, roundsReadyForPromotion: 4 }
+        : p),
+    }
+
+    const carried = carryOverYouthTeam(team, club, 'developing', 2026, 8)
+    const tracked = carried.players.find(p => p.id === trackedId)!
+
+    expect(tracked.readyForPromotion).toBe(true)
+    expect(tracked.roundsReadyForPromotion).toBe(4)
   })
 })

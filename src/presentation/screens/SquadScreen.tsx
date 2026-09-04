@@ -27,6 +27,7 @@ import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
+import { getLoanRoundsRemaining } from '../../domain/services/loanService'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 import { getBurnoutTacticSuppression, suppressTacticRecommendation, burnoutEffectSeed } from '../../domain/services/burnoutReliefService'
 import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
@@ -882,8 +883,7 @@ export function SquadScreen() {
             {(game?.loanDeals ?? []).map((deal: LoanDeal) => {
               const player = game?.players.find(p => p.id === deal.playerId)
               if (!player) return null
-              const currentMatchday = game?.currentMatchday ?? 0
-              const roundsLeft = (deal.endRound ?? currentMatchday) - currentMatchday
+              const roundsLeft = getLoanRoundsRemaining(deal)
               return (
                 <div key={deal.playerId} className="card-sharp" style={{
                   padding: '10px 14px', marginBottom: 8,

@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/gameStore'
 import { positionShort, positionLong, formatSalary } from '../../utils/formatters'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
+import { isPlayerInMatchSquad } from '../../../domain/services/matchSquadService'
 
 /**
  * CODE_ORDER_NODTRUPP — soft-lock-skydd: visas FÖRE lineup när managed klubb har
@@ -29,7 +30,10 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
   const signFreeAgent = useGameStore(s => s.signFreeAgent)
   const concedeWalkover = useGameStore(s => s.concedeWalkover)
 
-  const squad = game.players.filter(p => p.clubId === game.managedClubId)
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const squad = managedClub
+    ? game.players.filter(p => isPlayerInMatchSquad(p, managedClub))
+    : []
   const injured = squad.filter(p => p.isInjured).length
   const suspended = squad.filter(p => p.suspensionGamesRemaining > 0).length
   // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): en tredje, skild orsak till
@@ -54,7 +58,6 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
     .slice(0, 6)
 
   const deadEnd = youth.length === 0 && freeAgents.length === 0
-  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const leagueAverages = computeLeaguePositionAverages(game)
 
   function emergencySalary(player: (typeof freeAgents)[number]): number {

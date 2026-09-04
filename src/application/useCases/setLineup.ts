@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { TeamSelection } from '../../domain/entities/Fixture'
+import { isPlayerInMatchSquad } from '../../domain/services/matchSquadService'
 
 export interface SetLineupInput {
   game: SaveGame
@@ -25,8 +26,17 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
     }
   }
 
-  // 2. Validate each starter
-  for (const playerId of startingPlayerIds) {
+  const club = game.clubs.find(c => c.id === clubId)
+  if (!club) {
+    return {
+      success: false,
+      error: `Klubb ${clubId} hittades inte.`,
+    }
+  }
+
+  // 2. Validate every selected player. Bänken är lika mycket del av den
+  // sparade matchtruppen som startelvan och får inte bära en utlånad spelare.
+  for (const playerId of [...startingPlayerIds, ...benchPlayerIds]) {
     const player = game.players.find(p => p.id === playerId)
 
     if (!player) {
@@ -36,11 +46,14 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
       }
     }
 
-    // Check club membership
-    if (player.clubId !== clubId) {
+    // Ägarskap räcker inte: spelaren måste också vara registrerad i den
+    // aktuella matchtruppen och inte vara utlånad.
+    if (!isPlayerInMatchSquad(player, club)) {
       return {
         success: false,
-        error: `Spelare ${playerId} tillhör inte klubben.`,
+        error: player.clubId !== clubId
+          ? `Spelare ${playerId} tillhör inte klubben.`
+          : `${player.firstName} ${player.lastName} ingår inte i den tillgängliga matchtruppen.`,
       }
     }
 
@@ -69,14 +82,6 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
         success: false,
         error: `${player.firstName} ${player.lastName} vilar efter förra matchen.`,
       }
-    }
-  }
-
-  const club = game.clubs.find(c => c.id === clubId)
-  if (!club) {
-    return {
-      success: false,
-      error: `Klubb ${clubId} hittades inte.`,
     }
   }
 

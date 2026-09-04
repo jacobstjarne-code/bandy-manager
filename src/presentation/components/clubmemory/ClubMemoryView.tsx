@@ -55,9 +55,12 @@ export function buildBlodslinje(game: SaveGame): SpineItem[] {
     const seniorPlayer = game.players.find(p => p.id === record.seniorPlayerId)
     const seniorName = seniorPlayer
       ? `${seniorPlayer.firstName} ${seniorPlayer.lastName}`
-      : seniorLegend?.name ?? 'Okänd'
+      : seniorLegend?.name ?? record.seniorName ?? 'Okänd'
     const juniorPlayer = game.players.find(p => p.id === record.youthPlayerId)
-    const juniorName = juniorPlayer ? `${juniorPlayer.firstName} ${juniorPlayer.lastName}` : null
+      ?? game.youthTeam?.players.find(p => p.id === record.youthPlayerId)
+    const juniorName = juniorPlayer
+      ? `${juniorPlayer.firstName} ${juniorPlayer.lastName}`
+      : record.youthName ?? null
     if (!juniorName) continue
     const label = seniorName
     const text = record.outcome === 'graduated'

@@ -3,6 +3,43 @@ import { createNewGame } from '../../createNewGame'
 import { processLoans } from '../transferProcessor'
 
 describe('processLoans — lånets omgångskontrakt', () => {
+  it('ett kalenderhopp 0→4 förbrukar ett av fyra tillfällen, inte hela lånet', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    game = {
+      ...game,
+      players: game.players.map(p => p.id === player.id ? { ...p, isOnLoan: true, loanClubName: 'Testklubben' } : p),
+      clubs: game.clubs.map(c => c.id === game.managedClubId
+        ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== player.id) }
+        : c),
+      loanDeals: [{
+        playerId: player.id,
+        destinationClubName: 'Testklubben',
+        startRound: 0,
+        endRound: 4,
+        remainingRounds: 4,
+        salaryShare: 0.5,
+        matchesPlayed: 0,
+        totalMatches: 4,
+        averageRating: 0,
+        reports: [],
+      }],
+    }
+
+    for (const matchday of [4, 5, 6]) {
+      const result = processLoans(game, game.players, game.clubs, matchday, `2026-01-${matchday}`, () => 0.9)
+      game = { ...game, players: result.loanUpdatedPlayers, clubs: result.updatedClubs, loanDeals: result.updatedLoanDeals }
+    }
+
+    expect(game.loanDeals).toHaveLength(1)
+    expect(game.loanDeals[0].reports).toHaveLength(3)
+    expect(game.loanDeals[0].remainingRounds).toBe(1)
+
+    const result = processLoans(game, game.players, game.clubs, 7, '2026-01-07', () => 0.9)
+    expect(result.updatedLoanDeals).toHaveLength(0)
+    expect(result.updatedClubs.find(c => c.id === game.managedClubId)!.squadPlayerIds).toContain(player.id)
+  })
+
   it('ett fyraronderslån ger fyra möjliga matcher och räknar slutronden före retur', () => {
     let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
     const player = game.players.find(p => p.clubId === game.managedClubId)!
@@ -18,6 +55,7 @@ describe('processLoans — lånets omgångskontrakt', () => {
         destinationClubName: 'Testklubben',
         startRound: 0,
         endRound: 4,
+        remainingRounds: 4,
         salaryShare: 0.5,
         matchesPlayed: 0,
         totalMatches: 4,
@@ -64,6 +102,7 @@ describe('processLoans — lånets omgångskontrakt', () => {
         destinationClubName: 'Testklubben',
         startRound: 9,
         endRound: 17,
+        remainingRounds: 8,
         salaryShare: 0.5,
         matchesPlayed: 0,
         totalMatches: 8,

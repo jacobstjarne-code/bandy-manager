@@ -33,6 +33,13 @@ export function getPromotionTiming(
   return 'good'
 }
 
+/** Samma readiness-villkor används i P19-simulering och över sommaren. */
+export function isYouthReadyForPromotion(
+  player: Pick<YouthPlayer, 'currentAbility' | 'confidence'>,
+): boolean {
+  return player.currentAbility >= 25 && player.confidence >= 50
+}
+
 
 function archetypeForPosition(pos: PlayerPosition, rand: () => number): PlayerArchetype {
   const r = rand()
@@ -136,18 +143,26 @@ export function carryOverYouthTeam(
 
   // Age up — keep everyone under 20, including readyForPromotion (PT-4)
   const retained: YouthPlayer[] = existingTeam.players
-    .map(p => ({
-      ...p,
-      age: p.age + 1,
-      // Small CA boost each year (development)
-      currentAbility: Math.min(p.potentialAbility, p.currentAbility + Math.round(p.developmentRate / 20)),
-      // Reset season stats
-      seasonGoals: 0,
-      seasonAssists: 0,
-      readyForPromotion: false,
-      roundsReadyForPromotion: 0,
-      schoolConflict: (p.age + 1) <= 17 ? rand() < 0.40 : false,
-    }))
+    .map(p => {
+      const currentAbility = Math.min(
+        p.potentialAbility,
+        p.currentAbility + Math.round(p.developmentRate / 20),
+      )
+      const readyForPromotion = isYouthReadyForPromotion({ currentAbility, confidence: p.confidence })
+      return {
+        ...p,
+        age: p.age + 1,
+        // Small CA boost each year (development)
+        currentAbility,
+        // Reset season stats, but preserve the readiness state derived from
+        // the same thresholds as ordinary P19 progression.
+        seasonGoals: 0,
+        seasonAssists: 0,
+        readyForPromotion,
+        roundsReadyForPromotion: readyForPromotion ? (p.roundsReadyForPromotion ?? 0) : 0,
+        schoolConflict: (p.age + 1) <= 17 ? rand() < 0.40 : false,
+      }
+    })
     .filter(p => p.age < 20)  // 20+ must leave (aged out)
 
   // Fill up to target with new 15-year-olds
@@ -278,7 +293,7 @@ export function simulateYouthMatch(
     const devGain = (p.developmentRate / 100) * 0.3 * (won ? 1.1 : drew ? 1.0 : 0.9)
     const newCA = clamp(p.currentAbility + devGain, p.currentAbility, p.potentialAbility * 0.95)
 
-    const readyForPromotion = newCA >= 25 && newConf >= 50
+    const readyForPromotion = isYouthReadyForPromotion({ currentAbility: newCA, confidence: newConf })
     // PÅSTÅENDEKARTAN SANNINGEN-SAKNAS-fix (2026-08-25, Jacobs dom: "bygg
     // räknaren"): tickar en P19-omgång i taget (samma kadens som denna
     // funktion anropas i), nollställs om readyForPromotion faller tillbaka.

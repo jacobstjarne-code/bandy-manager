@@ -524,6 +524,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // gamla raden satte bara tomt om saknat och skulle annars köras FÖRE
   // flytten och kollidera med den.
   if (data.loanDeals === undefined) data.loanDeals = []
+  if (Array.isArray(data.loanDeals)) {
+    data.loanDeals = (data.loanDeals as Record<string, unknown>[]).map(deal => {
+      if (typeof deal.remainingRounds === 'number') return deal
+      const totalMatches = typeof deal.totalMatches === 'number' ? deal.totalMatches : 0
+      const reports = Array.isArray(deal.reports) ? deal.reports.length : 0
+      return { ...deal, remainingRounds: Math.max(0, totalMatches - reports) }
+    })
+  }
   if (data.talentSearchResults === undefined) data.talentSearchResults = []
   if (data.youthIntakeHistory === undefined) data.youthIntakeHistory = []
   if (data.transferState === undefined) data.transferState = { freeAgents: [], pendingOffers: [] }
