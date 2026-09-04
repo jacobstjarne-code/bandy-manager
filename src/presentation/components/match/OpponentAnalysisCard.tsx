@@ -9,6 +9,7 @@ import { positionShort } from '../../utils/formatters'
 import type { PlayerPosition } from '../../../domain/enums'
 import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { BURNOUT_OPPONENT_READ, pickBurnoutOpponentReadIndex } from '../../../domain/services/burnoutReliefService'
+import { CLUB_EXTENDED_INFO } from '../../../domain/data/clubExtendedInfo'
 // ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
@@ -66,6 +67,25 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           </div>
         ) : null}
       </div>
+
+      {/* sluttest-b3-ui-yta (B3, BANDYSPRAK_KALLASNING_2026-08-19.md): spela/åka-
+          axeln — orten ska kännas VARJE match, inte bara vid fördjupning, därför
+          utanför displayAnalysis-nivåerna. TEXT LÅST (Opus), kopierat ordagrant.
+          Bortamatch (opponent spelar hemma) lägger till arenaNote som andra mening,
+          redan låst Opus-text i clubExtendedInfo. */}
+      {(() => {
+        const extendedInfo = CLUB_EXTENDED_INFO[opponent.id]
+        if (!extendedInfo?.playStyleTradition) return null
+        const opponentIsHome = fixture.homeClubId === opponent.id
+        const playStyleLine = extendedInfo.playStyleTradition === 'spelande'
+          ? `${opponent.name} spelar — passningarna kommer först, åkningen sen. Låt dem inte hitta rytmen.`
+          : `${opponent.name} åker — de tar bollen framåt med benen. Håll zonen tät och låt dem åka in i den.`
+        return (
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.4 }}>
+            {playStyleLine}{opponentIsHome && ` ${extendedInfo.arenaNote}`}
+          </p>
+        )
+      })()}
 
       {/* Analysis section */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
