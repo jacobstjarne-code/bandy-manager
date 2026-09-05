@@ -57,6 +57,11 @@ export type GameEventType =
   // återhämtningsväg, kostar tålamod+kontroll) / 'push_through' (inget pris
   // nu, risken är permanens). Bägge lämnar ett ärr (D) i managerProfile.diary.
   | 'burnoutCeiling'
+  // SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8) §3C — jobbgarantins bakgrundsrisk:
+  // sponsorn/patronen bakom en bunden jobbgaranti lämnar, spelaren står utan
+  // jobbet klubben lovade. Se contractNegotiationService.ts (jobGuarantee-termen)
+  // och sponsorProcessor.ts/patronWithdrawalService.ts (triggerpunkterna).
+  | 'jobbet_forsvann'
 
 /**
  * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
@@ -187,6 +192,19 @@ export interface EventEffect {
     | 'renewCommunityActivity'
     | 'lockKioskSupplyContract'
     | 'signBusContract'
+    // C-T8 §6 jobbet_forsvann, valet "Höj lönen" — läser targetPlayerId +
+    // amount (kr/mån-delta, samma konvention som boostMorale). Ingen befintlig
+    // effekt höjer bara lönen utan att också röra kontraktslängd/moral
+    // (extendContract gör båda) — därför en egen, smal typ.
+    | 'raisePlayerSalary'
+    // C-T8 §6, valet "Vi hittar något" — läser targetPlayerId. Söker en ny
+    // kapabel sponsor/patron (getJobGuaranteeCapableSponsorIds) ÅT SPELAREN;
+    // hittas en rebinds jobGuaranteeSponsorId dit och kapaciteten konsumeras,
+    // annars nollställs jobGuaranteeSponsorId. Morale −15 alltid (spec §6),
+    // oavsett utfall. Förenkling mot specen: sökningen sker DIREKT vid
+    // resolution, inte "nästa omgång" — se MASTER_OPPET.md för den flaggade
+    // skillnaden (ingen retry-loop om ingen kapacitet finns just nu).
+    | 'jobGuaranteeReseek'
   value?: number
   refereeId?: string
   amount?: number

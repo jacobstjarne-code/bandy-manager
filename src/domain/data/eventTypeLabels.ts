@@ -82,6 +82,9 @@ export const EVENT_TYPE_LABELS: Record<GameEventType, EventTypeLabel> = {
   criticalEconomy:      { icon: '💰', label: 'Ekonomi' },
   mecenatDinner:        { icon: '🤝', label: 'Mecenat' },
   riskySponsorOffer:    { icon: '💼', label: 'Sponsor' },
+  // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) — jobbgaranti-termens
+  // sponsor/patron-avgångskonsekvens.
+  jobbet_forsvann:      { icon: '💼', label: 'Sponsor' },
   mecenatWithdrawal:    { icon: '🤝', label: 'Mecenat' },
   patronWithdrawal:     { icon: '🤝', label: 'Mecenat' },
   fanLetter:            { icon: '✉️', label: 'Insändare' },

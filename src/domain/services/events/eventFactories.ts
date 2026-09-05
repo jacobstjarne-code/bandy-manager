@@ -5,6 +5,7 @@ import type { Mecenat } from '../../entities/Mecenat'
 import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
 import { formatValue, formatSalary, formatContractRemaining } from '../../format'
 import { getSeasonDeadlineMatchday } from '../decisionTierService'
+import { JOBBET_FORSVANN_TEXT } from '../../data/contractTermText'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
 export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
@@ -706,6 +707,52 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
     title: chosen.title,
     body: chosen.body,
     choices: chosen.choices,
+    resolved: false,
+  }
+}
+
+/**
+ * SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8) §3C/§6 — jobbet_forsvann. Byggs
+ * vid två triggerpunkter (sponsorProcessor.ts vid sponsoravgång,
+ * patronWithdrawalService.ts vid patronavgång) för varje spelare vars
+ * `jobGuaranteeSponsorId` pekar på den avgående sponsorn/patronen.
+ *
+ * Återfall (§7): identifieras via resolvedEventIds-prefixet — samma spelare
+ * har fått ett jobbet_forsvann-kort tidigare. Den fulla liggarvarianten
+ * (transfer_story `job_lost` med semanticKeyStem) är EN AV DE FLAGGADE
+ * §7-gapen (se MASTER_OPPET.md, c-t8-jobbgaranti) — subject2 saknar en
+ * 'sponsor'-kind, så återfallet detekteras här mot resolvedEventIds i
+ * stället för mot liggaren.
+ */
+export function jobbetForsvannEvent(player: Player, sponsorName: string, game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'resolvedEventIds'>): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  const isRelapse = (game.resolvedEventIds ?? []).some(id => id.startsWith(`jobbet_forsvann_${player.id}_`))
+  return {
+    id: `jobbet_forsvann_${player.id}_${game.currentSeason}_${game.currentMatchday ?? 0}`,
+    type: 'jobbet_forsvann',
+    title: JOBBET_FORSVANN_TEXT.title(playerName),
+    body: (isRelapse ? JOBBET_FORSVANN_TEXT.relapsePrefix : '') + JOBBET_FORSVANN_TEXT.body(sponsorName, playerName),
+    choices: [
+      {
+        id: 'raiseSalary',
+        label: JOBBET_FORSVANN_TEXT.choices.raiseSalary.label,
+        subtitle: JOBBET_FORSVANN_TEXT.choices.raiseSalary.subtitle,
+        effect: { type: 'raisePlayerSalary', targetPlayerId: player.id, amount: 4000 },
+      },
+      {
+        id: 'findAnother',
+        label: JOBBET_FORSVANN_TEXT.choices.findAnother.label,
+        subtitle: JOBBET_FORSVANN_TEXT.choices.findAnother.subtitle,
+        effect: { type: 'jobGuaranteeReseek', targetPlayerId: player.id },
+      },
+      {
+        id: 'honest',
+        label: JOBBET_FORSVANN_TEXT.choices.honest.label,
+        subtitle: JOBBET_FORSVANN_TEXT.choices.honest.subtitle,
+        effect: { type: 'boostMorale', targetPlayerId: player.id, value: -25 },
+      },
+    ],
+    relatedPlayerId: player.id,
     resolved: false,
   }
 }

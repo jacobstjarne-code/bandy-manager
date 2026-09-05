@@ -4,6 +4,14 @@ import type { Player } from '../../../domain/entities/Player'
 import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
 import { formatValue } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
+import {
+  getRequiredContractSalary,
+  HOUSING_CLUB_COST_MONTHLY_KR,
+  type ContractTermKey,
+  type ContractTermOffer,
+} from '../../../domain/services/contractNegotiationService'
+import { contractTermSummaryText } from '../../../domain/data/contractTermText'
+import { ContractTermChips } from './ContractTermChips'
 import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -12,14 +20,25 @@ interface BidModalProps {
   player: Player
   managedClub: { transferBudget: number; finances: number }
   onClose: () => void
-  onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => void
+  onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number, terms: ContractTermOffer) => void
   rivalry?: { name: string; intensity: number } | null
   mode?: 'transfer' | 'freeAgent'
   salaryRange?: { min: number; max: number }
   availableTransferBudget?: number
+  // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §5 — bara friagent-läget: bud
+  // på en annan klubbs spelare (transfer) rör sig genom playerAcceptsTransfer,
+  // en helt separat mekanik som inte konsulterar termer, se
+  // contractNegotiationService.ts.
+  availableTerms?: ContractTermKey[]
+  jobGuaranteeSponsor?: { id: string; name: string }
+  imageRightsSponsor?: { id: string; name: string }
+  minSalary?: number
 }
 
-export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget }: BidModalProps) {
+export function BidModal({
+  player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget,
+  availableTerms = [], jobGuaranteeSponsor, imageRightsSponsor, minSalary,
+}: BidModalProps) {
   const isFreeAgent = mode === 'freeAgent'
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
   const [offerAmount, setOfferAmount] = useState(isFreeAgent ? 0 : suggestedBid)
@@ -27,8 +46,10 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
     isFreeAgent && salaryRange ? salaryRange.max : Math.round(player.salary / 500) * 500,
   )
   const [contractYears, setContractYears] = useState(3)
+  const [terms, setTerms] = useState<ContractTermOffer>({})
   const availableBudget = availableTransferBudget ?? managedClub.transferBudget
   const canAfford = isFreeAgent || (availableBudget >= offerAmount && managedClub.finances - offerAmount >= -100000)
+  const requiredSalary = isFreeAgent && minSalary !== undefined ? getRequiredContractSalary(player, minSalary, contractYears) : 0
 
   return (
     <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
@@ -81,6 +102,21 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
                 ))}
               </div>
             </div>
+            {isFreeAgent && (
+              <>
+                <ContractTermChips
+                  availableTerms={availableTerms}
+                  terms={terms}
+                  onChange={setTerms}
+                  requiredSalary={requiredSalary}
+                  jobGuaranteeSponsor={jobGuaranteeSponsor}
+                  imageRightsSponsor={imageRightsSponsor}
+                />
+                <p className="transfers-term-summary">
+                  {contractTermSummaryText(offeredSalary, terms.housing ? HOUSING_CLUB_COST_MONTHLY_KR : 0, terms.signOnKr ?? 0)}
+                </p>
+              </>
+            )}
             {!isFreeAgent && rivalry && (
               <div className="transfers-rivalry-warning">
                 {(() => {
@@ -94,7 +130,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry, mod
           </div>
         </div>
         <button
-          onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
+          onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears, terms)}
           disabled={!canAfford}
           className="mf-stamp"
         >

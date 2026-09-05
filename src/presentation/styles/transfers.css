@@ -985,3 +985,46 @@
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+
+/* ── C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §5 — Villkor-chips ── */
+.transfers-term-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.transfers-term-chip {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.transfers-term-subtext {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.transfers-term-stepper {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.transfers-term-stepper-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.transfers-term-summary {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}

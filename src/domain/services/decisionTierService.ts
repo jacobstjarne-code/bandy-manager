@@ -91,6 +91,9 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   economicStress: 'month',
   criticalEconomy: 'month',
   varsel: 'month',
+  // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) — verklig ekonomisk/moralisk
+  // konsekvens av en sponsor-/patronavgång, samma klass som varsel ovan.
+  jobbet_forsvann: 'month',
   // Trupp/kontraktsekonomi med verklig konsekvens (inte kulör)
   transferBidReceived: 'month',
   bidWar: 'month',
@@ -176,6 +179,9 @@ export const DECISION_MODE_BY_TYPE: Record<GameEventType, DecisionMode> = {
   patronWithdrawal: 'brytpunkt',
   retirementCeremony: 'brytpunkt',
   burnoutCeiling: 'brytpunkt',
+  // C-T8 — en bunden jobbgaranti försvinner, samma vändande vikt som
+  // mecenat/patronWithdrawal ovan.
+  jobbet_forsvann: 'brytpunkt',
 
   // dilemma
   contractRequest: 'dilemma',

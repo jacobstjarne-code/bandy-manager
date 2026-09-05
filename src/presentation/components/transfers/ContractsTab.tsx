@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { X, ArrowRight, TriangleAlert } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
+import { getAvailableContractTerms, resolveContractTermSponsors } from '../../../domain/services/contractNegotiationService'
+import type { ContractTermOffer } from '../../../domain/services/contractNegotiationService'
 import { positionShort, formatValue, formatSalary, formatContractUntil } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
@@ -46,7 +48,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
     .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
   const renewingPlayer = renewingPlayerId ? game.players.find(p => p.id === renewingPlayerId) ?? null : null
 
-  function handleRenew(playerId: string, newSalary: number, years: number) {
+  function handleRenew(playerId: string, newSalary: number, years: number, terms: ContractTermOffer) {
     if (!game) return
     const club = game.clubs.find(c => c.id === game.managedClubId)
     if (!club) return
@@ -61,7 +63,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
     const wouldExceed = weeklyEquiv > club.wageBudget
 
     const doRenew = () => {
-      const result = renewContract(playerId, newSalary, years)
+      const result = renewContract(playerId, newSalary, years, terms)
       if (!result.success) {
         setRenewError(result.error ?? 'Kunde inte förlänga kontraktet')
         return
@@ -71,7 +73,13 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
       }
       setRenewingPlayerId(null)
       setRenewError(null)
-      setRenewConfirmText(`Kontrakt förlängt till ${game.currentSeason + years}`)
+      // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §6 — en termaccept ersätter
+      // den generiska bekräftelsen, en rad per accepterad term.
+      setRenewConfirmText(
+        result.termMessages && result.termMessages.length > 0
+          ? result.termMessages.join(' ')
+          : `Kontrakt förlängt till ${game.currentSeason + years}`
+      )
       setTimeout(() => setRenewConfirmText(null), 2000)
     }
 
@@ -134,6 +142,8 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
         const club = game.clubs.find(c => c.id === game.managedClubId)
         const leagueAverages = computeLeaguePositionAverages(game)
         const minSalary = club ? computeContractMinSalary(renewingPlayer, club, leagueAverages) : 0
+        const availableTerms = club ? getAvailableContractTerms(game, club, renewingPlayer) : []
+        const { jobGuaranteeSponsor, imageRightsSponsor } = resolveContractTermSponsors(game)
         return (
           <RenewContractModal
             player={renewingPlayer}
@@ -142,6 +152,9 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
             error={renewError}
             onClose={() => { setRenewingPlayerId(null); setRenewError(null) }}
             onConfirm={handleRenew}
+            availableTerms={availableTerms}
+            jobGuaranteeSponsor={jobGuaranteeSponsor}
+            imageRightsSponsor={imageRightsSponsor}
           />
         )
       })()}

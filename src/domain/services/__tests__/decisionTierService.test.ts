@@ -60,6 +60,7 @@ const EXPECTED_TIER: Record<GameEventType, DecisionTier> = {
   hesitantPlayer: 'month',
   playerUnhappy: 'month',
   detOmojligaValet: 'month',
+  jobbet_forsvann: 'month',
   playoffEvent: 'month',
   burnoutRelief: 'month',
   // ANSPRÅK 4, spak 3: statiskt 'month'. Den villkorade måste-eskaleringen i
@@ -98,6 +99,7 @@ const EXPECTED_MODE: Record<GameEventType, DecisionMode> = {
   patronWithdrawal: 'brytpunkt',
   retirementCeremony: 'brytpunkt',
   burnoutCeiling: 'brytpunkt',
+  jobbet_forsvann: 'brytpunkt',
 
   contractRequest: 'dilemma',
   transferBidReceived: 'dilemma',

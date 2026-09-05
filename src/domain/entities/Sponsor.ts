@@ -23,4 +23,9 @@ export interface Sponsor {
   // en global konstant, annars visar meddelandet ett skalat tal men
   // betalar ut det gamla fasta beloppet.
   oneTimeAmount?: number
+  /** SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8) §3C — jobbgaranti-termens
+   *  sponsorkapacitet: max 2 bundna jobb per sponsor per säsong (patron har
+   *  egen kapacitet 3, se Patron.jobsUsedThisSeason). Nollställs vid
+   *  säsongsrollover (seasonEndProcessor.ts), inte vid sponsorbyte. */
+  jobsUsedThisSeason?: number
 }

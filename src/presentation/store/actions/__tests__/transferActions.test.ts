@@ -177,11 +177,16 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
 // funktion. berg: currentAbility 72, isFullTimePro (inget dayJob).
 describe('renewContract — O5 kraft 1, löneinflation med rykte', () => {
   it('avvisar en förlängning under golvet (rykte 60 → golv 12500)', () => {
+    // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04): motbudet föreslår nu en TERM
+    // (boende är alltid tillgängligt och stänger det här lilla gapet billigt
+    // för berg, som varken är isHomegrown eller har 'lokal'-traiten) istället
+    // för ett rent lönemotbud — det är den avsedda nya prioriteringsordningen
+    // i suggestCounterTerm, inte en regression av golv-testet.
     const store = makeStore(makeGame())
     const actions = transferActions(store.get, store.set)
     const result = actions.renewContract('berg', 12000, 2)
     expect(result.success).toBe(false)
-    expect((result as { error?: string }).error).toMatch(/vill ha minst/)
+    expect((result as { error?: string }).error).toMatch(/lägenhet/i)
   })
 
   it('accepterar ett tydligt premiumbud', () => {

@@ -1,16 +1,22 @@
 import type { SaveGame, InboxItem, Sponsor } from '../../../domain/entities/SaveGame'
 import type { Player } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { InboxItemType, TrainingType, TrainingIntensity } from '../../../domain/enums'
 import { mulberry32 } from '../../../domain/utils/random'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { isActiveLicenseWarning } from '../../../domain/services/licenseService'
+import { jobbetForsvannEvent } from '../../../domain/services/events/eventFactories'
 
 export interface SponsorProcessorResult {
   updatedSponsors: Sponsor[]
   inboxItems: InboxItem[]
+  /** C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §3C — jobbet_forsvann-kort för
+   *  varje spelare vars jobbgaranti var bunden till en sponsor som lämnade
+   *  denna omgång (naturlig utgång eller licensutlöst avhopp, se nedan). */
+  jobLossEvents: GameEvent[]
 }
 
 /**
@@ -34,10 +40,16 @@ export function processSponsors(
   options?: { skipSideEffects?: boolean },
 ): SponsorProcessorResult {
   if (options?.skipSideEffects) {
-    return { updatedSponsors: game.sponsors ?? [], inboxItems: [] }
+    return { updatedSponsors: game.sponsors ?? [], inboxItems: [], jobLossEvents: [] }
   }
   const inboxItems: InboxItem[] = []
   const v09Rand = mulberry32(baseSeed + 999777)
+
+  // C-T8 §3C — sponsorer aktiva VID START av denna omgång, för att avgöra
+  // exakt vilka som faktiskt lämnar (oavsett vilken av de tre nedanstående
+  // vägarna som orsakar det), inte bara den naturliga utgångens delmängd.
+  const activeSponsorIdsAtStart = new Set((game.sponsors ?? []).filter(s => s.contractRounds > 0).map(s => s.id))
+  const sponsorNamesById = new Map((game.sponsors ?? []).map(s => [s.id, s.name]))
 
   // ── Sponsor chain effects ──────────────────────────────────────────────────
   let v09Sponsors = (game.sponsors ?? []).map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
@@ -109,6 +121,20 @@ export function processSponsors(
   }
 
   const updatedSponsors = v09Sponsors.filter(s => s.contractRounds > 0)
+
+  // C-T8 §3C/§6 — jobbet_forsvann. Genereras för varje spelare vars bundna
+  // jobbgaranti pekade på en sponsor som just gick från aktiv till borta,
+  // oavsett vilken av vägarna ovan (naturlig utgång eller licensavhopp) som
+  // orsakade det.
+  const stillActiveSponsorIds = new Set(updatedSponsors.map(s => s.id))
+  const departedSponsorIds = [...activeSponsorIdsAtStart].filter(id => !stillActiveSponsorIds.has(id))
+  const jobLossEvents: GameEvent[] = []
+  for (const sponsorId of departedSponsorIds) {
+    const sponsorName = sponsorNamesById.get(sponsorId) ?? 'sponsorn'
+    for (const player of finalPlayers.filter(p => p.jobGuaranteeSponsorId === sponsorId)) {
+      jobLossEvents.push(jobbetForsvannEvent(player, sponsorName, game))
+    }
+  }
 
   // ── Patron influence inbox ─────────────────────────────────────────────────
   const v09Patron = game.patron
@@ -218,7 +244,7 @@ export function processSponsors(
     }
   }
 
-  return { updatedSponsors, inboxItems }
+  return { updatedSponsors, inboxItems, jobLossEvents }
 }
 
 const RISKY_SPONSOR_MATURATION_CHANCE = 0.25

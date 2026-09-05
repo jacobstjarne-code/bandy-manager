@@ -472,6 +472,7 @@ export function processGameEvents(
         } : undefined
         patronWithdrawnSeason = transition.patronWithdrawnSeason
         if (transition.withdrawalEvent) gameEvents.push(transition.withdrawalEvent)
+        if (transition.jobLossEvents) gameEvents.push(...transition.jobLossEvents)
         patronLedgerEntry = transition.ledgerEntry
       }
     } else if (localRand() < 0.2) {

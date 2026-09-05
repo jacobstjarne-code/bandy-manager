@@ -82,6 +82,19 @@ export interface Player {
   salary: number
   contractUntilSeason: number
   marketValue: number
+  /**
+   * SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8) — förhandlingens fyra termer,
+   * bundna till KONTRAKTET (inte kontraktsförhandlingens engångsval).
+   * `housingProvided`/`jobGuaranteeSponsorId`/`imageRightsSponsorId` upphör
+   * när spelaren släpps/säljs eller (jobb/ansikte) när sponsorn bakom lämnar
+   * — se `jobbet_forsvann`-eventet (contractTermConsequences.ts) för jobbets
+   * uttåg. `signOnKr` är historisk (engångsbelopp redan utbetalt), bärs kvar
+   * bara för årsbokens generiska sats ("{bonus} nu").
+   */
+  signOnKr?: number
+  housingProvided?: boolean
+  jobGuaranteeSponsorId?: string
+  imageRightsSponsorId?: string
 
   morale: number       // 0-100
   form: number         // 0-100

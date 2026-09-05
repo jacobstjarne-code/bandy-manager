@@ -32,6 +32,7 @@ import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilit
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
 import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../domain/services/seasonDecisionCaptureService'
 import { logEvent } from '../../domain/services/eventLedgerService'
+import type { ContractTermOffer } from '../../domain/services/contractNegotiationService'
 
 import { matchActions } from './actions/matchActions'
 import { trainingActions } from './actions/trainingActions'
@@ -141,8 +142,8 @@ interface GameState {
   toggleScoutShortlist: (playerId: string) => void
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   respondToOutgoingBid: (bidId: string, choiceId: 'raise' | 'withdraw') => { success: boolean; error?: string }
-  renewContract: (playerId: string, newSalary: number, years: number) => { success: boolean; error?: string; wageWarning?: number }
-  signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number) => { success: boolean; error?: string; wageWarning?: number }
+  renewContract: (playerId: string, newSalary: number, years: number, terms?: ContractTermOffer) => { success: boolean; error?: string; wageWarning?: number; termMessages?: string[] }
+  signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number, terms?: ContractTermOffer) => { success: boolean; error?: string; wageWarning?: number; termMessages?: string[] }
   listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
   respondToIncomingBid: (bidId: string, choiceId: string) => { success: boolean; error?: string }
   // HIGH 6 (Jacobs körorder 2026-08-31): madeByPlayer obligatorisk, ingen

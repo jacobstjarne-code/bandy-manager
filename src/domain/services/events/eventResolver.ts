@@ -23,6 +23,7 @@ import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
 import { appendNewlyResolvedStorylines } from '../storylineLedgerService'
 import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
+import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -151,12 +152,16 @@ function appendBurnoutDecisionLedgerEntry(
  */
 function applyPatronHappiness(game: SaveGame, amount: number): SaveGame {
   const transition = applyPatronHappinessTransition(game, amount)
+  const newEvents = [
+    ...(transition.withdrawalEvent ? [transition.withdrawalEvent] : []),
+    ...(transition.jobLossEvents ?? []),
+  ]
   return {
     ...game,
     patron: transition.patron,
     patronWithdrawnSeason: transition.patronWithdrawnSeason,
-    pendingEvents: transition.withdrawalEvent
-      ? [...(game.pendingEvents ?? []), transition.withdrawalEvent]
+    pendingEvents: newEvents.length > 0
+      ? [...(game.pendingEvents ?? []), ...newEvents]
       : game.pendingEvents,
     // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, uttågshalvan.
     eventLedger: transition.ledgerEntry ? logEvent(game, transition.ledgerEntry) : game.eventLedger,
@@ -571,6 +576,44 @@ export function resolveEvent(
         players: updatedGame.players.map(p =>
           p.id === pid ? { ...p, morale: Math.max(0, Math.min(100, p.morale + (effect.value ?? 5))) } : p,
         ),
+      }
+      break
+    }
+    // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §6 jobbet_forsvann, valet
+    // "Höj lönen" — ren löneraise, medvetet utan extendContract-effekterna
+    // (kontraktslängd/morale) som inte hör hemma i det här valet.
+    case 'raisePlayerSalary': {
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'raisePlayerSalary' saknar obligatoriskt fält targetPlayerId")
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid ? { ...p, salary: p.salary + (effect.amount ?? 0) } : p,
+        ),
+      }
+      break
+    }
+    // C-T8 §6, valet "Vi hittar något" — morale −15 alltid (spec), plus ett
+    // omedelbart (inte "nästa omgång", se GameEvent.ts:s kommentar på typen)
+    // försök att rebinda jobbgarantin till en annan kapabel sponsor/patron.
+    case 'jobGuaranteeReseek': {
+      const pid = effect.targetPlayerId
+      if (!pid) throw new Error("effect 'jobGuaranteeReseek' saknar obligatoriskt fält targetPlayerId")
+      const capableIds = getJobGuaranteeCapableSponsorIds(updatedGame)
+      const newSponsorId = capableIds[0]
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === pid
+            ? { ...p, jobGuaranteeSponsorId: newSponsorId, morale: Math.max(0, Math.min(100, p.morale - 15)) }
+            : p,
+        ),
+        sponsors: newSponsorId && updatedGame.patron?.id !== newSponsorId
+          ? (updatedGame.sponsors ?? []).map(s => s.id === newSponsorId ? { ...s, jobsUsedThisSeason: (s.jobsUsedThisSeason ?? 0) + 1 } : s)
+          : updatedGame.sponsors,
+        patron: newSponsorId && updatedGame.patron?.id === newSponsorId
+          ? { ...updatedGame.patron, jobsUsedThisSeason: (updatedGame.patron.jobsUsedThisSeason ?? 0) + 1 }
+          : updatedGame.patron,
       }
       break
     }

@@ -166,6 +166,9 @@ export const GAME_EVENT_TYPE_IDS = [
   'communityActivityRenewal',
   // DOM_BURNOUT_TAK_2026-09-02 — samma "fyll direkt"-disciplin.
   'burnoutCeiling',
+  // SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8), 2026-09-05 — samma "fyll
+  // direkt"-disciplin som raderna ovan.
+  'jobbet_forsvann',
 ] as const
 
 const STORYLINE_TYPE_IDS = [
@@ -698,6 +701,19 @@ const FILLED_BURNOUT_TAK: Partial<Record<string, Omit<ContentContractEntry, 'id'
   },
 }
 
+const FILLED_C_T8: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
+  jobbet_forsvann: {
+    trigger: "Fyras för varje spelare vars player.jobGuaranteeSponsorId pekar på en sponsor/patron som DENNA omgång går från aktiv till borta. Två triggerpunkter, samma villkor (aktiv→borta): sponsorProcessor.ts (naturlig contractRounds-utgång ELLER licensutlöst omedelbart avhopp — departedSponsorIds beräknas som mängddifferensen mellan sponsorer aktiva vid omgångens start och updatedSponsors, oavsett vilken av de två vägarna som orsakade det) och patronWithdrawalService.ts:applyPatronHappinessTransition (happiness når exakt noll). jobGuaranteeSponsorId sätts ursprungligen av contractNegotiationService.ts:applyContractTerms när jobbgaranti-termen accepteras vid kontraktsskrivning (RenewContractModal/BidModal freeAgent, C-T8 §3C).",
+    stateEffect: "Tre val, konstruerade i eventFactories.ts:jobbetForsvannEvent. 'raiseSalary' → effekt raisePlayerSalary: player.salary +4000 kr/mån, ingen morale-ändring. 'findAnother' → effekt jobGuaranteeReseek: morale −15 ALLTID (spec §6), plus en sökning efter en ny kapabel sponsor/patron via getJobGuaranteeCapableSponsorIds(game) — hittas en rebinds jobGuaranteeSponsorId dit och dess jobsUsedThisSeason konsumeras, annars nollställs jobGuaranteeSponsorId helt (spelaren tappar jobbet). Medveten förenkling mot specen: sökningen sker DIREKT vid resolution, inte 'nästa omgång', och saknar specens retry ('annars upprepas frågan') om ingen kapacitet finns — flaggat i MASTER_OPPET.md (c-t8-jobbgaranti). 'honest' → effekt boostMorale: −25 morale på spelaren. Specens 'spelaren begär transfer nästa fönster' är INTE byggt — ingen transfer-request-mekanik existerar någonstans i kodbasen att koppla an till; flaggat, inte tystad.",
+    systems: ['player.salary/morale/jobGuaranteeSponsorId', 'sponsor-/patron-kapaciteten jobsUsedThisSeason (contractNegotiationService.ts)'],
+    lifespan: 'Engångs per faktisk sponsor-/patronavgång och bunden spelare. Samma spelare kan få kortet igen om en SENARE jobbgaranti (ny sponsor) i sin tur avgår — dedupliceras per unikt instans-id (spelare+säsong+omgång), inte spärrat mot upprepning över tid.',
+    semanticKey: 'jobbet_forsvann_{playerId}_{season}_{matchday}',
+    cooldownSeasons: 0,
+    recallSurface: "Kortet självt (EventOverlay/Granska). Efteråt: 'raiseSalary' syns i spelarens lön (Trupp/Ekonomi lönebudget), 'findAnother' syns i vilken sponsor/patron som nu bär jobbgarantin (ingen egen visningsyta utöver kontraktsdata än) eller att den är borta, 'honest' syns bara som en morale-nedgång. Ingen liggarpost skrivs — se notes.",
+    notes: "Byggd 2026-09-05, C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04). Återfall (§7, 'Andra jobbet han förlorat på ditt löfte') detekteras via resolvedEventIds-prefixet jobbet_forsvann_{playerId}_ i eventFactories.ts, INTE via liggaren — §7:s tänkta transfer_story-variant job_lost är ett flaggat, inte byggt, gap: Narrative.ts:s subject2 saknar en 'sponsor'-kind, och ingen låst Krönika-text finns för förstagångsfallet (bara återfallsprefixet, JOBBET_FORSVANN_TEXT.relapsePrefix, är låst). decision-payloadens {terms:{...}} (§7) är samma sorts flaggat schemagap. Alla tre dokumenterade i MASTER_OPPET.md under c-t8-jobbgaranti, samma mönster som liggare-k12. Ingen browser-verifiering av själva eventkortet gjord denna session (kräver att trigga en riktig sponsoravgång med en bunden spelare i spelet) — resolver-effekterna (raisePlayerSalary/jobGuaranteeReseek) och trigger-beräkningen (departedSponsorIds) är test- och tsc-verifierade, inte spelade.",
+  },
+}
+
 const STORYLINE_FILLED: Partial<Record<StorylineType, Omit<ContentContractEntry, 'id' | 'source' | 'filled'>>> = {
   rescued_from_unemployment: {
     trigger: 'Skapas endast när spelaren själv löser ett varsel med offer_pro och minst en namngiven, tidigare icke-heltidsanställd spelare i managed club faktiskt har blivit isFullTimePro genom valets makeFullTimePro-subeffekt. En resolved storyline skapas per verkligt räddad spelare; auto-resolution, felaktig JSON, fel klubb eller utebliven statusövergång ger ingen post.',
@@ -1117,7 +1133,7 @@ const PIVOTAL_FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | '
 
 export const CONTENT_CONTRACT: ContentContractEntry[] = [
   ...GAME_EVENT_TYPE_IDS.map(id => {
-    const filled = FILLED[id] ?? FILLED_ANSPRAK4[id] ?? FILLED_BURNOUT_TAK[id]
+    const filled = FILLED[id] ?? FILLED_ANSPRAK4[id] ?? FILLED_BURNOUT_TAK[id] ?? FILLED_C_T8[id]
     return { ...basePlaceholder(id, 'GameEventType'), ...(filled ? { ...filled, filled: true } : {}) }
   }),
   ...STORYLINE_TYPE_IDS.map(id => ({ ...basePlaceholder(id, 'StorylineType'), ...(STORYLINE_FILLED[id] ? { ...STORYLINE_FILLED[id], filled: true } : {}) })),

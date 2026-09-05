@@ -9,8 +9,17 @@ import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { formatSalary } from '../../../domain/format'
 import { fixtureSeed, mulberry32, seededPick } from '../../../domain/utils/random'
-import { evaluateContractOffer } from '../../../domain/services/contractNegotiationService'
+import { evaluateContractOffer, getAvailableContractTerms, applyContractTerms } from '../../../domain/services/contractNegotiationService'
+import type { ContractTermOffer, ContractTermKey } from '../../../domain/services/contractNegotiationService'
+import { contractTermReactionText, contractTermAcceptText } from '../../../domain/data/contractTermText'
 import { logEvent } from '../../../domain/services/eventLedgerService'
+
+/** C-T8 — namnet en reaktions-/accepttextrad interpolerar för en jobb-/ansiktesterm. */
+function resolveTermSponsorName(game: Pick<SaveGame, 'sponsors' | 'patron'>, sponsorId: string | undefined): string | undefined {
+  if (!sponsorId) return undefined
+  if (game.patron?.id === sponsorId) return game.patron.name
+  return (game.sponsors ?? []).find(s => s.id === sponsorId)?.name
+}
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -157,7 +166,7 @@ export function transferActions(get: Get, set: Set) {
       return { success: true }
     },
 
-    renewContract: (playerId: string, newSalary: number, years: number) => {
+    renewContract: (playerId: string, newSalary: number, years: number, terms: ContractTermOffer = {}) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const player = game.players.find(p => p.id === playerId && p.clubId === game.managedClubId)
@@ -174,15 +183,23 @@ export function transferActions(get: Get, set: Set) {
       // ställen: här, ContractsTab.tsx och transferService.ts).
       const leagueAverages = computeLeaguePositionAverages(game)
       const minSalary = computeContractMinSalary(player, club, leagueAverages)
+      // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04): fyra förhandlingstermer
+      // utöver lön/år — se contractNegotiationService.ts.
+      const availableTerms = getAvailableContractTerms(game, club, player)
       const negotiation = evaluateContractOffer(
         player,
         minSalary,
         newSalary,
         years,
         mulberry32(fixtureSeed(`${game.id}:${playerId}:${game.currentSeason}:${newSalary}:${years}:renew`)),
+        terms,
+        availableTerms,
       )
       if (!negotiation.accepted) {
-        return { success: false, error: `${player.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}` }
+        const reactionText = negotiation.counterTerm
+          ? contractTermReactionText(negotiation.counterTerm, player.firstName, resolveTermSponsorName(game, (game.sponsors ?? [])[0]?.id))
+          : `${player.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}`
+        return { success: false, error: reactionText }
       }
 
       const currentWageBill = game.players
@@ -205,9 +222,13 @@ export function transferActions(get: Get, set: Set) {
       // av lönebeslut: möta kravet = neutral, INTE möta det = erosion. Denna
       // manuella förlängningsväg ska spegla samma princip, inte en egen,
       // motsatt regel.
+      // C-T8 §3 — binder termerna till spelaren, konsumerar sponsor-/
+      // patronkapacitet. Kassan dras nedan via samma applyFinanceChange-väg
+      // som övriga transferbeslut.
+      const termResult = applyContractTerms(player, game.sponsors ?? [], game.patron, terms)
       const updatedPlayers = game.players.map(p =>
         p.id === playerId
-          ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary }
+          ? { ...termResult.player, contractUntilSeason: game.currentSeason + years, salary: newSalary }
           : p
       )
 
@@ -232,16 +253,49 @@ export function transferActions(get: Get, set: Set) {
       // (50) i en händelserik säsong, se SaveGame.ts's kommentar på fältet.
       const updatedExtensionCount = (game.seasonContractExtensionCount ?? 0) + 1
 
-      set({ game: { ...game, players: updatedPlayers, financeLog: updatedFinanceLog, seasonContractExtensionCount: updatedExtensionCount } })
+      // C-T8 §3 — engångshandpenningen dras ur kassan här (applyContractTerms
+      // rapporterar bara beloppet, se dess kommentar).
+      const clubsAfterSignOn = termResult.signOnDeductionKr > 0
+        ? applyFinanceChange(game.clubs, game.managedClubId, -termResult.signOnDeductionKr)
+        : game.clubs
+      const financeLogAfterSignOn = termResult.signOnDeductionKr > 0
+        ? appendFinanceLog(updatedFinanceLog, {
+            round: game.currentMatchday ?? 0,
+            amount: -termResult.signOnDeductionKr,
+            reason: 'contract_extension',
+            label: `Handpenning — ${player.firstName} ${player.lastName} (${formatSalary(termResult.signOnDeductionKr)})`,
+          })
+        : updatedFinanceLog
+
+      set({
+        game: {
+          ...game,
+          players: updatedPlayers,
+          clubs: clubsAfterSignOn,
+          sponsors: termResult.sponsors,
+          patron: termResult.patron,
+          financeLog: financeLogAfterSignOn,
+          seasonContractExtensionCount: updatedExtensionCount,
+        },
+      })
+      const sponsorNameForTerm = (key: ContractTermKey) => {
+        const sponsorId = key === 'jobGuarantee' ? terms.jobGuarantee?.sponsorId
+          : key === 'imageRights' ? terms.imageRights?.sponsorId
+          : undefined
+        return resolveTermSponsorName(game, sponsorId)
+      }
       return {
         success: true,
         wageWarning: projectedWageBill > club.wageBudget
           ? projectedWageBill - club.wageBudget
           : undefined,
+        termMessages: termResult.acceptedTermKeys.length > 0
+          ? termResult.acceptedTermKeys.map(key => contractTermAcceptText(key, player.firstName, sponsorNameForTerm(key)))
+          : undefined,
       }
     },
 
-    signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number) => {
+    signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number, terms: ContractTermOffer = {}) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const agent = game.transferState.freeAgents.find(p => p.id === agentId)
@@ -251,21 +305,32 @@ export function transferActions(get: Get, set: Set) {
 
       const leagueAverages = computeLeaguePositionAverages(game)
       const minSalary = computeContractMinSalary(agent, club, leagueAverages)
+      // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04): friagent-vägen har samma
+      // fyra termer som förlängning — transferbud (playerAcceptsTransfer) är
+      // separat mekanik och berörs inte.
+      const availableTerms = getAvailableContractTerms(game, club, agent)
       const negotiation = evaluateContractOffer(
         agent,
         minSalary,
         offeredSalary,
         contractYears,
         mulberry32(fixtureSeed(`${game.id}:${agentId}:${game.currentSeason}:${offeredSalary}:${contractYears}:free-agent`)),
+        terms,
+        availableTerms,
       )
       if (!negotiation.accepted) {
-        return { success: false, error: `${agent.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}` }
+        const reactionText = negotiation.counterTerm
+          ? contractTermReactionText(negotiation.counterTerm, agent.firstName, resolveTermSponsorName(game, (game.sponsors ?? [])[0]?.id))
+          : `${agent.firstName} avvisar erbjudandet — vill ha minst ${formatSalary(negotiation.counterSalary ?? minSalary)}`
+        return { success: false, error: reactionText }
       }
+
+      const termResult = applyContractTerms(agent, game.sponsors ?? [], game.patron, terms)
 
       // tenure-falt-joinedclubseason (DOM 2026-09-03): friövergång är ett av
       // domens tre skrivställen.
       const agentWithClub = {
-        ...agent,
+        ...termResult.player,
         clubId: game.managedClubId,
         joinedClubSeason: game.currentSeason,
         salary: offeredSalary,
@@ -273,11 +338,23 @@ export function transferActions(get: Get, set: Set) {
       }
       const updatedPlayers = [...game.players, agentWithClub]
       const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
-      const updatedClubs = game.clubs.map(c =>
+      const updatedClubs0 = game.clubs.map(c =>
         c.id === game.managedClubId
           ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
           : c
       )
+      // C-T8 §3 — engångshandpenningen dras ur kassan (samma väg som renewContract).
+      const updatedClubs = termResult.signOnDeductionKr > 0
+        ? applyFinanceChange(updatedClubs0, game.managedClubId, -termResult.signOnDeductionKr)
+        : updatedClubs0
+      const financeLogAfterSignOn = termResult.signOnDeductionKr > 0
+        ? appendFinanceLog(game.financeLog ?? [], {
+            round: game.currentMatchday ?? 0,
+            amount: -termResult.signOnDeductionKr,
+            reason: 'contract_extension',
+            label: `Handpenning — ${agent.firstName} ${agent.lastName} (${formatSalary(termResult.signOnDeductionKr)})`,
+          })
+        : game.financeLog
 
       const currentWageBill = game.players
         .filter(p => p.clubId === game.managedClubId)
@@ -286,6 +363,9 @@ export function transferActions(get: Get, set: Set) {
           ...game,
           players: updatedPlayers,
           clubs: updatedClubs,
+          sponsors: termResult.sponsors,
+          patron: termResult.patron,
+          financeLog: financeLogAfterSignOn,
           transferState: { ...game.transferState, freeAgents: updatedFreeAgents },
         }
       set({
@@ -304,10 +384,19 @@ export function transferActions(get: Get, set: Set) {
         },
       })
       const projectedWageBill = currentWageBill + offeredSalary
+      const sponsorNameForTerm = (key: ContractTermKey) => {
+        const sponsorId = key === 'jobGuarantee' ? terms.jobGuarantee?.sponsorId
+          : key === 'imageRights' ? terms.imageRights?.sponsorId
+          : undefined
+        return resolveTermSponsorName(game, sponsorId)
+      }
       return {
         success: true,
         wageWarning: projectedWageBill > club.wageBudget
           ? projectedWageBill - club.wageBudget
+          : undefined,
+        termMessages: termResult.acceptedTermKeys.length > 0
+          ? termResult.acceptedTermKeys.map(key => contractTermAcceptText(key, agent.firstName, sponsorNameForTerm(key)))
           : undefined,
       }
     },

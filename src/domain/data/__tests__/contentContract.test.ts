@@ -9,23 +9,24 @@ import { PORTAL_BEATS } from '../portalBeats'
  * läsa källkoden, inte genom en assertion. Se contentContract.ts:s
  * huvudkommentar för täckningsläget (92 rader, en delmängd `filled: true`).
  *
- * Sedan ursprungsläget har `burnoutRelief` och `burnoutCeiling` tillkommit;
- * båda lades direkt i det kanoniska registret. ArcType 8 → 6 när
- * 'ledare_crisis' och den falska dubbletten 'veteran_final_season' togs bort.
- * De döda,
+ * Sedan ursprungsläget har `burnoutRelief`, `burnoutCeiling` och
+ * `jobbet_forsvann` (C-T8, SPEC_FORHANDLING_TERMER_2026-09-04, 2026-09-05)
+ * tillkommit; alla tre lades direkt i det kanoniska registret. ArcType 8 → 6
+ * när 'ledare_crisis' och den falska dubbletten 'veteran_final_season' togs
+ * bort. De döda,
  * producentlösa typerna GameEventType:mediaReaction och
  * StorylineType:refused_to_go_pro, StorylineType:left_for_bigger_club och
  * StorylineType:returned_to_club, StorylineType:career_crossroads_stayed och
  * StorylineType:partner_moved_here togs bort 2026-09-02.
  */
 describe('CONTENT_CONTRACT — struktur', () => {
-  it('har 92 rader — 51 GameEventType + 17 StorylineType + 6 ArcType + 18 PortalBeat', () => {
-    expect(CONTENT_CONTRACT).toHaveLength(92)
+  it('har 93 rader — 52 GameEventType + 17 StorylineType + 6 ArcType + 18 PortalBeat', () => {
+    expect(CONTENT_CONTRACT).toHaveLength(93)
     const bySource = CONTENT_CONTRACT.reduce((acc, e) => {
       acc[e.source] = (acc[e.source] ?? 0) + 1
       return acc
     }, {} as Record<string, number>)
-    expect(bySource.GameEventType).toBe(51)
+    expect(bySource.GameEventType).toBe(52)
     expect(bySource.StorylineType).toBe(17)
     expect(bySource.ArcType).toBe(6)
     expect(bySource.PortalBeat).toBe(18)

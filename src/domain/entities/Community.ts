@@ -95,6 +95,10 @@ export interface Patron {
   demands?: string[]
   pendingDemand?: PendingDemand
   backstory?: string
+  /** SPEC_FORHANDLING_TERMER_2026-09-04 (C-T8) §3C — patron räknas som en
+   *  sponsor med jobbgaranti-kapacitet 3 (mot sponsorers 2). Samma
+   *  säsongsnollställning som Sponsor.jobsUsedThisSeason. */
+  jobsUsedThisSeason?: number
 }
 
 export type PoliticalAgenda = 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'

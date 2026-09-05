@@ -118,6 +118,9 @@ export const ROLLOVER_POLICY_BY_TYPE: Record<GameEventType, RolloverPolicy> = {
   varsel: 'expire',
   detOmojligaValet: 'expire',
   playoffEvent: 'expire',
+  // C-T8 — tre meningsfullt olika val (höj lön/sök nytt jobb/var ärlig), inget
+  // försvarbart tyst utfall.
+  jobbet_forsvann: 'expire',
 
   // Bakgrund: kulör och småval. Avböj där det går, annars utrinning.
   pressConference: 'decline',

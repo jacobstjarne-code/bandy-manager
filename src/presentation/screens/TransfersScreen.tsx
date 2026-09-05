@@ -9,7 +9,8 @@ import type { TransferBid } from '../../domain/entities/GameEvent'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { getCounterOfferAmount, getTransferBudgetSummary } from '../../domain/services/transferService'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../domain/services/economyService'
-import { getContractSalaryRange } from '../../domain/services/contractNegotiationService'
+import { getContractSalaryRange, getAvailableContractTerms, resolveContractTermSponsors } from '../../domain/services/contractNegotiationService'
+import type { ContractTermOffer } from '../../domain/services/contractNegotiationService'
 import { formatFinanceAbs, positionShort, formatValue } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 
@@ -118,7 +119,7 @@ export function TransfersScreen() {
   const marknadHasDot = availablePlayersForDot.length > 0
   const saljHasDot = incomingBids.length > 0
 
-  function handleSignFreeAgent(agentId: string, _offerAmount: number, offeredSalary: number, contractYears: number) {
+  function handleSignFreeAgent(agentId: string, _offerAmount: number, offeredSalary: number, contractYears: number, terms: ContractTermOffer) {
     if (!game) return
     const agent = game.transferState.freeAgents.find(p => p.id === agentId)
     const club = game.clubs.find(c => c.id === game.managedClubId)
@@ -131,11 +132,16 @@ export function TransfersScreen() {
     const wouldExceed = weeklyEquiv > club.wageBudget
 
     const doSign = () => {
-      const result = signFreeAgent(agentId, offeredSalary, contractYears)
+      const result = signFreeAgent(agentId, offeredSalary, contractYears, terms)
       if (!result.success) {
         setScoutMessage(result.error ?? 'Kunde inte värva spelaren.')
         setTimeout(() => setScoutMessage(null), 4000)
         return
+      }
+      // C-T8 §6 — termaccept-raderna visas som scoutMessage istf en tyst stäng.
+      if (result.termMessages && result.termMessages.length > 0) {
+        setScoutMessage(result.termMessages.join(' '))
+        setTimeout(() => setScoutMessage(null), 4000)
       }
       setContractingFreeAgentId(null)
     }
@@ -173,6 +179,9 @@ export function TransfersScreen() {
     }
   }
 
+  // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §5: transferbud rör aldrig
+  // termer (playerAcceptsTransfer är en separat mekanik) — BidModal skickar
+  // ändå alltid samma onConfirm-signatur, terms ignoreras här.
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
     if (!game) return
     const club = game.clubs.find(c => c.id === game.managedClubId)
@@ -543,6 +552,8 @@ export function TransfersScreen() {
         const agent = game.transferState.freeAgents.find(p => p.id === contractingFreeAgentId)
         if (!agent) return null
         const minSalary = computeContractMinSalary(agent, managedClub, computeLeaguePositionAverages(game))
+        const availableTerms = getAvailableContractTerms(game, managedClub, agent)
+        const { jobGuaranteeSponsor, imageRightsSponsor } = resolveContractTermSponsors(game)
         return (
           <BidModal
             player={agent}
@@ -551,6 +562,10 @@ export function TransfersScreen() {
             onConfirm={handleSignFreeAgent}
             mode="freeAgent"
             salaryRange={getContractSalaryRange(minSalary)}
+            availableTerms={availableTerms}
+            jobGuaranteeSponsor={jobGuaranteeSponsor}
+            imageRightsSponsor={imageRightsSponsor}
+            minSalary={minSalary}
           />
         )
       })()}

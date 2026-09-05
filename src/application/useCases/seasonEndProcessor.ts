@@ -2158,7 +2158,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // uttrycklig utrinning. Slutläget är identiskt ([]), spåret är nytt.
     deferredDecisions: [],
     handledContractPlayerIds: [],
-    sponsors: sponsorsAfterLicense,
+    // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §3C — jobbgarantins
+    // sponsorkapacitet nollställs vid säsongsrollover, inte vid sponsorbyte
+    // (Sponsor.jobsUsedThisSeason-kommentaren).
+    sponsors: sponsorsAfterLicense.map(s => ({ ...s, jobsUsedThisSeason: 0 })),
     opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: game.talentSearchResults ?? [],
@@ -2244,6 +2247,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ? {
           ...updatedPatron,
           pendingDemand: rolloverPendingDemand(updatedPatron.pendingDemand, game.currentMatchday),
+          // C-T8 §3C — samma säsongsnollställning som sponsorernas jobbkapacitet ovan.
+          jobsUsedThisSeason: 0,
         }
       : updatedPatron,
     localPolitician: nextPolitician

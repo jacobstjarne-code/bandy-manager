@@ -2196,6 +2196,9 @@ export function DevScenesScreen() {
         {scene === 'phase-overlay' && (
           <PhaseOverlay phase="overtime" onContinue={() => {}} />
         )}
+        {/* C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §5 — hårdkodade
+            sponsor-stubbar bara för galleriets synlighet av Villkor-chipsen;
+            riktiga ytor slår upp via resolveContractTermSponsors(game). */}
         {scene === 'bid-modal' && (
           <BidModal
             player={interactionPlayer}
@@ -2212,6 +2215,9 @@ export function DevScenesScreen() {
             minSalary={interactionPlayer.salary + 1_000}
             onClose={() => {}}
             onConfirm={() => {}}
+            availableTerms={['signOnBonus', 'housing', 'jobGuarantee', 'imageRights']}
+            jobGuaranteeSponsor={{ id: 'dev-sponsor-1', name: 'ICA Maxi' }}
+            imageRightsSponsor={{ id: 'dev-sponsor-1', name: 'ICA Maxi' }}
           />
         )}
         {scene === 'ceremony-sm-final' && (

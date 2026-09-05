@@ -1187,6 +1187,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     { skipSideEffects: isSecondPassForManagedMatch },
   )
   newInboxItems.push(...sponsorResult.inboxItems)
+  allNewEvents.push(...sponsorResult.jobLossEvents)
   let updatedSponsors = sponsorResult.updatedSponsors
 
   // M13: contextual sponsors (top4, CS>70, attendance>1000)

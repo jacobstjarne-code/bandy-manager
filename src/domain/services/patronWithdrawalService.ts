@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { EventLedgerEntry } from '../entities/Narrative'
+import { jobbetForsvannEvent } from './events/eventFactories'
 
 export interface PatronHappinessTransition {
   patron: SaveGame['patron']
@@ -12,6 +13,10 @@ export interface PatronHappinessTransition {
    *  happiness, inte ett enskilt spelarval — samma princip som de
    *  ripple-triggade liggarposterna (star_injury/mecenat_withdrawal). */
   ledgerEntry?: EventLedgerEntry
+  /** C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §3C — jobbet_forsvann-kort för
+   *  varje spelare vars jobbgaranti var bunden till DEN HÄR patronen, satt
+   *  bara vid en genuin nollpunktsövergång (samma villkor som withdrawalEvent). */
+  jobLossEvents?: GameEvent[]
 }
 
 /**
@@ -74,10 +79,20 @@ export function applyPatronHappinessTransition(
         significance: 95,
       }
 
+  // C-T8 §3C/§6 — samma jobbet_forsvann-kort som sponsorProcessor.ts bygger
+  // för sponsoravgång, här för patronens jobbgarantier. alreadyKnown-grinden
+  // ovan skyddar bara withdrawalId (avhoppskortet); jobLossEvents dedupliceras
+  // separat via jobbetForsvannEvent()s eget instans-id (samma spelare/säsong/
+  // omgång kan inte producera två identiska kort).
+  const jobLossEvents = game.players
+    .filter(p => p.jobGuaranteeSponsorId === patron.id)
+    .map(p => jobbetForsvannEvent(p, patron.name, game))
+
   return {
     patron: updatedPatron,
     patronWithdrawnSeason: game.currentSeason,
     withdrawalEvent,
     ledgerEntry,
+    jobLossEvents,
   }
 }

@@ -3,7 +3,15 @@ import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { formatSalary, formatContractUntil } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
-import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
+import {
+  getContractSalaryRange,
+  getRequiredContractSalary,
+  HOUSING_CLUB_COST_MONTHLY_KR,
+  type ContractTermKey,
+  type ContractTermOffer,
+} from '../../../domain/services/contractNegotiationService'
+import { contractTermSummaryText } from '../../../domain/data/contractTermText'
+import { ContractTermChips } from './ContractTermChips'
 import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
@@ -14,10 +22,19 @@ interface RenewContractModalProps {
   minSalary: number
   error?: string | null
   onClose: () => void
-  onConfirm: (playerId: string, newSalary: number, years: number) => void
+  onConfirm: (playerId: string, newSalary: number, years: number, terms: ContractTermOffer) => void
+  // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §5 — bara de faktiskt
+  // tillgängliga termerna visas; sponsornamnen slås upp av anroparen
+  // (ContractsTab), som redan har hela sponsorlistan/patronen.
+  availableTerms?: ContractTermKey[]
+  jobGuaranteeSponsor?: { id: string; name: string }
+  imageRightsSponsor?: { id: string; name: string }
 }
 
-export function RenewContractModal({ player, currentSeason, minSalary, error, onClose, onConfirm }: RenewContractModalProps) {
+export function RenewContractModal({
+  player, currentSeason, minSalary, error, onClose, onConfirm,
+  availableTerms = [], jobGuaranteeSponsor, imageRightsSponsor,
+}: RenewContractModalProps) {
   const salaryRange = getContractSalaryRange(minSalary)
   // B3 (Designgranskning fresh-eyes 2026-09-03, blockerare): förvalet var
   // rått player.salary, som kan hamna UNDER minSalary om den senare stigit
@@ -26,6 +43,8 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
   // nuvarande, aldrig under lägsta accepterade".
   const [newSalary, setNewSalary] = useState(Math.max(player.salary, salaryRange.max))
   const [years, setYears] = useState(2)
+  const [terms, setTerms] = useState<ContractTermOffer>({})
+  const requiredSalary = getRequiredContractSalary(player, minSalary, years)
 
   return (
     <Overlay onClose={onClose} ariaLabel={`Förläng kontrakt med ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
@@ -79,11 +98,22 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
               </div>
               <p className="transfers-contract-end">Nytt slutdatum: säsong {currentSeason + years}</p>
             </div>
+            <ContractTermChips
+              availableTerms={availableTerms}
+              terms={terms}
+              onChange={setTerms}
+              requiredSalary={requiredSalary}
+              jobGuaranteeSponsor={jobGuaranteeSponsor}
+              imageRightsSponsor={imageRightsSponsor}
+            />
+            <p className="transfers-term-summary">
+              {contractTermSummaryText(newSalary, terms.housing ? HOUSING_CLUB_COST_MONTHLY_KR : 0, terms.signOnKr ?? 0)}
+            </p>
             {error && <p className="transfers-modal-error">{error}</p>}
           </div>
         </div>
         <button
-          onClick={() => onConfirm(player.id, newSalary, years)}
+          onClick={() => onConfirm(player.id, newSalary, years, terms)}
           className="mf-stamp"
         >
           Förläng →
