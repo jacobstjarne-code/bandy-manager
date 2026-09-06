@@ -567,6 +567,7 @@ export function buildDecisionLedgerEntry(
   candidate: SeasonDecisionCandidate,
   semanticKey: string,
   matchday: number,
+  actionLabel?: string,
 ): EventLedgerEntry {
   const significance = Math.min(100, 50
     + (candidate.irreversible ? 15 : 0)
@@ -586,6 +587,7 @@ export function buildDecisionLedgerEntry(
     systemsAffectedCount: candidate.systemsAffectedCount,
     moneyAmount: candidate.moneyAmount,
     madeByPlayer: true,
+    actionLabel,
   }
 }
 
@@ -699,6 +701,47 @@ function findSubjectMecenat(game: SaveGame, subject: EventLedgerEntry['subject']
   return (game.mecenater ?? []).find(m => m.id === subject.id)
 }
 
+/** Namnet på en generisk kandidats subject, oavsett entitetstyp — bara de tre kinds som faktiskt förekommer i `decision`-poster (aldrig 'referee'/'voice'). */
+function findSubjectName(game: SaveGame, subject: EventLedgerEntry['subject']): string | undefined {
+  if (!subject) return undefined
+  if (subject.kind === 'player') {
+    const p = findSubjectPlayer(game, subject)
+    return p ? `${p.firstName} ${p.lastName}` : undefined
+  }
+  if (subject.kind === 'mecenat') return findSubjectMecenat(game, subject)?.name
+  if (subject.kind === 'club') return game.clubs.find(c => c.id === subject.id)?.name
+  return undefined
+}
+
+/**
+ * arsbok-generisk-beslutssats (DOM 2026-09-06, Opus): den generiska
+ * fallbacken för VARJE `madeByPlayer`-beslut med en kostnad — inte en nionde
+ * handskriven byggare. Text LÅST (Opus): "{Handling}{, {Subject}}. Kostade
+ * {kostnad} nu." `{Handling}` = `entry.actionLabel` (choice.label, satt vid
+ * skrivtillfället av `buildDecisionLedgerEntry`), `{kostnad}` = `moneyAmount`
+ * via samma `formatValue` all annan text i denna fil redan använder.
+ *
+ * Kräver BÅDE `actionLabel` OCH `moneyAmount` — saknas endera skrivs ingen
+ * mening (hellre ingen än en falsk, samma disciplin som varje handskriven
+ * gren ovan). Om `subject` finns men inte går att slå upp (t.ex. en spelare
+ * som senare tagits bort) skrivs meningen ändå UTAN subjektklausulen — till
+ * skillnad från de handskrivna grenarna (som kräver namnet för att meningen
+ * ska vara begriplig alls) klarar den neutrala satsen sig utan namnet.
+ *
+ * "och {skuld} framåt"-klausulen i domens mall är MEDVETET INTE byggd: ingen
+ * ledgerpost bär idag ett separat, strukturerat fält för en återkommande
+ * framtida kostnad skild från engångsbeloppet (se t.ex. `take_loan` ovan,
+ * vars treåriga löptid bara finns i en kommentar, inte i schemat). Att
+ * gissa en löptid vore att hitta på ett tal — domens egen klammerform
+ * (`{ och {skuld} framåt}`) gör klausulen valfri, inte obligatorisk.
+ */
+function composeGenericDecisionSentence(entry: EventLedgerEntry, game: SaveGame): string | null {
+  if (!entry.madeByPlayer || !entry.actionLabel || entry.moneyAmount === undefined) return null
+  const subjectName = findSubjectName(game, entry.subject)
+  const subjectClause = subjectName ? `, ${subjectName}` : ''
+  return `${entry.actionLabel}${subjectClause}. Kostade ${formatValue(entry.moneyAmount)} nu.`
+}
+
 const FACILITY_SEMANTIC_KEY = /^facility_(.+)_s\d+$/
 
 /**
@@ -798,7 +841,7 @@ export function composeSeasonDecisionSentence(entry: EventLedgerEntry, game: Sav
       return getCaptainSupportSentence({ captain: `${captain.firstName} ${captain.lastName}`, last: captain.lastName })
     }
     default:
-      return null
+      return composeGenericDecisionSentence(entry, game)
   }
 }
 

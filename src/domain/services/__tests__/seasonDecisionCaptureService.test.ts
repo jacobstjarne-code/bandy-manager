@@ -913,3 +913,77 @@ describe('pickMostImportantDecisionText — samma vinnare som pickSeasonDecision
     expect(pickSeasonDecisionFromLedger([burnout, larger])).toBe(larger)
   })
 })
+
+/**
+ * arsbok-generisk-beslutssats (DOM 2026-09-06, Opus): "sluta bygga byggare
+ * som modell" — varje madeByPlayer-decision med actionLabel + moneyAmount
+ * ska ge en neutral rad utan en nionde handskriven mall. Rotorsak: årsboken
+ * sa "Inget beslut stack ut i vintras" efter ett kommunlån på +300 tkr
+ * eftersom den slutna listan i composeSeasonDecisionSentence inte kände
+ * igen semanticKey:n.
+ */
+describe('composeSeasonDecisionSentence — generisk fallback (arsbok-generisk-beslutssats)', () => {
+  it('okänd semanticKey + actionLabel + moneyAmount + subject: neutral sats, ingen ny mall', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'municipalLoan:accept', season: 3, matchday: 0,
+      significance: 80, irreversible: true, tension: true, systemsAffectedCount: 2,
+      subject: { kind: 'club', id: 'club_kommun' }, moneyAmount: 300_000, madeByPlayer: true,
+      actionLabel: 'Ta kommunens lån',
+    }
+    const game = makeGame({ clubs: [{ id: 'club_kommun', name: 'Kommunen', shortName: 'Kmn' }] as never })
+    expect(composeSeasonDecisionSentence(entry, game)).toBe(
+      `Ta kommunens lån, Kommunen. Kostade ${formatValue(300_000)} nu.`,
+    )
+  })
+
+  it('okänd semanticKey utan subject: meningen utelämnar subjektklausulen, kraschar inte', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 50_000, madeByPlayer: true, actionLabel: 'Gjorde något nytt',
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(`Gjorde något nytt. Kostade ${formatValue(50_000)} nu.`)
+  })
+
+  it('subject finns men går inte att slå upp: meningen utelämnar klausulen i stället för att krascha eller påstå fel namn', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      subject: { kind: 'player', id: 'gone' }, moneyAmount: 50_000, madeByPlayer: true, actionLabel: 'Gjorde något nytt',
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(`Gjorde något nytt. Kostade ${formatValue(50_000)} nu.`)
+  })
+
+  it('saknar actionLabel: hellre ingen mening än en falsk — null, inte en tom sats', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 50_000, madeByPlayer: true,
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBeNull()
+  })
+
+  it('saknar moneyAmount: null — mallen kräver "Kostade X nu", inget belopp att sätta in', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      madeByPlayer: true, actionLabel: 'Gjorde något nytt',
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBeNull()
+  })
+
+  it('madeByPlayer inte satt (systemhändelse): null — fallbacken gäller bara spelarens egna beslut', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 50_000, actionLabel: 'Gjorde något nytt',
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBeNull()
+  })
+
+  it('end-to-end: eventResolver-vägen sätter actionLabel ur choice.label generiskt (buildDecisionLedgerEntry)', () => {
+    const candidate = { eventId: 'x', round: 1, season: 1, systemsAffectedCount: 2, irreversible: true, tension: true, subject: { kind: 'player' as const, id: 'p1' }, moneyAmount: 42_000, sentence: 'ospecad' }
+    const entry = buildDecisionLedgerEntry(candidate, 'anyNewType:choiceX', 5, 'Skriv under avtalet')
+    expect(entry.actionLabel).toBe('Skriv under avtalet')
+  })
+})

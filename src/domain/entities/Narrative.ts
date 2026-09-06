@@ -313,6 +313,16 @@ export interface EventLedgerEntry {
   systemsAffectedCount?: number
   /** A-H9 rangordningsfält 5, sista skiljedomaren. */
   moneyAmount?: number
+  /**
+   * arsbok-generisk-beslutssats (DOM 2026-09-06, Opus): beslutets etikett SOM
+   * SPELAREN SÅG DEN (`choice.label`), satt generiskt vid skrivtillfället —
+   * inte en ny prosa-mall per typ. Bär den neutrala årsboksmeningens
+   * `{Handling}`-token när ingen specialskriven `composeSeasonDecisionSentence`-
+   * gren känner igen `semanticKey`n. En sluten byggarmängd (åtta handskrivna
+   * fall) täcker inte "varje" `madeByPlayer`-beslut per domen — det gör
+   * `actionLabel` + `moneyAmount` tillsammans, generiskt, utan ny textmall.
+   */
+  actionLabel?: string
 
   // ── URSPRUNG ──
   /** HIGH 6:s attributions-skillnad (beslut vs systemhändelse) — ärvd, aldrig tappad. */

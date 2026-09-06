@@ -98,7 +98,10 @@ function appendSeasonDecisionLedgerEntry(
     ...after,
     eventLedger: logEvent(
       after,
-      buildDecisionLedgerEntry(candidate, `${event.type}:${choiceId}`, after.currentMatchday),
+      buildDecisionLedgerEntry(
+        candidate, `${event.type}:${choiceId}`, after.currentMatchday,
+        event.choices.find(c => c.id === choiceId)?.label,
+      ),
     ),
   }
 }
