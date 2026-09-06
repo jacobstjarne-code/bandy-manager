@@ -97,14 +97,12 @@ function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
   if (game.journalist) {
     const voiceId = localPressVoiceId(game.managedClubId, game.journalist.name)
     if (!isVoiceIntroduced(game, voiceId) && !queuedVoiceIds.has(voiceId)) {
-      const place = club?.shortName ?? club?.name ?? 'orten'
       const clubName = club?.name ?? 'klubben'
       events.push({
         id: `voice_intro_local_press_${voicePart(game.managedClubId)}_${voicePart(game.journalist.name)}`,
         type: 'journalistExclusive',
         title: `${game.journalist.name}, ${game.journalist.outlet}.`,
-        // Könsneutral tills roster-speccens lokaltidningscopy är slutlåst.
-        body: `${game.journalist.outlet}s reporter i ${place}. Skriver om ${clubName} — och om det mesta annat som händer här.`,
+        body: `Bevakar ${clubName} — matcher, beslut, det som sägs i kön på Konsum. Var på plats före dig, och blir kvar efter.`,
         sender: { name: game.journalist.name, role: game.journalist.outlet },
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
         resolved: false,
@@ -123,7 +121,7 @@ function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
         id: `voice_intro_klack_leader_${voicePart(game.managedClubId)}_${voicePart(leader.name)}`,
         type: 'supporterEvent',
         title: `${leader.name}.`,
-        body: `Han håller ihop ${clubName}s klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
+        body: `Håller ihop ${clubName}s klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
         sender: { name: leader.name, role: 'Klackledare' },
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
         resolved: false,
