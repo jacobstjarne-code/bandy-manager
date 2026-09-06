@@ -14,6 +14,9 @@ import type { CurrentChronology } from './currentChronology'
 import { readClubLedger } from './eventLedgerService'
 import { ledgerPostKey, toldMarksFor } from './ledgerToldService'
 import { getStorylineTypeFromLedger } from './storylineLedgerService'
+import { semanticKeyStem } from './semanticKeyService'
+
+export { semanticKeyStem } from './semanticKeyService'
 
 export type EditorialFamily =
   | 'match'
@@ -108,20 +111,6 @@ function fitsSurfaces(post: EventLedgerEntry): NarrativeSurface[] {
   if (REVIEW_TYPES.has(post.type)) surfaces.push('review')
   if (post.subject) surfaces.push('coffee_room')
   return surfaces
-}
-
-/**
- * Instansdelar (säsong/matchdag) tas bort, men person-, klubb- och
- * beslutsidentitet bevaras. Det gör att ett verkligt återfall kan kännas igen
- * utan att två olika personer råkar bli samma berättelse.
- */
-export function semanticKeyStem(semanticKey: string): string {
-  return semanticKey
-    .replace(/([:_-])s(?:eason)?\d+/gi, '')
-    .replace(/([:_-])m(?:atchday)?\d+/gi, '')
-    .replace(/([:_-])r(?:ound)?\d+/gi, '')
-    .replace(/:{2,}/g, ':')
-    .replace(/_{2,}/g, '_')
 }
 
 function isEarlier(a: EventLedgerEntry, b: EventLedgerEntry): boolean {

@@ -6,6 +6,11 @@ import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
+import {
+  countPriorStorylineResolutions,
+  getStorylineResolutionEntries,
+  getStorylineTypeFromLedger,
+} from './storylineLedgerService'
 
 // 4.6 (SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
 // sätter matchday: getCurrentLeagueRound(game), INTE den lokala
@@ -26,6 +31,63 @@ function playerName(p: { firstName: string; lastName: string }): string {
 
 function genId(prefix: string, matchday: number, suffix: string): string {
   return `${prefix}_${suffix}_md${matchday}`
+}
+
+function priorPlayerResolutions(
+  game: SaveGame,
+  type: StorylineEntry['type'],
+  playerId: string,
+  beforeMatchday: number,
+  resolutionIdSuffix?: string,
+): number {
+  return countPriorStorylineResolutions(game, type, {
+    before: { season: game.currentSeason, matchday: beforeMatchday },
+    clubId: game.managedClubId,
+    subject: { kind: 'player', id: playerId },
+    resolutionIdSuffix,
+  })
+}
+
+function recurrenceData(data: Record<string, unknown>, priorCount: number): Record<string, unknown> {
+  return priorCount === 1 ? { ...data, recurrence: 'variant' } : data
+}
+
+function previousDerbyResult(
+  game: SaveGame,
+  opponentClubId: string | undefined,
+  beforeMatchday: number,
+): 'win' | 'loss' | null {
+  if (!opponentClubId) return null
+  const prior = getStorylineResolutionEntries(game, game.currentSeason)
+    .filter(entry =>
+      getStorylineTypeFromLedger(entry) === 'derby_echo_resolved'
+      && entry.matchday < beforeMatchday
+      && entry.subject2?.kind === 'club'
+      && entry.subject2.id === opponentClubId
+    )
+    .sort((a, b) => b.matchday - a.matchday)[0]
+  return prior?.outcome === 'won' ? 'win' : prior?.outcome === 'lost' ? 'loss' : null
+}
+
+function derbyRecurrenceCopy(
+  previous: 'win' | 'loss' | null,
+  current: 'win' | 'loss' | 'draw',
+  managedClubName: string,
+  opponentName: string,
+): { headline: string; resultText: string } | null {
+  if (previous === 'loss' && current === 'win') {
+    return { headline: `Revanschen tog ${managedClubName}`, resultText: `🏆 Revansch mot ${opponentName}` }
+  }
+  if (previous === 'win' && current === 'win') {
+    return { headline: 'Två derbyn, två segrar', resultText: `🏆 Dubbelt mot ${opponentName}` }
+  }
+  if (previous === 'loss' && current === 'loss') {
+    return { headline: 'Derbyt förlorat igen', resultText: `💔 Dubbel derbyförlust mot ${opponentName}` }
+  }
+  if (previous === 'win' && current === 'loss') {
+    return { headline: `${opponentName} tog tillbaka det`, resultText: `💔 Derbyförlust mot ${opponentName} — de kvitterade` }
+  }
+  return null
 }
 
 // ── detectArcTriggers ─────────────────────────────────────────────────────────
@@ -75,6 +137,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
       p => p.trait === 'hungrig' && p.age <= 24 && !activePlayerIds.has(p.id)
     )
     for (const p of hungrigPlayers) {
+      const priorCount = priorPlayerResolutions(game, 'hungrig_breakthrough', p.id, currentMatchday)
+      if (priorCount >= 2) continue
       // Count consecutive games without a goal where player was in the lineup
       const recentFixtures = completedManagedFixtures
         .slice()
@@ -104,7 +168,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
           eventsFired: [],
           decisionsMade: [],
           expiresMatchday: currentMatchday + 6,
-          data: { gamesWithoutGoal },
+          data: recurrenceData({ gamesWithoutGoal }, priorCount),
         })
         break
       }
@@ -122,6 +186,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
       p => p.trait === 'joker' && !activePlayerIds.has(p.id)
     )
     for (const p of jokerPlayers) {
+      const priorCount = priorPlayerResolutions(game, 'joker_vindicated', p.id, currentMatchday)
+      if (priorCount >= 2) continue
       const events = justCompletedFixture.events ?? []
       const hadSuspension = events.some(e =>
         e.type === MatchEventType.Suspension
@@ -139,7 +205,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
           eventsFired: [],
           decisionsMade: [],
           expiresMatchday: currentMatchday + 4,
-          data: { sourceFixtureId: justCompletedFixture.id },
+          data: recurrenceData({ sourceFixtureId: justCompletedFixture.id }, priorCount),
         })
         break
       }
@@ -153,8 +219,12 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
            p.contractUntilSeason === game.currentSeason &&
            !activePlayerIds.has(p.id)
     )
-    if (veterans.length > 0) {
-      const p = veterans[0]
+    const candidate = veterans.find(p =>
+      priorPlayerResolutions(game, 'veteran_stayed', p.id, currentMatchday) < 2
+    )
+    if (candidate) {
+      const p = candidate
+      const priorCount = priorPlayerResolutions(game, 'veteran_stayed', p.id, currentMatchday)
       newArcs.push({
         id: genId('arc', currentMatchday, `veteran_${p.id}`),
         type: 'veteran_farewell',
@@ -165,6 +235,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
         eventsFired: [],
         decisionsMade: [],
         expiresMatchday: currentMatchday + 8,
+        data: recurrenceData({}, priorCount),
       })
     }
   }
@@ -190,6 +261,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
         p => p.trait === 'lokal' && !activePlayerIds.has(p.id)
       )
       for (const p of lokalPlayers) {
+        const priorCount = priorPlayerResolutions(game, 'lokal_hero_moment', p.id, currentMatchday)
+        if (priorCount >= 2) continue
         const events = justCompletedFixture.events ?? []
         const scoredInDerby = events.some(e =>
           e.type === MatchEventType.Goal
@@ -207,7 +280,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
             eventsFired: [],
             decisionsMade: [],
             expiresMatchday: currentMatchday + 4,
-            data: { sourceFixtureId: justCompletedFixture.id },
+            data: recurrenceData({ sourceFixtureId: justCompletedFixture.id }, priorCount),
           })
           break
         }
@@ -240,6 +313,14 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
       if (activePlayerIds.has(p.id)) continue
       if (p.contractUntilSeason !== game.currentSeason) continue
       if (p.form <= 65) continue
+      const priorCount = priorPlayerResolutions(
+        game,
+        'contract_drama_resolved',
+        p.id,
+        currentMatchday,
+        '_extended',
+      )
+      if (priorCount >= 2) continue
       newArcs.push({
         id: genId('arc', currentMatchday, `contract_${p.id}`),
         type: 'contract_drama',
@@ -250,6 +331,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
         eventsFired: [],
         decisionsMade: [],
         expiresMatchday: currentMatchday + 6,
+        data: recurrenceData({}, priorCount),
       })
       break
     }
@@ -338,6 +420,7 @@ export function progressArcs(
     const p = arc.playerId ? managedPlayers.find(pp => pp.id === arc.playerId) : undefined
     const name = p ? playerName(p) : 'Spelaren'
     const matchdaysSinceStart = currentMatchday - arc.startedMatchday
+    const isRecurrenceVariant = arc.data?.recurrence === 'variant'
 
     let updatedArc = { ...arc }
 
@@ -378,24 +461,30 @@ export function progressArcs(
         : arc.opponentClubId
       const opponentClub = game.clubs.find(c => c.id === sourceOpponentId)
       const opponentName = opponentClub?.name ?? 'rivalen'
+      const managedClubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'klubben'
+      const priorDerbyResult = previousDerbyResult(game, sourceOpponentId, arc.startedMatchday)
+      const recurrenceCopy = derbyResult
+        ? derbyRecurrenceCopy(priorDerbyResult, derbyResult, managedClubName, opponentName)
+        : null
 
       if (arc.phase === 'building' && derbyResult) {
         const echoId = `derby_echo_inbox_${arc.id}`
         if (!arc.eventsFired.includes(echoId)) {
-          const headline = derbyResult === 'win'
+          const headline = recurrenceCopy?.headline ?? (derbyResult === 'win'
             ? 'Derbyseger ger hela orten energi'
             : derbyResult === 'loss'
               ? `Tung förlust mot ${opponentName} — men nästa gång...`
-              : 'Derbyt slutade oavgjort — orten delad'
+              : 'Derbyt slutade oavgjort — orten delad')
+          const resultText = recurrenceCopy?.resultText ?? (derbyResult === 'win'
+            ? `🏆 Derby-triumf mot ${opponentName}`
+            : derbyResult === 'loss'
+              ? `💔 Derby-förlust mot ${opponentName}`
+              : `Oavgjort mot ${opponentName}.`)
           newInboxItems.push({
             id: `inbox_${echoId}`,
             type: InboxItemType.Derby,
             title: `📰 ${localPaper}: "${headline}"`,
-            body: derbyResult === 'win'
-              ? `🏆 Derby-triumf mot ${opponentName}`
-              : derbyResult === 'loss'
-                ? `💔 Derby-förlust mot ${opponentName}`
-                : `Oavgjort mot ${opponentName}.`,
+            body: resultText,
             isRead: false,
             date: currentDate,
           })
@@ -406,22 +495,21 @@ export function progressArcs(
       if (updatedArc.phase === 'resolving') {
         const storylineId = `storyline_${arc.id}_resolved`
         if (!arc.eventsFired.includes(storylineId) && derbyResult) {
+          const resultText = recurrenceCopy?.resultText ?? (derbyResult === 'win'
+            ? `🏆 Derby-triumf mot ${opponentName}`
+            : derbyResult === 'loss'
+              ? `💔 Derby-förlust mot ${opponentName}`
+              : `Oavgjort mot ${opponentName}.`)
           newStorylines.push({
             id: storylineId,
             type: 'derby_echo_resolved',
             season: game.currentSeason,
             matchday: getCurrentLeagueRound(game),
             clubId: game.managedClubId,
-            description: derbyResult === 'win'
-              ? `🏆 Derby-triumf mot ${opponentName}`
-              : derbyResult === 'loss'
-                ? `💔 Derby-förlust mot ${opponentName}`
-                : `Oavgjort mot ${opponentName}.`,
-            displayText: derbyResult === 'win'
-              ? `🏆 Derby-triumf mot ${opponentName}`
-              : derbyResult === 'loss'
-                ? `💔 Derby-förlust mot ${opponentName}`
-                : `Oavgjort mot ${opponentName}.`,
+            relatedClubId: sourceOpponentId,
+            outcome: derbyResult === 'win' ? 'won' : derbyResult === 'loss' ? 'lost' : 'neutral',
+            description: resultText,
+            displayText: resultText,
             resolved: true,
           })
         }
@@ -454,8 +542,12 @@ export function progressArcs(
           newInboxItems.push({
             id: `inbox_${inboxId}`,
             type: InboxItemType.Media,
-            title: `📰 ${localPaper}: "${name} — ortens hjälte"`,
-            body: `${name} spelade sin roll. Orten minns.`,
+            title: isRecurrenceVariant
+              ? `📰 ${localPaper}: "${name} gjorde det igen"`
+              : `📰 ${localPaper}: "${name} — ortens hjälte"`,
+            body: isRecurrenceVariant
+              ? 'Två derbyn, två mål. Orten har slutat bli förvånad.'
+              : `${name} spelade sin roll. Orten minns.`,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -473,9 +565,23 @@ export function progressArcs(
             matchday: getCurrentLeagueRound(game),
             playerId: p.id,
             clubId: game.managedClubId,
-            description: `🏠 ${name} — ortens hjälte`,
-            displayText: `🏠 ${name} — ortens hjälte`,
+            description: isRecurrenceVariant
+              ? `🏠 ${name} — ortens hjälte, andra gången`
+              : `🏠 ${name} — ortens hjälte`,
+            displayText: isRecurrenceVariant
+              ? `🏠 ${name} — ortens hjälte, andra gången`
+              : `🏠 ${name} — ortens hjälte`,
             resolved: true,
+          })
+        } else if (isRecurrenceVariant && p && !groundedLocalHero) {
+          newInboxItems.push({
+            id: `inbox_arc_resolved_generic_${arc.id}`,
+            type: InboxItemType.MediaEvent,
+            title: `Berättelsen om ${name}`,
+            body: `${name} gjorde det igen. Orten räknar med det nu — det är en annan sorts press.`,
+            relatedPlayerId: p.id,
+            isRead: false,
+            date: currentDate,
           })
         }
         continue
@@ -512,8 +618,12 @@ export function progressArcs(
           newEvents.push({
             id: eventId,
             type: 'playerArc',
-            title: `Journalisten frågar om ${name}`,
-            body: `${name} har det tungt. Tror du fortfarande på honom?`,
+            title: isRecurrenceVariant
+              ? `Journalisten frågar om ${name} — igen`
+              : `Journalisten frågar om ${name}`,
+            body: isRecurrenceVariant
+              ? `${name} har det tungt igen. Förra gången höll du honom om ryggen, och han bröt isen. Nu står frågan där en gång till: tror du fortfarande?`
+              : `${name} har det tungt. Tror du fortfarande på honom?`,
             choices: [
               {
                 id: 'back_him',
@@ -580,11 +690,21 @@ export function progressArcs(
               // The goal event proves that the drought ended, but not that
               // this was the match's or season's decisive moment. Reuse the
               // existing approved display line for the narrower true claim.
-              description: `${name} bröt isen`,
-              displayText: `${name} bröt isen`,
+              description: isRecurrenceVariant ? `${name} bröt isen. Igen.` : `${name} bröt isen`,
+              displayText: isRecurrenceVariant ? `${name} bröt isen. Igen.` : `${name} bröt isen`,
               resolved: true,
             })
           }
+        } else if (isRecurrenceVariant && p) {
+          newInboxItems.push({
+            id: `inbox_arc_resolved_generic_${arc.id}`,
+            type: InboxItemType.MediaEvent,
+            title: `Berättelsen om ${name}`,
+            body: `${name}s andra torka. Hungern är kvar. Tålamodet är en annan sak.`,
+            relatedPlayerId: p.id,
+            isRead: false,
+            date: currentDate,
+          })
         }
         continue
       }
@@ -613,8 +733,10 @@ export function progressArcs(
           newInboxItems.push({
             id: `inbox_${inboxId}`,
             type: InboxItemType.Media,
-            title: `📰 ${localPaper}: "${name} — geni eller risk?"`,
-            body: `${name} — geni eller risk?`,
+            title: isRecurrenceVariant
+              ? `📰 ${localPaper}: "${name} — igen"`
+              : `📰 ${localPaper}: "${name} — geni eller risk?"`,
+            body: isRecurrenceVariant ? `${name} — igen.` : `${name} — geni eller risk?`,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -629,8 +751,12 @@ export function progressArcs(
           newEvents.push({
             id: eventId,
             type: 'playerArc',
-            title: `Styrelsen frågar om ${name}`,
-            body: `Styrelsen undrar om ${name}s osäkerhet är värt risken. De vill ha ett klart besked om hans roll i laget.`,
+            title: isRecurrenceVariant
+              ? `Styrelsen frågar om ${name} igen`
+              : `Styrelsen frågar om ${name}`,
+            body: isRecurrenceVariant
+              ? `Du trodde på ${name} förra gången, och han gav er rätt. Nu sitter han utvisad igen. Styrelsen vill veta om det är samma svar.`
+              : `Styrelsen undrar om ${name}s osäkerhet är värt risken. De vill ha ett klart besked om hans roll i laget.`,
             choices: [
               {
                 id: 'back_joker',
@@ -699,8 +825,12 @@ export function progressArcs(
                 clubId: game.managedClubId,
                 // The event proves a contribution after the manager backed
                 // the player, not a match-winning action or universal acclaim.
-                description: `${name} — joker i hjärtat`,
-                displayText: `${name} — joker i hjärtat`,
+                description: isRecurrenceVariant
+                  ? `${name} — joker i hjärtat. Andra gången.`
+                  : `${name} — joker i hjärtat`,
+                displayText: isRecurrenceVariant
+                  ? `${name} — joker i hjärtat. Andra gången.`
+                  : `${name} — joker i hjärtat`,
                 resolved: true,
               })
             }
@@ -725,18 +855,20 @@ export function progressArcs(
           // {ersättare} — "den som väntar" räcker, mallen kräver den inte.
           const annualSalaryTkr = Math.round((p.salary * 12) / 1000)
           const seasonsInClub = p.careerStats?.seasonsPlayed ?? 0
-          const body = p.isHomegrown
-            ? `${name} fyller ${p.age} i vinter. Han har varit här i ${seasonsInClub} år och han vill ha två till. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
-            : `${name} fyller ${p.age} i vinter och vill ha två år till. Han har varit här länge nog att folk vet var han bor. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
+          const body = isRecurrenceVariant
+            ? `Två år sedan du förlängde. ${name} fyller ${p.age} och vill ha ett år till. Ett, säger han, inte två. Han är inte bättre än den som väntar — det var han inte då heller. ${annualSalaryTkr} tkr i året, samma som förut.`
+            : p.isHomegrown
+              ? `${name} fyller ${p.age} i vinter. Han har varit här i ${seasonsInClub} år och han vill ha två till. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
+              : `${name} fyller ${p.age} i vinter och vill ha två år till. Han har varit här länge nog att folk vet var han bor. Han är inte bättre än den som väntar, men han är den de sjunger om. ${annualSalaryTkr} tkr i året, samma som förut.`
           newEvents.push({
             id: eventId,
             type: 'playerArc',
-            title: `${name} vill stanna`,
+            title: isRecurrenceVariant ? `${name} vill stanna — igen` : `${name} vill stanna`,
             body,
             choices: [
               {
                 id: 'extend_veteran',
-                label: 'Förläng två år',
+                label: isRecurrenceVariant ? 'Förläng ett år' : 'Förläng två år',
                 // O1 kandidat 2 (Jacobs dom 2026-08-24): klackens mood är
                 // KONSEKVENSEN av valet, inte ett villkor — favoritePlayerId
                 // mäter en annan fråga (vem som är bäst just nu) och skulle
@@ -744,11 +876,13 @@ export function progressArcs(
                 // +6 klackens stämning, godkänd magnitud — mindre än avskedets
                 // −14: att behålla någon är förväntat, att släppa någon är
                 // en händelse.
-                subtitle: 'Kontrakt +2 år · klackens stämning +6',
+                subtitle: isRecurrenceVariant
+                  ? 'Kontrakt +1 år · klackens stämning +6'
+                  : 'Kontrakt +2 år · klackens stämning +6',
                 effect: {
                   type: 'multiEffect',
                   subEffects: JSON.stringify([
-                    { type: 'extendContract', targetPlayerId: p.id, contractYears: 2 },
+                    { type: 'extendContract', targetPlayerId: p.id, contractYears: isRecurrenceVariant ? 1 : 2 },
                     { type: 'supporterMood', amount: 6 },
                   ]),
                 },
@@ -798,7 +932,7 @@ export function progressArcs(
           const outcomeIsApplied = veteran && (
             (extended
               && veteran.clubId === game.managedClubId
-              && veteran.contractUntilSeason >= game.currentSeason + 2)
+              && veteran.contractUntilSeason >= game.currentSeason + (isRecurrenceVariant ? 1 : 2))
             || (farewelled
               && veteran.clubId === 'free_agent'
               && !managedSquad.includes(veteran.id))
@@ -816,11 +950,19 @@ export function progressArcs(
               // sista meningen i avskedet ("Han sa att han förstod") är avsiktligt
               // det som gör beslutet dyrt.
               description: extended
-                ? `${veteranName} skriver på i omklädningsrummet. Någon hade tagit med tårta.`
-                : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
+                ? isRecurrenceVariant
+                  ? `${veteranName} skriver på igen. Ett år. Ingen tårta den här gången — men han log.`
+                  : `${veteranName} skriver på i omklädningsrummet. Någon hade tagit med tårta.`
+                : isRecurrenceVariant
+                  ? `${veteranName} tömde skåpet själv. Han hade väntat på det i två år.`
+                  : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
               displayText: extended
-                ? `🏅 ${veteranName} stannar — legenden lever`
-                : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
+                ? isRecurrenceVariant
+                  ? `🏅 ${veteranName} stannar ett år till`
+                  : `🏅 ${veteranName} stannar — legenden lever`
+                : isRecurrenceVariant
+                  ? `${veteranName} tömde skåpet själv. Han hade väntat på det i två år.`
+                  : `${veteranName} tömde skåpet själv. Han sa att han förstod.`,
               resolved: true,
             })
           }
@@ -856,8 +998,10 @@ export function progressArcs(
           newEvents.push({
             id: eventId,
             type: 'playerArc',
-            title: `${name} ber om ett möte`,
-            body: `${name} vill reda ut sin framtid. Rykten om intresse utifrån cirkulerar och han vill ha ett klart besked.`,
+            title: isRecurrenceVariant ? `${name} ber om ett möte igen` : `${name} ber om ett möte`,
+            body: isRecurrenceVariant
+              ? `Förra året förlängde ni ett år. Nu är budet tillbaka och kontraktet går ut igen. Han vill inte ha samma samtal två gånger.`
+              : `${name} vill reda ut sin framtid. Rykten om intresse utifrån cirkulerar och han vill ha ett klart besked.`,
             choices: [
               {
                 id: 'extend_now',
@@ -916,7 +1060,9 @@ export function progressArcs(
               matchday: getCurrentLeagueRound(game),
               playerId: player.id,
               clubId: game.managedClubId,
-              description: `${playerDisplayName} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
+              description: isRecurrenceVariant
+                ? `${playerDisplayName} lämnade klubben. Andra gången frågan ställdes fick han sitt svar.`
+                : `${playerDisplayName} lämnade klubben efter kontraktsstriden. En bitter upplösning.`,
               displayText: `📋 ${playerDisplayName} lämnade`,
               resolved: true,
             })

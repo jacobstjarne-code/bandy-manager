@@ -4,8 +4,8 @@ import { FixtureStatus, MatchEventType } from '../../enums'
 import type { Fixture } from '../../entities/Fixture'
 import type { EventLedgerEntry } from '../../entities/Narrative'
 import type { SaveGame } from '../../entities/SaveGame'
-import { ledgerPostKey, markLedgerPostTold } from '../ledgerToldService'
-import { generatePressConference } from '../pressConferenceService'
+import { ledgerPostKey, markLedgerPostTold, toldMarksFor } from '../ledgerToldService'
+import { generatePressConference, recordPressLedgerQuestionShown } from '../pressConferenceService'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -115,7 +115,7 @@ describe('generatePressConference — Berättaren steg 7', () => {
   })
 
   it('återanvänder skandalens befintliga rubrik som låst `{ämne}`', () => {
-    let game = makeGame()
+    let game = makeGame({ currentMatchday: 3 })
     const scandal = {
       id: 'scandal-press-topic',
       season: game.currentSeason,
@@ -131,7 +131,7 @@ describe('generatePressConference — Berättaren steg 7', () => {
     })
     game = { ...game, scandalHistory: [scandal], eventLedger: [scandalPost] }
 
-    const event = generatePressConference(makeFixture(game), game, () => 0)
+    const event = generatePressConference(makeFixture(game, { matchday: 3, roundNumber: 3 }), game, () => 0)
 
     expect(event?.body).toBe('"Vi måste fråga om Borgvik Bygg drar sig ur — söker ny sponsor. Vad hände egentligen?"')
     expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(scandalPost))
@@ -182,5 +182,21 @@ describe('generatePressConference — Berättaren steg 7', () => {
     )
     expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(sale))
     expect(withoutStreak?.pressLedgerPostKey).toBeUndefined()
+  })
+
+  it('kvitterar den visade liggarfrågan exakt en gång på pressytan', () => {
+    const game = makeGame()
+    const era = post(game, { type: 'era_shift', semanticKey: 'era-for-receipt', significance: 85 })
+    const event = generatePressConference(makeFixture(game), { ...game, eventLedger: [era] }, () => 0)
+    expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(era))
+
+    const visible = { ...game, eventLedger: [era], pendingPressConference: event ?? undefined }
+    const once = recordPressLedgerQuestionShown(visible)
+    const twice = recordPressLedgerQuestionShown(once)
+
+    expect(toldMarksFor(once.ledgerTold, era)).toEqual([{
+      surface: 'press', season: game.currentSeason, matchday: game.currentMatchday,
+    }])
+    expect(twice).toBe(once)
   })
 })

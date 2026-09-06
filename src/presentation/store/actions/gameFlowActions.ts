@@ -19,7 +19,7 @@ import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../..
 import { logEvent } from '../../../domain/services/eventLedgerService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
-import { getCoffeeRoomReturnDueMatchday, getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
+import { getCoffeeRoomReturnDueMatchday, getCoffeeRoomScene, recordCoffeeRoomLedgerEchoShown } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 import { logNarrativeBeat, pickPoolIndexAvoidingCooldown, BIRGER_SM_QUOTE_PREFIX, BIRGER_CUP_QUOTE_PREFIX } from '../../../domain/services/narrativeLogService'
@@ -758,7 +758,7 @@ export function gameFlowActions(get: Get, set: Set) {
     completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => {
       const { game } = get()
       if (!game) return
-      const updatedGame: SaveGame = { ...game }
+      let updatedGame: SaveGame = { ...game }
       updatedGame.pendingScene = undefined
       if (sceneId === 'coffee_room') {
         updatedGame.lastCoffeeSceneRound = updatedGame.currentMatchday
@@ -777,6 +777,7 @@ export function gameFlowActions(get: Get, set: Set) {
             updatedGame.coffeeRoomPendingReturns = (updatedGame.coffeeRoomPendingReturns ?? [])
               .filter(p => p.questionId !== coffeeScene.consumedReturnQuestionId)
           }
+          updatedGame = recordCoffeeRoomLedgerEchoShown(updatedGame, coffeeScene.ledgerEcho?.postKey)
         }
         // A2/D1-D3 — choiceId format "{questionId}:{answerId}" när spelaren svarat.
         // Svaret pensioneras (ställs aldrig igen) och en återkomst schemaläggs.

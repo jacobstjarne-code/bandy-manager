@@ -1778,11 +1778,12 @@ export function DevScenesScreen() {
     ? new URLSearchParams(window.location.search).get('club')
     : null
   const arrivalClubId = requestedArrivalClubId && [
-    'club_forsbacka', 'club_gagnef', 'club_karlsborg', 'club_malilla',
-    'club_rogle', 'club_slottsbron', 'club_soderfors',
+    'club_forsbacka', 'club_gagnef', 'club_halleforsnas', 'club_heros',
+    'club_karlsborg', 'club_lesjofors', 'club_malilla', 'club_rogle',
+    'club_skutskar', 'club_slottsbron', 'club_soderfors', 'club_vastanfors',
   ].includes(requestedArrivalClubId)
     ? requestedArrivalClubId
-    : squadGame.managedClubId
+    : (initialScene === 'opponent-intro' ? 'club_heros' : squadGame.managedClubId)
   const [seededScene, setSeededScene] = useState<SceneId | null>(null)
   // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
   // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken

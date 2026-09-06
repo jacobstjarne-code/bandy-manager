@@ -3,6 +3,8 @@ import type { Tactic } from '../../../domain/entities/Club'
 import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 import { getPositionFit } from '../../../domain/utils/positionFit'
+import { PlayerPosition } from '../../../domain/enums'
+import { getPitchSlotTopPct } from './PitchLineupView'
 
 interface LineupFormationViewProps {
   tacticState: Tactic
@@ -48,7 +50,7 @@ export function LineupFormationView({
             const isEmpty = !player
             const isSelected = selectedSlotId === slot.id
 
-            const topPct = (1 - slot.y / 100) * 100
+            const topPct = getPitchSlotTopPct(slot.y, slot.position as PlayerPosition)
             const leftPct = slot.x
 
             let ringColor = 'var(--accent)'

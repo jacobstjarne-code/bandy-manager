@@ -221,7 +221,7 @@ export function InteractionShell({
         {/* Readout */}
         {readout && (
           <div className="interaction-readout">
-            <span className="interaction-readout-label">VAL: </span>
+            <span className="interaction-readout-label">KOMBINATION: </span>
             <span className="interaction-readout-value">{readout.label}</span>
             <span className="interaction-readout-pct">{readout.pct}%</span>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useGameStore, type SaveActionResult } from '../store/gameStore'
-import { pickBestEleven, buildNudgeLineup, buildCarryForwardLineup, assessFatigueFloorBreach } from '../utils/lineupNudge'
+import { pickBestEleven, buildNudgeLineup, buildCarryForwardLineup, assessFatigueFloorBreach, type AutoFillMode } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
@@ -39,7 +39,7 @@ export interface LineupEditor {
   canPlay: boolean
   togglePlayer: (playerId: string) => void
   /** true när elvan applicerades; false när konditionsgrinden tog över. */
-  handleAutoFill: () => boolean
+  handleAutoFill: (mode?: AutoFillMode) => boolean
   /**
    * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: nuvarande elvas
    * golvbrott. `forced` = truppen HADE inte elva spelklara över golvet;
@@ -281,13 +281,13 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     setLineupError(null)
   }
 
-  function handleAutoFill(): boolean {
+  function handleAutoFill(mode: AutoFillMode = 'matchfit'): boolean {
     // High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): "Fyll bästa
     // elvan" — den knapp auditen faktiskt testade. Delar nu pickBestEleven()
     // med lineupNudge.ts:s buildNudgeLineup istf en egen, tredje kopia av
     // samma urvalslogik med en annan (CA-dominant) formel.
     const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
-    const { starters, rest, belowFloorStarters, shortfall, forced } = pickBestEleven(available)
+    const { starters, rest, belowFloorStarters, shortfall, forced } = pickBestEleven(available, mode)
     // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: "Autofyll får aldrig
     // TYST starta under golvet." Den tvingade fyllningen APPLICERAS INTE — den
     // parkeras tills managern bekräftat. Att lägga grinden här (före) istället

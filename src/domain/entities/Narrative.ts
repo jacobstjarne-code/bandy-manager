@@ -120,6 +120,10 @@ export interface StorylineEntry {
   /** Exact pair/group anchor for storylines involving more than one player. */
   playerIds?: string[]
   clubId?: string
+  /** Motpart när upplösningen är klubb-till-klubb, t.ex. ett derbyeko. */
+  relatedClubId?: string
+  /** Rått utfall för kanoniska återkopplingar; aldrig färdig ton eller text. */
+  outcome?: EventLedgerEntry['outcome']
   description: string
   displayText: string
   resolved: boolean

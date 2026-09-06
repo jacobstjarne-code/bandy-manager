@@ -27,3 +27,5 @@ Synkfilerna (`github-synk-*.md`) arkiveras direkt när deras leverans är behand
 ## Nästa steg
 
 `Överlämning 2/` är arkiverad (se ovan) — dess tre återstående öppna poster lever nu i `MASTER_OPPET.md`, inte här. Mappen är annars tom på "status okänd"-poster; det som ligger kvar är antingen aktiv referens (`Illustrationer-stilbibel`, `github.md`) eller redan arkiverat (`_arkiv-2026-08/`, `_arkiv-2026-09/`).
+
+**Arkiverat 2026-09-06:** originalbilderna för Heros, Hälleforsnäs, Lesjöfors, Skutskär och Västanfors flyttades till `_arkiv-2026-09/ortsbilder-original/` efter att de komprimerade produktversionerna skapats i `public/assets/illustrations/`.

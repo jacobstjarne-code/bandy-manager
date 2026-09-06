@@ -1184,7 +1184,7 @@
 }
 
 .interaction-fold-hint-arrow {
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 11px;
 }
 
@@ -1193,7 +1193,7 @@
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.62);
   text-transform: uppercase;
 }
 
@@ -1281,13 +1281,13 @@
 .interaction-readout {
   font-family: var(--font-mono);
   font-size: 9px;
-  color: rgba(245, 241, 235, 0.55);
+  color: rgba(245, 241, 235, 0.78);
   padding: 4px 0;
   margin-bottom: 6px;
 }
 
 .interaction-readout-label {
-  color: rgba(245, 241, 235, 0.35);
+  color: rgba(245, 241, 235, 0.62);
 }
 
 .interaction-readout-value {
@@ -1295,7 +1295,7 @@
 }
 
 .interaction-readout-pct {
-  color: rgba(245, 241, 235, 0.35);
+  color: rgba(245, 241, 235, 0.68);
   margin-left: 8px;
 }
 

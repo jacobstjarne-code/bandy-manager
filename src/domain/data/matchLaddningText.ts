@@ -59,7 +59,7 @@ export const SCENE_TEXT: Record<LaddningOccasion, OccasionText> = {
       'Vinna eller hem i spelarbussen.',
       'I dag har ingen tabellen att luta sig mot.',
       'Här kan vem som helst slå vem som helst.',
-      'Det som hände i höstas räknas inte i dag.',
+      'Förra säsongen spelar ingen roll i dag.',
       'Det sitter hårdare i magen än en seriematch.',
     ],
   },

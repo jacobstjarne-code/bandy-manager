@@ -12,7 +12,7 @@ import { SCENE_TEXT, STAKE_TEXT, FINAL_LAGPRESENTATION_QUOTES, type LaddningOcca
 import { FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
-import { getClubIntroIllustrationAssetName, IllustrationPlaceholder } from '../illustration/IllustrationScene'
+import { getClubIntroIllustrationAssetName, getClubIntroIllustrationSrc, IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
 // Assets confirmed in repo; others fall back to IllustrationPlaceholder.
@@ -95,12 +95,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
   const texts = SCENE_TEXT[occasion]
   const seed = game.currentSeason * 97 + game.currentMatchday * 31
-  // Playtest-fynd 4: säsong 1 har ingen historik — laddnings-rader som åberopar
-  // "i höstas" (förra säsongen) får inte visas premiärsäsongen.
-  const chargePool = game.currentSeason <= 1
-    ? texts.charge.filter(c => !c.includes('höstas'))
-    : texts.charge
-  const charge = seededPick(chargePool, seed)
+  const charge = seededPick(texts.charge, seed)
   const relation = seededPick(texts.relation, seed + 7)
 
   const seasonCtx = getSeasonContext(game)
@@ -113,6 +108,11 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
   // levererad. Saknas den ligger den medvetna typografiska fonden kvar.
   const assetName = OCCASION_ASSET[occasion]
     ?? (opponent ? getClubIntroIllustrationAssetName(opponent.id) : undefined)
+  const assetSrc = OCCASION_ASSET[occasion]
+    ? `/assets/illustrations/${OCCASION_ASSET[occasion]}.jpg`
+    : opponent && getClubIntroIllustrationAssetName(opponent.id)
+      ? getClubIntroIllustrationSrc(opponent.id)
+      : undefined
   const isHome = nextFixture.homeClubId === game.managedClubId
   const plats = isHome ? 'Hemma' : 'Borta'
 
@@ -386,7 +386,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
   // (eyebrow, motståndarens namn, plats · relation, laddningsraden, stake).
   // Ingen ny text. Typskalan lyfts ett steg (h-display-md → h-display-lg,
   // båda befintliga klasser) eftersom typografin nu bär hela skärmen.
-  const hasImage = !!assetName
+  const hasImage = !!assetSrc
 
   return (
     <div style={{
@@ -404,7 +404,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         {hasImage ? (
           <>
             <img
-              src={`/assets/illustrations/${assetName}.jpg`}
+              src={assetSrc}
               alt={texts.eyebrow}
               style={{
                 position: 'absolute', inset: 0,
@@ -416,14 +416,14 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
             {/* Top scrim (mock: top 26%, rgba(12,14,20,0.6) → transparent) */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '26%',
-              background: 'linear-gradient(180deg, rgba(12,14,20,0.6), transparent)',
+              background: 'linear-gradient(180deg, rgba(12,14,20,0.20), transparent)',
               pointerEvents: 'none',
             }} />
 
             {/* Bottom scrim (mock: bottom 70%, transparent → deep dark) */}
             <div style={{
               position: 'absolute', left: 0, right: 0, bottom: 0, height: '70%',
-              background: 'linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 42%, rgba(12,14,20,0.94) 100%)',
+              background: 'linear-gradient(180deg, transparent 0%, rgba(12,14,20,0.34) 100%)',
               pointerEvents: 'none',
             }} />
           </>
@@ -439,7 +439,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
         {/* Text — över bilden när det finns en bild, annars ÄR texten scenen. */}
         <div style={hasImage
-          ? { position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2 }
+          ? { position: 'absolute', left: 18, right: 18, bottom: 44, zIndex: 2, padding: '14px 15px', background: 'rgba(10,8,12,0.44)', borderRadius: 10 }
           : { position: 'relative', zIndex: 2, width: '100%', padding: '0 26px', textAlign: 'center' }
         }>
           <p className="h-label h-label-light" style={{ color: eyebrowColor, marginBottom: hasImage ? 9 : 16, ...(hasImage ? { textShadow: '0 1px 4px rgba(0,0,0,0.6)' } : {}) }}>
@@ -502,10 +502,10 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         zIndex: 3,
       }}>
         <button
-          className="btn btn-primary btn-cta"
+          className="btn-scene-cta"
           onClick={onContinue}
         >
-          SÄTT LAGET →
+          SÄTT LAGET
         </button>
       </div>
     </div>

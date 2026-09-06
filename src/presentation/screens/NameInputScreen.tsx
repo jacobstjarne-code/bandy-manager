@@ -108,14 +108,6 @@ export function NameInputScreen() {
         </button>
       </div>
 
-      <footer style={{
-        height: 40, background: 'var(--bg-surface)',
-        borderTop: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <span className="h-label" style={{ letterSpacing: 2 }}>BURY FEN</span>
-      </footer>
     </div>
   )
 }

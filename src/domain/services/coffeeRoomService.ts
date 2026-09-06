@@ -14,6 +14,10 @@ import { TRANSFER_DEADLINE_ROUND } from './portal/triggers/transferTriggers'
 import { COFFEE_ROOM_QUESTIONS, COFFEE_ROOM_QUESTION_SPEAKER, type CoffeeRoomAnswerOption } from '../data/coffeeRoomQuestionsText'
 import { PROVNING_AMBIENT, HALL_KLACK_BASE } from '../data/hallProvningData'
 import { deriveUtfall } from './matchTypeAxes'
+import { currentChronology } from './currentChronology'
+import { resolveSubjectName } from './momentLedgerService'
+import { agendaForSurface, redaktoren } from './redaktorenService'
+import { ledgerPostKey, markLedgerPostTold } from './ledgerToldService'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -59,6 +63,38 @@ export interface CoffeeScene {
   consumedReturnQuestionId?: string
   /** D4-regressionsfix — se CoffeeNarratorLine. Ersätter exchanges för det besöket när satt. */
   narratorLine?: CoffeeNarratorLine
+  /** SPEC_BERATTAREN steg 8 — liten, sista rad från den kanoniska agendan. */
+  ledgerEcho?: { text: string; postKey: string }
+}
+
+const COFFEE_ROOM_LEDGER_MIN_WEIGHT = 60
+
+function selectCoffeeRoomLedgerEcho(game: SaveGame): CoffeeScene['ledgerEcho'] {
+  const chronology = currentChronology(game)
+  const agenda = agendaForSurface(redaktoren(game, chronology), 'coffee_room')
+
+  for (const item of agenda) {
+    if (item.scoresBySurface.coffee_room.total < COFFEE_ROOM_LEDGER_MIN_WEIGHT) continue
+    if (item.toldBefore.some(mark => mark.surface === 'coffee_room')) continue
+    const name = resolveSubjectName(game, item.post.subject)
+    if (name) return { text: `Det pratas om ${name}.`, postKey: item.postKey }
+  }
+
+  return undefined
+}
+
+/** Ren, idempotent kvittoväg för den exakta post som faktiskt följde med scenen. */
+export function recordCoffeeRoomLedgerEchoShown(game: SaveGame, postKey?: string): SaveGame {
+  if (!postKey) return game
+  const post = (game.eventLedger ?? []).find(candidate => ledgerPostKey(candidate) === postKey)
+  if (!post) return game
+  const ledgerTold = markLedgerPostTold(
+    game.ledgerTold,
+    post,
+    'coffee_room',
+    currentChronology(game),
+  )
+  return ledgerTold === game.ledgerTold ? game : { ...game, ledgerTold }
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
@@ -528,7 +564,7 @@ const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
  * som GENERIC_EXCHANGES internt. Texten levereras *utan* citationstecken;
  * komponenten lägger på dem vid render.
  */
-export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
+function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   // D4-regressionsfix (2026-07-21, andra omgången) — victory-echo. Samma
   // topprioritet som ursprungligen (checkad allra först, före rundkontrollen
   // — game.pendingVictoryEcho beror inte på round). Verifierat innan porten:
@@ -834,6 +870,17 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     },
     question,
   }
+}
+
+/**
+ * Berättarens strangler: den etablerade scenen äger fortsatt allt ordinarie
+ * innehåll. Agendan får endast lägga till sin låsta, lilla slutrad.
+ */
+export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
+  const scene = buildCoffeeRoomScene(game)
+  if (!scene) return null
+  const ledgerEcho = selectCoffeeRoomLedgerEcho(game)
+  return ledgerEcho ? { ...scene, ledgerEcho } : scene
 }
 
 /**

@@ -7,6 +7,7 @@ import {
   getResolvedStorylineProjections,
   getStorylineIdFromLedger,
   getStorylineTypeFromLedger,
+  countPriorStorylineResolutions,
 } from '../storylineLedgerService'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
@@ -111,5 +112,43 @@ describe('storylineLedgerService', () => {
 
     expect(entry?.subject).toEqual({ kind: 'player', id: 'player-a' })
     expect(entry?.subject2).toEqual({ kind: 'player', id: 'player-b' })
+  })
+
+  it('bevarar derbyts motpart och råa utfall för nästa instans', () => {
+    const entry = buildStorylineResolutionLedgerEntry(storyline({
+      id: 'story-derby-1',
+      type: 'derby_echo_resolved',
+      playerId: undefined,
+      clubId: 'club-a',
+      relatedClubId: 'club-b',
+      outcome: 'lost',
+    }), 9)
+
+    expect(entry).toMatchObject({
+      subject: { kind: 'club', id: 'club-a' },
+      subject2: { kind: 'club', id: 'club-b' },
+      outcome: 'lost',
+    })
+  })
+
+  it('räknar samma person över säsonger men bara före aktuell tidpunkt', () => {
+    const old = buildStorylineResolutionLedgerEntry(storyline({
+      id: 'story-hungry-s2025', type: 'hungrig_breakthrough', season: 2025,
+    }), 8)!
+    const current = buildStorylineResolutionLedgerEntry(storyline({
+      id: 'story-hungry-s2026', type: 'hungrig_breakthrough', season: 2026,
+    }), 10)!
+    const game = makeGame({ eventLedger: [old, current] })
+
+    expect(countPriorStorylineResolutions(game, 'hungrig_breakthrough', {
+      before: { season: 2026, matchday: 10 },
+      clubId: 'club-a',
+      subject: { kind: 'player', id: 'player-a' },
+    })).toBe(1)
+    expect(countPriorStorylineResolutions(game, 'hungrig_breakthrough', {
+      before: { season: 2026, matchday: 11 },
+      clubId: 'club-a',
+      subject: { kind: 'player', id: 'player-a' },
+    })).toBe(2)
   })
 })

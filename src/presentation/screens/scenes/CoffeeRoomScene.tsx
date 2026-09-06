@@ -239,6 +239,25 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
             </div>
           </div>
         )}
+
+        {scene.ledgerEcho && (
+          <div
+            data-testid="coffee-room-ledger-echo"
+            style={{
+              paddingTop: 2,
+              color: 'var(--text-light-secondary)',
+              fontFamily: 'Georgia, serif',
+              fontSize: 12,
+              fontStyle: 'italic',
+              lineHeight: 1.45,
+              opacity: 0,
+              animation: 'scene-fade-in-exchange 0.6s ease-out forwards',
+              animationDelay: `${(scene.exchanges.length + (question ? 1 : 0)) * 400}ms`,
+            }}
+          >
+            {scene.ledgerEcho.text}
+          </div>
+        )}
         </div>
 
         <div style={{ padding: '0 18px 18px' }}>

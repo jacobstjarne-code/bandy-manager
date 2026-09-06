@@ -17,7 +17,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Det är inte en stor klubb. Det är en klubb som har funnits längre än din morfar. Det är inte samma sak.',
+      text: 'Det är en klubb som har funnits längre än din morfar. Det är inte samma sak.',
 
     },
     {
@@ -97,7 +97,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Klubben har överlevt på kaffekassan i hundra år. Den räcker länge till.',
+      text: 'Klubben har överlevt på kaffekassan i hundra år. Den räcker ett tag till.',
 
     },
     {
@@ -219,7 +219,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Vänern lägger sig sent. När den gör det är det bandyväder. När den inte gör är det inte.',
+      text: 'Vänern lägger sig sent. När den gör det är det bandyväder.',
 
     },
   ],

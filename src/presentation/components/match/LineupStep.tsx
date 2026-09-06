@@ -17,6 +17,7 @@ import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 import { CoachFraming } from '../CoachFraming'
 import { FatigueFloorConfirm } from './FatigueFloorConfirm'
 import { getFitnessProjection } from '../../../domain/services/fitnessRecoveryService'
+import { AUTOFILL_MODE_LABELS, type AutoFillMode } from '../../utils/lineupNudge'
 
 interface GroupedPlayers {
   position: string
@@ -49,7 +50,7 @@ interface LineupStepProps {
   injuredInStarting: Player[]
   onTogglePlayer: (pid: string) => void
   onSetCaptain: (pid: string) => void
-  onAutoFill: () => boolean
+  onAutoFill: (mode?: AutoFillMode) => boolean
   onSlotClick: (slotId: string) => void
   onFormationChange: (newTactic: Tactic) => void
   onAssignPlayer: (playerId: string, slotId: string) => void
@@ -83,7 +84,7 @@ const PRACTICE_COACH_QUOTES = [
   '”Här är truppen. Elva på isen, redan uppställda — du börjar inte från tomt.”',
   '”Färgen säger om spelaren passar sin plats. Grönt är rätt, gult går an, rött skaver.”',
   null, // beat 2 — interpoleras, se practiceSpotlightQuote()
-  '”Det var allt. Formen sköter jag; den ändrar du själv senare. Kör. Efter i dag ställer du dem själv.”',
+  '”Formationsvalet sköter jag i dag. Nästa gång är det ditt.”',
 ] as const
 
 function practiceSpotlightQuote(player: Player, slotPosition: PlayerPosition): string {
@@ -130,6 +131,7 @@ export function LineupStep({
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
   const [justFilled, setJustFilled] = useState(false)
+  const [autoFillMode, setAutoFillMode] = useState<AutoFillMode>('matchfit')
   // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 (c): bekräftelsegrinden
   // sitter på BESLUTET — CTA:n som lämnar uppställningen — och inte bara på
   // autofyll-knappen. En manuellt ihopsatt elva under golvet är exakt samma
@@ -194,9 +196,10 @@ export function LineupStep({
     : null
 
   const oppFormation = opponent?.activeTactic?.formation
+  const oppFormationLabel = oppFormation ? FORMATIONS[oppFormation]?.label ?? oppFormation : null
   const oppFormText = oppAnalysis
-    ? (oppFormation ? `${oppAnalysis.recentForm} · ${oppFormation}` : oppAnalysis.recentForm)
-    : (oppFormation ?? '—')
+    ? (oppFormationLabel ? `${oppAnalysis.recentForm} · ${oppFormationLabel}` : oppAnalysis.recentForm)
+    : (oppFormationLabel ?? '—')
 
   // Practice — beat 3 spotlight: första icke-gröna slotten (amber före röd).
   const practiceSpotlight = (() => {
@@ -293,20 +296,32 @@ export function LineupStep({
 
       {/* 4. Status + Auto-fyll — practice autofyller automatiskt, ingen manuell knapp */}
       {!practice && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 14px', marginBottom: 10, gap: 8 }}>
+        <div style={{ padding: '0 14px', marginBottom: 10 }}>
           <span style={{ fontSize: 9, color: startingIds.length === 11 ? 'var(--success)' : 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             {startingIds.length} av 11 placerade
           </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, margin: '7px 0 6px' }}>
+            {(['strongest', 'rested', 'matchfit'] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setAutoFillMode(mode)}
+                className={`btn ${autoFillMode === mode ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ minHeight: 36, padding: '4px 5px', fontSize: 9, lineHeight: 1.15 }}
+              >
+                {AUTOFILL_MODE_LABELS[mode]}
+              </button>
+            ))}
+          </div>
           <button
             onClick={() => {
-              const applied = onAutoFill()
+              const applied = onAutoFill(autoFillMode)
               if (applied) {
                 setJustFilled(true)
                 setTimeout(() => setJustFilled(false), 1500)
               }
             }}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
+              width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5,
               padding: '5px 10px',
               background: justFilled ? 'var(--success)' : 'transparent',
               border: `1.5px solid ${justFilled ? 'var(--success)' : 'var(--accent)'}`,
@@ -332,12 +347,6 @@ export function LineupStep({
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
             {FORMATIONS[(tacticState.formation ?? '3-3-4') as FormationType].label}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--success)', fontWeight: 600 }}>· rekommenderad</span>
-          <span style={{
-            marginLeft: 'auto', fontFamily: 'ui-monospace, monospace', fontSize: 8, letterSpacing: '1px',
-            color: 'var(--text-muted)', background: 'var(--bg)', border: '1px solid var(--border)',
-            borderRadius: 3, padding: '2px 6px',
-          }}>SATT FÖR IDAG</span>
         </div>
       ) : (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', marginBottom: 10 }}>
@@ -374,13 +383,13 @@ export function LineupStep({
           background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8,
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--success)' }} />rätt position
+            <span aria-hidden className="tag tag-green" style={{ minWidth: 14, padding: '1px 3px', justifyContent: 'center' }}>✓</span> rätt position
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--warning)' }} />går an
+            <span aria-hidden className="tag tag-copper" style={{ minWidth: 14, padding: '1px 3px', justifyContent: 'center' }}>~</span> går an
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--danger)' }} />fel position
+            <span aria-hidden className="tag tag-red" style={{ minWidth: 14, padding: '1px 3px', justifyContent: 'center' }}>!</span> fel position
           </span>
         </div>
       )}
@@ -409,7 +418,7 @@ export function LineupStep({
       {/* 6b. Practice — hint (beat 3 exakt) */}
       {practice && practiceBeat === 2 && practiceSpotlight && (
         <p style={{ margin: '0 14px 8px', textAlign: 'center', fontSize: 11, color: 'var(--accent-dark)', fontWeight: 600 }}>
-          Tryck den glödande ringen för att byta spelare
+          Den glödande ringen visar spelaren du kan byta
         </p>
       )}
 
@@ -462,7 +471,8 @@ export function LineupStep({
                     key={player.id}
                     onClick={() => handlePlayerClick(player)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
+                      display: 'grid', alignItems: 'center', gap: 6,
+                      gridTemplateColumns: '22px 24px minmax(0, 1fr) 28px 48px 58px',
                       padding: '6px 10px',
                       background: 'var(--bg-surface)',
                       borderLeft: rowBorderLeft,
@@ -523,6 +533,7 @@ export function LineupStep({
                           </>
                         )}
                     </span>
+                    <span style={{ width: 58, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
                     {isInjured && (
                       <span className="tag tag-red" style={{ padding: '2px 5px' }}>
                         {player.injuryDaysRemaining > 0 ? `${player.injuryDaysRemaining} dgr` : 'Skadad'}
@@ -553,6 +564,7 @@ export function LineupStep({
                         Start
                       </span>
                     )}
+                    </span>
                   </div>
                 )
               })}

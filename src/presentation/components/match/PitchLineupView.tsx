@@ -20,6 +20,15 @@ export function getPositionFit(playerPosition: PlayerPosition, slotPosition: Pla
   return 'red'
 }
 
+/** Ger målvakten en säker nederkant och flyttar backlinjen upp så ringar/namn
+ * inte går ihop på den smala mobilplanen. */
+export function getPitchSlotTopPct(y: number, position: PlayerPosition): number {
+  const raw = (1 - y / 100) * 100
+  if (position === PlayerPosition.Goalkeeper) return Math.min(raw, 85)
+  if (y <= 25) return Math.max(0, raw - 8)
+  return raw
+}
+
 interface PitchLineupViewProps {
   tacticState: Tactic
   startingIds: string[]
@@ -139,7 +148,7 @@ export function PitchLineupView({
               const isTarget = selection !== null && !isSelected
 
               // Slot at top% = (1 - slot.y/100)*100%, left% = slot.x%
-              const topPct = (1 - slot.y / 100) * 100
+              const topPct = getPitchSlotTopPct(slot.y, slot.position)
               const leftPct = slot.x
 
               // Position-match color
@@ -276,7 +285,7 @@ export function PitchLineupView({
       )}
 
       {/* Unplaced players — tap to select */}
-      <div style={{ padding: '10px 16px 4px', borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: '10px 16px 20px', borderTop: '1px solid var(--border)' }}>
         <p style={{
           fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
           textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8,

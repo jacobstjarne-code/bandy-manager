@@ -101,7 +101,7 @@ export function CupIntroScene({ game, onComplete }: Props) {
               style={{
                 width: 24,
                 height: 2,
-                borderRadius: 1,
+                borderRadius: 3,
                 background: i <= currentIndex ? 'var(--accent)' : 'var(--border-dark)',
                 opacity: i <= currentIndex ? 0.8 : 0.3,
                 transition: 'background 0.3s ease',

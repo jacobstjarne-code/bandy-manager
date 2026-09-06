@@ -182,7 +182,7 @@ export function TilltradeScreen() {
           {/* Narrativ panel — centrerad mot illustrationen, ingen fri luft i mitten */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: 8 }}>
             <div style={{
-              background: 'rgba(10,8,12,0.80)',
+              background: 'rgba(10,8,12,0.52)',
               border: '1px solid rgba(245,241,235,0.06)',
               borderRadius: 'var(--radius)',
               padding: '18px',
@@ -224,7 +224,7 @@ export function TilltradeScreen() {
               {/* Coach framing — ingen cirkel, hel bredd inuti narrativ-panelen */}
               <div style={{
                 alignSelf: 'stretch',
-                background: 'rgba(0,0,0,0.25)',
+                background: 'rgba(0,0,0,0.18)',
                 borderLeft: '2px solid var(--copper)',
                 borderRadius: '0 8px 8px 0',
                 padding: '12px 14px',
@@ -233,7 +233,7 @@ export function TilltradeScreen() {
                 <div className="h-scene-quote">
                   {step === 1
                     ? '“Styrelsen gav dig målet. Jag ger dig laget. Två saker innan första matchen — sätt elvan, och lär dig hur vi slår en hörna. Sen är du igång.”'
-                    : '“Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill ha. Jag vet vad laget tål. Däremellan spelas säsongen.”'}
+                    : '“Det var allt jag har. Resten lär du dig på vägen. Du vet vad styrelsen vill. Jag vet vad laget tål. Däremellan spelas säsongen.”'}
                 </div>
               </div>
             </div>
@@ -243,7 +243,7 @@ export function TilltradeScreen() {
         <div className="scene-cta-area in">
           {step === 1
             ? <button className="btn-scene-cta" onClick={() => setStep(2)}>Visa mig</button>
-            : <button className="btn btn-primary btn-cta" onClick={finish}>Första omgången →</button>}
+            : <button className="btn-scene-cta" onClick={finish}>Första omgången</button>}
         </div>
       </div>
     )
@@ -269,7 +269,7 @@ export function TilltradeScreen() {
             letterSpacing: '2.5px', textTransform: 'uppercase',
             color: 'var(--text-light-secondary)',
           }}>
-            Uppgift {step} / 4 · {STEP_TITLES[step - 1]}
+            Steg {step} av 4 · {STEP_TITLES[step - 1]}
           </span>
           {step === 3 && (
             <span style={{
@@ -295,7 +295,7 @@ export function TilltradeScreen() {
         {step === 3 && (
           <CoachFraming
             initial={coachInitials}
-            quote='“En hörna innan det gäller. Du väljer var den läggs och hur hårt. Titta på zonerna.”'
+            quote='“En hörna innan det gäller. Du väljer var den läggs och hur den ska slås. Titta på zonerna.”'
           />
         )}
 
@@ -384,14 +384,14 @@ export function TilltradeScreen() {
       {step === 2 && (
         <div className="scene-cta-area in">
           <button
-            className="btn btn-primary btn-cta"
+            className="btn-scene-cta"
             disabled={!lineupEditor.canPlay}
             onClick={() => {
               if (lineupBeat < 3) setLineupBeat(b => Math.min(3, b + 1))
               else commitLineupAndAdvance()
             }}
           >
-            FORTSÄTT →
+            FORTSÄTT
           </button>
         </div>
       )}

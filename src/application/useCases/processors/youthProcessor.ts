@@ -8,6 +8,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { academyBreakthroughQuote } from '../../../domain/data/academyBreakthroughText'
 import { generateAcademySchoolPartnershipEvent } from '../../../domain/services/academySchoolPartnershipService'
+import { semanticKeyStem } from '../../../domain/services/semanticKeyService'
 
 export interface YouthProcessorResult {
   updatedYouthTeam: YouthTeam | undefined
@@ -114,11 +115,16 @@ export function processYouth(
     }) ?? []
     if (conflictPlayers.length > 0 && localRand() < 0.12) {
       const player = conflictPlayers[Math.floor(localRand() * conflictPlayers.length)]
+      const eventId = `event_school_conflict_${player.id}_s${game.currentSeason}_m${nextMatchday}`
+      const eventStem = semanticKeyStem(eventId)
+      const hasPriorSeasonConflict = allKnownEventIds.some(id =>
+        id.startsWith('event_school_conflict_') && semanticKeyStem(id) === eventStem
+      )
       gameEvents.push({
-        id: `event_school_conflict_${player.id}_s${game.currentSeason}_m${nextMatchday}`,
+        id: eventId,
         type: 'communityEvent',
         title: `Skolkonflikt — ${player.firstName} ${player.lastName}`,
-        body: `${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,
+        body: `${hasPriorSeasonConflict ? 'Samma samtal som förra året. ' : ''}${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,
         relatedPlayerId: player.id,
         choices: [
           { id: 'let_study', label: 'Låt honom plugga', subtitle: '📚 +confidence', effect: { type: 'noOp' } },

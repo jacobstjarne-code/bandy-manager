@@ -9,11 +9,13 @@ Det här är det enda stället promptarna bor. Alla 28 är fullständiga och kö
 
 **Stilsträngen, alltid först, oförändrad:**
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
-*Ljusvarianter byter sista meningen och lägger en ljusrad (se resp. prompt). Använda: Gagnef sol, Forsbacka måne, Skutskär gryning, Hälleforsnäs dag, Sommaren (enda icke-vintern).*
+*Ljusvarianter byter sista meningen och lägger en ljusrad (se resp. prompt). Använda: Gagnef sol, Forsbacka måne, Skutskär gryning, Hälleforsnäs dag, Lesjöfors låg sol på dalsidorna (inversion, botten kall), Sommaren (enda icke-vintern).*
 
 **Komposition, alltid:** "seen from slightly below so the horizon sits in the upper third"; motivet i övre mitten; "the lower third is … in shadow, empty" (scrimen äter 62 %). Fullbleed 9:16. Klubbhuset, där det finns, är **en länga med fönsterrad och en varm lampa över dörren** — konstanten.
 
 **Bandytecken (vida bilder, ett–två):** strålkastarstolpar, lågt brett mål lutat mot väggen, sopmaskin/traktor med kvast, **snövallar runt planen** (aldrig staket), planen som "huge flat field under untouched fresh snow, no markings, continuing out of frame". Aldrig ordet rink, aldrig linjer, planen aldrig hel i bild. Röd/orange boll får förekomma.
+
+**Bruket (orter med industri):** en bakgrundssignal, inte en mittplansmassa — helst en fjärran skorsten på horisonten med låg siluett. Rök BARA där bruket lever (Karlsborg/Skutskär/Heros); tyst eller nedlagt bruk = ingen rök (Hälleforsnäs). Regeln gäller framåt och vid omtag — de nio körda bär sina bruk större och rörs inte. Skäl: tolv bruksorter med varsitt stort tegelbruk i framkant blir tjatigt och orterna suddas mot varann (Västanfors/Hälleforsnäs klarnade när Hälleforsnäs bruk gick till bakgrunden, 2026-09-05).
 
 **Negativa, bas (varje prompt):** no text, no logos, no faces in focus, no field markings, no lines, no hockey rink, no boards, no plexiglass, no photographic realism.
 
@@ -37,10 +39,10 @@ Muted painterly illustration, flat graphic shapes, simplified forms, editorial p
 | 6 | Gagnef | vid | låg sol | ✅ (kullar, snövallar, plan ur bild) |
 | 7 | Forsbacka | nära | månljus | prompt levererad — körd? |
 | 8 | Skutskär | vid | gryning | ✅ |
-| 9 | Hälleforsnäs | nära | dag (Jacobs val) | klippa-korrigering |
-| 10 | Västanfors | vid | skymning | ej körd |
-| 11 | Lesjöfors | nära | köldhål | ej körd |
-| 12 | Heros | vid | dimma över sjön | ej körd |
+| 9 | Hälleforsnäs | vid | dag | ✅ (bruk till bakgrund, gammalt järnbruk i siluett) |
+| 10 | Västanfors | vid | skymning | ✅ (tegelbruk, laven ej renderingsbar) |
+| 11 | Lesjöfors | vid | köldhål, ljusare (inversion sedd på avstånd) | ✅ (ljus dag, fabrik i bakgrund) |
+| 12 | Heros | vid | dimma över sjön | ✅ |
 
 ### 1. Rögle — nära, skymning · `intro_rogle.jpg` ✅
 
@@ -122,17 +124,17 @@ Negativa: no sun disc, no dusk colours, no fog, no farmland, no mountains, no fi
 
 *Skutskär:* älvmynningen i havsis, bruket på andra sidan vattnet, den handbyggda läktaren ("byggd med egna händer 1961").
 
-### 9. Hälleforsnäs — nära, dag · `intro_halleforsnas.jpg` (korrigering pågår)
+### 9. Hälleforsnäs — vid, dag · `intro_halleforsnas.jpg` ✅ (låst 2026-09-05, bruk till bakgrund)
 
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Grey-blue overcast Nordic winter day, flat light, still.
 
-A long low red wooden clubhouse with a row of small windows standing at the edge of a frozen mill pond in central Sweden, seen from slightly below so the horizon sits in the upper third. The ground is flat all the way to the water — no rocks, no cliff, a low snowy shoreline. One warm lamp lit above the door even in daylight. On the clubhouse wall, a small notice board with a few pinned papers, illegible. Beside the door, a low wide goal frame leans against the wall under the eaves. In front, the pond: natural ice, swept clean in a wide pale area with low ridges of swept snow along its edges, a wooden broom left leaning at one corner, a single small red ball lying on the ice, the ice continuing out of frame to the left. Across the pond, the old ironworks: dark red brick buildings with arched windows, one tall brick chimney with no smoke, everything unlit and still under snow. Along the far shore, a row of small identical red workers' cottages with white trim, two or three windows lit. A few bare oaks with heavy snow. Nobody visible. The clubhouse and the ironworks silhouette occupy the upper-middle of the image. The lower third is snow and dark open water at the shoreline in shadow, empty. No text, no logos, no faces.
+A wide view of a frozen mill pond and the sports ground beside it in central Sweden on a still overcast winter day, seen from a low three-quarter angle and slightly below so the horizon sits in the upper third. In the foreground, a low snowy bank marks the near edge of the pond, so the swept ice reads as a shallow pond seen from just above; below the bank the ground falls away gently into snow in deep blue shadow and out of the bottom of the frame — empty, no open water in front. The pond: natural ice swept clean into a wide pale area, low ridges of swept snow along its edges, a single small red ball on the ice, a wooden broom left leaning at one corner, the ice continuing off the left edge of the frame. On the near right bank, a long low red wooden clubhouse with a row of small windows, one warm lamp above the door, and a small notice board with a few pinned papers by the door; a low wide goal frame leans against its wall under the eaves. Tall floodlight poles, dark. Along the far shore, a row of small identical red workers' cottages with white trim, two or three windows lit, and a few bare oaks heavy with snow. Far off on the horizon, small and distant, an old ironworks in plain silhouette: a single tall slender brick chimney and one low long building with a simple pitched roof, nothing more — no tanks, no towers, no pipes — no smoke, quiet, half-lost in the mist. Low forested hills behind. Nobody visible. The clubhouse and pond occupy the upper-middle of the image. The lower third is snow in deep blue shadow, empty. No text, no logos, no faces.
 
-Negativa: no cliff, no rocks, no mountains, no smoke, no steam, no working factory lights, no sea, no dense spruce forest, no field markings, no fence, no hockey rink, no photographic realism.
+Negativa: no open water in the foreground, no lake or river in front, no ice floes, no large brick mill or factory in the middle distance, no cooling towers, no storage tanks, no pipes or gantries, no lattice structures, no modern processing plant, no smoke, no cliff, no rocks, no mountains, no steam, no working factory lights, no sea, no dense spruce forest, no field markings, no fence, no hockey rink, no photographic realism.
 
-*Hälleforsnäs:* det tysta bruket (skorsten utan rök), bruksbostäder i rad, ekarna, naturisen. Första versionen fick en uppfunnen klippa och en kvadratisk is — korrigeras: "Remove the large rock cliff on the left entirely. Replace it with a low flat snowy shoreline so the swept ice continues to the left and runs out of the frame. Keep everything else exactly as it is."
+*Hälleforsnäs:* det tysta bruket (nedlagt, skorsten UTAN rök), bruksbostäder i rad, ekarna, naturisen på bruksdammen, röda bollen, anslagstavlan, sopborsten. Två ändringar 2026-09-05 (tredje utfallet): (1) bruket fällt till bakgrunden — fjärran skorsten + låg siluett, inte en mittplansmassa; löser tjatiga-bruk + Västanfors-likheten (Västanfors nu enda orten med bruk i framkant), och bruket är TYST till skillnad från Karlsborg/Skutskär/Heros. (2) förgrunden fick en synlig närstrand så isen läser som damm sedd uppifrån i stället för en brant blek panel. *Risk:* modellen drar upp bruket i mittplan igen — negativa "no large brick mill in the middle distance"; eller lägger tillbaka förgrundsvatten — "no open water in the foreground".
 
-### 10. Västanfors — vid, skymning · `intro_vastanfors.jpg`
+### 10. Västanfors — vid, skymning · `intro_vastanfors.jpg` ✅ (tegelbruk-kompromiss)
 
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
 
@@ -140,19 +142,19 @@ A wide view of an old outdoor sports ground in a mining and steel town in centra
 
 Negativa: no smoke, no working factory, no sea, no lake in the foreground, no open water, no field markings, no fence, no hockey rink, no photographic realism.
 
-*Västanfors:* gruvlaven på åsen (Bergslagens siluett), stålverket tyst, den gamla läktaren och det slitna huset ("landets äldsta landbana, konstfrusen sedan 1935"). *Risk:* laven blir kraftverk — "a mine headframe, an open steel tower with a wheel at the top".
+*Västanfors:* gruvlaven övergiven 2026-09-05 — Gemini renderar "mine headframe/steelworks" som amerikanskt rostbälte (hjul-på-torn) oavsett prompt, Jacob prövade och tog tegelbruket som medveten kompromiss. Följd: bakgrunden liknar Hälleforsnäs bruk. Ortens "var" bärs nu av den svängda gamla läktaren + det slitna huset med stengrund ("landets äldsta landbana, konstfrusen sedan 1935") — Hälleforsnäs har varken läktare eller stengrund, det är skillnaden. **Ingen omtag på bakgrunden — verktyget bär inte laven.**
 
-### 11. Lesjöfors — nära, köldhål · `intro_lesjofors.jpg`
+### 11. Lesjöfors — vid, köldhål (ljusare) · `intro_lesjofors.jpg` ✅ (låst 2026-09-05)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk, bitterly cold, still.
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources — here under a pale, clear, cold winter forenoon, the low sun out of frame catching the hoarfrost on the upper valley sides while the valley floor stays cold and blue. Visible grain, soft edges. Bright, still Nordic winter day, sun low, an inversion holding cold fog in the valley bottom.
 
-A long low red wooden clubhouse with a row of small windows at the bottom of a narrow forested valley in western Sweden, seen from slightly below so the horizon sits in the upper third — the horizon here is the dark tree-line of the steep valley sides, not sky. One warm lamp above the door. Dense white cold fog lies in the valley bottom, waist-high, so the ground and the lower part of the clubhouse dissolve into it while the roof, the windows and the lamp stay sharp above the fog. Everything above the fog is coated in thick hoarfrost. Beside the clubhouse, a low wide goal frame leaning against the wall, half in the fog. Behind, the long low shape of a small factory with a few lit windows and, stacked by its wall on pallets, coils of steel springs in neat rows. A single bare rowan tree. The steep valley sides rise on both edges, black spruce under snow, closing the picture in. Nobody visible. The clubhouse and lamp occupy the upper-middle of the image. The lower third is fog and shadow, empty. No text, no logos, no faces.
+A wide view of a narrow forested valley in western Sweden, seen from a rise on the valley shoulder and slightly below the skyline so the dark spruce tree-line of the far valley side sits in the upper third. Steep spruce sides under snow close the picture in on both edges, their upper slopes bright with hoarfrost lit by a low unseen sun. In the valley floor lies a lake of still white fog — an inversion pooled in the cold-hollow — thinning higher up so the air above it is pale and clear. In the middle distance, at the near edge of the fog, a long low red wooden clubhouse with a row of small windows and one warm lamp above the door, its lower half softened by fog, its roof and windows sharp above it. Beside it, tall floodlight poles standing over a huge flat field under smooth untouched snow, no markings, bordered by low uneven banks of swept snow, the field continuing out of frame and dissolving into the fog on one side. A low wide goal frame leaning against the clubhouse wall. A small tractor with a broom parked at the field's edge. Further down the valley, clearly separated from the sports ground and set well back in the background, a small factory on its own: long low buildings, a few lit windows, and stacked on pallets against its wall, coils of steel springs in neat rows, small at this distance. A single bare rowan tree by the clubhouse. Nobody visible. The clubhouse and field occupy the upper-middle of the image. The lower third is snow and fog in blue shadow, empty. No text, no logos, no faces.
 
-Negativa: no stars, no clear sky, no open landscape, no sea, no lake, no chimneys with smoke, no field markings, no fence, no hockey rink, no photographic realism.
+Negativa: no dusk, no dark sky, no night, no stars, no sea, no open lake, no chimneys with smoke, no alpine peaks, no fence, no field markings, no lines, no hockey rink, no photographic realism.
 
-*Lesjöfors:* köldhålet som dimma i dalbotten (inversionen), den smala instängda dalgången, fjäderfabriken med spiralfjädrar på pall, byalaget — allt nära. *Risk:* dimman äter huset — "roof, windows and lamp stay sharp above the fog".
+*Lesjöfors:* fabriken tydligt skild från idrottsplatsen, längre ner i dalen och i bakgrunden, spiralfjädrarna på pall små men läsbara. Den smala instängda dalgången kvar. LÅST 2026-09-05 som ljus klar vinterdag: köldhålets INVERSION (dimhav i dalbotten) kom aldrig med i utfallet och tvingades inte tillbaka — den ljusa versionen gick före, per Jacobs brief (avstånd + ljus + skild fabrik). Katalognoten lovar därför inte längre ett dimhav. Bandymålet läser lågt och brett mot väggen (Jacob godkände 2026-09-05). *Risk:* solskivan ritas — "keep the low sunlight on the frost, no sun disc in frame".
 
-### 12. Heros — vid, dimma över sjön · `intro_heros.jpg`
+### 12. Heros — vid, dimma över sjön · `intro_heros.jpg` ✅
 
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter dusk.
 
@@ -263,11 +265,11 @@ Negativa: no cranes, no workers, no scaffolding, no text, no field markings, no 
 
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, still.
 
-The long low red wooden clubhouse at night, seen from slightly below so the roofline sits in the upper third. For the first time in the series, the lamp above the door is OFF. All windows dark except one at the far end. In the foreground snow, a single line of footprints leads away from the door toward the bottom edge of the frame and out of the picture. At the edge of the yard, a small parked car with its headlights on, exhaust rising, door open, interior light glowing copper — the only warm light. A cardboard box on the passenger seat, visible through the open door. The floodlight poles dark behind. Nobody visible. The dark clubhouse occupies the upper-middle of the image. The lower third is the footprints and snow in deep shadow. No text, no logos, no faces.
+A tight close-up of the door of a red wooden clubhouse at night, seen straight on, the door and the wall around it filling most of the frame — faluröd vertical planks, a plain shut wooden door. Above the door, a small metal lamp on a bracket, dark and unlit — for the first time in the series it is off. A single brass key is left in the lock beside the handle, and from it hangs a worn keyring tag, its lettering rubbed away. A thin fresh dusting of snow has settled on the doorstep and along the top of the handle — time has passed, no one has come. Everything is cold blue and black; the only glint is a faint cold light on the metal of the key. No warm light anywhere. Nobody visible. The door and lock fill the middle of the frame; the lower part is the dark snowy threshold in shadow. No text, no logos, no faces.
 
-Negativa: no people, no daylight, no field markings, no hockey rink, no photographic realism.
+Negativa: no people, no hands, no lit lamp, no warm glow, no windows lit, no daylight, no wide landscape, no distant clubhouse, no snowfield, no car, no footprints, no legible text on the keyring, no photographic realism.
 
-*Känslan:* lampan släckt. Det är hela bilden — konstanten bruten. Bilen med lådan säger resten.
+*Känslan:* någon låste, lämnade nyckeln i låset och gick — det är över. Lampan ovanför släckt, konstanten bruten. Nyckel-i-dörr-konceptet valt 2026-09-05 efter att båda bil+fotspår-versionerna föll: den första (öppen dörr, lysande kupé, bil på fältet) läste som brottsplats, den av-iscensatta (bakljus som kör bort) läste som "bil på en parkering" — obegriplig. Slutsatsen: avskedet är en känsla, inte en vy, så föremålet bär det, inte landskapet. Bryter serieformatet med flit (närbild). **Generera från tomt, ingen referensbild.** *Risk:* modellen zoomar ut till hela klubbhuset + snöfältet (lärt sig den vida formen genom tolv orter) — håll TIGHT på dörren; och tänder lampan — ska vara SLÄCKT. *Öppen designfråga:* brickan generisk/oläslig (rek) vs klubbspecifikt namn (hårdare slag, men bryter no-text och blir svår för modellen).
 
 ### Året utan klubb — "Se hur det går utan dig" · `aret_utan_klubb.jpg`
 

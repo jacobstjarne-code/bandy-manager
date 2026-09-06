@@ -48,8 +48,20 @@ export const SPELKLARHET_FITNESS_FLOOR = FATIGUE_AVAILABILITY_FLOOR
  * "Fyll bästa elvan"-ytor EN funktion, som `pickBestEleven`-docstringen
  * redan påstod.
  */
-export function prioritizeByFitnessFloor(players: Player[]): Player[] {
-  const byScore = (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
+export type AutoFillMode = 'strongest' | 'rested' | 'matchfit'
+
+export const AUTOFILL_MODE_LABELS: Record<AutoFillMode, string> = {
+  strongest: 'Starkast',
+  rested: 'Mest utvilad',
+  matchfit: 'Bäst för dagens match',
+}
+
+export function prioritizeByFitnessFloor(players: Player[], mode: AutoFillMode = 'matchfit'): Player[] {
+  const byScore = mode === 'strongest'
+    ? (a: Player, b: Player) => b.currentAbility - a.currentAbility
+    : mode === 'rested'
+      ? (a: Player, b: Player) => b.fitness - a.fitness || getSelectionScore(b) - getSelectionScore(a)
+      : (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
   const aboveFloor = players.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).sort(byScore)
   const belowFloor = players.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR).sort(byScore)
   return [...aboveFloor, ...belowFloor]
@@ -94,8 +106,8 @@ export function assessFatigueFloorBreach(
  * testade) med en TREDJE, oberoende formel (spelklarhet) än den matchmotorn
  * faktiskt använder. Nu: en källa, en formel (getSelectionScore), delad.
  */
-export function pickBestEleven(available: Player[]): BestElevenResult {
-  const sorted = prioritizeByFitnessFloor(available)
+export function pickBestEleven(available: Player[], mode: AutoFillMode = 'matchfit'): BestElevenResult {
+  const sorted = prioritizeByFitnessFloor(available, mode)
   const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
   const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
 

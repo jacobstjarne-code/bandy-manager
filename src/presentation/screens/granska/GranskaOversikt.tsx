@@ -605,7 +605,7 @@ export function GranskaOversikt({
                   <span className="h-label" style={{ marginBottom: 0 }}>{stat.label.toUpperCase()}</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{stat.away}{stat.suffix ?? ''}</span>
                 </div>
-                <div style={{ display: 'flex', height: 3, borderRadius: 2, overflow: 'hidden', gap: 1 }}>
+                <div style={{ display: 'flex', height: 3, borderRadius: 3, overflow: 'hidden', gap: 1 }}>
                   <div style={{ flex: homeW, background: isHome ? 'var(--accent)' : 'var(--border)' }} />
                   <div style={{ flex: 100 - homeW, background: !isHome ? 'var(--accent)' : 'var(--border)' }} />
                 </div>

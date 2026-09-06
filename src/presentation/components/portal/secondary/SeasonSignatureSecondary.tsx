@@ -27,7 +27,7 @@ export function SeasonSignatureSecondary({ game }: CardRenderProps) {
   if (!sig || sig.id === 'calm_season') return null
 
   const emoji = getSignatureEmoji(sig.id)
-  const name = getSignatureName(sig.id)
+  const name = sig.id === 'scandal_season' ? 'Skandalrisk' : getSignatureName(sig.id)
   const borderColor = BORDER_COLOR[sig.id]
   const factText = sig.observedFacts[0] ?? getDefaultFact(sig.id)
 
@@ -66,7 +66,7 @@ export function SeasonSignatureSecondary({ game }: CardRenderProps) {
           textTransform: 'uppercase',
           color: 'var(--text-muted)',
         }}>
-          aktiv signatur
+          säsongstendens
         </div>
       </div>
 

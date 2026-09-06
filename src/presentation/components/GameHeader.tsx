@@ -12,7 +12,7 @@ import { getPlayoffFixtureContext, getPlayoffSeriesContext } from '../../domain/
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { exportSaveAsJson, importSaveFromJson } from '../../infrastructure/persistence/saveGameStorage'
 import { exportSaveRecoveryReportAsJson } from '../../infrastructure/persistence/saveRecoveryMetrics'
-import { playoffRoundName } from '../../domain/roundLabel'
+import { getRoundLabel, playoffRoundName } from '../../domain/roundLabel'
 import type { PlayoffBracket } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 
@@ -166,13 +166,9 @@ export function GameHeader() {
 
   if (!game || !club) return null
 
-  const lastPlayedRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-  const nextLeagueRound = game.fixtures
-    .filter(f => f.status === 'scheduled' && !f.isCup && !f.isKnockout && f.roundNumber <= 22)
-    .reduce((min, f) => Math.min(min, f.roundNumber), Infinity)
-  const currentRound = nextLeagueRound < Infinity ? nextLeagueRound : lastPlayedRound
+  const nextManagedFixture = game.fixtures
+    .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => a.matchday - b.matchday || Number(b.isCup) - Number(a.isCup))[0]
 
   // AUDIT DEL 2 (2026-08-09), Jacobs ruling: RoundMark (ren kronologi — rundnamn
   // + kritikalitet) hör hemma i headerns befintliga omgångs-sigill, inte som en
@@ -188,7 +184,7 @@ export function GameHeader() {
     : null
   const playoffLabel = getPlayoffHeaderLabel(game, reviewedFixtureId)
 
-  const roundChipLabel = playoffLabel ?? (currentRound > 0 ? `Omg ${currentRound}` : null)
+  const roundChipLabel = playoffLabel ?? (nextManagedFixture ? getRoundLabel(nextManagedFixture, game.playoffBracket).short : null)
 
   return (
     <div style={{
@@ -256,11 +252,12 @@ export function GameHeader() {
           </div>
         )}
 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1, padding: 2, border: '1px solid rgba(245,241,235,0.10)', borderRadius: 7, background: 'rgba(245,241,235,0.04)' }}>
         {/* Klubbpärmen */}
         <button
           onClick={() => setShowKlubbparm(true)}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            width: 30, height: 30, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
             color: 'rgba(245,241,235,0.45)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -274,9 +271,11 @@ export function GameHeader() {
           onClick={() => navigate('/game/inbox')}
           style={{
             position: 'relative',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
             color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.45)',
           }}
+          aria-label="Inkorg"
         >
           <EnvelopeIcon size={17} color="currentColor" />
           {/* Notifikationsprick — separat element, kan visas/döljas oberoende */}
@@ -295,12 +294,15 @@ export function GameHeader() {
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
             color: 'rgba(245,241,235,0.45)',
           }}
+          aria-label="Inställningar"
         >
           <Icon icon={Settings} size={16} />
         </button>
+        </div>
       </div>
 
       {/* Save toast */}

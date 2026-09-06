@@ -297,7 +297,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           { name: oppClub?.shortName ?? 'De', goal: oppGoals, save: oppSavedByUs, miss: oppMissCount, goalColor: 'color-mix(in srgb, var(--danger) 80%, transparent)' },
         ].map((row, ri) => (
           <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', marginBottom: 3 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', minWidth: 44, textAlign: 'right', letterSpacing: '0.3px' }}>
+            <span className="h-label" style={{ color: 'var(--text-muted)', minWidth: 44, textAlign: 'right', marginBottom: 0 }}>
               {row.name.toUpperCase()}
             </span>
             {[

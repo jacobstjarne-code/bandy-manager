@@ -18,17 +18,24 @@ export type IllustrationMode = 'fullbleed' | 'band' | 'header'
 const CLUB_INTRO_ILLUSTRATION_BY_ID: Record<string, string> = {
   club_forsbacka: 'intro-forsbacka',
   club_gagnef: 'intro-gagnef',
+  club_halleforsnas: 'intro-halleforsnas',
+  club_heros: 'intro-heros',
   club_karlsborg: 'intro-karlsborg',
+  club_lesjofors: 'intro-lesjofors',
   club_malilla: 'intro-malilla',
   club_rogle: 'intro-rogle',
+  club_skutskar: 'intro-skutskar',
   club_slottsbron: 'intro-slottsbron',
   club_soderfors: 'intro-soderfors',
+  club_vastanfors: 'intro-vastanfors',
 }
 
-/** Klubbens egen ankomstbild när den finns, annars den generiska introbilden. */
+/** Klubbens egen optimerade ankomstbild när den finns, annars den generiska introbilden. */
 export function getClubIntroIllustrationSrc(clubId: string): string {
-  const assetName = getClubIntroIllustrationAssetName(clubId) ?? 'intro'
-  return `/assets/illustrations/${assetName}.jpg`
+  const assetName = getClubIntroIllustrationAssetName(clubId)
+  return assetName
+    ? `/assets/illustrations/${assetName}.webp`
+    : '/assets/illustrations/intro.jpg'
 }
 
 /** Returnerar bara en levererad klubbspecifik bild; används när fallbacken är typografisk. */
@@ -122,8 +129,8 @@ export function IllustrationScene({ mode, name, src, alt, children, style, objec
       {/* Scrim — text aldrig naken på bild (DB-8 sanktionerad gradient) */}
       {mode === 'fullbleed' ? (
         <>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '22%', background: 'linear-gradient(180deg, rgba(12,14,20,0.55) 0%, transparent 100%)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%', background: 'linear-gradient(180deg, transparent 0%, rgba(16,18,24,0.55) 45%, rgba(12,14,20,0.92) 100%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '18%', background: 'linear-gradient(180deg, rgba(12,14,20,0.20) 0%, transparent 100%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '35%', background: 'linear-gradient(180deg, transparent 0%, rgba(12,14,20,0.32) 100%)', pointerEvents: 'none' }} />
         </>
       ) : (
         <div style={{ position: 'absolute', inset: 0, background: singleScrim(mode, fadeTo), pointerEvents: 'none' }} />

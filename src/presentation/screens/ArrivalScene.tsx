@@ -132,7 +132,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
           display: 'flex',
           flexDirection: 'column',
           gap: 18,
-          background: 'rgba(10,8,12,0.80)',
+          background: 'rgba(10,8,12,0.52)',
           border: '1px solid rgba(245,241,235,0.06)',
           borderRadius: 'var(--radius)',
           padding: '20px 18px',
@@ -144,7 +144,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
           phaseGte(phase, 'margareta') && 'dimmed',
         ].filter(Boolean).join(' ')}>
           <strong>{clubName}.</strong>
-          {` Onsdag kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. ${treasurer.firstName} ${treasurer.lastName}. ${member.firstName} ${member.lastName}. Två kaffekoppar redan på bordet.`}
+          {` Onsdag kväll. Lampan vid klubbhuset lyser. De väntar på dig där inne. ${treasurer.firstName} ${treasurer.lastName}. ${member.firstName} ${member.lastName}. Två kaffekoppar står redan på bordet.`}
         </div>
 
         {/* Margareta */}

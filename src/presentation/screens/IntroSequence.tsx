@@ -242,16 +242,6 @@ export function IntroSequence() {
               width: '100%', maxWidth: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
               opacity: s1 ? 1 : 0, transition: 'opacity 700ms ease', transitionDelay: s1 ? '1800ms' : '0ms',
             }}>
-              {/* M7: "kall återkomst"-raden — nästa match/tabellplacering/
-                  styrelsezon, så FORTSÄTT inte är den enda informationen. */}
-              {coldReturnLine && (
-                <p style={{
-                  fontSize: 11, color: 'rgba(245,241,235,0.6)', textAlign: 'center',
-                  letterSpacing: '0.5px', margin: 0,
-                }}>
-                  {coldReturnLine}
-                </p>
-              )}
               <button
                 onClick={() => navigate('/game')}
                 style={{
@@ -264,17 +254,27 @@ export function IntroSequence() {
                   textTransform: 'uppercase', cursor: 'pointer',
                 }}
               >
-                FORTSÄTT
+                FORTSÄTT KARRIÄREN
               </button>
+              {coldReturnLine && (
+                <p style={{
+                  fontSize: 11, color: 'rgba(245,241,235,0.6)', textAlign: 'center',
+                  letterSpacing: '0.5px', margin: 0,
+                }}>
+                  {coldReturnLine}
+                </p>
+              )}
             </div>
           )}
           {saveCount > 1 && (
             <button
               onClick={() => navigate('/saves')}
               style={{
-                width: '100%', maxWidth: 300, padding: '10px 24px',
-                background: 'transparent', border: 'none',
-                color: 'rgba(245,241,235,0.55)',
+                width: '100%', maxWidth: 300, padding: '12px 24px',
+                background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
+                border: '1.5px solid color-mix(in srgb, var(--accent) 42%, transparent)',
+                borderRadius: 'var(--radius-md)',
+                color: 'rgba(245,241,235,0.78)',
                 fontSize: 11, fontWeight: 600, letterSpacing: '2px',
                 textTransform: 'uppercase', cursor: 'pointer',
                 opacity: s1 ? 1 : 0,

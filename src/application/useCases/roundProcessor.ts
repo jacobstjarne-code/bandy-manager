@@ -97,8 +97,7 @@ import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTa
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
-import { ledgerPostKey, markLedgerPostTold } from '../../domain/services/ledgerToldService'
-import { currentChronology } from '../../domain/services/currentChronology'
+import { recordPressLedgerQuestionShown } from '../../domain/services/pressConferenceService'
 
 export type { AdvanceResult }
 
@@ -1926,20 +1925,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // kvar som synlig yta. Kvittera då den exakta kanoniska post som gav
   // liggarfrågan; en bortbudgeterad presskonferens räknas aldrig som frågad.
   if (updatedGame.pendingPressConference?.pressLedgerPostKey) {
-    const pressPost = (updatedGame.eventLedger ?? []).find(post =>
-      ledgerPostKey(post) === updatedGame.pendingPressConference?.pressLedgerPostKey
-    )
-    if (pressPost) {
-      updatedGame = {
-        ...updatedGame,
-        ledgerTold: markLedgerPostTold(
-          updatedGame.ledgerTold,
-          pressPost,
-          'press',
-          currentChronology(updatedGame),
-        ),
-      }
-    }
+    updatedGame = recordPressLedgerQuestionShown(updatedGame)
   }
 
   // Release-svepet 2026-07-21 (Block 2c) — landslagsuttagningens +5 tkr/uttagen

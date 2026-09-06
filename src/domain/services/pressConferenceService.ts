@@ -2,7 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
-import { MatchEventType } from '../enums'
+import { FixtureStatus, MatchEventType } from '../enums'
 import { deriveUtfall, computeTrailedAtHalf } from './matchTypeAxes'
 import {
   isTemplateEligible,
@@ -16,6 +16,7 @@ import { currentChronology, type CurrentChronology } from './currentChronology'
 import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getScandalPressTopic } from './scandalService'
+import { ledgerPostKey, markLedgerPostTold } from './ledgerToldService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -844,7 +845,7 @@ function soldPlayerScoresEveryWeek(
 
   const recentClubFixtures = game.fixtures
     .filter(candidate =>
-      candidate.status === 'completed'
+      candidate.status === FixtureStatus.Completed
       && candidate.season === chronology.season
       && candidate.matchday > item.post.matchday
       && candidate.matchday <= chronology.matchday
@@ -917,6 +918,24 @@ function selectLedgerPressQuestion(
   return null
 }
 
+/**
+ * Skrivs av rundprocessorn först efter surfacing-budgeten. Ren och
+ * idempotent så en omkörning eller legacyhändelse utan giltig post är säker.
+ */
+export function recordPressLedgerQuestionShown(game: SaveGame): SaveGame {
+  const postKey = game.pendingPressConference?.pressLedgerPostKey
+  if (!postKey) return game
+  const post = (game.eventLedger ?? []).find(candidate => ledgerPostKey(candidate) === postKey)
+  if (!post) return game
+  const ledgerTold = markLedgerPostTold(
+    game.ledgerTold,
+    post,
+    'press',
+    currentChronology(game),
+  )
+  return ledgerTold === game.ledgerTold ? game : { ...game, ledgerTold }
+}
+
 // ── generatePressConference ────────────────────────────────────────────────────
 
 /**
@@ -980,6 +999,7 @@ export function generatePressConference(
   const finalQuestionPool = freshQuestionPool.length > 0 ? freshQuestionPool : questionPool
 
   let question = finalQuestionPool[Math.floor(rand() * finalQuestionPool.length)]
+  const baseQuestionPreferIds = question.preferIds
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
   // Arc-aware question override (40% chance if arc in peak phase)
@@ -1133,8 +1153,9 @@ export function generatePressConference(
   // journalistrelation ändras därför inte.
   const ledgerQuestion = selectLedgerPressQuestion(game, fixture)
   if (ledgerQuestion) {
-    question = { text: ledgerQuestion.text, preferIds: question.preferIds }
+    question = { text: ledgerQuestion.text, preferIds: baseQuestionPreferIds }
     storylinePressKey = undefined
+    excludedResponseIds = []
   }
 
   // Fill template placeholders

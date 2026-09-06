@@ -51,6 +51,12 @@ describe('playerArc — produktionsvalens text motsvarar state', () => {
       contractUntilSeason: base.currentSeason + 1,
       morale: Math.min(100, player.morale + 10),
     })
+    expect(extended.eventLedger).toContainEqual(expect.objectContaining({
+      type: 'storyline_resolution',
+      semanticKey: `storyline_resolution:contract_drama_resolved:storyline_${arc.id}_extended`,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: base.managedClubId },
+    }))
     expect(waited.players.find(candidate => candidate.id === player.id)).toMatchObject({
       contractUntilSeason: player.contractUntilSeason,
       morale: Math.max(0, player.morale - 5),

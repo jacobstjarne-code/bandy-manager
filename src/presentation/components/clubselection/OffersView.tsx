@@ -90,7 +90,7 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
             textUnderlineOffset: 3,
           }}
         >
-          Visa alla 12 klubbar i bandysverige
+          Visa alla 12 klubbar i vårt bandysverige
         </button>
       </div>
     </div>

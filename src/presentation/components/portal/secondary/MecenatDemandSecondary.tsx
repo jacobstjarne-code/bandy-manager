@@ -70,7 +70,7 @@ export function MecenatDemandSecondary({ game }: CardRenderProps) {
           marginBottom: 4,
         }}
       >
-        👤 {mec.name.toUpperCase()} KRÄVER
+        👤 {mec.name.toUpperCase()} · MECENAT
       </div>
       <div className="h-quote h-quote-light" style={{ lineHeight: 1.5, marginBottom: 4 }}>
         {demand.description}

@@ -1,7 +1,7 @@
 # Implementation — stickiness och notifieringar
 
 **Datum:** 2026-09-04  
-**Status:** Etapp 1A + Berättaren steg 1–6 + agenda→push-adapter lokalt verifierade  
+**Status:** Etapp 1A + Berättaren steg 1–9 + agenda→push-adapter lokalt verifierade
 **Beslutad produktstrategi:** `docs/incoming/RAPPORT_STICKINESS_NOTIFIERINGAR_PWA_2026-09-04.md`
 
 ## Genomfört
@@ -69,6 +69,30 @@
 - Klackens känslotillstånd, journalistrelation/minnescache, brev och nemesisläge ligger kvar som live-/presentationsstate enligt gränsdomen. `activeAnniversaries`, ekonomisk kris och rivalförsäljningsfickan används bara som retire-last-fallback när en säker liggarpost saknas. Styrelsemålsfickan behålls tills en kanonisk motsvarighet finns; ingen ny liggartyp uppfanns i detta steg.
 - Befintliga premiss- och eko-pooler återanvänds oförändrade. Ingen ny spelartext eller ny minneslagring har lagts till.
 
+### Berättaren steg 7 — pressens liggarfråga
+
+- Presskonferensen väljer nu högst en post ur `redaktoren(..., press)`: samma säsong, högst tre matchdagar gammal, redaktionell vikt minst 70 och ännu inte frågad på pressytan.
+- De sju låsta Opus-stammarna är kopplade till domarfejd, patron-/mecenatuttåg, patronens ankomst, epokskifte, lång skada, utmärkt såld spelare och skandal. Namn löses ur samma strukturerade subjects som övriga berättarytor; skandalämnet återanvänder skandalsystemets befintliga rubrik.
+- Påståendet att en såld spelare ”gör mål varje vecka” kräver mål i båda hans två senaste matcher för den nya klubben. Om den grinden eller ett nödvändigt namn saknas provar redaktören nästa säkra agendapost.
+- Liggarfrågan ersätter bara frågetexten. Pressens redan kontextgrindade svar, moralpåverkan, journalistminne och relationseffekt är oförändrade.
+- Den exakta postnyckeln följer presshändelsen. Rundprocessorn skriver ett idempotent `surface: press`-kvitto först efter att presskortet överlevt den gemensamma surfacing-budgeten.
+
+### Berättaren steg 8 — kafferummets agendaeko
+
+- Kafferummets befintliga scenurval och alla dess live-/reaktionskällor är orörda. Efter urvalet dekoreras scenen med högst en post ur `redaktoren(..., coffee_room)` med redaktionell vikt minst 60.
+- Kandidaten måste ha ett namn som den gemensamma subject-resolvern kan belägga, tillhöra den managerade klubben och vara otald på kafferumsytan. Om topposten inte går att uttrycka prövas nästa säker kandidat.
+- Den enda nya spelarraden är den låsta Opus-texten ”Det pratas om {Namn}.”. Den renderas liten, kursiv och sist i sceninnehållet, efter ordinarie repliker och eventuell fråga.
+- Exakt liggarpost följer scenmodellen. Det riktiga scenavslutet skriver ett idempotent `surface: coffee_room`-kvitto; en scen som aldrig blev synlig räknas därmed inte som berättad.
+- Ingen ny minneslagring, copybank eller liggartyp har lagts till.
+
+### Berättaren steg 9 — återfall ersätter intro
+
+- `semanticKeyStem` är flyttad till en gemensam domäntjänst. Storyline-liggaren kan nu räkna en viss persons tidigare resolutioner före aktuell kronologi, över säsongsgränser och fortsatt strikt inom managerad klubb.
+- `hungrig_breakthrough`, `joker_redemption`, `veteran_farewell`, `lokal_hero` och `contract_drama` följer domen normal första gång, ordagrant låst återfallsvariant andra gång och tyst skip från tredje gången. Joker kräver en tidigare verklig vindikation; veteranens andra förlängning är ett år; kontraktsdrama kräver en tidigare faktiskt applicerad `extend_now`-markör.
+- Derbyresolutioner bär nu strukturerad motpart och rått utfall i samma kanoniska liggarpost. Nästa derby mot samma motståndare samma säsong kan därför uttrycka revansch, dubbel seger eller dubbel förlust utan att tolka presentationstext. Derbybågen hoppas aldrig.
+- Skolkonfliktens befintliga en-gång-per-spelare-och-säsong-grind är kvar. En ny säsong får händelsen igen, men samma elev får den låsta prefixmeningen ”Samma samtal som förra året.”.
+- Ingen Apple-native-kod eller ny parallell minnesbank har införts.
+
 ### Klient och browserytor
 
 - Lade till ett opt-in-API/hook för Web Push. Ingen permission-prompt visas automatiskt.
@@ -132,7 +156,7 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 1. Välj driftarkitektur för API:t. Nuvarande Render-konfiguration och `vercel.json` publicerar en statisk app, medan de nya API-rutterna lever i `server.js`.
 2. Ersätt `InMemoryAttentionStore` med hållbar lagring. Vercel/Render-instansminne får inte behandlas som databas.
 3. Koppla en extern scheduler/cron till `POST /api/attention/run`.
-4. Låt Opus färdigställa och låsa `stickiness-copy-roster`, koppla dess resolver till produktionssnapshotten och kör textgrinden. Adaptern och det leveransbekräftade `surface: push`-kvittot finns; narrativ aktivering är avsiktligt av tills copy-registret finns. Berättarens Efterklang-steg är nu klart; nästa steg i `SPEC_BERATTAREN` är pressens liggarfråga.
+4. Koppla det nu låsta `STICKINESS_COPY_REGISTER_2026-09-04.md` till produktionssnapshotten och kör textgrinden. Adaptern och det leveransbekräftade `surface: push`-kvittot finns; narrativ aktivering är avsiktligt av tills resolvern är inkopplad. Berättarens steg 1–9 är klara.
 5. Bygg kategori-/quiet-hour-inställningar efter Designs mock. Den kontextuella pre-prompten och iOS-installationshjälpen finns nu, men förblir avsiktligt osynliga tills backend rapporterar giltig VAPID-konfiguration.
 6. Lägg till integrationsprov mot en riktig push-provider i en stagingmiljö med HTTPS och verklig service worker.
 7. Lås dataskyddstext och gallring innan lagringen görs beständig. Raderingskontraktet finns nu, men policy och spelartext väntar på Jacob/Opus.
@@ -142,7 +166,7 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 - **Produktionshosting:** appen deployas statiskt i de versionsstyrda hostingfilerna. Backendkoden kan köras lokalt via `server.js`, men är inte skarpt driftsatt av den nuvarande konfigurationen.
 - **Hållbar serverstate:** repot har ingen befintlig produktionsdatabas eller användaridentitet. In-memory-adaptern är endast en körbar kontraktsreferens och tappar data vid omstart.
 - **Revalideringens auktoritet:** spelets save är local-first. Servern kan endast revalidera mot senaste minimerade snapshot som klienten hunnit skicka, inte läsa spelarens IndexedDB direkt.
-- **Berättarkonsumenter:** Portalens första konsument och pushens leveranskvittoväg skriver nu till samma told-register. Endast den rena matchförberedelse-loopen kan fortfarande bli push; narrativ pushaktivering är spärrad tills `stickiness-copy-roster` finns och kopplats in.
+- **Berättarkonsumenter:** Portal, Efterklang, årsbok, Granska, press, kafferum och pushens leveranskvittoväg delar nu agenda/told-registret enligt respektive ytas gräns. Endast den rena matchförberedelse-loopen kan fortfarande bli push; narrativ pushaktivering är spärrad tills `stickiness-copy-roster` finns och kopplats in.
 - **Managerperspektivet:** klubbperspektivet är strikt `clubId`-avgränsat och callbacks har nu den separata `managerId`-stämpeln för beslut, burnout och personliga mål över klubbgränser. HistoryScreens fulla manager-vy är fortsatt en egen OPPET-rad, inte en callback-blockerare.
 - **Permission-ögonblick:** Opus rekommenderade och koden använder första lästa Granska + nästa obekräftade lag. Jacobs slutliga kvittering och speltest återstår innan skarp aktivering.
 - **Apple-native:** ingen WidgetKit-, ActivityKit-, Live Activity- eller Dynamic Island-kod har lagts till. Den delen finns enbart som framtida epic i rapporten.
@@ -160,6 +184,12 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 - Full `npm test` efter Berättarens callbacksteg — 458 testfiler och 4 400 tester godkända.
 - Efterklangens agenda-/fallback-/kvittokontrakt tillsammans med närliggande Portal- och Berättartester — 58 tester godkända; TypeScript och full build/grindar godkända före helsviten.
 - Full `npm test` efter Berättarens Efterklang-steg — 462 testfiler och 4 421 tester godkända. Den direkta `@cites`-deklarationen är också verifierad av påståendegrinden.
+- Pressens agenda-, text-, sanningsgrind- och kvittokontrakt tillsammans med rundprocessorn och närliggande presstester — 86 tester godkända; TypeScript och full build/grindar godkända före helsviten.
+- Full `npm test` efter Berättarens press-steg — 463 testfiler och 4 427 tester godkända.
+- Kafferummets agenda-, gräns-, renderings- och kvittokontrakt tillsammans med rundprocessorn och befintliga fikarumstester — 73 tester godkända; TypeScript och full build/grindar godkända före helsviten.
+- Full `npm test` efter Berättarens kafferumssteg — 465 testfiler och 4 432 tester godkända.
+- Återfallspolicyns fokussvit — 34 tester godkända; TypeScript, produktionsbuildens samtliga grindar samt text- och dubblettvakterna godkända.
+- Full `npm test` efter Berättarens återfallssteg — 466 testfiler och 4 442 tester godkända.
 - Genererad Workbox-service-worker verifierad att den importerar `notification-sw.js` och undantar `/api/*` från navigation fallback.
 - Lokal server-smoke: health 200, installationsregistrering 204 och VAPID-status 503 när nycklar saknas (förväntat säkert fel).
 

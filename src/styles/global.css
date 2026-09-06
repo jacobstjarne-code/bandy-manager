@@ -1288,13 +1288,7 @@ a {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 6, 10, 0.82) 0%,
-    rgba(8, 6, 10, 0.55) 30%,
-    rgba(8, 6, 10, 0.50) 54%,
-    rgba(8, 6, 10, 0.78) 100%
-  );
+  background: none;
 }
 
 /* Skip link — top right (ARRIVAL-06) */
@@ -1424,7 +1418,7 @@ a {
   color: var(--text-light);
 }
 .scene-setting.in { opacity: 1; transform: translateY(0); }
-.scene-setting.in.dimmed { opacity: 0.4; transform: translateY(0); }
+.scene-setting.in.dimmed { opacity: 0.68; transform: translateY(0); }
 
 /* ArrivalScene v2 replica — transition-based fade-in (ARRIVAL-03) */
 .scene-replica {
@@ -1436,7 +1430,7 @@ a {
   transition: opacity 1.0s ease-out, transform 1.0s ease-out;
 }
 .scene-replica.in { opacity: 1; transform: translateY(0); }
-.scene-replica.in.dimmed { opacity: 0.4; transform: translateY(0); }
+.scene-replica.in.dimmed { opacity: 0.68; transform: translateY(0); }
 
 /* Speaker label — "MARGARETA · KASSÖR" */
 .h-scene-speaker {
@@ -1470,7 +1464,13 @@ a {
 }
 
 /* Legacy dimmed modifier */
-.scene-dimmed { opacity: 0.4; transition: opacity 0.5s ease; }
+.scene-dimmed { opacity: 0.68; transition: opacity 0.5s ease; }
+
+.event-card-inline .btn-outline {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-portal-surface));
+  border-color: color-mix(in srgb, var(--accent) 52%, transparent);
+  color: var(--text-light-secondary);
+}
 
 /* BoardObjectives block in ArrivalScene (ARRIVAL-04) */
 .arrival-board-objectives {

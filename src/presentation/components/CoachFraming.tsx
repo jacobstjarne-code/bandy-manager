@@ -4,7 +4,7 @@ export function CoachFraming({ initial, quote }: { initial: string; quote: strin
   return (
     <div style={{
       margin: '12px 16px',
-      background: 'rgba(0,0,0,0.3)',
+      background: 'rgba(24,20,17,0.94)',
       borderLeft: '2px solid var(--copper)',
       borderRadius: '0 8px 8px 0',
       padding: '9px 12px',

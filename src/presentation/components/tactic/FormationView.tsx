@@ -10,21 +10,13 @@ import { PlayerDot } from './PlayerDot'
 import { BandyPitch } from '../BandyPitch'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
-import { prioritizeByFitnessFloor, SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
+import { prioritizeByFitnessFloor, SPELKLARHET_FITNESS_FLOOR, AUTOFILL_MODE_LABELS, type AutoFillMode } from '../../utils/lineupNudge'
 import { getSelectionScore, getPositionFit } from '../../../domain/services/squadEvaluator'
 
 // taktik-fyll-elvan-tre-lagen (Playtest Taktik 2026-09-03 MEDIUM 2, Jacobs
 // dom 2026-09-03): "Fyll bästa elvan" prioriterade bara styrka och kunde
 // starta spelare på 20–35 % kondition trots A3-golvet. Tre lägen, alla
 // golv-medvetna (SPELKLARHET_FITNESS_FLOOR respekteras av samtliga).
-type AutoFillMode = 'strongest' | 'rested' | 'matchfit'
-
-const AUTOFILL_MODE_LABELS: Record<AutoFillMode, string> = {
-  strongest: 'Starkast',
-  rested: 'Mest utvilad',
-  matchfit: 'Bäst för dagens match',
-}
-
 interface FormationViewProps {
   tactic: Tactic
   players: Player[]  // entire squad
@@ -105,7 +97,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
     // passningen är redan 1 där) — de skiljer sig bara i FALLBACK-steget
     // nedan, där matchfit väger in positionspassning för spelare utan exakt
     // matchning. Exakt viktning mäts i kalibreringsrundan C2 — enkel start.
-    const sorted = autoFillMode === 'rested' ? sortByRest(candidates) : prioritizeByFitnessFloor(candidates)
+    const sorted = autoFillMode === 'rested' ? sortByRest(candidates) : prioritizeByFitnessFloor(candidates, autoFillMode)
 
     const newLineupSlots = { ...lineupSlots }
     const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])

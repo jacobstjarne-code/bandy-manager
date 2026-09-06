@@ -22,7 +22,7 @@ export interface ClubExtendedInfo {
 export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
   'club_forsbacka': {
     clubId: 'club_forsbacka',
-    arenaNote: 'Naturis bäddad bland furor. Köldhål vid sjön.',
+    arenaNote: 'Naturis inbäddad bland furor. Köldhål vid sjön.',
     patronType: 'Bruksdisponent',
     klimateArchetype: 'bruk_lakeside',
     briefDescription: 'Bruksort i skogslandskap vid Storsjöns utlopp. Klämd mellan stadsklubbarnas skuggor — men när isen ligger är det magiskt.',
@@ -54,7 +54,7 @@ export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
   },
   'club_malilla': {
     clubId: 'club_malilla',
-    arenaNote: 'Konstfrusen sedan 1934. En av landets äldsta banor.',
+    arenaNote: 'Konstfrusen sedan 1934. En av landets äldsta planer.',
     patronType: 'Kommunens näringsliv',
     klimateArchetype: 'sm_highland_extreme',
     briefDescription: 'Småländska höglandet med extrema temperaturer. Termometern på torget mäter allt — och klacken är alltid här.',
@@ -94,7 +94,7 @@ export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
   },
   'club_slottsbron': {
     clubId: 'club_slottsbron',
-    arenaNote: 'Vid Vänerns strand. Sen istäcke, dimma, storm.',
+    arenaNote: 'Vid Vänerns strand. Sent istäcke, dimma, storm.',
     patronType: 'Sulfitbrukets veteranarbetare',
     klimateArchetype: 'vanern_effect',
     briefDescription: 'Bruksort vid Vänern. Sjön fördröjer isen men ger också storarna av stämning när vädret vänder.',

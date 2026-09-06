@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { EventLedgerEntry, StorylineEntry, StorylineType } from '../entities/Narrative'
 import { logEvent } from './eventLedgerService'
+import { semanticKeyStem } from './semanticKeyService'
 
 const STORYLINE_RESOLUTION_PREFIX = 'storyline_resolution:'
 
@@ -88,7 +89,9 @@ export function buildStorylineResolutionLedgerEntry(
     ? { kind: 'player', id: playerIds[1] }
     : playerIds[0] && storyline.clubId
       ? { kind: 'club', id: storyline.clubId }
-      : undefined
+      : storyline.relatedClubId
+        ? { kind: 'club', id: storyline.relatedClubId }
+        : undefined
 
   return {
     type: 'storyline_resolution',
@@ -97,6 +100,7 @@ export function buildStorylineResolutionLedgerEntry(
     matchday: globalMatchday,
     subject,
     subject2,
+    outcome: storyline.outcome,
     significance: storylineResolutionSignificance(storyline.type),
   }
 }
@@ -160,16 +164,60 @@ export function getResolvedStorylineProjections(game: SaveGame, season?: number)
   })
 }
 
+export interface PriorStorylineResolutionScope {
+  before: { season: number; matchday: number }
+  clubId?: string
+  subject?: NonNullable<EventLedgerEntry['subject']>
+  sameSeasonOnly?: boolean
+  resolutionIdSuffix?: string
+}
+
+function belongsToClub(entry: EventLedgerEntry, clubId: string): boolean {
+  return entry.clubId === clubId
+    || (entry.subject?.kind === 'club' && entry.subject.id === clubId)
+    || (entry.subject2?.kind === 'club' && entry.subject2.id === clubId)
+}
+
+function hasSubjectIdentity(
+  entry: EventLedgerEntry,
+  type: StorylineType,
+  subject: NonNullable<EventLedgerEntry['subject']>,
+): boolean {
+  const expected = semanticKeyStem(`${type}:${subject.kind}:${subject.id}`)
+  return [entry.subject, entry.subject2].some(candidate => candidate
+    && semanticKeyStem(`${type}:${candidate.kind}:${candidate.id}`) === expected)
+}
+
+/**
+ * DOM_ATERFALL_ARCS — räknar kanoniska resolutioner före en given punkt.
+ * Typ + strukturerat subject bildar samma tidsrensade identitet över säsonger.
+ */
+export function countPriorStorylineResolutions(
+  game: Pick<SaveGame, 'eventLedger'>,
+  type: StorylineType,
+  scope: PriorStorylineResolutionScope,
+): number {
+  return getStorylineResolutionEntries(game).filter(entry => {
+    if (getStorylineTypeFromLedger(entry) !== type) return false
+    if (scope.sameSeasonOnly && entry.season !== scope.before.season) return false
+    if (scope.resolutionIdSuffix && !getStorylineIdFromLedger(entry)?.endsWith(scope.resolutionIdSuffix)) return false
+    const isBefore = entry.season < scope.before.season
+      || (entry.season === scope.before.season && entry.matchday < scope.before.matchday)
+    if (!isBefore) return false
+    if (scope.clubId && !belongsToClub(entry, scope.clubId)) return false
+    if (scope.subject && !hasSubjectIdentity(entry, type, scope.subject)) return false
+    return true
+  }).length
+}
+
 export function hasPriorStorylineResolution(
   game: Pick<SaveGame, 'eventLedger'>,
   type: StorylineType,
   beforeSeason: number,
   clubId?: string,
 ): boolean {
-  return getStorylineResolutionEntries(game).some(entry => {
-    if (entry.season >= beforeSeason || getStorylineTypeFromLedger(entry) !== type) return false
-    if (!clubId) return true
-    return (entry.subject?.kind === 'club' && entry.subject.id === clubId)
-      || (entry.subject2?.kind === 'club' && entry.subject2.id === clubId)
-  })
+  return countPriorStorylineResolutions(game, type, {
+    before: { season: beforeSeason, matchday: 0 },
+    clubId,
+  }) > 0
 }

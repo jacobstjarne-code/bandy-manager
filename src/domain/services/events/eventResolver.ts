@@ -21,7 +21,10 @@ import { logEvent } from '../eventLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { appendNewlyResolvedStorylines } from '../storylineLedgerService'
+import {
+  appendNewlyResolvedStorylines,
+  storylineResolutionSignificance,
+} from '../storylineLedgerService'
 import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 
@@ -2660,6 +2663,31 @@ export function resolveEvent(
 
   // ── Record arc decisions ──────────────────────────────────────────────────
   if (event.type === 'playerArc') {
+    const resolvedArc = (updatedGame.activeArcs ?? []).find(arc => arc.eventsFired.includes(eventId))
+    if (madeByPlayer && choiceId === 'extend_now' && resolvedArc?.type === 'contract_drama' && resolvedArc.playerId) {
+      const afterPlayer = updatedGame.players.find(player => player.id === resolvedArc.playerId)
+      const extensionApplied = afterPlayer
+        && afterPlayer.clubId === updatedGame.managedClubId
+        && afterPlayer.contractUntilSeason >= updatedGame.currentSeason + 1
+      const semanticKey = `storyline_resolution:contract_drama_resolved:storyline_${resolvedArc.id}_extended`
+      const duplicate = (updatedGame.eventLedger ?? []).some(entry =>
+        entry.type === 'storyline_resolution' && entry.semanticKey === semanticKey
+      )
+      if (extensionApplied && !duplicate) {
+        updatedGame = {
+          ...updatedGame,
+          eventLedger: logEvent(updatedGame, {
+            type: 'storyline_resolution',
+            semanticKey,
+            season: updatedGame.currentSeason,
+            matchday: updatedGame.currentMatchday,
+            subject: { kind: 'player', id: resolvedArc.playerId },
+            subject2: { kind: 'club', id: updatedGame.managedClubId },
+            significance: storylineResolutionSignificance('contract_drama_resolved'),
+          }),
+        }
+      }
+    }
     updatedGame = {
       ...updatedGame,
       activeArcs: (updatedGame.activeArcs ?? []).map(arc =>
