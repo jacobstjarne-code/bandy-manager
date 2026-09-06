@@ -22,7 +22,7 @@ import {
  * mot balanserat minst lika ofta som den vinner över 22 omgångar, mätt över
  * 10 000 seeds enligt docs/BANDYTAKTIK_KALLASNING_2026-09-04.md).
  */
-export const FORMATION_523_EXTRA_FITNESS_COST = 3
+export const FORMATION_523_EXTRA_FITNESS_COST = 9
 
 export interface TacticModifiers {
   offenseModifier: number    // 0.75–1.25

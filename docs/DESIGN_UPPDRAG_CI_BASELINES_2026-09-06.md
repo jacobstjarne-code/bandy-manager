@@ -17,15 +17,23 @@ källa (commit eller MASTER-rad) som förklarar exakt den förändringen. "Sanno
 avsett" räcker inte. Och ingen baseline skrivs om för att bli grön — bara för att
 den är rätt.
 
-## Steg 0 — Code, före Design
+## Steg 0 — Code/Jacob, före Design
 
-Kör `npm run test:visual` (ren `playwright test`). Playwright lägger vid snapshot-fel
-tre filer per scen i `test-results/` (`*-expected.png`, `*-actual.png`, `*-diff.png`).
-Samla dem per scen till **`docs/visual-review/ci-baselines-2026-09-06/<scen>/`** med
-namnen `before.png` (expected = gamla baselinen), `after.png` (actual = nu), `diff.png`.
-Lägg en `index.md` i mappen som listar alla 54 scener, en rad var — Designs
-sorteringslista för steg 1. Committa mappen. **Kör INTE `npm run test:visual:update`**
-— inga baselines skrivs om förrän Design dömt. Design börjar inte förrän mappen finns.
+Diffarna finns REDAN som CI-artefakt — regenerera dem INTE lokalt. Baselines är
+Linux-only (`*-linux.png`); en Mac-körning av `npm run test:visual` ger `-darwin`-
+renders som varken matchar Linux-baselinerna eller versioneras — värdelöst för de 54
+CI-diffarna. Rätt källa: `visual-regression`-jobbets artefakt `visual-regression-report`
+från de röda app-ci-körningarna (GitHub Actions 34040419661 och 34040569759).
+
+Hämta: `gh run download 34040419661 -n visual-regression-report` (och 34040569759),
+eller ladda ner artefakten från körningen i GitHub-UI:t. Artefakten är Playwrights
+`test-results/` med `*-expected.png` (Linux-baselinen), `*-actual.png` (nya Linux-
+rendern) och `*-diff.png` per fallerad scen.
+
+Organisera per scen till **`docs/visual-review/ci-baselines-2026-09-06/<scen>/`** som
+`before.png` (expected), `after.png` (actual), `diff.png`, plus en `index.md` som listar
+alla 54 scener (Designs sorteringslista för steg 1). Committa mappen. Design börjar
+inte förrän den finns.
 
 ## Steg 1 — SORTERA innan du tittar på en enda pixel
 
@@ -81,11 +89,18 @@ krympt, primärknapp som dubblerats eller tappat hierarki.
 
 Det är hela leveransen. Jacob kvitterar tabellen, inte pixlarna.
 
-## Steg 5 — Code, efter Design
+## Steg 5 — baseline-seed, EFTER Design + hög C fixad
 
-- Skriv om baselines ENBART för rader dömda "acceptera".
-- Fixa hög C först; kör om; de scenerna får ny dom.
-- Först när alla 54 är acceptera eller fixade: grön körning = CI grön på riktigt.
+Baselines skrivs INTE lokalt (`test:visual:update` på Mac → darwin) och INTE per scen.
+De seedas genom workflow `visual-baselines.yml` (workflow_dispatch, med en note om vad
+som godkänns) — den regenererar ALLA Linux-baselines till nuvarande render och committar
+dem i CI. Allt-eller-inget: körs den medan en hög-C-regression finns kvar bakas
+regressionen in som ny sanning. Därför ordning:
+1. Design dömer (steg 1–4).
+2. Code fixar ALLA hög-C-regressioner först, kör om app-ci tills bara "acceptera"-diffar
+   återstår.
+3. Trigga `visual-baselines.yml` EN gång → alla 54 (avsedda + nu-rättade) blir ny
+   baseline, CI grön på riktigt. Jacob triggar workflowen (Code om gh-access).
 
 ## Angränsande, INTE del av detta
 
@@ -95,5 +110,6 @@ när baselines är klara.
 
 ## Vem gör vad
 
-Code: steg 0 + steg 5. Design: steg 1–4 (och det är steg 1 som gör steg 3 kort).
-Jacob: kvitterar tabellen. Opus: inget mer här — instruktionen är leveransen.
+Code: steg 0 (hämta artefakten) + steg 5 (trigga baseline-workflowen efter hög C).
+Design: steg 1–4 (och det är steg 1 som gör steg 3 kort).
+Jacob: kvitterar tabellen, triggar `visual-baselines.yml`. Opus: inget mer här.
