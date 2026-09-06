@@ -20,24 +20,18 @@ import type { Player } from '../src/domain/entities/Player'
 import type { Tactic } from '../src/domain/entities/Club'
 import type { Weather } from '../src/domain/entities/Weather'
 import {
-  CornerStrategy,
   FixtureStatus,
   IceQuality,
   MatchEventType,
-  PenaltyKillStyle,
   PlayerArchetype,
   PlayerPosition,
-  TacticAttackingFocus,
-  TacticMentality,
-  TacticPassingRisk,
-  TacticTempo,
-  TacticWidth,
   WeatherCondition,
 } from '../src/domain/enums'
 import { simulateMatch } from '../src/domain/services/matchEngine'
 import { evaluateSquad } from '../src/domain/services/squadEvaluator'
 import { getTacticModifiers } from '../src/domain/services/tacticModifiers'
 import { getPositionFit } from '../src/domain/utils/positionFit'
+import { c2Tactic } from './c2/tacticProfiles'
 
 type ProfileId = 'balanced-correct' | 'balanced-misplaced' | 'stacked-correct' | 'stacked-misplaced'
 
@@ -174,30 +168,7 @@ function makeSquad(clubId: string, ca: number): Player[] {
 }
 
 function tacticFor(profile: Profile): Tactic {
-  return profile.stacked
-    ? {
-        mentality: TacticMentality.Offensive,
-        tempo: TacticTempo.High,
-        passingRisk: TacticPassingRisk.Direct,
-        // Exakt paket från speltestet/C2-domen. Smalt är inte maxvärdet i
-        // motorn, men mätningen ska reproducera den rapporterade taktiken —
-        // inte konstruera en ny, starkare profil.
-        width: TacticWidth.Narrow,
-        attackingFocus: TacticAttackingFocus.Wings,
-        cornerStrategy: CornerStrategy.Aggressive,
-        penaltyKillStyle: PenaltyKillStyle.Aggressive,
-        formation: profile.formation,
-      }
-    : {
-        mentality: TacticMentality.Balanced,
-        tempo: TacticTempo.Normal,
-        passingRisk: TacticPassingRisk.Mixed,
-        width: TacticWidth.Normal,
-        attackingFocus: TacticAttackingFocus.Mixed,
-        cornerStrategy: CornerStrategy.Standard,
-        penaltyKillStyle: PenaltyKillStyle.Active,
-        formation: profile.formation,
-      }
+  return { ...c2Tactic(profile.stacked ? 'stacked' : 'balanced'), formation: profile.formation }
 }
 
 function correctLineupSlots(formation: FormationType, squad: Player[]): Record<string, string | null> {
