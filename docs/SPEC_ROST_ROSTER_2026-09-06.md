@@ -4,8 +4,9 @@
 
 Rosten över namngivna återkommande röster som röstintro-grinden gäller, med
 klass per röst. Grundad i kod (portalBuilder/inboxToPortal/patronData/journalist-
-service), inte gissad. **Status: FÖRSLAG — start/kö väntar Jacobs kall i speltest,
-två rader väntar kod-bekräftelse (se §Flaggor).**
+service), inte gissad. **Status: start/kö-FÖRSLAG väntar Jacobs kall i speltest. Kod-flaggorna besvarade
+(Codex 2026-09-06): sponsor undantagen (bolag utan talesperson), klackledare
+bekräftad som kö-röst (namngiven person).**
 
 Bakgrund: portalen märker korten med KATEGORI (`inboxToPortal.KIND_LABEL`:
 🏆 RESULTAT, 📰 MEDIA, 💼 MECENAT…). Kategorin är sorteringen och ska VARA KVAR —
@@ -25,8 +26,8 @@ faller aldrig bort.
 | `board` | Ordföranden/styrelsen | board_objectives, BoardFeedback, styrelsemöten | **SEED** | Tillträdet |
 | `local_press` | Lokalpressen/journalisten | journalist_card, Media/MediaEvent, journalistService, feud/redemption | **KÖ** | Nytt introkort (Opus-copy) |
 | `patron` | Mecenaten (namngiven: Hedlund/Nordin…) | PatronInfluence, patronData.PATRON_PROFILES, patron_emerge (CS ≥ 60) | **KÖ** | **Återanvänd `patron_emerge`** — den ÄR introt (namn+bolag+backstory) |
-| `sponsor` | Sponsor(er) | sponsor-events, motbud, sponsorfavör, jobbet_forsvann | **KÖ om namngiven** (flagga) | Nytt introkort om namngiven |
-| `klack_leader` | Namngiven klackledare | — (ej funnen i kod ännu) | **KÖ om existerar** (flagga) | Nytt introkort om röst införs |
+| `sponsor` | Sponsor(er) | sponsor-events, motbud, sponsorfavör, jobbet_forsvann | **UNDANTAGEN** (Codex: bolag utan namngiven talesperson) | — |
+| `klack_leader` | Namngiven klackledare | namngiven person i kod (Codex bekräftat); wiras i nästa producentpass | **KÖ** | Nytt introkort (Opus-copy) |
 | `klack_collective` | Klacken som kollektiv | klackEcho, klackPresenter, klackState/mood | **UNDANTAGEN** | Ambient, ingen person |
 | `club_voice` | Klubben (torr institutionsröst) | club.deadpan, Klubbpärmen/liggaren | **UNDANTAGEN** | Institution, ingen man möter |
 | `narrator` | Berättaren | SPEC_BERATTAREN | **UNDANTAGEN** | Spelets röst (per dom) |
@@ -42,7 +43,8 @@ som en NAMNGIVEN tjänsteman — då flyttas de till kö. Flaggat, ej bråttom.
 - **Start (Tillträdet seedar introducerade):** `assistant_coach`, `board`. De två
   mest frekventa rösterna känns redan vid avspark → portalen står inte tom.
 - **Kö (introduceras vid första förekomst, max 1/matchdag):** `local_press` tidigt,
-  `patron` när den emergerar (CS ≥ 60, alltså inte direkt), sedan ev. `sponsor`.
+  `patron` när den emergerar (CS ≥ 60, alltså inte direkt), och `klack_leader` när
+  producentpasset wirat den. `sponsor` är undantagen (bolag utan talesperson).
 - **Kön är kort.** Max 1/matchdag bottnar aldrig — speltestets flod var 3–4
   oidentifierade röster samtidigt, inte tio i kö. Klacken ambient + resten grindad
   löser surret utan en parad av "hej, jag är X".
@@ -50,12 +52,11 @@ som en NAMNGIVEN tjänsteman — då flyttas de till kö. Flaggat, ej bråttom.
 Jacob mäter i speltest: känns ordningen rätt (journalist före mecenat), och lämnar
 Tillträdet spelaren med assistent + ordförande redan kända?
 
-## Flaggor (Codex/Code bekräftar i koden)
+## Kod-svar (Codex 2026-09-06)
 
-1. Är sponsorer namngivna personas? Ja → `sponsor` = KÖ, eget introkort. Abstrakta/
-   system → UNDANTAGEN.
-2. Finns en namngiven klackledare som egen röst? Ja → `klack_leader` = KÖ. Bara
-   kollektiv klack → raden utgår.
+1. Sponsor: bolag utan namngiven talesperson → **UNDANTAGEN**.
+2. Klackledare: namngiven person → **KÖ**; wiras i nästa producentpass, behöver
+   introkort-copy (nedan).
 
 ## Introkort-copy
 
@@ -68,7 +69,12 @@ Tillträdet spelaren med assistent + ordförande redan kända?
   - Förkastad variant: "Du kommer att läsa honom. Ibland gillar du det inte." —
     för ödesmättad, förvarnar om en känslobåge i stället för att konstatera vem.
 - `patron`: ingen ny copy — `patron_emerge` är introt.
-- `sponsor`/`klack_leader`: skrivs om flaggorna faller ut som KÖ.
+- `klack_leader` (klackens register genom en person — jordnära, direkt, sparsam;
+  presentation KONSTATERAR):
+  - Titel: `{klackledare}.`
+  - Body: `Han håller ihop {klubb}s klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`
+  - `{klackledare}`/`{klubb}` resolvas ur klack-producenten (wiras nästa pass).
+- `sponsor`: ingen copy — undantagen.
 
 ## Regel: presentationskort konstaterar, de förvarnar inte
 
@@ -81,7 +87,10 @@ känslomässigt i stället för informationsmässigt.
 
 ## Handoff
 
-- Code: forma `voiceId`-enumen mot rostern; seed `assistant_coach`+`board` i
-  Tillträdet + migrering; bekräfta de två flaggorna.
-- Opus: slutlig `local_press`-copy + ev. `sponsor`/`klack_leader`-copy när
-  enum/namngivning bekräftad; Jacobs start/kö-kall från speltest låser tabellen.
+- Code/Codex: `voiceId`-enum + grind + seed + migrering BYGGT (Codex `752e610a` dom+roster,
+  `6970dd1a` patron-/deferralfix — okänd patron får introkort, uttalande nästa matchdag,
+  gamla saves migreras; 6 regressioner gröna, 4 499 tester + bygge). Kvar: wira
+  `local_press`-introkortet och `klack_leader`-producenten.
+- Opus: `klack_leader`-copy skriven (ovan); slutlig `local_press`-copy när
+  journalistnamngivningen bekräftas ur `journalistService`. Jacobs start/kö-kall
+  från speltest låser tabellen.
