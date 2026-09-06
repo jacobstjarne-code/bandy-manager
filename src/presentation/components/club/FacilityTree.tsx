@@ -38,9 +38,12 @@ function ConsekvensRad({ consequences }: { consequences: FacilityNodeDef['conseq
             ? 'var(--danger-text)'
             : 'var(--text-muted)'
         const arrow = c.dir === 'upp' ? '↑' : c.dir === 'ned' ? '↓' : '—'
+        const text = c.kind === 'mechanical' && c.hook === 'construction_cost'
+          ? c.label
+          : `${DIM_LABELS[c.dim]} ${arrow}`
         return (
           <span key={i} style={{ fontSize: 8.5, fontWeight: 600, color, whiteSpace: 'nowrap' }}>
-            {DIM_LABELS[c.dim]} {arrow}
+            {text}
           </span>
         )
       })}
@@ -101,13 +104,11 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
   const { def, status } = view
   const isHall = def.isHall
 
-  const borderStyle = (() => {
-    if (isHall) return `1.5px solid var(--cold)`
-    if (status === 'built') return '2px solid var(--success)'
-    if (status === 'ongoing') return '2px solid var(--accent)'
-    if (status === 'available') return '1.5px solid var(--border-dark)'
-    return '1px solid var(--border)'
-  })()
+  const stateStripeColor = status === 'built'
+    ? 'var(--success)'
+    : status === 'ongoing'
+      ? 'var(--accent)'
+      : undefined
 
   const bg = (() => {
     if (isHall) return 'color-mix(in srgb, var(--cold) 5%, var(--bg-surface))'
@@ -132,6 +133,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
     if (isHall) return 'var(--cold)'
     if (status === 'built') return 'var(--success)'
     if (status === 'ongoing') return 'var(--accent-dark)'
+    if (status === 'locked') return 'var(--text-muted)'
     return 'var(--text-secondary)'
   })()
 
@@ -142,7 +144,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
     return 'transparent'
   })()
 
-  const opacity = status === 'locked' ? 0.35 : 1
+  const opacity = status === 'locked' ? 0.45 : 1
   // Block 3a: hallnoden öppnar H·1-hubben (via chevron) närhelst ett trial är
   // aktivt — oberoende av betrakta/valj-läget, eftersom hubben bara VISAR
   // status, den startar inget bygge. Startvalet (inled/inte_nu) sker separat
@@ -161,7 +163,17 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
       style={{
         position: 'relative',
         background: selected ? 'color-mix(in srgb, var(--accent) 8%, var(--bg-surface))' : bg,
-        border: selected ? `2px solid var(--accent)` : borderStyle,
+        borderWidth: selected ? 2 : isHall || status === 'available' ? 1.5 : 1,
+        borderStyle: !selected && status === 'available' ? 'dashed' : 'solid',
+        borderColor: selected
+          ? 'var(--accent)'
+          : isHall
+            ? 'var(--cold)'
+            : status === 'available'
+              ? 'var(--border-dark)'
+              : 'var(--border)',
+        borderLeftWidth: !selected && stateStripeColor ? 2 : undefined,
+        borderLeftColor: !selected ? stateStripeColor : undefined,
         borderRadius: 8,
         padding: '7px 10px',
         marginBottom: 5,
@@ -196,7 +208,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
         <span style={{
           fontSize: 8, padding: '2px 7px', borderRadius: 99, fontWeight: 600,
           whiteSpace: 'nowrap', color: tagColor, background: tagBg,
-          border: (status === 'available' || status === 'locked') && !isHall ? '1px solid var(--border-dark)' : undefined,
+          border: status === 'available' && !isHall ? '1px solid var(--border-dark)' : undefined,
         }}>
           {tagText}
         </span>

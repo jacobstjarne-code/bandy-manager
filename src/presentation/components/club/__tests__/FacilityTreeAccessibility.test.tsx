@@ -19,8 +19,11 @@ afterEach(() => {
   container = null
 })
 
-function renderTree(mode: 'betrakta' | 'valj', onSelect = vi.fn()) {
-  const facilityState: FacilityState = { builtNodeIds: [] }
+function renderTree(
+  mode: 'betrakta' | 'valj',
+  onSelect = vi.fn(),
+  facilityState: FacilityState = { builtNodeIds: [] },
+) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -69,5 +72,30 @@ describe('FacilityTree — E-M4 klickbara nodkort', () => {
   it('gör inga nodkort interaktiva i betrakta-läget', () => {
     const { view } = renderTree('betrakta')
     expect(view.querySelector('[role="button"]')).toBeNull()
+  })
+})
+
+describe('FacilityTree — B1:s ratificerade nodstater och konsekvensrad', () => {
+  it('skiljer byggd, pågående, möjlig och låst med rätt kantbehandling', () => {
+    const { view: builtView } = renderTree('betrakta', vi.fn(), { builtNodeIds: ['varmestuga'] })
+    expect(findCard(builtView, 'Värmestuga').style.borderLeftWidth).toBe('2px')
+
+    const { view: ongoingView } = renderTree('betrakta', vi.fn(), {
+      builtNodeIds: [],
+      activeProject: { nodeId: 'varmestuga', startedMatchday: 1, etaMatchday: 9 },
+    })
+    expect(findCard(ongoingView, 'Värmestuga').style.borderLeftWidth).toBe('2px')
+
+    const { view: availableView } = renderTree('betrakta')
+    expect(findCard(availableView, 'Värmestuga').style.borderStyle).toBe('dashed')
+    expect(findCard(availableView, 'Läktare — östra').style.opacity).toBe('0.45')
+  })
+
+  it('visar den mekaniska kassakostnaden i tkr i stället för en anonym ekonomipil', () => {
+    const { view } = renderTree('betrakta')
+    const card = findCard(view, 'Värmestuga')
+
+    expect(card.textContent).toContain('Kassa −120 tkr')
+    expect(card.textContent).not.toContain('Ekonomi ↓')
   })
 })
