@@ -311,7 +311,7 @@ function BoardTalksSection({ assessment }: { assessment: BoardAssessment }) {
             <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--copper)', marginBottom: 1, fontFamily: 'var(--font-body)' }}>
               Ordföranden
             </div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: 'var(--text-light)' }}>
+            <div className="h-card-sm" style={{ color: 'var(--text-light)' }}>
               Styrelsen har sett er säsong
             </div>
           </div>
@@ -348,14 +348,14 @@ function BoardTalksSection({ assessment }: { assessment: BoardAssessment }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: assessment.reasonLine ? 8 : 0 }}>
             {assessment.direction !== 'unchanged' && (
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text-light-secondary)' }}>
+              <span className="h-body-sm" style={{ color: 'var(--text-light-secondary)' }}>
                 {BOARD_EXPECTATION_LEVEL_LABEL[assessment.previousExpectation]}
               </span>
             )}
             {assessment.direction !== 'unchanged' && (
               <span style={{ color: arrowColor, fontSize: 12 }}>{isRaised ? '↗' : '↘'}</span>
             )}
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 800, color: 'var(--text-light)' }}>
+            <span className="h-name" style={{ color: 'var(--text-light)' }}>
               {BOARD_EXPECTATION_LEVEL_LABEL[assessment.newExpectation]}
             </span>
             {assessment.direction === 'unchanged' && (

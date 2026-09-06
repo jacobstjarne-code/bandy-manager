@@ -303,7 +303,7 @@ export function GranskaScreen() {
         transition: 'opacity 0.3s ease 0.3s',
       }}>
         {/* Step label */}
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textAlign: 'center', color: 'var(--text-muted)', paddingTop: 8, marginBottom: 2 }}>
+        <p className="h-label" style={{ textAlign: 'center', paddingTop: 8, marginBottom: 2 }}>
           FÖRDJUPA
         </p>
 

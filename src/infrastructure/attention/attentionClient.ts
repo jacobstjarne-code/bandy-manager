@@ -1,5 +1,7 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { evaluateAttention } from '../../domain/attention/attentionEngine'
+import { createNarrativePushCopyResolver, type PushCopyRotationStore } from '../../domain/attention/narrativePushCopyResolver'
+import type { AttentionVoice } from '../../domain/attention/types'
 import type {
   AttentionSnapshot,
   NarrativeDeliveryReceipt,
@@ -9,6 +11,37 @@ import type {
 const IDENTITY_KEY = 'bandy-attention-installation-v1'
 const ENABLED_KEY = 'bandy-attention-enabled-v1'
 const ATTRIBUTION_KEY = 'bandy-notification-attribution-v1'
+const PUSH_COPY_ROTATION_KEY = 'bandy-attention-push-copy-rotation-v1'
+
+/**
+ * stickiness-copy-roster (2026-09-06) — per-installation "senast visad röst
+ * per scenario" (register §8.1: aldrig samma variant två leveranser i rad).
+ * localStorage, samma nivå som IDENTITY_KEY/ENABLED_KEY ovan — inte i saven,
+ * rotationen är en egenskap hos INSTALLATIONEN, inte klubbens historia.
+ */
+function readPushCopyRotation(): Record<string, AttentionVoice> {
+  try {
+    return JSON.parse(localStorage.getItem(PUSH_COPY_ROTATION_KEY) ?? '{}') as Record<string, AttentionVoice>
+  } catch {
+    return {}
+  }
+}
+
+const pushCopyRotationStore: PushCopyRotationStore = {
+  getLastVoice(scenarioKey) {
+    return readPushCopyRotation()[scenarioKey]
+  },
+  setLastVoice(scenarioKey, voice) {
+    try {
+      const current = readPushCopyRotation()
+      current[scenarioKey] = voice
+      localStorage.setItem(PUSH_COPY_ROTATION_KEY, JSON.stringify(current))
+    } catch {
+      // Rotationsspårning är en trevnadsdetalj, inte ett kontrakt — en
+      // localStorage-miss (privat läge, kvot) ska aldrig hindra en push.
+    }
+  },
+}
 
 interface InstallationIdentity {
   installationId: string
@@ -188,7 +221,9 @@ export async function unsubscribeFromClubNotifications(): Promise<void> {
 export function buildAttentionSnapshot(game: SaveGame, now = new Date()): AttentionSnapshot | null {
   const identity = readIdentity()
   if (!identity || !isAttentionEnabled()) return null
-  const evaluation = evaluateAttention(game, now)
+  const evaluation = evaluateAttention(game, now, {
+    narrativePushCopy: createNarrativePushCopyResolver(game, pushCopyRotationStore),
+  })
   return {
     schemaVersion: 1,
     installationId: identity.installationId,

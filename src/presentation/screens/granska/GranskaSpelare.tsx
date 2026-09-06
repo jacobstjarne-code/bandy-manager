@@ -131,7 +131,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                 <div style={{ width: 18, height: 18, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
                   dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
                 <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
-                <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
+                <span className="h-num-sm" style={{ color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
               </div>
             )
           })}

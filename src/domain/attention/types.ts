@@ -6,7 +6,11 @@ export type AttentionCategory =
   | 'season_context'
   | 'narrative_return'
 
-export type AttentionVoice = 'assistant' | 'club' | 'press' | 'season'
+// stickiness-copy-roster (2026-09-06): 'chair'/'fans' tillagda — registrets
+// två röster som saknades (ordföranden/klacken, prep.chair.pressure,
+// anchor.fans.derby m.fl.). 'season' var död kod (grep: aldrig ett verkligt
+// röstvärde någonstans i src/) — borttagen, superseterad kod (Princip 7).
+export type AttentionVoice = 'assistant' | 'club' | 'press' | 'chair' | 'fans'
 
 export type AttentionImportance = 'normal' | 'major'
 

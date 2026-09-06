@@ -85,7 +85,12 @@ export function narrativePushDrafts(
     importance: item.post.significance >= 90 ? 'major' : 'normal',
     title: copy.title,
     body: copy.body,
-    deepLink: category === 'season_context' ? '/game/tabell' : '/game/dashboard',
+    // stickiness-copy-roster (2026-09-06): narrative_return (revansch/
+    // ex-spelare) pekar mot nästa match — deep-linken register §4 tillåter
+    // ("nästa match eller Krönikan"), och den enda av de två redan
+    // allowlistad i public/notification-sw.js (Krönikan har ingen egen
+    // route, bara en ClubScreen-flik, inte allowlistad).
+    deepLink: category === 'season_context' ? '/game/tabell' : category === 'narrative_return' ? '/game/match' : '/game/dashboard',
     score: item.scoresBySurface.push.total,
     narrativePost: {
       post: {
