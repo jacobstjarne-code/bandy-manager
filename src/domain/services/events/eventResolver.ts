@@ -18,6 +18,8 @@ import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
+import { buildPromotedPlayerFromYouth, starsForPotential } from '../academyService'
+import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry } from '../clubHistoryLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
@@ -2090,6 +2092,72 @@ export function resolveEvent(
           ...selected.filter(player => !existingIds.has(player.id)),
         ],
       },
+    }
+  }
+
+  // akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4) — beslutskortets två
+  // val. "Flytta upp" delar konstruktion med academyActions.ts:s manuella
+  // promoteYouthPlayer (buildPromotedPlayerFromYouth, en sanning). "Släpp"
+  // skriver youth_aged_out DIREKT (inte vid rollover) så spelaren inte
+  // dubbelbehandlas av seasonEndProcessor.ts:s tystnads-fallback för
+  // obesvarade kort — den fallbacken ser bara vad som FORTFARANDE står i
+  // game.youthTeam.players vid rollover.
+  if (eventId.startsWith('event_youth_aged_out_') && updatedGame.youthTeam && event.relatedPlayerId) {
+    const youthPlayerId = event.relatedPlayerId
+    const youthPlayer = updatedGame.youthTeam.players.find(p => p.id === youthPlayerId)
+    if (youthPlayer) {
+      if (choiceId === 'flytta_upp') {
+        const newPlayer = buildPromotedPlayerFromYouth(
+          youthPlayer, updatedGame.managedClubId, updatedGame.currentSeason, updatedGame.currentMatchday,
+        )
+        updatedGame = {
+          ...updatedGame,
+          players: [...updatedGame.players, newPlayer],
+          youthTeam: {
+            ...updatedGame.youthTeam,
+            players: updatedGame.youthTeam.players.filter(p => p.id !== youthPlayerId),
+          },
+          clubs: updatedGame.clubs.map(c =>
+            c.id === updatedGame.managedClubId
+              ? { ...c, squadPlayerIds: [...c.squadPlayerIds, newPlayer.id] }
+              : c
+          ),
+          eventLedger: logEvent(updatedGame, buildAcademyPromotionLedgerEntry({
+            playerId: newPlayer.id,
+            clubId: updatedGame.managedClubId,
+            season: updatedGame.currentSeason,
+            matchday: updatedGame.currentMatchday,
+          })),
+        }
+      } else if (choiceId === 'slapp') {
+        const stars = starsForPotential(youthPlayer.potentialAbility)
+        updatedGame = {
+          ...updatedGame,
+          youthTeam: {
+            ...updatedGame.youthTeam,
+            players: updatedGame.youthTeam.players.filter(p => p.id !== youthPlayerId),
+          },
+          // Text LÅST (DOM_AKADEMI_LIGGARE §4) — "släppt VIA kort", skild
+          // från seasonEndProcessor.ts:s tystnads-variant ("utan kort").
+          inbox: [...updatedGame.inbox, {
+            id: `inbox_youth_aged_out_${youthPlayerId}_${updatedGame.currentSeason}`,
+            date: updatedGame.currentDate,
+            type: InboxItemType.AcademyAgedOut,
+            title: `${youthPlayer.firstName} ${youthPlayer.lastName} släppt`,
+            body: `${youthPlayer.firstName} ${youthPlayer.lastName} släppt. Tjugo år, ${stars} stjärnor. Det var ditt val — och det kan ha varit rätt.`,
+            isRead: false,
+          }],
+          eventLedger: logEvent(updatedGame, buildYouthAgedOutLedgerEntry({
+            playerId: youthPlayerId,
+            clubId: updatedGame.managedClubId,
+            season: updatedGame.currentSeason,
+            matchday: updatedGame.currentMatchday,
+            outcome: 'released',
+            stars,
+            caAtExit: youthPlayer.currentAbility,
+          })),
+        }
+      }
     }
   }
 

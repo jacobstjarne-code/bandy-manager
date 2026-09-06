@@ -118,6 +118,9 @@ export enum InboxItemType {
    *  ett tillämpat default-utfall eller en uttrycklig utrinning. Egen typ, inte
    *  BoardFeedback: "aldrig tyst" ska gå att hitta och räkna som sin egen sort. */
   DecisionRollover = 'decisionRollover',
+  /** akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4): en P19-spelare som
+   *  fyllde tjugo och lämnade akademin, med eller utan beslutskort. */
+  AcademyAgedOut = 'academyAgedOut',
 }
 
 export enum TrainingType {

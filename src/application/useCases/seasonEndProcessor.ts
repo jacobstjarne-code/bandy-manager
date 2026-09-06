@@ -6,7 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
-import { buildRetirementLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -23,7 +23,7 @@ import { mulberry32 } from '../../domain/utils/random'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/playerDevelopmentService'
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
-import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
+import { generateYouthTeam, carryOverYouthTeam, starsForPotential } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage, seasonReputationDelta, computeBoardPatienceUpdate, computeSeasonVerdictRating, deriveBoardAssessment, BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER, seasonVerdictZoneLine, buildSeasonBoardTruth, isUnderdogSeason, seasonVerdictText, RELEGATION_ZONE_SIZE, selectBoardReasonLine, shouldFireManagerForSport } from '../../domain/services/boardService'
 import { deriveBoardLeagueContext, generateSeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -1726,10 +1726,41 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // Berättaren steg 4: pensioneringarna skapas tidigare i samma rollover.
   // Lägg dem i den kanoniska vy som årsboken rankar, annars kan årets
   // viktigaste person försvinna just för att han slutade denna säsong.
+  // DOM_AKADEMI_LIGGARE §4, "utan kort": en P19-spelare som fyller 20 utan
+  // att ha lämnat youthTeam.players via ett besvarat beslutskort (event_youth_aged_out_*
+  // i eventResolver.ts tar bort spelaren direkt vid "Flytta upp"/"Släpp") — täcker
+  // BÅDE <3-stjärniga (fick aldrig kort, §4) och ≥3-stjärniga vars kort låg obesvarat
+  // vid rollover (ingen expiry-mekanism finns för pendingEvents, se recon). Måste
+  // beräknas HÄR, före carryOverYouthTeam nedan tyst filtrerar bort dem (`age < 20`).
+  const agingOutYouthPlayers = (game.youthTeam?.players ?? []).filter(p => p.age === 19)
+  const youthAgedOutInbox: InboxItem[] = agingOutYouthPlayers.map(p => {
+    // joinedSeason saknas på äldre spara — 5 är standardintagets 15→20-spann,
+    // en dokumenterad uppskattning för legacy-data, inte en påstådd exakt siffra.
+    const seasons = p.joinedSeason != null ? game.currentSeason - p.joinedSeason + 1 : 5
+    return {
+      id: `inbox_youth_aged_out_${p.id}_${nextSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.AcademyAgedOut,
+      title: `${p.firstName} ${p.lastName} fyllde tjugo`,
+      body: `${p.firstName} ${p.lastName} fyllde tjugo. Ingen plats i A-laget, inget kontrakt. Han tackade för ${seasons} år och gick.`,
+      isRead: false,
+    } as InboxItem
+  })
+  const youthAgedOutLedgerEntries: EventLedgerEntry[] = agingOutYouthPlayers.map(p =>
+    buildYouthAgedOutLedgerEntry({
+      playerId: p.id,
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: game.currentMatchday,
+      outcome: 'released',
+      stars: starsForPotential(p.potentialAbility),
+      caAtExit: p.currentAbility,
+    })
+  )
   const seasonEndLedger = appendMomentsAndEntriesToLedger(
     game.eventLedger ?? [],
     [],
-    [...retirementLedgerEntries, ...galaLedgerEntriesForSeason],
+    [...retirementLedgerEntries, ...galaLedgerEntriesForSeason, ...youthAgedOutLedgerEntries],
     game.managedClubId,
     game.id,
   )
@@ -2030,6 +2061,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...retirementMessages,
       ...contractExpiryInbox,
       ...(contractInboxItem ? [contractInboxItem] : []),
+      ...youthAgedOutInbox,
     ].slice(-75),
     managerProfile: updatedManagerProfile,
     transferState: {

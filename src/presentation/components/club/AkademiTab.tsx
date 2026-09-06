@@ -6,6 +6,7 @@ import { positionShort } from '../../utils/formatters'
 import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } from '../../../domain/data/mentorshipStrings'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
+import { starsForPotential } from '../../../domain/services/academyService'
 
 const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -108,7 +109,9 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                 {group.label}
               </p>
               {group.players.map(p => {
-                const stars = p.potentialAbility >= 70 ? '★★★★' : p.potentialAbility >= 55 ? '★★★' : p.potentialAbility >= 45 ? '★★' : '★'
+                // akademi-junior-fyller-20: kanonisk formel delad med
+                // beslutskortets ≥3-stjärnors-gate (academyService.ts).
+                const stars = '★'.repeat(starsForPotential(p.potentialAbility))
                 return (
                   <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                     <div>

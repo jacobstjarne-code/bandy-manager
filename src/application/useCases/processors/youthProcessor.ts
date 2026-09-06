@@ -3,7 +3,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { YouthTeam } from '../../../domain/entities/Academy'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { InboxItemType } from '../../../domain/enums'
-import { simulateYouthMatch } from '../../../domain/services/academyService'
+import { simulateYouthMatch, starsForPotential } from '../../../domain/services/academyService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { academyBreakthroughQuote } from '../../../domain/data/academyBreakthroughText'
@@ -162,6 +162,43 @@ export function processYouth(
             subtitle: '⚠️ −confidence (missad landslagschans)',
             effect: { type: 'noOp' },
           },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  // ── akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4, Jacobs kall
+  // 2026-09-05: JA) — en P19-spelare med ≥3 stjärnor som fyller tjugo i
+  // sommar får ett beslutskort FÖRE rollover, i säsongens sista omgångar
+  // (nextMatchday 19, av 22 — samma "sista omgångarna"-idiom som district-
+  // callupens matchday 8/15, bara flyttat till slutet). En spelare UNDER
+  // 3 stjärnor och en OBESVARAD ≥3-stjärnors-kandidat behandlas identiskt
+  // vid rollover (seasonEndProcessor.ts): tystnaden är avsiktlig likhet,
+  // inte en bugg — det finns ingen separat "utgången obesvarad"-spärr för
+  // pendingEvents (till skillnad från deferredDecisions), så rollover är
+  // den enda punkten som mekaniskt GARANTERAT kör för alla kvarvarande. ──
+  if (game.youthTeam && nextMatchday === 19) {
+    const allKnownEventIds = [
+      ...(game.resolvedEventIds ?? []),
+      ...(game.pendingEvents ?? []).map(event => event.id),
+      ...(game.deferredDecisions ?? []).map(event => event.id),
+    ]
+    const turningTwenty = (updatedYouthTeam?.players ?? []).filter(player =>
+      player.age === 19 && starsForPotential(player.potentialAbility) >= 3
+    )
+    for (const player of turningTwenty) {
+      const eventId = `event_youth_aged_out_${player.id}_s${game.currentSeason}`
+      if (allKnownEventIds.includes(eventId)) continue
+      gameEvents.push({
+        id: eventId,
+        type: 'academyEvent',
+        relatedPlayerId: player.id,
+        title: `${player.firstName} ${player.lastName} fyller tjugo`,
+        body: 'Sista året i P19 är slut. Antingen får han ett kontrakt, eller så får han gå. Ingen tredje väg.',
+        choices: [
+          { id: 'flytta_upp', label: 'Flytta upp', effect: { type: 'noOp' } },
+          { id: 'slapp', label: 'Släpp', effect: { type: 'noOp' } },
         ],
         resolved: false,
       })

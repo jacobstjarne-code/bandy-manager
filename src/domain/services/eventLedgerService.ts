@@ -16,15 +16,41 @@ import type { EventLedgerEntry } from '../entities/Narrative'
  * fältvalidering utöver TypeScripts unionstyper; posten är redan
  * färdigformad av anroparen.
  */
+/**
+ * DOM_AKADEMI_LIGGARE_2026-09-04 §2: en spelares namn ska överleva att
+ * personen försvinner ur `game.players` (såld/pensionerad) ELLER
+ * `game.youthTeam.players` (åldrats ut/uppflyttad) — en P19-spelare finns
+ * ALDRIG i `game.players` till att börja med, så subject.kind==='player'
+ * måste slå upp båda källorna, inte bara den ena.
+ */
+function snapshotForPlayerSubject(
+  game: SaveGame,
+  subject: EventLedgerEntry['subject'] | EventLedgerEntry['subject2'],
+): EventLedgerEntry['subjectSnapshot'] | undefined {
+  if (subject?.kind !== 'player') return undefined
+  const senior = game.players.find(p => p.id === subject.id)
+  if (senior) return { name: `${senior.firstName} ${senior.lastName}`, position: senior.position, age: senior.age }
+  const youth = game.youthTeam?.players.find(p => p.id === subject.id)
+  if (youth) return { name: `${youth.firstName} ${youth.lastName}`, position: youth.position, age: youth.age }
+  return undefined
+}
+
 export function logEvent(game: SaveGame, entry: EventLedgerEntry): EventLedgerEntry[] {
   const withClub = entry.clubId ? entry : { ...entry, clubId: game.managedClubId }
   const withManager = (withClub.type === 'decision' || withClub.type === 'manager_burnout')
     && !withClub.managerId
     ? { ...withClub, managerId: game.id }
     : withClub
+  const withSnapshot = withManager.subjectSnapshot
+    ? withManager
+    : {
+        ...withManager,
+        subjectSnapshot: snapshotForPlayerSubject(game, withManager.subject)
+          ?? snapshotForPlayerSubject(game, withManager.subject2),
+      }
   return [
     ...(game.eventLedger ?? []),
-    withManager,
+    withSnapshot,
   ]
 }
 

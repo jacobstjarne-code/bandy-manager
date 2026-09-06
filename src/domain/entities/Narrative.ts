@@ -203,6 +203,11 @@ export type EventLedgerType =
   // hör därför till kanon. Behörigheten att tala ligger separat i
   // SaveGame.introducedVoices och härleds aldrig tillbaka ur ledgern.
   | 'voice_introduced'
+  // DOM_AKADEMI_LIGGARE_2026-09-04 §4 (akademi-junior-fyller-20, Jacobs kall
+  // 2026-09-05: JA) — en P19-spelare som fyller tjugo utan uppflyttning
+  // försvann tidigare ljudlöst (game.youthTeam.players filtrerades bort,
+  // ingen post, ingen konsument). subject = junioren.
+  | 'youth_aged_out'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -282,6 +287,19 @@ export interface EventLedgerEntry {
   // spelaren + rivalklubben). Legitimt bara när källan redan bär två
   // identiteter — ALDRIG en dumpningsplats för en andra godtycklig referens.
   subject2?: { kind: 'player' | 'club' | 'mecenat'; id: string }
+  /**
+   * DOM_AKADEMI_LIGGARE_2026-09-04 §2: en spelares namn ska överleva att
+   * personen försvinner ur den array subject.id pekar in i (game.players
+   * för en såld/pensionerad spelare, game.youthTeam.players för en P19-
+   * spelare som åldras ut eller flyttas upp — ingen av arrayerna behåller
+   * en post för den som lämnat). Fyllt av `logEvent` vid skrivtillfället
+   * för alla spelar-subjekt (subject OCH subject2 om `kind==='player'`) —
+   * inte en ny mall per producent. `resolveSubjectName` läser snapshotet
+   * FÖRST, `game.players` som fallback (bakåtkompatibelt, äldre poster
+   * saknar fältet). Bara namn/position/ålder — inga andra fält, ingen
+   * duplicering av spelarschemat.
+   */
+  subjectSnapshot?: { name: string; position?: string; age?: number }
 
   // ── VAD BLEV DET ──
   outcome?: 'won' | 'lost' | 'neutral'
@@ -336,6 +354,8 @@ export interface EventLedgerEntry {
   eraLabel?: ClubEra                      // era_shift
   transferRole?: TransferRole             // transfer_story
   matchCategory?: MatchHighlightCategory  // season_highlight — Code-fynd, flaggat till Opus
+  /** youth_aged_out (DOM_AKADEMI_LIGGARE §4). `other_club` reserverat, produceras inte i v1. */
+  youthAgedOut?: { outcome: 'released' | 'other_club'; stars: number; caAtExit: number }
 
   /**
    * liggare-k9-doda-typer (DOM 2026-09-04, Opus): matchresultatet ÄR rå

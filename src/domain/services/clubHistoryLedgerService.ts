@@ -79,6 +79,34 @@ export function buildAcademyPromotionLedgerEntry(input: {
   }
 }
 
+/**
+ * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE_2026-09-04 §4/§1). subject
+ * = junioren; `subjectSnapshot` fylls av `logEvent` vid skrivtillfället
+ * (spelaren finns ännu i game.youthTeam.players just då, men är borta ur
+ * den arrayen så fort rollover eller uppflyttningen kört). significance
+ * 45 bas, 60 om ≥3 stjärnor (samma tröskel som beslutskortet).
+ */
+export function buildYouthAgedOutLedgerEntry(input: {
+  playerId: string
+  clubId: string
+  season: number
+  matchday: number
+  outcome: 'released' | 'other_club'
+  stars: number
+  caAtExit: number
+}): EventLedgerEntry {
+  return {
+    type: 'youth_aged_out',
+    semanticKey: `youth_aged_out_${input.playerId}_s${input.season}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'player', id: input.playerId },
+    significance: input.stars >= 3 ? 60 : 45,
+    youthAgedOut: { outcome: input.outcome, stars: input.stars, caAtExit: input.caAtExit },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

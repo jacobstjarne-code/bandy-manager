@@ -1,9 +1,25 @@
 import type { Club } from '../entities/Club'
 import type { YouthTeam, YouthPlayer, YouthMatchResult, AcademyLevel } from '../entities/Academy'
+import type { Player } from '../entities/Player'
 import { PlayerPosition, PlayerArchetype } from '../enums'
 import { clamp } from '../utils/clamp'
 import { mulberry32 } from '../utils/random'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
+import { generatePlayerAttributes } from './playerAttributeGenerator'
+
+/**
+ * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4): samma stjärnformel som
+ * Akademi-vyns visning (AkademiTab.tsx, `★`/`★★`/`★★★`/`★★★★`). Delad hit
+ * som ett tal (inte en sträng) så beslutskortets ≥3-stjärnors-gate och
+ * liggarens `stars`-fält aldrig kan glida isär från vad spelaren faktiskt
+ * ser i akademin.
+ */
+export function starsForPotential(potentialAbility: number): number {
+  if (potentialAbility >= 70) return 4
+  if (potentialAbility >= 55) return 3
+  if (potentialAbility >= 45) return 2
+  return 1
+}
 
 // Fictional opposing youth teams from Swedish bandy regions
 const YOUTH_OPPONENTS = [
@@ -111,6 +127,7 @@ export function generateYouthTeam(
       seasonAssists: 0,
       readyForPromotion: false,
       roundsReadyForPromotion: 0,
+      joinedSeason: season,
     })
   }
 
@@ -189,6 +206,7 @@ export function carryOverYouthTeam(
       seasonAssists: 0,
       readyForPromotion: false,
       roundsReadyForPromotion: 0,
+      joinedSeason: season,
     })
   }
 
@@ -325,4 +343,78 @@ export function simulateYouthMatch(
   const updatedPosition = clamp(Math.round(12 - pointsPerGame * 4), 1, 12)
 
   return { matchResult: result, updatedPlayers, updatedRecord, updatedPosition }
+}
+
+/**
+ * En sanning, ett ställe (CLAUDE.md OPUS-REGLER #4): den senior-spelare en
+ * uppflyttad P19:are blir — tidigare hade `academyActions.ts`s
+ * `promoteYouthPlayer` (store-action, manuell uppflyttning) den enda
+ * kopian. akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4) behöver samma
+ * konstruktion från `eventResolver.ts`s "Flytta upp"-val (ren domänkod, når
+ * inte store-actions) — extraherad hit så de två vägarna aldrig kan glida
+ * isär. Hash-baserad lön/attribut-rng är oförändrad, deterministisk per
+ * youthPlayer.id (samma seed oavsett vilken väg som anropar).
+ */
+export function buildPromotedPlayerFromYouth(
+  youthPlayer: YouthPlayer,
+  managedClubId: string,
+  currentSeason: number,
+  promotionRound: number,
+): Player {
+  const timing = getPromotionTiming(youthPlayer)
+
+  let hash = 0
+  for (let i = 0; i < youthPlayer.id.length; i++) {
+    hash = ((hash << 5) - hash) + youthPlayer.id.charCodeAt(i)
+    hash |= 0
+  }
+  const hashRand = Math.abs(hash % 1000) / 1000
+  const salary = 2000 + Math.round(hashRand * 2000)
+  const attributeRandom = mulberry32(hash)
+
+  return {
+    id: `player_promoted_${youthPlayer.id}_${currentSeason}`,
+    firstName: youthPlayer.firstName,
+    lastName: youthPlayer.lastName,
+    age: youthPlayer.age,
+    nationality: 'Svensk',
+    clubId: managedClubId,
+    // tenure-falt-joinedclubseason (DOM 2026-09-03): akademiuppflyttning är
+    // ett av domens tre skrivställen.
+    joinedClubSeason: currentSeason,
+    academyClubId: managedClubId,
+    isHomegrown: true,
+    position: youthPlayer.position,
+    archetype: youthPlayer.archetype,
+    salary,
+    contractUntilSeason: currentSeason + 2,
+    marketValue: Math.round(youthPlayer.currentAbility * 1000),
+    morale: timing === 'good' ? 75 : timing === 'early' ? 45 : 60,
+    form: 50,
+    fitness: 80,
+    sharpness: 60,
+    seasonForm: 60,
+    dayJob: undefined,
+    isFullTimePro: false,
+    currentAbility: youthPlayer.currentAbility,
+    potentialAbility: youthPlayer.potentialAbility,
+    developmentRate: youthPlayer.developmentRate,
+    injuryProneness: 30,
+    discipline: 65,
+    // P19-spelaren bär CA + arketyp men inga fulla seniorattribut.
+    // Materialisera dem här ur samma kanoniska källa som övriga spelare.
+    attributes: generatePlayerAttributes({
+      currentAbility: youthPlayer.currentAbility,
+      archetype: youthPlayer.archetype,
+      rng: { next: attributeRandom },
+    }),
+    isInjured: false,
+    injuryDaysRemaining: 0,
+    suspensionGamesRemaining: 0,
+    seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
+    careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 },
+    promotedFromAcademy: true,
+    promotionRound,
+    promotionSeason: currentSeason,
+  } as Player
 }

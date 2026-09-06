@@ -83,4 +83,60 @@ describe('logEvent', () => {
     const game = makeGame()
     expect(game.eventLedger).toBeUndefined()
   })
+
+  /**
+   * DOM_AKADEMI_LIGGARE_2026-09-04 §2 — subjectSnapshot. En avgående/uppflyttad
+   * YouthPlayer finns aldrig i game.players och lämnar förr eller senare
+   * game.youthTeam.players också — utan en snapshot vid skrivtillfället har
+   * senare läsare (Krönikan) ingen väg till namnet.
+   */
+  it('fyller subjectSnapshot automatiskt för ett spelar-subject i game.players', () => {
+    const game = makeGame()
+    const player = game.players[0]
+    const updated = logEvent(game, { ...minimalEntry, subject: { kind: 'player', id: player.id } })
+    expect(updated[0].subjectSnapshot).toEqual({
+      name: `${player.firstName} ${player.lastName}`,
+      position: player.position,
+      age: player.age,
+    })
+  })
+
+  it('fyller subjectSnapshot ur game.youthTeam.players när spelaren inte finns i game.players', () => {
+    const game = makeGame()
+    const youth = game.youthTeam!.players[0]
+    const updated = logEvent(game, { ...minimalEntry, subject: { kind: 'player', id: youth.id } })
+    expect(updated[0].subjectSnapshot).toEqual({
+      name: `${youth.firstName} ${youth.lastName}`,
+      position: youth.position,
+      age: youth.age,
+    })
+  })
+
+  it('prioriterar subject över subject2 när båda är spelare (enda subjectSnapshot-fältet)', () => {
+    const game = makeGame()
+    const [playerA, playerB] = game.players
+    const updated = logEvent(game, {
+      ...minimalEntry,
+      subject: { kind: 'player', id: playerA.id },
+      subject2: { kind: 'player', id: playerB.id },
+    })
+    expect(updated[0].subjectSnapshot?.name).toBe(`${playerA.firstName} ${playerA.lastName}`)
+  })
+
+  it('lämnar subjectSnapshot orört om anroparen redan satt en (t.ex. seasonEndProcessor för en spelare på väg ut ur saven)', () => {
+    const game = makeGame()
+    const explicit = { name: 'Frusen Namn', position: game.players[0].position, age: 20 }
+    const updated = logEvent(game, {
+      ...minimalEntry,
+      subject: { kind: 'player', id: game.players[0].id },
+      subjectSnapshot: explicit,
+    })
+    expect(updated[0].subjectSnapshot).toEqual(explicit)
+  })
+
+  it('sätter ingen subjectSnapshot när subject saknas eller inte är en spelare', () => {
+    const game = makeGame()
+    const updated = logEvent(game, { ...minimalEntry, subject: { kind: 'club', id: game.managedClubId! } })
+    expect(updated[0].subjectSnapshot).toBeUndefined()
+  })
 })

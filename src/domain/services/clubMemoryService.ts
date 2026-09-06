@@ -189,6 +189,10 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'derby_result',
   'big_win',
   'big_loss',
+  // DOM_AKADEMI_LIGGARE_2026-09-04 §4/§1 (akademi-junior-fyller-20): en P19-
+  // spelare som lämnar akademin vid tjugo ska minnas — inte försvinna
+  // ljudlöst ur game.youthTeam.players.
+  'youth_aged_out',
 ])
 
 function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
@@ -228,11 +232,24 @@ function playerMilestoneText(
 export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEntry, managedClubId: string): MemoryEvent | null {
   const playerId = entry.subject?.kind === 'player' ? entry.subject.id : undefined
   const player = playerId ? game.players.find(item => item.id === playerId) : undefined
-  const playerName = player
-    ? `${player.firstName} ${player.lastName}`
-    : (game.clubLegends ?? []).find(item => item.playerId === playerId)?.name
+  const playerName = entry.subjectSnapshot?.name
+    ?? (player
+      ? `${player.firstName} ${player.lastName}`
+      : (game.clubLegends ?? []).find(item => item.playerId === playerId)?.name)
 
   switch (entry.type) {
+    case 'youth_aged_out': {
+      // Text LÅST (DOM_AKADEMI_LIGGARE §4). Namnet kommer nästan alltid ur
+      // subjectSnapshot — en åldrats-ut junior finns aldrig i game.players
+      // och är redan borta ur game.youthTeam.players när Krönikan renderar
+      // detta senare.
+      if (!playerName || !entry.youthAgedOut) return null
+      return {
+        type: 'youth_aged_out', season: entry.season, matchday: entry.matchday,
+        text: `${playerName}, ${entry.youthAgedOut.stars} stjärnor, lämnade akademin vid tjugo.`,
+        emoji: '👤', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
     case 'academy_promotion':
       if (!playerName) return null
       return {
@@ -558,6 +575,8 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   nemesis_signed: 'tension', referee_feud: 'tension',
   mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
   voice_introduced: 'neutral',
+  // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
+  youth_aged_out: 'neutral',
 }
 
 /**
@@ -598,7 +617,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
-  rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤',
+  rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',

@@ -37,6 +37,14 @@ export interface YouthPlayer {
    * (simulateYouthMatch, academyService.ts).
    */
   availabilityUntilRound?: number
+  /**
+   * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4): den låsta "avsked
+   * utan kort"-texten ("Han tackade för {seasons} år och gick") behöver ett
+   * verkligt antal säsonger, inte en gissning ur intagsåldern (intag sker
+   * 15-19, inte alltid 15 — "20 - 15" hade varit fel för en sent intagen
+   * spelare). Optional: äldre saves saknar fältet, se textbyggarens fallback.
+   */
+  joinedSeason?: number
 }
 
 export interface YouthMatchResult {
