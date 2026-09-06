@@ -4,7 +4,8 @@ import type {
   LedgerToldRegistry,
   NarrativeSurface,
 } from '../entities/Narrative'
-import type { CurrentChronology } from './currentChronology'
+import type { SaveGame } from '../entities/SaveGame'
+import { currentChronology, type CurrentChronology } from './currentChronology'
 
 /** Identiteten är exakt den som SPEC_BERATTAREN §4 låser. */
 export function ledgerPostKey(
@@ -44,4 +45,25 @@ export function markLedgerPostTold(
     ...current,
     [key]: [...marks, { surface, season: chronology.season, matchday: chronology.matchday }],
   }
+}
+
+/**
+ * Gemensam kvittoväg för ytor som bär liggarpostens stabila nyckel men inte
+ * hela posten. Ogiltiga eller redan kvitterade nycklar är rena no-op:s.
+ */
+export function recordLedgerPostToldByKey(
+  game: SaveGame,
+  postKey: string | undefined,
+  surface: NarrativeSurface,
+): SaveGame {
+  if (!postKey) return game
+  const post = (game.eventLedger ?? []).find(candidate => ledgerPostKey(candidate) === postKey)
+  if (!post) return game
+  const ledgerTold = markLedgerPostTold(
+    game.ledgerTold,
+    post,
+    surface,
+    currentChronology(game),
+  )
+  return ledgerTold === game.ledgerTold ? game : { ...game, ledgerTold }
 }

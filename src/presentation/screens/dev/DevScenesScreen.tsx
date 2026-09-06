@@ -1803,7 +1803,7 @@ export function DevScenesScreen() {
     'club_skutskar', 'club_slottsbron', 'club_soderfors', 'club_vastanfors',
   ].includes(requestedArrivalClubId)
     ? requestedArrivalClubId
-    : (initialScene === 'opponent-intro' ? 'club_heros' : squadGame.managedClubId)
+    : (initialScene === 'opponent-intro' ? 'club_heros' : factoryMidSeasonGame.managedClubId)
   const [seededScene, setSeededScene] = useState<SceneId | null>(null)
   // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
   // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken
@@ -2479,7 +2479,7 @@ export function DevScenesScreen() {
         {scene === 'ekonomi' && (
           <div style={{ background: 'var(--bg)', minHeight: '812px', padding: '12px' }}>
             {([['Lugn säsong (stigande)', ekonomiCalmClub, ekonomiCalmGame], ['Krissäsong (fallande)', ekonomiCrisisClub, ekonomiCrisisGame]] as const).map(([label, c, g]) => (
-              <div key={label} style={{ marginBottom: 20 }}>
+              <div key={label} data-primary-scope style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
                 <EkonomiTab club={c} game={g} seekSponsor={() => ({ success: false })} activateCommunity={() => ({ success: false })} setTransferBudget={() => {}} buyScoutRounds={() => {}} />
               </div>

@@ -29,10 +29,21 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   // Dev-server: /dev/scenes-rutten är import.meta.env.DEV-gatad (AppRouter), så den
   // renderas bara i dev-läge — inte i `vite preview` (prod-bygge). Ingen build behövs.
-  webServer: {
-    command: 'npx vite --port 4173 --strictPort',
-    url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  // Attention-klienten är en del av de riktiga Portal-/onboardingytorna.
+  // Dev-serverns /api-proxy måste därför ha samma lokala backend som npm start;
+  // annars väntar visuella grindar på ett nätverksfel i stället för på UI:t.
+  webServer: [
+    {
+      command: 'node server.js',
+      url: 'http://localhost:3000/api/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: 'npx vite --port 4173 --strictPort',
+      url: 'http://localhost:4173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 })

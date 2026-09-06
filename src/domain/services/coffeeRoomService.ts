@@ -17,7 +17,7 @@ import { deriveUtfall } from './matchTypeAxes'
 import { currentChronology } from './currentChronology'
 import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren } from './redaktorenService'
-import { ledgerPostKey, markLedgerPostTold } from './ledgerToldService'
+import { recordLedgerPostToldByKey } from './ledgerToldService'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -85,16 +85,7 @@ function selectCoffeeRoomLedgerEcho(game: SaveGame): CoffeeScene['ledgerEcho'] {
 
 /** Ren, idempotent kvittoväg för den exakta post som faktiskt följde med scenen. */
 export function recordCoffeeRoomLedgerEchoShown(game: SaveGame, postKey?: string): SaveGame {
-  if (!postKey) return game
-  const post = (game.eventLedger ?? []).find(candidate => ledgerPostKey(candidate) === postKey)
-  if (!post) return game
-  const ledgerTold = markLedgerPostTold(
-    game.ledgerTold,
-    post,
-    'coffee_room',
-    currentChronology(game),
-  )
-  return ledgerTold === game.ledgerTold ? game : { ...game, ledgerTold }
+  return recordLedgerPostToldByKey(game, postKey, 'coffee_room')
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [

@@ -26,9 +26,12 @@ export async function findEnPrimaryViolations(
   page: Page,
   scopeSelector = '[data-scene-content]',
 ): Promise<EnPrimaryViolation[]> {
-  const labels = await page.evaluate(({ scopeSelector }) => {
-    const scope = document.querySelector(scopeSelector) ?? document.body
-    const candidates = Array.from(scope.querySelectorAll('.btn-primary'))
+  const labelGroups = await page.evaluate(({ scopeSelector }) => {
+    const root = document.querySelector(scopeSelector) ?? document.body
+    // En dev-scen kan visa flera fullständiga skärmvarianter bredvid varandra.
+    // Då är varje uttryckligt markerat specimen en egen skärm för hierarkiregeln.
+    const specimens = Array.from(root.querySelectorAll('[data-primary-scope]'))
+    const scopes = specimens.length > 0 ? specimens : [root]
 
     function isVisible(el: Element): boolean {
       const cs = getComputedStyle(el)
@@ -42,11 +45,14 @@ export async function findEnPrimaryViolations(
       return `${el.tagName.toLowerCase()}${text ? ` "${text}"` : ''}`
     }
 
-    return candidates.filter(isVisible).map(label)
+    return scopes.map(scope =>
+      Array.from(scope.querySelectorAll('.btn-primary')).filter(isVisible).map(label),
+    )
   }, { scopeSelector })
 
-  if (labels.length <= 1) return []
-  return [{
-    message: `${labels.length} synliga .btn-primary samtidigt (max 1): ${labels.join(' | ')}`,
-  }]
+  return labelGroups
+    .filter(labels => labels.length > 1)
+    .map(labels => ({
+      message: `${labels.length} synliga .btn-primary samtidigt (max 1): ${labels.join(' | ')}`,
+    }))
 }

@@ -16,7 +16,7 @@ import { currentChronology, type CurrentChronology } from './currentChronology'
 import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getScandalPressTopic } from './scandalService'
-import { ledgerPostKey, markLedgerPostTold } from './ledgerToldService'
+import { recordLedgerPostToldByKey } from './ledgerToldService'
 import { localPressVoiceId } from './voiceIntroductionService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
@@ -924,17 +924,11 @@ function selectLedgerPressQuestion(
  * idempotent så en omkörning eller legacyhändelse utan giltig post är säker.
  */
 export function recordPressLedgerQuestionShown(game: SaveGame): SaveGame {
-  const postKey = game.pendingPressConference?.pressLedgerPostKey
-  if (!postKey) return game
-  const post = (game.eventLedger ?? []).find(candidate => ledgerPostKey(candidate) === postKey)
-  if (!post) return game
-  const ledgerTold = markLedgerPostTold(
-    game.ledgerTold,
-    post,
+  return recordLedgerPostToldByKey(
+    game,
+    game.pendingPressConference?.pressLedgerPostKey,
     'press',
-    currentChronology(game),
   )
-  return ledgerTold === game.ledgerTold ? game : { ...game, ledgerTold }
 }
 
 // ── generatePressConference ────────────────────────────────────────────────────

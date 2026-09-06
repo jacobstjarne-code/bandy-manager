@@ -155,4 +155,15 @@ test.describe('meta: enPrimaryGate fångar Å3/Å4-fyndet (åtgärdslistans post
     const violations = await findEnPrimaryViolations(page)
     expect(violations).toEqual([])
   })
+
+  test('friskt: flera skärmvarianter i samma dev-scen bedöms var för sig', async ({ page }) => {
+    await page.setContent(`
+      <div data-scene-content>
+        <section data-primary-scope><button class="btn-primary">Lugn ekonomi</button></section>
+        <section data-primary-scope><button class="btn-primary">Krissäsong</button></section>
+      </div>
+    `)
+    const violations = await findEnPrimaryViolations(page)
+    expect(violations).toEqual([])
+  })
 })
