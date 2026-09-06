@@ -408,6 +408,17 @@ describe('shouldFireManagerForSport — Survive har nåd men inte immunitet', ()
     expect(shouldFireManagerForSport(ClubExpectation.AvoidBottom, 80, 3)).toBe(true)
     expect(shouldFireManagerForSport(ClubExpectation.AvoidBottom, 16, 2)).toBe(false)
   })
+
+  it('WinLeague-klubb sparkas inte för en enskild tredjeplats', () => {
+    const result = computeBoardPatienceUpdate(3, TOTAL, 70, 0, ClubExpectation.WinLeague)
+
+    expect(result).toEqual({ newBoardPatience: 66, newConsecutiveFailures: 0, newMeritBuffer: 0 })
+    expect(shouldFireManagerForSport(
+      ClubExpectation.WinLeague,
+      result.newBoardPatience,
+      result.newConsecutiveFailures,
+    )).toBe(false)
+  })
 })
 
 describe('computeBoardPatienceUpdate — meritbuffert (fjärde koefficientrundan, 2026-08-23)', () => {
