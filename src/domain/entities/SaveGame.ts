@@ -28,7 +28,7 @@ import type { PendingScene, SceneId } from './Scene'
 import type { IntroducedVoiceRegistry, VoiceIntroductionBudget } from './Voice'
 
 /** En enda källa för save-schemats version, både vid skapande och migrering. */
-export const CURRENT_SAVE_VERSION = '0.3.11'
+export const CURRENT_SAVE_VERSION = '0.3.12'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'

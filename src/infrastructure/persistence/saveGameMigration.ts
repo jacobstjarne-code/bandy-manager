@@ -873,6 +873,23 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // people must not become known merely because the save was reloaded.
   if (!data.introducedVoices || typeof data.introducedVoices !== 'object' || Array.isArray(data.introducedVoices)) {
     data.introducedVoices = buildLegacyIntroducedVoices(data as unknown as SaveGame)
+  } else {
+    // 0.3.11 landed before the canonical roster names were final. Preserve
+    // those observed introductions while moving both former patron prefixes
+    // into the roster's single `patron` class. Idempotent for 0.3.12 ids.
+    const registry = data.introducedVoices as Record<string, unknown>
+    for (const [voiceId, record] of Object.entries(registry)) {
+      const parts = voiceId.split(':')
+      const migratedId = parts[0] === 'mecenat' && parts.length === 3
+        ? `patron:${parts[1]}:mecenat:${parts[2]}`
+        : parts[0] === 'patron' && parts.length === 3
+          ? `patron:${parts[1]}:patron:${parts[2]}`
+          : voiceId
+      if (migratedId !== voiceId) {
+        registry[migratedId] = record
+        delete registry[voiceId]
+      }
+    }
   }
   // The budget is live period state, never reconstructed from permanent
   // introductions. Malformed legacy payloads safely restart at zero.
@@ -886,6 +903,18 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       || typeof budget.used !== 'number'
     ) {
       delete data.voiceIntroductionBudget
+    } else if (Array.isArray(budget.introducedVoiceIds)) {
+      budget.introducedVoiceIds = budget.introducedVoiceIds.map(rawId => {
+        if (typeof rawId !== 'string') return rawId
+        const parts = rawId.split(':')
+        if (parts[0] === 'mecenat' && parts.length === 3) {
+          return `patron:${parts[1]}:mecenat:${parts[2]}`
+        }
+        if (parts[0] === 'patron' && parts.length === 3) {
+          return `patron:${parts[1]}:patron:${parts[2]}`
+        }
+        return rawId
+      })
     }
   }
 

@@ -23,11 +23,23 @@ export function assistantCoachVoiceId(clubId: string): VoiceId {
 }
 
 export function mecenatVoiceId(clubId: string, mecenatId: string): VoiceId {
-  return `mecenat:${voicePart(clubId)}:${voicePart(mecenatId)}`
+  return `patron:${voicePart(clubId)}:mecenat:${voicePart(mecenatId)}`
 }
 
 export function patronVoiceId(clubId: string, patronId: string): VoiceId {
-  return `patron:${voicePart(clubId)}:${voicePart(patronId)}`
+  return `patron:${voicePart(clubId)}:patron:${voicePart(patronId)}`
+}
+
+export function localPressVoiceId(clubId: string, journalistName: string): VoiceId {
+  return `local_press:${voicePart(clubId)}:${voicePart(journalistName)}`
+}
+
+export function sponsorVoiceId(clubId: string, sponsorId: string): VoiceId {
+  return `sponsor:${voicePart(clubId)}:${voicePart(sponsorId)}`
+}
+
+export function klackLeaderVoiceId(clubId: string, leaderName: string): VoiceId {
+  return `klack_leader:${voicePart(clubId)}:${voicePart(leaderName)}`
 }
 
 export function isVoiceIntroduced(
@@ -52,6 +64,16 @@ export function canIntroduceVoiceThisMatchday(
   return voiceIntroductionBudgetUsed(game) < MAX_VOICE_INTRODUCTIONS_PER_MATCHDAY
 }
 
+export function wasVoiceIntroducedThisMatchday(
+  game: Pick<SaveGame, 'voiceIntroductionBudget' | 'currentSeason' | 'currentMatchday'>,
+  voiceId: VoiceId,
+): boolean {
+  const budget = game.voiceIntroductionBudget
+  if (!budget) return false
+  if (budget.season !== game.currentSeason || budget.matchday !== game.currentMatchday) return false
+  return budget.introducedVoiceIds?.includes(voiceId) ?? false
+}
+
 /**
  * The pendingEvents array is the deferral store: a blocked event is never
  * removed or copied to a lossy secondary queue. It simply remains in place
@@ -74,8 +96,10 @@ export function getVoiceEligibleEvents(
     const introducesSelf = event.introducesVoiceId === voiceId
     if (isVoiceIntroduced(game, voiceId)) {
       // A queued intro for a voice already known is obsolete, not a reason to
-      // re-introduce them. Normal events from that voice are eligible.
-      return !introducesSelf
+      // re-introduce them. A newly introduced voice remains silent for the
+      // rest of this matchday; its first substantive statement is eligible
+      // only after the period latch resets.
+      return !introducesSelf && !wasVoiceIntroducedThisMatchday(game, voiceId)
     }
 
     if (!introducesSelf || introCapacity <= 0) return false
@@ -125,6 +149,13 @@ function appendIntroduction(
         season: game.currentSeason,
         matchday: game.currentMatchday,
         used: voiceIntroductionBudgetUsed(game) + 1,
+        introducedVoiceIds: [
+          ...(game.voiceIntroductionBudget?.season === game.currentSeason
+            && game.voiceIntroductionBudget.matchday === game.currentMatchday
+            ? (game.voiceIntroductionBudget.introducedVoiceIds ?? [])
+            : []),
+          voiceId,
+        ],
       }
     : game.voiceIntroductionBudget
 

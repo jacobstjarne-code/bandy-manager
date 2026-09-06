@@ -82,6 +82,16 @@ describe('voice introduction gate', () => {
     expect(canIntroduceVoiceThisMatchday({ ...once, currentMatchday: 4 })).toBe(true)
   })
 
+  it('defers the first substantive statement until the matchday after the intro', () => {
+    const voiceId = mecenatVoiceId('malilla', 'm1')
+    const introduced = recordVoiceIntroduction(game(), voiceId)
+    const statement = event('statement', voiceId)
+
+    expect(getVoiceEligibleEvents(introduced, [statement])).toEqual([])
+    expect(getVoiceEligibleEvents({ ...introduced, currentMatchday: 4 }, [statement]))
+      .toEqual([statement])
+  })
+
   it('seeds the board and assistant coach from onboarding without consuming the matchday budget', () => {
     const base = game({
       currentMatchday: 0,

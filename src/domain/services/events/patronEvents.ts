@@ -2,7 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { TacticMentality } from '../../enums'
 import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
-import { patronVoiceId } from '../voiceIntroductionService'
+import { isVoiceIntroduced, patronVoiceId } from '../voiceIntroductionService'
 
 /**
  * @cites patronGame.totalContributed, patronGame.contribution
@@ -17,8 +17,14 @@ export function generatePatronEvents(
   const patron = game.patron
 
   if (patron?.isActive) {
-    // Patron intro — round 3, first time
-    if (currentRound === 3) {
+    const voiceId = patronVoiceId(game.managedClubId, patron.id)
+    const patronAlreadyIntroduced = patron.introducedSeason !== undefined
+      || isVoiceIntroduced(game, voiceId)
+
+    // Patron intro — normally round 3. If an established runtime path reaches
+    // a later round without the intro, recreate the missing card instead of
+    // leaving every subsequent patron event permanently deferred.
+    if (!patronAlreadyIntroduced && currentRound >= 3) {
       const eid = `patron_intro_${game.currentSeason}`
       // En patron som nyss accepterats via patron_emerge har redan fått sin
       // introduktion. Utan den här grinden kom samma person tillbaka två
@@ -46,6 +52,8 @@ export function generatePatronEvents(
             },
           ],
           resolved: false,
+          voiceId,
+          introducesVoiceId: voiceId,
         })
       }
     }

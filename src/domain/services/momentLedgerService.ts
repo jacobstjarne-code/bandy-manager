@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Moment, MomentSource } from '../entities/Moment'
 import type { EventLedgerEntry } from '../entities/Narrative'
+import { isVoiceId } from '../entities/Voice'
 import { readClubLedger } from './eventLedgerService'
 
 /**
@@ -174,6 +175,8 @@ export function resolveSubjectName(game: SaveGame, subject?: EventLedgerEntry['s
     case 'voice':
       // The entity may have left or the manager may have changed club. The
       // permanent gate keeps the identity snapshot needed for callbacks.
-      return game.introducedVoices?.[subject.id]?.nameSnapshot
+      return isVoiceId(subject.id)
+        ? game.introducedVoices?.[subject.id]?.nameSnapshot
+        : undefined
   }
 }

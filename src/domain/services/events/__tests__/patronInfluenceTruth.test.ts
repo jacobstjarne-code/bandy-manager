@@ -4,14 +4,16 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { getDefaultRolloverChoice, getRolloverPolicy } from '../../deferredRolloverService'
 import { resolveEvent } from '../eventResolver'
 import { generatePatronEvents } from '../patronEvents'
+import { patronVoiceId } from '../../voiceIntroductionService'
 
 function makeGame(overrides: { influence?: number; goodwill?: number; happiness?: number } = {}) {
   const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 9 })
-  return {
+  const established = {
     ...base,
     currentSeason: 2026,
     currentMatchday: 6,
     patron: {
+      id: 'patron_test',
       name: 'Patron Test',
       business: 'Testbolaget',
       influence: overrides.influence ?? 65,
@@ -20,6 +22,22 @@ function makeGame(overrides: { influence?: number; goodwill?: number; happiness?
       contribution: 100000,
       totalContributed: 200000,
       isActive: true,
+      introducedSeason: 2026,
+    },
+  }
+  const voiceId = patronVoiceId(established.managedClubId, established.patron.id)
+  return {
+    ...established,
+    introducedVoices: {
+      ...established.introducedVoices,
+      [voiceId]: {
+        provenance: 'observed' as const,
+        source: 'event' as const,
+        introducedSeason: 2025,
+        introducedDate: '2025-10-01',
+        nameSnapshot: established.patron.name,
+        roleSnapshot: established.patron.business,
+      },
     },
   }
 }

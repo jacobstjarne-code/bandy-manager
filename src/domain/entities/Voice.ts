@@ -1,11 +1,28 @@
 /**
  * Stable instance identity for a named, recurring voice.
  *
- * The canonical roster owns which prefixes may be produced. Keeping the
- * persisted key as a string lets that roster land independently without
- * coupling saves to a presentation enum.
+ * The canonical roster owns which prefixes may be produced. The suffix is a
+ * club-scoped instance identity, while the prefix is intentionally closed so
+ * ambient and system voices cannot accidentally enter the gate.
  */
-export type VoiceId = string
+export const GATED_VOICE_KINDS = [
+  'assistant_coach',
+  'board',
+  'local_press',
+  'patron',
+  'sponsor',
+  'klack_leader',
+] as const
+
+/** Canonical roster class. Ambient/system voices deliberately do not occur here. */
+export type VoiceKind = typeof GATED_VOICE_KINDS[number]
+
+/** Club-scoped instance id for one member of the canonical gated roster. */
+export type VoiceId = `${VoiceKind}:${string}`
+
+export function isVoiceId(value: string): value is VoiceId {
+  return GATED_VOICE_KINDS.some(kind => value.startsWith(`${kind}:`))
+}
 
 /**
  * A permanent gate record. Deliberately no matchday: absolute matchday
@@ -39,4 +56,10 @@ export interface VoiceIntroductionBudget {
   season: number
   matchday: number
   used: number
+  /**
+   * Period-only latch: these voices were introduced in this matchday and may
+   * not make their first substantive statement until the next one. This list
+   * is reset with the budget and never enters the permanent registry.
+   */
+  introducedVoiceIds?: VoiceId[]
 }

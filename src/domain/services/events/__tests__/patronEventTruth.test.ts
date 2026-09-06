@@ -3,6 +3,7 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { generatePatronEmergenceEvent, generatePatronEvents } from '../patronEvents'
 import { resolveEvent } from '../eventResolver'
+import { patronVoiceId } from '../../voiceIntroductionService'
 
 function makeGame() {
   return createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
@@ -10,7 +11,7 @@ function makeGame() {
 
 function withPatron(happiness: number, season = 2026) {
   const game = makeGame()
-  return {
+  const established = {
     ...game,
     currentSeason: season,
     patron: {
@@ -25,6 +26,22 @@ function withPatron(happiness: number, season = 2026) {
       goodwill: 80,
       totalContributed: 0,
       demands: [],
+      introducedSeason: season,
+    },
+  }
+  const voiceId = patronVoiceId(established.managedClubId, established.patron.id)
+  return {
+    ...established,
+    introducedVoices: {
+      ...established.introducedVoices,
+      [voiceId]: {
+        provenance: 'observed' as const,
+        source: 'event' as const,
+        introducedSeason: season - 1,
+        introducedDate: `${season - 1}-10-01`,
+        nameSnapshot: established.patron.name,
+        roleSnapshot: established.patron.business,
+      },
     },
   }
 }
@@ -52,13 +69,40 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
   })
 
   it('stämplar relationen som introducerad först när introkortet har avgjorts', () => {
-    const base = withPatron(80, 2026)
+    const fresh = makeGame()
+    const base = {
+      ...fresh,
+      currentSeason: 2026,
+      patron: {
+        id: 'patron_testsson', name: 'Patron Testsson', business: 'Testbruket',
+        influence: 50, happiness: 80, contribution: 75000, wantsStyle: 'attacking',
+        isActive: true, goodwill: 80, totalContributed: 0, demands: [],
+      },
+    }
     const event = generatePatronEvents(base, 3, new Set(), () => 0)
       .find(candidate => candidate.id === 'patron_intro_2026')!
 
     expect(base.patron.introducedSeason).toBeUndefined()
     const resolved = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'welcome', undefined, true)
     expect(resolved.patron?.introducedSeason).toBe(2026)
+  })
+
+  it('återskapar ett saknat introkort vid en senare första förekomst', () => {
+    const fresh = makeGame()
+    const base = {
+      ...fresh,
+      currentSeason: 2026,
+      patron: {
+        id: 'patron_sen', name: 'Patron Sen', business: 'Senbruket',
+        influence: 50, happiness: 20, contribution: 75000, isActive: true,
+      },
+    }
+
+    const events = generatePatronEvents(base, 8, new Set(), () => 0)
+    expect(events[0]).toMatchObject({
+      id: 'patron_intro_2026',
+      introducesVoiceId: patronVoiceId(base.managedClubId, base.patron.id),
+    })
   })
 
   it('krismötet ger de +30 relation som kortet anger och behåller patronen', () => {

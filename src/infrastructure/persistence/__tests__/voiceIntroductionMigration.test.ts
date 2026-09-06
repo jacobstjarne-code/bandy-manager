@@ -53,4 +53,29 @@ describe('voice introduction migration', () => {
     const twice = migrateSaveGame(structuredClone(once))
     expect(twice.introducedVoices).toEqual(once.introducedVoices)
   })
+
+  it('preserves 0.3.11 introductions while moving them to canonical patron ids', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_ID, seed: 20 })
+    const record = { provenance: 'observed', source: 'event', introducedSeason: 2026, introducedDate: '2026-10-01' }
+    const migrated = migrateSaveGame({
+      ...base,
+      version: '0.3.11',
+      introducedVoices: {
+        [`mecenat:${CLUB_ID}:m1`]: record,
+        [`patron:${CLUB_ID}:p1`]: record,
+      } as never,
+      voiceIntroductionBudget: {
+        season: base.currentSeason,
+        matchday: base.currentMatchday,
+        used: 1,
+        introducedVoiceIds: [`mecenat:${CLUB_ID}:m1`],
+      } as never,
+    })
+
+    expect(migrated.introducedVoices?.[mecenatVoiceId(CLUB_ID, 'm1')]).toEqual(record)
+    expect(migrated.introducedVoices?.[patronVoiceId(CLUB_ID, 'p1')]).toEqual(record)
+    expect(migrated.introducedVoices).not.toHaveProperty(`mecenat:${CLUB_ID}:m1`)
+    expect(migrated.voiceIntroductionBudget?.introducedVoiceIds)
+      .toEqual([mecenatVoiceId(CLUB_ID, 'm1')])
+  })
 })

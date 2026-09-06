@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import type { GameEvent } from '../../../entities/GameEvent'
+import type { VoiceId } from '../../../entities/Voice'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { mecenatVoiceId } from '../../voiceIntroductionService'
 import { resolveEvent } from '../eventResolver'
@@ -24,6 +25,7 @@ describe('eventResolver — voice introductions', () => {
     })
     expect(resolved.voiceIntroductionBudget).toEqual({
       season: base.currentSeason, matchday: base.currentMatchday, used: 1,
+      introducedVoiceIds: [voiceId],
     })
     expect(resolved.eventLedger?.some(entry =>
       entry.type === 'voice_introduced' && entry.subject?.id === voiceId
@@ -34,7 +36,7 @@ describe('eventResolver — voice introductions', () => {
     const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 73 })
     const firstVoice = mecenatVoiceId(base.managedClubId, 'm1')
     const secondVoice = mecenatVoiceId(base.managedClubId, 'm2')
-    const intro = (id: string, voiceId: string): GameEvent => ({
+    const intro = (id: string, voiceId: VoiceId): GameEvent => ({
       id, type: 'mecenatEvent', title: id, body: id,
       voiceId, introducesVoiceId: voiceId, resolved: false,
       choices: [{ id: 'ack', label: 'Noterat', effect: { type: 'noOp' } }],
@@ -54,5 +56,11 @@ describe('eventResolver — voice introductions', () => {
     )
     const secondPending = { ...firstResolved, pendingEvents: [intro('intro-2', secondVoice)] }
     expect(resolveEvent(secondPending, 'intro-2', 'ack', () => 0.5, true)).toBe(secondPending)
+
+    const sameDaySpeech = { ...firstResolved, pendingEvents: [blockedSpeech] }
+    expect(resolveEvent(sameDaySpeech, blockedSpeech.id, 'ack', () => 0.5, true)).toBe(sameDaySpeech)
+
+    const nextDaySpeech = { ...sameDaySpeech, currentMatchday: sameDaySpeech.currentMatchday + 1 }
+    expect(resolveEvent(nextDaySpeech, blockedSpeech.id, 'ack', () => 0.5, true).pendingEvents).toEqual([])
   })
 })
