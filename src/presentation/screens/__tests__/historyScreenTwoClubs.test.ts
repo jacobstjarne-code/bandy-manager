@@ -13,8 +13,9 @@
 import { describe, it, expect } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { deriveCareerSpells, HistoryManagerSeason, managerSeasonEntriesForHistory, shouldShowEraChangeForSummary } from '../HistoryScreen'
+import { deriveCareerSpells, deriveManagerLedgerStatsByClub, HistoryManagerSeason, managerSeasonEntriesForHistory, shouldShowEraChangeForSummary } from '../HistoryScreen'
 import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
+import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { ClubExpectation } from '../../../domain/enums'
 
 function s(season: number, clubId: string, clubName: string, over: Partial<SeasonSummary> = {}): SeasonSummary {
@@ -134,5 +135,44 @@ describe('HIGH 2 — managerhistoriken läser säsongens frysta poster', () => {
 
   it('gissar inte fram managerhistorik för äldre säsonger utan fältet', () => {
     expect(managerSeasonEntriesForHistory(s(2026, 'club_a', 'Alfa'))).toEqual([])
+  })
+})
+
+/**
+ * DOM_LIGGARE_CLUBID_2026-09-04, arbetsordning steg 3 — HistoryScreens
+ * managerId-vy. readManagerLedger (eventLedgerService.ts) filtrerar på
+ * managerId; det här testet låser att gruppering per clubId sker korrekt
+ * och att poster utan managerId (klubbens egna, inte managerns) räknas
+ * bort av readManagerLedger innan de ens når grupperingen.
+ */
+describe('DOM_LIGGARE_CLUBID — deriveManagerLedgerStatsByClub', () => {
+  function entry(over: Partial<EventLedgerEntry>): EventLedgerEntry {
+    return { type: 'decision', semanticKey: 'k', season: 2026, matchday: 1, significance: 10, ...over }
+  }
+
+  it('räknar beslut och personliga mål per klubb, bara för DEN HÄR managern', () => {
+    const game = {
+      id: 'manager_1',
+      eventLedger: [
+        entry({ type: 'decision', clubId: 'club_a', managerId: 'manager_1' }),
+        entry({ type: 'decision', clubId: 'club_a', managerId: 'manager_1' }),
+        entry({ type: 'player_milestone', clubId: 'club_a', managerId: 'manager_1' }),
+        entry({ type: 'decision', clubId: 'club_b', managerId: 'manager_1' }),
+        // Klubbens egen post (t.ex. en föregångares beslut) — ingen managerId
+        // för DEN HÄR managern, ska inte räknas in.
+        entry({ type: 'decision', clubId: 'club_a', managerId: 'manager_0' }),
+        // Ambient/klubbtillhörig typ utan managerId alls.
+        entry({ type: 'big_win', clubId: 'club_a' }),
+      ],
+    }
+
+    expect(deriveManagerLedgerStatsByClub(game)).toEqual({
+      club_a: { decisions: 2, personalGoals: 1 },
+      club_b: { decisions: 1, personalGoals: 0 },
+    })
+  })
+
+  it('tom liggare ger tom karta, ingen krasch', () => {
+    expect(deriveManagerLedgerStatsByClub({ id: 'manager_1', eventLedger: [] })).toEqual({})
   })
 })

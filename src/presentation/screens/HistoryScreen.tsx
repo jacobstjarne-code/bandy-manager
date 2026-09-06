@@ -15,6 +15,7 @@ import { deriveGoalOutcomeLine, derivePersonChangeLine, deriveRivalryLine, deriv
 import { TabBar } from '../components/shared/TabBar'
 import { getBoardRelationshipTrend } from '../../domain/services/seasonSummaryService'
 import type { BoardRelationshipTrendPoint } from '../../domain/services/seasonSummaryService'
+import { readManagerLedger } from '../../domain/services/eventLedgerService'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -77,6 +78,37 @@ export function deriveCareerSpells(summariesChronological: SeasonSummary[]): Car
     }
   }
   return spells
+}
+
+/**
+ * DOM_LIGGARE_CLUBID_2026-09-04, arbetsordning steg 3 ("HistoryScreen
+ * managerId-vy: efter 1, liten") — den enda delen av domen som inte redan
+ * var byggd. `readManagerLedger` (eventLedgerService.ts) filtrerar hela
+ * liggaren på managerId, oberoende av vilken klubb managern var hos NÄR
+ * händelsen skrevs — precis det `spells` (ovan, klubbdata) inte kan visa.
+ * Grupperar per clubId till rena, faktabaserade räknare (samma
+ * UI-register som RecordRow/"SM-guld"-etiketterna nedan — CLAUDE.md:s
+ * "Code skriver aldrig svensk speltext" gäller narrativ prosa, inte
+ * siffersatta stat-etiketter som redan är etablerad UI-konvention i den
+ * här filen).
+ */
+export interface ManagerLedgerStatsByClub {
+  decisions: number
+  personalGoals: number
+}
+
+export function deriveManagerLedgerStatsByClub(
+  game: Parameters<typeof readManagerLedger>[0],
+): Record<string, ManagerLedgerStatsByClub> {
+  const byClub: Record<string, ManagerLedgerStatsByClub> = {}
+  for (const entry of readManagerLedger(game)) {
+    const key = entry.clubId
+    if (!key) continue
+    if (!byClub[key]) byClub[key] = { decisions: 0, personalGoals: 0 }
+    if (entry.type === 'decision') byClub[key].decisions++
+    if (entry.type === 'player_milestone') byClub[key].personalGoals++
+  }
+  return byClub
 }
 
 /**
@@ -370,6 +402,9 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
   // managern är NU).
   const spells = deriveCareerSpells(game.seasonSummaries ?? [])
   const isMultiClubCareer = spells.length > 1
+  // DOM_LIGGARE_CLUBID_2026-09-04, arbetsordning steg 3 — se
+  // deriveManagerLedgerStatsByClub-kommentaren ovan.
+  const managerLedgerStatsByClub = isMultiClubCareer ? deriveManagerLedgerStatsByClub(game) : {}
 
   // Hall of Fame — top 5 per category
   const topGoalScorers = [...managedPlayers]
@@ -417,6 +452,38 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
           </p>
         </div>
       </div>
+
+      {/* DOM_LIGGARE_CLUBID_2026-09-04, arbetsordning steg 3 — managerns eget
+          avtryck per klubb, oberoende av var han är nu. Döljs om liggaren inte
+          har någon post för karriären än (äldre spar innan handelseliggaren,
+          eller en karriär utan fattade beslut/satta mål så här långt). */}
+      {isMultiClubCareer && Object.values(managerLedgerStatsByClub).some(s => s.decisions > 0 || s.personalGoals > 0) && (
+        <div className="card-sharp" style={{ padding: '10px 14px 8px', marginBottom: 8 }}>
+          <p className="h-label" style={{ marginBottom: 10 }}>
+            Två klubbar, ett liv
+          </p>
+          {spells.map((sp, i) => {
+            const stats = managerLedgerStatsByClub[sp.clubId]
+            return (
+              <div key={`${sp.clubId}_${sp.fromSeason}`} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                paddingBottom: i < spells.length - 1 ? 10 : 0, marginBottom: i < spells.length - 1 ? 10 : 0,
+                borderBottom: i < spells.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>{sp.clubName}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {seasonStartYear(sp.fromSeason)}–{seasonStartYear(sp.toSeason)}
+                  </p>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>
+                  {(stats?.decisions ?? 0)} beslut · {(stats?.personalGoals ?? 0)} personliga mål
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Archive tabs */}
       <div style={{ marginBottom: 14 }}>

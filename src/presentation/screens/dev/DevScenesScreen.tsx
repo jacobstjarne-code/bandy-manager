@@ -179,7 +179,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // 'game-over-historik' läser HistoryScreens `snapshot`-prop direkt (samma
   // data GameOverScreen.tsx:s handleViewHistory() annars skickar via
   // location.state) — ingen MemoryRouter-omväg som match-live behövde.
-  | 'game-over' | 'game-over-historik'
+  | 'game-over' | 'game-over-historik' | 'game-over-historik-tvaklubb'
   // Mobilhierarki-regressioner (2026-08-31): riktiga, deterministiska lägen
   // för månadskön och DecisionCards tre visuella vikter.
   | 'portal-month-decisions' | 'decision-modes' | 'event-overlay-breakpoint'
@@ -278,6 +278,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'bygget-avveckling', label: 'Bygget — riktig nav, H1-regressionstest (avveckling/finansiering)' },
   { id: 'game-over',          label: 'GameOverScreen — sparkad efter tre säsonger utan förbättring' },
   { id: 'game-over-historik', label: 'HistoryScreen (snapshot-prop) — avslutad karriär, "Se karriären"' },
+  { id: 'game-over-historik-tvaklubb', label: 'HistoryScreen — två klubbar, managerns liggaravtryck (DOM_LIGGARE_CLUBID steg 3)' },
   { id: 'portal-month-decisions', label: 'Portal — tre månadsbeslut (1 primärt + 2 väntar)' },
   { id: 'decision-modes', label: 'DecisionCard — notis, dilemma, brytpunkt' },
   { id: 'event-overlay-breakpoint', label: 'EventOverlay — brytpunkt med accentkant' },
@@ -1320,6 +1321,25 @@ const gameOverGame = {
   managerFired: true,
 } as unknown as SaveGame
 
+// DOM_LIGGARE_CLUBID_2026-09-04, arbetsordning steg 3 — HistoryScreens
+// managerId-vy behöver en KLUBBYTAND karriär med riktiga liggarposter
+// (decision/player_milestone, managerId satt) för att "Två klubbar, ett
+// liv"-kortet ska ha något att räkna. gameOverGame ensam är enklubbs.
+const historyTwoClubGame = {
+  ...gameOverGame,
+  seasonSummaries: [
+    makeSeasonSummary({ season: 1, finalPosition: 8, wins: 10, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeSeasonSummary({ season: 2, finalPosition: 10, wins: 8, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeSeasonSummary({ season: 3, finalPosition: 5, wins: 14, clubId: HOME_ID, clubName: 'Edsbyn BK' }),
+  ],
+  eventLedger: [
+    { type: 'decision', semanticKey: 'dev_decision_1', season: 1, matchday: 8, significance: 40, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'decision', semanticKey: 'dev_decision_2', season: 2, matchday: 14, significance: 35, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'player_milestone', semanticKey: 'dev_milestone_1', season: 2, matchday: 18, significance: 60, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'decision', semanticKey: 'dev_decision_3', season: 3, matchday: 4, significance: 30, clubId: HOME_ID, managerId: gameOverGame.id },
+  ],
+} as unknown as SaveGame
+
 const callupGame = {
   ...squadGame,
   pendingCallupModal: {
@@ -1880,6 +1900,7 @@ export function DevScenesScreen() {
       : scene === 'halftime-summary' ? portalGame
       : scene === 'bygget' || scene === 'bygget-avveckling' ? facilityGame
       : scene === 'game-over' || scene === 'game-over-historik' ? gameOverGame
+      : scene === 'game-over-historik-tvaklubb' ? historyTwoClubGame
       : scene === 'callup-modal' ? callupGame
       : scene === 'playoff-intro' ? playoffIntroGame
       : scene === 'qf-summary' ? qfSummaryGame
@@ -2368,6 +2389,11 @@ export function DevScenesScreen() {
         {scene === 'game-over-historik' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <HistoryScreen snapshot={gameOverGame} />
+          </div>
+        )}
+        {scene === 'game-over-historik-tvaklubb' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
+            <HistoryScreen snapshot={historyTwoClubGame} />
           </div>
         )}
         {scene === 'annandagen' && (

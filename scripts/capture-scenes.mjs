@@ -23,6 +23,7 @@ const SCENES = [
   ['season-arc', 'SeasonArcCard (toppa)'],
   ['portal-cards', 'Portal Cards (mörk yta)'],
   ['portal-midseason', 'Portal — mitt i säsongen (Simulera-baren synlig, design-b4)'],
+  ['game-over-historik-tvaklubb', 'HistoryScreen — två klubbar, managerns liggaravtryck (DOM_LIGGARE_CLUBID steg 3)'],
   ['efterklang', 'Efterklang + economicScar-efterdyning'],
   ['squad', 'SquadScreen (DB-5 stripe + R2-3 chip + Q1)'],
   ['portal', 'PortalScreen (dashboard)'],
