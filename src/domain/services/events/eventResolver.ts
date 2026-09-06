@@ -111,11 +111,23 @@ function appendSeasonDecisionLedgerEntry(
 /**
  * Gemensam orsak/verkan-väg för spelarfattade eventbeslut. En post skrivs bara
  * när before/after-diffen passerar captureDecisionRipples trivialitetsgolv.
+ *
+ * transfer-arsbok-minns-fel (systemaudit 2026-09-06): `contractRequest`
+ * skrev redan en post härifrån (ripple på playerMorale) men saknade
+ * `actionLabel`/`moneyAmount`/`recurringCost` — composeGenericDecisionSentence
+ * kunde därför aldrig göra en mening av den, så en viktig förlängning kunde
+ * aldrig bli "säsongens beslut" trots att posten fanns. `actionLabel` sätts
+ * GENERISKT för varje ripple-post (samma choice.label-mönster som
+ * appendSeasonDecisionLedgerEntry/buildWeeklyDecisionLedgerEntry redan
+ * använder). `recurringCost` sätts bara för `extendContract` specifikt —
+ * ur den faktiska lönehöjningen (before/after-diff), inte en generell
+ * heuristik över alla ripple-beslut.
  */
 function appendDecisionConsequenceLedgerEntry(
   before: SaveGame,
   after: SaveGame,
   event: GameEvent,
+  choiceId: string,
   madeByPlayer: boolean,
 ): SaveGame {
   if (!madeByPlayer) return after
@@ -128,9 +140,26 @@ function appendDecisionConsequenceLedgerEntry(
     event.relatedPlayerId,
     event.relatedClubId,
   )
-  return ledgerEntry
-    ? { ...after, eventLedger: logEvent(after, ledgerEntry) }
-    : after
+  if (!ledgerEntry) return after
+
+  const choice = event.choices.find(c => c.id === choiceId)
+  const recurringCost = (() => {
+    if (choice?.effect.type !== 'extendContract' || !choice.effect.targetPlayerId || !choice.effect.contractYears) return undefined
+    const targetId = choice.effect.targetPlayerId
+    const salaryBefore = before.players.find(p => p.id === targetId)?.salary
+    const salaryAfter = after.players.find(p => p.id === targetId)?.salary
+    if (salaryBefore === undefined || salaryAfter === undefined || salaryAfter <= salaryBefore) return undefined
+    return { amountPerSeason: (salaryAfter - salaryBefore) * 12, seasons: choice.effect.contractYears }
+  })()
+
+  return {
+    ...after,
+    eventLedger: logEvent(after, {
+      ...ledgerEntry,
+      actionLabel: choice?.label,
+      recurringCost,
+    }),
+  }
 }
 
 /** Burnout-lättnaden är alltid ett meningsbärande val, även när dess pris
@@ -308,7 +337,7 @@ export function resolveEvent(
     }
     resolvedGame = appendSeasonDecisionLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer)
     return recordIntroducedVoice(
-      appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, madeByPlayer),
+      appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer),
     )
   }
 
@@ -2831,7 +2860,7 @@ export function resolveEvent(
   // använder för ETT annat fält med andra semantik). Skriver ingen post om
   // beslutet inte rörde något ripple-bärande fält (trivial-brus-golvet,
   // se captureDecisionRipple).
-  updatedGame = appendDecisionConsequenceLedgerEntry(game, updatedGame, event, madeByPlayer)
+  updatedGame = appendDecisionConsequenceLedgerEntry(game, updatedGame, event, choiceId, madeByPlayer)
 
   const financesAfterEvent = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)?.finances
   if (financesBeforeEvent !== undefined && financesAfterEvent !== undefined

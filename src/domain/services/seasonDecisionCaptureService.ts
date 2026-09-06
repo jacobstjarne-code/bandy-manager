@@ -752,9 +752,18 @@ function findSubjectName(game: SaveGame, subject: EventLedgerEntry['subject']): 
  * är villkorlig: finns fältet inte, ingen skuldsats (hellre ingen än falsk).
  */
 function composeGenericDecisionSentence(entry: EventLedgerEntry, game: SaveGame): string | null {
-  if (!entry.madeByPlayer || !entry.actionLabel || entry.moneyAmount === undefined) return null
+  if (!entry.madeByPlayer || !entry.actionLabel) return null
+  if (entry.moneyAmount === undefined && !entry.recurringCost) return null
   const subjectName = findSubjectName(game, entry.subject)
   const subjectClause = subjectName ? `, ${subjectName}` : ''
+  // transfer-arsbok-minns-fel: ett beslut kan ha en löpande kostnad UTAN
+  // engångsbelopp (t.ex. en kontraktsförlängning — ingen "Kostade X nu",
+  // bara en lönehöjning framåt). "Kostade X nu"-mallen passar bara när det
+  // faktiskt finns ett engångsbelopp.
+  if (entry.moneyAmount === undefined) {
+    const recurring = entry.recurringCost!
+    return `${entry.actionLabel}${subjectClause}. Kostar ${formatValue(recurring.amountPerSeason)}/säsong i ${recurring.seasons} år framåt.`
+  }
   const debtClause = entry.recurringCost
     ? ` och ${formatValue(entry.recurringCost.amountPerSeason)}/säsong i ${entry.recurringCost.seasons} år framåt`
     : ''
