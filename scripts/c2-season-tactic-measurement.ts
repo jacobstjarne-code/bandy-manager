@@ -40,6 +40,7 @@ interface SeasonResult {
   fired: boolean
   error: string | null
   leagueMatches: number
+  postponedLeagueMatches: number
   wins: number
   draws: number
   losses: number
@@ -207,6 +208,12 @@ function managedLeagueFixtures(game: SaveGame) {
   )
 }
 
+function resolvedManagedLeagueFixtures(game: SaveGame) {
+  return managedLeagueFixtures(game).filter(fixture =>
+    fixture.status === FixtureStatus.Completed || fixture.status === FixtureStatus.Postponed,
+  )
+}
+
 function resultFromFixture(game: SaveGame, fixtureId: string): { win: number; draw: number; loss: number; gf: number; ga: number } {
   const fixture = game.fixtures.find(candidate => candidate.id === fixtureId)
   if (!fixture) throw new Error(`Nyss spelad fixtur saknas: ${fixtureId}`)
@@ -241,7 +248,7 @@ function runSeason(seed: number, clubId: string, profile: C2TacticProfileId): Se
   let stepSeed = seed * 1000
 
   try {
-    while (completedIds.size < LEAGUE_MATCHES && !game.managerFired) {
+    while (resolvedManagedLeagueFixtures(game).length < LEAGUE_MATCHES && !game.managerFired) {
       if (++guard > 300) throw new Error('Rundgrinden (300) utlöstes före 22 ligamatcher')
       game = autoResolvePendingEvents(game, () => 0.5)
       const resolved = autoResolvePendingScreen(game)
@@ -291,20 +298,22 @@ function runSeason(seed: number, clubId: string, profile: C2TacticProfileId): Se
         goalsFor += outcome.gf
         goalsAgainst += outcome.ga
       }
-      if (result.seasonEnded && completedIds.size < LEAGUE_MATCHES) {
-        throw new Error(`Säsongen slutade efter ${completedIds.size} ligamatcher`)
+      if (result.seasonEnded && resolvedManagedLeagueFixtures(game).length < LEAGUE_MATCHES) {
+        throw new Error(`Säsongen slutade efter ${resolvedManagedLeagueFixtures(game).length} avgjorda ligaomgångar`)
       }
     }
 
     const standing = game.standings.find(row => row.clubId === game.managedClubId)
     const squad = game.players.filter(player => player.clubId === game.managedClubId)
+    const postponedLeagueMatches = managedLeagueFixtures(game).filter(fixture => fixture.status === FixtureStatus.Postponed).length
     return {
       seed,
       profile,
-      completed: completedIds.size === LEAGUE_MATCHES,
-      fired: game.managerFired,
+      completed: resolvedManagedLeagueFixtures(game).length === LEAGUE_MATCHES,
+      fired: Boolean(game.managerFired),
       error: null,
       leagueMatches: completedIds.size,
+      postponedLeagueMatches,
       wins,
       draws,
       losses,
@@ -325,9 +334,10 @@ function runSeason(seed: number, clubId: string, profile: C2TacticProfileId): Se
       seed,
       profile,
       completed: false,
-      fired: game.managerFired,
+      fired: Boolean(game.managerFired),
       error: error instanceof Error ? error.message : String(error),
       leagueMatches: completedIds.size,
+      postponedLeagueMatches: managedLeagueFixtures(game).filter(fixture => fixture.status === FixtureStatus.Postponed).length,
       wins,
       draws,
       losses,
@@ -359,6 +369,8 @@ function summarize(results: SeasonResult[]) {
     fired: results.filter(result => result.fired).length,
     errors: results.filter(result => result.error).map(result => ({ seed: result.seed, error: result.error })),
     meanPoints: round(average(completed.map(result => result.points))),
+    meanLeagueMatchesPlayed: round(average(completed.map(result => result.leagueMatches))),
+    meanPostponedLeagueMatches: round(average(completed.map(result => result.postponedLeagueMatches))),
     meanGoalDifference: round(average(completed.map(result => result.goalsFor - result.goalsAgainst))),
     meanPosition: round(average(completed.flatMap(result => result.finalPosition === null ? [] : [result.finalPosition]))),
     meanPreMatchStarterFitness: round(average(completed.map(result => result.meanPreMatchStarterFitness))),
@@ -407,7 +419,8 @@ if (config.json) {
     const summary = byProfile[profile]
     console.log(
       `${profile.padEnd(8)} ${summary.completed}/${summary.requested} klara · `
-      + `${summary.meanPoints} p · målskillnad ${summary.meanGoalDifference} · plats ${summary.meanPosition} · `
+      + `${summary.meanPoints} p · spelade/inställda ${summary.meanLeagueMatchesPlayed}/${summary.meanPostponedLeagueMatches} · `
+      + `målskillnad ${summary.meanGoalDifference} · plats ${summary.meanPosition} · `
       + `startfitness ${summary.meanPreMatchStarterFitness} · slutfitness ${summary.meanFinalSquadFitness} · `
       + `<40-starter ${summary.meanStartsBelow40Fitness} · `
       + `nöduppflyttningar ${summary.meanEmergencyPromotions} · walkover ${summary.meanWalkovers}`,
