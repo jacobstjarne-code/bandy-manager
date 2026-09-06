@@ -8,6 +8,7 @@ import { bidReceivedEvent } from '../../../domain/services/events/eventFactories
 import { resolveEvent } from '../../../domain/services/eventService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { formatSalary } from '../../../domain/format'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { fixtureSeed, mulberry32, seededPick } from '../../../domain/utils/random'
 import { evaluateContractOffer, getAvailableContractTerms, applyContractTerms } from '../../../domain/services/contractNegotiationService'
 import type { ContractTermOffer, ContractTermKey } from '../../../domain/services/contractNegotiationService'
@@ -244,7 +245,9 @@ export function transferActions(get: Get, set: Set) {
         round: game.currentMatchday ?? 0,
         amount: 0,
         reason: 'contract_extension',
-        label: `Kontraktsförlängning — ${player.firstName} ${player.lastName} (${formatSalary(newSalary)}/${game.currentSeason + years})`,
+        // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-
+        // span (seasonSpanLabel), inte ett naket kalenderår.
+        label: `Kontraktsförlängning — ${player.firstName} ${player.lastName} (${formatSalary(newSalary)}/${seasonSpanLabel(game.currentSeason + years)})`,
       }
       const updatedFinanceLog = appendFinanceLog(game.financeLog ?? [], extensionEntry)
 

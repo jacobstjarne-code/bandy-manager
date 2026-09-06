@@ -54,6 +54,8 @@ describe('PÅSTÅENDEGRINDEN nivå 2 — förbudslistan', () => {
       'ordning-mellan-matcher': 'games.sort((a, b) => b.roundNumber - a.roundNumber)',
       'vem-eliminerades': 'const bracket = game?.playoffBracket',
       'vem-blev-mastare': 'const champId = game?.playoffBracket?.champion',
+      'sasongsindex-naket-tal': 'return `t.o.m. säsong ${contractUntilSeason}`',
+      'sasongsfras-verifierad': 'const premiss = `${n.goalsAgainstUs} mål mot er den här säsongen.`',
     }
     for (const rule of FORBUDSLISTA) {
       const bug = historicalBugs[rule.id]

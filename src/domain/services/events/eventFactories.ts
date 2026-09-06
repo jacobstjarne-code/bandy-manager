@@ -4,6 +4,7 @@ import type { Player } from '../../entities/Player'
 import type { Mecenat } from '../../entities/Mecenat'
 import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
 import { formatValue, formatSalary, formatContractRemaining } from '../../format'
+import { seasonSpanLabel } from '../../utils/seasonYear'
 import { getSeasonDeadlineMatchday } from '../decisionTierService'
 import { JOBBET_FORSVANN_TEXT } from '../../data/contractTermText'
 import { localPressVoiceId } from '../voiceIntroductionService'
@@ -171,7 +172,9 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
     id: `event_contract_${playerId}_${game.currentSeason}`,
     type: 'contractRequest',
     title: `📋 Kontraktsförfrågan — ${playerName}`,
-    body: `${playerName} vill diskutera ett nytt kontrakt. Nuvarande kontrakt löper ut efter säsong ${player.contractUntilSeason}.`,
+    // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-span,
+    // inte ett naket kalenderår.
+    body: `${playerName} vill diskutera ett nytt kontrakt. Nuvarande kontrakt löper ut efter säsong ${seasonSpanLabel(player.contractUntilSeason)}.`,
     choices,
     relatedPlayerId: playerId,
     resolved: false,

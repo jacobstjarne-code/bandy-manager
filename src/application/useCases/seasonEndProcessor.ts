@@ -20,6 +20,7 @@ import {
   createYouthIntakeItem,
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/playerDevelopmentService'
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
@@ -1696,7 +1697,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `inbox_ai_transfers_${nextSeason}`,
       date: game.currentDate,
       type: InboxItemType.Transfer,
-      title: `Övergångar inför säsong ${nextSeason}`,
+      // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-
+      // span, inte ett naket kalenderår.
+      title: `Övergångar inför säsong ${seasonSpanLabel(nextSeason)}`,
       body: `Några anmärkningsvärda övergångar:\n${transferText}`,
       isRead: false,
     } as InboxItem)

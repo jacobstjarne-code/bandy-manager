@@ -12,6 +12,7 @@
  */
 
 import { PlayerPosition } from './enums'
+import { seasonSpanLabel } from './utils/seasonYear'
 
 // ── Positionsetiketter ───────────────────────────────────────────────
 // Kort: scoreboard, pills, tabeller. Lång: kort, formulär, prosa.
@@ -99,7 +100,7 @@ export function formatRating(rating: number): string {
 // vs "t.o.m. säsong 2028"), och eventFactories.ts räknade "N säsong(er) kvar"
 // separat med egen `-`-uträkning. Detta är nu enda källan för båda formerna.
 
-/** "t.o.m. säsong 2028" — kanonisk text för kontraktets sista säsong. Rå säsongssiffra, inget offset. */
+/** "t.o.m. säsong 2028/29" — kanonisk text för kontraktets sista säsong. Bandyårs-span, inget offset. */
 export function formatContractUntil(contractUntilSeason: number): string {
   // B1 (Designgranskning fresh-eyes 2026-09-03, blockerare): "t.o.m. säsong
   // undefined" läckte till spelaren i PlayerCard.tsx + RenewContractModal.tsx
@@ -108,7 +109,11 @@ export function formatContractUntil(contractUntilSeason: number): string {
   // fel värde) — guard här stänger hela klassen på källan i stället för
   // patch per anropsställe.
   if (!Number.isFinite(contractUntilSeason)) return 'kontraktstid saknas'
-  return `t.o.m. säsong ${contractUntilSeason}`
+  // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): en absolut
+  // säsongsreferens visas som bandyårs-span (seasonSpanLabel), aldrig ett
+  // naket kalenderår — samma kanon GameHeader/HistoryScreen/ChampionScreen
+  // redan följer.
+  return `t.o.m. säsong ${seasonSpanLabel(contractUntilSeason)}`
 }
 
 /** Säsonger kvar på kontraktet. 0 = sista/innevarande säsongen. Negativt = redan utgånget (invariant-brott för en aktiv spelare). */

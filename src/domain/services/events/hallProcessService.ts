@@ -20,6 +20,7 @@ import {
 } from '../../data/hallProvningData'
 import { getRivalry } from '../../data/rivalries'
 import { clamp } from '../../utils/clamp'
+import { seasonSpanLabel } from '../../utils/seasonYear'
 import { FACILITY_NODE_DEFS, isFacilityTreeFull } from '../facilityService'
 
 const MATCHHALL_DEF = FACILITY_NODE_DEFS.find(def => def.id === 'matchhall')!
@@ -568,8 +569,11 @@ export function formatHallNodeSub(game: SaveGame): string {
       return template.replace('{x}', String(met))
     }
     case 'bygge': {
-      if ((trial?.buildPausedUntilSeason ?? 0) > game.currentSeason) {
-        return `Bygge · paus till säsong ${trial?.buildPausedUntilSeason}`
+      const pausedUntilSeason = trial?.buildPausedUntilSeason
+      if (pausedUntilSeason !== undefined && pausedUntilSeason > game.currentSeason) {
+        // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-
+        // span, inte ett naket kalenderår.
+        return `Bygge · paus till säsong ${seasonSpanLabel(pausedUntilSeason)}`
       }
       const eta = fs?.activeProject?.etaMatchday
       return template.replace('{season}', eta !== undefined ? `omg ${eta}` : '—')

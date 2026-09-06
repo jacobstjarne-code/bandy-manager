@@ -59,8 +59,11 @@ describe('formatFinanceAbs', () => {
 // olika ordval, eventFactories.ts räknade "N kvar" separat). Dessa tester
 // låser den kanoniska semantiken: rå säsongssiffra, inget offset.
 describe('formatContractUntil', () => {
-  it('visar den rå säsongssiffran utan offset (INGET +1 — det var PlayerCard.tsx-buggen)', () => {
-    expect(formatContractUntil(2028)).toBe('t.o.m. säsong 2028')
+  // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-span
+  // (seasonSpanLabel), inte ett naket kalenderår — men fortfarande INGET +1-
+  // offset på själva säsongstalet (det var PlayerCard.tsx-buggen).
+  it('visar bandyårs-spannet utan offset (INGET +1 — det var PlayerCard.tsx-buggen)', () => {
+    expect(formatContractUntil(2028)).toBe('t.o.m. säsong 2028/29')
   })
 
   // B1 (Designgranskning fresh-eyes 2026-09-03, blockerare): "t.o.m. säsong
