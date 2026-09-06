@@ -185,7 +185,7 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 | **cupguld** | `cupguld.jpg` | prompt | Cupfinal vunnen |
 | **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
 | **bygget klart** | `bygget_klart.jpg` | prompt | Anläggning färdig |
-| **avskedet** | `avsked.jpg` | prompt | Sparkad |
+| **avskedet** | `avsked.jpg` | ✅ (låst 2026-09-06) | Sparkad |
 | **året utan klubb** | `aret_utan_klubb.jpg` | prompt | "Se hur det går utan dig" |
 | **game over** | `game_over.jpg` | prompt | Konkurs / licensnekad |
 
@@ -261,15 +261,15 @@ Negativa: no cranes, no workers, no scaffolding, no text, no field markings, no 
 
 *Känslan:* det nya bredvid det gamla, färskt virke mot faluröd. Generisk nog för alla noder (värmestuga, läktare, kiosk, hall är för stor — hallen får ingen bild i v1).
 
-### Avskedet — sparkad · `avsked.jpg`
+### Avskedet — sparkad · `avsked.jpg` ✅ (låst 2026-09-06)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, still.
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. **Extra-guarder för denna närbild:** flat blocks of colour, matte surfaces, rough screen-print texture; NOT a photograph, NOT a cartoon, no realistic wood grain, no depth of field, no glossy highlights, no ink outlines, no 3D render. Muted overcast winter daylight, still.
 
-A tight close-up of the door of a red wooden clubhouse at night, seen straight on, the door and the wall around it filling most of the frame — faluröd vertical planks, a plain shut wooden door. Above the door, a small metal lamp on a bracket, dark and unlit — for the first time in the series it is off. A single brass key is left in the lock beside the handle, and from it hangs a worn keyring tag, its lettering rubbed away. A thin fresh dusting of snow has settled on the doorstep and along the top of the handle — time has passed, no one has come. Everything is cold blue and black; the only glint is a faint cold light on the metal of the key. No warm light anywhere. Nobody visible. The door and lock fill the middle of the frame; the lower part is the dark snowy threshold in shadow. No text, no logos, no faces.
+Portrait orientation, tall vertical format. A tall vertical straight-on close-up of a red wooden clubhouse door, seen flat and square. The metal lock plate, handle, a brass key and a small blank keyring tag sit in the upper-middle of the frame; below them the plain flat faluröd planks continue down into shadow, the lower third quiet and empty. Flat matte red planks, simplified — no realistic wood texture. The key hangs at the lock with the worn keyring tag, the tag blank with no text. A thin even layer of snow resting only on top of the handle and the key. No lamp in view, no building corner, no roofline. Nobody visible.
 
-Negativa: no people, no hands, no lit lamp, no warm glow, no windows lit, no daylight, no wide landscape, no distant clubhouse, no snowfield, no car, no footprints, no legible text on the keyring, no photographic realism.
+Negativa: no photograph, no photorealism, no realistic wood grain, no realistic snow texture, no depth of field, no blur, no 3D render, no glossy shading, no cartoon, no ink outlines, no readable text, no legible keyring, no letters, no lamp, no building corner, no wide shot, no people, no daylight glare.
 
-*Känslan:* någon låste, lämnade nyckeln i låset och gick — det är över. Lampan ovanför släckt, konstanten bruten. Nyckel-i-dörr-konceptet valt 2026-09-05 efter att båda bil+fotspår-versionerna föll: den första (öppen dörr, lysande kupé, bil på fältet) läste som brottsplats, den av-iscensatta (bakljus som kör bort) läste som "bil på en parkering" — obegriplig. Slutsatsen: avskedet är en känsla, inte en vy, så föremålet bär det, inte landskapet. Bryter serieformatet med flit (närbild). **Generera från tomt, ingen referensbild.** *Risk:* modellen zoomar ut till hela klubbhuset + snöfältet (lärt sig den vida formen genom tolv orter) — håll TIGHT på dörren; och tänder lampan — ska vara SLÄCKT. *Öppen designfråga:* brickan generisk/oläslig (rek) vs klubbspecifikt namn (hårdare slag, men bryter no-text och blir svår för modellen).
+*Känslan:* någon låste, lämnade nyckeln och gick — det är över. LÅST 2026-09-06 efter en lång jakt: bil+fotspår föll (makabert / obegripligt), sedan nyckel-i-dörr men fel stil (foto, sedan cartoon) och fel format (liggande). Den låsta bilden är en rak stående närbild i seriens platta tryckstil, dämpad dagsljus. Två medvetna avvikelser från domens ursprungsbild: (1) INGEN lampa i bild — den "släckta lampan" som skulle bära konstant-brottet gjorde bilden till en vy; nyckeln vid låset bär avskedet i stället, starkare och utan risk att modellen tänder lampan. (2) dämpad dag, inte natt — natt krävde en synlig lampa som inte fick plats i närbilden. Brickan tom (no-text). Bryter serieformatet med flit (närbild, föremål). **Generera från tomt, ingen referensbild — referens drog mot foto/cartoon.** *Risk:* modellen gör den fotorealistisk (äkta ådring, oskärpa) eller tecknad, eller vänder till liggande — extra-guarderna i stilraden håller emot; kör om hellre än att acceptera foto/cartoon/liggande.
 
 ### Året utan klubb — "Se hur det går utan dig" · `aret_utan_klubb.jpg`
 
@@ -378,6 +378,6 @@ Negativa: no faces, no field markings, no hockey rink, no boards, no adults play
 
 ## 5. Räkning
 
-Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment med prompter. Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 16 körda, 19 med prompter klara att köra.**
+Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (avskedet låst 2026-09-06, fem med prompter kvar). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 17 körda, 18 med prompter klara att köra.**
 
 Ordning om du kör dem i följd: orterna klart först (Västanfors, Lesjöfors, Heros), sedan de fyra momenten som avgör om Erik ritar, sedan avskedet och året utan klubb (de bär karriärens vändpunkter), sedan interiörerna.
