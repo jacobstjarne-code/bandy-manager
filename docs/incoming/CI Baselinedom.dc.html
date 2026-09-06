@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+    .cell { padding: 8px 12px; }
+    .rowgrid { display:grid; grid-template-columns:34px 1.35fr 1.15fr 2fr; align-items:start; border-top:1px solid var(--border); background:var(--bg-surface); }
+    .rowgrid > div { border-right:1px solid var(--border); }
+    .rowgrid > div:last-child { border-right:none; }
+    .num { font-family:var(--font-display); font-weight:700; color:var(--text-muted); text-align:center; }
+    code { font-family:var(--font-display); font-size:11px; color:var(--accent-dark); }
+  </style>
+</helmet>
+<div style="min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:24px 16px 72px;">
+  <div style="max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
+
+    <div style="background:var(--bg-leather); border-bottom:2px solid var(--accent); border-radius:var(--radius-md); padding:16px 18px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+      <div>
+        <div class="h-label" style="color:var(--accent); margin-bottom:6px;">CI · VISUELLA BASELINES · 2026-09-06 · RUN 34040569759 · 957dfde5</div>
+        <div style="font-family:var(--font-display); font-size:24px; font-weight:800; color:var(--text-light); line-height:1.1;">Baselinedom — 54 diffar</div>
+        <div class="h-body-sm" style="color:var(--text-light-secondary); margin-top:6px;">Steg 1–4 klara mot CI:s Linux-artefakt. Jacob kvitterar tabellen, inte pixlarna.</div>
+      </div>
+      <div style="display:flex; gap:14px; text-align:center; white-space:nowrap;">
+        <div><div style="font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--success); line-height:1;">41</div><div class="h-body-xs" style="color:var(--text-light-secondary);">acceptera</div></div>
+        <div><div style="font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--ice); line-height:1;">11</div><div class="h-body-xs" style="color:var(--text-light-secondary);">Code-läsning</div></div>
+        <div><div style="font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--danger); line-height:1;">2</div><div class="h-body-xs" style="color:var(--text-light-secondary);">timeout</div></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-surface); border:1.5px solid var(--danger); border-left:4px solid var(--danger); border-radius:var(--radius-md); padding:12px 14px;">
+      <div class="h-label" style="color:var(--danger);">⚠ FYRA FYND SOM ÄNDRAR BRIEFENS ANTAGANDEN</div>
+      <ul class="h-body" style="margin:6px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:5px;">
+        <li><strong>d2 årtal (8c4e03b6) förklarar noll av de 54.</strong> Sex av de åtta "bekräftade" scennamnen finns inte i exporten; de två som finns (season-fired, renew-contract-modal) visar <em>ingen</em> 2026→2026/27-ändring i pixlarna. Ingen rad kan tillskrivas d2 — Code bör bekräfta om ändringen landade i redan gröna scener eller i ofotograferade ytor.</li>
+        <li><strong>Illustrationsprogrammet saknas i de sex källorna.</strong> 9 diffar är målade scen-illustrationer (sommaren, miljoheader, coffee-room, annandagen, season-fired) — avsedda och on-brand per det ratificerade programmet, men ingen av de sex källorna namnger dem. Accepterade, men kräver egen MASTER-rad + commit-namngivning av Code.</li>
+        <li><strong>Ett oskrivet budgethuvud</strong> (TOTAL/BUNDEN/TILLGÄNGLIG) dyker upp på alla fyra transfers-scener utan namngiven källa. On-brand, ingen regression → accepterat men eget MASTER.</li>
+        <li><strong>Taktik + två oförklarade content-tillägg</strong> (lineup-motståndaranalys, scouting-radlayout) har ingen källa alls → Code-läsning, ingen baseline förrän spårat.</li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="h-label" style="color:var(--text-secondary);">SÅ LÄSES TABELLEN · KÄLLNYCKEL</div>
+      <div class="h-body-sm" style="margin:2px 0 6px;">De 16 raderna med prefix <code>375px-</code>/<code>390px-</code> är samma scener som de oprefixade portal-/lineup-raderna, fotade av en andra testfil (baseline.visual.ts × två bredder). Samma diff-orsak, samma dom.</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:8px;">
+        <sc-for list="{{ sources }}" as="s" hint-placeholder-count="7">
+          <div class="card-sharp" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:9px 12px;">
+            <div style="display:flex; justify-content:space-between; gap:8px; align-items:baseline;">
+              <span class="h-card-sm">{{ s.label }}</span>
+              <code>{{ s.commit }}</code>
+            </div>
+            <div class="h-body-sm" style="margin-top:3px;">{{ s.desc }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div class="h-label" style="color:var(--success-light);">✓ ACCEPTERA — FÖRKLARAD AV NAMNGIVEN KÄLLA ({{ plainAcceptCount }} rader)</div>
+      <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+        <div class="rowgrid" style="background:var(--bg); border-top:none;">
+          <div class="cell h-label" style="color:var(--text-muted);">#</div>
+          <div class="cell h-label" style="color:var(--text-muted);">Scen</div>
+          <div class="cell h-label" style="color:var(--text-muted);">Källa</div>
+          <div class="cell h-label" style="color:var(--text-muted);">Varför</div>
+        </div>
+        <sc-for list="{{ accept }}" as="r" hint-placeholder-count="28">
+          <div class="rowgrid">
+            <div class="cell num">{{ r.n }}</div>
+            <div class="cell h-card-sm" style="font-family:var(--font-display);">{{ r.scene }}</div>
+            <div class="cell h-body-sm">{{ r.source }}</div>
+            <div class="cell h-body-sm">{{ r.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div class="h-label" style="color:var(--accent-dark);">✓ ACCEPTERA + NY MASTER-RAD — AVSEDD MEN OSKRIVEN ({{ masterCount }} rader)</div>
+      <div class="h-body-sm" style="margin-bottom:6px;">Ingen regression, men ingen av de sex källorna namnger dem. Accepteras och skrivs upp så de inte blir tysta baselines. Två MASTER-rader täcker alla: <strong>(M1)</strong> illustrationsprogram-leverans, <strong>(M2)</strong> transfer-budgethuvud.</div>
+      <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+        <sc-for list="{{ acceptMaster }}" as="r" hint-placeholder-count="13">
+          <div class="rowgrid">
+            <div class="cell num">{{ r.n }}</div>
+            <div class="cell h-card-sm" style="font-family:var(--font-display);">{{ r.scene }}</div>
+            <div class="cell h-body-sm">{{ r.source }}</div>
+            <div class="cell h-body-sm">{{ r.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div class="h-label" style="color:var(--ice-dark);">◐ CODE-LÄSNING — OFÖRKLARAD, EJ REGRESSION FASTSTÄLLD ({{ codeCount }} rader)</div>
+      <div class="h-body-sm" style="margin-bottom:6px;">Ingen namngiven källa. <strong>scouting</strong> och <strong>name-input</strong> är de två med regressionsmisstanke (radlayout resp. Bury Fen-footer) — läs dem först. Ingen baseline skrivs för dessa förrän Code spårat commit och avfärdat regression.</div>
+      <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+        <sc-for list="{{ codeReading }}" as="r" hint-placeholder-count="11">
+          <div class="rowgrid">
+            <div class="cell num">{{ r.n }}</div>
+            <div class="cell h-card-sm" style="font-family:var(--font-display);">{{ r.scene }}</div>
+            <div class="cell h-body-sm">{{ r.source }}</div>
+            <div class="cell h-body-sm">{{ r.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div class="h-label" style="color:var(--danger);">⛔ CODE (TIMEOUT) — INGEN BILD ATT DÖMA ({{ timeoutCount }} rader)</div>
+      <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+        <sc-for list="{{ timeout }}" as="r" hint-placeholder-count="2">
+          <div class="rowgrid">
+            <div class="cell num">{{ r.n }}</div>
+            <div class="cell h-card-sm" style="font-family:var(--font-display);">{{ r.scene }}</div>
+            <div class="cell h-body-sm">{{ r.source }}</div>
+            <div class="cell h-body-sm">{{ r.why }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+      <div class="h-label" style="color:var(--text-secondary);">ÖVERLÄMNING TILL CODE (STEG 5)</div>
+      <ol class="h-body" style="margin:6px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:5px;">
+        <li>Skriv om baselines för de <strong>41 acceptera-raderna</strong> (inkl. de 13 som också får MASTER-rad).</li>
+        <li>Skriv <strong>M1 illustrationsprogram</strong> och <strong>M2 transfer-budgethuvud</strong> som egna MASTER-rader och namnge de commits som levererade dem.</li>
+        <li>Spåra commit för de <strong>11 Code-läsning-raderna</strong>. Läs <strong>scouting</strong> + <strong>name-input</strong> först — bekräfta avsikt eller flytta till hög C (regression, fixas före baseline).</li>
+        <li>Fixa <strong>arrival</strong> + <strong>tilltrade</strong>-timeouten i testharnesset, kör om, döm de två då.</li>
+        <li>Bekräfta var <strong>d2 (8c4e03b6)</strong> faktiskt landade — ingen synlig diff pekar på den.</li>
+      </ol>
+      <div class="h-body-sm" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">CI blir grön på riktigt först när alla 41 är ombaseline:ade, de 11 spårade (accepterade eller fixade som hög C) och de 2 timeout-scenerna dömda. <strong>Taktikens två primärknappar</strong> (Följ rådet / Bäst för dagens match) är ett separat hierarkibeslut — egen rad, tas när baselines är klara.</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const accept = [
+      { n: 7,  scene: "portal-normal",         source: "röstintro-introkort (3cc76b6e4)", why: "MECENAT/patron-demand-introkort tillagt överst; resten oförändrat men nedskjutet." },
+      { n: 39, scene: "portal-normal",          source: "röstintro-introkort (3cc76b6e4)", why: "Samma som #7 (oprefixad, scenes.visual.ts)." },
+      { n: 15, scene: "390px-portal-normal",    source: "röstintro-introkort (3cc76b6e4)", why: "Samma scen som #7, 390px-bredd." },
+      { n: 5,  scene: "375px-portal-full",      source: "röstintro-introkort (3cc76b6e4)", why: "Introkort/primary-card överst; samma reflow-signatur." },
+      { n: 37, scene: "portal-full",            source: "röstintro-introkort (3cc76b6e4)", why: "Samma som #5 (oprefixad)." },
+      { n: 13, scene: "390px-portal-full",      source: "röstintro-introkort (3cc76b6e4)", why: "Samma scen som #5, 390px." },
+      { n: 6,  scene: "375px-portal-grind",     source: "röstintro-introkort (3cc76b6e4)", why: "Introkort/primary-card överst." },
+      { n: 38, scene: "portal-grind",           source: "röstintro-introkort (3cc76b6e4)", why: "Samma som #6 (oprefixad)." },
+      { n: 14, scene: "390px-portal-grind",     source: "röstintro-introkort (3cc76b6e4)", why: "Samma scen som #6, 390px." },
+      { n: 8,  scene: "375px-portal-tom",       source: "röstintro-introkort (3cc76b6e4)", why: "Introkort överst i tom-läge; verifierat i diff." },
+      { n: 40, scene: "portal-tom",             source: "röstintro-introkort (3cc76b6e4)", why: "Samma som #8 (oprefixad)." },
+      { n: 16, scene: "390px-portal-tom",       source: "röstintro-introkort (3cc76b6e4)", why: "Samma scen som #8, 390px." },
+      { n: 4,  scene: "375px-portal-bid-single",source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Introkort överst + budkort omstylat till kompakt BUD-kort; båda avsedda." },
+      { n: 36, scene: "portal-bid-single",      source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Samma som #4 (oprefixad)." },
+      { n: 12, scene: "390px-portal-bid-single",source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Samma scen som #4, 390px." },
+      { n: 3,  scene: "375px-portal-bid-multi", source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Introkort + omstylat budkort (multi-bud)." },
+      { n: 35, scene: "portal-bid-multi",       source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Samma som #3 (oprefixad)." },
+      { n: 11, scene: "390px-portal-bid-multi", source: "röstintro (3cc76b6e4) + C-T8 (0f9581a6)", why: "Samma scen som #3, 390px." },
+      { n: 22, scene: "granska",                source: "design-d1 hero-score (a3044daf5)", why: "Nytt mörkt SLUTSIGNAL-hero-score-block ersätter ljus MATCHEN-hero; resten oförändrat, nedskjutet av hero-höjden." },
+      { n: 23, scene: "granska-analys",         source: "design-d1 hero-score (a3044daf5)", why: "Ren vertikal reflow från den högre delade heron; flikinnehåll identiskt." },
+      { n: 24, scene: "granska-avsked",         source: "design-d1 hero-score (a3044daf5)", why: "Hero-score + avskeds-innehåll nedskjutet; inget utöver heron." },
+      { n: 25, scene: "granska-cup",            source: "design-d1 hero-score (a3044daf5)", why: "Hero-score-block; reflow." },
+      { n: 26, scene: "granska-cup-final",      source: "design-d1 hero-score (a3044daf5)", why: "Hero-score-block; reflow." },
+      { n: 27, scene: "granska-level3",         source: "design-d1 hero-score (a3044daf5)", why: "Hero-score-block; reflow." },
+      { n: 28, scene: "granska-slutspel",       source: "design-d1 hero-score (a3044daf5)", why: "Hero-score-block; reflow." },
+      { n: 29, scene: "granska-sm-final",       source: "design-d1 hero-score (a3044daf5)", why: "Hero-score-block; reflow." },
+      { n: 19, scene: "bygget",                 source: "design-d7 (35b942ca5)", why: "Bygget omgjort till ljus ClubScreen-flik (BYGGET-header + Bygg ut-CTA); allt innehåll bevarat, reskin per d7." },
+      { n: 41, scene: "renew-contract-modal",   source: "C-T8 ContractTermChips (0f9581a6)", why: "Villkor-chips (Handpenning/Lägenhet/Jobb/Ansikte) + 'Kostar klubben'-rad tillagd; modal recentrerad. Ingen synlig d2-årtalsändring (dubbelkällan stämmer ej)." },
+    ];
+    const acceptMaster = [
+      { n: 45, scene: "sommaren-s2",            source: "M1 illustrationsprogram (Code namnger commit)", why: "Målad sommarplan-illustration tillagd överst; on-brand, ingen regression." },
+      { n: 46, scene: "sommaren-siffra",        source: "M1 illustrationsprogram", why: "Målad sommarplan-illustration tillagd." },
+      { n: 47, scene: "sommaren-titelforsvarare",source: "M1 illustrationsprogram", why: "Målad sommarplan-illustration tillagd." },
+      { n: 48, scene: "sommaren-tomt",          source: "M1 illustrationsprogram", why: "Målad sommarplan-illustration tillagd." },
+      { n: 32, scene: "miljoheader-karlsborg",  source: "M1 illustrationsprogram", why: "Bruksort-header-illustration ersätter 'bruksort-header saknas'-platshållare." },
+      { n: 33, scene: "miljoheader-rogle",      source: "M1 illustrationsprogram", why: "Bruksort-header-illustration ersätter platshållare." },
+      { n: 20, scene: "coffee-room",            source: "M1 illustrationsprogram", why: "Målad kafferum-interiör ersätter tomt mörkt rum." },
+      { n: 17, scene: "annandagen",             source: "M1 illustrationsprogram", why: "Uppdaterad annandagen-illustration; CTA flyttas i reflow." },
+      { n: 43, scene: "season-fired",           source: "arsbok (f21a13d8) + M1 illustration", why: "ÅRSBOK-header + tillbaka-pil (f21a13d8) + målad avskeds-illustration. INGEN årtalsändring — briefens d2-koppling stämmer inte här." },
+      { n: 53, scene: "transfers-onebid",       source: "C-T8 (0f9581a6) + M2 budgethuvud", why: "Budkonsekvens-rader under Acceptera/Avslå (C-T8) + nytt TOTAL/BUNDEN/TILLGÄNGLIG-huvud (M2)." },
+      { n: 52, scene: "transfers-multibids",    source: "C-T8 (0f9581a6) + M2 budgethuvud", why: "Budkonsekvens-chips (C-T8) + budgethuvud (M2)." },
+      { n: 51, scene: "transfers-closed",       source: "M2 transfer-budgethuvud", why: "Enbart nytt budgethuvud överst; on-brand, oskriven → MASTER." },
+      { n: 54, scene: "transfers-open-nobids",  source: "M2 transfer-budgethuvud", why: "Enbart nytt budgethuvud överst; on-brand, oskriven → MASTER." },
+    ];
+    const codeReading = [
+      { n: 31, scene: "lineup-filled",          source: "oförklarad (ev. d7 Trupp-toggle)", why: "Motståndaranalys tillagd i TRUPP-vyn (opp-formation '5-2-3 hög' + scouting-prosa). Ingen namngiven källa." },
+      { n: 30, scene: "lineup-empty",           source: "oförklarad (ev. d7 Trupp-toggle)", why: "Samma Trupp-vy-ändring som #31, tomt-läge." },
+      { n: 2,  scene: "375px-lineup-filled",    source: "oförklarad", why: "Samma scen som #31, 375px." },
+      { n: 10, scene: "390px-lineup-filled",    source: "oförklarad", why: "Samma scen som #31, 390px." },
+      { n: 1,  scene: "375px-lineup-empty",     source: "oförklarad", why: "Samma scen som #30, 375px." },
+      { n: 9,  scene: "390px-lineup-empty",     source: "oförklarad", why: "Samma scen som #30, 390px." },
+      { n: 42, scene: "scouting",               source: "oförklarad — REGRESSIONSMISSTANKE", why: "Rad-layoutändring i scoutinglistan (positions/roll-etikett?). Läs först: regression eller avsikt oklart ur diffen." },
+      { n: 34, scene: "name-input",             source: "oförklarad — REGRESSIONSMISSTANKE", why: "Vertikal omplacering + ändrad Bury Fen-footer. Footern är låst till exakt två platser — verifiera att ändringen är avsiktlig." },
+      { n: 21, scene: "ekonomi",                source: "oförklarad (ev. f21a13d8 licens)", why: "Liten vertikal förskjutning i kassa/scouting-blocket; möjligen licens-som-eget-kort. Spåra commit." },
+      { n: 44, scene: "season-signature-reveal",source: "oförklarad", why: "Liten vertikal förskjutning i KÖLDVINTERN-reveal; ingen tydlig källa." },
+      { n: 49, scene: "taktik",                 source: "parkerat hierarkibeslut + oförklarad omarbetning", why: "Två koppar-primärknappar (Följ rådet + Bäst för dagens match) = eget hierarkibeslut, ej baseline-dom. Dessutom full formations-omarbetning (532_ytterben, Uppställning-varianter, libero) utan källa. Ingen baseline förrän båda lösta." },
+    ];
+    const timeout = [
+      { n: 18, scene: "arrival",  source: "— (locator-timeout)", why: "TimeoutError på 'DEV GALLERY' — ingen skärmdump. Ej pixel-dömbar; kräver testharness-fix först." },
+      { n: 50, scene: "tilltrade",source: "— (locator-timeout)", why: "Samma timeout-mönster som #18; ingen bild att döma." },
+    ];
+    return {
+      sources: [
+        { label: "design-d1 · hero-score Granska", commit: "a3044daf5", desc: "Mörkt SLUTSIGNAL-hero-score-block ersätter ljus MATCHEN-hero." },
+        { label: "design-d7 · Bygget → flik", commit: "35b942ca5", desc: "Bygget flyttat till ljus ClubScreen-flik; Akademi → Trupp-toggle." },
+        { label: "C-T8 · ContractTermChips", commit: "0f9581a6", desc: "Kontraktsterm-chips i renew-modal + budkonsekvenser i BidModal/transfers." },
+        { label: "arsbok · Dina val / licens", commit: "f21a13d8", desc: "ÅRSBOK-inramning; licensstatus som eget kort." },
+        { label: "röstintro · introkort", commit: "3cc76b6e4", desc: "Patron/MECENAT-introkort (patron-demand-primary) överst på portal-scener." },
+        { label: "M1 · illustrationsprogram", commit: "(Code namnger)", desc: "MASTER: målade scen-illustrationer — ej i de sex källorna." },
+        { label: "M2 · transfer-budgethuvud", commit: "(Code namnger)", desc: "MASTER: TOTAL/BUNDEN/TILLGÄNGLIG-huvud på transfers." },
+        { label: "d2 · årtal 2026→2026/27", commit: "8c4e03b6", desc: "Förklarar noll synliga diffar i exporten — se fynd ovan." },
+      ],
+      accept, acceptMaster, codeReading, timeout,
+      acceptCount: accept.length + acceptMaster.length,
+      plainAcceptCount: accept.length,
+      masterCount: acceptMaster.length,
+      codeCount: codeReading.length,
+      timeoutCount: timeout.length,
+    };
+  }
+}
+</script>
+</body>
+</html>
