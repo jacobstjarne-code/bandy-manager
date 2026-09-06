@@ -523,6 +523,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   transfer_story: 'scar', scandal: 'scar', mecenat_withdrawal: 'scar', patron_withdrawal: 'scar',
   nemesis_signed: 'tension', referee_feud: 'tension',
   mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
+  voice_introduced: 'neutral',
 }
 
 /**
@@ -561,6 +562,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   derby_result: '⚔️', big_win: '⚔️', big_loss: '⚔️',
   facility_built: '🏟️',
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
+  voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤',
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',

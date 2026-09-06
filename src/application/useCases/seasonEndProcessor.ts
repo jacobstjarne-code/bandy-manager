@@ -1974,6 +1974,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     captainPlayerId: nextCaptainPlayerId,
     currentSeason: nextSeason,
     currentMatchday: 0,
+    // Per-period presentation budget; the permanent introducedVoices
+    // registry intentionally survives untouched through the spread above.
+    voiceIntroductionBudget: undefined,
     ...rolloverSeasonMatchdayAnchors(game),
     ...rolloverTransientEchoMatchdays(game),
     activeNationalTeamCamp: rolloverNationalTeamCamp(game.activeNationalTeamCamp, game.currentMatchday),

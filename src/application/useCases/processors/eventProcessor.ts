@@ -566,7 +566,7 @@ export function applyMecenatSpawn(
     localRand() < 0.15
   ) {
     const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
-    const introEvent = generateMecenatIntroEvent(newMecenat)
+    const introEvent = generateMecenatIntroEvent(newMecenat, game.managedClubId)
     return {
       updatedMecenater: [...updatedMecenater, { ...newMecenat, isActive: false }],
       newEvents: [introEvent],

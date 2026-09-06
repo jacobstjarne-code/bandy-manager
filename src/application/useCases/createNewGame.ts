@@ -20,6 +20,7 @@ import { createSeasonSignature } from '../../domain/services/seasonSignatureServ
 import { generateManagerProfile, generateCoachRivalries } from '../../domain/services/managerProfileService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
+import { generateMecenatIntroEvent } from '../../domain/services/mecenatService'
 // O13 (DOM_TRANARMARKNADEN_2026-08-26): det klubbspecifika steget är utbrutet
 // till setupManagedClub.ts så att tränarmarknadens klubbyte kan köra EXAKT
 // samma generering mot en redan existerande värld. rand-ordningen där är
@@ -127,6 +128,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     entourageSeed: input.seed ?? 42,
     objectiveContext: { players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, currentSeason: season, boardObjectiveHistory: [] },
   })
+  // A startmecenat used to enter as active and could speak on the first
+  // dashboard before the player had met them. Reuse the existing intro card:
+  // inactive until answered, exactly like a later-spawned mecenat.
+  const initialMecenater = entourage.mecenater.map(mecenat => ({ ...mecenat, isActive: false }))
+  const initialMecenatIntroductions = initialMecenater.map(mecenat =>
+    generateMecenatIntroEvent(mecenat, input.clubId),
+  )
 
   const game: SaveGame = {
     id: saveId,
@@ -175,13 +183,14 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     boardObjectiveHistory: [],
     aiTransferLog: [],
     onboardingStep: 0,
-    mecenater: entourage.mecenater,
+    mecenater: initialMecenater,
     facilityState: { builtNodeIds: [] },
     previousMarketValues: {},
     scoutReports: {},
     activeScoutAssignment: null,
     scoutBudget: 10,
-    pendingEvents: [],
+    pendingEvents: initialMecenatIntroductions,
+    introducedVoices: {},
     deferredDecisions: [],
     transferBids: [],
     handledContractPlayerIds: [],

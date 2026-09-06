@@ -12,6 +12,7 @@ import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { NextOpponentHook } from './NextOpponentHook'
 import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
+import { getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -53,7 +54,9 @@ export function GranskaScreen() {
   // till 3 som om det vore ovanligt att nå), och att lösa det utan att
   // återinföra en timing-baserad "släpp in nästa efter en stund"-mekanik
   // hade motverkat hela poängen med denna fix.
-  const [pendingEventsSnapshot] = useState(() => game?.pendingEvents ?? [])
+  const [pendingEventsSnapshot] = useState(() => game
+    ? getVoiceEligibleEvents(game, game.pendingEvents ?? [])
+    : [])
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)

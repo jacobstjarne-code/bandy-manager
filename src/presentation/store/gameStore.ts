@@ -53,6 +53,7 @@ import {
   markLedgerPostTold as markLedgerPostToldInRegistry,
 } from '../../domain/services/ledgerToldService'
 import type { NarrativePostReference } from '../../domain/attention/types'
+import { seedTilltradeVoices } from '../../domain/services/voiceIntroductionService'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -537,7 +538,9 @@ export const useGameStore = create<GameState>()(
       markOnboardingComplete: async () => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
-        const updated = { ...game, onboardingComplete: true }
+        // Ankomsten + Tillträdet have already shown the board and assistant
+        // coach. Open their permanent voice gates at the same atomic save.
+        const updated = seedTilltradeVoices({ ...game, onboardingComplete: true })
         set({ game: updated })
         return persistGameSnapshot(updated, set)
       },

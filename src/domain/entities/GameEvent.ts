@@ -1,3 +1,5 @@
+import type { VoiceId } from './Voice'
+
 export type GameEventType =
   | 'transferBidReceived'
   | 'contractRequest'
@@ -315,6 +317,12 @@ export interface GameEvent {
   body: string
   choices: EventChoice[]
   sender?: EventSender       // Named person + role
+  /** Canonical instance id for a named recurring speaker. Omitted for the
+   * narrator, system messages and ambient collectives. */
+  voiceId?: VoiceId
+  /** Set only on the card that introduces this voice. It may speak before
+   * the gate opens because resolving this card is what opens the gate. */
+  introducesVoiceId?: VoiceId
   relatedPlayerId?: string
   // M3 (audit 5c9a7a8, 2026-08-24): för händelser som namnger FLERA specifika
   // spelare i title/body (t.ex. juniorlandslagets "1-2 utvalda") men bara har

@@ -1,6 +1,7 @@
 import type { Mecenat, MecenatType, MecenatPersonality, SaveGame, SocialEvent } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import { TacticMentality } from '../enums'
+import { mecenatVoiceId } from './voiceIntroductionService'
 
 const MECENAT_SOCIAL_KEY_PREFIX = 'mecenat_social_'
 export const MECENAT_SOCIAL_MAX_PER_SEASON = 2
@@ -284,13 +285,15 @@ const SOCIAL_TYPES: Record<MecenatType, SocialEvent['type'][]> = {
 
 // ── Generate mecenat intro event ────────────────────────────────────────
 
-export function generateMecenatIntroEvent(mecenat: Mecenat): GameEvent {
+export function generateMecenatIntroEvent(mecenat: Mecenat, clubId?: string): GameEvent {
   const pro = mecenat.gender === 'female' ? { subj: 'Hon', poss: 'Hennes' } : { subj: 'Han', poss: 'Hans' }
+  const voiceId = clubId ? mecenatVoiceId(clubId, mecenat.id) : undefined
   return {
     id: `event_mecenat_intro_${mecenat.id}`,
     type: 'mecenatEvent',
     title: `💼 ${mecenat.name} visar intresse`,
     sender: { name: mecenat.name, role: `${mecenat.business}` },
+    ...(voiceId ? { voiceId, introducesVoiceId: voiceId } : {}),
     body: `${mecenat.name} från ${mecenat.business} har hört om er förening.\n\n"${pro.subj === 'Hon' ? 'Jag har alltid haft ett hjärta för bandyn' : 'Jag har alltid brunnit för bandy'}. Ni gör ett fantastiskt jobb — jag vill hjälpa till."`,
     choices: [
       {

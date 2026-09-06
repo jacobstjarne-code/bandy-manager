@@ -9,6 +9,7 @@ import { getNextEvent } from '../../domain/services/eventQueueService'
 import { getEffectiveWhyNowLine } from '../../domain/data/contentContract'
 import { getEffectiveDecisionMode } from '../../domain/services/decisionTierService'
 import { DecisionCard } from './DecisionCard'
+import { getVoiceEligibleEvents } from '../../domain/services/voiceIntroductionService'
 
 interface EventOverlayProps {
   // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
@@ -54,7 +55,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
     resolveEvent(activeEvent.id, choiceId, true)
   }
 
-  const total = game.pendingEvents?.filter(e => !e.resolved).length ?? 1
+  const total = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(e => !e.resolved).length || 1
 
   // Presskonferens: dedikerad visuell scen istf generisk overlay
   if (event.type === 'pressConference') {

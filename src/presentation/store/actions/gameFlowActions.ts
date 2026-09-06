@@ -30,6 +30,7 @@ import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 import { applyContractDemandResolutions } from '../../../domain/services/contractDemandService'
 import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 import { getFinalIntroScene, type FinalTier } from '../../../domain/data/scenes/finalIntroScene'
+import { getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
 
 interface GetState {
   game: SaveGame | null
@@ -722,8 +723,9 @@ export function gameFlowActions(get: Get, set: Set) {
       const state = get()
       const { game, resolveEvent, setPlayerLineup, advance } = state
       if (!game) return null
-      if ((game.pendingEvents?.length ?? 0) > 0) {
-        const event = game.pendingEvents[0]
+      const eligiblePendingEvents = getVoiceEligibleEvents(game, game.pendingEvents ?? [])
+      if (eligiblePendingEvents.length > 0) {
+        const event = eligiblePendingEvents[0]
         // D1-utredningen (2026-08-19): ambienta events (choices.length === 0,
         // se eventQueueService.ts:s isAmbientEvent) gav tidigare
         // event.choices[0] === undefined → .id kraschade. eventResolver.ts:33

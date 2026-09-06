@@ -2,6 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { TacticMentality } from '../../enums'
 import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
+import { patronVoiceId } from '../voiceIntroductionService'
 
 /**
  * @cites patronGame.totalContributed, patronGame.contribution
@@ -255,7 +256,13 @@ export function generatePatronEvents(
     }
   }
 
-  return events
+  if (!patron) return events
+  const voiceId = patronVoiceId(game.managedClubId, patron.id)
+  return events.map(event => ({
+    ...event,
+    voiceId,
+    ...(event.id.startsWith('patron_intro_') ? { introducesVoiceId: voiceId } : {}),
+  }))
 }
 
 export function generatePatronEmergenceEvent(
@@ -291,12 +298,16 @@ export function generatePatronEmergenceEvent(
   }
 
   const tkr = Math.round(contribution / 1000)
+  const patronId = `patron_${String(patronData.name).split(' ')[0].toLowerCase()}_${game.currentSeason}`
+  const voiceId = patronVoiceId(game.managedClubId, patronId)
 
   return {
     id: emergeId,
     type: 'patronEvent' as const,
     title: `${patronData.name} kliver fram`,
     sender: { name: patronData.name, role: patronData.business },
+    voiceId,
+    introducesVoiceId: voiceId,
     body: `${patronData.backstory ?? 'En stillsam figur i bygden har följt klubbens resa.'}\n\n"Jag har sett vad ni byggt. Jag vill stötta er vidare — ${tkr} tkr/säsong."`,
     choices: [
       {

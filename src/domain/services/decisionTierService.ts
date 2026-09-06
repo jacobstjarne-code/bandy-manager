@@ -23,6 +23,7 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, GameEventType, DecisionTier, DecisionMode } from '../entities/GameEvent'
+import { getVoiceEligibleEvents } from './voiceIntroductionService'
 
 // ── 1. TIER ────────────────────────────────────────────────────────────────
 
@@ -285,7 +286,7 @@ function byDeadlineThenQueueOrder(all: GameEvent[]) {
  * rendera ett komponentträd.
  */
 export function selectDashboardDecisions(game: SaveGame): DashboardDecisionSelection {
-  const actionable = (game.pendingEvents ?? []).filter(isActionable)
+  const actionable = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(isActionable)
   const must = actionable.filter(e => getEventDecisionTier(e) === 'must')
     .sort(byDeadlineThenQueueOrder(actionable))
   // Månadsordning = köordning (FIFO). roundProcessor.ts:s KF3-block lägger
@@ -342,7 +343,7 @@ export function getUpcomingMustDeadlines(
   withinRounds: number = MUST_DEADLINE_WARNING_ROUNDS,
 ): MustDeadline[] {
   const currentMatchday = game.currentMatchday ?? 1
-  return (game.pendingEvents ?? [])
+  return getVoiceEligibleEvents(game, game.pendingEvents ?? [])
     .filter(isActionable)
     .filter(e => getEventDecisionTier(e) === 'must')
     .filter(e => e.deadlineRound != null)

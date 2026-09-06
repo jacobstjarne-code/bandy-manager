@@ -40,6 +40,7 @@ import { createSeasonSignature } from '../../domain/services/seasonSignatureServ
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
+import { generateMecenatIntroEvent } from '../../domain/services/mecenatService'
 import {
   buildDefaultLineup,
   generateManagedClubEntourage,
@@ -135,6 +136,10 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
       boardObjectiveHistory: [],
     },
   })
+  const newMecenater = entourage.mecenater.map(mecenat => ({ ...mecenat, isActive: false }))
+  const newMecenatIntroductions = newMecenater.map(mecenat =>
+    generateMecenatIntroEvent(mecenat, newClubId),
+  )
 
   const managerProfile = game.managerProfile
     ? advanceProfileToNewClub(
@@ -187,7 +192,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     journalist: entourage.journalist,
     doctor: entourage.doctor,
     doctorQuestionsUsed: 0,
-    mecenater: entourage.mecenater,
+    mecenater: newMecenater,
     supporterGroup: entourage.supporterGroup,
     volunteers: entourage.volunteers,
     volunteerMorale: {},
@@ -281,7 +286,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
 
     // Inkorg och beslutsköer: allt i dem gällde den gamla klubben.
     inbox: [],
-    pendingEvents: [],
+    pendingEvents: newMecenatIntroductions,
     deferredDecisions: [],
     pendingContractDemands: undefined,
     pendingWeeklyDecision: undefined,

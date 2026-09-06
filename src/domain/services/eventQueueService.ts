@@ -8,6 +8,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, EventPriority } from '../entities/GameEvent'
 import { getEventPriority } from '../entities/GameEvent'
 import { getEffectiveWhyNowLine } from '../data/contentContract'
+import { getVoiceEligibleEvents } from './voiceIntroductionService'
 
 // Numerisk rank per prio — lägre tal = högre prioritet
 const PRIORITY_RANK: Record<string, number> = {
@@ -87,7 +88,7 @@ export function getEventRenderTarget(event: GameEvent): EventRenderTarget {
  * Hoppar över resolved events.
  */
 export function getNextEvent(game: SaveGame): GameEvent | null {
-  const events = (game.pendingEvents ?? []).filter(e => !e.resolved)
+  const events = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(e => !e.resolved)
   if (events.length === 0) return null
 
   const sorted = [...events].sort((a, b) => {
@@ -105,7 +106,7 @@ export function getNextEvent(game: SaveGame): GameEvent | null {
  * Statistik för Portal-visning och debugging.
  */
 export function getQueueStats(game: SaveGame): QueueStats {
-  const events = (game.pendingEvents ?? []).filter(e => !e.resolved)
+  const events = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(e => !e.resolved)
   return {
     total: events.length,
     critical: events.filter(e => getEffectivePriority(e) === 'critical').length,

@@ -109,6 +109,26 @@ describe('season rollover — absoluta matchday-fält', () => {
     })
   })
 
+  it('bevarar permanent röstgrind men nollställer introbudgeten', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 31 })
+    const introducedVoices = {
+      'mecenat:club:m1': {
+        provenance: 'observed' as const,
+        source: 'event' as const,
+        introducedSeason: base.currentSeason,
+        introducedDate: base.currentDate,
+      },
+    }
+    const rolled = handleSeasonEnd({
+      ...base,
+      introducedVoices,
+      voiceIntroductionBudget: { season: base.currentSeason, matchday: 22, used: 1 },
+    }, 31).game
+
+    expect(rolled.introducedVoices).toEqual(introducedVoices)
+    expect(rolled.voiceIntroductionBudget).toBeUndefined()
+  })
+
   it('bevarar återstående juniorlandslagsfrånvaro för kvarvarande P19-spelare', () => {
     const player = {
       id: 'p19', firstName: 'Bo', lastName: 'Test', age: 17,

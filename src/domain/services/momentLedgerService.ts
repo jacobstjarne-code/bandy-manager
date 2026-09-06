@@ -171,5 +171,9 @@ export function resolveSubjectName(game: SaveGame, subject?: EventLedgerEntry['s
       const ref = (game.referees ?? []).find(r => r.id === subject.id)
       return ref ? `${ref.firstName} ${ref.lastName}` : undefined
     }
+    case 'voice':
+      // The entity may have left or the manager may have changed club. The
+      // permanent gate keeps the identity snapshot needed for callbacks.
+      return game.introducedVoices?.[subject.id]?.nameSnapshot
   }
 }

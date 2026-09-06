@@ -13,6 +13,7 @@ import { buildExpectationVerdictSentence } from '../../domain/services/seasonSum
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
 import { backfillClubHistoryLedger } from '../../domain/services/clubHistoryLedgerService'
 import type { FormationType } from '../../domain/entities/Formation'
+import { buildLegacyIntroducedVoices } from '../../domain/services/voiceIntroductionService'
 
 /**
  * DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
@@ -866,6 +867,27 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // fickorna. Funktionen är idempotent; prio 3:s lösta storylines ingår nu,
   // medan aktiva storylines och journalistens cache/livevärde lämnas orörda.
   data.eventLedger = backfillClubHistoryLedger(data as unknown as SaveGame)
+
+  // DOM_ROSTINTRODUKTIONER_2026-09-06 — migration only when the registry is
+  // wholly absent. Once a modern save owns the field, later unintroduced
+  // people must not become known merely because the save was reloaded.
+  if (!data.introducedVoices || typeof data.introducedVoices !== 'object' || Array.isArray(data.introducedVoices)) {
+    data.introducedVoices = buildLegacyIntroducedVoices(data as unknown as SaveGame)
+  }
+  // The budget is live period state, never reconstructed from permanent
+  // introductions. Malformed legacy payloads safely restart at zero.
+  if (data.voiceIntroductionBudget !== undefined) {
+    const budget = data.voiceIntroductionBudget as Record<string, unknown>
+    if (
+      typeof budget !== 'object'
+      || budget === null
+      || typeof budget.season !== 'number'
+      || typeof budget.matchday !== 'number'
+      || typeof budget.used !== 'number'
+    ) {
+      delete data.voiceIntroductionBudget
+    }
+  }
 
   // SPEC_BERATTAREN_2026-09-04 §4. Registret innehåller bara
   // presentationskvitton; gamla saves har per definition inga sådana.

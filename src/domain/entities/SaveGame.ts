@@ -25,9 +25,10 @@ import type { RoundSummaryData } from './RoundSummary'
 import type { Moment, MomentSource } from './Moment'
 import type { AssistantCoach } from './AssistantCoach'
 import type { PendingScene, SceneId } from './Scene'
+import type { IntroducedVoiceRegistry, VoiceIntroductionBudget } from './Voice'
 
 /** En enda källa för save-schemats version, både vid skapande och migrering. */
-export const CURRENT_SAVE_VERSION = '0.3.10'
+export const CURRENT_SAVE_VERSION = '0.3.11'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
@@ -88,6 +89,7 @@ export type { RoundSummaryData }
 
 export type { Moment, MomentSource }
 export type { AssistantCoach, CoachPersonality, CoachBackground } from './AssistantCoach'
+export type { VoiceId, VoiceIntroductionRecord, IntroducedVoiceRegistry, VoiceIntroductionBudget } from './Voice'
 
 export type ClubEra = 'survival' | 'fotfaste' | 'establishment' | 'legacy'
 
@@ -666,6 +668,14 @@ export interface SaveGame {
 
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]
+
+  // DOM_ROSTINTRODUKTIONER_2026-09-06 — permanent GRIND-state. Registret
+  // svarar bara på om en namngiven återkommande röst får tala. Det är inte
+  // kanonhistorik (eventLedger) och inte visnings-cooldown (narrativeBeatLog).
+  introducedVoices?: IntroducedVoiceRegistry
+  // Separat per-periodbudget: högst ett vanligt introkort per matchdag.
+  // Service-lagret betraktar ett värde från annan season/matchday som tomt.
+  voiceIntroductionBudget?: VoiceIntroductionBudget
 
   // V1.5 — Senast processade matchdag (sätts av roundProcessor — förhindrar dubbelprocess vid cup)
   lastProcessedMatchday?: number

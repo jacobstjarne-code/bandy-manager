@@ -27,6 +27,7 @@ import {
 } from '../storylineLedgerService'
 import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
+import { canEventPassVoiceGate, recordVoiceIntroduction } from '../voiceIntroductionService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -257,15 +258,27 @@ export function resolveEvent(
     ?? (game.pendingCSPress?.id === eventId ? game.pendingCSPress : undefined)
   if (!event) return game
 
+  const voiceGateQueue = (game.pendingEvents ?? []).some(candidate => candidate.id === event.id)
+    ? (game.pendingEvents ?? [])
+    : [event]
+  // Domain guard, not just a presentation filter: a stale UI or direct call
+  // cannot resolve (and thereby discard) an event whose speaker is deferred.
+  if (!canEventPassVoiceGate(game, event, voiceGateQueue)) return game
+
+  const recordIntroducedVoice = (resolvedGame: SaveGame): SaveGame =>
+    event.introducesVoiceId
+      ? recordVoiceIntroduction(resolvedGame, event.introducesVoiceId, event.sender)
+      : resolvedGame
+
   // Events with no choices are observations, not decisions: consume the row and
   // remember its stable id for generator dedup, but never fabricate a
   // resolvedChoices entry or a player-attributed narrative beat.
   if (event.choices.length === 0) {
-    return {
+    return recordIntroducedVoice({
       ...game,
       pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
       resolvedEventIds: recordResolvedId(game, eventId),
-    }
+    })
   }
 
   const choice = event.choices.find(c => c.id === choiceId)
@@ -289,7 +302,9 @@ export function resolveEvent(
       resolvedEventIds: recordResolvedId(afterEffects, eventId),
     }
     resolvedGame = appendSeasonDecisionLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer)
-    return appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, madeByPlayer)
+    return recordIntroducedVoice(
+      appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, madeByPlayer),
+    )
   }
 
   // Handle sponsor events by type (not effect)
@@ -2764,5 +2779,7 @@ export function resolveEvent(
     }
   }
 
-  return appendNewlyResolvedStorylines(game, updatedGame, updatedGame.currentMatchday)
+  return recordIntroducedVoice(
+    appendNewlyResolvedStorylines(game, updatedGame, updatedGame.currentMatchday),
+  )
 }

@@ -199,6 +199,10 @@ export type EventLedgerType =
   // type:'decision'; denna typ säger bara att zonen markerades, lättade eller
   // slöts. semanticKey bär fas+zon, aldrig färdig prosa.
   | 'manager_burnout'
+  // DOM_ROSTINTRODUKTIONER_2026-09-06 — själva introduktionen HÄNDE och
+  // hör därför till kanon. Behörigheten att tala ligger separat i
+  // SaveGame.introducedVoices och härleds aldrig tillbaka ur ledgern.
+  | 'voice_introduced'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -271,7 +275,7 @@ export interface EventLedgerEntry {
   // 'referee' tillagd DOM_DOMARRELATION_2026-09-02.md (Jacobs dom) — samma
   // polymorfa union, en femte entitetstyp. Referee.id (redan ett stabilt
   // id-fält, ingen patron-liknande migrering behövs).
-  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee'; id: string }
+  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee' | 'voice'; id: string }
   // Skärpning 3 (Fas 4 Moment-vägval, 2026-09-01, Opus dom): för genuint
   // två-parts-händelser — en Moment som redan bär BÅDA subjectPlayerId OCH
   // subjectClubId (transfer_story: spelaren + köpande klubben; rival_sale:
