@@ -13,6 +13,7 @@ import { resolveBoardMeetingState } from '../../../application/services/boardMee
 import { BOARD_MEETING_COPY, GOAL_MOTIVATIONS } from '../../../domain/data/boardMeetingCopy'
 import { BOARD_EXPECTATION_CEREMONIAL } from '../../../domain/services/boardService'
 import { seededPick } from '../../../domain/utils/random'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -148,7 +149,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       {data.newGoals.length > 0 && (
         <div style={{ marginBottom: 'auto' }}>
           <div className="h-label h-label-light" style={{ marginBottom: 8 }}>
-            📋 Mål för säsong {game.currentSeason}
+            📋 Mål för säsong {seasonSpanLabel(game.currentSeason)}
           </div>
           {data.newGoals.map((obj, i) => {
             const stretch = isStretch(obj)
@@ -173,7 +174,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       {/* CTA — DB-2: aldrig guld här (B-läge = aspiration → accent/default) */}
       <div style={{ marginTop: 16 }}>
         <SceneCTA
-          label={`Till säsong ${game.currentSeason} →`}
+          label={`Till säsong ${seasonSpanLabel(game.currentSeason)} →`}
           onClick={onComplete}
           variant="default"
         />

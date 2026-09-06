@@ -1,4 +1,5 @@
 import type { AllTimeRecords } from '../../../domain/entities/Narrative'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 interface Props {
   records: AllTimeRecords
@@ -19,7 +20,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Bästa placering',
       value: posLabel,
-      sub: `Säsong ${records.bestFinish.season}`,
+      sub: `Säsong ${seasonSpanLabel(records.bestFinish.season)}`,
     })
   }
 
@@ -27,7 +28,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Flest mål (säsong)',
       value: `${records.mostGoalsSeason.goals} mål`,
-      sub: `${records.mostGoalsSeason.playerName}, ${records.mostGoalsSeason.season}`,
+      sub: `${records.mostGoalsSeason.playerName}, ${seasonSpanLabel(records.mostGoalsSeason.season)}`,
     })
   }
 
@@ -35,7 +36,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Flest assist (säsong)',
       value: `${records.mostAssistsSeason.assists} assist`,
-      sub: `${records.mostAssistsSeason.playerName}, ${records.mostAssistsSeason.season}`,
+      sub: `${records.mostAssistsSeason.playerName}, ${seasonSpanLabel(records.mostAssistsSeason.season)}`,
     })
   }
 
@@ -43,7 +44,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Högsta rating',
       value: `${records.highestRatingSeason.rating.toFixed(1)}`,
-      sub: `${records.highestRatingSeason.playerName}, ${records.highestRatingSeason.season}`,
+      sub: `${records.highestRatingSeason.playerName}, ${seasonSpanLabel(records.highestRatingSeason.season)}`,
     })
   }
 
@@ -51,7 +52,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Största seger',
       value: records.biggestWin.score,
-      sub: `mot ${records.biggestWin.opponent}, ${records.biggestWin.season}`,
+      sub: `mot ${records.biggestWin.opponent}, ${seasonSpanLabel(records.biggestWin.season)}`,
     })
   }
 
@@ -59,7 +60,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'SM-guld',
       value: `${records.championSeasons.length}×`,
-      sub: records.championSeasons.join(', '),
+      sub: records.championSeasons.map(seasonSpanLabel).join(', '),
     })
   }
 
@@ -67,7 +68,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
     cards.push({
       label: 'Cupsegrar',
       value: `${records.cupWinSeasons.length}×`,
-      sub: records.cupWinSeasons.join(', '),
+      sub: records.cupWinSeasons.map(seasonSpanLabel).join(', '),
     })
   }
 

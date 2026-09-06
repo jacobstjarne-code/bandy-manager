@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSignature, SeasonSignatureId } from '../entities/SeasonSignature'
 import { SEASON_SIGNATURE_DEFS } from '../entities/SeasonSignature'
+import { seasonSpanLabel } from '../utils/seasonYear'
 
 type WeightEntry = { id: SeasonSignatureId; weight: number }
 
@@ -118,6 +119,7 @@ export function summarizeSignature(
   actualTransferCount = 0,
 ): string | null {
   const season = signature.startedSeason
+  const seasonLabel = seasonSpanLabel(season)
   const facts = signature.observedFacts
 
   // Påståendesvepet #21 (MASTER.md, 2026-08-24): fallbacken (`|| '...'`)
@@ -130,25 +132,25 @@ export function summarizeSignature(
   // rubrikmeningen ensam.
   switch (signature.id) {
     case 'cold_winter':
-      return facts[0] ? `Köldvintern ${season}. ${facts[0]}` : `Köldvintern ${season}.`
+      return facts[0] ? `Köldvintern ${seasonLabel}. ${facts[0]}` : `Köldvintern ${seasonLabel}.`
     case 'scandal_season': {
       const seasonScandalCount = (scandalHistory ?? []).filter(s => s.season === season).length
       if (seasonScandalCount > 0) {
         const noun = seasonScandalCount === 1 ? 'skandal' : 'skandaler'
-        return `Skandalsäsongen ${season}. ${seasonScandalCount} ${noun} i ligan i år.`
+        return `Skandalsäsongen ${seasonLabel}. ${seasonScandalCount} ${noun} i ligan i år.`
       }
-      return facts[0] ? `Skandalsäsongen ${season}. ${facts[0]}` : `Skandalsäsongen ${season}.`
+      return facts[0] ? `Skandalsäsongen ${seasonLabel}. ${facts[0]}` : `Skandalsäsongen ${seasonLabel}.`
     }
     case 'hot_transfer_market':
       // Signaturen ökar sannolikheter men är inte i sig ett bevis för att
       // sommaren faktiskt blev het. Årsboken får bara påstå det när minst en
       // verklig övergång finns i AI-loggen eller händelseliggaren.
       if (actualTransferCount <= 0) return null
-      return facts[0] ? `Den heta transfersommaren ${season}. ${facts[0]}` : `Den heta transfersommaren ${season}.`
+      return facts[0] ? `Den heta transfersommaren ${seasonLabel}. ${facts[0]}` : `Den heta transfersommaren ${seasonLabel}.`
     case 'injury_curve':
-      return facts[0] ? `Skadekurvan ${season}. ${facts[0]}` : `Skadekurvan ${season}.`
+      return facts[0] ? `Skadekurvan ${seasonLabel}. ${facts[0]}` : `Skadekurvan ${seasonLabel}.`
     case 'dream_round':
-      return facts[0] ? `Drömrundan ${season}. ${facts[0]}` : `Drömrundan ${season}.`
+      return facts[0] ? `Drömrundan ${seasonLabel}. ${facts[0]}` : `Drömrundan ${seasonLabel}.`
     case 'calm_season':
     default:
       return null

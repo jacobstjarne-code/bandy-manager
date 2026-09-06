@@ -1,4 +1,5 @@
 import type { Player } from '../../../domain/entities/Player'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 interface CareerJourneyProps {
   player: Player
@@ -68,7 +69,7 @@ export function CareerJourney({ player, currentSeason }: CareerJourneyProps) {
         return (
           <div key={season} style={{ marginBottom: 10 }}>
             <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4, fontWeight: isCurrent ? 700 : 400 }}>
-              Säsong {season}
+              Säsong {seasonSpanLabel(season)}
             </p>
             {visible.map((entry, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, paddingBottom: 3 }}>

@@ -1,5 +1,6 @@
 import type { SeasonMemory } from '../../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../../domain/services/clubMemoryService'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { ClubMemoryEventRow } from './ClubMemoryEventRow'
 
 interface Props {
@@ -44,7 +45,7 @@ export function ClubMemorySeasonSection({ seasonMemory, activeAnniversaries = []
       {/* Season header */}
       <div className="club-memory-season-header">
         <span className="club-memory-season-title">
-          Säsong {season}
+          Säsong {seasonSpanLabel(season)}
         </span>
         {isOngoing && (
           <span className="club-memory-season-ongoing-badge">

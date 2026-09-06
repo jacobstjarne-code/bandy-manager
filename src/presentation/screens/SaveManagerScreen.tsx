@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 /**
  * Multi-slot (2026-08-22, releasegrind) — save-väljare, inte destruktiv
@@ -113,7 +114,7 @@ export function SaveManagerScreen() {
                 )}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                {save.clubName} · säsong {save.season}
+                {save.clubName} · säsong {seasonSpanLabel(save.season)}
                 {save.leaguePosition !== undefined && ` · ${save.leaguePosition}:a plats`}
               </div>
               {/* M7 (audit 5c9a7a8, 2026-08-24): "save-väljaren visar bara

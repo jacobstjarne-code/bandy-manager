@@ -1,6 +1,7 @@
 import type { ClubLegend } from '../../../domain/entities/Narrative'
 import { positionShort } from '../../utils/formatters'
 import type { PlayerPosition } from '../../../domain/enums'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 interface Props {
   legends: ClubLegend[]
@@ -24,7 +25,7 @@ export function ClubMemoryLegendsBlock({ legends }: Props) {
             {legend.name}
           </div>
           <div className="club-memory-legend-meta">
-            {positionShort(legend.position as PlayerPosition)} · {legend.seasons} säsonger · Pensionerad {legend.retiredSeason}
+            {positionShort(legend.position as PlayerPosition)} · {legend.seasons} säsonger · Pensionerad {seasonSpanLabel(legend.retiredSeason)}
           </div>
           <div className="club-memory-legend-stats">
             {legend.totalGoals} mål · {legend.totalAssists} assist

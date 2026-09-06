@@ -268,7 +268,7 @@ describe('createContractExpiringItem', () => {
     expect(item.type).toBe(InboxItemType.ContractExpiring)
     expect(item.title).toContain(player.firstName)
     expect(item.title).toContain(player.lastName)
-    expect(item.body).toContain('2027')
+    expect(item.body).toContain('säsong 2027/28')
     expect(item.relatedPlayerId).toBe(player.id)
     expect(item.isRead).toBe(false)
   })

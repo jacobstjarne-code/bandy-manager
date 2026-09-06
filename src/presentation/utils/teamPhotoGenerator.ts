@@ -4,6 +4,7 @@
 import type { Club } from '../../domain/entities/Club'
 import type { Player } from '../../domain/entities/Player'
 import { positionShort } from '../../domain/format'
+import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 function escape(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -66,7 +67,7 @@ export function generateTeamPhotoSvg(
   <!-- Club name -->
   <text x="${W / 2}" y="60" text-anchor="middle" font-size="32" fill="#E8E4DC" font-family="Georgia, serif" font-weight="700" letter-spacing="3">${escape(club.name.toUpperCase())}</text>
   <!-- Season -->
-  <text x="${W / 2}" y="92" text-anchor="middle" font-size="14" fill="#C47A3A" font-family="Georgia, serif" letter-spacing="2">SÄSONG ${season}/${season + 1}</text>
+  <text x="${W / 2}" y="92" text-anchor="middle" font-size="14" fill="#C47A3A" font-family="Georgia, serif" letter-spacing="2">SÄSONG ${seasonSpanLabel(season)}</text>
   <!-- Arena -->
   <text x="${W / 2}" y="116" text-anchor="middle" font-size="12" fill="rgba(245,241,235,0.35)" font-family="Georgia, serif">${escape(club.arenaName ?? '')}</text>
   <!-- Row labels -->

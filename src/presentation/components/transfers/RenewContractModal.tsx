@@ -11,6 +11,7 @@ import {
   type ContractTermOffer,
 } from '../../../domain/services/contractNegotiationService'
 import { contractTermSummaryText } from '../../../domain/data/contractTermText'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { ContractTermChips } from './ContractTermChips'
 import '../../styles/match-flow.css'
 
@@ -96,7 +97,7 @@ export function RenewContractModal({
                   </button>
                 ))}
               </div>
-              <p className="transfers-contract-end">Nytt slutdatum: säsong {currentSeason + years}</p>
+              <p className="transfers-contract-end">Nytt slutdatum: säsong {seasonSpanLabel(currentSeason + years)}</p>
             </div>
             <ContractTermChips
               availableTerms={availableTerms}

@@ -1,3 +1,5 @@
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
+
 export interface SpineItem {
   label: string
   season?: number
@@ -34,7 +36,7 @@ export function Spine({ items, title }: Props) {
               background: item.dimmed ? 'var(--border)' : 'var(--accent)',
             }} />
             <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 2 }}>
-              {item.label}{item.season != null ? ` · Säsong ${item.season}` : ''}
+              {item.label}{item.season != null ? ` · Säsong ${seasonSpanLabel(item.season)}` : ''}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {item.text}

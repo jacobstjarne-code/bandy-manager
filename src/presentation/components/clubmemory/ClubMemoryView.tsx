@@ -10,6 +10,7 @@ import { ClubMemoryRecordsBlock } from './ClubMemoryRecordsBlock'
 import { ClubMemoryEmpty } from './ClubMemoryEmpty'
 import { Spine } from '../shared/Spine'
 import type { SpineItem } from '../shared/Spine'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 
 const KIND_LABEL: Record<string, string> = {
   triumph: 'Triumf',
@@ -30,7 +31,7 @@ const MATCH_BOUND_MOMENT_SOURCES = new Set<MomentSource>(['derby_win', 'season_h
 
 function momentRoundLabel(entry: MomentLedgerEntry, game: SaveGame): string {
   if (!MATCH_BOUND_MOMENT_SOURCES.has(entry.type)) {
-    return `Säsong ${entry.season}`
+    return `Säsong ${seasonSpanLabel(entry.season)}`
   }
   const fixture = game.fixtures.find(f =>
     f.matchday === entry.matchday && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)

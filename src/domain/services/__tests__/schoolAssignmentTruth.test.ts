@@ -42,6 +42,8 @@ describe('schoolAssignment — O11:s text/state-kontrakt', () => {
     expect(event?.relatedPlayerId).toBe(expected.id)
     expect(event?.choices.map(choice => choice.id)).toEqual(['tell_notable', 'tell_legend', 'tell_now'])
     expect(event?.choices.every(choice => choice.effect.type === 'saveSchoolAssignment' && !!choice.effect.replyText)).toBe(true)
+    expect(event?.choices[0]?.label).toContain('2023/24')
+    expect(event?.choices[0]?.effect.replyText).toContain('2023/24')
   })
 
   it('ett redan defererat canonical skolkort kan inte genereras igen', () => {

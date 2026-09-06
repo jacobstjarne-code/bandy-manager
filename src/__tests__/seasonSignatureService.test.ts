@@ -132,17 +132,17 @@ describe('recordSignatureFact', () => {
 describe('summarizeSignature', () => {
   it('returns correct Swedish text for cold_winter', () => {
     const sig: SeasonSignature = { id: 'cold_winter', modifiers: {}, startedSeason: 2027, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('Köldvintern 2027')
+    expect(summarizeSignature(sig)).toContain('Köldvintern 2027/28')
   })
 
   it('returns correct Swedish text for scandal_season', () => {
     const sig: SeasonSignature = { id: 'scandal_season', modifiers: {}, startedSeason: 2028, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('Skandalsäsongen 2028')
+    expect(summarizeSignature(sig)).toContain('Skandalsäsongen 2028/29')
   })
 
   it('returns correct Swedish text for hot_transfer_market', () => {
     const sig: SeasonSignature = { id: 'hot_transfer_market', modifiers: {}, startedSeason: 2029, observedFacts: [] }
-    expect(summarizeSignature(sig, [], 1)).toContain('transfersommaren 2029')
+    expect(summarizeSignature(sig, [], 1)).toContain('transfersommaren 2029/30')
   })
 
   it('påstår inte en het transfersommar utan en verklig övergång', () => {
@@ -152,12 +152,12 @@ describe('summarizeSignature', () => {
 
   it('returns correct Swedish text for injury_curve', () => {
     const sig: SeasonSignature = { id: 'injury_curve', modifiers: {}, startedSeason: 2030, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('Skadekurvan 2030')
+    expect(summarizeSignature(sig)).toContain('Skadekurvan 2030/31')
   })
 
   it('returns correct Swedish text for dream_round', () => {
     const sig: SeasonSignature = { id: 'dream_round', modifiers: {}, startedSeason: 2031, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('Drömrundan 2031')
+    expect(summarizeSignature(sig)).toContain('Drömrundan 2031/32')
   })
 
   it('returns null for calm_season — no rubric added to SeasonSummary', () => {

@@ -13,6 +13,7 @@
  */
 
 import type { CareerBreakReport, CareerBreakSeasonLine } from '../services/careerBreakService'
+import { seasonSpanLabel } from '../utils/seasonYear'
 
 // ── Steg 1: säsongen som spelades utan dig ─────────────────────────────────
 
@@ -38,7 +39,7 @@ export function careerBreakSeasonIntro(report: CareerBreakReport): string {
  */
 export function careerBreakSeasonLine(line: CareerBreakSeasonLine, report: CareerBreakReport): string {
   const tail = line.championClubName ? ` ${line.championClubName} vann.` : ''
-  return `Säsong ${line.season}: ${report.formerClubName} på plats ${line.formerClubPosition}.${tail}`
+  return `Säsong ${seasonSpanLabel(line.season)}: ${report.formerClubName} på plats ${line.formerClubPosition}.${tail}`
 }
 
 /**

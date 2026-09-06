@@ -4,6 +4,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { SeasonSummary } from '../entities/SeasonSummary'
+import { seasonSpanLabel } from '../utils/seasonYear'
 
 /**
  * @cites SeasonSummary.playoffResult, SeasonSummary.finalPosition, SeasonSummary.season
@@ -12,7 +13,7 @@ function summarizeSeason(s: SeasonSummary): string {
   if (s.playoffResult === 'champion') return 'säsongen vi blev SM'
   if (s.playoffResult === 'finalist') return 'SM-final-säsongen'
   if (s.finalPosition <= 3) return `säsongen vi slutade ${s.finalPosition}:a`
-  return `säsong ${s.season}`
+  return `säsong ${seasonSpanLabel(s.season)}`
 }
 
 /**
@@ -47,10 +48,10 @@ export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: numb
   if (notableSeason) {
     choices.push({
       id: 'tell_notable',
-      label: `Berätta om ${notableSeason.season}/${notableSeason.season + 1} — ${summarizeSeason(notableSeason)}`,
+      label: `Berätta om ${seasonSpanLabel(notableSeason.season)} — ${summarizeSeason(notableSeason)}`,
       effect: {
         type: 'saveSchoolAssignment' as const,
-        replyText: `Det var ${notableSeason.season}/${notableSeason.season + 1}. Vi slutade ${notableSeason.finalPosition}:a i serien${notableSeason.playoffResult === 'champion' ? ' och vann SM.' : '.'}`,
+        replyText: `Det var ${seasonSpanLabel(notableSeason.season)}. Vi slutade ${notableSeason.finalPosition}:a i serien${notableSeason.playoffResult === 'champion' ? ' och vann SM.' : '.'}`,
       },
     })
   }

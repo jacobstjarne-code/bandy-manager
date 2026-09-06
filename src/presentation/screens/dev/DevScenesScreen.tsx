@@ -326,6 +326,8 @@ const SCENES: { id: SceneId; label: string }[] = [
 // ── Fingered data ────────────────────────────────────────────────────────────
 
 const HOME_ID = 'dev-managed'
+const DEV_FIRST_SEASON = 2026
+const devSeason = (careerSeason: number) => DEV_FIRST_SEASON + careerSeason - 1
 const AWAY_ID = 'dev-opponent'
 const SECOND_RIVAL_ID = 'dev-second-rival'
 
@@ -377,8 +379,8 @@ function makePlayer(id: string, first: string, last: string, age: number, pos: P
     // mönster som managerName-gapet i makeGame(), fångat i tranare-scenen).
     careerStats: { totalGames: 50, totalGoals: 0, totalAssists: 0, seasonsPlayed: 3 },
     seasonHistory: [
-      { season: 6, goals: 4, assists: 3, games: 18, rating: 6.4, clubId: HOME_ID },
-      { season: 7, goals: 5, assists: 4, games: 20, rating: 6.7, clubId: HOME_ID },
+      { season: devSeason(6), goals: 4, assists: 3, games: 18, rating: 6.4, clubId: HOME_ID },
+      { season: devSeason(7), goals: 5, assists: 4, games: 20, rating: 6.7, clubId: HOME_ID },
     ],
     ...extra,
   }
@@ -429,7 +431,7 @@ function makeStandings() {
 function makeLeagueFixtures() {
   return Array.from({ length: 14 }, (_, i) => ({
     id: `fx-lg-${i}`,
-    leagueId: 'liga-dev', season: 8, roundNumber: i + 1, matchday: i + 1,
+    leagueId: 'liga-dev', season: devSeason(8), roundNumber: i + 1, matchday: i + 1,
     homeClubId: i % 2 === 0 ? HOME_ID : AWAY_ID,
     awayClubId: i % 2 === 0 ? AWAY_ID : HOME_ID,
     homeScore: i % 3 === 0 ? 3 : i % 3 === 1 ? 2 : 1,
@@ -441,7 +443,7 @@ function makeLeagueFixtures() {
 
 // Cup final fixture — triggers useCupFinalData
 const cupFinalFixture = {
-  id: 'fx-cup-final', leagueId: 'liga-dev', season: 8, roundNumber: 4, matchday: 38,
+  id: 'fx-cup-final', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 4, matchday: 38,
   homeClubId: HOME_ID, awayClubId: AWAY_ID,
   homeScore: 5, awayScore: 3,
   status: 'completed' as const,
@@ -472,10 +474,10 @@ function makeGame(fixtureOverrides: object[], extra: Record<string, unknown> = {
   return {
     id: 'dev-game',
     managedClubId: HOME_ID,
-    currentSeason: 8,
+    currentSeason: devSeason(8),
     currentMatchday: 16,
-    currentDate: '2026-01-15',
-    trainingHistory: [{ season: 8, roundNumber: 15, focus: { type: 'physical', intensity: 'normal' }, effects: {} }],
+    currentDate: '2034-01-15',
+    trainingHistory: [{ season: devSeason(8), roundNumber: 15, focus: { type: 'physical', intensity: 'normal' }, effects: {} }],
     clubs: devClubs,
     players: devPlayers,
     fixtures: fixtureOverrides,
@@ -519,9 +521,9 @@ const efterklangGame = makeGame(makeLeagueFixtures(), {
     persona: 'sceptical',
     relationship: 62,
     memory: [
-      { season: 8, matchday: 4, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' },
-      { season: 8, matchday: 7, event: 'bad_answer', sentiment: -5 },
-      { season: 8, matchday: 9, event: 'big_win', sentiment: 6 },
+      { season: devSeason(8), matchday: 4, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' },
+      { season: devSeason(8), matchday: 7, event: 'bad_answer', sentiment: -5 },
+      { season: devSeason(8), matchday: 9, event: 'big_win', sentiment: 6 },
     ],
   },
   nemesisTracker: {
@@ -589,7 +591,7 @@ const mecenatDinnerBaseGame = makeGame(makeLeagueFixtures(), {
     id: 'dev-mecenat-dinner', name: 'Karin Berg', gender: 'female', business: 'Berg AB',
     businessType: 'entrepreneur', wealth: 3, personality: 'tyst_kraft', influence: 60,
     happiness: 60, goodwill: 50, contribution: 60_000, totalContributed: 120_000,
-    demands: [], socialExpectations: [], isActive: true, arrivedSeason: 7, silentShout: 0,
+    demands: [], socialExpectations: [], isActive: true, arrivedSeason: devSeason(7), silentShout: 0,
   }],
 })
 const mecenatDinnerEvent = generateDinnerEvent(mecenatDinnerBaseGame, 20)!
@@ -627,7 +629,7 @@ const journalistSceneGame = {
   storylines: journalistRelationshipType ? [{
     id: `dev-${journalistRelationshipType}`,
     type: journalistRelationshipType,
-    season: 7,
+    season: devSeason(7),
     matchday: 12,
     clubId: HOME_ID,
     description: 'dev-history',
@@ -660,7 +662,7 @@ const contractDemandsGame = makeGame(makeLeagueFixtures(), {
 
 const careerBreakGame = makeGame(makeLeagueFixtures(), {
   careerBreak: {
-    firedAtSeason: 7,
+    firedAtSeason: devSeason(7),
     stage: 'season',
     renomme: 61,
     careerOver: false,
@@ -673,8 +675,8 @@ const careerBreakGame = makeGame(makeLeagueFixtures(), {
       formerClubDidWorse: false,
       seasonsSimulated: 2,
       seasons: [
-        { season: 8, formerClubPosition: 7, championClubId: AWAY_ID, championClubName: 'Bollnäs GoIF' },
-        { season: 9, formerClubPosition: 5, championClubId: HOME_ID, championClubName: 'Edsbyn BK' },
+        { season: devSeason(8), formerClubPosition: 7, championClubId: AWAY_ID, championClubName: 'Bollnäs GoIF' },
+        { season: devSeason(9), formerClubPosition: 5, championClubId: HOME_ID, championClubName: 'Edsbyn BK' },
       ],
       finalStandings: [{ clubId: HOME_ID, position: 5 }, { clubId: AWAY_ID, position: 11 }],
     },
@@ -693,9 +695,9 @@ const careerBreakGame = makeGame(makeLeagueFixtures(), {
 
 const inboxGame = makeGame(makeLeagueFixtures(), {
   inbox: [
-    { id: 'dev-inbox-license', date: '2026-01-15', type: InboxItemType.LicenseReview, title: 'Licensen kräver en plan', body: 'Styrelsen vill se en åtgärd före nästa kontroll.', isRead: false, createdMatchday: 16, createdRound: 14, licenseZoneLabel: 'Riskzon' },
-    { id: 'dev-inbox-media', date: '2026-01-14', type: InboxItemType.Media, title: 'Vinterns formkurva väcker frågor', body: 'Gefle Dagblad summerar de senaste matcherna.', isRead: false, createdMatchday: 15, createdRound: 13, outlet: 'Gefle Dagblad' },
-    { id: 'dev-inbox-scout', date: '2026-01-13', type: InboxItemType.ScoutReport, title: 'Scoutrapport klar', body: 'Tre spelare har följts under månaden.', isRead: true, createdMatchday: 14, createdRound: 12 },
+    { id: 'dev-inbox-license', date: '2034-01-15', type: InboxItemType.LicenseReview, title: 'Licensen kräver en plan', body: 'Styrelsen vill se en åtgärd före nästa kontroll.', isRead: false, createdMatchday: 16, createdRound: 14, licenseZoneLabel: 'Riskzon' },
+    { id: 'dev-inbox-media', date: '2034-01-14', type: InboxItemType.Media, title: 'Vinterns formkurva väcker frågor', body: 'Gefle Dagblad summerar de senaste matcherna.', isRead: false, createdMatchday: 15, createdRound: 13, outlet: 'Gefle Dagblad' },
+    { id: 'dev-inbox-scout', date: '2034-01-13', type: InboxItemType.ScoutReport, title: 'Scoutrapport klar', body: 'Tre spelare har följts under månaden.', isRead: true, createdMatchday: 14, createdRound: 12 },
   ],
 })
 
@@ -978,7 +980,7 @@ const scoutingTargetPlayer = transfersOpenNoBidsGame.players.find(
   p => p.clubId !== transfersOpenNoBidsGame.managedClubId,
 )!
 const scoutingDevReport = processScoutAssignment(
-  startScoutAssignment(scoutingTargetPlayer.id, scoutingTargetPlayer.clubId, '2026-11-01', true),
+  startScoutAssignment(scoutingTargetPlayer.id, scoutingTargetPlayer.clubId, '2033-11-01', true),
   scoutingTargetPlayer,
   75,
   7,
@@ -1072,7 +1074,7 @@ function makeSpecialNextMatchGame(kind: 'derby' | 'annandagen'): SaveGame {
     awayClubId: opponentId,
     roundNumber: kind === 'annandagen' ? 8 : 2,
     matchday: kind === 'annandagen' ? 12 : 2,
-    date: kind === 'annandagen' ? '2026-12-26' : '2026-11-08',
+    date: kind === 'annandagen' ? '2033-12-26' : '2033-11-08',
     isCup: false,
     isKnockout: false,
     isAnnandagen: kind === 'annandagen' ? true : undefined,
@@ -1188,7 +1190,7 @@ const breakpointEvent = {
 // osynlig en månad (3f9bc07a): otestad rangordning upptäcks inte förrän
 // någon råkar trigga rätt kombination i skarpt läge.
 const primarySmFinalFixture = {
-  id: 'fx-primary-smfinal', leagueId: 'liga-dev', season: 8, roundNumber: 37, matchday: 37,
+  id: 'fx-primary-smfinal', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 37, matchday: 37,
   homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
   status: 'scheduled' as const, isFinaldag: true, events: [],
 }
@@ -1198,7 +1200,7 @@ const primarySmFinalFixture = {
 const primarySmfinalVsDeadlineGame = makeGame([...makeLeagueFixtures(), primarySmFinalFixture])
 
 const primaryFarewellFixture = {
-  id: 'fx-primary-farewell', leagueId: 'liga-dev', season: 8, roundNumber: 21, matchday: 21,
+  id: 'fx-primary-farewell', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 21, matchday: 21,
   homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
   status: 'scheduled' as const, farewellMatchForPlayerId: 'p-h1', events: [],
 }
@@ -1290,7 +1292,7 @@ const facilityGame = {
   // avslutats. makeBaseGame() sätter ingen seasonSummaries — utan denna raden
   // hänger fixturen kvar i S1 och testklicket på "Bygg ut" hittar aldrig knappen.
   seasonSummaries: [makeSeasonSummary({ finalPosition: 6, playoffResult: null })],
-  facilityState: { builtNodeIds: ['varmestuga'], builtSeasons: { varmestuga: 1 } },
+  facilityState: { builtNodeIds: ['varmestuga'], builtSeasons: { varmestuga: devSeason(1) } },
   localPolitician: {
     name: 'Karin Åhs', title: 'Kommunalråd', party: 'lokalt' as const,
     agenda: 'infrastructure' as const, relationship: 55, kommunBidrag: 0,
@@ -1310,11 +1312,11 @@ const facilityGame = {
 // säsonger på rad utan förbättring"), inte den mildare boardPatience-grenen.
 const gameOverGame = {
   ...makeBaseGame({ seed: 6 }),
-  currentSeason: 4,
+  currentSeason: devSeason(4),
   seasonSummaries: [
-    makeSeasonSummary({ season: 1, finalPosition: 8, wins: 10 }),
-    makeSeasonSummary({ season: 2, finalPosition: 10, wins: 8 }),
-    makeSeasonSummary({ season: 3, finalPosition: 11, wins: 6 }),
+    makeSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10 }),
+    makeSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8 }),
+    makeSeasonSummary({ season: devSeason(3), finalPosition: 11, wins: 6 }),
   ],
   boardPatience: 12,
   consecutiveFailures: 3,
@@ -1328,15 +1330,15 @@ const gameOverGame = {
 const historyTwoClubGame = {
   ...gameOverGame,
   seasonSummaries: [
-    makeSeasonSummary({ season: 1, finalPosition: 8, wins: 10, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
-    makeSeasonSummary({ season: 2, finalPosition: 10, wins: 8, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
-    makeSeasonSummary({ season: 3, finalPosition: 5, wins: 14, clubId: HOME_ID, clubName: 'Edsbyn BK' }),
+    makeSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeSeasonSummary({ season: devSeason(3), finalPosition: 5, wins: 14, clubId: HOME_ID, clubName: 'Edsbyn BK' }),
   ],
   eventLedger: [
-    { type: 'decision', semanticKey: 'dev_decision_1', season: 1, matchday: 8, significance: 40, clubId: 'club-s2', managerId: gameOverGame.id },
-    { type: 'decision', semanticKey: 'dev_decision_2', season: 2, matchday: 14, significance: 35, clubId: 'club-s2', managerId: gameOverGame.id },
-    { type: 'player_milestone', semanticKey: 'dev_milestone_1', season: 2, matchday: 18, significance: 60, clubId: 'club-s2', managerId: gameOverGame.id },
-    { type: 'decision', semanticKey: 'dev_decision_3', season: 3, matchday: 4, significance: 30, clubId: HOME_ID, managerId: gameOverGame.id },
+    { type: 'decision', semanticKey: 'dev_decision_1', season: devSeason(1), matchday: 8, significance: 40, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'decision', semanticKey: 'dev_decision_2', season: devSeason(2), matchday: 14, significance: 35, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'player_milestone', semanticKey: 'dev_milestone_1', season: devSeason(2), matchday: 18, significance: 60, clubId: 'club-s2', managerId: gameOverGame.id },
+    { type: 'decision', semanticKey: 'dev_decision_3', season: devSeason(3), matchday: 4, significance: 30, clubId: HOME_ID, managerId: gameOverGame.id },
   ],
 } as unknown as SaveGame
 
@@ -1351,7 +1353,7 @@ const callupGame = {
 
 // Granska IA — fingerad spelad match (md 20) + andra matcher + roundSummary
 const granskaFixture = {
-  id: 'fx-granska', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
+  id: 'fx-granska', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 20, matchday: 20,
   homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 4, awayScore: 2,
   status: 'completed' as const,
   events: [
@@ -1385,8 +1387,8 @@ const granskaFixture = {
   },
 }
 const granskaOtherFixtures = [
-  { id: 'fx-o1', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s1', awayClubId: 'club-s5', homeScore: 3, awayScore: 2, status: 'completed' as const, events: [] },
-  { id: 'fx-o2', leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20, homeClubId: 'club-s8', awayClubId: 'club-s2', homeScore: 1, awayScore: 1, status: 'completed' as const, events: [] },
+  { id: 'fx-o1', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 20, matchday: 20, homeClubId: 'club-s1', awayClubId: 'club-s5', homeScore: 3, awayScore: 2, status: 'completed' as const, events: [] },
+  { id: 'fx-o2', leagueId: 'liga-dev', season: devSeason(8), roundNumber: 20, matchday: 20, homeClubId: 'club-s8', awayClubId: 'club-s2', homeScore: 1, awayScore: 1, status: 'completed' as const, events: [] },
 ]
 // BROWSER-VERIFIERING (2026-08-12): två fabricerade pendingEvents (en 'critical',
 // en 'player') så DecisionCard faktiskt går att se renderad med riktigt
@@ -1423,7 +1425,7 @@ const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...gransk
   // — ett beslut mellan förra matchen (omg 14, makeLeagueFixtures) och denna
   // (omg 20, granskaFixture).
   eventLedger: [{
-    type: 'decision', semanticKey: 'dev-decision-k4', season: 8, matchday: 17, significance: 55,
+    type: 'decision', semanticKey: 'dev-decision-k4', season: devSeason(8), matchday: 17, significance: 55,
     consequences: [
       { field: 'finances', dir: 'down', magnitude: 'tydligt' },
       { field: 'supporterMood', dir: 'up', magnitude: 'knappt' },
@@ -1447,9 +1449,9 @@ function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
 const upptaktFx = (variant: 'sakrat' | 'farozon' | 'bottenstrid') => [
   ...makeLeagueFixtures(),
   {
-    id: `fx-upptakt-next-${variant}`, leagueId: 'liga-dev', season: 8, roundNumber: 20, matchday: 20,
+    id: `fx-upptakt-next-${variant}`, leagueId: 'liga-dev', season: devSeason(8), roundNumber: 20, matchday: 20,
     homeClubId: HOME_ID, awayClubId: AWAY_ID, homeScore: 0, awayScore: 0,
-    status: 'scheduled' as const, events: [], isCup: false, date: '2026-02-08', tipoffHour: 14,
+    status: 'scheduled' as const, events: [], isCup: false, date: '2034-02-08', tipoffHour: 14,
   },
 ]
 const upptaktSakrat = makeGame(upptaktFx('sakrat'), { currentMatchday: 19, standings: makeUpptaktStandings(34, [38, 36, 30, 28, 28, 20, 18, 16, 14, 12, 10]) })
@@ -1483,7 +1485,7 @@ const ekonomiCrisisGame = makeGame(makeLeagueFixtures(), {
 // SeasonSummary — fingerade summaries för fyra states
 function makeSeasonSummary(overrides: Record<string, unknown>) {
   const base = {
-    season: 8, clubId: HOME_ID, clubName: 'Edsbyn BK', finalPosition: 5,
+    season: devSeason(8), clubId: HOME_ID, clubName: 'Edsbyn BK', finalPosition: 5,
     wins: 14, draws: 4, losses: 4, goalsFor: 62, goalsAgainst: 38, goalDifference: 24, points: 32,
     totalGoals: 14, totalAssists: 10, totalCornerGoals: 4, totalCleanSheets: 6,
     longestWinStreak: 5, longestLossStreak: 2, biggestWin: { opponent: 'BGF', score: '7–1', round: 12 }, worstLoss: null,
@@ -1539,7 +1541,7 @@ const seasonShareGame = makeGame(makeLeagueFixtures(), { seasonSummaries: [seaso
 // Finalhelg: playoffBracket med managed i en pågående final (winnerId null) → isSmFinal.
 const finalhelgGame = makeGame(makeLeagueFixtures(), {
   playoffBracket: {
-    season: 8, status: 'final', champion: null,
+    season: devSeason(8), status: 'final', champion: null,
     quarterFinals: [], semiFinals: [],
     final: { id: 'pf-final', round: 'final', homeClubId: HOME_ID, awayClubId: AWAY_ID, fixtures: [], homeWins: 1, awayWins: 1, winnerId: null, loserId: null },
   },
@@ -1553,7 +1555,7 @@ const seasonGameC = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSum
 // inte en egen scen — samma princip som season-a/b/c ovan).
 const SOMMAREN_CLUBS = [...devClubs, ...Array.from({ length: 10 }, (_, i) => ({ ...devClubs[1], id: `club-filler-${i}`, name: `Fyllnadsklubb ${i}` }))]
 const sommarenCupFixture = {
-  id: 'fx-sommaren-cup', leagueId: 'liga-dev', season: 9, roundNumber: 2, matchday: 1,
+  id: 'fx-sommaren-cup', leagueId: 'liga-dev', season: devSeason(9), roundNumber: 2, matchday: 1,
   homeClubId: HOME_ID, awayClubId: AWAY_ID, status: 'scheduled' as const,
   isCup: true, events: [],
 }
@@ -1561,8 +1563,8 @@ function makeSommarenGame(extra: Record<string, unknown>): SaveGame {
   return makeGame([sommarenCupFixture], {
     clubs: SOMMAREN_CLUBS,
     boardObjectives: [
-      { id: 'obj-1', type: 'sporting', label: 'Nå slutspel', description: 'Slutspel', ownerId: 'O. Ström', ownerPersonality: 'traditionalist', targetValue: 8, currentValue: 3, measureFn: 'position', status: 'active', assignedSeason: 9, successReward: '', failureConsequence: '', carryOver: false },
-      { id: 'obj-2', type: 'economic', label: 'Balansera budgeten', description: 'Ekonomi', ownerId: 'B. Lund', ownerPersonality: 'ekonom', targetValue: 0, currentValue: 120000, measureFn: 'finances', status: 'active', assignedSeason: 9, successReward: '', failureConsequence: '', carryOver: false },
+      { id: 'obj-1', type: 'sporting', label: 'Nå slutspel', description: 'Slutspel', ownerId: 'O. Ström', ownerPersonality: 'traditionalist', targetValue: 8, currentValue: 3, measureFn: 'position', status: 'active', assignedSeason: devSeason(9), successReward: '', failureConsequence: '', carryOver: false },
+      { id: 'obj-2', type: 'economic', label: 'Balansera budgeten', description: 'Ekonomi', ownerId: 'B. Lund', ownerPersonality: 'ekonom', targetValue: 0, currentValue: 120000, measureFn: 'finances', status: 'active', assignedSeason: devSeason(9), successReward: '', failureConsequence: '', carryOver: false },
     ],
     ...extra,
   } as never)
@@ -1572,23 +1574,22 @@ function transitionEvents(...types: Array<'retired' | 'aged' | 'promoted'>): imp
   return types.map(type => ({ type, playerId: `p-${type}`, playerLastName: names[type], ...(type === 'aged' && { age: 34 }) }))
 }
 // Säsong 2, utvilad, tre händelser, slutspel rimligt.
-// currentSeason satt = seasonCount (2026-08-19-fyndet: kickern läste game.
-// currentSeason, epokLine läser trainerArc.seasonCount — två olika fält som
-// makeSommarenGame() aldrig synkade, så alla fyra scener visade samma
-// ärvda default (8) i kickern oavsett vad brödtexten sa).
+// currentSeason sätts till motsvarande absoluta kalenderår; seasonCount och
+// seasonsAtClub förblir ordningstal. Tidigare blandade fixturen ihop de två
+// skalorna och gjorde formatgranskningen missvisande.
 // H6 (2026-08-24): epokLine läser numera managerProfile.seasonsAtClub, inte
 // trainerArc.seasonCount (se SeasonTransitionScene.tsx:s rotorsak-kommentar)
 // — seasonsAtClub tillagd på alla fyra mockar nedan så de fortsätter visa
 // RÄTT säsongsordinal i epok-raden, inte bara i kickern.
 const sommarenS2Game = makeSommarenGame({
-  currentSeason: 2,
+  currentSeason: devSeason(2),
   trainerArc: { current: 'newcomer', history: [], seasonCount: 2, bestFinish: 3, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 2 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 3, playoffResult: 'quarterfinal' })],
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 15, seasonsAtClub: 2 },
   pendingSeasonTransitionEvents: transitionEvents('retired', 'aged', 'promoted'),
   // Förutsättningsfasen, steg 1 — höjd ribba (dev-scene-verifiering).
   boardAssessment: {
-    season: 2, previousExpectation: 'midTable', newExpectation: 'challengeTop', direction: 'raised',
+    season: devSeason(2), previousExpectation: 'midTable', newExpectation: 'challengeTop', direction: 'raised',
     reasonSource: 'results', reasonLine: 'Ni har visat att ni kan mer. Då begär vi mer.', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
     leagueMovements: [
       { type: 'transfer', playerName: 'Oskar Nyström', fromClubName: 'Rogle', toClubName: 'Lesjöfors', fee: 185000 },
@@ -1599,7 +1600,7 @@ const sommarenS2Game = makeSommarenGame({
 })
 // Säsong 6, titelförsvarare, nära gränsen, tre händelser.
 const sommarenTitelforsvarareGame = makeSommarenGame({
-  currentSeason: 6,
+  currentSeason: devSeason(6),
   trainerArc: { current: 'grind', history: [], seasonCount: 6, bestFinish: 1, titlesWon: 1, consecutiveLosses: 0, consecutiveWins: 4 },
   seasonSummaries: [
     makeSeasonSummary({ finalPosition: 4, playoffResult: 'semifinal' }),
@@ -1610,7 +1611,7 @@ const sommarenTitelforsvarareGame = makeSommarenGame({
 })
 // Säsong 4, efter tapp, tomt-fallet, slutspel INTE rimligt (avoidBottom + didNotQualify).
 const sommarenTomtGame = makeSommarenGame({
-  currentSeason: 4,
+  currentSeason: devSeason(4),
   clubs: SOMMAREN_CLUBS.map(c => c.id === HOME_ID ? { ...c, boardExpectation: 'avoidBottom' } : c),
   trainerArc: { current: 'questioned', history: [], seasonCount: 4, bestFinish: 5, titlesWon: 0, consecutiveLosses: 3, consecutiveWins: 0 },
   seasonSummaries: [
@@ -1621,7 +1622,7 @@ const sommarenTomtGame = makeSommarenGame({
   pendingSeasonTransitionEvents: [],
   // Förutsättningsfasen, steg 1 — sänkt ribba (dev-scene-verifiering).
   boardAssessment: {
-    season: 4, previousExpectation: 'midTable', newExpectation: 'avoidBottom', direction: 'lowered',
+    season: devSeason(4), previousExpectation: 'midTable', newExpectation: 'avoidBottom', direction: 'lowered',
     reasonSource: 'aiTransfers', reasonLine: 'Två lag omkring er har rustat på ett sätt ni inte matchat. Vi justerar därefter.', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER,
     leagueMovements: [
       { type: 'transfer', playerName: 'Oskar Nyström', fromClubName: 'Rogle', toClubName: 'Lesjöfors', fee: 185000 },
@@ -1631,17 +1632,17 @@ const sommarenTomtGame = makeSommarenGame({
 })
 // Säsong 11 (siffervarianten), något sliten, en händelse.
 const sommarenSiffraGame = makeSommarenGame({
-  currentSeason: 11,
+  currentSeason: devSeason(11),
   trainerArc: { current: 'grind', history: [], seasonCount: 11, bestFinish: 2, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 1 },
   seasonSummaries: [makeSeasonSummary({ finalPosition: 5, playoffResult: 'quarterfinal' })],
   managerProfile: { ...seasonHeaderGame.managerProfile, burnoutScore: 50, seasonsAtClub: 11 },
   pendingSeasonTransitionEvents: transitionEvents('retired'),
   // Förutsättningsfasen, steg 1 — oförändrad (dev-scene-verifiering).
-  boardAssessment: { season: 11, previousExpectation: 'challengeTop', newExpectation: 'challengeTop', direction: 'unchanged', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER },
+  boardAssessment: { season: devSeason(11), previousExpectation: 'challengeTop', newExpectation: 'challengeTop', direction: 'unchanged', seasonAcknowledgment: BOARD_SEASON_ACKNOWLEDGMENT_PLACEHOLDER },
 })
 
 const granskaRoundSummary = {
-  round: 20, date: '2026-02-01', matchPlayed: true,
+  round: 20, date: '2034-02-01', matchPlayed: true,
   communityStandingBefore: 54, communityStandingAfter: 58, communityStandingChanges: [],
   standingBefore: 5, financesBefore: 70000, financesAfter: 84000,
   injuries: ['Holm — lätt stukning, 1 vecka'], youthMatchResult: 'P19 vann 3–1',
@@ -1681,7 +1682,7 @@ const granskaCupGame = makeGame([...makeLeagueFixtures(), granskaCupFixture], {
   // kortets nya cup-lucka-gren (getAwaitingNextRoundInfo — vunnit kvarten,
   // semin inte lottad än) har en levande baseline, samma mönster som
   // granskaCupFinalGame redan gör för vunnen_final.
-  cupBracket: { season: 8, matches: [{ id: 'cup-r2-m0', round: 2, fixtureId: granskaCupFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: undefined, completed: false },
+  cupBracket: { season: devSeason(8), matches: [{ id: 'cup-r2-m0', round: 2, fixtureId: granskaCupFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: undefined, completed: false },
 })
 const granskaCupRoundSummary = { ...granskaRoundSummary, round: 16 }
 
@@ -1696,7 +1697,7 @@ const granskaCupFinalGame = makeGame([...makeLeagueFixtures(), granskaCupFinalFi
   // GRANSKA DEL 4 steg 5 (2026-08-12): cupBracket wired så Turneringsläge-
   // kortets cup-gren (vunnen_final — granskaCupFinalFixture avgörs 4-2 till
   // HOME_ID) har en levande baseline, inte bara enhetstest.
-  cupBracket: { season: 8, matches: [{ id: 'cup-r4-m0', round: 4, fixtureId: granskaCupFinalFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: HOME_ID, completed: true },
+  cupBracket: { season: devSeason(8), matches: [{ id: 'cup-r4-m0', round: 4, fixtureId: granskaCupFinalFixture.id, homeClubId: HOME_ID, awayClubId: AWAY_ID, winnerId: HOME_ID }], winnerId: HOME_ID, completed: true },
 })
 const granskaCupFinalRoundSummary = { ...granskaRoundSummary, round: 19 }
 
@@ -1709,7 +1710,7 @@ const granskaPlayoffFixture = makeGranskaFixture({ isKnockout: true, roundNumber
 const granskaPlayoffGame = makeGame([...makeLeagueFixtures(), granskaPlayoffFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 33, communityStanding: 58,
   playoffBracket: {
-    season: 8, status: 'quarterFinals',
+    season: devSeason(8), status: 'quarterFinals',
     quarterFinals: [{
       id: 'po-qf-granska', round: 'quarterFinal', homeClubId: HOME_ID, awayClubId: AWAY_ID,
       fixtures: [granskaPlayoffFixture.id], homeWins: 1, awayWins: 0, winnerId: null, loserId: null,
@@ -1734,7 +1735,7 @@ const granskaSmFinalFixture = makeGranskaFixture({
 const granskaSmFinalGame = makeGame([...makeLeagueFixtures(), granskaSmFinalFixture], {
   lastCompletedFixtureId: 'fx-granska', lastProcessedMatchday: 37, communityStanding: 58,
   playoffBracket: {
-    season: 8, status: 'final',
+    season: devSeason(8), status: 'final',
     quarterFinals: [], semiFinals: [],
     final: {
       id: 'po-final-granska', round: 'final', homeClubId: HOME_ID, awayClubId: AWAY_ID,
@@ -1755,25 +1756,25 @@ const granskaFarewellRoundSummary = { ...granskaRoundSummary }
 // BoardMeeting fingered state — season 2+, prev-season objective history + new goals
 // (board flyttad till fixturblocket ovanför squadGame, se kommentaren där)
 const newGoalsSet = [
-  { id: 'g-sport', type: 'sporting', label: 'Topp 6', description: 'Ett steg upp', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 6, currentValue: 0, measureFn: 'placement', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
-  { id: 'g-acad', type: 'academy', label: 'En egenfostrad i startelvan', description: 'Akademin ska synas', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 1, currentValue: 0, measureFn: 'academy', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
+  { id: 'g-sport', type: 'sporting', label: 'Topp 6', description: 'Ett steg upp', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 6, currentValue: 0, measureFn: 'placement', status: 'active', assignedSeason: devSeason(3), successReward: '', failureConsequence: '', carryOver: false },
+  { id: 'g-acad', type: 'academy', label: 'En egenfostrad i startelvan', description: 'Akademin ska synas', ownerId: 'b1', ownerPersonality: 'traditionalist', targetValue: 1, currentValue: 0, measureFn: 'academy', status: 'active', assignedSeason: devSeason(3), successReward: '', failureConsequence: '', carryOver: false },
 ]
 const stretchGoalsSet = [
   ...newGoalsSet.slice(0, 1),
-  { id: 'g-sm', type: 'sporting', label: 'SM-guld', description: 'SM-final och hela vägen', ownerId: 'b1', ownerPersonality: 'modernist', targetValue: 1, currentValue: 0, measureFn: 'title', status: 'active', assignedSeason: 3, successReward: '', failureConsequence: '', carryOver: false },
+  { id: 'g-sm', type: 'sporting', label: 'SM-guld', description: 'SM-final och hela vägen', ownerId: 'b1', ownerPersonality: 'modernist', targetValue: 1, currentValue: 0, measureFn: 'title', status: 'active', assignedSeason: devSeason(3), successReward: '', failureConsequence: '', carryOver: false },
 ]
-const histA = [{ season: 1, objectiveId: 'x', result: 'met' as const, ownerReaction: 'Bra jobbat.', label: 'Kvar i serien' }]
+const histA = [{ season: devSeason(1), objectiveId: 'x', result: 'met' as const, ownerReaction: 'Bra jobbat.', label: 'Kvar i serien' }]
 const histB = [
-  { season: 2, objectiveId: 'a', result: 'met' as const, ownerReaction: '', label: 'Topp 4' },
-  { season: 2, objectiveId: 'b', result: 'met' as const, ownerReaction: '', label: 'Slutspel' },
-  { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
+  { season: devSeason(2), objectiveId: 'a', result: 'met' as const, ownerReaction: '', label: 'Topp 4' },
+  { season: devSeason(2), objectiveId: 'b', result: 'met' as const, ownerReaction: '', label: 'Slutspel' },
+  { season: devSeason(2), objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
 ]
 const histC = [
-  { season: 2, objectiveId: 'a', result: 'failed' as const, ownerReaction: '', label: 'Topp 6' },
-  { season: 2, objectiveId: 'b', result: 'failed' as const, ownerReaction: '', label: 'Undvik kvalstrid' },
-  { season: 2, objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
+  { season: devSeason(2), objectiveId: 'a', result: 'failed' as const, ownerReaction: '', label: 'Topp 6' },
+  { season: devSeason(2), objectiveId: 'b', result: 'failed' as const, ownerReaction: '', label: 'Undvik kvalstrid' },
+  { season: devSeason(2), objectiveId: 'c', result: 'met' as const, ownerReaction: '', label: 'Egenfostrad i startelva' },
 ]
-const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: 2, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
+const boardGameA = makeGame(makeLeagueFixtures(), { currentSeason: devSeason(2), board, boardObjectives: newGoalsSet, boardObjectiveHistory: histA, seasonStartFinances: 62000 })
 // design-d3 (Designgranskning fresh-eyes 2026-09-03): boardGameB/C saknade
 // seasonSummaries — resolveBoardMeetingState (boardMeetingStateResolver.ts:87)
 // tvingar state='A' när seasonSummaries.length<=1, OAVSETT boardObjectiveHistory.
@@ -1785,8 +1786,8 @@ const boardSeasonSummaries = [
   makeSeasonSummary({ finalPosition: 5, playoffResult: null }),
   makeSeasonSummary({ finalPosition: 4, playoffResult: 'quarterfinal' }),
 ]
-const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000, seasonSummaries: boardSeasonSummaries, boardPatience: 70 })
-const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: 3, board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000, seasonSummaries: boardSeasonSummaries, boardPatience: 25 })
+const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: devSeason(3), board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000, seasonSummaries: boardSeasonSummaries, boardPatience: 70 })
+const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: devSeason(3), board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000, seasonSummaries: boardSeasonSummaries, boardPatience: 25 })
 
 export function DevScenesScreen() {
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
@@ -2442,7 +2443,7 @@ export function DevScenesScreen() {
             ] as const).map(([label, ratings]) => (
               <div key={label} style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
-                <PlayerCard player={devPlayers[10] as never} clubName="Edsbyn BK" isOwned currentSeason={8} recentRatings={ratings as never} game={portalGame} />
+                <PlayerCard player={devPlayers[10] as never} clubName="Edsbyn BK" isOwned currentSeason={devSeason(8)} recentRatings={ratings as never} game={portalGame} />
               </div>
             ))}
           </div>

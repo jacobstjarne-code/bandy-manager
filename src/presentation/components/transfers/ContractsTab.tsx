@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/gameStore'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { getAvailableContractTerms, resolveContractTermSponsors } from '../../../domain/services/contractNegotiationService'
 import type { ContractTermOffer } from '../../../domain/services/contractNegotiationService'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { positionShort, formatValue, formatSalary, formatContractUntil } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
 import { RenewContractModal } from './RenewContractModal'
@@ -78,7 +79,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
       setRenewConfirmText(
         result.termMessages && result.termMessages.length > 0
           ? result.termMessages.join(' ')
-          : `Kontrakt förlängt till ${game.currentSeason + years}`
+          : `Kontrakt förlängt till ${seasonSpanLabel(game.currentSeason + years)}`
       )
       setTimeout(() => setRenewConfirmText(null), 2000)
     }

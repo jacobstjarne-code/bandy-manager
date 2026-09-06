@@ -6,6 +6,7 @@
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { buildJournalistSceneData } from '../../../domain/data/scenes/journalistRelationshipScene'
+import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -129,7 +130,7 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
                   {entry.summary}
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                  Säsong {entry.season} · omg {entry.matchday}
+                  Säsong {seasonSpanLabel(entry.season)} · omg {entry.matchday}
                 </div>
               </div>
             </div>
