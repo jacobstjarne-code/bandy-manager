@@ -102,6 +102,14 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
     expect(dilemma.shadow).toBe('none')
     expect(parseFloat(breakpoint.borderLeftWidth)).toBeGreaterThanOrEqual(3)
     expect(breakpoint.shadow).not.toBe('none')
+
+    // Dev-galleriet ska visa de tre vikterna med verkliga produktval. Generiska
+    // platshållare gör att en designgranskare bedömer en yta som spelaren
+    // aldrig möter och kan dessutom misstas för läckande produktcopy.
+    await expect(page.getByRole('button', { name: 'Lyft det öppet' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Acceptera \(2000 kr\/vecka\)/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Skydda truppen' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Välj den (ena|andra) vägen/ })).toHaveCount(0)
   })
 
   test('rund EventOverlay behåller brytpunktens accentkant', async ({ page }) => {

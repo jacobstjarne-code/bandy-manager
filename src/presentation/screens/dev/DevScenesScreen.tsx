@@ -2574,21 +2574,18 @@ export function DevScenesScreen() {
         {scene === 'decision-modes' && (
           <div data-decision-mode-gallery style={{ position: 'fixed', inset: 0, zIndex: 51, overflowY: 'auto', background: 'var(--bg)', padding: '20px 14px' }}>
             {([
-              { mode: 'notis' as const, label: 'Notis', title: 'En röst från läktaren', body: 'Supportern vill att laget visar mer tålamod.' },
-              { mode: 'dilemma' as const, label: 'Dilemma', title: 'Två vägar framåt', body: 'Båda alternativen hjälper klubben men kostar något.' },
-              { mode: 'brytpunkt' as const, label: 'Brytpunkt', title: 'Klubben måste välja', body: 'Beslutet förändrar förutsättningarna för resten av säsongen.' },
+              { mode: 'notis' as const, label: 'Notis', event: granskaPendingEvents[1] },
+              { mode: 'dilemma' as const, label: 'Dilemma', event: sponsorMotbudEvent },
+              { mode: 'brytpunkt' as const, label: 'Brytpunkt', event: breakpointEvent },
             ]).map(item => (
               <DecisionCard
                 key={item.mode}
                 mode={item.mode}
                 label={item.label}
-                title={item.title}
-                body={item.body}
+                title={item.event.title}
+                body={item.event.body}
                 resolved={false}
-                choices={[
-                  { id: 'left', label: 'Välj den ena vägen', effect: { type: 'noOp' as const } },
-                  { id: 'right', label: 'Välj den andra vägen', effect: { type: 'noOp' as const } },
-                ]}
+                choices={item.event.choices}
                 onChoose={() => {}}
               />
             ))}
