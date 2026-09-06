@@ -23,6 +23,7 @@ import { StillnessSection } from '../components/squad/StillnessSection'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
+import { Icon } from '../components/primitives/Icon'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
 import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
@@ -32,6 +33,7 @@ import { getLoanRoundsRemaining } from '../../domain/services/loanService'
 import { getNextManagedFixture } from '../../domain/services/portal/triggers/matchTriggers'
 import { getBurnoutTacticSuppression, suppressTacticRecommendation, burnoutEffectSeed } from '../../domain/services/burnoutReliefService'
 import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
+import { Megaphone } from 'lucide-react'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -86,6 +88,7 @@ interface PlayerRowProps {
   currentSeason: number
   captainPlayerId: string | undefined
   anniversaries: ActiveAnniversary[]
+  isKlackFavorite: boolean
 }
 
 interface PlayerRowAnimatedProps {
@@ -95,6 +98,7 @@ interface PlayerRowAnimatedProps {
   currentSeason: number
   captainPlayerId: string | undefined
   anniversaries: ActiveAnniversary[]
+  isKlackFavorite: boolean
 }
 
 // Eko-text per type med variation. Deterministiskt val på eventId så raden
@@ -142,12 +146,12 @@ function anniversaryEkoText(ann: ActiveAnniversary): string {
 
 
 
-function PlayerRowAnimated({ player, index, onClick, currentSeason, captainPlayerId, anniversaries }: PlayerRowAnimatedProps) {
+function PlayerRowAnimated({ player, index, onClick, currentSeason, captainPlayerId, anniversaries, isKlackFavorite }: PlayerRowAnimatedProps) {
   return (
     <div style={{
       animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none',
     }}>
-      <PlayerRow player={player} onClick={onClick} currentSeason={currentSeason} captainPlayerId={captainPlayerId} anniversaries={anniversaries} />
+      <PlayerRow player={player} onClick={onClick} currentSeason={currentSeason} captainPlayerId={captainPlayerId} anniversaries={anniversaries} isKlackFavorite={isKlackFavorite} />
     </div>
   )
 }
@@ -162,7 +166,7 @@ function stripeColor(player: Player, currentSeason: number): string {
   return 'transparent'
 }
 
-function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversaries }: PlayerRowProps) {
+export function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversaries, isKlackFavorite }: PlayerRowProps) {
   const isCaptain = player.id === captainPlayerId
 
   const playerAnniversary = anniversaries
@@ -193,6 +197,13 @@ function PlayerRow({ player, onClick, currentSeason, captainPlayerId, anniversar
   }
   if (player.contractUntilSeason <= currentSeason) {
     allChips.push(<span key="contract" style={chipStyle('var(--warm-light)', 'color-mix(in srgb, var(--warm) 6%, transparent)', 'color-mix(in srgb, var(--warm) 40%, transparent)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
+  }
+  if (isKlackFavorite) {
+    allChips.push(
+      <span key="klack-favorite" style={chipStyle('var(--accent-text)', 'color-mix(in srgb, var(--accent) 5%, transparent)', 'color-mix(in srgb, var(--accent) 30%, transparent)')}>
+        <Icon icon={Megaphone} size={11} color="var(--accent-text)" /> Klackfavorit
+      </span>,
+    )
   }
   if (player.trait && TRAIT_META[player.trait]) {
     const meta = TRAIT_META[player.trait]
@@ -909,6 +920,7 @@ export function SquadScreen() {
               currentSeason={game?.currentSeason ?? 0}
               captainPlayerId={game?.captainPlayerId}
               anniversaries={activeAnniversaries}
+              isKlackFavorite={game?.supporterGroup?.favoritePlayerId === player.id}
             />
           ))}
           {(game?.managedClubPendingLineup ? lineupFiltered : sorted).length === 0 && (

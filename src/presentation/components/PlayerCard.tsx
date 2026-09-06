@@ -302,6 +302,7 @@ export function PlayerCard({
   const jerseyNum = (idNum % 98) + 1
 
   const isCaptain = game?.captainPlayerId === player.id
+  const isKlackFavorite = game?.supporterGroup?.favoritePlayerId === player.id
 
   // Spelarsamtal availability
   const lastTalked = game ? ((game.playerConversations ?? {})[player.id] ?? -Infinity) : -Infinity
@@ -394,6 +395,7 @@ export function PlayerCard({
                 {player.trait === 'joker' && <span className="tag tag-copper"><Icon icon={Drama} size={11} color="var(--accent-text)" /> Joker</span>}
                 {player.trait === 'lokal' && <span className="tag tag-ice"><Icon icon={Home} size={11} color="var(--ice-dark)" /> Lokal</span>}
                 {player.trait === 'ledare' && <span className="tag tag-copper"><Icon icon={Crown} size={11} color="var(--accent-text)" /> Ledare</span>}
+                {isKlackFavorite && <span className="tag tag-copper"><Icon icon={Megaphone} size={11} color="var(--accent-text)" /> Klackfavorit</span>}
                 {asMentor.length > 0 && <span className="tag" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>🎓 Mentor</span>}
               </div>
             )}
