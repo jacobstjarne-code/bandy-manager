@@ -26,6 +26,7 @@
     "analyze:choice-entropy": "node_modules/.bin/vite-node scripts/analyze-choice-entropy.ts",
     "analyze:firing-frequency": "node_modules/.bin/vite-node scripts/analyze-firing-frequency.ts",
     "analyze:text-repetition": "node_modules/.bin/vite-node scripts/analyze-text-repetition.ts",
+    "analyze:c2-position-tactics": "node_modules/.bin/vite-node scripts/c2-position-tactic-measurement.ts",
     "calibrate:firing": "node_modules/.bin/vite-node scripts/h4-alla-tolv-avskedsfrekvens.ts",
     "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
     "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts",

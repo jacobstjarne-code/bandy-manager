@@ -309,4 +309,63 @@ describe('evaluateSquad', () => {
 
     expect(high.cornerScore).toBeGreaterThan(low.cornerScore)
   })
+
+  it('applies the non-adjacent position discount to every affected squad score', () => {
+    const starters = [
+      makePlayer({ id: 'gk', position: PlayerPosition.Goalkeeper }),
+      makePlayer({ id: 'd1', position: PlayerPosition.Defender }),
+      makePlayer({ id: 'd2', position: PlayerPosition.Defender }),
+      makePlayer({ id: 'd3', position: PlayerPosition.Defender }),
+      makePlayer({ id: 'h1', position: PlayerPosition.Half }),
+      makePlayer({ id: 'h2', position: PlayerPosition.Half }),
+      makePlayer({ id: 'm1', position: PlayerPosition.Midfielder }),
+      makePlayer({ id: 'm2', position: PlayerPosition.Midfielder }),
+      makePlayer({ id: 'm3', position: PlayerPosition.Midfielder }),
+      makePlayer({ id: 'f1', position: PlayerPosition.Forward }),
+      makePlayer({ id: 'f2', position: PlayerPosition.Forward }),
+    ]
+    const correctSlots = {
+      gk: 'gk',
+      'half-l': 'h1',
+      'def-l': 'd1',
+      'def-c': 'd2',
+      'def-r': 'd3',
+      'half-r': 'h2',
+      'mid-l': 'm1',
+      'mid-c': 'm2',
+      'mid-r': 'm3',
+      'fwd-l': 'f1',
+      'fwd-r': 'f2',
+    }
+    const misplacedSlots = {
+      gk: 'gk',
+      'half-l': 'f1',
+      'def-l': 'm1',
+      'def-c': 'm2',
+      'def-r': 'm3',
+      'half-r': 'f2',
+      'mid-l': 'd1',
+      'mid-c': 'd2',
+      'mid-r': 'd3',
+      'fwd-l': 'h1',
+      'fwd-r': 'h2',
+    }
+    const correctlyPlaced = evaluateSquad(starters, {
+      ...defaultTactic,
+      formation: '532_tvatoppar',
+      lineupSlots: correctSlots,
+    })
+    const misplaced = evaluateSquad(starters, {
+      ...defaultTactic,
+      formation: '532_tvatoppar',
+      lineupSlots: misplacedSlots,
+    })
+
+    expect(misplaced.offenseScore).toBeLessThan(correctlyPlaced.offenseScore)
+    expect(misplaced.defenseScore).toBeLessThan(correctlyPlaced.defenseScore)
+    expect(misplaced.cornerScore).toBeLessThan(correctlyPlaced.cornerScore)
+    expect(misplaced.offenseScore).toBeCloseTo(correctlyPlaced.offenseScore * 0.75, 1)
+    expect(misplaced.defenseScore).toBeCloseTo(correctlyPlaced.defenseScore * 0.75, 1)
+    expect(misplaced.cornerScore).toBeCloseTo(correctlyPlaced.cornerScore * 0.75, 1)
+  })
 })
