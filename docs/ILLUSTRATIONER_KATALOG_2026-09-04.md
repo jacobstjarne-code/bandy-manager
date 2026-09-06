@@ -19,6 +19,8 @@ Muted painterly illustration, flat graphic shapes, simplified forms, editorial p
 
 **Negativa, bas (varje prompt):** no text, no logos, no faces in focus, no field markings, no lines, no hockey rink, no boards, no plexiglass, no photographic realism.
 
+**⚠ Stildrift att motverka (2026-09-06):** serien började driva mot **akvarell** — mjuka våta toningar, suddiga kanter, målad känsla — vid upprepade omtag. Serien ska vara TRYCKT: platta färgfält med skarpa kanter, korn, grafisk posterlook. Lägg i varje ny prompt/omtag: "flat blocks of colour with crisp edges, NOT watercolour, no soft wet bleeding, no watery gradients, no blurred edges — keep the printed, grainy, graphic poster look." Håll utfallet mot en tidig låst ortbild (Rögle/Skutskär) — driver kanterna mot blött, kör om.
+
 **Interiörer (§3, §4):** rummet strax före eller efter människorna, aldrig med dem. Möblerna berättar. Samma palett; lampan i rummet är kopparen.
 
 **Arbetsregel:** 90 % rätt → korrigera med bildredigering ("… keep everything else exactly as it is"). Omtag bara vid fel grundkomposition. Titta under scrimen i appen innan du dömer.
@@ -178,9 +180,9 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 | kafferum | `kafferum.jpg` | ✅ (incoming) | Kafferummet |
 | nedflyttning | `nedflyttning.jpg` | ✅ (incoming) | Nedflyttning |
 | säsongsslut | `sasongsslut.jpg` | ✅ (incoming) | Årsboken |
-| premiär | `premiar.jpg` | prompt | Premiärmatchen |
-| derby | `derby.jpg` | prompt | Derbyt, förmatch |
-| cup | `cup.jpg` | prompt | Cupmatch + cupintro |
+| premiär | `premiar.jpg` | ✅ (låst 2026-09-06) | Premiärmatchen |
+| derby | `derby.jpg` | ✅ (låst 2026-09-06, stående) | Derbyt, förmatch |
+| cup | `cup.jpg` | ✅ (låst 2026-09-06, oktober-em) | Cupmatch + cupintro |
 | nyår | `nyar.jpg` | prompt | Nyårsövergången |
 | **cupguld** | `cupguld.jpg` | ✅ (låst 2026-09-06) | Cupfinal vunnen |
 | **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
@@ -191,35 +193,35 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 
 De fyra första nya var Eriks beställning — **BESLUT 2026-09-06: alla genom Gemini, inte Erik.** Skäl: enhetlig stil genom hela serien (35 bilder ur samma hand) slår fyra handritade som avviker. Erik-spåret stängt, riv inte upp.
 
-### Premiär — den första matchen · `premiar.jpg`
+### Premiär — den första matchen · `premiar.jpg` ✅ (låst 2026-09-06)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic early-winter afternoon, first snow, light fading.
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic early-winter afternoon, the last cold daylight fading in the sky, not yet night.
 
-A wide view of an outdoor sports ground on the first match day of winter, seen from slightly below so the horizon sits in the upper third. Fresh thin snow, the first of the season, on brown grass at the edges. A huge flat pale surface of new ice, freshly laid and swept, continuing out of frame, bordered by low banks of snow. Tall floodlight poles just coming on, one still flickering. Along one side, a low line of people seen from behind — a small crowd in dark winter coats and knitted hats, close together, breath visible, a few thermos flasks — waiting. A long low red wooden clubhouse behind them with every window lit. Nobody's face visible. The crowd and the lit clubhouse occupy the upper-middle of the image. The lower third is dark ground in shadow, empty. No text, no logos, no faces.
+A wide view of an outdoor sports ground on the first match day of winter, seen from slightly behind and to one side of a small crowd, so the people are in the near foreground turned away from us and facing out across a huge flat pale field of freshly laid ice, covered in a thin even layer of new snow so no lines show, that fills the middle of the image and continues out of frame. Even fresh snow covering the ground and the low banks around the field — clean and new, not patchy, not melting. Low wide goal frames on the field. Tall floodlight poles just coming on over the field, one lamp still flickering on, no lens glare. A pale band of fading daylight low in the sky behind the tree-line. Along the near edge, the small crowd in dark winter coats and knitted hats, seen from behind in near-silhouette, close together, breath visible, a couple holding thermos flasks — waiting for the game to start. A long low red wooden clubhouse to one side with its windows warmly lit. Nobody's face visible. No players on the field yet. The crowd and the lit field occupy the upper-middle of the image. The lower third is snow and dark ground in shadow, empty. No text, no logos, no faces.
 
-Negativa: no deep snow, no factory, no lake, no players on the ice, no field markings, no hockey rink, no photographic realism.
+Negativa: no patchy melting snow, no bare brown ground, no spring thaw, no full night sky, no crowd facing the camera, no faces, no players on the field, no lens glare on the floodlights, no field markings, no lines, no hockey rink, no photographic realism.
 
-*Känslan:* förväntan. Första gången på ett år. Ingen spelar än.
+*Känslan:* förväntan. Första gången på ett år. Ingen spelar än. LÅST 2026-09-06 efter ett omtag: första utfallet blev vårtö (fläckvis smältsnö, brun mark, folk vända mot huset, ingen is) — obegripligt som premiär. Löst med tre grepp (Jacobs): (1) publiken vänd mot planen, i siluett, lagom nära — folklig men bryter inte no-faces; (2) **planen täckt av tunn snö i stället för blank is** — löser linje-felet vid roten (ingen isyta = inga linjer att rita fel), samma logik som "planen aldrig hel i bild"; (3) strålkastarglans borttagen (drog mot foto), mål tillagda. **Receptet för seriens folkbilder:** publik i siluett bakifrån, snö-över-is när planen syns. *Risk:* smältsnö/vårtö och ansikten vända mot kameran.
 
-### Derby — förmatchen · `derby.jpg`
+### Derby — förmatchen · `derby.jpg` ✅ (låst 2026-09-06)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night under floodlights.
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, floodlights on, just before the match.
 
-A packed standing crowd along the long side of an outdoor ice ground at night, seen from behind and slightly below so the crowd fills the middle of the frame and the floodlit pale ice is a bright band above them. Two groups, pressed close, divided by nothing but a gap: on the left, scarves and flags in one dark colour; on the right, another. Hand-painted banners held up on poles, plain cloth, no text visible. Breath and cold smoke rising in the floodlight beams. A few raised arms. The clubhouse roof and lamp just visible beyond the far side. Nobody's face visible. The lower third is the dark backs of the nearest people, in shadow. No text, no logos, no faces.
+A floodlit outdoor bandy ground at night in the quiet minutes before a big match. The huge pale sheet of freshly swept snow-dusted ice fills the middle, no lines showing. An ice-resurfacing machine (a small Zamboni-type vehicle, red and white) is out on the ice laying the final surface, a faint wet gleam behind it — the sport, unmistakably, no players yet. Two low wide goals face each other. Floodlight poles lit with a soft diffuse glow, no hard beams, no glare. Along both long sides, a dense crowd of spectators in deep silhouette, packed and standing, breath rising in the cold — a full house — but kept dark and low at the edges as a frame around the ice, never filling the picture. The long low red clubhouse with every window warmly lit and the lamp over the door — inside, the teams. A single knitted scarf left draped over the near railing. Deep still cold. Nobody's face visible. The lit ice and the resurfacer occupy the middle; the crowd and railing frame the edges. No text, no logos, no faces.
 
-Negativa: no readable text on banners, no specific club colours, no flares or fire, no players, no field markings, no hockey rink, no photographic realism.
+Negativa: no crowd filling the frame, no crowd as the subject, no protest, no raised banners, no flag forest, no players on the ice, no faces, no readable text, no ice lines, no hard light beams, no glare, no fire, no photographic realism.
 
-*Känslan:* laddning. Två läger, ingen sarg emellan. Färgerna ospecifika så bilden funkar för alla derbyn.
+*Känslan:* den tysta laddningen före. Isen görs i ordning, publiken har kommit, laget är inne i klubbhuset. LÅST 2026-09-06 (stående) efter en full omansats: de första försöken blev **demonstrationståg** — klacken som massa sedd bakifrån med höjda banér läser som protest, inte sport, och bandyn försvann helt. Jacobs fynd: sporten ska vara motivet, publiken bara mörk ram. **Ismaskinen** (Jacobs tillägg) löste ögonblicket-före utan att sätta spelare på isen — den säger bandy otvetydigt; liten röd prick långt ute på den stora isen (skalan viktig — stor ismaskin får planen att krympa). Publiken i tre lager som ram (siluetter fram, rad vid sargen, tät massa höger), halsduken på räcket. **Vaktpost för ALLA folkbilder (ny konstant):** sporten/isen är motivet, publiken är mörk ram, aldrig massan själv; färre banér slår fler; låg kamera i massan → demonstrationståg.
 
-### Cup — cupkvällen · `cup.jpg`
+### Cup — cupkvällen · `cup.jpg` ✅ (låst 2026-09-06, oktober-eftermiddag)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Nordic winter night, midweek, deep cold.
+Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Grey Nordic October afternoon, early season, light fading but not yet dark.
 
-A small outdoor ice ground at night lit by four floodlight poles, seen from a distance and slightly below so the light-cones and the pale ice sit in the upper-middle and the surrounding darkness fills the rest. Very few people — a thin scattered line of spectators along one side, a bus parked with its lights on, exhaust rising. Snow banks piled high around the ice from a hard winter. The long low red clubhouse with two windows lit. Everything outside the floodlights is black. Nobody's face visible. The lower third is darkness and snow in shadow, empty. No text, no logos, no faces.
+A small outdoor bandy ground on an early-season October afternoon, seen from a distance and slightly below so the pale snow-dusted ice sits in the upper-middle and the surrounding ground fills the rest, no lines showing. The light is a cold grey-blue afternoon, dusk approaching but not yet night. Floodlight poles lit with a soft diffuse glow against the fading day. Very few people — a thin scattered line of spectators along one side, small and dark, and two lone silhouettes at the near railing seen from behind. Far off at the edge, a single bus just arrived, small and distant, its lights on. A knitted scarf draped over the near railing. Snow banked around the ice. The long low red clubhouse with a warm window and the lamp over the door. Nobody's face visible. The lower third is the dark near railing and ground in shadow. No text, no logos, no faces.
 
-Negativa: no crowd, no daylight, no factory, no lake, no players, no field markings, no hockey rink, no photographic realism.
+Negativa: no full night, no black sky, no crowd, no full stand, no protest, no banners, no players on the ice, no faces, no hard light beams, no glare, no ice lines, no large bus, no bus filling the frame, no factory, no lake, no photographic realism.
 
-*Känslan:* en onsdag i januari. Ljusön i mörkret, bussen som väntar. Cupen är derbyts motsats. Används också som cupintro.
+*Känslan:* en onsdag tidigt på säsongen. Laget just anlänt med bussen, en handfull åskådare. Cupen är derbyts motsats. Används också som cupintro. LÅST 2026-09-06, bytt från midnattsversion till **oktober-eftermiddag** (Jacobs domänskäl: cupen spelas i oktober, före mörkret lagt sig för säsongen — grå eftermiddag är sannare än beckmörker). Detta **skiljer cup från derby** på årstid+ljus (derby = djup vinternatt, fullsatt, ismaskin; cup = tidig höst, grå, öde, bussen just anlänt) — de rimmar på plats men skiljer på säsong, skarpare kontrast än två nattbilder. Bussen anad, liten (Jacobs skala-instinkt). Skillnaden mot derby är BUSSEN + gles publik + dagsljus, inte strålkastare/siluetter (som finns i båda — läs inte fel på dem). Stilen skärptes 2026-09-06 till platta färgfält/skarpa kanter (anti-akvarell). Följer folkbilds-konstanten: sporten är motivet, människorna glesa och små.
 
 ### Nyår — övergången · `nyar.jpg`
 
@@ -378,6 +380,6 @@ Negativa: no faces, no field markings, no hockey rink, no boards, no adults play
 
 ## 5. Räkning
 
-Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (avskedet + cupguld låsta 2026-09-06, fyra med prompter kvar). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 18 körda, 17 med prompter klara att köra.**
+Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (derby + premiär + cup + avsked + cupguld låsta 2026-09-06, en med prompt kvar: nyår). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 21 körda, 14 med prompter klara att köra.**
 
 Ordning om du kör dem i följd: orterna klart först (Västanfors, Lesjöfors, Heros), sedan de fyra momenten som avgör om Erik ritar, sedan avskedet och året utan klubb (de bär karriärens vändpunkter), sedan interiörerna.

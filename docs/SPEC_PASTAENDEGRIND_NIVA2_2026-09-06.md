@@ -1,6 +1,11 @@
-# SPEC_PASTAENDEGRIND_NIVA2 — R1–R4 (sluttest-narrative-truth-grind)
+# SPEC_PASTAENDEGRIND_NIVA2 — R1–R4 (sluttest-narrative-truth-grind) ✅ BYGGD
 
-**2026-09-06 · Opus · domar mot Codes R1–R4-recon · Code bygger mot detta**
+**2026-09-06 · Opus · domar mot Codes R1–R4-recon · BYGGD `8c4e03b6`**
+
+**STATUS: alla fyra landade i `tests/grind/forbudslistan.ts` (nu 13 regler, 33 filkoller),
+commit `8c4e03b6`, pushad. R1 stängde `design-d2-sasongsformat-tre` helt.
+`reviewCallbackService.ts` verifierad gated → lades som required (ej forbidden).
+Domarna nedan bevaras som beläggning för hur reglerna scopades.**
 
 Fyra påståendegrindar som stänger klassen "texten påstår något om säsong/fas som
 datan inte bär". Recon (Code) scopade och hittade att två av fyra inte kan skrivas
@@ -93,11 +98,9 @@ gating → förbjudet. Scope STRIKT till match-simulering + portal-kort:
 `functionaries.ts:59` "som en final varje gång" = liknelse). Egen recon-pass om det
 någonsin ska täckas — inte nu, skulle bli falsk-positiv-svep.
 
-## Handoff
+## Handoff — STÄNGD
 
-- Code bygger nu: R1 (+ fem design-d2-fixar), R4 (strikt scope). Båda baseline-domar
-  klara.
-- Code bygger smalnad: R2 (fyra ledger-producenter; verifiera reviewCallbackService
-  gate-status vid bygget), R3 (retargetad mot evaluateObjective, frozen-record accepterat).
-- Varje R som landar: rotorsak, required/forbidden-ankare, test, commit-hash, status i MASTER.
-- Ingen kollision (recon: rent träd så när som på illustrationskatalogen).
+- **BYGGD `8c4e03b6`:** R1 (+ fem design-d2-fixar, design-d2 stängd), R4 (strikt scope),
+  R2 (fyra ledger-producenter + reviewCallbackService verifierad gated → required),
+  R3 (retargetad mot evaluateObjective, frozen-record accepterat). Full svit grön.
+- Inga öppna frågor kvar. Alla fyra reglerna aktiva i forbudslistan.
