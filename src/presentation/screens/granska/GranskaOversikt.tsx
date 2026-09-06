@@ -16,6 +16,7 @@ import { NEXT_MATCH_POINTER } from '../../../domain/data/nextMatchPointerText'
 import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
+import { ClubBadge } from '../../components/ClubBadge'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
 import { generateQuickSummary, getStartedTiredDirection, getSecondHalfKvittoDir, findRotationSubstituteRating, resolvedWithAssertedLabel, rankManagerChoiceLog } from './helpers'
 import { DecisionCard } from '../../components/DecisionCard'
@@ -193,6 +194,21 @@ export function dittValCornerText(args: {
   return `${chose} Det gav ${cardinal(cornerGoalMinutes.length)} mål.`
 }
 
+/**
+ * design-d1-granska-heroscore (Designgranskning 2026-09-03, mock
+ * `docs/mockups/2026-09-06_redesign_resultatet_klubbminnet.dc.html` skärm
+ * 01) — väder-tonad läder-bakgrund för resultat-heron. Mockens egen kod
+ * hårdkodade `--match-bg-snow`; denna läser den FAKTISKA matchvädret
+ * (samma NextMatchCard.tsx-tokenfamilj, `--match-bg-*`) i stället, så
+ * tonen verkligen läser matchens humör i stället för att alltid vara snö.
+ */
+function getHeroWeatherBg(condition: WeatherCondition | undefined): string {
+  if (condition === WeatherCondition.LightSnow || condition === WeatherCondition.HeavySnow) return 'var(--match-bg-snow)'
+  if (condition === WeatherCondition.Fog) return 'var(--match-bg-fog)'
+  if (condition === WeatherCondition.Thaw) return 'var(--match-bg-cold)'
+  return 'var(--match-bg-default)'
+}
+
 /** Grupp-avdelare: ⬩ + label + hairline. */
 function GroupDivider({ label, style }: { label: string; style?: React.CSSProperties }) {
   return (
@@ -262,44 +278,81 @@ export function GranskaOversikt({
   // kan glida isär från originalet över tid.
   const resultatHeroCard = fixture && (
         <div className="card-sharp card-tap" onClick={onOpenReport} style={{ margin: '0 0 3px', position: 'relative', cursor: 'pointer', ...fadeIn(0) }}>
-          <span style={{ position: 'absolute', top: 13, right: 14, fontSize: 16, color: 'var(--accent)' }}>›</span>
-          <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
-            <SectionLabel style={{ marginBottom: 10 }}><Swords size={12} />{' '}MATCHEN</SectionLabel>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>{homeClub?.shortName ?? homeClub?.name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>{awayClub?.shortName ?? awayClub?.name}</span>
+          <span style={{ position: 'absolute', top: 13, right: 14, fontSize: 16, color: 'var(--text-light)', zIndex: 1 }}>›</span>
+          {/* design-d1-granska-heroscore (Designgranskning 2026-09-03, DOM 2026-09-03
+              Jacob: ja) — ersätter den bleka 4–2:an. Mock: docs/mockups/
+              2026-09-06_redesign_resultatet_klubbminnet.dc.html, skärm 01. Väder-
+              tonad läder (getHeroWeatherBg, läser fixturens FAKTISKA väder — mockens
+              egen kod hårdkodade snö), Georgia-siffra, en klack-rad, is-streck.
+              Protokollet (potm/åskådare/arena/sammanfattning/flavor) NEDANFÖR är
+              OFÖRÄNDRAT — princip 4/5: en mock av X byter X:s utseende, raderar
+              aldrig X, och specen själv säger "protokollet ligger under, inget tas
+              bort".
+              overflow:hidden sitter HÄR (inte på det yttre .card-sharp) — kortet är
+              ett flex-item i .card-stack, och overflow:hidden på ett flex-item ger
+              automatic minimum size 0 (flexbox-spec), vilket lät hela stackens
+              höjdunderskott absorberas av just detta kort (kollapsade till 2px)
+              medan syskon utan overflow:hidden (min-height:auto) höll sin höjd. */}
+          <div style={{
+            background: getHeroWeatherBg(game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)?.weather.condition),
+            backgroundImage: 'radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--match-gold) 8%, transparent), transparent 60%)',
+            padding: '26px 20px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0',
+          }}>
+            <div style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--match-gold)', opacity: 0.8, marginBottom: 20 }}>
+              ⬩ &nbsp;Slutsignal&nbsp; ⬩
             </div>
-
-            {/* DB-3: hero-score → ScoreBlock (en primitiv för alla resultat i UI-flöde).
-                GRANSKA DEL 4 steg 3: trophy-ton — gold-variant reserverad för SM-final/
-                Cup-final (design-system/DESIGN-DECISIONS.md: "Gold-regel"), tvingad här
-                vid anropssidan, inte i komponenten. Bara på VUNNEN final — en förlorad
-                final är fortfarande en förlust, inte guld. */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-              <ScoreBlock
-                score={`${fixture.homeScore}–${fixture.awayScore}`}
-                variant={axes.skede === 'final' && won ? 'gold' : won ? 'win' : lost ? 'loss' : 'draw'}
-                size="hero"
-                light
-              />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 6 }}>
+              <div style={{ textAlign: 'center', width: 74 }}>
+                <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.homeClubId} name={homeClub?.name ?? ''} size={34} /></div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>{homeClub?.shortName ?? homeClub?.name}</div>
+                <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--match-positive)', textTransform: 'uppercase', marginTop: 2 }}>Hemma</div>
+              </div>
+              <div
+                className="granska-hero-score"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 66, lineHeight: 1, color: 'var(--match-gold)', letterSpacing: '-1px', animation: 'scaleFlash 320ms ease-out both' }}
+              >
+                {fixture.homeScore}<span style={{ opacity: 0.45, fontSize: 40, verticalAlign: 'middle', margin: '0 6px' }}>–</span>{fixture.awayScore}
+              </div>
+              <div style={{ textAlign: 'center', width: 74 }}>
+                <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.awayClubId} name={awayClub?.name ?? ''} size={34} /></div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>{awayClub?.shortName ?? awayClub?.name}</div>
+                <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginTop: 2 }}>Borta</div>
+              </div>
             </div>
 
             {(fixture.wentToOvertime || penResult) && (
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', marginBottom: 6 }}>
                 {penResult ? `Straffar: ${penResult.home}–${penResult.away}` : 'Avgjort i förlängning'}
               </p>
             )}
 
             <span style={{
-              display: 'inline-block', padding: '4px 14px', borderRadius: 99,
-              background: won ? 'color-mix(in srgb, var(--success) 12%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 12%, transparent)' : 'rgba(245,241,235,0.08)',
-              border: `1px solid ${won ? 'color-mix(in srgb, var(--success) 30%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 30%, transparent)' : 'rgba(245,241,235,0.2)'}`,
-              color: resultColor, fontSize: 11, fontWeight: 700, letterSpacing: '1px', marginBottom: 8,
+              display: 'inline-block', margin: '8px 0 16px', padding: '3px 12px', borderRadius: 99,
+              background: won ? 'color-mix(in srgb, var(--match-positive) 14%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 14%, transparent)' : 'rgba(245,241,235,0.08)',
+              border: `1px solid ${won ? 'color-mix(in srgb, var(--match-positive) 35%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 35%, transparent)' : 'rgba(245,241,235,0.2)'}`,
+              color: won ? 'var(--match-positive)' : resultColor, fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
             }}>
               {resultLabel}
             </span>
 
+            {/* text-utan-yta (CLAUDE.md Princip 7 / SVENSK TEXT-regeln): mockens
+                klack-rad ("Domaren blåser av. Klacken sjunger i kylan.") är Design
+                platshållare, kräver en riktig utfallsbandad pool (seger/förlust/
+                oavgjort/derby) — sökt (klackEchoText.ts/klackEchoService.ts täcker
+                bara "notable events", inte VARJE matchs utfall) och hittades INTE.
+                Flaggat i MASTER_OPPET.md (design-d1-granska-heroscore): Opus skriver
+                fyra rader, Code kopplar in samma dag. `[Opus]` är den avsedda,
+                synliga platshållaren (CLAUDE.md: "hellre synlig krasch än fel ton"). */}
+            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 14, lineHeight: 1.5, color: 'var(--text-light)', maxWidth: 280, margin: '0 auto' }}>
+              [Opus]
+            </p>
+
+            {/* Is-streck — absolut positionerad (inte negativ marginal) så den
+                inte stör den omgivande höjdberäkningen i overflow:hidden-kortet. */}
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, background: 'linear-gradient(90deg,transparent,color-mix(in srgb, var(--ice) 50%, transparent),transparent)' }} />
+          </div>
+
+          <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
             {potm && potmRating != null && (
               <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>⭐ {potm.firstName} {potm.lastName} · {potmRating.toFixed(1)}</p>
             )}
