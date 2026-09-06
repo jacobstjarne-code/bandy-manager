@@ -66,6 +66,12 @@ export function PortalEventSlot({ game }: Props) {
     return <CeremonyRetirement game={game} event={event} />
   }
 
+  // Röstintroduktioner är notiser men måste få en faktisk hemvist. Vanliga
+  // press-/klackhändelser av samma typer förblir bakgrund i Granska.
+  if (event.introducesVoiceId) {
+    return <EventCardInline event={event} currentMatchday={game.currentMatchday} />
+  }
+
   // HIGH 11 — visningsregeln. Kortet är inte längre "nästa i kön" utan det
   // primära beslutet: översta måste, annars översta månad. Bakgrund ger null
   // (inget dashboardkort), även när den ligger först i kön.

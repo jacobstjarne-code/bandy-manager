@@ -34,10 +34,6 @@ export function localPressVoiceId(clubId: string, journalistName: string): Voice
   return `local_press:${voicePart(clubId)}:${voicePart(journalistName)}`
 }
 
-export function sponsorVoiceId(clubId: string, sponsorId: string): VoiceId {
-  return `sponsor:${voicePart(clubId)}:${voicePart(sponsorId)}`
-}
-
 export function klackLeaderVoiceId(clubId: string, leaderName: string): VoiceId {
   return `klack_leader:${voicePart(clubId)}:${voicePart(leaderName)}`
 }
@@ -72,6 +68,84 @@ export function wasVoiceIntroducedThisMatchday(
   if (!budget) return false
   if (budget.season !== game.currentSeason || budget.matchday !== game.currentMatchday) return false
   return budget.introducedVoiceIds?.includes(voiceId) ?? false
+}
+
+/** A known voice may first speak on the matchday after its introduction. */
+export function canVoiceSpeak(
+  game: Pick<SaveGame, 'introducedVoices' | 'voiceIntroductionBudget' | 'currentSeason' | 'currentMatchday'>,
+  voiceId: VoiceId,
+): boolean {
+  return isVoiceIntroduced(game, voiceId) && !wasVoiceIntroducedThisMatchday(game, voiceId)
+}
+
+export function canLocalPressSpeak(
+  game: Pick<SaveGame, 'managedClubId' | 'journalist' | 'introducedVoices' | 'voiceIntroductionBudget' | 'currentSeason' | 'currentMatchday'>,
+): boolean {
+  if (!game.journalist) return false
+  return canVoiceSpeak(game, localPressVoiceId(game.managedClubId, game.journalist.name))
+}
+
+function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
+  if (!game.onboardingComplete) return []
+
+  const club = (game.clubs ?? []).find(candidate => candidate.id === game.managedClubId)
+  const queuedVoiceIds = new Set(
+    (game.pendingEvents ?? []).flatMap(event => event.introducesVoiceId ? [event.introducesVoiceId] : []),
+  )
+  const events: GameEvent[] = []
+
+  if (game.journalist) {
+    const voiceId = localPressVoiceId(game.managedClubId, game.journalist.name)
+    if (!isVoiceIntroduced(game, voiceId) && !queuedVoiceIds.has(voiceId)) {
+      const place = club?.shortName ?? club?.name ?? 'orten'
+      const clubName = club?.name ?? 'klubben'
+      events.push({
+        id: `voice_intro_local_press_${voicePart(game.managedClubId)}_${voicePart(game.journalist.name)}`,
+        type: 'journalistExclusive',
+        title: `${game.journalist.name}, ${game.journalist.outlet}.`,
+        // Könsneutral tills roster-speccens lokaltidningscopy är slutlåst.
+        body: `${game.journalist.outlet}s reporter i ${place}. Skriver om ${clubName} — och om det mesta annat som händer här.`,
+        sender: { name: game.journalist.name, role: game.journalist.outlet },
+        choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
+        resolved: false,
+        voiceId,
+        introducesVoiceId: voiceId,
+      })
+    }
+  }
+
+  const leader = game.supporterGroup?.leader
+  if (leader) {
+    const voiceId = klackLeaderVoiceId(game.managedClubId, leader.name)
+    if (!isVoiceIntroduced(game, voiceId) && !queuedVoiceIds.has(voiceId)) {
+      const clubName = club?.name ?? 'klubben'
+      events.push({
+        id: `voice_intro_klack_leader_${voicePart(game.managedClubId)}_${voicePart(leader.name)}`,
+        type: 'supporterEvent',
+        title: `${leader.name}.`,
+        body: `Han håller ihop ${clubName}s klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
+        sender: { name: leader.name, role: 'Klackledare' },
+        choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
+        resolved: false,
+        voiceId,
+        introducesVoiceId: voiceId,
+      })
+    }
+  }
+
+  return events
+}
+
+/** Missing roster intros are prepended, preserving all deferred statements. */
+export function queueRosterVoiceIntroductions(game: SaveGame): SaveGame {
+  const introductions = rosterIntroductionEvents(game)
+  if (introductions.length === 0) return game
+  return { ...game, pendingEvents: [...introductions, ...(game.pendingEvents ?? [])] }
+}
+
+/** Producer hook for round processing and legacy saves. */
+export function generateRosterVoiceIntroductions(game: SaveGame): GameEvent[] {
+  return rosterIntroductionEvents(game)
 }
 
 /**

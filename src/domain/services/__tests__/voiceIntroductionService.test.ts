@@ -6,13 +6,18 @@ import {
   boardVoiceId,
   canIntroduceVoiceThisMatchday,
   getVoiceEligibleEvents,
+  generateRosterVoiceIntroductions,
   isVoiceIntroduced,
+  klackLeaderVoiceId,
+  localPressVoiceId,
   mecenatVoiceId,
+  queueRosterVoiceIntroductions,
   recordVoiceIntroduction,
   seedTilltradeVoices,
   voiceIntroductionBudgetUsed,
 } from '../voiceIntroductionService'
 import { getNextEvent } from '../eventQueueService'
+import { GATED_VOICE_KINDS, SPONSOR_VOICE_GATE_POLICY } from '../../entities/Voice'
 
 function game(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -106,5 +111,37 @@ describe('voice introduction gate', () => {
     expect(isVoiceIntroduced(updated, assistantCoachVoiceId('malilla'))).toBe(true)
     expect(updated.voiceIntroductionBudget).toBeUndefined()
     expect(updated.eventLedger?.filter(entry => entry.type === 'voice_introduced')).toHaveLength(2)
+  })
+
+  it('queues local press before the named supporter leader and admits only one intro today', () => {
+    const base = game({
+      onboardingComplete: true,
+      currentMatchday: 0,
+      clubs: [{ id: 'malilla', name: 'Målilla Bandy', shortName: 'Målilla' }] as never,
+      journalist: {
+        name: 'Karin Bergström', outlet: 'Målilla Nytt', persona: 'analytical',
+        style: 'neutral', relationship: 50, memory: [], pressRefusals: 0,
+      },
+      supporterGroup: { leader: { name: 'Sture', role: 'leader' } } as never,
+      pendingEvents: [],
+    })
+
+    const queued = queueRosterVoiceIntroductions(base)
+    expect(queued.pendingEvents?.map(item => item.introducesVoiceId)).toEqual([
+      localPressVoiceId('malilla', 'Karin Bergström'),
+      klackLeaderVoiceId('malilla', 'Sture'),
+    ])
+    expect(queued.pendingEvents?.[0]).toMatchObject({
+      title: 'Karin Bergström, Målilla Nytt.',
+      body: 'Målilla Nytts reporter i Målilla. Skriver om Målilla Bandy — och om det mesta annat som händer här.',
+    })
+    expect(getVoiceEligibleEvents(queued, queued.pendingEvents ?? []).map(item => item.id))
+      .toEqual([queued.pendingEvents?.[0]?.id])
+    expect(generateRosterVoiceIntroductions(queued)).toEqual([])
+  })
+
+  it('keeps sponsor companies explicitly outside the personal voice gate', () => {
+    expect(GATED_VOICE_KINDS).not.toContain('sponsor')
+    expect(SPONSOR_VOICE_GATE_POLICY).toBe('company_without_spokesperson_exempt')
   })
 })

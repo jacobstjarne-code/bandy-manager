@@ -7,6 +7,7 @@ import { getRolloverPolicy } from '../../deferredRolloverService'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { resolveEvent } from '../eventResolver'
 import { generateSupporterEvents } from '../supporterEvents'
+import { klackLeaderVoiceId } from '../../voiceIntroductionService'
 
 function supporterGroup(overrides: Partial<SupporterGroup> = {}): SupporterGroup {
   return {
@@ -21,7 +22,13 @@ function supporterGroup(overrides: Partial<SupporterGroup> = {}): SupporterGroup
 
 function makeGame(group: SupporterGroup) {
   const template = CLUB_TEMPLATES[0]
-  return { ...createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 }), supporterGroup: group }
+  const game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
+  const voiceId = klackLeaderVoiceId(game.managedClubId, group.leader.name)
+  return {
+    ...game,
+    supporterGroup: group,
+    introducedVoices: { [voiceId]: { provenance: 'legacy_assumed' as const, source: 'migration' as const } },
+  }
 }
 
 describe('supporterEvent — global tid, effekter och sann efterklang', () => {
@@ -43,6 +50,7 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     const game = { ...makeGame(supporterGroup({ tifoDone: true })), currentMatchday: 9, lastProcessedMatchday: 99, fanMood: 50 }
     const event = generateSupporterEvents(game, 9, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_conflict_'))!
+    expect(event.voiceId).toBe(klackLeaderVoiceId(game.managedClubId, 'Sture'))
     expect(event.choices.find(choice => choice.id === 'both')?.subtitle)
       .toBe('💛 +5 klackens stämning · 🙂 +3 publikstämning')
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'both', undefined, true)
@@ -66,6 +74,7 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     const event = generateSupporterEvents(game, 6, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_away_trip_'))!
     expect(event).toBeDefined()
+    expect(event.voiceId).toBe(klackLeaderVoiceId(game.managedClubId, 'Sture'))
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'acknowledge', undefined, true)
     expect(result.supporterGroup).toMatchObject({ mood: 62, awayTripSeason: game.currentSeason, awayTripMatchday: 6 })
     const display = getKlackDisplay(result, 6)!

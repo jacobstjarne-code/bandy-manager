@@ -19,6 +19,7 @@ import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
+import { getCharacterName } from '../../../domain/services/supporterService'
 
 type GeneratorSetup = {
   fixture: Fixture
@@ -76,7 +77,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       supporterContext: game.supporterGroup ? {
         mood: game.supporterGroup.mood,
         members: game.supporterGroup.members,
-        leaderName: game.supporterGroup.leader.name,
+        leaderName: getCharacterName(game, 'leader'),
       } : undefined,
       ownScandalThisSeason: (game.scandalHistory ?? []).some(s =>
         s.season === game.currentSeason &&

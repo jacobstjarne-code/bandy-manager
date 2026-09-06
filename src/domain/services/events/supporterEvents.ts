@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { getCharacterName } from '../supporterService'
+import { klackLeaderVoiceId } from '../voiceIntroductionService'
 
 export function generateSupporterEvents(
   game: SaveGame,
@@ -13,9 +14,12 @@ export function generateSupporterEvents(
   if (!sg) return events
 
   const elin   = getCharacterName(game, 'youth')
-  const sture  = getCharacterName(game, 'leader')
+  // The deferred event keeps the real identity. Other narrative surfaces use
+  // getCharacterName(), which masks it until the gate opens next matchday.
+  const sture  = sg.leader.name
   const tommy  = getCharacterName(game, 'family')
   const rolf   = getCharacterName(game, 'veteran')
+  const leaderVoiceId = klackLeaderVoiceId(game.managedClubId, sg.leader.name)
 
   // ── Tifo-eventet — Elin vill organisera tifo (omg 5-7, max en gång per säsong) ──
   if (currentRound >= 5 && currentRound <= 7 && !sg.tifoDone) {
@@ -89,6 +93,8 @@ export function generateSupporterEvents(
             ]) },
           },
         ],
+        sender: { name: sg.leader.name, role: 'Klackledare' },
+        voiceId: leaderVoiceId,
         resolved: false,
       })
     }
@@ -180,6 +186,8 @@ export function generateSupporterEvents(
             effect: { type: 'supporterMood', amount: 2 },
           },
         ],
+        sender: { name: sg.leader.name, role: 'Klackledare' },
+        voiceId: leaderVoiceId,
         resolved: false,
       })
     }

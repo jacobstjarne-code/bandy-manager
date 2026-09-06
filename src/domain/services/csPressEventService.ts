@@ -10,6 +10,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { Player } from '../entities/Player'
 import { PlayerPosition } from '../enums'
 import { pickCSPressQuestionSelection, CS_PRESS_CHOICE_BUTTONS } from '../data/csPressEventText'
+import { localPressVoiceId } from './voiceIntroductionService'
 
 // ── CS streak ────────────────────────────────────────────────────────────────
 
@@ -159,5 +160,7 @@ export function buildCSPressEvent(
     relatedPlayerId: player.id,
     relatedFixtureId: fixture.id,
     journalistQuestionId: question.id,
+    sender: { name: journalist.name, role: journalist.outlet },
+    voiceId: localPressVoiceId(game.managedClubId, journalist.name),
   }
 }

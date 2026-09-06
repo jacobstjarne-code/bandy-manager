@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 import { appendNewlyResolvedStorylines, hasPriorStorylineResolution } from './storylineLedgerService'
+import { canLocalPressSpeak } from './voiceIntroductionService'
 
 export type JournalistCardSeverity = 'cold' | 'warm' | 'hidden'
 
@@ -13,7 +14,7 @@ export function getJournalistCardSeverity(game: SaveGame): JournalistCardSeverit
 }
 
 export function shouldShowJournalistCard(game: SaveGame): boolean {
-  return getJournalistCardSeverity(game) !== 'hidden'
+  return canLocalPressSpeak(game) && getJournalistCardSeverity(game) !== 'hidden'
 }
 
 export type RelationshipEventType = 'broken_under_20' | 'recovered_above_75' | null

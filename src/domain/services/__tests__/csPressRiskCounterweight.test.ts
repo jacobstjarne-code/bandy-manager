@@ -19,10 +19,16 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { getDefaultRolloverChoice } from '../deferredRolloverService'
 import { buildCSPressEvent } from '../csPressEventService'
+import { localPressVoiceId } from '../voiceIntroductionService'
 
 function makeGame(): SaveGame {
   const template = CLUB_TEMPLATES[0]
-  return createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
+  const game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
+  const voiceId = localPressVoiceId(game.managedClubId, game.journalist!.name)
+  return {
+    ...game,
+    introducedVoices: { [voiceId]: { provenance: 'legacy_assumed', source: 'migration' } },
+  }
 }
 
 function makeCSPressEvent(playerId: string, fixtureId: string): GameEvent {

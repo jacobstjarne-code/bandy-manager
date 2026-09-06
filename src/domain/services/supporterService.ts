@@ -3,6 +3,7 @@ import type { SupporterGroup, SupporterCharacter } from '../entities/Community'
 import type { Player } from '../entities/Player'
 import { PlayerPosition } from '../enums'
 import { stringHash } from '../utils/random'
+import { canVoiceSpeak, klackLeaderVoiceId } from './voiceIntroductionService'
 
 // ── Name pools per role ───────────────────────────────────────────────────────
 
@@ -102,6 +103,10 @@ export function adjustSupporterMood(group: SupporterGroup, delta: number): Suppo
 export function getCharacterName(game: SaveGame, role: SupporterCharacter['role']): string {
   const sg = game.supporterGroup
   if (!sg) return role === 'youth' ? 'Elin' : role === 'leader' ? 'Sture' : role === 'veteran' ? 'Rolf' : 'Tommy'
+  if (role === 'leader') {
+    const voiceId = klackLeaderVoiceId(game.managedClubId, sg.leader.name)
+    return canVoiceSpeak(game, voiceId) ? sg.leader.name : 'Klackledaren'
+  }
   return sg[role].name
 }
 

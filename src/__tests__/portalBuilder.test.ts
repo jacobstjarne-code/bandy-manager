@@ -4,6 +4,7 @@ import { setCardBag } from '../domain/services/portal/dashboardCardBag'
 import type { DashboardCard } from '../domain/services/portal/dashboardCardBag'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import { InboxItemType, PlayoffStatus } from '../domain/enums'
+import { localPressVoiceId } from '../domain/services/voiceIntroductionService'
 
 // ─── Mock komponenter ─────────────────────────────────────────────────────────
 const MockPrimary = () => null
@@ -352,7 +353,18 @@ describe('buildPortal — C1 storySlot live-stake-gate', () => {
       final: null,
     }
     const fixtures = [completedLeague22, { id: 'pf1', status: 'scheduled', isCup: false, isKnockout: true, roundNumber: 27, homeClubId: 'club_b', awayClubId: 'club_c' }]
-    const game = makeGame({ fixtures: fixtures as never, inbox: mediaInbox as never, playoffBracket: playoffBracket as never })
+    const journalist = {
+      name: 'Karin Bergström', outlet: 'Lokaltidningen', persona: 'analytical',
+      style: 'neutral', relationship: 50, memory: [], pressRefusals: 0,
+    } as const
+    const voiceId = localPressVoiceId('club_a', journalist.name)
+    const game = makeGame({
+      fixtures: fixtures as never,
+      inbox: mediaInbox as never,
+      playoffBracket: playoffBracket as never,
+      journalist: journalist as never,
+      introducedVoices: { [voiceId]: { provenance: 'legacy_assumed', source: 'migration' } },
+    })
     const layout = buildPortal(game, makeSeed(game))
     expect(layout.storySlot).not.toBeNull()
     expect(layout.storySlot?.kind).toBe('journalistHot')

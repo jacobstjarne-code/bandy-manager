@@ -34,6 +34,7 @@ import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
+import { canEventPassVoiceGate } from '../../../domain/services/voiceIntroductionService'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -666,7 +667,7 @@ export function GranskaOversikt({
           (2026-08-12): registrerad, ✓ i alla lägen. */}
       {visasFor('pressConference', axes.tavlingstyp, axes.skede) && (() => {
         const pc = game.pendingPressConference
-        if (!pc) return null
+        if (!pc || !canEventPassVoiceGate(game, pc)) return null
         // GRANSKA DEL 4 (2026-08-11): strukturerat fält (pc.sender) istf
         // title-prefix-parse — pc.title bär aldrig 🎤-prefixet (generatorn
         // emitterar det aldrig), så regexen var en no-op sedan tidigare.
@@ -690,7 +691,7 @@ export function GranskaOversikt({
       {/* C-B1: CS-pressfråga. GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
       {visasFor('csPress', axes.tavlingstyp, axes.skede) && (() => {
         const cp = game.pendingCSPress
-        if (!cp) return null
+        if (!cp || !canEventPassVoiceGate(game, cp)) return null
         const journalist = game.journalist
         return (
           <DecisionCard

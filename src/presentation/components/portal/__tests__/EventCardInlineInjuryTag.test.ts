@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getInjuryTag } from '../EventCardInline'
+import { getEventSourceLabel, getInjuryTag } from '../EventCardInline'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../../../domain/services/worldGenerator'
 import type { GameEvent } from '../../../../domain/entities/GameEvent'
@@ -108,5 +108,15 @@ describe('getInjuryTag', () => {
     const event = makeEvent({ relatedPlayerId: player.id })
 
     expect(getInjuryTag(event, players)).toContain('Frisk')
+  })
+})
+
+describe('getEventSourceLabel', () => {
+  it('keeps the category and adds the named voice', () => {
+    const event = {
+      id: 'press', type: 'journalistExclusive', title: 'Rubrik', body: 'Text',
+      choices: [], resolved: false, sender: { name: 'Karin Bergström', role: 'Målilla Nytt' },
+    } as GameEvent
+    expect(getEventSourceLabel(event)).toBe('📰 LOKALTIDNINGEN · Karin Bergström')
   })
 })

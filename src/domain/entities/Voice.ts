@@ -10,9 +10,15 @@ export const GATED_VOICE_KINDS = [
   'board',
   'local_press',
   'patron',
-  'sponsor',
   'klack_leader',
 ] as const
+
+/**
+ * A sponsor is currently a company, not a named recurring spokesperson.
+ * Keep it outside the personal voice gate until the domain explicitly adds
+ * such a person; a future producer must not infer a voice from the company.
+ */
+export const SPONSOR_VOICE_GATE_POLICY = 'company_without_spokesperson_exempt' as const
 
 /** Canonical roster class. Ambient/system voices deliberately do not occur here. */
 export type VoiceKind = typeof GATED_VOICE_KINDS[number]

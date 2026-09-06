@@ -598,7 +598,7 @@ export function generatePostAdvanceEvents(
         const eid = `event_journalist_exclusive_${subject.id}_r${roundPlayed}`
         if (!alreadyQueued.has(eid)) {
           events.push({
-            ...generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed),
+            ...generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed, game.managedClubId),
             journalistExclusiveKey: `${JOURNALIST_EXCLUSIVE_PREFIX}${subject.id}`,
           })
         }

@@ -12,7 +12,7 @@ import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { NextOpponentHook } from './NextOpponentHook'
 import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
-import { getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
+import { canEventPassVoiceGate, getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -207,11 +207,20 @@ export function GranskaScreen() {
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
 
+  const voiceEligiblePressConference = game.pendingPressConference
+    && canEventPassVoiceGate(game, game.pendingPressConference)
+    ? game.pendingPressConference
+    : undefined
+  const voiceEligibleCSPress = game.pendingCSPress
+    && canEventPassVoiceGate(game, game.pendingCSPress)
+    ? game.pendingCSPress
+    : undefined
+
   const unresolved = countUnresolvedGranskaDecisions(
     pendingEvents,
     effectiveResolvedEventIds,
-    game.pendingPressConference,
-    game.pendingCSPress,
+    voiceEligiblePressConference,
+    voiceEligibleCSPress,
     game.pendingRefereeMeeting,
   )
 

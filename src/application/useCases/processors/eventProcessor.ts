@@ -34,6 +34,7 @@ import type { Patron } from '../../../domain/entities/Community'
 import { applyPatronHappinessTransition } from '../../../domain/services/patronWithdrawalService'
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { buildScandalLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { generateRosterVoiceIntroductions } from '../../../domain/services/voiceIntroductionService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -97,7 +98,13 @@ export function processGameEvents(
     ? nextMatchday
     : (game.lastEventQueueRound ?? undefined)
 
-  const gameEvents: GameEvent[] = [...newEvents, ...communityEvents]
+  // Re-run the intro producer every round so pre-feature saves get the same
+  // deferred queue as new careers. Id/voice checks make this idempotent.
+  const gameEvents: GameEvent[] = [
+    ...generateRosterVoiceIntroductions(game),
+    ...newEvents,
+    ...communityEvents,
+  ]
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (managedClub && managedClub.finances < -50000 && managedClub.finances >= -100000) {

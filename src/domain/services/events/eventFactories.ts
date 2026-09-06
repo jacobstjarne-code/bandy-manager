@@ -6,6 +6,7 @@ import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCar
 import { formatValue, formatSalary, formatContractRemaining } from '../../format'
 import { getSeasonDeadlineMatchday } from '../decisionTierService'
 import { JOBBET_FORSVANN_TEXT } from '../../data/contractTermText'
+import { localPressVoiceId } from '../voiceIntroductionService'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
 export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
@@ -585,6 +586,7 @@ export function generateJournalistExclusiveEvent(
   outlet: string,
   player: Player,
   roundNumber: number,
+  clubId: string,
 ): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   return {
@@ -614,6 +616,8 @@ export function generateJournalistExclusiveEvent(
       },
     ],
     relatedPlayerId: player.id,
+    sender: { name: journalistName, role: outlet },
+    voiceId: localPressVoiceId(clubId, journalistName),
     resolved: false,
   }
 }

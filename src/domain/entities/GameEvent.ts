@@ -318,7 +318,8 @@ export interface GameEvent {
   choices: EventChoice[]
   sender?: EventSender       // Named person + role
   /** Canonical instance id for a named recurring speaker. Omitted for the
-   * narrator, system messages and ambient collectives. */
+   * narrator, system messages, ambient collectives and sponsor companies
+   * without a named spokesperson. */
   voiceId?: VoiceId
   /** Set only on the card that introduces this voice. It may speak before
    * the gate opens because resolving this card is what opens the gate. */

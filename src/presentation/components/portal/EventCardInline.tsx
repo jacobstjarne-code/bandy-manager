@@ -83,6 +83,11 @@ export function getEventTypeLabel(event: GameEvent): string {
   return `${icon} ${label.toUpperCase()}`
 }
 
+export function getEventSourceLabel(event: GameEvent): string {
+  const category = getEventTypeLabel(event)
+  return event.sender ? `${category} · ${event.sender.name}` : category
+}
+
 export function EventCardInline({ event, currentMatchday }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const previewSponsorCounter = useGameStore(s => s.previewSponsorCounter)
@@ -94,7 +99,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   // renderas (PortalEventSlot → EventCardInline), se rotorsak i D-fact.
   const [showCounterModal, setShowCounterModal] = useState(false)
   const actions = getActionsForEvent(event)
-  const typeLabel = getEventTypeLabel(event)
+  const typeLabel = getEventSourceLabel(event)
   const injuryTag = getInjuryTag(event, players)
   // Entitets-dedup-grinden (2026-08-12): ett event OM ett bud ÄR budet, inte
   // en separat entitet — event.id och bid.id är olika strängar för samma
@@ -148,8 +153,8 @@ export function EventCardInline({ event, currentMatchday }: Props) {
         )}
       </p>
 
-      {/* Titel — visas för hallDebate-events */}
-      {event.type === 'hallDebate' && event.title && (
+      {/* Introkort måste visa den namngivna personen, inte bara kategorin. */}
+      {(event.type === 'hallDebate' || event.introducesVoiceId) && event.title && (
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, fontWeight: 600, color: 'var(--text-light)', lineHeight: 1.35, marginBottom: 8 }}>
           {event.title}
         </div>

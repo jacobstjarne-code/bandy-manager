@@ -17,6 +17,7 @@ import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getScandalPressTopic } from './scandalService'
 import { ledgerPostKey, markLedgerPostTold } from './ledgerToldService'
+import { localPressVoiceId } from './voiceIntroductionService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
@@ -1224,6 +1225,9 @@ export function generatePressConference(
     sender: namedJournalist
       ? { name: namedJournalist.name, role: namedJournalist.outlet }
       : { name: journalist, role: '' },
+    ...(namedJournalist ? {
+      voiceId: localPressVoiceId(game.managedClubId, namedJournalist.name),
+    } : {}),
     storylinePressKey,
     // Centralredaktören, punkt 2: den FAKTISKA frågans recency-nyckel,
     // beräknad efter alla överstyrningar/platshållarfyllning ovan — inte

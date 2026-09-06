@@ -13,17 +13,21 @@ import {
 import type { SaveGame } from '../domain/entities/SaveGame'
 import { buildJournalistSceneData } from '../domain/data/scenes/journalistRelationshipScene'
 import { buildStorylineResolutionLedgerEntry } from '../domain/services/storylineLedgerService'
+import { localPressVoiceId } from '../domain/services/voiceIntroductionService'
 
 function makeGame(relationship: number, lastTriggered?: number): SaveGame {
+  const managedClubId = 'club_forsbacka'
+  const journalistName = 'Karin Bergström'
+  const voiceId = localPressVoiceId(managedClubId, journalistName)
   return {
     currentSeason: 2026,
     currentMatchday: 8,
-    managedClubId: 'club_forsbacka',
+    managedClubId,
     fixtures: [],
     storylines: [],
     eventLedger: [],
     journalist: {
-      name: 'Karin Bergström',
+      name: journalistName,
       outlet: 'Lokaltidningen',
       persona: 'analytical',
       style: 'neutral',
@@ -31,6 +35,9 @@ function makeGame(relationship: number, lastTriggered?: number): SaveGame {
       memory: [],
       pressRefusals: 0,
       lastTriggeredRelationship: lastTriggered,
+    },
+    introducedVoices: {
+      [voiceId]: { provenance: 'legacy_assumed', source: 'migration' },
     },
   } as unknown as SaveGame
 }
@@ -77,6 +84,9 @@ describe('shouldShowJournalistCard', () => {
   it('true vid warm', () => expect(shouldShowJournalistCard(makeGame(80))).toBe(true))
   it('false vid neutral', () => expect(shouldShowJournalistCard(makeGame(50))).toBe(false))
   it('false utan journalist', () => expect(shouldShowJournalistCard(makeGameNoJournalist())).toBe(false))
+  it('false innan lokalpressen har introducerats', () => {
+    expect(shouldShowJournalistCard({ ...makeGame(80), introducedVoices: {} })).toBe(false)
+  })
 })
 
 describe('detectRelationshipEvent', () => {

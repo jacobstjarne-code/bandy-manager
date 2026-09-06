@@ -6,6 +6,7 @@ import type { DashboardCard } from './dashboardCardBag'
 import type { CardRenderProps } from './dashboardCardBag'
 import { isRivalryMatch } from '../../data/rivalries'
 import { nextMatchIsDerby } from './triggers/matchTriggers'
+import { canLocalPressSpeak } from '../voiceIntroductionService'
 
 export type InboxKind =
   | 'bigResult'
@@ -56,8 +57,8 @@ const STRIPE_LABEL_COLOR: Record<string, string> = {
   accent: 'var(--accent)',
 }
 
-function makeInboxStoryComponent(item: InboxItem, kind: InboxKind, stripe: string) {
-  const label = KIND_LABEL[kind]
+function makeInboxStoryComponent(item: InboxItem, kind: InboxKind, stripe: string, sourceName?: string) {
+  const label = sourceName ? `${KIND_LABEL[kind]} · ${sourceName}` : KIND_LABEL[kind]
   const borderColor = STRIPE_BORDER[stripe] ?? 'var(--accent)'
   const gradient = STRIPE_GRADIENT[stripe] ?? STRIPE_GRADIENT.accent
   const labelColor = STRIPE_LABEL_COLOR[stripe] ?? 'var(--accent)'
@@ -154,6 +155,8 @@ export function inboxItemToCardCandidate(
     weight = 80
     stripe = 'warm'
   } else if (item.type === InboxItemType.Media || item.type === InboxItemType.MediaEvent) {
+    // The inbox keeps the item; only its speaking surface is deferred.
+    if (!canLocalPressSpeak(game)) return null
     kind = 'journalistHot'
     tier = 'secondary'
     weight = 70
@@ -216,6 +219,11 @@ export function inboxItemToCardCandidate(
     triggers: [() => true],
     kind,
     stripe,
-    Component: makeInboxStoryComponent(displayItem, kind, stripe),
+    Component: makeInboxStoryComponent(
+      displayItem,
+      kind,
+      stripe,
+      kind === 'journalistHot' ? game.journalist?.name : undefined,
+    ),
   }
 }

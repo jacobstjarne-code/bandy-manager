@@ -62,6 +62,7 @@ import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
 import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
+import { getCharacterName } from '../../../domain/services/supporterService'
 
 interface LocationState {
   fixture: Fixture
@@ -309,7 +310,7 @@ export function MatchLiveScreen() {
       supporterContext: game.supporterGroup ? {
         mood: game.supporterGroup.mood,
         members: game.supporterGroup.members,
-        leaderName: game.supporterGroup.leader.name,
+        leaderName: getCharacterName(game, 'leader'),
       } : undefined,
       ownScandalThisSeason: (game.scandalHistory ?? []).some(s =>
         s.season === game.currentSeason &&
