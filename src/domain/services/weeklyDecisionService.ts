@@ -375,6 +375,10 @@ export function buildWeeklyDecisionLedgerEntry(
     systemsAffectedCount: affectedSystems,
     moneyAmount: moneyAmount > 0 ? moneyAmount : undefined,
     madeByPlayer: true,
+    // overlamning2-weeklydecision-boardmeeting-konsolidering: seasonDecisionCaptureService.ts's
+    // composeGenericDecisionSentence() kräver BÅDE actionLabel OCH moneyAmount — utan denna
+    // kunde ett veckobeslut som faktiskt flyttade pengar aldrig bli "säsongens beslut" i årsboken.
+    actionLabel: (choice === 'A' ? decision.optionA : decision.optionB).label,
   }
 }
 
