@@ -10,7 +10,7 @@ import { csColor, formatFinance, formatFinanceAbs, positionShort, playoffResultL
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage, downloadSeasonImage } from '../utils/seasonShareImage'
 import { shareMatchImage } from '../utils/matchShareImage'
-import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
+import { collectSeasonDecisions, getSeasonLicenseConsequence } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
 import { pickSeasonElimText } from '../../domain/data/seasonSummaryElimText'
@@ -1002,6 +1002,22 @@ export function SeasonSummaryScreen() {
           </p>
         </div>
 
+        {/* arsbok-dina-val-licensstatus (GPT styrelse-test 2026-09-04, PRIO 3):
+            licensstatus flyttad HIT ur "Dina val" — ett systemtillstånd, inte
+            ett val. Egen konsekvensrad bredvid Ekonomi, som är den yta
+            licensnämnden faktiskt reagerar på. */}
+        {(() => {
+          const licenseConsequence = getSeasonLicenseConsequence(game)
+          if (!licenseConsequence) return null
+          return (
+            <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <SectionLabel style={{ marginBottom: 6 }}>LICENSNÄMNDEN</SectionLabel>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                {licenseConsequence.icon} {licenseConsequence.text}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (

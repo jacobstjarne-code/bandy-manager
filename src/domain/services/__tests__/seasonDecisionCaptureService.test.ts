@@ -234,9 +234,19 @@ describe('captureSystemDecision — offer_pro (varsel, form 1)', () => {
   // faktiskt blev isFullTimePro (trasig/utebliven effekt) → null, inte en
   // mening som påstår att någon fick kontrakt när ingen fick det.
   it('ingen berörd spelare bekräftat isFullTimePro i gameAfter: null', () => {
-    const game = makeGame()
-    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    // sluttest-narrative-truth-grind-svepet (2026-09-06) unifierade attribut-
+    // generatorn (playerAttributeGenerator.ts), vilket ändrade RNG-förbruknings-
+    // ordningen i createNewGame({seed:1}) — squadPlayerIds[0] kunde därför bli
+    // en spelare som RÅKAR ha isFullTimePro:true redan vid generering. Testet
+    // ska bevisa logikvägen ("ingen bekräftad" → null), inte råka bero på vilken
+    // spelare frö 1 för tillfället ger — explicit isFullTimePro:false på källan.
+    const game0 = makeGame()
+    const club = game0.clubs.find(c => c.id === game0.managedClubId)!
     const playerId = club.squadPlayerIds[0]
+    const game: SaveGame = {
+      ...game0,
+      players: game0.players.map(p => p.id === playerId ? { ...p, isFullTimePro: false } : p),
+    }
     const player = game.players.find(p => p.id === playerId)!
     const newSalary = Math.round(player.salary * 1.5)
     const event: GameEvent = {

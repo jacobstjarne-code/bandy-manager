@@ -74,14 +74,6 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
     }
   }
 
-  // License
-  if (game.licenseStatus && game.licenseStatus !== 'clear') {
-    decisions.push({
-      icon: '📋',
-      text: `Licensnämnden: ${LICENSE_ZONE_TEXT[game.licenseStatus]}`,
-    })
-  }
-
   // Facility — pågående bygge (nya modellen; completedSeason saknas → bara aktivt bygge visas)
   const ap = game.facilityState?.activeProject
   if (ap) {
@@ -90,4 +82,27 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   }
 
   return decisions.sort((a, b) => (a.round ?? 99) - (b.round ?? 99)).slice(0, 8)
+}
+
+export interface SeasonLicenseConsequence {
+  icon: string
+  text: string
+}
+
+/**
+ * arsbok-dina-val-licensstatus (GPT styrelse-test 2026-09-04, PRIO 3):
+ * licensstatus är ett SYSTEMTILLSTÅND, inte ett val spelaren gjorde —
+ * `collectSeasonDecisions` (ovan) lade tidigare alltid in den under "Dina
+ * val", en rubrik som lovar beslut. Egen konsekvensrad i stället.
+ *
+ * Om spelaren FAKTISKT svarat på licensnämndens handlingsplan
+ * (`licenseHandlingsplan`-eventet, seasonEndProcessor.ts) är DET valet —
+ * inte statusen — vad "Dina val" borde visa. Den kopplingen (läsa
+ * `resolvedChoices` för den specifika eventet) är INTE byggd här; PRIO 3-
+ * raden är märkt "Liten" för statusflytten, inte för handlingsplan-vägen.
+ * Flaggat, inte tyst utelämnat — egen rad om Jacob vill ha den.
+ */
+export function getSeasonLicenseConsequence(game: SaveGame): SeasonLicenseConsequence | null {
+  if (!game.licenseStatus || game.licenseStatus === 'clear') return null
+  return { icon: '📋', text: `Licensnämnden: ${LICENSE_ZONE_TEXT[game.licenseStatus]}` }
 }

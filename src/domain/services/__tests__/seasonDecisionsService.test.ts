@@ -8,7 +8,7 @@
  * typ bara syns en gång per skärm — excludeStorylineTypes är den mekanismen.
  */
 import { describe, it, expect } from 'vitest'
-import { collectSeasonDecisions } from '../seasonDecisionsService'
+import { collectSeasonDecisions, getSeasonLicenseConsequence } from '../seasonDecisionsService'
 import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { StorylineEntry } from '../../entities/Narrative'
@@ -76,16 +76,28 @@ describe('collectSeasonDecisions — excludeStorylineTypes', () => {
     expect(collectSeasonDecisions(game)[0].text).toBe('Styrelseuppdrag: Gå långt i cupen — uppfyllt')
   })
 
-  it('läser licensraden från den kanoniska licenseStatus-zonen', () => {
+  it('arsbok-dina-val-licensstatus: licensstatus är INTE längre en Dina-val-rad — den är ett systemtillstånd, inte ett val', () => {
     const game = makeGame({ licenseStatus: 'point_deduction' })
-    expect(collectSeasonDecisions(game)).toContainEqual({
+    expect(collectSeasonDecisions(game).some(d => d.text.startsWith('Licensnämnden:'))).toBe(false)
+  })
+})
+
+describe('getSeasonLicenseConsequence', () => {
+  it('läser licenskonsekvensen från den kanoniska licenseStatus-zonen', () => {
+    const game = makeGame({ licenseStatus: 'point_deduction' })
+    expect(getSeasonLicenseConsequence(game)).toEqual({
       icon: '📋',
       text: 'Licensnämnden: Licensen är hotad. Vänd resultatet inom två säsonger.',
     })
   })
 
-  it('skriver ingen årsboksrad för clear', () => {
+  it('skriver ingen konsekvensrad för clear', () => {
     const game = makeGame({ licenseStatus: 'clear' })
-    expect(collectSeasonDecisions(game)).toEqual([])
+    expect(getSeasonLicenseConsequence(game)).toBeNull()
+  })
+
+  it('skriver ingen konsekvensrad när licenseStatus saknas', () => {
+    const game = makeGame({})
+    expect(getSeasonLicenseConsequence(game)).toBeNull()
   })
 })
