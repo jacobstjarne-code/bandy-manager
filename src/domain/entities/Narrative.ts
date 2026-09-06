@@ -376,7 +376,7 @@ const MATCH_RESULT_LEDGER_TYPES = new Set<EventLedgerType>(['cup_final', 'sm_fin
  * (slutplacering) förloras aldrig — `game.seasonSummaries[].finalPosition`
  * ackumuleras för alltid (till skillnad från `game.fixtures`, som nollställs
  * varje rollover), så season_finish behöver aldrig `result`. Se
- * clubMemoryService.ts's `finishPositionForSeason`.
+ * clubMemoryService.ts's `seasonFinishDataForSeason`.
  */
 export function isMatchResultEntry(entry: EventLedgerEntry): entry is EventLedgerEntry & { result: MatchResultPayload } {
   return MATCH_RESULT_LEDGER_TYPES.has(entry.type) && entry.result !== undefined

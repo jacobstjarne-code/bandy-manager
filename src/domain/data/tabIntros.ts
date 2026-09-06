@@ -38,11 +38,15 @@ export const TAB_INTROS = {
   },
   // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): ingen befintlig en-rads-
   // sammanfattning av Bygget som HELHET hittades (facilityDescriptions.ts har
-  // bara per-nod-texter). '[Opus]' väntar på den riktiga raden.
+  // bara per-nod-texter). '// OPUS_COPY' — TabIntro.tsx:s etablerade sentinel
+  // för väntande copy — döljer raden tyst tills Opus skriver den (INTE
+  // '[Opus]': den literalen är en NÅBAR platshållare per
+  // tests/grind/opusPlaceholderGate.ts, hard fail för en yta spelaren ser
+  // varje besök i Bygget-fliken).
   bygget: {
     icon: '🏗️',
     label: 'Bygget',
-    text: '[Opus]',
+    text: '// OPUS_COPY',
   },
   minne: {
     icon: '📖',

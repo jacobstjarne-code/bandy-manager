@@ -24,6 +24,7 @@ import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
 import { isMatchResultEntry } from '../entities/Narrative'
 import { getRivalry } from '../data/rivalries'
 import { readClubLedger } from './eventLedgerService'
+import { buildExpectationVerdictSentence } from './seasonSummaryService'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -97,24 +98,57 @@ export function scoreEvent(event: MemoryEvent): number {
  * `result`-payload (till skillnad från de fem match-resultat-typerna) —
  * bara en bättre datakälla för samma befintliga fixture-väg.
  */
-function finishPositionForSeason(game: SaveGame, season: number): number | undefined {
+interface SeasonFinishData {
+  position: number
+  /** undefined bara för äldre saves utan seasonSummaries — se fallback-grenen nedan. */
+  verdictSentence?: string
+}
+
+/**
+ * sluttest-be-blind-clubmemory (DOM 2026-09-03, Jacob): klubbminnet ska
+ * minnas om säsongen var över/under/möte förväntan, inte bara placeringen.
+ * `game.seasonSummaries` (samma källa som finalPosition redan läste sedan
+ * liggare-k9-doda-typer) bär redan `expectationVerdict`/`boardExpectation`
+ * — ingen ny liggarpost eller skrivväg behövs, bara den datan som redan
+ * fanns i samma objekt. Meningen byggs via `buildExpectationVerdictSentence`
+ * (seasonSummaryService.ts) — SAMMA låsta text som årsboken/Game Over redan
+ * använder, inte en ny formulering (EN SANNING, ETT STÄLLE).
+ */
+function seasonFinishDataForSeason(game: SaveGame, season: number): SeasonFinishData | undefined {
   if (season === game.currentSeason) return undefined
   const summary = (game.seasonSummaries ?? []).find(s => s.season === season)
-  if (summary) return summary.finalPosition
-  // Fallback för säsonger utan sparad summary (t.ex. äldre saves från
-  // innan seasonSummaries fanns) — samma smalare källa som tidigare.
+  if (summary) {
+    // Hellre ingen dom-mening än en falsk (samma linje som decision-grenen
+    // nedan): en ofullständig/äldre SeasonSummary (migrering, testfixtur)
+    // ska falla tillbaka på position-texten, inte interpolera "undefined".
+    const hasVerdictData = summary.clubName != null && summary.expectationVerdict != null && summary.boardExpectation != null
+    const isChampion = summary.playoffResult === 'champion'
+    return {
+      position: summary.finalPosition,
+      verdictSentence: hasVerdictData
+        ? buildExpectationVerdictSentence(
+            summary.clubName, summary.expectationVerdict, summary.finalPosition,
+            summary.boardExpectation, isChampion, summary.season,
+          )
+        : undefined,
+    }
+  }
+  // Fallback för säsonger utan sparad summary (t.ex. äldre saves från innan
+  // seasonSummaries fanns) — samma smalare källa som tidigare, ingen dom
+  // tillgänglig (seasonStartSnapshot bär ingen boardExpectation/verdict).
   if (season === game.currentSeason - 1 && game.seasonStartSnapshot) {
-    return game.seasonStartSnapshot.finalPosition
+    return { position: game.seasonStartSnapshot.finalPosition }
   }
   return undefined
 }
 
-function seasonFinishEvent(season: number, pos: number): MemoryEvent {
+function seasonFinishEvent(season: number, data: SeasonFinishData): MemoryEvent {
+  const pos = data.position
   const sig = pos === 1 ? 100 : pos === 2 ? 75 : pos <= 4 ? 65 : pos <= 6 ? 45 : pos <= 9 ? 35 : 30
   const label = pos === 1 ? '1:a (MÄSTARE!)' : pos === 2 ? '2:a' : pos === 3 ? '3:a' : `${pos}:e`
   return {
     type: 'season_finish', season, matchday: 22,
-    text: `Säsongen avslutad på ${label} plats.`,
+    text: data.verdictSentence ?? `Säsongen avslutad på ${label} plats.`,
     emoji: pos === 1 ? '🥇' : pos <= 3 ? '🏅' : '📊',
     significance: sig,
   }
@@ -465,10 +499,10 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
 
   for (let season = currentSeason; season >= firstSeason; season--) {
     const isOngoing = season === currentSeason
-    const position = finishPositionForSeason(game, season)
+    const finishData = seasonFinishDataForSeason(game, season)
     const events = collectSeasonEvents(game, season, managedClubId)
-    if (position !== undefined) {
-      events.unshift(seasonFinishEvent(season, position))
+    if (finishData !== undefined) {
+      events.unshift(seasonFinishEvent(season, finishData))
       events.sort((a, b) => a.matchday - b.matchday)
     }
     // Era: for ongoing season use currentEra; for previous season use snapshot; older = unknown
@@ -482,7 +516,7 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
 
     if (events.length === 0 && !isOngoing) continue
     seasons.push({
-      season, isOngoing, finishPosition: position, events,
+      season, isOngoing, finishPosition: finishData?.position, events,
       eraName,
     })
   }

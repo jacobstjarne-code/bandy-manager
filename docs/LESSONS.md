@@ -1180,3 +1180,15 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** en källäsning som slutar med "Jacob: om du känner till…". Ett "sökmotorer hittar dem inte" efter färre än fem sökningar, alla generiska. En rekommendation att Jacob gör en sökning eller ett arkiv Opus/GPT kan göra själv (#32:s klass — spelaren ska inte vara kurir).
 
 **Historik (2026-09-04):** BANDYTAKTIK_KALLASNING §"Vad som INTE hittades" (Opus, förmiddag) mot `kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md` (GPT, samma dag). Jacob: "gpt gjorde jobbet när du latade ut." Korrekt. Källorna ändrade kanon §2–§3 och kalibreringsdomens trötthetsform.
+
+## 57. Scopad testkörning bevisar sprintens filer — inte kodbasens grindar
+
+**Mönster:** Två sprintar samma dag (design-d1-granska-heroscore, design-d7-bottennav-sju) körde bara `npx vitest run <ändrad katalog>` innan commit/push, aldrig hela svepet. Båda introducerade en `'[Opus]'`-platshållare på en NÅBAR spelaryta (Granskas hero-score, Klubb → Bygget-fliken) — giltigt enligt SVENSK TEXT-regelns bokstav ("använd `'[Opus]'` som enda sträng"), men `tests/grind/opusPlaceholderGate.ts` (kodbas-bred, inte katalogscopad) hard-failar precis det: en `reachable:true`-platshållare är alltid en violation, `maxAllowed` ignoreras helt. Grinden låg röd på main i flera commits innan en full körning (av en ANNAN anledning, tredje sprinten samma session) råkade avslöja den.
+
+**Rotorsak:** en scopad testkörning (`vitest run src/presentation/screens`) bevisar att DE ÄNDRADE FILERNA inte regredierade — den säger ingenting om kodbas-breda grindar (hex-färg-grepen, rink-grepen, opusPlaceholderGate, standingPositionReadGate m.fl.) som skannar HELA `src/` oavsett vilken fil som ändrades. Att "mina filer är gröna" och "kodbasen är grön" är två olika påståenden, och bara den senare är det som faktiskt gäller för main.
+
+**Fix:** kör full `npx vitest run` (inget katalogargument) innan varje push till main, inte bara efter den ändrade katalogen — scopade körningar är för SNABB ITERATION under bygget, aldrig det sista steget före commit. Om suiten är för långsam för att köras varje edit, kör den ändå en gång per rad/sprint, precis före push.
+
+**Känn igen:** ett commit-meddelande eller en audit som citerar testresultat från en enda underkatalog ("X/Y tester gröna i src/presentation/screens") utan att någonstans nämna en fullkörning. En ny `'[Opus]'`-platshållare, hex-färg, eller `rink`-förekomst som "borde" ha fångats av en grind men inte gjorde det.
+
+**Historik (2026-09-06):** design-d1-granska-heroscore (a3044daf) och design-d7-bottennav-sju (35b942ca) landade båda med en nåbar `[Opus]`-platshållare; upptäckt och fixat samma dag när sluttest-be-blind-clubmemory-raden triggade en full `npx vitest run` av andra skäl. Fixat genom att byta till `TabIntro.tsx`s etablerade `'// OPUS_COPY'`-sentinel (döljer raden) respektive att utelämna den hårdkodade `<p>`-raden helt.

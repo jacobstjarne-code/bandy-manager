@@ -341,11 +341,10 @@ export function GranskaOversikt({
                 oavgjort/derby) — sökt (klackEchoText.ts/klackEchoService.ts täcker
                 bara "notable events", inte VARJE matchs utfall) och hittades INTE.
                 Flaggat i MASTER_OPPET.md (design-d1-granska-heroscore): Opus skriver
-                fyra rader, Code kopplar in samma dag. `[Opus]` är den avsedda,
-                synliga platshållaren (CLAUDE.md: "hellre synlig krasch än fel ton"). */}
-            <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 14, lineHeight: 1.5, color: 'var(--text-light)', maxWidth: 280, margin: '0 auto' }}>
-              [Opus]
-            </p>
+                fyra rader, Code kopplar in samma dag. Raden UTELÄMNAS tills dess
+                (INTE '[Opus]' — den literalen är en NÅBAR platshållare per
+                tests/grind/opusPlaceholderGate.ts, hard fail på en yta som visas
+                efter varje match). */}
 
             {/* Is-streck — absolut positionerad (inte negativ marginal) så den
                 inte stör den omgivande höjdberäkningen i overflow:hidden-kortet. */}

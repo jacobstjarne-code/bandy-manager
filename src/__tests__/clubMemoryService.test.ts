@@ -518,6 +518,37 @@ describe('liggare-k9-doda-typer — season_finish läser nu seasonSummaries, int
   })
 })
 
+describe('sluttest-be-blind-clubmemory — season_finish minns över/under förväntan, inte bara placeringen', () => {
+  it('en fullständig seasonSummary ger domens mening (buildExpectationVerdictSentence), inte bara "Säsongen avslutad på..."', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      seasonSummaries: [{
+        season: 1, clubId: MANAGED_CLUB_ID, clubName: 'Testklubben',
+        finalPosition: 2, boardExpectation: 'avoidBottom',
+        expectationVerdict: 'exceeded', playoffResult: null,
+      }] as never,
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons.find(s => s.season === 1)?.events.find(e => e.type === 'season_finish')
+    expect(event?.text).toContain('Testklubben')
+    expect(event?.text).toContain('överträffade')
+    expect(event?.text).not.toContain('Säsongen avslutad på')
+  })
+
+  it('en ofullständig seasonSummary (t.ex. äldre migrerad post utan expectationVerdict) faller tillbaka på position-texten — hellre ingen dom-mening än en falsk', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      seasonSummaries: [
+        { season: 1, clubId: MANAGED_CLUB_ID, finalPosition: 5 },
+      ] as never,
+    })
+    const result = getClubMemory(game)
+    const event = result.seasons.find(s => s.season === 1)?.events.find(e => e.type === 'season_finish')
+    expect(event?.text).toBe('Säsongen avslutad på 5:e plats.')
+    expect(event?.text).not.toContain('undefined')
+  })
+})
+
 describe('liggare-k7-beslutsminne — beslut ≥70 blir egna Krönika-rader, inte bara säsongens topp-1', () => {
   it('ett beslut med significance ≥ 70 och känd semanticKey ger en rad', () => {
     const game = makeMinimalGame({
