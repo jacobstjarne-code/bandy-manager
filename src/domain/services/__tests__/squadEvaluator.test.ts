@@ -268,6 +268,18 @@ describe('evaluateSquad', () => {
       }
     })
 
+    it('24–39 % är en gradvis prestationskurva, inte en platå före 22 %-spärren', () => {
+      const levels = [39, 32, 24]
+      const evaluations = levels.map(fitness => evaluateSquad(squadAtFitness(fitness), defaultTactic))
+
+      for (let i = 1; i < evaluations.length; i++) {
+        expect(evaluations[i].offenseScore).toBeLessThan(evaluations[i - 1].offenseScore)
+        expect(evaluations[i].defenseScore).toBeLessThan(evaluations[i - 1].defenseScore)
+        expect(evaluations[i].cornerScore).toBeLessThan(evaluations[i - 1].cornerScore)
+        expect(evaluations[i].goalkeeperScore).toBeLessThan(evaluations[i - 1].goalkeeperScore)
+      }
+    })
+
     it('0 % är en verklig, betydande nedgång mot 100 % — inte "för spelbart" (auditens ord)', () => {
       const full = evaluateSquad(squadAtFitness(100), defaultTactic)
       const zero = evaluateSquad(squadAtFitness(0), defaultTactic)
