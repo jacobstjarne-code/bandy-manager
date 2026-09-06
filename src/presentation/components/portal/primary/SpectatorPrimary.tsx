@@ -42,7 +42,11 @@ export function SpectatorPrimary({ game }: CardRenderProps) {
   if (hasScheduled) return null
 
   const handleCta = () => {
-    if (focus.type === 'akademi') navigate('/game/academy')
+    // Bugg hittad under klubb-flikar-overflod (2026-09-06): '/game/academy' är
+    // ingen route i AppRouter.tsx — klicket landade på catch-all → tillbaka till
+    // titelskärmen. Fanns redan innan Akademi flyttade till Trupp; fixad i
+    // samma pass eftersom denna funktion ändå rördes.
+    if (focus.type === 'akademi') navigate('/game/squad', { state: { tab: 'trupp', truppView: 'akademi' } })
     else navigate('/game/squad')
   }
 

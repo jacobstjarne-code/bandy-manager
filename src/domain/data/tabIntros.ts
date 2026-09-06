@@ -36,10 +36,13 @@ export const TAB_INTROS = {
     label: 'Orten',
     text: 'Bygdens stöd — frivilliga, mecenater, kommun och föreningsaktiviteter. Hög puls ger hemmaplansfördel och lockar sponsorer.',
   },
-  akademi: {
-    icon: '🎓',
-    label: 'Akademi',
-    text: 'Ungdomslaget och talangutvecklingen. Lyft spelare till A-laget när de är redo.',
+  // SVENSK TEXT — CODE SKRIVER ALDRIG (CLAUDE.md): ingen befintlig en-rads-
+  // sammanfattning av Bygget som HELHET hittades (facilityDescriptions.ts har
+  // bara per-nod-texter). '[Opus]' väntar på den riktiga raden.
+  bygget: {
+    icon: '🏗️',
+    label: 'Bygget',
+    text: '[Opus]',
   },
   minne: {
     icon: '📖',

@@ -1177,7 +1177,9 @@ export function GranskaOversikt({
               </div>
             )}
             {rs.youthMatchResult && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+              // klubb-flikar-overflod (2026-09-06): Akademi flyttade från Klubb till
+              // Trupp-fliken (A-lag/Akademi-toggeln) — se SquadScreen.tsx.
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad', { state: { tab: 'trupp', truppView: 'akademi' } })}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🎓 Akademin (P19)</span>
                 <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{rs.youthMatchResult}</span>
               </div>

@@ -16,6 +16,7 @@ import { SectionCard } from '../components/SectionCard'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
+import { AkademiTab } from '../components/club/AkademiTab'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { SeasonArcCard } from '../components/squad/SeasonArcCard'
 import { StillnessSection } from '../components/squad/StillnessSection'
@@ -406,8 +407,18 @@ export function SquadScreen() {
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
   const updateTactic = useGameStore(s => s.updateTactic)
+  const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
+  const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
+  const assignMentor = useGameStore(s => s.assignMentor)
+  const removeMentor = useGameStore(s => s.removeMentor)
+  const loanOutPlayer = useGameStore(s => s.loanOutPlayer)
+  const recallLoan = useGameStore(s => s.recallLoan)
   const expiringCount = useExpiringContracts()
   const [screenTab, setScreenTab] = useState<'nu' | 'trupp' | 'taktik' | 'värvning'>('nu')
+  // klubb-flikar-overflod (DOM 2026-09-03, Jacob): Akademi flyttade hit från
+  // Klubb 2026-09-06 — en toggle inuti Trupp-fliken, inte ett eget top-level
+  // screenTab (skulle tvinga NU/Taktik/Kontrakt in i samma segment).
+  const [truppView, setTruppView] = useState<'alag' | 'akademi'>('alag')
   // B1-nav Fas 2: deep-link från PlayerCard "Förläng" → öppna Värvning + renew-modal.
   const [renewDeepLinkId, setRenewDeepLinkId] = useState<string | null>(null)
   const [sort, setSort] = useState<SortKey>('position')
@@ -483,15 +494,19 @@ export function SquadScreen() {
   }
 
   useEffect(() => {
-    const state = location.state as { highlightPlayer?: string; tab?: string; renewPlayerId?: string } | null
+    const state = location.state as { highlightPlayer?: string; tab?: string; truppView?: string; renewPlayerId?: string } | null
     const highlightId = state?.highlightPlayer
     if (highlightId) {
       setSelectedPlayerId(highlightId)
     }
     // B1-nav Fas 2: PlayerCard "Förläng" landar här på Värvning med renew-modalen öppen.
     if (state?.tab === 'värvning') setScreenTab('värvning')
+    // klubb-flikar-overflod: djuplänkar till Akademi (Granskas "Akademin →"-rad,
+    // Portalens akademi-fokuskort) landar nu på Trupp + akademi-toggeln.
+    if (state?.tab === 'trupp') setScreenTab('trupp')
+    if (state?.truppView === 'akademi') { setScreenTab('trupp'); setTruppView('akademi') }
     if (state?.renewPlayerId) setRenewDeepLinkId(state.renewPlayerId)
-    if (highlightId || state?.tab || state?.renewPlayerId) {
+    if (highlightId || state?.tab || state?.truppView || state?.renewPlayerId) {
       // Clear state so back/forward nav doesn't re-open
       window.history.replaceState({ ...window.history.state, usr: {} }, '')
     }
@@ -703,6 +718,33 @@ export function SquadScreen() {
       })()}
       {/* Header */}
       {screenTab === 'trupp' && <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
+        {/* A-lag / Akademi — klubb-flikar-overflod (DOM 2026-09-03) */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {([
+            { key: 'alag' as const, label: 'A-lag' },
+            { key: 'akademi' as const, label: 'Akademi' },
+          ]).map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setTruppView(tab.key)}
+              style={{
+                flex: 1,
+                padding: '7px 8px',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 11,
+                fontWeight: 600,
+                border: truppView === tab.key ? 'none' : '1px solid var(--accent)',
+                background: truppView === tab.key ? 'var(--accent)' : 'transparent',
+                color: truppView === tab.key ? 'var(--text-light)' : 'var(--accent)',
+                cursor: 'pointer',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {truppView === 'alag' && <>
         {/* Lineup hint */}
         {!hasPendingLineup && (
           <div className="card-stagger-1" style={{
@@ -783,10 +825,11 @@ export function SquadScreen() {
             ))}
           </div>
         )}
+        </>}
       </div>}
 
-      {/* Player list */}
-      {screenTab === 'trupp' && <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+      {/* Player list — A-lag */}
+      {screenTab === 'trupp' && truppView === 'alag' && <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
         {/* Fitness warning */}
         {players.filter(p => p.fitness < 35 && !p.isInjured).length >= 2 && (
           <div
@@ -905,6 +948,23 @@ export function SquadScreen() {
 
         <div style={{ height: 90 }} />
       </div>}
+
+      {/* Player list — Akademi (klubb-flikar-overflod, flyttad hit från Klubb 2026-09-06) */}
+      {screenTab === 'trupp' && truppView === 'akademi' && club && game && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+          <AkademiTab
+            club={club}
+            game={game}
+            upgradeAcademy={upgradeAcademy}
+            promoteYouthPlayer={promoteYouthPlayer}
+            assignMentor={assignMentor}
+            removeMentor={removeMentor}
+            loanOutPlayer={loanOutPlayer}
+            recallLoan={recallLoan}
+          />
+          <div style={{ height: 90 }} />
+        </div>
+      )}
 
       {/* Player Card Modal */}
       {selectedPlayer && (

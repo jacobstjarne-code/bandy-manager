@@ -107,7 +107,9 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
       {/* Ortskarta */}
       <SectionCard title="🗺️ Ortskartan" stagger={1}>
         <OrtenMap club={club} game={game} onNodeClick={(id) => {
-          if (id === 'arena') { navigate('/game/bygget'); return }
+          // design-d7-bottennav-sju: Bygget är sedan 2026-09-06 en ClubScreen-flik,
+          // inte en egen route — samma skärm, en flikväxling, inte en navigation.
+          if (id === 'arena') { onNavigateTab?.('bygget'); return }
           const sectionMap: Record<string, string> = {
             skola: 'section-youth',
             kommunen: 'section-politician',

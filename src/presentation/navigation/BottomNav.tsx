@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, Table2, Building2, Hammer, ArrowLeftRight } from 'lucide-react'
+import { Home, Users, Swords, Table2, Building2, ArrowLeftRight } from 'lucide-react'
 import { useInjuredInLineup, useGameStore, useNavigationLock } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
@@ -9,8 +9,10 @@ const tabs = [
   { to: '/game/squad', label: 'Trupp', Icon: Users },
   { to: '/game/match', label: 'Match', Icon: Swords },
   { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
-  // B1-nav 2026-06-19: Bygget ersätter Transfers permanent plats (Transfers blir villkorad, Fas 3)
-  { to: '/game/bygget', label: 'Bygget', Icon: Hammer },
+  // design-d7-bottennav-sju (DOM 2026-09-03): Bygget flyttade till Klubb-fliken
+  // 2026-09-06 (byggd som en ClubTab, se ClubScreen.tsx) — sex flikar igen,
+  // inte sju. B1-nav 2026-06-19-kommentaren om Bygget som permanent nav-flik
+  // är därmed historisk.
   { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
 

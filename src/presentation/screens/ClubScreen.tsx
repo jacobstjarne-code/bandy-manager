@@ -6,7 +6,7 @@ import { TrainingProjectsCard } from '../components/club/TrainingProjectsCard'
 import { TrainingSection } from '../components/club/TrainingSection'
 import { EkonomiTab } from '../components/club/EkonomiTab'
 import { OrtenTab } from '../components/club/OrtenTab'
-import { AkademiTab } from '../components/club/AkademiTab'
+import { FacilityTab } from '../components/club/FacilityTab'
 import { ClubMemoryView } from '../components/clubmemory/ClubMemoryView'
 import { TranareTab } from '../components/club/TranareTab'
 import { TabBar } from '../components/shared/TabBar'
@@ -18,7 +18,7 @@ import { getArcMoodText } from '../../domain/services/trainerArcService'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
-type ClubTab = 'training' | 'ekonomi' | 'orten' | 'akademi' | 'minne' | 'tranare'
+type ClubTab = 'training' | 'ekonomi' | 'orten' | 'bygget' | 'minne' | 'tranare'
 
 /**
  * inv-2-21b-getarcmoodtext (DOM 2026-09-03, Opus): seed = currentSeason*100 +
@@ -35,12 +35,8 @@ export function ClubScreen() {
   const game = useGameStore(s => s.game)
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
-  const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
-  const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
-  const assignMentor = useGameStore(s => s.assignMentor)
-  const removeMentor = useGameStore(s => s.removeMentor)
-  const loanOutPlayer = useGameStore(s => s.loanOutPlayer)
-  const recallLoan = useGameStore(s => s.recallLoan)
+  const startFacilityBuildNode = useGameStore(s => s.startFacilityBuildNode)
+  const decommissionFacilityNode = useGameStore(s => s.decommissionFacilityNode)
   const startTrainingProject = useGameStore(s => s.startTrainingProject)
   const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
   const seekSponsor = useGameStore(s => s.seekSponsor)
@@ -51,7 +47,7 @@ export function ClubScreen() {
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const navigate = useNavigate()
   const location = useLocation()
-  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi', 'minne', 'tranare']
+  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'bygget', 'minne', 'tranare']
   const rawTab = (location.state as { tab?: string; section?: string } | null)?.tab
   const rawSection = (location.state as { tab?: string; section?: string } | null)?.section
   const [activeTab, setActiveTab] = useState<ClubTab>(
@@ -88,7 +84,7 @@ export function ClubScreen() {
     { key: 'training', label: 'Träning' },
     { key: 'ekonomi', label: 'Ekonomi' },
     { key: 'orten', label: 'Orten' },
-    { key: 'akademi', label: 'Akademi' },
+    { key: 'bygget', label: 'Bygget' },
     { key: 'minne', label: 'Minne' },
     { key: 'tranare', label: 'Tränare' },
   ]
@@ -184,17 +180,13 @@ export function ClubScreen() {
           <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} scrollToSection={rawSection} />
         )}
 
-        {/* ── Tab 4: Akademi ── */}
-        {activeTab === 'akademi' && (
-          <AkademiTab
-            club={club}
+        {/* ── Tab 4: Bygget ── */}
+        {activeTab === 'bygget' && (
+          <FacilityTab
             game={game}
-            upgradeAcademy={upgradeAcademy}
-            promoteYouthPlayer={promoteYouthPlayer}
-            assignMentor={assignMentor}
-            removeMentor={removeMentor}
-            loanOutPlayer={loanOutPlayer}
-            recallLoan={recallLoan}
+            navigate={navigate}
+            startFacilityBuildNode={startFacilityBuildNode}
+            decommissionFacilityNode={decommissionFacilityNode}
           />
         )}
 
