@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { FixtureStatus } from '../../enums'
 import type { EventLedgerEntry, LedgerToldRegistry } from '../../entities/Narrative'
 import type { SaveGame } from '../../entities/SaveGame'
-import { currentChronology, type CurrentChronology } from '../currentChronology'
+import { chronologyPointLabel, currentChronology, leagueRoundAtMatchday, type CurrentChronology } from '../currentChronology'
 import { ledgerPostKey, markLedgerPostTold, toldMarksFor } from '../ledgerToldService'
 import { agendaForSurface, redaktoren, semanticKeyStem } from '../redaktorenService'
 
@@ -78,6 +78,31 @@ describe('Berättaren steg 1 — currentChronology + ledgerTold', () => {
       leagueRound: 6,
       phase: 'regular_active',
     })
+  })
+
+  it('etiketterar en historisk ligamatch med faktisk omgång men cupgap som matchdag', () => {
+    const game = makeGame({
+      currentMatchday: 6,
+      fixtures: [{
+        id: 'league_2', season: 3, matchday: 3, roundNumber: 2,
+        homeClubId: CLUB_ID, awayClubId: 'club_b', status: FixtureStatus.Completed,
+        isCup: false, isKnockout: false,
+      } as never, {
+        id: 'cup_gap', season: 3, matchday: 4, roundNumber: 1,
+        homeClubId: CLUB_ID, awayClubId: 'club_c', status: FixtureStatus.Completed,
+        isCup: true, isKnockout: false,
+      } as never, {
+        id: 'league_3', season: 3, matchday: 5, roundNumber: 3,
+        homeClubId: 'club_d', awayClubId: CLUB_ID, status: FixtureStatus.Completed,
+        isCup: false, isKnockout: false,
+      } as never],
+    })
+
+    expect(leagueRoundAtMatchday(game, 3, 3)).toBe(2)
+    expect(leagueRoundAtMatchday(game, 3, 4)).toBe(2)
+    expect(chronologyPointLabel(game, 3, 3)).toBe('omgång 2')
+    expect(chronologyPointLabel(game, 3, 4)).toBe('matchdag 4')
+    expect(chronologyPointLabel(game, 3, 5)).toBe('omgång 3')
   })
 
   it('bygger stabil postnyckel och skriver idempotent ytkvitto', () => {
