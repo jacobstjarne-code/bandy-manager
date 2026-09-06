@@ -11,7 +11,7 @@
  * att den är EN funktion (så portal/live/rapport/årsbok inte KAN gå isär).
  */
 import { describe, it, expect } from 'vitest'
-import { getRoundLabel, playoffRoundName, playoffRoundNameUpper, playoffRoundDefinite } from '../roundLabel'
+import { getRoundLabel, playoffRoundName, playoffRoundNameUpper, playoffRoundDefinite, storedRoundLabel } from '../roundLabel'
 import { getPlayoffRoundForFixture, nextPlayoffStart } from '../services/playoffService'
 import { PlayoffRound, FixtureStatus } from '../enums'
 import type { Fixture } from '../entities/Fixture'
@@ -64,6 +64,13 @@ describe('getRoundLabel — liga', () => {
 
   it('sista ligaomgången', () => {
     expect(getRoundLabel(makeFixture({ roundNumber: 22, matchday: 26 })).long).toBe('Omgång 22')
+  })
+})
+
+describe('storedRoundLabel — legacy-snapshots', () => {
+  it('behåller en frusen tävlingsetikett och degraderar annars till sann matchdag', () => {
+    expect(storedRoundLabel('Cup · semifinal', 13)).toBe('Cup · semifinal')
+    expect(storedRoundLabel(undefined, 13)).toBe('Matchdag 13')
   })
 })
 

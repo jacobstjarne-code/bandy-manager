@@ -1,6 +1,7 @@
 import type { MatchHighlight, SeasonSummary } from '../../domain/entities/SeasonSummary'
 import type { SeasonShareResult } from './seasonShareImage'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
+import { storedRoundLabel } from '../../domain/roundLabel'
 
 const WIDTH = 1080
 const HEIGHT = 1350
@@ -56,7 +57,7 @@ export function generateMatchShareImage(summary: SeasonSummary, match: MatchHigh
   ctx.fillText(`${match.homeScore}–${match.awayScore}`, WIDTH / 2, 610)
   ctx.fillStyle = '#C47A3A'
   ctx.font = '700 26px system-ui'
-  ctx.fillText(match.roundLabel ?? `Omgång ${match.matchday}`, WIDTH / 2, 675)
+  ctx.fillText(storedRoundLabel(match.roundLabel, match.matchday), WIDTH / 2, 675)
 
   ctx.fillStyle = '#F5F1EB'
   ctx.font = 'italic 40px Georgia'

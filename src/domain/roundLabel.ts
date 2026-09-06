@@ -89,6 +89,14 @@ export interface RoundLabel {
 }
 
 /**
+ * Gamla snapshots saknar ibland den färdiga tävlingsetiketten. `matchday`
+ * kan då bara belägga kronologi, aldrig en ligaomgång — degradera sant.
+ */
+export function storedRoundLabel(roundLabel: string | undefined, matchday: number): string {
+  return roundLabel ?? `Matchdag ${matchday}`
+}
+
+/**
  * Tävlingsmedveten rond-etikett för en fixture.
  *
  * - Liga   → `roundNumber` (1–22), det tal spelaren faktiskt tänker i.

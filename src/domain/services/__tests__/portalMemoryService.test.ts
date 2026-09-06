@@ -42,6 +42,12 @@ function patronPost(overrides: Partial<EventLedgerEntry> = {}): EventLedgerEntry
 }
 
 describe('Portal memory_card — Berättaren steg 3', () => {
+  it('kallar skandalens globala tidsaxel matchdag, aldrig ligaomgång', () => {
+    const entry = patronPost({ type: 'scandal', semanticKey: 'scandal:s3:m8', matchday: 8 })
+    expect(buildMemoryEventFromLedger(makeGame(), entry, CLUB_ID)?.text)
+      .toBe('Skandal drabbade klubben (matchdag 8).')
+  })
+
   it('väljer högst ett färskt, otalt ämne och använder k1:s text', () => {
     const entry = patronPost()
     const game = makeGame({

@@ -23,6 +23,7 @@ import { BookOpen, Share2 } from 'lucide-react'
 import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import { ledgerPostKey } from '../../domain/services/ledgerToldService'
+import { storedRoundLabel } from '../../domain/roundLabel'
 
 function YearbookPersonCard({ summary }: { summary: SeasonSummary }) {
   const { game, markLedgerPostTold } = useGameStore()
@@ -486,7 +487,7 @@ export function SeasonSummaryScreen() {
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '6px 0 12px', letterSpacing: 1, fontFamily: 'var(--font-body)' }}>
                 {/* HIGH 5: matchday är kronologi, inte ligaomgång — samma derby
                     stod som "Omgång 8" här och "Omgång 4" i portalen. */}
-                {h.roundLabel ?? `Omgång ${h.matchday}`}{matchDate ? ` · ${matchDate}` : ''}
+                {storedRoundLabel(h.roundLabel, h.matchday)}{matchDate ? ` · ${matchDate}` : ''}
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 12 }}>
@@ -790,7 +791,7 @@ export function SeasonSummaryScreen() {
           <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} matcher`} color="var(--success)" />
           <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} matcher`} color="var(--danger)" />
           {summary.biggestWin && (
-            <StatRow label="Största vinst" value={`${summary.biggestWin.score} mot ${summary.biggestWin.opponent} (${(summary.biggestWin.roundLabel ?? `omg ${summary.biggestWin.round}`).toLowerCase()})`} color="var(--success)" />
+            <StatRow label="Största vinst" value={`${summary.biggestWin.score} mot ${summary.biggestWin.opponent} (${storedRoundLabel(summary.biggestWin.roundLabel, summary.biggestWin.round).toLowerCase()})`} color="var(--success)" />
           )}
           {summary.worstLoss && (
             <StatRow label="Tyngsta förlust" value={`${summary.worstLoss.score} mot ${summary.worstLoss.opponent}`} color="var(--danger)" />

@@ -252,7 +252,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
     case 'scandal':
       return {
         type: 'scandal', season: entry.season, matchday: entry.matchday,
-        text: `Skandal drabbade klubben (omgång ${entry.matchday}).`,
+        text: `Skandal drabbade klubben (matchdag ${entry.matchday}).`,
         emoji: '🔥', significance: entry.significance, subjectClubId: managedClubId,
       }
     case 'facility_built': {
