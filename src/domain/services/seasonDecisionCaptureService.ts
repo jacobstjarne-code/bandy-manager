@@ -106,6 +106,10 @@ export interface SeasonDecisionCandidate {
   subject?: { kind: 'player' | 'club' | 'mecenat'; id: string }
   /** Rangordningsfält 5, allra sista skiljedomaren. */
   moneyAmount?: number
+  /** arsbok-skuld-recurringcost — se EventLedgerEntry.recurringCost. Satt
+   *  ur gameAfter:s resulterande state (t.ex. municipalLoanAnnualCost/
+   *  -UntilSeason), aldrig härledd/gissad. */
+  recurringCost?: { amountPerSeason: number; seasons: number }
   /** Färdigbyggd mening — sammansatt HÄR, vid resolution, ur data som är
    *  garanterat aktuell just då (spelaren kan redan vara borttagen ur
    *  truppen vid säsongsslut om han sålts). */
@@ -263,6 +267,16 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
       if (gameAfter.economicCrisisState?.outcome !== 'loan') return null
       const sentence = getTakeLoanSentence()
       if (!sentence) return null
+      // arsbok-skuld-recurringcost: municipalLoanAnnualCost/-UntilSeason sätts
+      // av samma resolveEconomicCrisis-gren (eventResolver.ts) som satte
+      // economicCrisisState.outcome ovan — läst ur den resulterande statusen,
+      // inte hårdkodat om/när kalibreringen av lånevillkoren ändras.
+      const recurringCost = gameAfter.municipalLoanAnnualCost && gameAfter.municipalLoanUntilSeason
+        ? {
+            amountPerSeason: gameAfter.municipalLoanAnnualCost,
+            seasons: gameAfter.municipalLoanUntilSeason - gameAfter.currentSeason,
+          }
+        : undefined
       return {
         eventId: event.id, round: getCurrentLeagueRound(gameAfter), season: gameAfter.currentSeason,
         systemsAffectedCount: 1, // finances (löpande)
@@ -271,6 +285,7 @@ const BUILDERS: Record<string, Record<string, Builder>> = {
         irreversible: true,
         tension: true, // en löpande kostnad som äter av varje omgångs marginal
         moneyAmount: 300_000,
+        recurringCost,
         sentence,
       }
     },
@@ -586,6 +601,7 @@ export function buildDecisionLedgerEntry(
     tension: candidate.tension,
     systemsAffectedCount: candidate.systemsAffectedCount,
     moneyAmount: candidate.moneyAmount,
+    recurringCost: candidate.recurringCost,
     madeByPlayer: true,
     actionLabel,
   }
@@ -728,18 +744,21 @@ function findSubjectName(game: SaveGame, subject: EventLedgerEntry['subject']): 
  * skillnad från de handskrivna grenarna (som kräver namnet för att meningen
  * ska vara begriplig alls) klarar den neutrala satsen sig utan namnet.
  *
- * "och {skuld} framåt"-klausulen i domens mall är MEDVETET INTE byggd: ingen
- * ledgerpost bär idag ett separat, strukturerat fält för en återkommande
- * framtida kostnad skild från engångsbeloppet (se t.ex. `take_loan` ovan,
- * vars treåriga löptid bara finns i en kommentar, inte i schemat). Att
- * gissa en löptid vore att hitta på ett tal — domens egen klammerform
- * (`{ och {skuld} framåt}`) gör klausulen valfri, inte obligatorisk.
+ * arsbok-skuld-recurringcost (DOM 2026-09-06, Opus): "och {skuld} framåt"-
+ * klausulen är nu byggd. `entry.recurringCost` sätts GENERISKT ur den
+ * resulterande spelstatusen (t.ex. `take_loan`s municipalLoanAnnualCost/
+ * -UntilSeason) — aldrig härledd/gissad. Fältet saknas fortfarande på de
+ * flesta beslut (ingen ny modelldom krävde det retroaktivt), så klausulen
+ * är villkorlig: finns fältet inte, ingen skuldsats (hellre ingen än falsk).
  */
 function composeGenericDecisionSentence(entry: EventLedgerEntry, game: SaveGame): string | null {
   if (!entry.madeByPlayer || !entry.actionLabel || entry.moneyAmount === undefined) return null
   const subjectName = findSubjectName(game, entry.subject)
   const subjectClause = subjectName ? `, ${subjectName}` : ''
-  return `${entry.actionLabel}${subjectClause}. Kostade ${formatValue(entry.moneyAmount)} nu.`
+  const debtClause = entry.recurringCost
+    ? ` och ${formatValue(entry.recurringCost.amountPerSeason)}/säsong i ${entry.recurringCost.seasons} år framåt`
+    : ''
+  return `${entry.actionLabel}${subjectClause}. Kostade ${formatValue(entry.moneyAmount)} nu${debtClause}.`
 }
 
 const FACILITY_SEMANTIC_KEY = /^facility_(.+)_s\d+$/

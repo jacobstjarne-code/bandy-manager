@@ -986,4 +986,95 @@ describe('composeSeasonDecisionSentence — generisk fallback (arsbok-generisk-b
     const entry = buildDecisionLedgerEntry(candidate, 'anyNewType:choiceX', 5, 'Skriv under avtalet')
     expect(entry.actionLabel).toBe('Skriv under avtalet')
   })
+
+  it('recurringCost: lägger till "och X/säsong i Y år framåt" när fältet finns', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 300_000, madeByPlayer: true, actionLabel: 'Ta kommunens lån',
+      recurringCost: { amountPerSeason: 100_000, seasons: 3 },
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(
+      `Ta kommunens lån. Kostade ${formatValue(300_000)} nu och ${formatValue(100_000)}/säsong i 3 år framåt.`,
+    )
+  })
+
+  it('utan recurringCost: ingen skuldsats, exakt samma mening som innan fältet fanns', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'someNewDecision:accept', season: 3, matchday: 5,
+      significance: 60, irreversible: false, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 50_000, madeByPlayer: true, actionLabel: 'Gjorde något nytt',
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(`Gjorde något nytt. Kostade ${formatValue(50_000)} nu.`)
+  })
+})
+
+/**
+ * arsbok-skuld-recurringcost (DOM 2026-09-06, Opus): `recurringCost` sätts
+ * GENERISKT ur den resulterande spelstatusen (municipalLoanAnnualCost/
+ * -UntilSeason), aldrig härledd/gissad.
+ *
+ * VIKTIGT UPPTÄCKT VID BYGGE — flaggat, inte tyst löst: `take_loan` är en av
+ * de nio HANDSKRIVNA grenarna i `composeSeasonDecisionSentence` (`case
+ * 'criticalEconomy:take_loan': return getTakeLoanSentence()`) — den grenen
+ * returnerar den låsta, helt statiska texten "Du tog lånet. Det kostade er
+ * varje månad sedan dess." och når ALDRIG `composeGenericDecisionSentence`.
+ * `recurringCost` sätts korrekt på take_loans LIGGARPOST (verifierat nedan,
+ * användbart för framtida konsumenter, t.ex. en ekonomisammanfattning som
+ * läser liggaren direkt) — men take_loans EGEN årsboksmening bär INTE
+ * skuldsatsen, eftersom den låsta mallen (`TAKE_LOAN` i
+ * seasonDecisionSentences.ts) saknar ett `{skuld}`-token. Att lägga till ett
+ * sådant är en textändring av låst prosa — Opus bord, inte byggt här
+ * (SVENSK TEXT — CODE SKRIVER ALDRIG).
+ */
+describe('captureSystemDecision — take_loan bär recurringCost (arsbok-skuld-recurringcost)', () => {
+  it('municipalLoanAnnualCost/-UntilSeason satta av resolveEconomicCrisis ⇒ candidate.recurringCost', () => {
+    const gameBefore = makeGame()
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      economicCrisisState: {
+        startedSeason: gameBefore.currentSeason, startedMatchday: 1,
+        phase: 'resolved', eventsFired: [], outcome: 'loan',
+      },
+      municipalLoanAnnualCost: 100_000,
+      municipalLoanUntilSeason: gameBefore.currentSeason + 3,
+    }
+    const event: GameEvent = {
+      id: 'ev3', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'take_loan', label: 'l', effect: { type: 'resolveEconomicCrisis' } }],
+      resolved: false, systemhandelse: true,
+    }
+    const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'take_loan')
+    expect(candidate?.recurringCost).toEqual({ amountPerSeason: 100_000, seasons: 3 })
+  })
+
+  it('municipalLoanAnnualCost saknas: recurringCost undefined, ingen gissning', () => {
+    const gameBefore = makeGame()
+    const gameAfter: SaveGame = {
+      ...gameBefore,
+      economicCrisisState: {
+        startedSeason: gameBefore.currentSeason, startedMatchday: 1,
+        phase: 'resolved', eventsFired: [], outcome: 'loan',
+      },
+    }
+    const event: GameEvent = {
+      id: 'ev3', type: 'criticalEconomy', title: 't', body: 'b',
+      choices: [{ id: 'take_loan', label: 'l', effect: { type: 'resolveEconomicCrisis' } }],
+      resolved: false, systemhandelse: true,
+    }
+    const candidate = captureSystemDecision(gameBefore, gameAfter, event, 'take_loan')
+    expect(candidate?.recurringCost).toBeUndefined()
+  })
+
+  it('KÄND BEGRÄNSNING: take_loans egen årsboksmening förblir den låsta statiska texten, oavsett recurringCost', () => {
+    const entry: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'criticalEconomy:take_loan', season: 1, matchday: 22,
+      significance: 60, irreversible: true, tension: true, systemsAffectedCount: 1,
+      moneyAmount: 300_000, madeByPlayer: true,
+      recurringCost: { amountPerSeason: 100_000, seasons: 3 },
+    }
+    expect(composeSeasonDecisionSentence(entry, makeGame())).toBe(
+      'Du tog lånet. Det kostade er varje månad sedan dess.',
+    )
+  })
 })

@@ -341,6 +341,15 @@ export interface EventLedgerEntry {
    * `actionLabel` + `moneyAmount` tillsammans, generiskt, utan ny textmall.
    */
   actionLabel?: string
+  /**
+   * arsbok-skuld-recurringcost (DOM 2026-09-06, Opus): en återkommande framtida
+   * kostnad skild från engångsbeloppet i `moneyAmount` — t.ex. kommunlånets
+   * årskostnad över dess löptid. Satt GENERISKT ur den resulterande spelstatusen
+   * (samma before/after-princip som `moneyAmount` redan använder), aldrig
+   * härledd/gissad. `composeGenericDecisionSentence` fyller "och {skuld} framåt"
+   * bara när fältet finns — hellre ingen skuldsats än en falsk.
+   */
+  recurringCost?: { amountPerSeason: number; seasons: number }
 
   // ── URSPRUNG ──
   /** HIGH 6:s attributions-skillnad (beslut vs systemhändelse) — ärvd, aldrig tappad. */
