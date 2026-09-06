@@ -182,14 +182,14 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 | derby | `derby.jpg` | prompt | Derbyt, förmatch |
 | cup | `cup.jpg` | prompt | Cupmatch + cupintro |
 | nyår | `nyar.jpg` | prompt | Nyårsövergången |
-| **cupguld** | `cupguld.jpg` | prompt | Cupfinal vunnen |
+| **cupguld** | `cupguld.jpg` | ✅ (låst 2026-09-06) | Cupfinal vunnen |
 | **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
 | **bygget klart** | `bygget_klart.jpg` | prompt | Anläggning färdig |
 | **avskedet** | `avsked.jpg` | ✅ (låst 2026-09-06) | Sparkad |
 | **året utan klubb** | `aret_utan_klubb.jpg` | prompt | "Se hur det går utan dig" |
 | **game over** | `game_over.jpg` | prompt | Konkurs / licensnekad |
 
-De fyra första nya var Eriks beställning — Erik eller Gemini, Jacobs kall, en gång.
+De fyra första nya var Eriks beställning — **BESLUT 2026-09-06: alla genom Gemini, inte Erik.** Skäl: enhetlig stil genom hela serien (35 bilder ur samma hand) slår fyra handritade som avviker. Erik-spåret stängt, riv inte upp.
 
 ### Premiär — den första matchen · `premiar.jpg`
 
@@ -231,7 +231,7 @@ Negativa: no large fireworks display, no crowd, no daylight, no field markings, 
 
 *Känslan:* halvvägs. Ett fönster tänt i klubbhuset — någon är där ändå.
 
-### Cupguld — efteråt · `cupguld.jpg` (interiör)
+### Cupguld — efteråt · `cupguld.jpg` (interiör) ✅ (låst 2026-09-06)
 
 Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources. Visible grain, soft edges. Interior, late winter night.
 
@@ -239,7 +239,7 @@ The inside of a small wooden clubhouse late at night after a match, seen from th
 
 Negativa: no people, no large trophy, no confetti, no modern interior, no readable text, no photographic realism.
 
-*Känslan:* de har gått hem. Bägaren står kvar mellan kaffekopparna. Cupguld är stort för en bruksort och litet för alla andra — bilden ska veta det.
+*Känslan:* de har gått hem. Bägaren står kvar mellan kaffekopparna. Cupguld är stort för en bruksort och litet för alla andra — bilden ska veta det. LÅST 2026-09-06: fönstret fick idrottsplatsen (strålkastare + snötäckt plan i mörkret) — varmt tomt rum, kall plan, bägaren emellan; festen över, isen väntar på nästa match. Skalan rätt (bägaren coffee-pot-stor, ingen pokal).
 
 ### Sommaren — mellan säsongerna · `sommaren.jpg` (enda icke-vintern)
 
@@ -378,6 +378,6 @@ Negativa: no faces, no field markings, no hockey rink, no boards, no adults play
 
 ## 5. Räkning
 
-Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (avskedet låst 2026-09-06, fem med prompter kvar). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 17 körda, 18 med prompter klara att köra.**
+Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (avskedet + cupguld låsta 2026-09-06, fyra med prompter kvar). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 18 körda, 17 med prompter klara att köra.**
 
 Ordning om du kör dem i följd: orterna klart först (Västanfors, Lesjöfors, Heros), sedan de fyra momenten som avgör om Erik ritar, sedan avskedet och året utan klubb (de bär karriärens vändpunkter), sedan interiörerna.
