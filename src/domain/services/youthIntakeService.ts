@@ -6,6 +6,10 @@ import { PlayerPosition, PlayerArchetype } from '../enums'
 import { mulberry32 } from '../utils/random'
 import { clamp } from '../utils/clamp'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
+// sluttest-dubblett-pickarchetype (DOM_KALIBRERING_AVSKED_HEROS_2026-09-03,
+// §B) — delad med worldGenerator.ts, se dess kommentar för varför just den
+// filens fördelning valdes som kanon.
+import { pickArchetype } from './worldGenerator'
 
 function makeRng(seed: number) {
   const rand = mulberry32(seed)
@@ -91,32 +95,6 @@ function pickPosition(rng: ReturnType<typeof makeRng>, existingPlayers: Player[]
     if (r <= 0) return positions[i]
   }
   return positions[positions.length - 1]
-}
-
-function pickArchetype(rng: ReturnType<typeof makeRng>, position: PlayerPosition): PlayerArchetype {
-  const r = rng.next()
-  switch (position) {
-    case PlayerPosition.Goalkeeper:
-      return r < 0.5 ? PlayerArchetype.ReflexGoalkeeper : PlayerArchetype.PositionalGoalkeeper
-    case PlayerPosition.Defender:
-      if (r < 0.40) return PlayerArchetype.DefensiveWorker
-      if (r < 0.75) return PlayerArchetype.TwoWaySkater
-      return PlayerArchetype.CornerSpecialist
-    case PlayerPosition.Half:
-      if (r < 0.45) return PlayerArchetype.TwoWaySkater
-      if (r < 0.75) return PlayerArchetype.Playmaker
-      return PlayerArchetype.DefensiveWorker
-    case PlayerPosition.Midfielder:
-      if (r < 0.40) return PlayerArchetype.Playmaker
-      if (r < 0.65) return PlayerArchetype.TwoWaySkater
-      if (r < 0.85) return PlayerArchetype.Dribbler
-      return PlayerArchetype.CornerSpecialist
-    case PlayerPosition.Forward:
-      if (r < 0.35) return PlayerArchetype.Finisher
-      if (r < 0.65) return PlayerArchetype.Dribbler
-      if (r < 0.85) return PlayerArchetype.RawTalent
-      return PlayerArchetype.Playmaker
-  }
 }
 
 function generateYouthAttributes(

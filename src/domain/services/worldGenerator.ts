@@ -468,8 +468,21 @@ const POSITION_POOL: PlayerPosition[] = [
 // Age distribution — 16 entries matching the position pool size
 const AGE_DISTRIBUTION = [18, 19, 20, 21, 22, 23, 24, 24, 25, 26, 27, 27, 28, 29, 30, 31]
 
-function pickArchetype(
-  rng: ReturnType<typeof makeRng>,
+// sluttest-dubblett-pickarchetype (DOM_KALIBRERING_AVSKED_HEROS_2026-09-03,
+// §B): fanns tidigare som en näst intill identisk, tyst divergerad kopia i
+// youthIntakeService.ts (Defender 0,40/0,75 mot 0,5/0,8 här, Forward-svansens
+// ordning RawTalent/Playmaker omkastad) — samma konceptuella sanning,
+// olika arketypfördelning beroende på källa. Domen: en fördelning, källa-
+// oberoende. Denna (världsgenererade seniorspelare, den större populationen)
+// vald som kanon eftersom ingen dom pekade ut vilken av de två divergerade
+// uppsättningarna som var den avsedda — flaggat i MASTER_OPPET.md, inte en
+// magnitudberäkning, bara ett val mellan två redan existerande, likvärdiga
+// trädstrukturer. `rng` typad minimalt (bara `.next()` används) så
+// youthIntakeService.ts:s egen `makeRng()`-form (som saknar `shuffle`)
+// strukturellt uppfyller parametern utan att båda filernas rng-helpers
+// behöver slås ihop — det vore en separat, större dubblett att lösa.
+export function pickArchetype(
+  rng: { next: () => number },
   position: PlayerPosition,
 ): PlayerArchetype {
   const r = rng.next()

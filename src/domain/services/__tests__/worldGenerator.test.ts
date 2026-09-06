@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { generateWorld } from '../worldGenerator'
-import { PlayerPosition } from '../../enums'
+import { generateWorld, pickArchetype } from '../worldGenerator'
+import { PlayerPosition, PlayerArchetype } from '../../enums'
 
 describe('generateWorld', () => {
   const world = generateWorld(2026)
@@ -130,5 +130,27 @@ describe('generateWorld', () => {
     expect(erik, 'Erik Ström ska finnas i Forsbackas trupp').toBeDefined()
     expect(erik?.careerStats.seasonsPlayed).toBe(0)
     expect(erik?.careerStats.totalGames).toBe(0)
+  })
+})
+
+// sluttest-dubblett-pickarchetype (DOM_KALIBRERING_AVSKED_HEROS_2026-09-03,
+// §B): youthIntakeService.ts hade en tyst divergerad kopia av pickArchetype
+// (Defender 0,40/0,75 mot 0,5/0,8 här; Forward-svansens RawTalent/Playmaker-
+// ordning omkastad). Den kopian är nu borttagen — youthIntakeService.ts
+// importerar denna. Testet låser exakt de trösklar domen pekade ut som
+// divergerade, så en framtida ändring av EN sida inte tyst återinför en
+// andra källa.
+describe('pickArchetype — exporterad, en källa (sluttest-dubblett-pickarchetype)', () => {
+  const stubRng = (value: number) => ({ next: () => value })
+
+  it('Defender-tröskeln är 0,5/0,8 (inte youthIntakeService.ts:s tidigare 0,40/0,75)', () => {
+    expect(pickArchetype(stubRng(0.45), PlayerPosition.Defender)).toBe(PlayerArchetype.DefensiveWorker)
+    expect(pickArchetype(stubRng(0.6), PlayerPosition.Defender)).toBe(PlayerArchetype.TwoWaySkater)
+    expect(pickArchetype(stubRng(0.85), PlayerPosition.Defender)).toBe(PlayerArchetype.CornerSpecialist)
+  })
+
+  it('Forward-svansen är Playmaker/RawTalent (inte den tidigare omkastade ordningen)', () => {
+    expect(pickArchetype(stubRng(0.8), PlayerPosition.Forward)).toBe(PlayerArchetype.Playmaker)
+    expect(pickArchetype(stubRng(0.95), PlayerPosition.Forward)).toBe(PlayerArchetype.RawTalent)
   })
 })
