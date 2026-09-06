@@ -5,7 +5,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle, PlayerArchetype, MatchEventType } from '../../../domain/enums'
-import type { FormationType } from '../../../domain/entities/Formation'
+import { FORMATIONS, autoAssignFormation, type FormationType } from '../../../domain/entities/Formation'
 import { simulateMatch } from '../../../domain/services/matchSimulator'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import { getRivalry } from '../../../domain/data/rivalries'
@@ -59,6 +59,7 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
 }
 
 export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number = Math.random): { selection: TeamSelection; regenPlayers: Player[] } {
+  const formation = AI_FORMATIONS[club.preferredStyle] ?? '532_tvatoppar'
   const available = allPlayers.filter(
     p =>
       club.squadPlayerIds.includes(p.id) &&
@@ -135,13 +136,20 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     (best, p) => (p.currentAbility > (best?.currentAbility ?? -1) ? p : best),
     starters[0],
   )
+  // Formation V2: position fit is evaluated from tactic.lineupSlots. AI teams
+  // previously chose a formation but omitted the slot map, which made
+  // effectivePlayerModifier() skip position fit for every AI player while the
+  // managed team paid it. Derive the map from the already selected eleven so
+  // rotation policy and squad membership remain unchanged; only the chosen
+  // formation's actual positional meaning is restored.
+  const lineupSlots = autoAssignFormation(FORMATIONS[formation], starters)
 
   return {
     selection: {
       startingPlayerIds: starters.map(p => p.id),
       benchPlayerIds: bench.map(p => p.id),
       captainPlayerId: captain?.id,
-      tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '532_tvatoppar' },
+      tactic: { ...club.activeTactic, formation, lineupSlots },
     },
     regenPlayers,
   }
