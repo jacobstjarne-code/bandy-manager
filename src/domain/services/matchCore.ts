@@ -1228,7 +1228,11 @@ function* simulateMatchCore(
             scorerPlayerId = scorer.id
             goalScored = true
             trackGoal(scorer.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking), origin: 'OPEN_PLAY' }
+            // SPEC_B12_GRANSKA_MATCHENS_SAMBAND_2026-09-04 §4 ("Liten
+            // motorrättelse"): sekvensen är redan separat (seqType
+            // 'transition'), bara ostämplad — origin: 'TRANSITION' i stället
+            // för OPEN_PLAY så katalograd A kan bevisa omställningsmål-nyttan.
+            const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`, manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking), origin: 'TRANSITION' }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
               assisterPlayerId = assister.id

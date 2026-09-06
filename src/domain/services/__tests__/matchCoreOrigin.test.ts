@@ -27,7 +27,10 @@ const NEUTRAL_TACTIC: Tactic = {
   formation: '5-3-2',
 }
 
-const KNOWN_ORIGINS = ['OPEN_PLAY', 'CORNER', 'PENALTY']
+// SPEC_B12_GRANSKA_MATCHENS_SAMBAND_2026-09-04 §4 — 'TRANSITION' tillagd
+// (omställningsmål, tidigare felaktigt OPEN_PLAY) så katalograd A kan
+// bevisa sin nytta.
+const KNOWN_ORIGINS = ['OPEN_PLAY', 'CORNER', 'PENALTY', 'TRANSITION']
 
 function makePlayer(id: string, position: PlayerPosition, clubId: string, ca = 65): Player {
   return {

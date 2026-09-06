@@ -6,6 +6,7 @@ import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
+import { selectMatchensSamband } from '../../../domain/services/matchensSambandService'
 
 interface GranskaAnalysProps {
   game: SaveGame
@@ -107,6 +108,30 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           </div>
         </div>
       )}
+
+      {/* MATCHENS SAMBAND — SPEC_B12_GRANSKA_MATCHENS_SAMBAND_2026-09-04.
+          Ovanför FORMSPELARE (§6). NYCKELINSIKTER NEDANFÖR är INTE retirerad
+          än (§6 säger retire-last, men potm-radens nya hem — Översikt/
+          hero-score, design-d1-granska-heroscore — är inte byggt; att
+          retirera nu hade strandat potm-highlighten utan yta, se Princip 7
+          i CLAUDE.md). Flaggat i MASTER_OPPET.md, inte tyst skippat. */}
+      {fixture?.report && (() => {
+        const weather = game.matchWeathers?.find(w => w.fixtureId === fixture.id)
+        const lines = selectMatchensSamband({ fixture, managedClubId: game.managedClubId, weather, players: game.players })
+        if (!lines || lines.length === 0) return null
+        return (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 8 }}>MATCHENS SAMBAND</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {lines.map((line, i) => (
+                <p key={i} style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Form players */}
       {fixture?.report && (() => {

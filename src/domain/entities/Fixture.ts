@@ -51,7 +51,11 @@ export interface MatchEvent {
    *  sätts). Sätts bara på skott-/målutfall (Goal/Assist/Save/Corner) —
    *  Suspension/Substitution har inget "ursprung" i den bemärkelsen och
    *  lämnas `undefined`, inte ett gissat värde. */
-  origin?: 'OPEN_PLAY' | 'CORNER' | 'PENALTY'
+  /** `'TRANSITION'` (SPEC_B12_GRANSKA_MATCHENS_SAMBAND_2026-09-04 §4, "Liten
+   *  motorrättelse") tillagd 2026-09-06 — omställningssekvensen (seqType
+   *  'transition', "Omställningsmål av...") var redan separat i motorn men
+   *  ostämplad; utan den kan katalograd A (5-2-3) inte bevisa sin nytta. */
+  origin?: 'OPEN_PLAY' | 'CORNER' | 'PENALTY' | 'TRANSITION'
   /** B12 steg 2 — CLASS C, medvetet aldrig satt av matchCore i denna omgång.
    *  Kräver att motorn kan peka ut en enskild ansvarig spelare generellt
    *  (inte bara i den smala kontringsmåls-pathwayn), vilket den inte kan
