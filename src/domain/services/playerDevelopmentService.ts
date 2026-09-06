@@ -33,7 +33,7 @@ export interface DevelopmentResult {
   notableChanges: NotableDevelopment[]
 }
 
-function getAgeFactor(age: number): number {
+export function getAgeFactor(age: number): number {
   if (age <= 19) return 1.4
   if (age <= 22) return 1.1
   if (age <= 25) return 0.6
@@ -111,7 +111,7 @@ function getGKOutfieldMultiplier(): number {
 
 const GK_ARCHETYPES = new Set([PlayerArchetype.ReflexGoalkeeper, PlayerArchetype.PositionalGoalkeeper])
 
-function getArchetypeMultiplier(archetype: PlayerArchetype, attr: keyof PlayerAttributes): number {
+export function getArchetypeMultiplier(archetype: PlayerArchetype, attr: keyof PlayerAttributes): number {
   if (archetype === PlayerArchetype.RawTalent) {
     // RawTalent handled separately
     return 0.4

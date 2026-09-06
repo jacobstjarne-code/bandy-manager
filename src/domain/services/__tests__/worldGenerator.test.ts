@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { generateWorld, pickArchetype } from '../worldGenerator'
 import { PlayerPosition, PlayerArchetype } from '../../enums'
+import { calculateArchetypeWeightedAbility, PLAYER_ATTRIBUTE_KEYS } from '../playerAttributeGenerator'
 
 describe('generateWorld', () => {
   const world = generateWorld(2026)
@@ -37,21 +38,22 @@ describe('generateWorld', () => {
     }
   })
 
-  it('no player has undefined attribute values (all 14 attributes are numbers 1-99)', () => {
-    const ATTR_KEYS = [
-      'skating', 'acceleration', 'stamina', 'ballControl', 'passing', 'shooting',
-      'dribbling', 'vision', 'decisions', 'workRate', 'positioning', 'defending',
-      'cornerSkill', 'goalkeeping',
-    ] as const
-
+  it('no player has undefined attribute values (all 15 attributes are numbers 1-99)', () => {
     for (const player of world.players) {
-      for (const key of ATTR_KEYS) {
+      for (const key of PLAYER_ATTRIBUTE_KEYS) {
         const val = player.attributes[key]
         expect(val).toBeDefined()
         expect(typeof val).toBe('number')
         expect(val).toBeGreaterThanOrEqual(1)
         expect(val).toBeLessThanOrEqual(99)
       }
+    }
+  })
+
+  it('world players round-trip their generated attributes to CA', () => {
+    for (const player of world.players) {
+      expect(calculateArchetypeWeightedAbility(player.attributes, player.archetype))
+        .toBeCloseTo(player.currentAbility, 0)
     }
   })
 

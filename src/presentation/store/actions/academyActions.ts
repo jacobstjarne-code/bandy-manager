@@ -1,12 +1,14 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal, MentorshipRecord } from '../../../domain/entities/Academy'
-import { PlayerPosition, InboxItemType } from '../../../domain/enums'
+import { InboxItemType } from '../../../domain/enums'
 import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS, applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
 import { buildAcademyPromotionLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 import { getPromotionTiming } from '../../../domain/services/academyService'
+import { generatePlayerAttributes } from '../../../domain/services/playerAttributeGenerator'
+import { mulberry32 } from '../../../domain/utils/random'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -209,34 +211,7 @@ export function academyActions(get: Get, set: Set) {
       }
       const hashRand = Math.abs(hash % 1000) / 1000
       const salary = 2000 + Math.round(hashRand * 2000)
-
-      function generateAttributes(position: PlayerPosition, ca: number) {
-        const base = Math.round(ca * 0.6)
-        const high = Math.round(ca * 1.1)
-        const low = Math.round(ca * 0.4)
-        const mid = Math.round(ca * 0.8)
-
-        // Petré 2022 — position-specifik stamina via VO₂max
-        // Forwards 60 mL/kg/min, midfielders 57, halvor ~54, defenders 53
-        const staminaForward = Math.round(ca * 0.95)
-        const staminaMid     = Math.round(ca * 0.85)
-        const staminaHalf    = Math.round(ca * 0.78)
-        const staminaDef     = Math.round(ca * 0.75)
-
-        if (position === PlayerPosition.Goalkeeper) {
-          return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high, cornerRecovery: mid }
-        } else if (position === PlayerPosition.Defender) {
-          return { skating: mid, acceleration: mid, stamina: staminaDef, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low, cornerRecovery: high }
-        } else if (position === PlayerPosition.Half) {
-          return { skating: mid, acceleration: mid, stamina: staminaHalf, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
-        } else if (position === PlayerPosition.Midfielder) {
-          return { skating: mid, acceleration: mid, stamina: staminaMid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
-        } else {
-          // Forward — INGEN skating/acceleration-bonus (van den Tillaar + Petré: ingen signifikant position-skillnad)
-          // MEN högst stamina (Petré: forwards VO₂max högst)
-          return { skating: mid, acceleration: mid, stamina: staminaForward, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low, cornerRecovery: base }
-        }
-      }
+      const attributeRandom = mulberry32(hash)
 
       const newPlayer = {
         id: `player_promoted_${youthPlayerId}_${game.currentSeason}`,
@@ -267,7 +242,13 @@ export function academyActions(get: Get, set: Set) {
         developmentRate: youthPlayer.developmentRate,
         injuryProneness: 30,
         discipline: 65,
-        attributes: generateAttributes(youthPlayer.position, youthPlayer.currentAbility),
+        // P19-spelaren bär CA + arketyp men inga fulla seniorattribut.
+        // Materialisera dem här ur samma kanoniska källa som övriga spelare.
+        attributes: generatePlayerAttributes({
+          currentAbility: youthPlayer.currentAbility,
+          archetype: youthPlayer.archetype,
+          rng: { next: attributeRandom },
+        }),
         isInjured: false,
         injuryDaysRemaining: 0,
         suspensionGamesRemaining: 0,

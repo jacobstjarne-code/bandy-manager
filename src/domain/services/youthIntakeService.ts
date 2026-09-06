@@ -1,6 +1,6 @@
 import type { Club } from '../entities/Club'
 import type { CommunityActivities } from '../entities/Community'
-import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats } from '../entities/Player'
+import type { Player, PlayerSeasonStats, PlayerCareerStats } from '../entities/Player'
 import type { YouthIntakeRecord } from '../entities/SaveGame'
 import { PlayerPosition, PlayerArchetype } from '../enums'
 import { mulberry32 } from '../utils/random'
@@ -10,6 +10,7 @@ import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
 // §B) — delad med worldGenerator.ts, se dess kommentar för varför just den
 // filens fördelning valdes som kanon.
 import { pickArchetype } from './worldGenerator'
+import { generatePlayerAttributes } from './playerAttributeGenerator'
 
 function makeRng(seed: number) {
   const rand = mulberry32(seed)
@@ -95,115 +96,6 @@ function pickPosition(rng: ReturnType<typeof makeRng>, existingPlayers: Player[]
     if (r <= 0) return positions[i]
   }
   return positions[positions.length - 1]
-}
-
-function generateYouthAttributes(
-  rng: ReturnType<typeof makeRng>,
-  archetype: PlayerArchetype,
-  ca: number,
-): PlayerAttributes {
-  const base = ca * 0.9
-
-  const attrs: PlayerAttributes = {
-    skating: Math.round(base),
-    acceleration: Math.round(base),
-    stamina: Math.round(base),
-    ballControl: Math.round(base),
-    passing: Math.round(base),
-    shooting: Math.round(base),
-    dribbling: Math.round(base),
-    vision: Math.round(base),
-    decisions: Math.round(base),
-    workRate: Math.round(base),
-    positioning: Math.round(base),
-    defending: Math.round(base),
-    cornerSkill: Math.round(base),
-    goalkeeping: Math.round(base),
-    cornerRecovery: Math.round(base),
-  }
-
-  const isGK =
-    archetype === PlayerArchetype.ReflexGoalkeeper ||
-    archetype === PlayerArchetype.PositionalGoalkeeper
-
-  if (isGK) {
-    const fieldAttrs: (keyof PlayerAttributes)[] = [
-      'skating', 'acceleration', 'stamina', 'ballControl', 'passing', 'shooting',
-      'dribbling', 'vision', 'decisions', 'workRate', 'positioning', 'defending', 'cornerSkill',
-    ]
-    for (const attr of fieldAttrs) {
-      attrs[attr] = clamp(attrs[attr] - 10, 1, 60)
-    }
-  } else {
-    attrs.goalkeeping = clamp(attrs.goalkeeping - 10, 1, 60)
-  }
-
-  switch (archetype) {
-    case PlayerArchetype.ReflexGoalkeeper:
-      attrs.goalkeeping = clamp(attrs.goalkeeping + 15, 1, 60)
-      attrs.acceleration = clamp(attrs.acceleration + 8, 1, 60)
-      attrs.skating = clamp(attrs.skating + 4, 1, 60)
-      break
-    case PlayerArchetype.PositionalGoalkeeper:
-      attrs.goalkeeping = clamp(attrs.goalkeeping + 15, 1, 60)
-      attrs.positioning = clamp(attrs.positioning + 10, 1, 60)
-      attrs.decisions = clamp(attrs.decisions + 8, 1, 60)
-      break
-    case PlayerArchetype.DefensiveWorker:
-      attrs.defending = clamp(attrs.defending + 15, 1, 60)
-      attrs.workRate = clamp(attrs.workRate + 12, 1, 60)
-      attrs.stamina = clamp(attrs.stamina + 8, 1, 60)
-      attrs.positioning = clamp(attrs.positioning + 8, 1, 60)
-      break
-    case PlayerArchetype.TwoWaySkater:
-      attrs.skating = clamp(attrs.skating + 12, 1, 60)
-      attrs.stamina = clamp(attrs.stamina + 12, 1, 60)
-      attrs.defending = clamp(attrs.defending + 8, 1, 60)
-      attrs.workRate = clamp(attrs.workRate + 8, 1, 60)
-      break
-    case PlayerArchetype.Playmaker:
-      attrs.passing = clamp(attrs.passing + 15, 1, 60)
-      attrs.vision = clamp(attrs.vision + 15, 1, 60)
-      attrs.decisions = clamp(attrs.decisions + 12, 1, 60)
-      attrs.ballControl = clamp(attrs.ballControl + 8, 1, 60)
-      break
-    case PlayerArchetype.Finisher:
-      attrs.shooting = clamp(attrs.shooting + 15, 1, 60)
-      attrs.acceleration = clamp(attrs.acceleration + 12, 1, 60)
-      attrs.decisions = clamp(attrs.decisions + 8, 1, 60)
-      attrs.positioning = clamp(attrs.positioning + 8, 1, 60)
-      break
-    case PlayerArchetype.Dribbler:
-      attrs.dribbling = clamp(attrs.dribbling + 15, 1, 60)
-      attrs.ballControl = clamp(attrs.ballControl + 12, 1, 60)
-      attrs.acceleration = clamp(attrs.acceleration + 12, 1, 60)
-      attrs.skating = clamp(attrs.skating + 4, 1, 60)
-      break
-    case PlayerArchetype.CornerSpecialist:
-      attrs.cornerSkill = clamp(attrs.cornerSkill + 18, 1, 60)
-      attrs.passing = clamp(attrs.passing + 12, 1, 60)
-      attrs.vision = clamp(attrs.vision + 8, 1, 60)
-      break
-    case PlayerArchetype.RawTalent: {
-      const allKeys = Object.keys(attrs) as (keyof PlayerAttributes)[]
-      for (const k of allKeys) {
-        attrs[k] = clamp(attrs[k] - 8, 1, 60)
-      }
-      const shuffled = [...allKeys].sort(() => rng.next() - 0.5)
-      const boostCount = rng.int(2, 3)
-      for (let i = 0; i < boostCount; i++) {
-        attrs[shuffled[i]] = clamp(attrs[shuffled[i]] + rng.int(12, 20), 1, 60)
-      }
-      break
-    }
-  }
-
-  // Clamp all to 1-60
-  for (const k of Object.keys(attrs) as (keyof PlayerAttributes)[]) {
-    attrs[k] = clamp(Math.round(attrs[k]), 1, 60)
-  }
-
-  return attrs
 }
 
 type PotentialTier = 'elite' | 'promising' | 'normal'
@@ -365,7 +257,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
     const caRaw = caBase + rng.float(-3, 3)
     const ca = clamp(Math.round(caRaw), 10, 35)
 
-    const attributes = generateYouthAttributes(rng, archetype, ca)
+    const attributes = generatePlayerAttributes({ currentAbility: ca, archetype, rng })
 
     const id = `player_${club.id}_youth_${season}_${i}`
     const scoutText = generateScoutText(potentialTier, archetype)

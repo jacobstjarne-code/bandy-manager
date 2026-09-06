@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
+import { calculateArchetypeWeightedAbility } from '../../../../domain/services/playerAttributeGenerator'
 
 vi.mock('idb-keyval', () => ({
   get: vi.fn().mockResolvedValue(undefined),
@@ -35,6 +36,10 @@ describe('promoteYouthPlayer — pendingSeasonTransitionEvents (academyActions.t
     expect(promotedEvent?.playerLastName).toBe(youthPlayer!.lastName)
 
     const promotedPlayerId = `player_promoted_${youthPlayer!.id}_${game.currentSeason}`
+    const promotedPlayer = useGameStore.getState().game?.players.find(player => player.id === promotedPlayerId)
+    expect(promotedPlayer).toBeDefined()
+    expect(calculateArchetypeWeightedAbility(promotedPlayer!.attributes, promotedPlayer!.archetype))
+      .toBeCloseTo(youthPlayer!.currentAbility, 0)
     expect(useGameStore.getState().game?.eventLedger).toContainEqual(expect.objectContaining({
       type: 'academy_promotion',
       season: game.currentSeason,

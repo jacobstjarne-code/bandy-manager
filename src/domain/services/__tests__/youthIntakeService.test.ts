@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { generateYouthIntake } from '../youthIntakeService'
+import { calculateArchetypeWeightedAbility, PLAYER_ATTRIBUTE_KEYS } from '../playerAttributeGenerator'
 import type { Club } from '../../entities/Club'
 import type { Player } from '../../entities/Player'
 import {
@@ -16,12 +17,6 @@ import {
   PlayerPosition,
   PlayerArchetype,
 } from '../../enums'
-
-const ATTR_KEYS = [
-  'skating', 'acceleration', 'stamina', 'ballControl', 'passing', 'shooting',
-  'dribbling', 'vision', 'decisions', 'workRate', 'positioning', 'defending',
-  'cornerSkill', 'goalkeeping',
-] as const
 
 function makeClub(overrides: Partial<Club> = {}): Club {
   return {
@@ -229,15 +224,25 @@ describe('generateYouthIntake', () => {
     expect(forwardRatio).toBeGreaterThan(0.15)
   })
 
-  it('all 14 player attributes are present and in range 1-60', () => {
+  it('all 15 player attributes are present and in range 1-60', () => {
     const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed: 42 })
     for (const p of result.newPlayers) {
-      for (const key of ATTR_KEYS) {
+      for (const key of PLAYER_ATTRIBUTE_KEYS) {
         const val = p.attributes[key]
         expect(val).toBeDefined()
         expect(typeof val).toBe('number')
         expect(val).toBeGreaterThanOrEqual(1)
         expect(val).toBeLessThanOrEqual(60)
+      }
+    }
+  })
+
+  it('youth players round-trip their generated attributes to CA', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed })
+      for (const player of result.newPlayers) {
+        expect(calculateArchetypeWeightedAbility(player.attributes, player.archetype))
+          .toBeCloseTo(player.currentAbility, 0)
       }
     }
   })

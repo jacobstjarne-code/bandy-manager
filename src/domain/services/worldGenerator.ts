@@ -1,7 +1,7 @@
 import type { Club, Tactic } from '../entities/Club'
 import { stringHashUnsigned } from '../utils/random'
 import { generateOpponentManager } from './opponentManagerService'
-import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
+import type { Player, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -19,6 +19,7 @@ import { mulberry32 } from '../utils/random'
 import { calculateMarketValue } from './marketValueService'
 import { clamp } from '../utils/clamp'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
+import { generatePlayerAttributes, normalizePlayerAttributesToAbility } from './playerAttributeGenerator'
 
 interface GeneratedWorld {
   clubs: Club[]
@@ -547,123 +548,6 @@ function pickSuspensionProfile(
   return 'neutral'
 }
 
-function generateAttributes(
-  rng: ReturnType<typeof makeRng>,
-  archetype: PlayerArchetype,
-  reputation: number,
-): PlayerAttributes {
-  const base = clamp(reputation * 0.7 + rng.float(-10, 10), 20, 95)
-
-  // cornerRecovery: physical + tactical + some noise. Defenders tend to run higher.
-  const isDefensiveArchetype =
-    archetype === PlayerArchetype.DefensiveWorker ||
-    archetype === PlayerArchetype.TwoWaySkater ||
-    archetype === PlayerArchetype.PositionalGoalkeeper
-
-  const attrs: PlayerAttributes = {
-    skating: Math.round(base),
-    acceleration: Math.round(base),
-    stamina: Math.round(base),
-    ballControl: Math.round(base),
-    passing: Math.round(base),
-    shooting: Math.round(base),
-    dribbling: Math.round(base),
-    vision: Math.round(base),
-    decisions: Math.round(base),
-    workRate: Math.round(base),
-    positioning: Math.round(base),
-    defending: Math.round(base),
-    cornerSkill: Math.round(base),
-    goalkeeping: Math.round(base),
-    cornerRecovery: isDefensiveArchetype
-      ? clamp(Math.round(base * 0.9 + rng.float(0, 15)), 30, 99)
-      : clamp(Math.round(base * 0.7 + rng.float(-10, 20)), 20, 90),
-  }
-
-  // Apply archetype bonuses and GK penalty
-  const isGK =
-    archetype === PlayerArchetype.ReflexGoalkeeper ||
-    archetype === PlayerArchetype.PositionalGoalkeeper
-
-  // For GK, first reduce all outfield-relevant stats
-  if (isGK) {
-    const fieldAttrs: (keyof PlayerAttributes)[] = [
-      'skating', 'acceleration', 'stamina', 'ballControl', 'passing', 'shooting',
-      'dribbling', 'vision', 'decisions', 'workRate', 'positioning', 'defending', 'cornerSkill',
-    ]
-    for (const attr of fieldAttrs) {
-      attrs[attr] = clamp(attrs[attr] - 15, 1, 99)
-    }
-  } else {
-    // Non-GK: reduce goalkeeping
-    attrs.goalkeeping = clamp(attrs.goalkeeping - 15, 1, 99)
-  }
-
-  switch (archetype) {
-    case PlayerArchetype.ReflexGoalkeeper:
-      attrs.goalkeeping = clamp(attrs.goalkeeping + 20, 1, 99)
-      attrs.skating = clamp(attrs.skating + 5, 1, 99)
-      attrs.acceleration = clamp(attrs.acceleration + 10, 1, 99)
-      break
-    case PlayerArchetype.PositionalGoalkeeper:
-      attrs.goalkeeping = clamp(attrs.goalkeeping + 20, 1, 99)
-      attrs.positioning = clamp(attrs.positioning + 15, 1, 99)
-      attrs.decisions = clamp(attrs.decisions + 10, 1, 99)
-      break
-    case PlayerArchetype.DefensiveWorker:
-      attrs.defending = clamp(attrs.defending + 20, 1, 99)
-      attrs.workRate = clamp(attrs.workRate + 15, 1, 99)
-      attrs.stamina = clamp(attrs.stamina + 10, 1, 99)
-      attrs.positioning = clamp(attrs.positioning + 10, 1, 99)
-      break
-    case PlayerArchetype.TwoWaySkater:
-      attrs.skating = clamp(attrs.skating + 15, 1, 99)
-      attrs.stamina = clamp(attrs.stamina + 15, 1, 99)
-      attrs.defending = clamp(attrs.defending + 10, 1, 99)
-      attrs.workRate = clamp(attrs.workRate + 10, 1, 99)
-      break
-    case PlayerArchetype.Playmaker:
-      attrs.passing = clamp(attrs.passing + 20, 1, 99)
-      attrs.vision = clamp(attrs.vision + 20, 1, 99)
-      attrs.decisions = clamp(attrs.decisions + 15, 1, 99)
-      attrs.ballControl = clamp(attrs.ballControl + 10, 1, 99)
-      break
-    case PlayerArchetype.Finisher:
-      attrs.shooting = clamp(attrs.shooting + 20, 1, 99)
-      attrs.acceleration = clamp(attrs.acceleration + 15, 1, 99)
-      attrs.decisions = clamp(attrs.decisions + 10, 1, 99)
-      attrs.positioning = clamp(attrs.positioning + 10, 1, 99)
-      break
-    case PlayerArchetype.Dribbler:
-      attrs.dribbling = clamp(attrs.dribbling + 20, 1, 99)
-      attrs.ballControl = clamp(attrs.ballControl + 15, 1, 99)
-      attrs.acceleration = clamp(attrs.acceleration + 15, 1, 99)
-      attrs.skating = clamp(attrs.skating + 5, 1, 99)
-      break
-    case PlayerArchetype.CornerSpecialist:
-      attrs.cornerSkill = clamp(attrs.cornerSkill + 25, 1, 99)
-      attrs.passing = clamp(attrs.passing + 15, 1, 99)
-      attrs.vision = clamp(attrs.vision + 10, 1, 99)
-      break
-    case PlayerArchetype.RawTalent: {
-      const allKeys = Object.keys(attrs) as (keyof PlayerAttributes)[]
-      // Reduce all first
-      for (const k of allKeys) {
-        attrs[k] = clamp(attrs[k] - 10, 1, 99)
-      }
-      // Boost 2-3 random attributes
-      const shuffled = [...allKeys].sort(() => rng.next() - 0.5)
-      const boostCount = rng.int(2, 3)
-      for (let i = 0; i < boostCount; i++) {
-        attrs[shuffled[i]] = clamp(attrs[shuffled[i]] + rng.int(15, 25), 1, 99)
-      }
-      break
-    }
-  }
-
-  return attrs
-}
-
 const DAY_JOB_TITLES = [
   'Lärare', 'Snickare', 'IT-konsult', 'Polis', 'Sjuksköterska', 'Elektriker',
   'Ingenjör', 'Säljare', 'Lastbilsförare', 'Brandman', 'Byggnadsarbetare',
@@ -736,7 +620,6 @@ function generatePlayer(
   season: number,
 ): Player {
   const archetype = pickArchetype(rng, position)
-  const attributes = generateAttributes(rng, archetype, reputation)
 
   const tier = tierFromReputation(reputation)
   let caMin: number, caMax: number
@@ -752,6 +635,8 @@ function generatePlayer(
     ca = Math.round(ca * 0.6)
     ca = clamp(ca, 20, 80)
   }
+
+  const attributes = generatePlayerAttributes({ currentAbility: ca, archetype, rng })
 
   let pa = ca + rng.int(5, 30) + paBonus
   pa = clamp(pa, ca, 98)
@@ -939,14 +824,14 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     injuryProneness: 20,
     discipline: 85,
     suspensionProfile: 'ren' as SuspensionProfile,
-    attributes: {
+    attributes: normalizePlayerAttributesToAbility({
       skating: 72, acceleration: 65, stamina: 76,
       ballControl: 62, passing: 68, shooting: 50,
       dribbling: 55, vision: 64, decisions: 72,
       workRate: 82, positioning: 74, defending: 78,
       cornerSkill: 55, goalkeeping: 5,
       cornerRecovery: 78,
-    },
+    }, PlayerArchetype.TwoWaySkater, 68),
     isInjured: false,
     injuryDaysRemaining: 0,
     suspensionGamesRemaining: 0,
