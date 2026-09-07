@@ -5,6 +5,7 @@ import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import type { Moment } from '../../../domain/entities/Moment'
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
+import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer, playerAcceptsTransfer } from '../../../domain/services/transferService'
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
@@ -13,6 +14,7 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE, FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER } from '../../../domain/data/transferResponseText'
 import { seededPick } from '../../../domain/utils/random'
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
+import { DEADLINE_AI_BID_TEXT } from '../../../domain/data/windowDeadlineText'
 
 const BUD_WITHDRAWN_POOL = [
   (klubb: string, namn: string) => `${klubb} drog tillbaka budet på ${namn}. De tröttnade på att vänta.`,
@@ -45,6 +47,52 @@ export interface LoanProcessorResult {
   updatedClubs: Club[]
   updatedLoanDeals: LoanDeal[]
   inboxItems: InboxItem[]
+}
+
+/**
+ * Creates the transfer-window deadline prompt for the next managed fixture.
+ * The deterministic random stream is supplied by the round orchestrator so
+ * extraction does not change simulation order or outcomes.
+ */
+export function generateDeadlineDayBidInbox(
+  game: SaveGame,
+  upcomingManagedFixture: Fixture | undefined,
+  nextMatchday: number,
+  localRand: () => number,
+): InboxItem[] {
+  if (!upcomingManagedFixture?.isWindowDeadlineDay || localRand() >= 0.35) return []
+
+  const deadlineBidId = `deadline_window_bid_${game.currentSeason}_${nextMatchday}`
+  if (game.inbox.some(item => item.id === deadlineBidId)) return []
+
+  const favoritePlayerId = game.supporterGroup?.favoritePlayerId
+  const bestPlayer = game.players
+    .filter(player =>
+      player.clubId === game.managedClubId &&
+      !player.isInjured &&
+      player.id !== favoritePlayerId
+    )
+    .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+  const aiClubs = game.clubs.filter(club => club.id !== game.managedClubId)
+  const randomAIClub = aiClubs.length > 0
+    ? aiClubs[Math.floor(localRand() * aiClubs.length)]
+    : null
+  if (!bestPlayer || !randomAIClub) return []
+
+  const template = DEADLINE_AI_BID_TEXT[Math.floor(localRand() * DEADLINE_AI_BID_TEXT.length)]
+  const playerName = `${bestPlayer.firstName} ${bestPlayer.lastName}`
+  return [{
+    id: deadlineBidId,
+    date: game.currentDate,
+    type: InboxItemType.TransferDeadline,
+    title: 'Sent bud på deadline-dagen',
+    body: template
+      .replace('{club}', randomAIClub.name)
+      .replace('{player}', playerName),
+    relatedPlayerId: bestPlayer.id,
+    relatedClubId: randomAIClub.id,
+    isRead: false,
+  }]
 }
 
 /**

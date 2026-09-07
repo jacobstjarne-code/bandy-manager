@@ -28,7 +28,7 @@ import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
-import { processTransferBids, processLoans, executeAcceptedTransfers } from './processors/transferProcessor'
+import { executeAcceptedTransfers, generateDeadlineDayBidInbox, processLoans, processTransferBids } from './processors/transferProcessor'
 import { processSponsors, applyRiskySponsorMaturation } from './processors/sponsorProcessor'
 import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/services/contextualSponsorService'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
@@ -59,7 +59,6 @@ import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
-import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
@@ -391,42 +390,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const pendingAnnandagsVal = upcomingFixtureResult.pendingAnnandagsVal
   const upcomingManagedFix = upcomingFixtureResult.upcomingManagedFixture
 
-  // C-T2: deadline-dag — AI-bud om nästa match är transferfönstrets deadline-dag
-  if (upcomingManagedFix?.isWindowDeadlineDay && localRand() < 0.35) {
-    const deadlineBidId = `deadline_window_bid_${game.currentSeason}_${nextMatchday}`
-    const alreadySent = game.inbox.some(i => i.id === deadlineBidId)
-    if (!alreadySent) {
-      const favPlayerId = game.supporterGroup?.favoritePlayerId
-      const bestPlayer = game.players
-        .filter(p =>
-          p.clubId === game.managedClubId &&
-          !p.isInjured &&
-          p.id !== favPlayerId
-        )
-        .sort((a, b) => b.currentAbility - a.currentAbility)[0]
-      const aiClubs = game.clubs.filter(c => c.id !== game.managedClubId)
-      const randomAIClub = aiClubs.length > 0
-        ? aiClubs[Math.floor(localRand() * aiClubs.length)]
-        : null
-      if (bestPlayer && randomAIClub) {
-        const template = DEADLINE_AI_BID_TEXT[Math.floor(localRand() * DEADLINE_AI_BID_TEXT.length)]
-        const playerName = `${bestPlayer.firstName} ${bestPlayer.lastName}`
-        const body = template
-          .replace('{club}', randomAIClub.name)
-          .replace('{player}', playerName)
-        newInboxItems.push({
-          id: deadlineBidId,
-          date: game.currentDate,
-          type: InboxItemType.TransferDeadline,
-          title: `Sent bud på deadline-dagen`,
-          body,
-          relatedPlayerId: bestPlayer.id,
-          relatedClubId: randomAIClub.id,
-          isRead: false,
-        })
-      }
-    }
-  }
+  newInboxItems.push(...generateDeadlineDayBidInbox(game, upcomingManagedFix, nextMatchday, localRand))
 
   const marketValueResult = processMarketValues(game, finalPlayers, nextMatchday)
   const availabilityUpdatedPlayers = marketValueResult.players
