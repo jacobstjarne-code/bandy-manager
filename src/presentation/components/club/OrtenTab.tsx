@@ -7,6 +7,8 @@ import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
+import { readClubLedger } from '../../../domain/services/eventLedgerService'
+import { buildMemoryEventFromLedger } from '../../../domain/services/clubMemoryService'
 import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus, getVolunteerProfile } from '../../../domain/services/volunteerService'
 import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS } from '../../../domain/services/economyService'
@@ -79,6 +81,14 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
   }
 
   const cs = game.communityStanding ?? 50
+  // liggare-ny-community-shift DEL 2 (Orten-vyn, konsument 3 av 4): ingen ny
+  // prosa — samma buildMemoryEventFromLedger/text som Krönikan och
+  // Portal/Berättaren redan renderar (DEL 1, 2026-09-07). Senaste vändningen
+  // för DENNA klubb, om någon skrivits.
+  const latestShift = readClubLedger(game, club.id)
+    .filter(e => e.type === 'community_shift')
+    .sort((a, b) => b.season - a.season || b.matchday - a.matchday)[0]
+  const latestShiftText = latestShift ? buildMemoryEventFromLedger(game, latestShift, club.id)?.text : undefined
   const currentRound = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
@@ -142,6 +152,11 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
           <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
           <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
         </div>
+        {latestShiftText && (
+          <p className="h-quote-sm" style={{ marginBottom: 10 }}>
+            {latestShiftText}
+          </p>
+        )}
         {/* Samhällsaktiviteter — MASTER_OPPET.md sluttest-ortentab-falsk-kommentar
             (2026-09-01): påstods tidigare bara påverka bygdens puls, inte inkomst
             — falskt, motsagt av economyService.ts. Barnskolan, funktionärer
