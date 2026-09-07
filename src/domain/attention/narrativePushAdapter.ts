@@ -9,12 +9,12 @@ import {
 import {
   getNextManagedFixture,
   nextMatchIsDerby,
-  nextMatchIsCupFinal,
   nextMatchIsSMFinal,
   daysUntilNextMatch,
 } from '../services/portal/triggers/matchTriggers'
 import { RELEGATION_ZONE_SIZE } from '../services/boardService'
 import { getStreakState } from '../data/roundCharacter'
+import { deriveMatchTypeAxes, type Skede } from '../services/matchTypeAxes'
 import type {
   AttentionCategory,
   AttentionImportance,
@@ -84,7 +84,8 @@ export type ForwardPushPayload =
       category: 'calendar_anchor'
       fixture: Fixture
       opponentClubId: string
-      kind: 'derby' | 'cup' | 'final'
+      kind: 'derby' | 'cup' | 'playoff' | 'final' | 'annandag'
+      playoffStage?: Extract<Skede, 'kvartsfinal' | 'semifinal'>
       daysUntil: number
       venue: 'hemma' | 'borta'
     }
@@ -180,15 +181,32 @@ function calendarAnchorCandidate(game: SaveGame): ForwardCandidate | null {
   const daysUntil = daysUntilNextMatch(game)
   if (daysUntil < 0 || daysUntil > CALENDAR_ANCHOR_WINDOW_DAYS) return null
 
-  const kind = nextMatchIsSMFinal(game) ? 'final' : nextMatchIsCupFinal(game) ? 'cup' : nextMatchIsDerby(game) ? 'derby' : null
+  const axes = deriveMatchTypeAxes(fixture, game.managedClubId, game.playoffBracket)
+  const playoffStage = axes.tavlingstyp === 'slutspel' &&
+    (axes.skede === 'kvartsfinal' || axes.skede === 'semifinal')
+    ? axes.skede
+    : undefined
+  const kind = nextMatchIsSMFinal(game)
+    ? 'final'
+    : fixture.isCup
+      ? 'cup'
+      : playoffStage
+        ? 'playoff'
+        : nextMatchIsDerby(game)
+          ? 'derby'
+          : fixture.isAnnandagen
+            ? 'annandag'
+            : null
   if (!kind) return null
 
   const opponentClubId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
-  const score = kind === 'final' ? 95 : kind === 'cup' ? 85 : 75
+  const score = kind === 'final' ? 95 : kind === 'playoff' ? 90 : kind === 'cup' ? 85 : kind === 'annandag' ? 80 : 75
   const venue = fixture.homeClubId === game.managedClubId ? 'hemma' : 'borta'
 
   return {
-    payload: { category: 'calendar_anchor', fixture, opponentClubId, kind, daysUntil, venue },
+    payload: {
+      category: 'calendar_anchor', fixture, opponentClubId, kind, playoffStage, daysUntil, venue,
+    },
     subjectId: fixture.id,
     sources: [{ kind: 'fixture', id: fixture.id }],
     unresolved: ['upcoming_fixture_not_yet_played'],

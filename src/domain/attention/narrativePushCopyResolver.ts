@@ -107,6 +107,23 @@ export function createNarrativePushCopyResolver(
         }
       }
 
+      if (payload.kind === 'playoff') {
+        if (!payload.playoffStage) return null
+        return {
+          voice: 'press',
+          title: 'Slutspelet börjar.',
+          body: `${opponentName} i ${payload.playoffStage}.`,
+        }
+      }
+
+      if (payload.kind === 'annandag') {
+        return {
+          voice: 'club',
+          title: 'Annandagen.',
+          body: `${opponentName} ${payload.venue}. Som varje år.`,
+        }
+      }
+
       const voices: [AttentionVoice, ...AttentionVoice[]] = (game.fanMood ?? 50) >= 60
         ? ['press', 'club', 'fans']
         : ['press', 'club']

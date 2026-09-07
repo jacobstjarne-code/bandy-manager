@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import { CLUB_TEMPLATES } from '../../services/worldGenerator'
 import { narrativePushDrafts, type ForwardPushPayload } from '../narrativePushAdapter'
 import type { SaveGame } from '../../entities/SaveGame'
@@ -91,6 +91,36 @@ describe('narrativePushDrafts — calendar_anchor (familj 2)', () => {
     narrativePushDrafts(game, (payload) => { payloads.push(payload); return null })
     const calendarPayload = payloads.find(p => p.category === 'calendar_anchor')
     expect(calendarPayload).toMatchObject({ category: 'calendar_anchor', kind: 'final' })
+  })
+
+  it('slutspelskvart klassas ur bracketen, inte ur det globala roundNumber-talet', () => {
+    const fixture = { ...derbyFixture(3), awayClubId: OTHER, isKnockout: true, roundNumber: 27 }
+    const series = {
+      id: 'qf-1', round: PlayoffRound.QuarterFinal, homeClubId: MANAGED, awayClubId: OTHER,
+      fixtures: ['fixture-next'], homeWins: 0, awayWins: 0, winnerId: null, loserId: null,
+    }
+    const game = baseGame({
+      fixtures: [fixture],
+      playoffBracket: {
+        season: 3, status: PlayoffStatus.QuarterFinals, quarterFinals: [series],
+        semiFinals: [], final: null, champion: null,
+      },
+    })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return null })
+    expect(payloads.find(p => p.category === 'calendar_anchor')).toMatchObject({
+      category: 'calendar_anchor', kind: 'playoff', playoffStage: 'kvartsfinal',
+    })
+  })
+
+  it('annandagsmatch utan tyngre ankare får den egna kalenderkategorin', () => {
+    const fixture = { ...derbyFixture(3), awayClubId: OTHER, isAnnandagen: true }
+    const game = baseGame({ fixtures: [fixture] })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return null })
+    expect(payloads.find(p => p.category === 'calendar_anchor')).toMatchObject({
+      category: 'calendar_anchor', kind: 'annandag', venue: 'hemma',
+    })
   })
 })
 

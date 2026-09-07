@@ -132,6 +132,28 @@ describe('createNarrativePushCopyResolver', () => {
     })).toBeNull()
   })
 
+  it('kalenderankare: slutspel och annandag använder sina låsta, smala rader', () => {
+    const game = gameFixture()
+    const resolver = createNarrativePushCopyResolver(game, memoryRotation())
+    const fixture = game.fixtures[0]
+    expect(resolver({
+      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
+      kind: 'playoff', playoffStage: 'semifinal', daysUntil: 3, venue: 'hemma',
+    })).toEqual({
+      voice: 'press',
+      title: 'Slutspelet börjar.',
+      body: 'Skutskär i semifinal.',
+    })
+    expect(resolver({
+      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
+      kind: 'annandag', daysUntil: 3, venue: 'borta',
+    })).toEqual({
+      voice: 'club',
+      title: 'Annandagen.',
+      body: 'Skutskär borta. Som varje år.',
+    })
+  })
+
   it('säsongsläge: nedflyttning och förlustsvit använder varsin låst mall', () => {
     const game = gameFixture()
     const resolver = createNarrativePushCopyResolver(game, memoryRotation())
