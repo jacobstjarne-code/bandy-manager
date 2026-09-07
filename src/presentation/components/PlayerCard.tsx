@@ -16,7 +16,7 @@ import { formatSalary, positionShort, formatContractUntil, formatWeeks } from '.
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
-import { matchdayToLeagueRound } from '../../domain/services/scheduleGenerator'
+import { leagueRoundExactAt } from '../../domain/services/currentChronology'
 import { MessageCircle, Crown, Wind, MessageSquare, Megaphone, Smile, Flame, Medal, Drama, Home } from 'lucide-react'
 
 export interface PlayerCardProps {
@@ -824,7 +824,8 @@ export function PlayerCard({
               // sig giltigt mot innevarande säsongs kalender. Kan ändå landa
               // före matchdag 1 (samtalet skedde en tidigare säsong) — då
               // finns ingen meningsfull etikett att visa, bara "sedan"-talet.
-              const lastTalkedRound = matchdayToLeagueRound(Number(lastTalked), game!.currentSeason)
+              // berattaren-en-kronologi (2026-09-07): migrerad till Berättarens klocka.
+              const lastTalkedRound = leagueRoundExactAt(game!.currentSeason, Number(lastTalked))
               const lastTalkedLabel = lastTalkedRound !== undefined
                 ? `Omg ${lastTalkedRound}`
                 : Number(lastTalked) >= 1 ? `Matchdag ${Number(lastTalked)}` : null

@@ -5,7 +5,7 @@ import { SectionCard } from '../SectionCard'
 import { formatFinanceAbs, formatFinance, formatSalary, seasonTrendStroke } from '../../utils/formatters'
 import { BANDYPLAY_ACTIVATION_COST, calcRoundIncome, deriveKassaHistory, buildRoundIncomeParamsForNextFixture } from '../../../domain/services/economyService'
 import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
-import { matchdayToLeagueRound } from '../../../domain/services/scheduleGenerator'
+import { leagueRoundExactAt } from '../../../domain/services/currentChronology'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import { Phone } from 'lucide-react'
 import '../../styles/economy.css'
@@ -29,13 +29,22 @@ function formatSignedFinance(amount: number): string {
 
 /**
  * SKALA-BUGGEN steg B (2026-09-02) — entry.round är global matchdag, inte en
- * serieomgång. financeLog rebasas vid säsongsskifte (seasonEndProcessor.ts)
- * så talet håller sig kronologiskt begripligt, men en post kan ändå landa
- * före matchdag 1 (skriven en tidigare säsong, hunnit bli gammal innan
- * FINANCE_LOG_MAX (50) tryckte ut den) — då finns ingen meningsfull etikett.
+ * serieomgång. financeLog rebasas vid säsongsskifte (`rolloverFinanceLog`,
+ * seasonEndProcessor.ts: `round: entry.round - completedSeasonMatchday`) så
+ * talet håller sig kronologiskt begripligt inom INNEVARANDE säsongs
+ * numrering — det bär ingen egen `season` (se kommentaren där), och kallas
+ * alltid med `game.currentSeason`. En post kan ändå landa före matchdag 1
+ * (skriven en tidigare säsong, hunnit bli gammal innan FINANCE_LOG_MAX (50)
+ * tryckte ut den) — då finns ingen meningsfull etikett i INNEVARANDE
+ * säsongs kalender, oavsett hur säsongssäker klockan är (round<1 matchar
+ * ingen slot i någon kalender). berattaren-en-kronologi (2026-09-07):
+ * uppslaget migrerat till Berättarens klocka — men "tidigare säsong"-
+ * fallbacken är INTE samma sak som klockans gamla game.fixtures-bugg och
+ * kan inte tas bort av den fixen; den skyddar mot ett negativt rebasat tal,
+ * inte mot en okänd säsongs kalender.
  */
-function financeRoundLabel(round: number, season: number): string {
-  const leagueRound = matchdayToLeagueRound(round, season)
+export function financeRoundLabel(round: number, season: number): string {
+  const leagueRound = leagueRoundExactAt(season, round)
   if (leagueRound !== undefined) return `omg ${leagueRound}`
   if (round >= 1) return `matchdag ${round}`
   return 'tidigare säsong'

@@ -43,66 +43,50 @@ const chronology: CurrentChronology = {
 }
 
 describe('Berättaren steg 1 — currentChronology + ledgerTold', () => {
-  it('håller global matchdag skild från spelad ligaomgång', () => {
+  // berattaren-en-kronologi (2026-09-07, Opus dom): klockan läser inte
+  // längre game.fixtures — den routar genom buildSeasonCalendar(season),
+  // ren och säsongsagnostisk (samma väg matchdayToLeagueRound redan
+  // använde). Testerna nedan använder därför den RIKTIGA kalenderns
+  // matchdag/omgång-par (cup matchdag 1-4, liga matchdag 5+ = omgång 1+
+  // för en 22-omgångarssäsong), inte en påhittad fixture-lista.
+  it('håller global matchdag skild från spelad ligaomgång — matchdag 11 = omgång 7', () => {
+    // getSeasonEndPhase/getCurrentLeagueRound (seasonPhases.ts, orört av
+    // denna fix) läser fortfarande game.fixtures för FAS-bedömningen — en
+    // separat, äldre fråga än vad denna raden fixade. En enda avslutad
+    // ligamatch räcker för att ge rätt fas i testet.
     const game = makeGame({
       currentMatchday: 11,
       fixtures: [{
-        id: 'league_6',
-        season: 3,
-        matchday: 9,
-        roundNumber: 6,
-        homeClubId: CLUB_ID,
-        awayClubId: 'club_b',
-        homeScore: 3,
-        awayScore: 2,
-        status: FixtureStatus.Completed,
-        isCup: false,
-        isKnockout: false,
-      } as never, {
-        id: 'cup_gap',
-        season: 3,
-        matchday: 10,
-        roundNumber: 2,
-        homeClubId: CLUB_ID,
-        awayClubId: 'club_c',
-        homeScore: 2,
-        awayScore: 1,
-        status: FixtureStatus.Completed,
-        isCup: true,
+        id: 'league_7', season: 3, matchday: 11, roundNumber: 7,
+        homeClubId: CLUB_ID, awayClubId: 'club_b', status: FixtureStatus.Completed,
+        isCup: false, isKnockout: false,
       } as never],
     })
 
     expect(currentChronology(game)).toEqual({
       season: 3,
       matchday: 11,
-      leagueRound: 6,
+      leagueRound: 7,
       phase: 'regular_active',
     })
   })
 
-  it('etiketterar en historisk ligamatch med faktisk omgång men cupgap som matchdag', () => {
-    const game = makeGame({
-      currentMatchday: 6,
-      fixtures: [{
-        id: 'league_2', season: 3, matchday: 3, roundNumber: 2,
-        homeClubId: CLUB_ID, awayClubId: 'club_b', status: FixtureStatus.Completed,
-        isCup: false, isKnockout: false,
-      } as never, {
-        id: 'cup_gap', season: 3, matchday: 4, roundNumber: 1,
-        homeClubId: CLUB_ID, awayClubId: 'club_c', status: FixtureStatus.Completed,
-        isCup: true, isKnockout: false,
-      } as never, {
-        id: 'league_3', season: 3, matchday: 5, roundNumber: 3,
-        homeClubId: 'club_d', awayClubId: CLUB_ID, status: FixtureStatus.Completed,
-        isCup: false, isKnockout: false,
-      } as never],
-    })
+  it('etiketterar en historisk ligaomgång men cupperioden (matchdag 1-4) som matchdag, aldrig omgång', () => {
+    expect(leagueRoundAtMatchday(3, 7)).toBe(3)   // matchdag 7 = omgång 3
+    expect(leagueRoundAtMatchday(3, 4)).toBe(0)   // fortfarande cupperioden, ingen omgång spelad än
+    expect(chronologyPointLabel(3, 7)).toBe('omgång 3')
+    expect(chronologyPointLabel(3, 4)).toBe('matchdag 4')
+    expect(chronologyPointLabel(3, 5)).toBe('omgång 1')
+  })
 
-    expect(leagueRoundAtMatchday(game, 3, 3)).toBe(2)
-    expect(leagueRoundAtMatchday(game, 3, 4)).toBe(2)
-    expect(chronologyPointLabel(game, 3, 3)).toBe('omgång 2')
-    expect(chronologyPointLabel(game, 3, 4)).toBe('matchdag 4')
-    expect(chronologyPointLabel(game, 3, 5)).toBe('omgång 3')
+  it('säsongssäker (rotfelet raden fixade): en ÄLDRE säsongs matchdag ger fortfarande rätt omgång, inte "matchdag N"-gissningen game.fixtures gav efter en rollover', () => {
+    // Säsong 1 hade inte spelats än när game.currentSeason=3 — game.fixtures
+    // (nollställs varje rollover) hade tidigare inte haft NÅGON data för
+    // säsong 1, vilket fick chronologyPointLabel att falla till "matchdag N"
+    // för varje historisk post från en avslutad säsong. buildSeasonCalendar
+    // är ren — den bryr sig inte om vilken säsong som är "nu".
+    expect(chronologyPointLabel(1, 9)).toBe('omgång 5')
+    expect(leagueRoundAtMatchday(1, 9)).toBe(5)
   })
 
   it('bygger stabil postnyckel och skriver idempotent ytkvitto', () => {

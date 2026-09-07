@@ -12,7 +12,7 @@ import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
 import { deriveUtfall } from './matchTypeAxes'
-import { matchdayToLeagueRound } from './scheduleGenerator'
+import { chronologyPointLabel } from './currentChronology'
 import { seasonSpanLabel } from '../utils/seasonYear'
 
 function generateId(type: InboxItemType): string {
@@ -122,8 +122,8 @@ export function createSuspensionItem(
     // rätt kalender att slå upp mot (ingen säsongsgräns-risk som journalist-
     // minnet). Cup-/slutspelsmatchdagar har ingen serieomgång — samma ärliga
     // fallback ("matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
-    const leagueRound = matchdayToLeagueRound(cause.sinceMatchday, season)
-    const omgfras = leagueRound !== undefined ? `omgång ${leagueRound}` : `matchdag ${cause.sinceMatchday}`
+    // berattaren-en-kronologi (2026-09-07): migrerad till Berättarens klocka.
+    const omgfras = chronologyPointLabel(season, cause.sinceMatchday)
     body = template
       .replace('{spelare}', spelareStr)
       .replace('{motståndare}', cause.opponentName)

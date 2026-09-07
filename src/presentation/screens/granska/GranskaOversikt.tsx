@@ -1125,7 +1125,7 @@ export function GranskaOversikt({
           .sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0
         const decision = getDecisionConsequenceSinceLastMatch(game, fixture.season, previousMatchday, fixture.matchday)
         if (!decision?.consequences?.length) return null
-        const when = chronologyPointLabel(game, decision.season, decision.matchday)
+        const when = chronologyPointLabel(decision.season, decision.matchday)
         const text = `Det du valde i ${when}: ${describeRippleChainForGranska(decision.consequences)}.`
         return (
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.7) }}>
