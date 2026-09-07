@@ -25,12 +25,14 @@ GPT:s slutprov: efter klubbyte fick Slottsbron en landslagsbelöning för Kristo
 | burnout-båge och återfall | Krönikan, Klubbminnet, årsdagar |
 | karriärhistorik, `managerSeason` | patron, mecenat, sponsorer |
 | brevarkivet (brev till honom) | journalistrelation och Efterklang |
-| rykte, meritbuffert, avskedsräkning | communityStanding, Orten |
+| rykte, karriärstatistik | communityStanding, Orten |
 | personliga mål han satt (stämpel på målet, inte på spelaren) | domarrelation |
 | beslut han fattat (`decision`) | styrelseförväntan, boardPatience, Survive-kontrakt |
 | "året utan klubb" | truppen, kontrakten, akademin |
 
 Byte nollställer allt i höger kolumn för managern (han börjar om hos en ny styrelse) och tar med allt i vänster. `switchManagedClub` verifieras mot tabellen rad för rad.
+
+**Rättelse 2026-09-07 (Opus):** raden ovan listade tidigare "meritbuffert, avskedsräkning" som följande managern. Fel — `switchManagedClub.ts:213-216` nollställer `meritBuffer`/`boardPatience`/`boardTrust`/`consecutiveFailures` vid klubbyte, och det är korrekt (de är relationen till EN styrelse, inte managerns person). Dömt: nollställningen står, tabellraden rättad till bara rykte + karriärstatistik. Ingen kodändring.
 
 ## Vad detta gör byggbart
 
