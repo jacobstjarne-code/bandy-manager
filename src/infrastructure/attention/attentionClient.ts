@@ -201,8 +201,13 @@ export async function subscribeToClubNotifications(): Promise<PushSubscription> 
 
 export async function unsubscribeFromClubNotifications(): Promise<void> {
   const identity = readIdentity()
+  // stickiness-avregistrering-yta: `.ready` VÄNTAR på att en service worker
+  // blir aktiv — hänger permanent om ingen någonsin registrerats (spelare
+  // som aldrig satt på push, men når "Tysta" ändå via Notisinstallningar).
+  // `getRegistration()` returnerar direkt (registreringen eller `undefined`),
+  // rätt verktyg för "finns det något att koppla ur", inte "vänta tills klart".
   const registration = 'serviceWorker' in navigator
-    ? await navigator.serviceWorker.ready
+    ? await navigator.serviceWorker.getRegistration()
     : null
   const subscription = await registration?.pushManager.getSubscription()
   try {

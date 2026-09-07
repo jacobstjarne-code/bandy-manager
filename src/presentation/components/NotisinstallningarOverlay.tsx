@@ -3,7 +3,7 @@ import { Overlay } from './primitives/Overlay'
 import { ToggleSwitch } from './primitives/ToggleSwitch'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { AttentionCategory, NotificationPreferences } from '../../domain/attention/types'
-import { getNotificationPreferences, setNotificationPreferences } from '../../infrastructure/attention/attentionClient'
+import { getNotificationPreferences, setNotificationPreferences, unsubscribeFromClubNotifications } from '../../infrastructure/attention/attentionClient'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 /**
@@ -18,6 +18,13 @@ import { seasonSpanLabel } from '../../domain/utils/seasonYear'
  * RÄTTADE, LÅSTA texterna — inte mockens ordagranna platshållare.
  * Beskrivningsraderna är oförändrade (Design skrev dem, Opus bekräftade
  * dem låsta i samma dom).
+ *
+ * stickiness-avregistrering-yta (Jacob 2026-09-07, "hoppa mocken, ge Code
+ * raden direkt"): "Tysta"-knappen längst ner, text låst i
+ * STICKINESS_COPY_REGISTER_2026-09-04.md §7 "Avregistrering". Irreversibel
+ * (raderar allt server-side, se attentionClient.ts/store.js "local-first-
+ * domen") — bekräftas i två steg innan `unsubscribeFromClubNotifications()`
+ * anropas, samma försiktighet som andra hård-att-ångra åtgärder i appen.
  */
 
 interface NotisinstallningarOverlayProps {
@@ -46,6 +53,8 @@ function timeDisplay(hour: number, minute: number): string {
 
 export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarOverlayProps) {
   const [prefs, setPrefs] = useState<NotificationPreferences>(getNotificationPreferences)
+  const [confirmingMute, setConfirmingMute] = useState(false)
+  const [isMuting, setIsMuting] = useState(false)
 
   const club = game.clubs.find(c => c.id === game.managedClubId)
   const clubLabel = `${(club?.shortName ?? club?.name ?? '').toUpperCase()} · ${seasonSpanLabel(game.currentSeason)}`
@@ -70,6 +79,22 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
         ? { ...prefs.quietHours, startHour: hour, startMinute: minute }
         : { ...prefs.quietHours, endHour: hour, endMinute: minute },
     })
+  }
+
+  const confirmMute = async () => {
+    setIsMuting(true)
+    try {
+      await unsubscribeFromClubNotifications()
+    } catch {
+      // unsubscribeFromClubNotifications() städar redan lokalt state i sin
+      // egen finally-gren (subscription/identity) oavsett nätverksutfall —
+      // en misslyckad server-radering ska inte hindra spelaren från att
+      // stänga ytan. Serverns kvarvarande installation raderas av samma
+      // anrop nästa gång det lyckas (idempotent DELETE).
+    } finally {
+      setIsMuting(false)
+      onClose()
+    }
   }
 
   return (
@@ -222,6 +247,54 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
               Vi skickar högst en om dagen.
             </p>
           </div>
+
+          <div style={{ borderTop: '1px solid var(--border)', margin: '18px 0 14px' }} />
+
+          {!confirmingMute ? (
+            <button
+              onClick={() => setConfirmingMute(true)}
+              style={{
+                width: '100%', minHeight: 44, background: 'none',
+                border: '1px solid var(--border-dark)', borderRadius: 'var(--radius-md)',
+                color: 'var(--text-muted)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'var(--font-body)',
+              }}
+            >Tysta</button>
+          ) : (
+            <div className="card-sharp" style={{
+              background: 'var(--bg-elevated)', border: '1px solid var(--border-dark)',
+              borderRadius: 'var(--radius-md)', padding: 14,
+            }}>
+              <p style={{
+                fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+                color: 'var(--text-primary)', margin: '0 0 6px',
+              }}>Klubben tystnar.</p>
+              <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+                Inga fler notiser. Allt om den här installationen raderas hos oss.
+              </p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setConfirmingMute(false)}
+                  disabled={isMuting}
+                  style={{
+                    flex: 1, minHeight: 44, background: 'none', border: '1px solid var(--border-dark)',
+                    borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', fontSize: 13,
+                    fontWeight: 600, cursor: isMuting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
+                  }}
+                >Avbryt</button>
+                <button
+                  onClick={() => { void confirmMute() }}
+                  disabled={isMuting}
+                  style={{
+                    flex: 1, minHeight: 44, background: 'var(--danger)', border: 'none',
+                    borderRadius: 'var(--radius-sm)', color: 'var(--text-light)', fontSize: 13,
+                    fontWeight: 700, cursor: isMuting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
+                    opacity: isMuting ? 0.7 : 1,
+                  }}
+                >{isMuting ? '…' : 'Tysta'}</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Overlay>
