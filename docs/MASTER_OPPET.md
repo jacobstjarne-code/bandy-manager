@@ -668,6 +668,8 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 **Sammanfattning av rapporten:** "Matchkärnan kan vara rolig, men spelet lär mig inte tillräckligt väl varför den är rolig." Cup och slutspel roliga; serien blev upprepning av ett offensivt paket. Codex funktionella svep (d7303c82, EJ PUSHAT) tog fem saker direkt — se raden nedan. Resten är dömande och kalibrering. Opus läsning: tre av fynden är ETT fynd (B12 saknar konsument, se `sluttest-b12-konsument-b5` ovan), och ett fynd är formationsaxelns öppna fråga som nu syns i spel.
 
+**Separat verifierad mätrapport för C2:** [Kalibrering av 5-2-3:s konditionskostnad](matningar/C2_523_KONDITIONSKOSTNAD_2026-09-07.md). Rapporten skiljer uttryckligen den bevarade resultatsammanställningen från den råa JSON-utskrift som inte sparades.
+
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
 | taktik-funktionellt-svep-d7303c82 | Codex funktionella svep på rapporten: föregående elva följer med (bara skadade/avstängda lämnar hål); "✓ Uppdaterad" visas inte när konditionsgrinden stoppade autofyll; alla åtta taktikdimensioner i sammanfattningen före avslag; SM-finalens ceremoni → vanlig Granska före säsongsavslut; hjälptexten om direktspel i dåligt väder rättad (motorn straffar i snö och dimma) | **klar** | Code | Playtest Taktik 2026-09-03 + Codex d7303c82 | 4 198 tester/434 filer, build, design-/innehålls-/anläggningsgrindar gröna. Stänger rapportens HIGH 3 (SM-final utan Granska) och MEDIUM 1 (8/11-återställning) och halva MEDIUM 4 (sammanfattningen). EJ PUSHAT vid filning — Jacob pushar. |
