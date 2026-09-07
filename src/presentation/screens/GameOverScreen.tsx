@@ -101,12 +101,13 @@ export function GameOverScreen() {
     return gameOverBoardStatement(legacyTruth, managedClub?.name)
   }
 
-  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. "Se
-  // karriären" fångar game i route-state INNAN "Ny karriär" hinner nollställa
-  // store:t (clearFiredGame), så historikvyn aldrig tappar den avslutade
-  // karriärens data. handleNewGame() rensar store:t explicit — hasSave i
-  // IntroSequence blir korrekt false utan att förlita sig på att newGame()
-  // faktiskt anropas (spelaren kan avbryta på klubbvalet).
+  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. Route-
+  // state ger historiken sitt snapshot direkt, men "Se karriären" lämnar
+  // också den canonical sparfilen orörd i store/IndexedDB. Vid sidladdning
+  // försvinner route-state; HistoryScreen faller då tillbaka till den
+  // rehydrerade sparkade saven. En separat careerArchive-kopia skulle vara
+  // en parallell minnesbank för samma data. Bara "Ny karriär" nollställer
+  // live store; den id-nycklade saven ligger ändå kvar i multi-save-lagret.
   function handleViewHistory() {
     navigate('/game/game-over/historik', { state: { snapshot: game } })
   }

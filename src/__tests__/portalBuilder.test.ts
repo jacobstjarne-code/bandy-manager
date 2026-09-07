@@ -328,6 +328,40 @@ describe('buildPortal — C1 endgame-kurering', () => {
     expect(ids).toContain('coffee_room_card')
     expect(ids).toContain('ekonomi')
   })
+
+  it('säsong 2-start är etableringsår och kuraterar inte bort sekundärkorten', () => {
+    const game = makeGame({
+      fixtures: [],
+      managerProfile: { seasonsAtClub: 2 } as never,
+    })
+    const ids = buildPortal(game, makeSeed(game)).secondary.map(c => c.id)
+
+    expect(ids).toContain('coffee_room_card')
+    expect(ids).toContain('ekonomi')
+  })
+
+  it('från säsong 3-start gallras perifera kort men story-sloten lämnas till vändpunkten', () => {
+    const game = makeGame({
+      fixtures: [],
+      managerProfile: { seasonsAtClub: 3 } as never,
+      inbox: [{
+        id: 'm-season-start',
+        type: InboxItemType.BoardFeedback,
+        date: '2026-10-15',
+        title: 'Karriärsmilstolpe: Vändpunkten',
+        body: 'Förra säsongen sitter kvar.',
+        isRead: false,
+      }] as never,
+    })
+    const layout = buildPortal(game, makeSeed(game))
+    const ids = layout.secondary.map(c => c.id)
+
+    expect(ids).toContain('opponent_form')
+    expect(ids).toContain('tabell')
+    expect(ids).not.toContain('coffee_room_card')
+    expect(ids).not.toContain('ekonomi')
+    expect(layout.storySlot).not.toBeNull()
+  })
 })
 
 // ── C1 close-out: storySlot live-stake-gate ──────────────────────────────────

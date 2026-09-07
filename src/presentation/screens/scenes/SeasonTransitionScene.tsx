@@ -98,17 +98,17 @@ export function SeasonTransitionScene() {
   // valt här och bara här ("enda gången i spelet spelaren har överblick och
   // inte är mitt i något"). Tre-läges state: undefined = ingen interaktion
   // ännu (inget visuellt förvalt), 'none' = spelaren valde explicit "Inget
-  // särskilt i år", ett SeasonGoalOffer = ett riktigt mål valt. undefined
-  // och 'none' ger samma slutresultat i passSeasonTransition (inget mål
-  // registreras) — SeasonGoalType saknar idag en egen 'none'-variant, så ett
-  // explicit avstående går inte att skilja från ingen interaktion i
-  // historiken (se HistoryScreen.tsx). Känt, avsiktligt gap.
+  // särskilt i år", ett SeasonGoalOffer = ett riktigt mål valt. `none`
+  // skickas vidare som en explicit SeasonGoalType så årsboken kan skilja
+  // spelarens avstående från äldre saves där säsongsmål saknas helt.
   const [selectedGoal, setSelectedGoal] = useState<SeasonGoalOffer | 'none' | undefined>(undefined)
   const goalOffers = getSeasonGoalOffers(game)
 
   function handleContinue() {
     passSeasonTransition(
-      selectedGoal && selectedGoal !== 'none'
+      selectedGoal === 'none'
+        ? { type: 'none' }
+        : selectedGoal
         ? { type: selectedGoal.type, referenceId: selectedGoal.referenceId, trackedPlayerIds: selectedGoal.trackedPlayerIds }
         : undefined
     )

@@ -494,11 +494,10 @@ export function gameFlowActions(get: Get, set: Set) {
     // eventlistan här — inte i seasonEndProcessor.ts — för nästa säsongs
     // "medan du var borta" ska börja tomt, inte ärva den här säsongens.
     //
-    // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19): valfri goal-param.
-    // undefined = "Inget särskilt i år" (giltigt svar, domen kräver det) —
-    // skriver då inget activeSeasonGoal, samma "fältet saknas" som en spelare
-    // som aldrig sett O3 (seasonGoalService.deriveGoalOutcomeLine hanterar
-    // båda identiskt: "Du lovade ingenting i somras. Det höll du.").
+    // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19): valfri goal-param
+    // för bakåtkompatibla/anrop utan picker. Spelarens synliga "Inget särskilt
+    // i år" skickas som den explicita typen `none`, så activeSeasonGoal kan
+    // frysas i årsboken utan att fabricera samma val för äldre saves.
     passSeasonTransition: (goal?: { type: SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }) => {
       const { game } = get()
       if (!game) return

@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { GameEvent, TransferBid } from '../../../domain/entities/GameEvent'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
+import type { Player } from '../../../domain/entities/Player'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
 import { canAddDecision } from '../../../domain/services/decisionBudgetService'
@@ -35,6 +36,92 @@ import { applyPatronHappinessTransition } from '../../../domain/services/patronW
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { buildScandalLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 import { generateRosterVoiceIntroductions } from '../../../domain/services/voiceIntroductionService'
+import { evaluateBoard, generateBoardMessage } from '../../../domain/services/boardService'
+import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
+import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
+
+const BOARD_MILESTONES = [7, 14, 22]
+
+export function processRoundMilestoneInbox(
+  game: SaveGame,
+  standings: SaveGame['standings'],
+  fixtures: Fixture[],
+  currentLeagueRound: number | null,
+  isCupRound: boolean,
+  isPlayoffRound: boolean,
+): InboxItem[] {
+  const inboxItems: InboxItem[] = []
+
+  if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && BOARD_MILESTONES.includes(currentLeagueRound)) {
+    const managedClub = game.clubs.find(club => club.id === game.managedClubId)
+    const managedStanding = standings.find(standing => standing.clubId === game.managedClubId)
+    if (managedClub && managedStanding) {
+      const evaluation = evaluateBoard(game.boardPatience ?? 70)
+      const { title, body } = generateBoardMessage(evaluation, managedClub.name, currentLeagueRound)
+      const id = `inbox_board_r${currentLeagueRound}_${game.currentSeason}`
+      if (!game.inbox.some(item => item.id === id)) {
+        inboxItems.push({
+          id,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title,
+          body,
+          isRead: false,
+        })
+      }
+    }
+  }
+
+  inboxItems.push(...checkMidSeasonEvents({ ...game, standings, fixtures }))
+  return inboxItems
+}
+
+export function processBoardObjectiveCheckIn(
+  game: SaveGame,
+  players: Player[],
+  fixtures: Fixture[],
+  standings: SaveGame['standings'],
+  leagueRound: number,
+): {
+  objectives: NonNullable<SaveGame['boardObjectives']>
+  sponsorNetworkMoodDelta: number
+  boardTrustDelta: number
+  foretroendepottAmount: number
+  inboxItems: InboxItem[]
+} {
+  const objectives = game.boardObjectives ?? []
+  if (![7, 14, 22].includes(leagueRound) || objectives.length === 0) {
+    return { objectives, sponsorNetworkMoodDelta: 0, boardTrustDelta: 0, foretroendepottAmount: 0, inboxItems: [] }
+  }
+
+  const result = checkInObjectives(objectives, { ...game, players, fixtures, standings })
+  const inboxItems: InboxItem[] = result.inboxMessages.map(message => ({
+    id: `inbox_boardobj_${leagueRound}_${message.title.slice(0, 10)}_${game.currentSeason}`,
+    date: game.currentDate,
+    type: InboxItemType.BoardFeedback,
+    title: message.title,
+    body: message.body,
+    isRead: false,
+  }))
+  if (result.foretroendepottAmount > 0) {
+    inboxItems.push({
+      id: `inbox_foretroendepott_${game.currentSeason}_${leagueRound}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: 'Styrelsens förtroendepott',
+      body: 'Två raka säsonger med uppfyllt flaggskeppsmål. Styrelsen tillskjuter 62 500 kr som anläggnings- eller transferkredit.',
+      isRead: false,
+    })
+  }
+
+  return {
+    objectives: result.updated,
+    sponsorNetworkMoodDelta: result.sponsorNetworkMoodDelta,
+    boardTrustDelta: result.boardTrustDelta,
+    foretroendepottAmount: result.foretroendepottAmount,
+    inboxItems,
+  }
+}
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]

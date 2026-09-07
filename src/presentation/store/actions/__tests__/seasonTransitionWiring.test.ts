@@ -94,7 +94,19 @@ describe('passSeasonTransition (5.1 Sommaren — återinträdesguard)', () => {
     expect(after?.activeSeasonGoal).toEqual({ type: 'playoff', chosenSeason: game.currentSeason })
   })
 
-  it('utan mål ("Inget särskilt i år") — activeSeasonGoal förblir odefinierat', () => {
+  it('explicit "Inget särskilt i år" — skriver none med chosenSeason', () => {
+    const game = makeGame()
+    useGameStore.setState({ game })
+
+    useGameStore.getState().passSeasonTransition({ type: 'none' })
+
+    expect(useGameStore.getState().game?.activeSeasonGoal).toEqual({
+      type: 'none',
+      chosenSeason: game.currentSeason,
+    })
+  })
+
+  it('utelämnad parameter förblir bakåtkompatibelt odefinierad', () => {
     const game = makeGame()
     useGameStore.setState({ game })
 

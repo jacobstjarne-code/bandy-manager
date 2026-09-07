@@ -1,8 +1,8 @@
 /**
  * O3 — Spelarens eget säsongsmål (DOM_EGET_SASONGSMAL_2026-08-17.md).
  * Ett mål, valt i Sommaren, återkallat vid halvtid (ambient rad) och i
- * årsboken (O18 fält 1). Sex fasta måltyper härledda ur klubbens faktiska
- * läge — inget AI-genererat.
+ * årsboken (O18 fält 1). Sex faktiska måltyper härledda ur klubbens faktiska
+ * läge plus ett explicit avstående — inget AI-genererat.
  *
  * Halvtidsraden (2026-08-19): D1:s ambient-nivå (isAmbientEvent/
  * getEventRenderTarget, eventQueueService.ts) blev KLAR under samma session
@@ -153,6 +153,11 @@ export function evaluateSeasonGoal(
   ctx: SeasonGoalEvalContext,
 ): SeasonGoalRecord {
   switch (goal.type) {
+    case 'none':
+      // `outcome` är obligatoriskt i den frusna tre-fältsformen. För ett
+      // explicit avstående finns inget prestationsvillkor att misslyckas
+      // med; årsboken renderar den låsta avståenderaden separat.
+      return { type: 'none', outcome: 'met' }
     case 'playoff':
     case 'establish': {
       const finalPosition = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 12
@@ -194,6 +199,7 @@ export function evaluateSeasonGoal(
  */
 function deriveGoalPhrase(record: SeasonGoalRecord, game: SaveGame): string {
   switch (record.type) {
+    case 'none': return ''
     case 'playoff': return 'slutspel'
     case 'establish': return 'etablering'
     case 'playerCarry': {
@@ -218,7 +224,10 @@ function deriveGoalPhrase(record: SeasonGoalRecord, game: SaveGame): string {
  * @cites SeasonGoalRecord.outcome
  */
 export function deriveGoalOutcomeLine(record: SeasonGoalRecord | undefined, game: SaveGame): string {
-  if (!record) return 'Du lovade ingenting i somras. Det höll du.'
+  // undefined betyder en äldre/pre-O3-säsong och får inte fabricera ett
+  // aktivt avstående. HistoryScreen visar raden bara när en record finns.
+  if (!record) return ''
+  if (record.type === 'none') return 'Du lovade ingenting i somras. Det höll du.'
   const phrase = deriveGoalPhrase(record, game)
   switch (record.outcome) {
     case 'met': return `Du sa ${phrase} i somras. Du gjorde det.`
@@ -416,11 +425,13 @@ const CARRY_HALFWAY_GAMES_TARGET = 7   // hälften av slutmålets 15, avrundat n
  * en påminnelse ("Halva säsongen kvar.") bara när det INTE ser bra ut,
  * exakt som domens negativa exempel.
  */
-function deriveGoalHalfwayLine(goal: { type: SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }, game: SaveGame): string {
+function deriveGoalHalfwayLine(goal: { type: SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }, game: SaveGame): string | null {
   const phrase = deriveGoalPhrase({ type: goal.type, referenceId: goal.referenceId, outcome: 'not' }, game)
   const reminder = ' Halva säsongen kvar.'
 
   switch (goal.type) {
+    case 'none':
+      return null
     case 'playoff':
     case 'establish': {
       const position = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 12
@@ -467,6 +478,7 @@ function deriveGoalHalfwayLine(goal: { type: SeasonGoalType; referenceId?: strin
 export function checkSeasonGoalHalfwayEvent(game: SaveGame): GameEvent | null {
   const goal = game.activeSeasonGoal
   if (!goal || goal.chosenSeason !== game.currentSeason) return null
+  if (goal.type === 'none') return null
   if (getCurrentLeagueRound(game) < HALFWAY_LEAGUE_ROUND) return null
   // A-M7 (SEXSÄSONGSAUDITEN 2026-08-26) — rotorsak: gaten var bara en nedre
   // gräns på ligaomgång (>= 11), aldrig en övre. getCurrentLeagueRound
@@ -482,11 +494,14 @@ export function checkSeasonGoalHalfwayEvent(game: SaveGame): GameEvent | null {
   if ((game.resolvedEventIds ?? []).includes(eventId)) return null
   if ([...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])].some(e => e.id === eventId)) return null
 
+  const body = deriveGoalHalfwayLine(goal, game)
+  if (!body) return null
+
   return {
     id: eventId,
     type: 'seasonGoalHalfway',
     title: 'Halva säsongen',
-    body: deriveGoalHalfwayLine(goal, game),
+    body,
     choices: [],
     resolved: false,
     priority: 'low',

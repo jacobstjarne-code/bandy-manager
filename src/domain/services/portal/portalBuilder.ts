@@ -129,14 +129,19 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const phase = getPortalPhase(currentLigaRound, tablePosition, game.clubs.length, isPlayoff, isSpectator)
   const character = getRoundCharacter(game)
 
-  // C1: endgame-kurering — gäller de avgörande matchfönstren (slutspel + slutspurt
-  // omg ≥20). B1 (2026-07-19): smalare än BÅDE 'vinterkris' (omg 12-16,
+  // C1: match-/vändpunktskurering — gäller de avgörande matchfönstren
+  // (slutspel + slutspurt omg ≥20) och säsongsstart från managerns tredje
+  // säsong i klubben. B1 (2026-07-19): smalare än BÅDE 'vinterkris' (omg 12-16,
   // tabellvillkorad) och 'våroffensiv'/'slutspurt' (omg 17+, `phase` ovan);
   // här handlar det om att när utgången är avgörande ska portalen vara EN
-  // sak, oavsett vilken av de faserna man kom från. Säsong-2-start lämnas
-  // medvetet utanför (otydlig detektion, risk att gömma relevanta
-  // säsongsstart-kort) — flaggad.
-  const isEndgameCuration = isPlayoff || currentLigaRound >= 20
+  // sak, oavsett vilken av de faserna man kom från. Vid säsongsstart bevaras
+  // story-sloten (se liveStake nedan), men perifer secondary/minimal gallras så
+  // föregående säsongs verkliga vändpunkt kan bära sidan. managerProfile-
+  // räknaren är samma kanoniska tjänsteårsaxel som Sommaren-scenen använder;
+  // currentSeason är kalenderår och får inte användas som säsongsnummer.
+  const managerSeason = game.managerProfile?.seasonsAtClub ?? 1
+  const isEstablishedSeasonStart = managerSeason >= 3 && currentLigaRound === 0
+  const isEndgameCuration = isPlayoff || currentLigaRound >= 20 || isEstablishedSeasonStart
   // C1 close-out: storySlot-släckningen gatas på LEVANDE INSATS (kvar i slutspelsrace /
   // spelar match), inte rå omg≥20. En utslagen åskådar-klubb (isSpectator) vid omg≥20
   // behåller story-sloten — utslagningen är precis när reflektionen hör hemma.

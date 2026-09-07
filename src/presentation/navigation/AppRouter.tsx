@@ -69,7 +69,8 @@ const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
 // visa historik för en avslutad (managerFired) karriär. GameShell redirectar
 // bort managerFired-spel innan /game/history hinner rendera, så denna rutten
 // hänger under samma GameGuard som game-over (bara kollar !game, inte
-// managerFired) istället. Snapshot fångas i route-state av GameOverScreen.
+// managerFired) istället. Snapshot fångas i route-state av GameOverScreen;
+// efter sidladdning faller HistoryScreen tillbaka till rehydrerad live-save.
 function FiredCareerHistoryScreen() {
   const location = useLocation()
   const snapshot = (location.state as { snapshot?: import('../../domain/entities/SaveGame').SaveGame } | null)?.snapshot

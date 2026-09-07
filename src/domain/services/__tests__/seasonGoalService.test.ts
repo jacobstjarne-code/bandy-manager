@@ -121,6 +121,11 @@ describe('evaluateSeasonGoal', () => {
     }
   }
 
+  it('none — fryser ett explicit avstående utan prestationsvillkor', () => {
+    const record = evaluateSeasonGoal(baseGame(), { type: 'none' }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() })
+    expect(record).toEqual({ type: 'none', outcome: 'met' })
+  })
+
   it('playoff — met när plats <= 8', () => {
     const game = withStanding(baseGame(), 4)
     const record = evaluateSeasonGoal(game, { type: 'playoff' }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() })
@@ -194,8 +199,12 @@ describe('evaluateSeasonGoal', () => {
 describe('deriveGoalOutcomeLine — text låst av Opus, ordagrann', () => {
   const game = baseGame()
 
-  it('inget mål valt', () => {
-    expect(deriveGoalOutcomeLine(undefined, game)).toBe('Du lovade ingenting i somras. Det höll du.')
+  it('explicit avstående visar den låsta raden', () => {
+    expect(deriveGoalOutcomeLine({ type: 'none', outcome: 'met' }, game)).toBe('Du lovade ingenting i somras. Det höll du.')
+  })
+
+  it('äldre säsong utan record fabricerar inte ett avstående', () => {
+    expect(deriveGoalOutcomeLine(undefined, game)).toBe('')
   })
 
   it('slutspel — uppfyllt/nästan/inte', () => {
@@ -401,6 +410,15 @@ describe('checkSeasonGoalHalfwayEvent — ambient rad (D1)', () => {
 
   it('inget mål valt — null, ingen rad', () => {
     const game = atHalfway(baseGame())
+    expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
+  })
+
+  it('explicit avstående — null, inget halvtids-event', () => {
+    const base = atHalfway(baseGame())
+    const game = {
+      ...base,
+      activeSeasonGoal: { type: 'none' as const, chosenSeason: base.currentSeason },
+    }
     expect(checkSeasonGoalHalfwayEvent(game)).toBeNull()
   })
 

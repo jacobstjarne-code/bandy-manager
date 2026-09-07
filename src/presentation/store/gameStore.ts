@@ -104,9 +104,11 @@ interface GameState {
   // Actions
   newGame: (managerName: string, clubId: string) => void
   // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
-  // röra IndexedDB-posten. Gör att huvudmenyns hasSave blir korrekt false utan
-  // att "SE KARRIÄREN"-flödet (som fångar game i route-state FÖRE detta
-  // anrop) tappar sin data. Multi-slot (2026-08-22): newGame:s tidigare
+  // röra IndexedDB-posten. Gör att huvudmenyns hasSave blir korrekt false.
+  // "SE KARRIÄREN" anropar INTE denna action: den sparkade saven ligger kvar
+  // som live game, så en sidladdning på historikrouten rehydrerar samma
+  // canonical save och HistoryScreen kan falla tillbaka från förlorad
+  // route-state. Multi-slot (2026-08-22): newGame:s tidigare
   // ovillkorade delete-all-loop är borttagen — IndexedDB-posten för en
   // avfyrad karriär rensas alltså aldrig automatiskt längre, vilket nu är
   // KORREKT beteende (den ska kunna dyka upp i SaveManagerScreen efteråt),

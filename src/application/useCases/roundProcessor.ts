@@ -2,22 +2,14 @@ import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
 import { getEventPriority } from '../../domain/entities/GameEvent'
 import type { Moment } from '../../domain/entities/Moment'
 import type { Player } from '../../domain/entities/Player'
-import type { Fixture, ManagerChoiceEntry } from '../../domain/entities/Fixture'
+import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { FixtureStatus, MatchEventType, InboxItemType, PendingScreen, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../domain/enums'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
-import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
-import {
-  createInjuryItem,
-  createSuspensionItem,
-  createRecoveryItem,
-  createPlayThroughAftermathItem,
-} from '../../domain/services/inboxService'
-import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
-import { evaluateBoard, generateBoardMessage, updateRunningBoardPatience } from '../../domain/services/boardService'
+import { updateRunningBoardPatience } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
@@ -28,15 +20,11 @@ import { applyRoundTraining } from './processors/trainingProcessor'
 import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
-import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
-import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { isPlayoffNarrativeCardStillValid } from '../../domain/services/playoffNarrativeService'
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
-import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
-import { checkInObjectives } from '../../domain/services/boardObjectiveService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -59,37 +47,21 @@ import {
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
-import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
-import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid, processBoardObjectiveCheckIn, processRoundMilestoneInbox } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
-import type { RippleChain } from '../../domain/entities/SaveGame'
-import type { EventLedgerEntry } from '../../domain/entities/Narrative'
 import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanService'
-import { buildMatchResultLedgerEntry } from '../../domain/services/clubMemoryEventBuilders'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
-import {
-  annandagsbandyInbox,
-  finaldagInboxPlaying,
-  finaldagInboxSpectator,
-  cupFinalInboxPlaying,
-  type SpecialDateContext,
-} from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalService'
 import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from '../../domain/services/decisionBudgetService'
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
-import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
 import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { adjustSupporterMood } from '../../domain/services/supporterService'
-import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../../domain/services/nationalTeamService'
-import {
-  SNUB_SCENE_LINES,
-} from '../../domain/data/landslagText'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
 import { logEvent } from '../../domain/services/eventLedgerService'
@@ -98,172 +70,19 @@ import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKar
 import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
 import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
 import { recordPressLedgerQuestionShown } from '../../domain/services/pressConferenceService'
+import {
+  ensureManagerChoiceLog,
+  INBOX_PROTECTED_TYPES,
+  processUpcomingFixtureInbox,
+  stripCompletedFixture,
+} from './processors/fixtureProcessor'
+import { processManagedDevelopment } from './processors/developmentProcessor'
+import { processNationalTeamRound } from './processors/nationalTeamProcessor'
+import { processRoundNotifications } from './processors/notificationProcessor'
+import { processManagedMatchOutcome } from './processors/matchOutcomeProcessor'
+import { processMarketValues } from './processors/marketValueProcessor'
 
 export type { AdvanceResult }
-
-type Lineup = Fixture['homeLineup']
-
-function stripLineup(lineup: Lineup): Lineup {
-  if (!lineup) return undefined
-  return {
-    startingPlayerIds: lineup.startingPlayerIds,
-    benchPlayerIds: [],
-    tactic: {
-      mentality: lineup.tactic.mentality,
-      tempo: lineup.tactic.tempo,
-      passingRisk: lineup.tactic.passingRisk,
-      width: lineup.tactic.width,
-      attackingFocus: lineup.tactic.attackingFocus,
-      cornerStrategy: lineup.tactic.cornerStrategy,
-      penaltyKillStyle: lineup.tactic.penaltyKillStyle,
-    },
-  }
-}
-
-function generateSpecialDateInbox(
-  fixture: Fixture,
-  game: SaveGame,
-  matchday: number,
-): InboxItem[] {
-  const items: InboxItem[] = []
-  const isHome = fixture.homeClubId === game.managedClubId
-  const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
-  const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
-  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
-
-  const ctx: SpecialDateContext = {
-    isHomePlayer: isHome,
-    homeClubName: homeClub?.name ?? '',
-    awayClubName: awayClub?.name ?? '',
-    arenaName: homeClub?.arenaName ?? 'arenan',
-    venueCity: homeClub?.shortName ?? '',
-    rivalryName: rivalry?.name,
-  }
-
-  if (fixture.isFinaldag) {
-    const { subject, body } = finaldagInboxPlaying(ctx)
-    items.push({
-      id: `inbox_finaldag_${game.currentSeason}`,
-      date: game.currentDate,
-      type: InboxItemType.Playoff,
-      title: subject,
-      body,
-      isRead: false,
-    })
-    return items
-  }
-
-  // Use stored seasonCalendar as single source of truth
-  const storedCal = game.seasonCalendar ?? []
-  const slot = storedCal.find(s => s.matchday === matchday)
-
-  if (slot?.isAnnandagen || fixture.isAnnandagen) {
-    const { subject, body } = annandagsbandyInbox(ctx)
-    items.push({
-      id: `inbox_annandagen_match_${game.currentSeason}`,
-      date: game.currentDate,
-      type: InboxItemType.Derby,
-      title: subject,
-      body,
-      isRead: false,
-    })
-  } else if (slot?.isCupFinalhelgen && fixture.isCup && fixture.roundNumber === 4) {
-    const { subject, body } = cupFinalInboxPlaying(ctx)
-    items.push({
-      id: `inbox_cupfinalhelg_${fixture.id}`,
-      date: game.currentDate,
-      type: InboxItemType.Derby,
-      title: subject,
-      body,
-      isRead: false,
-    })
-  }
-  // Nyårsbandy: ingen inbox per spec
-
-  return items
-}
-
-function generateSpecialDateInboxSpectator(game: SaveGame): InboxItem[] {
-  const smFinal = game.fixtures.find(f =>
-    f.isFinaldag &&
-    f.status !== 'completed' &&
-    f.homeClubId !== game.managedClubId &&
-    f.awayClubId !== game.managedClubId
-  )
-  if (!smFinal) return []
-
-  const alreadySent = game.inbox.some(i => i.id === `inbox_finaldag_spectator_${game.currentSeason}`)
-  if (alreadySent) return []
-
-  const homeClub = game.clubs.find(c => c.id === smFinal.homeClubId)
-  const awayClub = game.clubs.find(c => c.id === smFinal.awayClubId)
-  const ctx: SpecialDateContext = {
-    isHomePlayer: false,
-    homeClubName: homeClub?.name ?? '',
-    awayClubName: awayClub?.name ?? '',
-    arenaName: homeClub?.arenaName ?? 'arenan',
-    venueCity: homeClub?.shortName ?? '',
-  }
-  const { subject, body } = finaldagInboxSpectator(ctx)
-  return [{
-    id: `inbox_finaldag_spectator_${game.currentSeason}`,
-    date: game.currentDate,
-    type: InboxItemType.Playoff,
-    title: subject,
-    body,
-    isRead: false,
-  }]
-}
-
-function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClubId?: string): Fixture {
-  if (f.id === managedFixtureId) return f
-  if (f.status !== FixtureStatus.Completed) return f
-
-  const isManagedFixture = managedClubId != null &&
-    (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
-  const margin = Math.abs((f.homeScore ?? 0) - (f.awayScore ?? 0))
-  // Derby/playoff/blowout managed fixtures keep playerRatings for GranskaScreen
-  const preserveRatings = isManagedFixture && (
-    getRivalry(f.homeClubId, f.awayClubId) !== null || f.matchday > 22 || margin >= 3
-  )
-
-  // ── Event retention after match completion ──────────────────────────────────
-  // PERSISTENT (kept in fix.events for all completed fixtures):
-  //   Goal      — primary scoring record; carries isCornerGoal + isPenaltyGoal flags
-  //   RedCard   — bandy 10-min suspensions (MatchEventType.Suspension used for all suspensions)
-  //   YellowCard — kept for completeness (not emitted in current bandy engine)
-  //
-  // TRANSIENT (stripped to save memory — not available after this point):
-  //   Assist, Save, Corner, Penalty, Substitution, Shot, Injury, FullTime
-  //
-  // IF YOU ADD NEW TRACKING that needs to survive beyond the live match:
-  //   Option A — add a boolean flag on a persistent event (like isPenaltyGoal on Goal)
-  //   Option B — add the event type to the filter below
-  //   Do NOT use a transient event as your source of truth in stats.ts or any
-  //   post-match analysis. See LESSONS.md §20.
-  const strippedEvents = f.events
-    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension)
-    .map(e => ({ ...e, description: '' }))
-
-  return {
-    ...f,
-    events: strippedEvents,
-    homeLineup: stripLineup(f.homeLineup),
-    awayLineup: stripLineup(f.awayLineup),
-    report: preserveRatings || !f.report ? f.report : { ...f.report, playerRatings: {} },
-  }
-}
-
-// Types that must never be auto-expired — user action may be required
-const INBOX_PROTECTED_TYPES = new Set<InboxItemType>([
-  InboxItemType.TransferOffer,
-  InboxItemType.ContractExpiring,
-  InboxItemType.Retirement,
-  InboxItemType.TransferBidReceived,
-  InboxItemType.YouthIntake,
-  InboxItemType.ScoutReport,
-  InboxItemType.TransferDeadline,
-])
 
 export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult {
   const preRound = derivePreRoundContext(game, seed)
@@ -388,268 +207,55 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Per-round development for managed club players ────────────────────────
-  const updatedChemistryStats = { ...(game.chemistryStats ?? {}) }
-  {
-    const managedFixture = simulatedFixtures.find(
-      f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
-    )
-    const playedIds = new Set<string>()
-    const starterIds = new Set<string>()
-    const ratings: Record<string, number> = {}
-
-    if (managedFixture) {
-      const isHome = managedFixture.homeClubId === game.managedClubId
-      const lineup = isHome ? managedFixture.homeLineup : managedFixture.awayLineup
-      if (lineup) {
-        for (const id of lineup.startingPlayerIds ?? []) { starterIds.add(id); playedIds.add(id) }
-        for (const id of lineup.benchPlayerIds ?? []) { playedIds.add(id) }
-      }
-
-      // Update chemistry stats — 90 min for each pair of starters
-      const starters = Array.from(starterIds)
-      for (let i = 0; i < starters.length; i++) {
-        for (let j = i + 1; j < starters.length; j++) {
-          const key = [starters[i], starters[j]].sort().join('|')
-          updatedChemistryStats[key] = (updatedChemistryStats[key] ?? 0) + 90
-        }
-      }
-      if (managedFixture.report?.playerRatings) {
-        Object.assign(ratings, managedFixture.report.playerRatings)
-      }
-    }
-
-    // Map TrainingType to the three focus buckets used by applyRoundDevelopment
-    const trainingType = game.managedClubTraining?.type
-    const focusBucket = (trainingType === TrainingType.Tactical || trainingType === TrainingType.MatchPrep)
-      ? 'tactical'
-      : (trainingType === TrainingType.Physical || trainingType === TrainingType.Skating)
-        ? 'physical'
-        : (trainingType === TrainingType.BallControl || trainingType === TrainingType.Passing || trainingType === TrainingType.Shooting)
-          ? 'technical'
-          : 'physical'
-
-    const intensityRaw = game.managedClubTraining?.intensity
-    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): "Sänk tempot på träningen"
-    // (burnoutRelief) tvingar 'light' till och med burnoutTrainingSlowdownUntilRound
-    // — en override, INTE en ändring av spelarens egen Träna-flik-inställning
-    // (game.managedClubTraining.intensity förblir orört, bara den EFFEKTIVA
-    // intensiteten denna omgång sänks).
-    const burnoutSlowdownActive = (game.burnoutTrainingSlowdownUntilRound ?? 0) >= nextMatchday
-    const intensityBucket = burnoutSlowdownActive ? 'light'
-      : intensityRaw === TrainingIntensity.Light ? 'light'
-      : (intensityRaw === TrainingIntensity.Hard || intensityRaw === TrainingIntensity.Extreme) ? 'heavy'
-      : 'normal'
-
-    finalPlayers = applyRoundDevelopment(
-      finalPlayers,
-      game.managedClubId,
-      focusBucket,
-      intensityBucket,
-      playedIds,
-      starterIds,
-      ratings,
-      game.leadershipActions,
-      nextMatchday,
-    )
-
-    // Mentor effect for A-team adepts (P19 is handled in youthProcessor — no overlap)
-    const youthPlayerIds = new Set((game.youthTeam?.players ?? []).map(p => p.id))
-    for (const m of (game.mentorships ?? []).filter(ms => ms.isActive)) {
-      if (youthPlayerIds.has(m.youthPlayerId)) continue
-      const mentor = finalPlayers.find(p => p.id === m.seniorPlayerId)
-      if (!mentor || mentor.form < MENTOR_FORM_THRESHOLD) continue
-      const devBoost = mentor.discipline / 20
-      finalPlayers = finalPlayers.map(p => p.id === m.youthPlayerId
-        ? { ...p, developmentRate: Math.min(100, p.developmentRate + devBoost * 0.1) }
-        : p
-      )
-    }
-  }
+  const developmentResult = processManagedDevelopment(game, finalPlayers, simulatedFixtures, nextMatchday)
+  finalPlayers = developmentResult.players
+  const updatedChemistryStats = developmentResult.chemistryStats
 
   // A1 — Notisdiet: egna matchresultat skapas INTE i inkorgen.
   // Spelaren har just upplevt matchen och ser allt i Granska.
 
-  // Injury notifications + DREAM-003 star injury ripple
-  let gameAfterRipples = game
-  const roundRippleChains: RippleChain[] = []
-  // MIGRATIONSPLAN_HANDELSELIGGAREN Fas 4+ (2026-09-02) — dual-write av alla
-  // tre systemtriggarna (star_injured/big_derby_win/mecenat_left).
-  const roundLedgerEntries: EventLedgerEntry[] = [...playerMilestoneLedgerEntries]
-  for (const { player, days } of newlyInjured) {
-    const clubId = player.clubId
-    if (clubId === game.managedClubId) {
-      newInboxItems.push(createInjuryItem(player, days, game.currentDate, game.doctor))
-      const beforeStarRipple = gameAfterRipples
-      gameAfterRipples = applyRipples(gameAfterRipples, { type: 'star_injured', playerId: player.id })
-      const starInjuryChain = describeRippleChain(beforeStarRipple, gameAfterRipples, 'star_injured',
-        `${player.firstName} ${player.lastName}`, nextMatchday, game.currentSeason)
-      roundRippleChains.push(starInjuryChain)
-      const starInjuryLedgerEntry = buildSystemRippleLedgerEntry(starInjuryChain, 'star_injury', { kind: 'player', id: player.id })
-      if (starInjuryLedgerEntry) roundLedgerEntries.push(starInjuryLedgerEntry)
-      if (player.currentAbility >= 65) {
-        newMoments.push({
-          id: `moment_injury_${player.id}_${nextMatchday}`,
-          source: 'star_injury',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `${player.firstName} ${player.lastName} är borta`,
-          body: `Sidan han spelade på blir tunnare. Klacken vet det. ${days} dagar minst.`,
-          subjectPlayerId: player.id,
-        })
-      }
-    }
-  }
+  const notificationResult = processRoundNotifications({
+    game,
+    updatedPlayers,
+    injuredBeforeRound,
+    newlyInjured,
+    newlySuspended,
+    playThroughResolutions,
+    nextMatchday,
+    initialLedgerEntries: playerMilestoneLedgerEntries,
+  })
+  let gameAfterRipples = notificationResult.gameAfterRipples
+  const roundRippleChains = notificationResult.rippleChains
+  const roundLedgerEntries = notificationResult.ledgerEntries
+  newInboxItems.push(...notificationResult.inboxItems)
+  newMoments.push(...notificationResult.moments)
 
-  // Suspension notifications
-  // PÅSTÅENDEKARTAN (2026-08-24): hårdkodade tidigare 3 matcher oavsett
-  // faktisk längd — sanningen (`player.suspensionGamesRemaining`, satt till
-  // 1 av matchstraffet några steg tidigare i playerStateProcessor.ts) fanns
-  // redan på samma objekt men lästes aldrig. Maskerat idag av att
-  // SUSPENSION_INCIDENT_LINES saknar {kvar}-token, men den icke-mallade
-  // fallback-raden ("avstängd i {gamesOut} match(er)") hade visat "3" rakt av.
-  for (const { player } of newlySuspended) {
-    if (player.clubId === game.managedClubId) {
-      newInboxItems.push(createSuspensionItem(player, player.suspensionGamesRemaining, game.currentDate, game.currentSeason))
-    }
-  }
+  newInboxItems.push(...processRoundMilestoneInbox(
+    game,
+    standings,
+    allFixtures,
+    currentLeagueRound,
+    isCupRound,
+    isPlayoffRound,
+  ))
 
-  // Recovery notifications (players who were injured before this round and are now healed)
-  for (const player of updatedPlayers) {
-    if (player.clubId === game.managedClubId && injuredBeforeRound.has(player.id) && !player.isInjured) {
-      newInboxItems.push(createRecoveryItem(player, game.currentDate))
-    }
-  }
-
-  // Pool 1c: spela-på-eftersnack (doktorns röst, PLAY_THROUGH_AFTERMATH)
-  for (const { player, aftermathLine } of playThroughResolutions) {
-    if (player.clubId === game.managedClubId) {
-      newInboxItems.push(createPlayThroughAftermathItem(player, aftermathLine, game.currentDate))
-    }
-  }
-
-  // ── Board milestone messages at league rounds 7, 14, 22 ──────────────
-  const BOARD_MILESTONES = [7, 14, 22]
-  if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && BOARD_MILESTONES.includes(currentLeagueRound)) {
-    const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-    const managedStanding = standings.find(s => s.clubId === game.managedClubId)
-    if (managedClub && managedStanding) {
-      // Skutskär-auditens test 2, Jacobs dom 2026-08-24: evaluateBoard läser
-      // nu game.boardPatience (samma ackumulerade värde som portalens
-      // getBoardPatienceZone), inte längre position/expectation — se
-      // boardService.ts:s kommentar på funktionen.
-      const evaluation = evaluateBoard(game.boardPatience ?? 70)
-      const { title, body } = generateBoardMessage(evaluation, managedClub.name, currentLeagueRound)
-      const alreadySent = game.inbox.some(
-        i => i.id === `inbox_board_r${currentLeagueRound}_${game.currentSeason}`
-      )
-      if (!alreadySent) {
-        newInboxItems.push({
-          id: `inbox_board_r${currentLeagueRound}_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title,
-          body,
-          isRead: false,
-        })
-      }
-    }
-  }
-
-  // ── Mid-season triggers — Halvtidsrapport + 6 andra milstolpar ──────
-  // Anropas med uppdaterade standings + allFixtures så lastMatchday och placering är aktuella.
-  newInboxItems.push(...checkMidSeasonEvents({ ...game, standings, fixtures: allFixtures }))
-
-  // ── C-K1: Landslagsuttagning — VM-uppehåll vid omgång 14 ─────────────
-  // calendarSlot here uses same logic as the one declared below; resolved early for national team trigger
-  const nationalTeamCalSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextMatchday)
-  let nationalTeamUpdatedPlayers = finalPlayers
-  let nationalTeamCampState = game.activeNationalTeamCamp
-  let nationalTeamSnub = game.lastNationalSnub
-  // Release-svepet 2026-07-21 (Block 2c) — se appendet vid updatedGame nedan
-  // (samma "lägg på i efterhand"-mönster som marketValueInbox): finansbonusen
-  // appliceras mot updatedGame.clubs i slutet, inte här, för att slippa tråckla
-  // en ny clubs-variabel genom hela economy/transfer-kedjan (rad ~900-1400)
-  // som redan ligger EFTER den här punkten i funktionen.
-  let nationalTeamCallupBonusTkr = 0
-  let nationalTeamCallupModal = game.pendingCallupModal
-
-  // Trigger callup on landslagsuppehall round
-  if (nationalTeamCalSlot?.isLandslagsuppehall && !isCupRound && !isPlayoffRound && !game.activeNationalTeamCamp) {
-    const calledUpIds = selectNationalTeam({ ...game, players: nationalTeamUpdatedPlayers })
-    if (calledUpIds.length > 0) {
-      const callupResult = applyCallupEffects(game, nationalTeamUpdatedPlayers, calledUpIds, nextMatchday)
-      nationalTeamUpdatedPlayers = callupResult.players
-      nationalTeamCampState = callupResult.activeNationalTeamCamp
-      newInboxItems.push(...callupResult.inboxItems)
-      nationalTeamCallupBonusTkr = callupResult.callupModal.bonusTkr
-      nationalTeamCallupModal = callupResult.callupModal
-      roundLedgerEntries.push(...callupResult.ledgerEntries)
-    }
-
-    // M16 (regelboksanpassning 2026-07-03): snub-mekaniken flyttad utanför
-    // calledUpIds.length > 0-grinden. Uttagningen är nu förtjänstgated (0-2,
-    // LANDSLAGS_CA_TROSKEL) — det dramaturgiskt sanna ögonblicket är bästa
-    // spelaren STRAX under tröskeln när 0 eller 1 tas ut, inte bara när någon
-    // redan tagits ut. Vid cap (2 uttagna) triggar inte snuben — klubben fick
-    // redan sin fulla tilldelning.
-    if (calledUpIds.length < CALLUP_CAP) {
-      const snubCandidate = nationalTeamUpdatedPlayers
-        .filter(p =>
-          p.clubId === game.managedClubId &&
-          !calledUpIds.includes(p.id) &&
-          p.currentAbility < LANDSLAGS_CA_TROSKEL &&
-          p.currentAbility >= LANDSLAGS_CA_TROSKEL - 5
-        )
-        .sort((a, b) => b.currentAbility - a.currentAbility)[0]
-
-      if (snubCandidate) {
-        nationalTeamUpdatedPlayers = nationalTeamUpdatedPlayers.map(p => {
-          if (p.id !== snubCandidate.id) return p
-          return {
-            ...p,
-            form: Math.max(0, p.form - 3),
-            morale: Math.max(0, p.morale - 5),
-          }
-        })
-        nationalTeamSnub = {
-          playerId: snubCandidate.id,
-          season: game.currentSeason,
-          round: nextMatchday,
-        }
-        const snubTemplate = SNUB_SCENE_LINES[game.currentSeason % SNUB_SCENE_LINES.length]
-        const snubBody = snubTemplate.replace('{spelare}', `${snubCandidate.firstName} ${snubCandidate.lastName}`)
-        const snubInboxId = `inbox_vm_snub_${game.currentSeason}`
-        if (!game.inbox.some(i => i.id === snubInboxId)) {
-          newInboxItems.push({
-            id: snubInboxId,
-            date: game.currentDate,
-            type: InboxItemType.Community,
-            title: 'Förbi utan VM-kallelse',
-            body: snubBody,
-            isRead: false,
-          })
-        }
-      }
-    }
-  }
-
-  // Return from national team camp
-  // Release-svepet 2026-07-21 (Block 2a): pending+expires-mönster, samma
-  // form som pendingVictoryEcho/victoryEchoExpires — konsumeras av
-  // coffeeRoomService.ts som en ovillkorad kafferums-scen.
-  let nationalTeamReturnLine = game.pendingNationalTeamReturn
-  let nationalTeamReturnExpiresState = game.nationalTeamReturnExpires
-  if (game.activeNationalTeamCamp && nextMatchday > game.activeNationalTeamCamp.endRound) {
-    const returnResult = applyReturnEffects(game, nationalTeamUpdatedPlayers, game.activeNationalTeamCamp)
-    nationalTeamUpdatedPlayers = returnResult.players
-    nationalTeamCampState = undefined
-    newInboxItems.push(...returnResult.inboxItems)
-    nationalTeamReturnLine = { text: returnResult.returnLine }
-    nationalTeamReturnExpiresState = nextMatchday + 1
-  } else if (nextMatchday > (nationalTeamReturnExpiresState ?? 0)) {
-    nationalTeamReturnLine = undefined
-    nationalTeamReturnExpiresState = undefined
-  }
+  // ── C-K1: Landslagsuttagning, snub och återkomst ──────────────────────
+  const nationalTeamResult = processNationalTeamRound(
+    game,
+    finalPlayers,
+    nextMatchday,
+    isCupRound,
+    isPlayoffRound,
+  )
+  finalPlayers = nationalTeamResult.players
+  newInboxItems.push(...nationalTeamResult.inboxItems)
+  roundLedgerEntries.push(...nationalTeamResult.ledgerEntries)
+  const nationalTeamCampState = nationalTeamResult.activeCamp
+  const nationalTeamSnub = nationalTeamResult.lastSnub
+  const nationalTeamCallupBonusTkr = nationalTeamResult.callupBonusTkr
+  const nationalTeamCallupModal = nationalTeamResult.pendingCallupModal
+  const nationalTeamReturnLine = nationalTeamResult.pendingReturn
+  const nationalTeamReturnExpiresState = nationalTeamResult.returnExpires
 
   // Release-svepet 2026-07-21 (Block 3c) — hallprövningens resolution-eko.
   // Satt av eventResolver.ts (spelaraktion, inte rundtakt) — samma expiry-
@@ -660,14 +266,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (hallEchoLine && nextMatchday > (hallEchoExpiresState ?? 0)) {
     hallEchoLine = undefined
     hallEchoExpiresState = undefined
-  }
-
-  // Merge national team player updates into finalPlayers
-  if (nationalTeamUpdatedPlayers !== finalPlayers) {
-    finalPlayers = finalPlayers.map(p => {
-      const updated = nationalTeamUpdatedPlayers.find(u => u.id === p.id)
-      return updated ?? p
-    })
   }
 
   // ── Process active scout assignment + talent search ───────────────────
@@ -697,85 +295,27 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // D1: snabbsim-vägen har inget T3-block (saveLiveMatchResult körs ej). Bygg managerChoiceLog här
   // om det saknas — kapten + started_tired + bench_fit. Halvtid utgår (matchen spelades ej live).
-  if (justCompletedManagedFixture && !justCompletedManagedFixture.report?.managerChoiceLog) {
-    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const lineup = isHome ? justCompletedManagedFixture.homeLineup : justCompletedManagedFixture.awayLineup
-    const choiceLog: ManagerChoiceEntry[] = []
-    if (game.captainPlayerId) {
-      choiceLog.push({ type: 'captain', playerId: game.captainPlayerId, detail: game.captainPlayerId })
-    }
-    for (const pid of (lineup?.startingPlayerIds ?? [])) {
-      const player = game.players.find(p => p.id === pid)
-      if (player && (player.fitness ?? 100) < 40) {
-        choiceLog.push({
-          type: 'started_tired', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}`,
-          ...(lineup?.autoSelected && { autoSelected: true }),
-        })
-      }
-    }
-    for (const pid of (lineup?.benchPlayerIds ?? [])) {
-      const player = game.players.find(p => p.id === pid)
-      if (player && (player.fitness ?? 100) > 80) {
-        choiceLog.push({ type: 'bench_fit', playerId: pid, detail: `condition_${Math.round(player.fitness ?? 0)}` })
-      }
-    }
-    if (choiceLog.length > 0) {
-      const enriched = {
-        ...justCompletedManagedFixture,
-        report: { ...justCompletedManagedFixture.report!, managerChoiceLog: choiceLog },
-      }
+  if (justCompletedManagedFixture) {
+    const enriched = ensureManagerChoiceLog(justCompletedManagedFixture, game)
+    if (enriched !== justCompletedManagedFixture) {
       justCompletedManagedFixture = enriched
       allFixtures = allFixtures.map(f => f.id === enriched.id ? enriched : f)
     }
   }
 
-  // DREAM-003: derby win ripple — big margin win in a derby gives cross-system boosts
-  if (justCompletedManagedFixture) {
-    const isDerby = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId) !== null
-    if (isDerby) {
-      if (deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet') {
-        const rivalClub = game.clubs.find(c => c.id === (justCompletedManagedFixture.homeClubId === game.managedClubId ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
-        const beforeDerbyRipple = gameAfterRipples
-        gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
-        const derbyChain = describeRippleChain(beforeDerbyRipple, gameAfterRipples, 'big_derby_win',
-          rivalClub?.name, nextMatchday, game.currentSeason)
-        roundRippleChains.push(derbyChain)
-        const derbyLedgerEntry = buildSystemRippleLedgerEntry(derbyChain, 'derby_win', rivalClub ? { kind: 'club', id: rivalClub.id } : undefined)
-        if (derbyLedgerEntry) roundLedgerEntries.push(derbyLedgerEntry)
-        newMoments.push({
-          id: `moment_derby_${justCompletedManagedFixture.id}`,
-          source: 'derby_win',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `Derbyt mot ${rivalClub?.name ?? 'rivalen'} sitter kvar`,
-          body: 'Klacken sjöng hela vägen till bilen. Två sponsorer hörde av sig i morse. Hälsningar från orten.',
-          subjectClubId: rivalClub?.id,
-        })
-      }
-    }
-  }
-
-  // liggare-k9-doda-typer (DOM 2026-09-04, Opus): match-resultat-liggarposten
-  // (sm_final/cup_final/derby_result/big_win/big_loss) skrivs här, vid
-  // matchslut för den managerade klubben — samma ställe redan känner till
-  // `justCompletedManagedFixture`. Resultatet (`result`-payloaden) överlever
-  // `game.fixtures`-nollställningen vid rollover (k10), till skillnad från
-  // dagens fixture-härledda Krönika-rad.
-  if (justCompletedManagedFixture) {
-    const matchResultLedgerEntry = buildMatchResultLedgerEntry(justCompletedManagedFixture, game.managedClubId)
-    if (matchResultLedgerEntry) roundLedgerEntries.push(matchResultLedgerEntry)
-  }
-
-  // C-B2: detect notable result for klack echo (after match completes)
-  let updatedKlackEcho = game.klackEcho ? decayKlackEcho(game.klackEcho) : undefined
-  let newKlackEchoType: string | undefined  // U5: bara satt när en NY eko faktiskt triggas, inte vid ren decay
-  if (justCompletedManagedFixture) {
-    const echo = detectNotableResult(justCompletedManagedFixture, { ...game, fixtures: simulatedFixtures })
-    if (echo) {
-      updatedKlackEcho = { ...echo, currentWeight: echo.initialWeight }
-      newKlackEchoType = echo.type
-    }
-  }
+  const matchOutcomeResult = processManagedMatchOutcome(
+    game,
+    justCompletedManagedFixture,
+    simulatedFixtures,
+    gameAfterRipples,
+    nextMatchday,
+  )
+  gameAfterRipples = matchOutcomeResult.gameAfterRipples
+  roundRippleChains.push(...matchOutcomeResult.rippleChains)
+  roundLedgerEntries.push(...matchOutcomeResult.ledgerEntries)
+  newMoments.push(...matchOutcomeResult.moments)
+  const updatedKlackEcho = matchOutcomeResult.klackEcho
+  const newKlackEchoType = matchOutcomeResult.newKlackEchoType
 
   // ── Narrative: fan mood, victory echo, rivalry, nemesis ─────────────────
   const narrativeResult = processNarrative(
@@ -846,38 +386,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Derby notification: if next matchday has a derby for managed club
   newInboxItems.push(...processUpcomingDerbyNotification(finalAllFixtures, game))
 
-  // P1 — Annandagen val-trigger: 2 omgångar innan hemmamatch på annandagen
-  let pendingAnnandagsVal = game.pendingAnnandagsVal ?? false
-  const annandagenHomeFix = (!game.annandagsValGjort && !game.pendingAnnandagsVal)
-    ? finalAllFixtures.find(f => f.isAnnandagen && f.homeClubId === game.managedClubId && f.status === FixtureStatus.Scheduled)
-    : undefined
-  if (annandagenHomeFix && annandagenHomeFix.matchday - nextMatchday === 2) {
-    pendingAnnandagsVal = true
-  }
-
-  // Special-date day-before inbox: annandagen, nyårsbandy, finaldag, cup-finalhelgen
-  const remainingScheduled2 = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
-  let upcomingManagedFix: typeof remainingScheduled2[0] | undefined = undefined
-  if (remainingScheduled2.length > 0) {
-    const upcomingMatchday2 = Math.min(...remainingScheduled2.map(f => f.matchday))
-    upcomingManagedFix = remainingScheduled2.find(
-      f => f.matchday === upcomingMatchday2 &&
-      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-    )
-    if (upcomingManagedFix) {
-      const specialInboxItems = generateSpecialDateInbox(upcomingManagedFix, game, upcomingMatchday2)
-      for (const item of specialInboxItems) {
-        if (!game.inbox.some(i => i.id === item.id)) {
-          newInboxItems.push(item)
-        }
-      }
-    } else {
-      // Managed club not playing — check for SM-final spectator inbox
-      for (const item of generateSpecialDateInboxSpectator(game)) {
-        newInboxItems.push(item)
-      }
-    }
-  }
+  const upcomingFixtureResult = processUpcomingFixtureInbox(finalAllFixtures, game, nextMatchday)
+  newInboxItems.push(...upcomingFixtureResult.inboxItems)
+  const pendingAnnandagsVal = upcomingFixtureResult.pendingAnnandagsVal
+  const upcomingManagedFix = upcomingFixtureResult.upcomingManagedFixture
 
   // C-T2: deadline-dag — AI-bud om nästa match är transferfönstrets deadline-dag
   if (upcomingManagedFix?.isWindowDeadlineDay && localRand() < 0.35) {
@@ -916,13 +428,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  const marketUpdatedPlayers = updateAllMarketValues(
-    updateLowMoraleDays(finalPlayers),
-    game.currentSeason
-  )
+  const marketValueResult = processMarketValues(game, finalPlayers, nextMatchday)
+  const availabilityUpdatedPlayers = marketValueResult.players
+  const newPrevValues = marketValueResult.previousMarketValues
+  const marketValueInbox = marketValueResult.inboxItems
 
   // ── Player availability + trainer arc ──────────────────────────────────
-  const availabilityUpdatedPlayers = updatePlayerAvailability({ ...game, players: marketUpdatedPlayers })
   const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
   // U1 andra halvan (2026-08-22): löpande boardPatience, samma omgång/samma
   // fixture-underlag som trainerArc — se boardService.ts:s egen kommentar
@@ -936,61 +447,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
   const leagueRound = currentLeagueRound ?? 0
-  let updatedBoardObjectives = game.boardObjectives ?? []
-  let boardObjSponsorDelta = 0
-  let boardObjTrustDelta = 0
-  let boardObjForetroendepott = 0
-  if ([7, 14, 22].includes(leagueRound) && updatedBoardObjectives.length > 0) {
-    const gameForEval = { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings }
-    const { updated, inboxMessages, sponsorNetworkMoodDelta: objSponsorDelta, boardTrustDelta, foretroendepottAmount } = checkInObjectives(updatedBoardObjectives, gameForEval)
-    updatedBoardObjectives = updated
-    boardObjSponsorDelta = objSponsorDelta
-    boardObjTrustDelta = boardTrustDelta
-    boardObjForetroendepott = foretroendepottAmount
-    for (const msg of inboxMessages) {
-      newInboxItems.push({
-        id: `inbox_boardobj_${leagueRound}_${msg.title.slice(0, 10)}_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.BoardFeedback,
-        title: msg.title,
-        body: msg.body,
-        isRead: false,
-      })
-    }
-    if (foretroendepottAmount > 0) {
-      newInboxItems.push({
-        id: `inbox_foretroendepott_${game.currentSeason}_${leagueRound}`,
-        date: game.currentDate,
-        type: InboxItemType.BoardFeedback,
-        title: 'Styrelsens förtroendepott',
-        body: `Två raka säsonger med uppfyllt flaggskeppsmål. Styrelsen tillskjuter 62 500 kr som anläggnings- eller transferkredit.`,
-        isRead: false,
-      })
-    }
-  }
-
-  // ── Market value change tracking — inbox for significant changes ──────────
-  const prevValues = game.previousMarketValues ?? {}
-  const newPrevValues: Record<string, number> = {}
-  const marketValueInbox: InboxItem[] = []
-  for (const p of availabilityUpdatedPlayers.filter(pp => pp.clubId === game.managedClubId)) {
-    const prev = prevValues[p.id] ?? p.marketValue
-    newPrevValues[p.id] = p.marketValue
-    const delta = p.marketValue - prev
-    const pct = prev > 0 ? Math.abs(delta) / prev : 0
-    if (pct >= 0.15 && Math.abs(delta) >= 10000) {
-      const arrow = delta > 0 ? '↑' : '↓'
-      const sign = delta > 0 ? '+' : ''
-      marketValueInbox.push({
-        id: `mv_${p.id}_${nextMatchday}`,
-        date: game.currentDate,
-        type: 'playerDevelopment' as InboxItemType,
-        title: `${arrow} ${p.firstName} ${p.lastName} — marknadsvärde ${sign}${Math.round(delta / 1000)} tkr`,
-        body: `Nytt värde: ${Math.round(p.marketValue / 1000)} tkr (${sign}${Math.round(pct * 100)}%)`,
-        isRead: false,
-      })
-    }
-  }
+  const boardObjectiveResult = processBoardObjectiveCheckIn(
+    game,
+    availabilityUpdatedPlayers,
+    finalAllFixtures,
+    standings,
+    leagueRound,
+  )
+  const updatedBoardObjectives = boardObjectiveResult.objectives
+  const boardObjSponsorDelta = boardObjectiveResult.sponsorNetworkMoodDelta
+  const boardObjTrustDelta = boardObjectiveResult.boardTrustDelta
+  const boardObjForetroendepott = boardObjectiveResult.foretroendepottAmount
+  newInboxItems.push(...boardObjectiveResult.inboxItems)
 
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
   const economyResult = processEconomy(

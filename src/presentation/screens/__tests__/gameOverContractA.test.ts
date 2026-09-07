@@ -55,6 +55,12 @@ describe('resolveDisplayedGame (HistoryScreen snapshot-vs-live)', () => {
     expect(resolveDisplayedGame(undefined, live)?.managerName).toBe('Live')
   })
 
+  it('efter sidladdning utan route-state läser historiken den rehydrerade sparkade saven', () => {
+    const rehydratedFiredSave = { ...makeGame(), managerName: 'Arkiverad', managerFired: true }
+
+    expect(resolveDisplayedGame(undefined, rehydratedFiredSave)).toBe(rehydratedFiredSave)
+  })
+
   it('snapshot renderar den avslutade karriären även om store.game redan är null', () => {
     // Exakt scenariot Kontrakt A löser: clearFiredGame() har redan kört.
     const snapshot = { ...makeGame(), managerFired: true }

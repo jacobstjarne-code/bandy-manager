@@ -5,8 +5,10 @@ import type { BoardPatienceZone } from '../services/portal/boardPatienceZone'
 import type { ManagerNarrativeEntry } from './ManagerProfile'
 
 // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
-// Sommaren. Sex fasta typer, interpolerade namn, ingen AI-generering.
-export type SeasonGoalType = 'playoff' | 'establish' | 'playerCarry' | 'rival' | 'facility' | 'keepSquad'
+// Sommaren. Sex faktiska måltyper plus ett explicit avstående, interpolerade
+// namn, ingen AI-generering. `none` skiljer ett aktivt val från äldre saves
+// där säsongsmål helt saknas.
+export type SeasonGoalType = 'playoff' | 'establish' | 'playerCarry' | 'rival' | 'facility' | 'keepSquad' | 'none'
 export type SeasonGoalOutcome = 'met' | 'close' | 'not'
 
 /**

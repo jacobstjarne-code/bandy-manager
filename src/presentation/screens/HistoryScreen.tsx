@@ -344,10 +344,11 @@ type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos' | 'blodslinje'
 export interface HistoryScreenProps {
   /**
    * 3.3 (SLUTTEST_KO.md, 2026-08-17) — Kontrakt A. En "avslutad karriär"-vy
-   * kan inte läsa live store-state (den kan vara rensad, eller på väg att
-   * bli det). Skickas explicit av GameOverScreens "SE KARRIÄREN"-flöde
-   * (game fångas i navigate-anropets route-state INNAN "NY KARRIÄR" hinner
-   * nollställa store:t) — och samma prop är avsedd att återanvändas av U7:s
+   * får ett direkt snapshot av GameOverScreens "SE KARRIÄREN"-flöde. Den
+   * vägen rensar inte live store eller den id-nycklade IndexedDB-saven. Om
+   * en sidladdning tar bort route-state faller komponenten därför tillbaka
+   * till samma rehydrerade, sparkade SaveGame — ingen separat arkivbank
+   * behövs. Prop:en är också avsedd att återanvändas av U7:s
    * återställningsflöde (visa ett save som inte är det aktiva). Utelämnas
    * fältet läses live store-state precis som tidigare (normalt Historik-flöde).
    */

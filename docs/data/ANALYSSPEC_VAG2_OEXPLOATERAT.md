@@ -101,4 +101,9 @@ A1 → A2 → A3 levereras först (var för sig, inte i klump — Fable skriver 
 | A7 publik × hemmafördel | Grind ej passerad (dam-täckning 20 % < 50 %) — täckningsrapport, ingen finding |
 | A8 restposter | Rapport + JSON räcker — ingen finding. Overtime- och own_goal-fälten saknas i datan (datagap, ej analysbrist); fas-breakdown bekräftar Finding 006; kvalets 38 matcher är deskriptivt redovisade. |
 
-Öppna spår ur svepet: motorkalibrering från A5 (Jacob-beslut), A4-scriptets commit (Jacob-beslut), attendance-datatäckning för dam (blockerar A7 tills bättre källa finns), overtime/own_goal-fält vid framtida omscrape av Bandygrytan, samt mekanismfrågorna bakom 065:s slutfaslyft (ej spawnade som questions ännu).
+Öppna spår ur svepet: motorkalibrering från A5 (Jacob-beslut), attendance-datatäckning för dam (blockerar A7 tills bättre källa finns), overtime/own_goal-fält vid framtida omscrape av Bandygrytan, samt mekanismfrågorna bakom 065:s slutfaslyft (ej spawnade som questions ännu).
+
+**A4-scriptets tidigare commit-rest är stängd (verifierat 2026-09-07):**
+`scripts/analyze_referee_anon.py` är incheckat i `033122f7` och omkört med
+exit 0 mot de lokala INTERNAL-källorna. De tre genererade resultaten ligger
+fortsatt under `.gitignore`-regeln `docs/data/INTERNAL_*`.
