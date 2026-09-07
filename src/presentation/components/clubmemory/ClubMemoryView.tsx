@@ -3,7 +3,7 @@ import type { MomentSource } from '../../../domain/entities/Moment'
 import type { MomentLedgerEntry } from '../../../domain/services/momentLedgerService'
 import { getClubMemory, momentKind } from '../../../domain/services/clubMemoryService'
 import { getRecentMomentsFromLedger, resolveSubjectName } from '../../../domain/services/momentLedgerService'
-import { MOMENT_VIEW_TEMPLATES } from '../../../domain/data/momentViewTemplates'
+import { renderMomentViewFromLedger } from '../../../domain/data/momentViewTemplates'
 import { ClubMemorySeasonSection } from './ClubMemorySeasonSection'
 import { ClubMemoryLegendsBlock } from './ClubMemoryLegendsBlock'
 import { ClubMemoryRecordsBlock } from './ClubMemoryRecordsBlock'
@@ -90,7 +90,7 @@ export function ClubMemoryView({ game }: Props) {
           <div className="moment-block-subheader">Säsongen</div>
           {recentMoments.map(entry => {
             const kind = momentKind(entry.type)
-            const { title, body } = MOMENT_VIEW_TEMPLATES[entry.type]({
+            const text = renderMomentViewFromLedger(entry, {
               subjectName: resolveSubjectName(game, entry.subject),
               subject2Name: resolveSubjectName(game, entry.subject2),
               matchday: entry.matchday,
@@ -100,6 +100,8 @@ export function ClubMemoryView({ game }: Props) {
               transferRole: entry.transferRole,
               matchCategory: entry.matchCategory,
             })
+            if (!text) return null
+            const { title, body } = text
             return (
               <div key={entry.semanticKey} className={`moment-row ${kind}`}>
                 <div className="moment-row-meta">

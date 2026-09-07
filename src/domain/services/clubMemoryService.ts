@@ -7,7 +7,6 @@ import {
   buildEventFromStoryline,
   deriveMatchMemoryText,
 } from './clubMemoryEventBuilders'
-import type { MomentSource } from '../entities/Moment'
 import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from '../data/facilityPortalBeats'
@@ -16,9 +15,10 @@ import {
   getPlayerMilestoneCodeFromLedger,
 } from './clubHistoryLedgerService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
-import { MOMENT_VIEW_TEMPLATES } from '../data/momentViewTemplates'
-import { LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
-import type { LedgerOnlySource } from '../data/momentViewTemplates'
+import {
+  hasMomentViewClaimContract,
+  renderMomentViewFromLedger,
+} from '../data/momentViewTemplates'
 import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
 import { isMatchResultEntry } from '../entities/Narrative'
@@ -458,15 +458,12 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
         transferRole: entry.transferRole,
         matchCategory: entry.matchCategory,
       }
-      const isMomentSource = (MOMENT_LEDGER_TYPES as string[]).includes(entry.type)
-      const isLedgerOnlySource = entry.type in LEDGER_ONLY_VIEW_TEMPLATES
-      if (!isMomentSource && !isLedgerOnlySource) return null
-      const { body } = isMomentSource
-        ? MOMENT_VIEW_TEMPLATES[entry.type as MomentSource](ctx)
-        : LEDGER_ONLY_VIEW_TEMPLATES[entry.type as LedgerOnlySource](ctx)
+      if (!hasMomentViewClaimContract(entry.type)) return null
+      const text = renderMomentViewFromLedger(entry, ctx)
+      if (!text) return null
       return {
         type: entry.type, season: entry.season, matchday: entry.matchday,
-        text: body, emoji: momentFamily(entry.type),
+        text: text.body, emoji: momentFamily(entry.type),
         significance: entry.significance,
         subjectPlayerId: entry.subject?.kind === 'player' ? entry.subject.id : undefined,
         subjectClubId: entry.subject?.kind === 'club' ? entry.subject.id : undefined,

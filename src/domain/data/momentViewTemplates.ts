@@ -1,4 +1,5 @@
 import type { MomentSource, TransferRole } from '../entities/Moment'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import type { ClubEra } from '../entities/SaveGame'
 import type { MatchHighlightCategory } from '../entities/SeasonSummary'
 
@@ -38,7 +39,7 @@ export interface MomentViewText {
 
 type MomentTemplate = (ctx: MomentViewContext) => MomentViewText
 
-export const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
+const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
   derby_win: (ctx) => ({
     title: `Derbyt mot ${ctx.subjectName ?? 'rivalen'} sitter kvar`,
     body: 'Klacken sjöng hela vägen till bilen, och ett par sponsorer hörde av sig dagen efter. Sånt glöms inte i första taget.',
@@ -138,7 +139,7 @@ export const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
 // subject2 saknas.
 export type LedgerOnlySource = 'referee_feud' | 'referee_trust' | 'mecenat_withdrawal' | 'patron_emerge' | 'patron_withdrawal' | 'transfer_signed' | 'transfer_sold'
 
-export const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate> = {
+const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate> = {
   referee_feud: (ctx) => ({
     title: `Fejd med ${ctx.subjectName ?? 'domaren'}`,
     body: 'Vi har protesterat en gång för mycket, och han har märkt det. Från och med nu tolkas varje tveksam situation åt fel håll — i huvudet på båda.',
@@ -171,4 +172,86 @@ export const LEDGER_ONLY_VIEW_TEMPLATES: Record<LedgerOnlySource, MomentTemplate
       ? `Till ${ctx.subject2Name}. Pengarna räknades på en gång. Det som saknas räknas i mars.`
       : 'Pengarna räknades på en gång. Det som saknas räknas i mars.',
   }),
+}
+
+export type MomentViewTemplateSource = MomentSource | LedgerOnlySource
+
+type LedgerSubjectKind = NonNullable<EventLedgerEntry['subject']>['kind']
+
+/**
+ * `sluttest-missing-check-grind` (Opus-dom 2026-09-07): en textmall som
+ * påstår att något hände måste deklarera vilken state-källa som bevisar
+ * påståendet. Liggarmallarnas första kontrakt är medvetet litet och strikt:
+ * rätt EventLedgerType måste finnas, och mallar som påstår något om en viss
+ * sorts subjekt kan dessutom kräva den subjektstypen.
+ *
+ * Det här är inte `gameBefore !== gameAfter`: en orelaterad mutation kan
+ * aldrig uppfylla kontraktet. En mall utan post, med fel posttyp eller utan
+ * sitt deklarerade subjekt renderas inte — hellre ingen mening än en falsk.
+ */
+export interface MomentViewClaimContract {
+  provenBy: {
+    source: 'eventLedger'
+    ledgerType: MomentViewTemplateSource
+    subjectKind?: LedgerSubjectKind
+    subject2Kind?: NonNullable<EventLedgerEntry['subject2']>['kind']
+  }
+}
+
+export const MOMENT_VIEW_CLAIM_CONTRACTS: {
+  [Source in MomentViewTemplateSource]: MomentViewClaimContract & {
+    provenBy: MomentViewClaimContract['provenBy'] & { ledgerType: Source }
+  }
+} = {
+  derby_win: { provenBy: { source: 'eventLedger', ledgerType: 'derby_win' } },
+  star_injury: { provenBy: { source: 'eventLedger', ledgerType: 'star_injury' } },
+  mecenat_costshare: { provenBy: { source: 'eventLedger', ledgerType: 'mecenat_costshare' } },
+  captain_crisis: { provenBy: { source: 'eventLedger', ledgerType: 'captain_crisis' } },
+  nemesis_signed: { provenBy: { source: 'eventLedger', ledgerType: 'nemesis_signed' } },
+  // Samma MomentSource används också av generella sponsor-/kommunhändelser.
+  // Mallen påstår däremot uttryckligen att en SPELARE värvades. Subjektkravet
+  // gör att de bredare händelserna inte kan återberättas som en falsk värvning.
+  sponsor_positive: {
+    provenBy: { source: 'eventLedger', ledgerType: 'sponsor_positive', subjectKind: 'player' },
+  },
+  sponsor_negative: {
+    provenBy: { source: 'eventLedger', ledgerType: 'sponsor_negative', subjectKind: 'player' },
+  },
+  transfer_story: { provenBy: { source: 'eventLedger', ledgerType: 'transfer_story' } },
+  season_highlight: { provenBy: { source: 'eventLedger', ledgerType: 'season_highlight' } },
+  era_shift: { provenBy: { source: 'eventLedger', ledgerType: 'era_shift' } },
+  rival_sale: { provenBy: { source: 'eventLedger', ledgerType: 'rival_sale' } },
+  referee_feud: { provenBy: { source: 'eventLedger', ledgerType: 'referee_feud' } },
+  referee_trust: { provenBy: { source: 'eventLedger', ledgerType: 'referee_trust' } },
+  mecenat_withdrawal: { provenBy: { source: 'eventLedger', ledgerType: 'mecenat_withdrawal' } },
+  patron_emerge: { provenBy: { source: 'eventLedger', ledgerType: 'patron_emerge' } },
+  patron_withdrawal: { provenBy: { source: 'eventLedger', ledgerType: 'patron_withdrawal' } },
+  transfer_signed: { provenBy: { source: 'eventLedger', ledgerType: 'transfer_signed' } },
+  transfer_sold: { provenBy: { source: 'eventLedger', ledgerType: 'transfer_sold' } },
+}
+
+export function hasMomentViewClaimContract(type: string): type is MomentViewTemplateSource {
+  return type in MOMENT_VIEW_CLAIM_CONTRACTS
+}
+
+export function isMomentViewClaimProven(entry: EventLedgerEntry): boolean {
+  if (!hasMomentViewClaimContract(entry.type)) return false
+  const proof = MOMENT_VIEW_CLAIM_CONTRACTS[entry.type].provenBy
+  return proof.source === 'eventLedger'
+    && entry.type === proof.ledgerType
+    && (!proof.subjectKind || entry.subject?.kind === proof.subjectKind)
+    && (!proof.subject2Kind || entry.subject2?.kind === proof.subject2Kind)
+}
+
+/** Enda publika renderingsvägen för de liggarbaserade mallarna. */
+export function renderMomentViewFromLedger(
+  entry: EventLedgerEntry,
+  ctx: MomentViewContext,
+): MomentViewText | null {
+  if (!isMomentViewClaimProven(entry)) return null
+
+  const template = entry.type in MOMENT_VIEW_TEMPLATES
+    ? MOMENT_VIEW_TEMPLATES[entry.type as MomentSource]
+    : LEDGER_ONLY_VIEW_TEMPLATES[entry.type as LedgerOnlySource]
+  return template(ctx)
 }

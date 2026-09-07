@@ -12,10 +12,13 @@ import { getRoundLabel } from '../roundLabel'
 import { computeSeasonVerdictRating, expectationVerdictFromRating } from './boardService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
 import { getBurnoutSeasonMemory } from './burnoutReliefService'
-import { MOMENT_VIEW_TEMPLATES, LEDGER_ONLY_VIEW_TEMPLATES } from '../data/momentViewTemplates'
-import type { LedgerOnlySource } from '../data/momentViewTemplates'
-import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
-import type { MomentSource } from '../entities/Moment'
+import {
+  hasMomentViewClaimContract,
+  isMomentViewClaimProven,
+  renderMomentViewFromLedger,
+} from '../data/momentViewTemplates'
+import type { MomentViewTemplateSource } from '../data/momentViewTemplates'
+import { resolveSubjectName } from './momentLedgerService'
 import { currentChronology } from './currentChronology'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getStorylineTypeFromLedger } from './storylineLedgerService'
@@ -288,19 +291,20 @@ type KeyMomentEntry = NonNullable<SeasonSummary['keyMoments']>[number]
 // clubId-gränsen. Årsboken får aldrig återinföra den gamla subject-heuristiken.
 function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): KeyMomentEntry[] {
   const usedRounds = new Set(existing.map(m => m.round))
-  const isCandidateType = (type: string): type is MomentSource | LedgerOnlySource =>
-    (MOMENT_LEDGER_TYPES as string[]).includes(type) || type in LEDGER_ONLY_VIEW_TEMPLATES
+  const isCandidateType = (type: string): type is MomentViewTemplateSource =>
+    hasMomentViewClaimContract(type)
 
   const candidates = agendaForSurface(redaktoren(game, currentChronology(game)), 'yearbook')
     .map(item => item.post)
     .filter(e =>
       e.season === game.currentSeason
       && isCandidateType(e.type)
+      && isMomentViewClaimProven(e)
       && !usedRounds.has(e.matchday)
     )
     .slice(0, 2)
 
-  return candidates.map(entry => {
+  return candidates.flatMap(entry => {
     const ctx = {
       subjectName: resolveSubjectName(game, entry.subject),
       subject2Name: resolveSubjectName(game, entry.subject2),
@@ -311,16 +315,15 @@ function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): Ke
       transferRole: entry.transferRole,
       matchCategory: entry.matchCategory,
     }
-    const { title, body } = (MOMENT_LEDGER_TYPES as string[]).includes(entry.type)
-      ? MOMENT_VIEW_TEMPLATES[entry.type as MomentSource](ctx)
-      : LEDGER_ONLY_VIEW_TEMPLATES[entry.type as LedgerOnlySource](ctx)
-    return {
+    const text = renderMomentViewFromLedger(entry, ctx)
+    if (!text) return []
+    return [{
       round: entry.matchday,
       type: 'storyline' as const,
-      headline: title,
-      body,
+      headline: text.title,
+      body: text.body,
       relatedPlayerId: entry.subject?.kind === 'player' ? entry.subject.id : undefined,
-    }
+    }]
   })
 }
 
