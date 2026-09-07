@@ -497,9 +497,12 @@ export const FORBUDSLISTA: Rule[] = [
         }],
       },
       {
-        path: 'src/application/useCases/roundProcessor.ts',
+        // ARCH-001 (863e449d) flyttade mål-check-in och dess inboxrad ur
+        // roundProcessor till eventProcessor. Grinden ska följa den verkliga
+        // ägaren; roundProcessor konsumerar bara det redan gated beloppet.
+        path: 'src/application/useCases/processors/eventProcessor.ts',
         required: [{
-          pattern: /if \(foretroendepottAmount > 0\)/,
+          pattern: /if \(result\.foretroendepottAmount > 0\)/,
           minCount: 1,
           note: '"uppfyllt flaggskeppsmål"-förtroendepotten ska förbli gated på flagshipMetThisCheckIn-summan från checkInObjectives (evaluateObjective), inte alltid visas.',
         }],
