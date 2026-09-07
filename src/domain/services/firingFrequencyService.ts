@@ -69,6 +69,25 @@ function emptyReasons(): Record<FiringReason, number> {
 }
 
 /**
+ * Läs den frusna orsaken till ett terminalt avsked från rätt sanningskälla.
+ * Sportsliga avsked och nekad licens hör till säsongens boardTruth, medan
+ * top-level firedReason är reservvägen för avsked mitt i säsongen (konkurs).
+ */
+export function storedFiringReason(
+  save: Pick<FiringAnalysisSave, 'managedClubId' | 'seasonSummaries' | 'firedAtSeason' | 'currentSeason' | 'firedReason'>,
+  season = save.firedAtSeason ?? save.currentSeason,
+): Exclude<FiringReason, 'unknown'> | undefined {
+  const seasonReason = [...save.seasonSummaries]
+    .reverse()
+    .find(summary => summary.clubId === save.managedClubId
+      && summary.season === season
+      && summary.boardTruth?.relationship.managerFired)
+    ?.boardTruth?.relationship.firedReason
+
+  return seasonReason ?? save.firedReason
+}
+
+/**
  * U9 — retrospektiv avskedsfrekvens ur riktiga save-exporter.
  *
  * En observation är en avslutad tränarsäsong vars SeasonSummary.boardTruth

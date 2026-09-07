@@ -9,13 +9,16 @@
  *
  * Standardurvalet ar Heros, Soderfors, Lesjofors och Forsbacka (toppklubb).
  * Anvand --clubs=all for hela ligan eller en kommaseparerad lista med klubb-id:n.
- * Skriptet laser SaveGame.firedReason — det gissar aldrig avskedsorsaken fran
- * efterhandsvarden som boardPatience eller licenseStatus.
+ * Skriptet laser den frusna orsaken fran säsongens boardTruth, med
+ * SaveGame.firedReason som reserv for konkurs mitt i säsongen. Det gissar
+ * aldrig avskedsorsaken fran efterhandsvarden som boardPatience eller
+ * licenseStatus.
  */
 
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
+import { storedFiringReason } from '../src/domain/services/firingFrequencyService'
 import { CLUB_TEMPLATES } from '../src/domain/services/worldGenerator'
 import { autoBuildCheapestAffordableFacility, autoResolvePendingScreen, autoSelectLineup } from './stress/fixtures'
 
@@ -153,11 +156,12 @@ function runOne(clubId: string, seed: number, seasons: number): RunResult {
       }
 
       if (game.managerFired) {
+        const firedSeason = game.firedAtSeason ?? season
         return {
           clubId,
           seed,
-          firedSeason: season,
-          firedReason: game.firedReason ?? 'unknown',
+          firedSeason,
+          firedReason: storedFiringReason(game, firedSeason) ?? 'unknown',
           crashed: false,
           crashMsg: null,
         }
