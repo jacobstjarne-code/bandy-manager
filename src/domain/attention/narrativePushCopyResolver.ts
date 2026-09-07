@@ -55,9 +55,22 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  *  - "återkommande taktiskt misslyckande" (B12-mönster) — kräver en ny
  *    treomgångars-detektor mot MatchEvent.contributingFactors; ingen
  *    liggarpost existerar för detta ännu.
- *  - nemesis (`nemesis_signed`) — deklarerad `EventLedgerType`, men noll
- *    skrivvägar (grep bekräftat, 2026-09-06) — text-utan-yta, väntar på sin
- *    producent, inte borttagen (Princip 7).
+ *  - nemesis — KORRIGERAT 2026-09-07 (Code, PRE-SPEC CROSS-CHECK): "noll
+ *    skrivvägar" höll inte. `nemesis_signed` HAR en producent sedan
+ *    2026-04-25 (`transferProcessor.ts:458-473`, `git log -S` bekräftar) och
+ *    flödar redan till Krönikan/`reviewCallbackService.ts` — men den
+ *    berättar MOTSATT historia mot registrets låsta text. Koden: "en
+ *    tidigare tormentor (3+ mål mot oss) är nu VÅR" (triumf). Registrets
+ *    §7-rad ("Han valde {Motståndare}. {Namn}, som {Klubb} jagade. På {dag}
+ *    står han på andra sidan.") beskriver motsatsen: ett mål vi JAGADE som
+ *    valde RIVALEN och nu står emot oss — samma koncept som
+ *    `liggare-ny-transfer-target-missed`/`liggare-k12-missad-varvning-mot-
+ *    dig` (MASTER_OPPET), inte `nemesis_signed`. Registrets rad är alltså
+ *    fel-etiketterad mot fel liggartyp, inte skriven mot en obyggd. Ingen av
+ *    de två är wirebar idag: k12 väntar Opus vägval (ny typ eller
+ *    TransferRole-gren), och `nemesis_signed`s EGEN, verkliga historia
+ *    saknar egen låst push-text (ny text, inte Code). Se
+ *    MASTER_OPPET.md#stickiness-copy-roster.
  *
  * Kalenderankare och säsongsläge läser sina egna framåtblickande payloads.
  * Mallarna är ordagrant låsta i copy-registrets §2–§3. Varje gren avstår om
