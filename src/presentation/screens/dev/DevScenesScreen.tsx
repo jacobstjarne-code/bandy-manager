@@ -8,11 +8,13 @@
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 import { FORMATIONS } from '../../../domain/entities/Formation'
-import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus, InboxItemType } from '../../../domain/enums'
+import { PlayerPosition, CornerStrategy, TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth, TacticAttackingFocus, PenaltyKillStyle, PlayoffRound, PlayoffStatus, InboxItemType, ClubExpectation } from '../../../domain/enums'
+import { buildExpectationVerdictSentence } from '../../../domain/services/seasonSummaryService'
 import { CupFinalVictoryScene } from '../scenes/CupFinalVictoryScene'
 import { SMFinalVictoryScene } from '../scenes/SMFinalVictoryScene'
 import { SeasonArcCard } from '../../components/squad/SeasonArcCard'
@@ -1317,9 +1319,9 @@ const gameOverGame = {
   ...makeBaseGame({ seed: 6 }),
   currentSeason: devSeason(4),
   seasonSummaries: [
-    makeSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10 }),
-    makeSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8 }),
-    makeSeasonSummary({ season: devSeason(3), finalPosition: 11, wins: 6 }),
+    makeGameOverSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10 }),
+    makeGameOverSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8 }),
+    makeGameOverSeasonSummary({ season: devSeason(3), finalPosition: 11, wins: 6 }),
   ],
   boardPatience: 12,
   consecutiveFailures: 3,
@@ -1333,9 +1335,9 @@ const gameOverGame = {
 const historyTwoClubGame = {
   ...gameOverGame,
   seasonSummaries: [
-    makeSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
-    makeSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
-    makeSeasonSummary({ season: devSeason(3), finalPosition: 5, wins: 14, clubId: HOME_ID, clubName: 'Edsbyn BK' }),
+    makeGameOverSeasonSummary({ season: devSeason(1), finalPosition: 8, wins: 10, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeGameOverSeasonSummary({ season: devSeason(2), finalPosition: 10, wins: 8, clubId: 'club-s2', clubName: 'Slottsbrons IF' }),
+    makeGameOverSeasonSummary({ season: devSeason(3), finalPosition: 5, wins: 14, clubId: HOME_ID, clubName: 'Edsbyn BK', metExpectation: true, expectationVerdict: 'met' }),
   ],
   eventLedger: [
     { type: 'decision', semanticKey: 'dev_decision_1', season: devSeason(1), matchday: 8, significance: 40, clubId: 'club-s2', managerId: gameOverGame.id },
@@ -1499,13 +1501,39 @@ function makeSeasonSummary(overrides: Record<string, unknown>) {
     youthIntakeCount: 2, bestYouthProspect: null,
     roundPoints: [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,32,32,32,32,32,32],
     narrativeSummary: 'En stark säsong.',
-    boardExpectation: 'playoff' as const, metExpectation: true, expectationVerdict: 'met' as const,
+    boardExpectation: ClubExpectation.ChallengeTop, metExpectation: true, expectationVerdict: 'met' as const,
     playoffResult: null, cupResult: null, signatureRubric: null, cupFinalScore: null,
     topScorer: null, topAssister: null, topRated: null, mostImproved: null, youngPlayer: null,
     storyTriggers: [],
     ...overrides,
   }
   return base
+}
+
+/**
+ * Game-over-historiken ska visa samma utfallsdom som en riktig säsong.
+ * Den gamla fixturen ärvde både en ogiltig, borttagen expectation-sträng
+ * (`playoff`) och den generiska texten "En stark säsong." för varje år.
+ */
+function makeGameOverSeasonSummary(overrides: Record<string, unknown>) {
+  const summary = makeSeasonSummary({
+    playoffResult: 'didNotQualify',
+    metExpectation: false,
+    expectationVerdict: 'failed',
+    ...overrides,
+  }) as unknown as SeasonSummary
+
+  return {
+    ...summary,
+    narrativeSummary: buildExpectationVerdictSentence(
+      summary.clubName,
+      summary.expectationVerdict,
+      summary.finalPosition,
+      summary.boardExpectation,
+      summary.playoffResult === 'champion',
+      summary.season,
+    ),
+  }
 }
 // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: cupResult='winner' läggs till här
 // (var tidigare null) — "mästare → gold-hero+cup" i ordern kräver BÅDA
