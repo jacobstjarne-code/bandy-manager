@@ -216,7 +216,9 @@
   min-height: 0;
 }
 
-/* ── Subflikrad (Förbered) ── */
+/* ── Förbereds stegindikator (matchflode-forbered-linjar, mock
+   Forbered-flode.dc.html) — LÄSBAR, ej klickbar. Ersätter den gamla
+   subTabs-flikraden (borttagen, se MatchFlowFrame.tsx); samma platsen. ── */
 .mf-subtabs {
   display: flex;
   background: var(--paper-warm);
@@ -224,26 +226,24 @@
   flex-shrink: 0;
 }
 
-.mf-subtab {
+.mf-step {
   flex: 1;
   position: relative;
-  padding: 8px 6px;
-  background: none;
-  border: none;
+  padding: 9px 6px;
   color: var(--ink-mute);
-  cursor: pointer;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  text-align: center;
 }
 
-.mf-subtab.active {
+.mf-step-current {
   color: var(--copper);
   font-weight: 700;
 }
 
-.mf-subtab.active::after {
+.mf-step-current::after {
   content: '';
   position: absolute;
   right: 0;
@@ -251,6 +251,14 @@
   left: 0;
   height: 2px;
   background: var(--copper);
+}
+
+.mf-step-done {
+  color: color-mix(in srgb, var(--copper) 55%, transparent);
+}
+
+.mf-step-pending {
+  color: var(--ink-mute);
 }
 
 /* ── Flikrad (Granska) ── */

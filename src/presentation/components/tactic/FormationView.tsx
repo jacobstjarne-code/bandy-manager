@@ -31,8 +31,6 @@ const FORMATION_OPTIONS: FormationType[] = ['532_tvatoppar', '532_triangel', '53
 export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
-  // Default = Bäst för dagens match (Jacobs dom 2026-09-03).
-  const [autoFillMode, setAutoFillMode] = useState<AutoFillMode>('matchfit')
   const autoFillTimerRef = useRef<number | null>(null)
   const navigate = useNavigate()
 
@@ -79,7 +77,10 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
     return [...above, ...below]
   }
 
-  function handleAutoFill() {
+  // matchflode-forbered-linjar (mock Forbered-flode.dc.html): läget kommer
+  // nu direkt från vilken av de tre fyll-knapparna som trycktes, inte från
+  // ett separat valt state — ett klick fyller, inget tvåstegsval.
+  function handleAutoFill(mode: AutoFillMode) {
     // A3-residualen (2026-08-31, Jacobs körorder): denna var kandidaturvalets
     // TREDJE, oberoende kopia — saknade både vilofiltret (restGamesRemaining,
     // A-H3 ben 2) och golv-medvetenheten (sorterade rå currentAbility, ingen
@@ -97,7 +98,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
     // passningen är redan 1 där) — de skiljer sig bara i FALLBACK-steget
     // nedan, där matchfit väger in positionspassning för spelare utan exakt
     // matchning. Exakt viktning mäts i kalibreringsrundan C2 — enkel start.
-    const sorted = autoFillMode === 'rested' ? sortByRest(candidates) : prioritizeByFitnessFloor(candidates, autoFillMode)
+    const sorted = mode === 'rested' ? sortByRest(candidates) : prioritizeByFitnessFloor(candidates, mode)
 
     const newLineupSlots = { ...lineupSlots }
     const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])
@@ -112,7 +113,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         continue
       }
       if (sorted.length === 0) continue
-      if (autoFillMode === 'matchfit') {
+      if (mode === 'matchfit') {
         let bestIdx = 0
         let bestScore = -Infinity
         sorted.forEach((p, idx) => {
@@ -229,37 +230,46 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         </button>
       </div>
 
-      {/* taktik-fyll-elvan-tre-lagen: lägesväljare för autofyll-knappen */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
-        {(['strongest', 'rested', 'matchfit'] as const).map(m => (
-          <button
-            key={m}
-            onClick={() => setAutoFillMode(m)}
-            className={`btn ${autoFillMode === m ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ padding: '3px 8px', fontSize: 10 }}
-          >
-            {AUTOFILL_MODE_LABELS[m]}
-          </button>
-        ))}
+      {/* taktik-fyll-elvan-tre-lagen / matchflode-forbered-linjar (mock
+          Forbered-flode.dc.html): ett klick per läge, ingen separat
+          "Fyll bästa elvan"-knapp — samma mönster som LineupStep.tsx. */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        paddingBottom: 4, marginBottom: 7,
+        borderBottom: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+      }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
+          Fyll laget automatiskt
+        </span>
+        <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>ett tryck fyller — inget läge att välja</span>
       </div>
-
-      {/* Auto-fill button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: autoFillMsg ? 4 : 8 }}>
-        <button
-          onClick={handleAutoFill}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '5px 10px',
-            background: 'transparent',
-            border: '1.5px solid var(--accent)',
-            color: 'var(--accent-dark)',
-            fontSize: 11, fontWeight: 600,
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          ✦ Fyll bästa elvan
-        </button>
+      <div style={{ display: 'flex', gap: 7, marginBottom: autoFillMsg ? 4 : 8 }}>
+        {(['strongest', 'rested', 'matchfit'] as const).map(mode => {
+          const isRecommended = mode === 'matchfit'
+          return (
+            <button
+              key={mode}
+              onClick={() => handleAutoFill(mode)}
+              style={{
+                flex: 1, minHeight: 35, borderRadius: 8,
+                fontSize: 8.5, fontWeight: 600, lineHeight: 1.15,
+                padding: '5px 3px', textAlign: 'center', cursor: 'pointer',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                // isRecommended: EJ .btn-primary-klassen här — TacticBoardCard.tsx
+                // har redan en egen .btn-primary ("Följ rådet", villkorad) som kan
+                // visas samtidigt; "en .btn-primary per skärm" (design-system) hade
+                // brutits. Samma gradient som klassen målar, via en delad token
+                // (--gradient-copper-cta, global.css) i stället för en fjärde
+                // hårdkodad hex-kopia.
+                ...(isRecommended
+                  ? { background: 'var(--gradient-copper-cta)', color: 'var(--text-on-copper-cta)', border: 'none', boxShadow: 'var(--shadow-primary)' }
+                  : { background: 'var(--bg-surface)', border: '1.5px solid var(--border-dark)', color: 'var(--accent-dark)' }),
+              }}
+            >
+              {AUTOFILL_MODE_LABELS[mode]}
+            </button>
+          )
+        })}
       </div>
       {autoFillMsg && (
         <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'right', marginBottom: 8, fontStyle: 'italic' }}>

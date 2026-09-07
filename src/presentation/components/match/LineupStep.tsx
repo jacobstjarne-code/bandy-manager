@@ -91,13 +91,6 @@ function practiceSpotlightQuote(player: Player, slotPosition: PlayerPosition): s
   return `”Ser du ringen som inte är grön? ${player.lastName} är ${positionLong(player.position).toLowerCase()} men står ${positionLong(slotPosition).toLowerCase()}. Tryck ringen om du vill byta — annars låter vi den stå.”`
 }
 
-const SPARKLE_SVG = (
-  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor">
-    <path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/>
-    <path d="M9.5 8.5 L10 9.5 L11 10 L10 10.5 L9.5 11.5 L9 10.5 L8 10 L9 9.5 Z"/>
-  </svg>
-)
-
 export function LineupStep({
   practice = false,
   practiceBeat = 0,
@@ -130,8 +123,6 @@ export function LineupStep({
   showFooter = true,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
-  const [justFilled, setJustFilled] = useState(false)
-  const [autoFillMode, setAutoFillMode] = useState<AutoFillMode>('matchfit')
   // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 (c): bekräftelsegrinden
   // sitter på BESLUTET — CTA:n som lämnar uppställningen — och inte bara på
   // autofyll-knappen. En manuellt ihopsatt elva under golvet är exakt samma
@@ -294,47 +285,50 @@ export function LineupStep({
         </div>
       )}
 
-      {/* 4. Status + Auto-fyll — practice autofyller automatiskt, ingen manuell knapp */}
+      {/* 4. Status + Auto-fyll — practice autofyller automatiskt, ingen manuell knapp.
+          matchflode-forbered-linjar (mock Forbered-flode.dc.html): ett klick per
+          läge, ingen separat "Fyll bästa elvan"-knapp. */}
       {!practice && (
         <div style={{ padding: '0 14px', marginBottom: 10 }}>
           <span style={{ fontSize: 9, color: startingIds.length === 11 ? 'var(--success)' : 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             {startingIds.length} av 11 placerade
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, margin: '7px 0 6px' }}>
-            {(['strongest', 'rested', 'matchfit'] as const).map(mode => (
-              <button
-                key={mode}
-                onClick={() => setAutoFillMode(mode)}
-                className={`btn ${autoFillMode === mode ? 'btn-primary' : 'btn-ghost'}`}
-                style={{ minHeight: 36, padding: '4px 5px', fontSize: 9, lineHeight: 1.15 }}
-              >
-                {AUTOFILL_MODE_LABELS[mode]}
-              </button>
-            ))}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+            marginTop: 8, paddingBottom: 4,
+            borderBottom: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+          }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
+              Fyll laget automatiskt
+            </span>
+            <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>ett tryck fyller — inget läge att välja</span>
           </div>
-          <button
-            onClick={() => {
-              const applied = onAutoFill(autoFillMode)
-              if (applied) {
-                setJustFilled(true)
-                setTimeout(() => setJustFilled(false), 1500)
-              }
-            }}
-            style={{
-              width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-              padding: '5px 10px',
-              background: justFilled ? 'var(--success)' : 'transparent',
-              border: `1.5px solid ${justFilled ? 'var(--success)' : 'var(--accent)'}`,
-              color: justFilled ? 'var(--text-light)' : 'var(--accent-dark)',
-              fontSize: 11, fontWeight: 600,
-              borderRadius: 8,
-              cursor: 'pointer',
-              transition: 'background 0.15s, border-color 0.15s, color 0.15s',
-            }}
-          >
-            {justFilled ? '✓' : SPARKLE_SVG}
-            {justFilled ? 'Uppdaterad' : 'Fyll bästa elvan'}
-          </button>
+          <div style={{ display: 'flex', gap: 7, marginTop: 7 }}>
+            {(['strongest', 'rested', 'matchfit'] as const).map(mode => {
+              const isRecommended = mode === 'matchfit'
+              return (
+                <button
+                  key={mode}
+                  onClick={() => onAutoFill(mode)}
+                  // isRecommended: .btn-primary — samma låsta koppargradient som
+                  // redan finns i global.css (inte en ny hårdkodad hex-kopia av
+                  // mocken, se CLAUDE.md om .btn-copper-historiken).
+                  className={isRecommended ? 'btn-primary' : undefined}
+                  style={{
+                    flex: 1, minHeight: 35, borderRadius: 8,
+                    fontSize: 8.5, fontWeight: 600, lineHeight: 1.15,
+                    padding: '5px 3px', textAlign: 'center', cursor: 'pointer',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    ...(isRecommended
+                      ? {}
+                      : { background: 'var(--bg-surface)', border: '1.5px solid var(--border-dark)', color: 'var(--accent-dark)' }),
+                  }}
+                >
+                  {AUTOFILL_MODE_LABELS[mode]}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
 

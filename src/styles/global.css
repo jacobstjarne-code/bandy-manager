@@ -67,6 +67,14 @@
      värde som --accent-dark idag (noll synlig ändring utanför portalen),
      remappad i .card--portal nedan. */
   --accent-text:  var(--accent-dark);
+  /* matchflode-forbered-linjar (2026-09-07): samma koppargradient .btn-primary
+     redan målar (rad ~499/529/1582), namngiven en gång så nya CTA:er slipper
+     en fjärde hårdkodad hex-kopia. Byt aldrig ut en av de tre befintliga mot
+     denna variabel i samma pass som en obesläktad ändring — retire-last. */
+  --gradient-copper-cta: linear-gradient(180deg, #DD9555, #8B4820);
+  /* Samma vita text .btn-primary redan sätter (color:#fff), namngiven för
+     samma retire-last-anledning. */
+  --text-on-copper-cta: #fff;
 
   /* Semantic */
   --success:        #5A9A4A;

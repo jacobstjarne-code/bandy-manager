@@ -1,6 +1,6 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { MatchFlowFrame } from '../MatchFlowFrame'
 
 beforeAll(() => {
@@ -17,7 +17,7 @@ afterEach(() => {
   container = null
 })
 
-function renderMatchFlow(onTactic = vi.fn()) {
+function renderMatchFlow() {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -30,9 +30,9 @@ function renderMatchFlow(onTactic = vi.fn()) {
         season="2026/27"
         roundLabel="OMGÅNG 1"
         phase="forbered"
-        subTabs={[
-          { id: 'lineup', label: 'Trupp', active: true, onClick: () => {} },
-          { id: 'tactic', label: 'Taktik', active: false, onClick: onTactic },
+        stepIndicator={[
+          { id: 'lineup', label: '① Uppställning', state: 'current' },
+          { id: 'tactic', label: '② Taktik', state: 'pending' },
         ]}
         stamp={{ label: 'FYLL ELVAN FÖRST', onClick: () => {}, disabled: true }}
       >
@@ -40,19 +40,46 @@ function renderMatchFlow(onTactic = vi.fn()) {
       </MatchFlowFrame>,
     )
   })
-  return { onTactic }
 }
 
+// matchflode-forbered-linjar (mock Forbered-flode.dc.html): stegindikatorn
+// är LÄSBAR, inte klickbar — taktik är ett steg man passerar via stämpeln,
+// aldrig en flik man kan hoppa till/förbi direkt.
 describe('MatchFlowFrame — Förbered', () => {
-  it('renderar subflikarna under RPS-stripen och aktiverar deras handlingar', () => {
-    const { onTactic } = renderMatchFlow()
-    const subTabs = container!.querySelector('.mf-subtabs')!
+  it('renderar stegindikatorn under RPS-stripen, läsbar utan klickbara element', () => {
+    renderMatchFlow()
+    const stepIndicator = container!.querySelector('.mf-subtabs')!
     const body = container!.querySelector('.mf-body')!
-    expect(subTabs.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect([...subTabs.querySelectorAll('button')].map(button => button.textContent)).toEqual(['Trupp', 'Taktik'])
+    expect(stepIndicator.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(stepIndicator.querySelectorAll('button')).toHaveLength(0)
+    const steps = [...stepIndicator.querySelectorAll('.mf-step')]
+    expect(steps.map(s => s.textContent)).toEqual(['① Uppställning', '② Taktik'])
+    expect(steps[0].className).toContain('mf-step-current')
+    expect(steps[1].className).toContain('mf-step-pending')
+  })
 
-    act(() => { (subTabs.querySelectorAll('button')[1] as HTMLButtonElement).click() })
-    expect(onTactic).toHaveBeenCalledOnce()
+  it('ett klart steg får en synlig ✓, inget klickbart element', () => {
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+    act(() => {
+      root!.render(
+        <MatchFlowFrame
+          clubId="club_forsbacka" clubName="Forsbacka IK" managerName="Test"
+          season="2026/27" roundLabel="OMGÅNG 1" phase="forbered"
+          stepIndicator={[
+            { id: 'lineup', label: '① Uppställning', state: 'done' },
+            { id: 'tactic', label: '② Taktik', state: 'current' },
+          ]}
+          stamp={{ label: 'Spela →', onClick: () => {}, disabled: false }}
+        >
+          <div>Taktik</div>
+        </MatchFlowFrame>,
+      )
+    })
+    const steps = [...container!.querySelectorAll('.mf-step')]
+    expect(steps[0].textContent).toBe('① Uppställning ✓')
+    expect(steps[0].className).toContain('mf-step-done')
   })
 
   it('visar spärrad status i samma stämpel i stället för en separat CTA', () => {

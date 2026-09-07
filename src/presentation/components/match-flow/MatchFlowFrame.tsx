@@ -11,6 +11,18 @@ export interface MatchFlowTab {
   onClick: () => void
 }
 
+/**
+ * matchflode-forbered-linjar (mock Forbered-flode.dc.html): Förbereds
+ * intra-fas-progression är nu en LÄSBAR, INTE klickbar indikator — taktik
+ * är ett steg man passerar via stämpeln, inte en flik man kan hoppa förbi.
+ * `label` bär redan sin cirklade siffra (t.ex. "① Uppställning").
+ */
+export interface MatchFlowStep {
+  id: string
+  label: string
+  state: 'done' | 'current' | 'pending'
+}
+
 interface MatchFlowFrameProps {
   clubId: string
   clubName: string
@@ -29,8 +41,8 @@ interface MatchFlowFrameProps {
   phase: MatchFlowPhase
   /** null = ingen stämpel (aktiv speltid) */
   stamp: { label: string; onClick: () => void; disabled?: boolean } | null
-  /** Förbereds intra-fas-flikar, direkt under RPS-stripen. */
-  subTabs?: MatchFlowTab[]
+  /** Förbereds läsbara (ej klickbara) två-stegs-indikator, direkt under RPS-stripen. */
+  stepIndicator?: MatchFlowStep[]
   /** Granskas flikrad, mellan body och stämpel. */
   tabs?: MatchFlowTab[]
   /** Grepp 4: under spel ersätts masthead + RPS-strip av en tunn live-rad.
@@ -61,7 +73,7 @@ export function MatchFlowFrame({
   roundLabel,
   phase,
   stamp,
-  subTabs,
+  stepIndicator,
   tabs,
   liveScore,
   dock,
@@ -122,17 +134,13 @@ export function MatchFlowFrame({
         </>
       )}
 
-      {/* ── Subflikrad (Förbered) ── */}
-      {subTabs && subTabs.length > 0 && (
+      {/* ── Stegindikator (Förbered) — läsbar, ej klickbar ── */}
+      {stepIndicator && stepIndicator.length > 0 && (
         <div className="mf-subtabs">
-          {subTabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`mf-subtab${tab.active ? ' active' : ''}`}
-              onClick={tab.onClick}
-            >
-              {tab.label}
-            </button>
+          {stepIndicator.map(step => (
+            <span key={step.id} className={`mf-step mf-step-${step.state}`}>
+              {step.label}{step.state === 'done' ? ' ✓' : ''}
+            </span>
           ))}
         </div>
       )}

@@ -414,7 +414,10 @@ export function MatchScreen() {
         roundLabel={roundLabel}
         phase="forbered"
         stamp={{ label: 'KOMPLETTERA TRUPPEN FÖRST', onClick: () => {}, disabled: true }}
-        subTabs={[{ id: 'lineup', label: 'Trupp', active: true, onClick: () => {} }]}
+        stepIndicator={[
+          { id: 'lineup', label: '① Uppställning', state: 'current' },
+          { id: 'tactic', label: '② Taktik', state: 'pending' },
+        ]}
       >
         <NodtruppScene game={game} availableCount={availableForMatch.length} nextFixtureId={nextFixture.id} />
       </MatchFlowFrame>
@@ -431,15 +434,15 @@ export function MatchScreen() {
       season={seasonSpanLabel(game.currentSeason)}
       roundLabel={roundLabel}
       phase="forbered"
-      subTabs={[
-        { id: 'lineup', label: 'Trupp', active: activePreparationTab === 'lineup', onClick: () => setMatchStep('lineup') },
-        { id: 'tactic', label: 'Taktik', active: activePreparationTab === 'tactic', onClick: () => setMatchStep('tactic') },
+      stepIndicator={[
+        { id: 'lineup', label: '① Uppställning', state: activePreparationTab === 'lineup' ? 'current' : 'done' },
+        { id: 'tactic', label: '② Taktik', state: activePreparationTab === 'tactic' ? 'current' : 'pending' },
       ]}
-      stamp={{
-        label: canPlay ? 'SPELA MATCHEN →' : 'FYLL ELVAN FÖRST',
-        onClick: handlePreparationStamp,
-        disabled: !canPlay,
-      }}
+      stamp={
+        activePreparationTab === 'lineup'
+          ? { label: 'Nästa: Taktik →', onClick: () => setMatchStep('tactic'), disabled: !canPlay }
+          : { label: canPlay ? 'Spela →' : 'FYLL ELVAN FÖRST', onClick: handlePreparationStamp, disabled: !canPlay }
+      }
     >
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Header */}

@@ -108,17 +108,14 @@ function fillerPlayers(exceptSlotId: string): { players: Player[]; lineupSlots: 
   return { players, lineupSlots }
 }
 
-function clickMode(mode: 'Starkast' | 'Mest utvilad' | 'Bäst för dagens match') {
+// matchflode-forbered-linjar (mock Forbered-flode.dc.html): ett klick fyller
+// direkt — knapptexten ÄR läget, inget separat väljar+tillämpa-steg kvar.
+function clickFill(mode: 'Starkast' | 'Mest utvilad' | 'Bäst för dagens match') {
   const btn = Array.from(container.querySelectorAll('button')).find(b => b.textContent === mode)!
   act(() => btn.click())
 }
 
-function clickAutoFill() {
-  const btn = Array.from(container.querySelectorAll('button')).find(b => b.textContent?.includes('Fyll bästa elvan'))!
-  act(() => btn.click())
-}
-
-// taktik-fyll-elvan-tre-lagen (DOM 2026-09-03) — tre lägen för "Fyll bästa elvan".
+// taktik-fyll-elvan-tre-lagen (DOM 2026-09-03) — tre lägen för autofyll.
 describe('FormationView — autofyll-lägen', () => {
   it('Starkast: exakt positionsmatch, väljer högre styrka trots lägre kondition', () => {
     const { players: fillers, lineupSlots } = fillerPlayers('mid-r')
@@ -126,8 +123,7 @@ describe('FormationView — autofyll-lägen', () => {
     const rested = makePlayer('cand-rested', PlayerPosition.Midfielder, { currentAbility: 40, fitness: 95 })
     renderFormation(baseTactic({ lineupSlots }), [...fillers, strong, rested])
 
-    clickMode('Starkast')
-    clickAutoFill()
+    clickFill('Starkast')
 
     expect(latestTactic?.lineupSlots?.['mid-r']).toBe('cand-strong')
   })
@@ -138,8 +134,7 @@ describe('FormationView — autofyll-lägen', () => {
     const rested = makePlayer('cand-rested', PlayerPosition.Midfielder, { currentAbility: 40, fitness: 95 })
     renderFormation(baseTactic({ lineupSlots }), [...fillers, strong, rested])
 
-    clickMode('Mest utvilad')
-    clickAutoFill()
+    clickFill('Mest utvilad')
 
     expect(latestTactic?.lineupSlots?.['mid-r']).toBe('cand-rested')
   })
@@ -153,10 +148,7 @@ describe('FormationView — autofyll-lägen', () => {
     const betterFitWeaker = makePlayer('cand-midfielder', PlayerPosition.Midfielder, { currentAbility: 70, fitness: 90 })
     renderFormation(baseTactic({ lineupSlots }), [...fillers, offPositionStrong, betterFitWeaker])
 
-    // matchfit är default — ingen klick behövs, men klickar ändå explicit
-    // så testet inte tyst blir sant av misstag om defaulten någonsin byts.
-    clickMode('Bäst för dagens match')
-    clickAutoFill()
+    clickFill('Bäst för dagens match')
 
     expect(latestTactic?.lineupSlots?.['fwd-l']).toBe('cand-midfielder')
   })
@@ -168,8 +160,7 @@ describe('FormationView — autofyll-lägen', () => {
 
     for (const mode of ['Starkast', 'Mest utvilad', 'Bäst för dagens match'] as const) {
       renderFormation(baseTactic({ lineupSlots }), [...fillers, belowFloor, aboveFloor])
-      clickMode(mode)
-      clickAutoFill()
+      clickFill(mode)
       expect(latestTactic?.lineupSlots?.['mid-r']).toBe('cand-ok')
     }
   })
