@@ -197,6 +197,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
+  | 'match-laddning-derby' | 'match-laddning-cup'
   | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
@@ -240,7 +241,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
-  { id: 'opponent-intro', label: 'Matchladdning — motståndarens ortbild' },
+  { id: 'opponent-intro', label: 'Matchladdning — premiär' },
+  { id: 'match-laddning-derby', label: 'Matchladdning — derby' },
+  { id: 'match-laddning-cup', label: 'Matchladdning — cup' },
   { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
   { id: 'momentumbar',   label: 'MomentumBar (ärlig — kvitterings-läge)' },
   { id: 'tacticmodal',   label: 'TacticChangeModal (🟥 mörk panel)' },
@@ -1874,7 +1877,8 @@ export function DevScenesScreen() {
       : scene === 'transfers-multibids' ? transfersMultiBidsGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' ? makeBaseGame({ seed: 31, clubId: arrivalClubId })
-      : scene === 'opponent-intro' ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
+      : scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup'
+        ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
       : scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
       : scene === 'trupp-kris' ? truppKrisGame
@@ -2309,17 +2313,22 @@ export function DevScenesScreen() {
             <ArrivalScene />
           </div>
         )}
-        {scene === 'opponent-intro' && storeGame && (() => {
+        {(scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup') && storeGame && (() => {
           const opponent = storeGame.clubs.find(club => club.id === arrivalClubId)
           const nextFixture = storeGame.fixtures.find(fixture =>
             fixture.status === 'scheduled'
             && ((fixture.homeClubId === storeGame.managedClubId && fixture.awayClubId === arrivalClubId)
               || (fixture.awayClubId === storeGame.managedClubId && fixture.homeClubId === arrivalClubId)),
           )
+          const occasion = scene === 'match-laddning-derby'
+            ? 'derby'
+            : scene === 'match-laddning-cup'
+              ? 'cup'
+              : 'premiar'
           return opponent && nextFixture ? (
             <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
               <MatchLaddningScene
-                occasion="premiar"
+                occasion={occasion}
                 isFinal={false}
                 game={storeGame}
                 opponent={opponent}

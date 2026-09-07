@@ -180,14 +180,14 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 | kafferum | `kafferum.jpg` | ✅ (incoming) | Kafferummet |
 | nedflyttning | `nedflyttning.jpg` | ✅ (incoming) | Nedflyttning |
 | säsongsslut | `sasongsslut.jpg` | ✅ (incoming) | Årsboken |
-| premiär | `premiar.jpg` | ✅ (låst 2026-09-06) | Premiärmatchen |
-| derby | `derby.jpg` | ✅ (låst 2026-09-06, stående) | Derbyt, förmatch |
-| cup | `cup.jpg` | ✅ (låst 2026-09-06, oktober-em) | Cupmatch + cupintro |
+| premiär | `premiar.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Premiärmatchen |
+| derby | `derby.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Derbyt, förmatch |
+| cup | `cup.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Cupmatch + cupintro |
 | nyår | `nyar.jpg` | prompt | Nyårsövergången |
-| **cupguld** | `cupguld.jpg` | ✅ (låst 2026-09-06) | Cupfinal vunnen |
+| **cupguld** | `cupguld.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Cupfinal vunnen |
 | **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
 | **bygget klart** | `bygget_klart.jpg` | prompt | Anläggning färdig |
-| **avskedet** | `avsked.jpg` | ✅ (låst 2026-09-06) | Sparkad |
+| **avskedet** | `avsked.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Sparkad |
 | **året utan klubb** | `aret_utan_klubb.jpg` | prompt | "Se hur det går utan dig" |
 | **game over** | `game_over.jpg` | prompt | Konkurs / licensnekad |
 

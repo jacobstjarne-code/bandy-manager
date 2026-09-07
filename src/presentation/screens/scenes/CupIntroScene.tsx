@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getCupIntroBeats } from '../../../domain/data/scenes/cupIntroScene'
+import { IllustrationScene } from '../../components/illustration/IllustrationScene'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -71,45 +72,54 @@ export function CupIntroScene({ game, onComplete }: Props) {
         flexDirection: 'column',
       }}
     >
-      <div style={{ padding: '30px 24px 0', textAlign: 'center' }}>
-        <div className="h-scene-genre">CUPEN</div>
-        <div
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 22,
-            fontWeight: 700,
-            color: 'var(--text-light)',
-            lineHeight: 1.2,
-            marginBottom: 4,
-          }}
-        >
-          Innan serien
-        </div>
+      <IllustrationScene
+        mode="header"
+        name="cup"
+        alt=""
+        fadeTo="var(--bg-scene)"
+        objectPosition="center 46%"
+        style={{ flexShrink: 0 }}
+      >
+        <div style={{ height: '100%', padding: '24px 24px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+          <div className="h-scene-genre">CUPEN</div>
+          <div
+            style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 22,
+              fontWeight: 700,
+              color: 'var(--text-light)',
+              lineHeight: 1.2,
+              marginBottom: 4,
+              textShadow: '0 1px 6px rgba(0,0,0,0.7)',
+            }}
+          >
+            Innan serien
+          </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            justifyContent: 'center',
-            marginTop: 12,
-            marginBottom: 20,
-          }}
-        >
-          {beats.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: 24,
-                height: 2,
-                borderRadius: 3,
-                background: i <= currentIndex ? 'var(--accent)' : 'var(--border-dark)',
-                opacity: i <= currentIndex ? 0.8 : 0.3,
-                transition: 'background 0.3s ease',
-              }}
-            />
-          ))}
+          <div
+            style={{
+              display: 'flex',
+              gap: 4,
+              justifyContent: 'center',
+              marginTop: 'auto',
+            }}
+          >
+            {beats.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: 24,
+                  height: 2,
+                  borderRadius: 3,
+                  background: i <= currentIndex ? 'var(--accent)' : 'var(--border-dark)',
+                  opacity: i <= currentIndex ? 0.8 : 0.3,
+                  transition: 'background 0.3s ease',
+                }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </IllustrationScene>
 
       <div style={{ flex: 1, padding: '0 24px', position: 'relative', zIndex: 1 }}>
         <div

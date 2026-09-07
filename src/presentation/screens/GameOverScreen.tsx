@@ -6,6 +6,7 @@ import { CAREER_BREAK_START_CTA } from '../../domain/data/careerBreakText'
 import { gameOverBoardStatement } from '../../domain/services/boardService'
 import { boardPatienceZoneFromScore } from '../../domain/services/portal/boardPatienceZone'
 import type { SeasonBoardTruth } from '../../domain/entities/SeasonSummary'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
 
 export function GameOverScreen() {
   const game = useGameStore(s => s.game)
@@ -37,6 +38,11 @@ export function GameOverScreen() {
   const totalWins = game.seasonSummaries
     ? game.seasonSummaries.reduce((sum, s) => sum + s.wins, 0)
     : 0
+  const firedReason = game.firedReason ?? lastSummary?.boardTruth?.relationship.firedReason
+  // Konkurs och licensnekad har ett eget katalogiserat motiv (`game_over`)
+  // som ännu inte är levererat. Avskedsbilden hör bara till den sportsliga
+  // vägen och får inte göra de administrativa sluten till samma händelse.
+  const showAvskedIllustration = firedReason !== 'bankruptcy' && firedReason !== 'licenseDenied'
 
   // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): läser numera
   // lastSummary.boardTruth — SAMMA frusna snapshot årsboken (SeasonSummaryScreen)
@@ -153,22 +159,33 @@ export function GameOverScreen() {
         maxWidth: 390,
         textAlign: 'center',
         margin: 'auto 0',
+        overflow: 'hidden',
       }}>
-        {/* Red warning icon */}
-        <div style={{
-          width: 64,
-          height: 64,
-          borderRadius: '50%',
-          background: 'color-mix(in srgb, var(--danger) 15%, transparent)',
-          border: '2px solid color-mix(in srgb, var(--danger) 40%, transparent)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 20px',
-          fontSize: 28,
-        }}>
-          ❌
-        </div>
+        {showAvskedIllustration ? (
+          <IllustrationScene
+            mode="header"
+            name="avsked"
+            alt=""
+            fadeTo="var(--bg)"
+            objectPosition="center 58%"
+            style={{ height: 160, margin: '-32px -24px 24px' }}
+          />
+        ) : (
+          <div style={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            background: 'color-mix(in srgb, var(--danger) 15%, transparent)',
+            border: '2px solid color-mix(in srgb, var(--danger) 40%, transparent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            fontSize: 28,
+          }}>
+            ❌
+          </div>
+        )}
 
         <p style={{
           fontSize: 11,

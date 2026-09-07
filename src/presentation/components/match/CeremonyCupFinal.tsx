@@ -86,6 +86,22 @@ export function CeremonyCupFinal({
       zIndex: Z.modal, overflow: 'hidden',
       paddingBottom: 'calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px))',
     }}>
+      {managedWon && (
+        <>
+          <img
+            src="/assets/illustrations/cupguld.jpg"
+            alt=""
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 46%',
+            }}
+          />
+          <div aria-hidden style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(12,10,8,0.62) 0%, rgba(12,10,8,0.76) 56%, var(--bg-dark) 100%)',
+          }} />
+        </>
+      )}
       {managedWon && <GoldConfetti />}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
         {managedWon ? (

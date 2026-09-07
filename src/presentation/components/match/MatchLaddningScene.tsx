@@ -15,12 +15,15 @@ import { seededPick } from '../../../domain/utils/random'
 import { getClubIntroIllustrationAssetName, getClubIntroIllustrationSrc, IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
-// Assets confirmed in repo; others fall back to IllustrationPlaceholder.
+// Assets confirmed in repo; missing occasions fall back to the opponent's
+// club illustration and finally to the deliberate typographic scene.
 const OCCASION_ASSET: Partial<Record<LaddningOccasion, string>> = {
   annandagen: 'annandagen',
+  derby: 'derby',
+  cup: 'cup',
+  premiar: 'premiar',
   final: 'final',
-  // derby: 'derby',      // ordered, placeholder until dropped
-  // nyar: 'nyarsbandy',  // ordered, placeholder until dropped
+  // nyar: 'nyar', // ordered, placeholder until dropped
 }
 
 interface Props {
@@ -103,9 +106,9 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
     ? seededPick(STAKE_TEXT[seasonCtx], seed + 13)
     : null
 
-  // Final och annandag har egna tillfällesbilder. För övriga laddningsscener
-  // får den faktiska motståndarklubben bära sin ortbild när en sådan är
-  // levererad. Saknas den ligger den medvetna typografiska fonden kvar.
+  // Levererade tillfällesbilder går före motståndarens ortbild. För nyår,
+  // vars motiv ännu saknas, får den faktiska motståndarklubben bära scenen.
+  // Saknas även den ligger den medvetna typografiska fonden kvar.
   const assetName = OCCASION_ASSET[occasion]
     ?? (opponent ? getClubIntroIllustrationAssetName(opponent.id) : undefined)
   const assetSrc = OCCASION_ASSET[occasion]
@@ -372,8 +375,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
   // ── Standard single-step scene (non-final or other occasions) ──
   //
   // HIGH-fyndet "den första matchillustrationen är i praktiken tom" (audit
-  // 2026-08-29): för de tillfällen som saknar asset (premiar, cup, derby, nyar
-  // — bara annandagen.jpg/final.jpg/intro.jpg finns i repot) renderades
+  // 2026-08-29): för de tillfällen som saknar asset renderades
   // IllustrationPlaceholder, dvs en stor mörk fond med etiketten "⬩ PREMIÄR ⬩"
   // och dev-texten "illustration på väg" mitt i bilden. Två fel samtidigt:
   // dev-copy nådde spelaren, och eyebrown stod två gånger på samma skärm

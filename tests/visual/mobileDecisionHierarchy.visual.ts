@@ -33,6 +33,7 @@ function contrast(foreground: string, background: string) {
 test.describe('mobil beslutshierarki @ 390×844', () => {
   test('Game Over visar tre jämlika, tryckbara CTA:er inom safe area', async ({ page }) => {
     await openMobileScene(page, 'game-over')
+    await expect(page.locator('img[src="/assets/illustrations/avsked.jpg"]')).toBeVisible()
 
     const buttons = [
       page.getByRole('button', { name: 'SE KARRIÄREN', exact: true }),

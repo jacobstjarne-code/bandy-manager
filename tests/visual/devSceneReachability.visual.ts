@@ -155,9 +155,32 @@ test('Cupintrot visar första beatet och nästa CTA', async ({ page }) => {
   await page.goto('/dev/scenes?scene=cup-intro&width=390', { waitUntil: 'networkidle' })
   const scene = page.locator('[data-scene-content]')
 
+  await expect(scene.locator('img[src="/assets/illustrations/cup.jpg"]')).toBeVisible()
   await expect(scene.getByText('CUPEN')).toBeVisible()
   await expect(scene.getByText('Innan serien')).toBeVisible()
   await expect(scene.getByRole('button')).toBeVisible()
+})
+
+for (const [sceneId, eyebrow, asset] of [
+  ['opponent-intro', 'PREMIÄR', 'premiar'],
+  ['match-laddning-derby', 'DERBY', 'derby'],
+  ['match-laddning-cup', 'CUPEN', 'cup'],
+] as const) {
+  test(`${sceneId} använder rätt låsta momentbild`, async ({ page }) => {
+    await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
+    const scene = page.locator('[data-scene-content]')
+
+    await expect(scene.getByText(new RegExp(eyebrow))).toBeVisible()
+    await expect(scene.locator(`img[src="/assets/illustrations/${asset}.jpg"]`)).toBeVisible()
+  })
+}
+
+test('cupguldet används på den simulerade segerns efterceremoni', async ({ page }) => {
+  await page.goto('/dev/scenes?scene=cup-victory&width=390&inspect=1', { waitUntil: 'networkidle' })
+  const scene = page.locator('[data-scene-content]')
+
+  await expect(scene.getByText(/Cupmästare/)).toBeVisible()
+  await expect(scene.locator('img[src="/assets/illustrations/cupguld.jpg"]')).toBeVisible()
 })
 
 test('Söndagsträningen visar plats, spelare och val', async ({ page }) => {
@@ -301,6 +324,9 @@ for (const [sceneId, text] of [
   test(`${sceneId} är nåbar i mobilbredd`, async ({ page }) => {
     await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
     await expect(page.getByText(text, { exact: true }).first()).toBeVisible()
+    if (sceneId === 'ceremony-cup-final') {
+      await expect(page.locator('img[src="/assets/illustrations/cupguld.jpg"]')).toBeVisible()
+    }
   })
 }
 
