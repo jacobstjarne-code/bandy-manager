@@ -3,6 +3,8 @@ import { applyPlayerStateUpdates } from '../playerStateProcessor'
 import type { Player } from '../../../../domain/entities/Player'
 import type { Fixture, TeamSelection } from '../../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
+import type { Club } from '../../../../domain/entities/Club'
+import { FORMATION_523_EXTRA_FITNESS_COST, getTacticModifiers } from '../../../../domain/services/tacticModifiers'
 import {
   PlayerPosition, PlayerArchetype, FixtureStatus,
   TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus,
@@ -97,6 +99,39 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 describe('playerStateProcessor — B9 positionsviktad fatigue', () => {
+  it('låser och applicerar C2:s minsta godkända 5-2-3-kostnad efter match', () => {
+    expect(FORMATION_523_EXTRA_FITNESS_COST).toBe(10)
+
+    const homePlayers = makeSquad('h', 'club1')
+    const awayPlayers = makeSquad('a', 'club2')
+    const fixture = makeFixture('f_c2', homePlayers, awayPlayers)
+    const allPlayers = [...homePlayers, ...awayPlayers]
+    const startersThisRound = new Set(allPlayers.map(player => player.id))
+    const game = makeGame()
+    const neutralMods = getTacticModifiers({ ...NEUTRAL_TACTIC, formation: '532_tvatoppar' })
+
+    const run = (formation: '532_tvatoppar' | '523_hog') => applyPlayerStateUpdates(
+      allPlayers,
+      startersThisRound,
+      new Set(),
+      game,
+      neutralMods,
+      undefined,
+      { id: 'club1', activeTactic: { ...NEUTRAL_TACTIC, formation } } as Club,
+      817,
+      6,
+      [fixture],
+    )
+
+    const balanced = run('532_tvatoppar').updatedPlayers.find(player => player.id === 'h_m1')!
+    const highPress = run('523_hog').updatedPlayers.find(player => player.id === 'h_m1')!
+
+    // Samma RNG och samma tacticModifiers isolerar den särskilda kostnaden.
+    // Proportionell återhämtning tar tillbaka en liten del efter matchen.
+    expect(balanced.fitness - highPress.fitness).toBeGreaterThanOrEqual(8)
+    expect(balanced.fitness - highPress.fitness).toBeLessThanOrEqual(FORMATION_523_EXTRA_FITNESS_COST)
+  })
+
   it('mittfältare tappar mer fitness än ytterhalv i genomsnitt (baseFitnessLoss slumpas per spelare — snitta över flera seeds)', () => {
     // Enskild seed (eller ett litet antal) kan visa skillnaden åt fel håll
     // av ren slump — baseFitnessLoss är oberoende per spelare. Kalibrerat

@@ -15,14 +15,13 @@ import {
  * DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditionskostnad
  * ("kraftödande ... kortare perioder", SvBF §2.4.2.2) — en per-omgångs-
  * kostnad UTÖVER fatigueRate, för managerade startspelare när matchens
- * formation är `523_hog`. Startvärde konservativt (samma storleksordning som
- * BYGG_EXTRA_FITNESS_COST=4, periodisationService.ts, en annan kronisk
- * kondition-pålaga) — magnituden är EXPLICIT INTE FÄRDIGKALIBRERAD, den
- * väntar kalibreringsrundan C2 (godkänt-kriterium: hög press ska förlora
- * mot balanserat minst lika ofta som den vinner över 22 omgångar, mätt över
- * 10 000 seeds enligt docs/BANDYTAKTIK_KALLASNING_2026-09-04.md).
+ * formation är `523_hog`. Magnitud 10 är det minsta heltalsvärde som klarade
+ * kalibreringsrundan C2:s 10 000 parade 22-omgångssäsonger: staplad taktik
+ * blev bättre i 44,85 % och sämre i 46,48 %, med −0,06 poäng i medeldelta.
+ * Värde 9 missade samma acceptans (45,90 % bättre mot 45,34 % sämre).
+ * Engångsmatchens styrka är oförändrad eftersom kostnaden bokförs efter match.
  */
-export const FORMATION_523_EXTRA_FITNESS_COST = 9
+export const FORMATION_523_EXTRA_FITNESS_COST = 10
 
 export interface TacticModifiers {
   offenseModifier: number    // 0.75–1.25

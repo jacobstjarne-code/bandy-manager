@@ -177,7 +177,8 @@ export function applyPlayerStateUpdates(
       const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
       // DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditions-
       // kostnad, utöver fatigueRate (som redan höjs +10% av heightMode:'high').
-      // Startvärde konservativt — se FORMATION_523_EXTRA_FITNESS_COST.
+      // Magnituden är C2-kalibrerad över 10 000 parade säsonger — se
+      // FORMATION_523_EXTRA_FITNESS_COST.
       const formation523ExtraCost = isManaged && managedClubForTactic?.activeTactic.formation === '523_hog'
         ? FORMATION_523_EXTRA_FITNESS_COST
         : 0
