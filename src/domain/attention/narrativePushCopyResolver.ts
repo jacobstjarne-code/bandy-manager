@@ -27,10 +27,11 @@ function weekdayLabel(isoDate: string): string {
 function pickVoice(
   rotation: PushCopyRotationStore,
   scenarioKey: string,
-  options: readonly [AttentionVoice, AttentionVoice],
+  options: readonly [AttentionVoice, ...AttentionVoice[]],
 ): AttentionVoice {
   const last = rotation.getLastVoice(scenarioKey)
-  const chosen = last === options[0] ? options[1] : options[0]
+  const lastIndex = last ? options.indexOf(last) : -1
+  const chosen = options[(lastIndex + 1) % options.length]
   rotation.setLastVoice(scenarioKey, chosen)
   return chosen
 }
@@ -58,33 +59,141 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  *    skrivvägar (grep bekräftat, 2026-09-06) — text-utan-yta, väntar på sin
  *    producent, inte borttagen (Princip 7).
  *
- * `calendar_anchor`/`season_context`-kategorierna (registrets familjer 2
- * "Kalenderankare" och 3 "Säsongsläge") lämnas MEDVETET oresolverade (retur
- * null) — se MASTER_OPPET `stickiness-categoryfor-tre-kallor`: adaptern
- * (narrativePushAdapter.ts) bygger nu en egen framåtblickande kandidat per
- * familj (`calendarAnchorCandidate`/`seasonContextCandidate`, ur
- * `game.fixtures`/`game.standings` — inte längre en gissning ur en
- * `AgendaItem`), men ingen låst copy finns än för dem. Opus skriver
- * familjernas 2/3-copy mot `ForwardPushPayload`s `calendar_anchor`/
- * `season_context`-varianter när den texten är dömd; fram tills dess
- * returnerar den här resolvern null för dem — infrastruktur utan dold
- * produktionscopy, samma disciplin som narrative_return alltid haft.
+ * Kalenderankare och säsongsläge läser sina egna framåtblickande payloads.
+ * Mallarna är ordagrant låsta i copy-registrets §2–§3. Varje gren avstår om
+ * ett fält som just den mallen behöver saknas — hellre ingen push än en
+ * påhittad dag, klubb eller tabellmarginal.
  */
 export function createNarrativePushCopyResolver(
   game: SaveGame,
   rotation: PushCopyRotationStore,
 ): NarrativePushCopyResolver {
   return (payload: ForwardPushPayload): NarrativePushCopy | null => {
-    if (payload.category !== 'narrative_return') return null
+    const ownClub = game.clubs.find(c => c.id === game.managedClubId)
+    const ownClubName = ownClub?.shortName ?? ownClub?.name
+    if (!ownClubName) return null
+
+    if (payload.category === 'calendar_anchor') {
+      if (!payload.fixture.date) return null
+      const opponent = game.clubs.find(c => c.id === payload.opponentClubId)
+      const opponentName = opponent?.shortName ?? opponent?.name
+      if (!opponentName) return null
+      const dag = weekdayLabel(payload.fixture.date)
+
+      if (payload.kind === 'cup') {
+        if (!payload.fixture.venueCity) return null
+        return {
+          voice: 'press',
+          title: `Cupkväll i ${payload.fixture.venueCity}.`,
+          body: `${opponentName} på ${dag}. Vinnaren går vidare, förloraren åker hem.`,
+        }
+      }
+
+      if (payload.kind === 'final') {
+        const voices: [AttentionVoice, ...AttentionVoice[]] = (game.fanMood ?? 50) >= 60
+          ? ['press', 'club', 'fans']
+          : ['press', 'club']
+        const voice = pickVoice(rotation, 'anchor_final', voices)
+        if (voice === 'press') {
+          return { voice, title: 'Final.', body: `${ownClubName} mot ${opponentName}. En match, ett år.` }
+        }
+        if (voice === 'fans') {
+          return { voice, title: 'Hela orten åker.', body: `Final mot ${opponentName}. Bussarna är fulla.` }
+        }
+        return {
+          voice,
+          title: `Det är final på ${dag}.`,
+          body: `Mot ${opponentName}. Ingen påminnelse behövs, men här är en.`,
+        }
+      }
+
+      const voices: [AttentionVoice, ...AttentionVoice[]] = (game.fanMood ?? 50) >= 60
+        ? ['press', 'club', 'fans']
+        : ['press', 'club']
+      const voice = pickVoice(rotation, 'anchor_derby', voices)
+      if (voice === 'press') {
+        return {
+          voice,
+          title: 'Derbyveckan är här.',
+          body: `${ownClubName}–${opponentName} ${payload.venue} på ${dag}. Orten pratar inte om något annat.`,
+        }
+      }
+      if (voice === 'fans') {
+        return {
+          voice,
+          title: 'Läktaren är redan där.',
+          body: `Derby mot ${opponentName}. Klacken sjunger sedan i onsdags.`,
+        }
+      }
+      return { voice, title: `Derby på ${dag}.`, body: `${opponentName}. Du vet.` }
+    }
+
+    if (payload.category === 'season_context') {
+      if (payload.kind === 'title') {
+        if (payload.pointsTo.title <= 0) return null
+        return {
+          voice: 'chair',
+          title: 'Serieseger inom räckhåll.',
+          body: `${payload.pointsTo.title} poäng, ${payload.roundsRemaining} omgångar. Ordföranden har inte sovit.`,
+        }
+      }
+
+      if (payload.kind === 'playoff_edge') {
+        if (payload.pointsTo.playoff <= 0) return null
+        const voice = pickVoice(rotation, 'season_playoff_edge', ['chair', 'assistant'])
+        return voice === 'chair'
+          ? {
+              voice,
+              title: `${payload.pointsTo.playoff} poäng till slutspel.`,
+              body: `${payload.roundsRemaining} omgångar kvar. Styrelsen räknar. Det gör vi alla.`,
+            }
+          : {
+              voice,
+              title: 'Slutspelet går att nå.',
+              body: `${payload.pointsTo.playoff} poäng på ${payload.roundsRemaining} matcher. Jag tror på det. Laget vet inte än.`,
+            }
+      }
+
+      if (payload.kind === 'relegation') {
+        if (payload.pointsTo.safety <= 0) return null
+        const voice = pickVoice(rotation, 'season_relegation', ['chair', 'assistant'])
+        return voice === 'chair'
+          ? {
+              voice,
+              title: `${payload.position}:e plats.`,
+              body: `${payload.pointsTo.safety} poäng till säkerhet, ${payload.roundsRemaining} omgångar. Vi behöver inte prata om vad det betyder.`,
+            }
+          : {
+              voice,
+              title: 'Vi ligger illa.',
+              body: `${payload.position}:e, ${payload.pointsTo.safety} poäng till säkerhet. Jag säger det rakt, för ingen annan gör det.`,
+            }
+      }
+
+      if (!payload.form || !payload.nextFixture?.date || !payload.nextOpponentClubId) return null
+      const opponent = game.clubs.find(c => c.id === payload.nextOpponentClubId)
+      const opponentName = opponent?.shortName ?? opponent?.name
+      if (!opponentName) return null
+      const dag = weekdayLabel(payload.nextFixture.date)
+      return payload.kind === 'streak_w'
+        ? {
+            voice: 'club',
+            title: `${payload.form.length} raka.`,
+            body: `${opponentName} nästa. Serien håller tills den inte gör det.`,
+          }
+        : {
+            voice: 'club',
+            title: `${payload.form.length} raka förluster.`,
+            body: `${opponentName} på ${dag}. Något måste ändras, eller inte.`,
+          }
+    }
+
     const item = payload.item
 
     const fixture = getNextManagedFixture(game)
     if (!fixture?.date) return null
     const opponentId = nextOpponentClubId(game, fixture)
     const dag = weekdayLabel(fixture.date)
-    const ownClub = game.clubs.find(c => c.id === game.managedClubId)
-    const ownClubName = ownClub?.shortName ?? ownClub?.name
-    if (!ownClubName) return null
 
     // Revansch (register §4) — big_loss / förlorat derby mot exakt nästa motstånd, ≤1 säsong.
     if (

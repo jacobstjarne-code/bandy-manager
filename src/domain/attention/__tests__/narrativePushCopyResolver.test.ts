@@ -60,11 +60,103 @@ function memoryRotation(): PushCopyRotationStore {
 }
 
 describe('createNarrativePushCopyResolver', () => {
-  it('returnerar null för calendar_anchor/season_context — MEDVETET oresolverat, ingen copy skriven än (se filhuvudet)', () => {
+  it('kalenderankare: derby använder låst presscopy med verklig dag och hemma/borta', () => {
     const resolver = createNarrativePushCopyResolver(gameFixture(), memoryRotation())
     const fixture = gameFixture().fixtures[0]
-    expect(resolver({ category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar', kind: 'derby' })).toBeNull()
-    expect(resolver({ category: 'season_context', position: 3, margin: { toPlayoff: 2, toRelegation: 10 } })).toBeNull()
+    expect(resolver({
+      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
+      kind: 'derby', daysUntil: 6, venue: 'hemma',
+    })).toEqual({
+      voice: 'press',
+      title: 'Derbyveckan är här.',
+      body: 'Söderfors–Skutskär hemma på lördag. Orten pratar inte om något annat.',
+    })
+  })
+
+  it('kalenderankare: finalen roterar från press till klubb och släpper in klacken först vid fanMood ≥60', () => {
+    const rotation = memoryRotation()
+    const game = gameFixture({ fanMood: 70 })
+    const resolver = createNarrativePushCopyResolver(game, rotation)
+    const fixture = game.fixtures[0]
+    const payload = {
+      category: 'calendar_anchor' as const, fixture, opponentClubId: 'club_skutskar',
+      kind: 'final' as const, daysUntil: 6, venue: 'hemma' as const,
+    }
+    expect(resolver(payload)?.title).toBe('Final.')
+    expect(resolver(payload)?.title).toBe('Det är final på lördag.')
+    expect(resolver(payload)).toEqual({
+      voice: 'fans',
+      title: 'Hela orten åker.',
+      body: 'Final mot Skutskär. Bussarna är fulla.',
+    })
+  })
+
+  it('säsongsläge: slutspelsmarginalen renderas ur payloaden och rösten roterar', () => {
+    const resolver = createNarrativePushCopyResolver(gameFixture(), memoryRotation())
+    const payload = {
+      category: 'season_context' as const,
+      kind: 'playoff_edge' as const,
+      position: 9,
+      margin: { toPlayoff: -2, toRelegation: 8 },
+      pointsTo: { playoff: 2, title: 14, safety: 0 },
+      roundsRemaining: 4,
+      form: null,
+    }
+    expect(resolver(payload)).toEqual({
+      voice: 'chair',
+      title: '2 poäng till slutspel.',
+      body: '4 omgångar kvar. Styrelsen räknar. Det gör vi alla.',
+    })
+    expect(resolver(payload)).toEqual({
+      voice: 'assistant',
+      title: 'Slutspelet går att nå.',
+      body: '2 poäng på 4 matcher. Jag tror på det. Laget vet inte än.',
+    })
+  })
+
+  it('kalenderankare: cupcopy kräver och använder den verkliga spelorten', () => {
+    const game = gameFixture()
+    const fixture = { ...game.fixtures[0], venueCity: 'Bollnäs' }
+    const resolver = createNarrativePushCopyResolver(game, memoryRotation())
+    expect(resolver({
+      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
+      kind: 'cup', daysUntil: 2, venue: 'borta',
+    })).toEqual({
+      voice: 'press',
+      title: 'Cupkväll i Bollnäs.',
+      body: 'Skutskär på lördag. Vinnaren går vidare, förloraren åker hem.',
+    })
+    expect(resolver({
+      category: 'calendar_anchor', fixture: { ...fixture, venueCity: undefined },
+      opponentClubId: 'club_skutskar', kind: 'cup', daysUntil: 2, venue: 'borta',
+    })).toBeNull()
+  })
+
+  it('säsongsläge: nedflyttning och förlustsvit använder varsin låst mall', () => {
+    const game = gameFixture()
+    const resolver = createNarrativePushCopyResolver(game, memoryRotation())
+    expect(resolver({
+      category: 'season_context', kind: 'relegation', position: 11,
+      margin: { toPlayoff: -8, toRelegation: -2 },
+      pointsTo: { playoff: 8, title: 20, safety: 2 },
+      roundsRemaining: 5, form: null,
+    })).toEqual({
+      voice: 'chair',
+      title: '11:e plats.',
+      body: '2 poäng till säkerhet, 5 omgångar. Vi behöver inte prata om vad det betyder.',
+    })
+
+    expect(resolver({
+      category: 'season_context', kind: 'streak_l', position: 6,
+      margin: { toPlayoff: 5, toRelegation: 12 },
+      pointsTo: { playoff: 0, title: 9, safety: 0 },
+      roundsRemaining: 8, form: { result: 'L', length: 4 },
+      nextFixture: game.fixtures[0], nextOpponentClubId: 'club_skutskar',
+    })).toEqual({
+      voice: 'club',
+      title: '4 raka förluster.',
+      body: 'Skutskär på lördag. Något måste ändras, eller inte.',
+    })
   })
 
   it('revansch: big_loss mot exakt nästa motstånd, samma säsong ("i höstas") — pressens variant först', () => {

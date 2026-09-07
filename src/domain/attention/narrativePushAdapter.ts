@@ -14,6 +14,7 @@ import {
   daysUntilNextMatch,
 } from '../services/portal/triggers/matchTriggers'
 import { RELEGATION_ZONE_SIZE } from '../services/boardService'
+import { getStreakState } from '../data/roundCharacter'
 import type {
   AttentionCategory,
   AttentionImportance,
@@ -32,11 +33,9 @@ const CALENDAR_ANCHOR_WINDOW_DAYS = 5
 // Samma åtta-lags-cutoff som playoffService.ts använder rått (ingen
 // namngiven konstant där heller) — hålls i synk manuellt.
 const PLAYOFF_QUALIFY_COUNT = 8
-// Beslutsrelevant = inom fyra poäng (två segrars marginal) från endera
-// linjen. Provisoriskt Code-vald tröskel, ingen dom — copyn skrivs inte
-// än (se createNarrativePushCopyResolver), så ingen spelare ser effekten
-// av var gränsen exakt går förrän dess.
-const SEASON_CONTEXT_MARGIN_WINDOW = 4
+// Copy-registret §3: tabelläget är laddat vid högst tre poäng till en
+// relevant gräns. Exakt samma tal styr kandidat och synlig copy.
+const SEASON_CONTEXT_MARGIN_WINDOW = 3
 
 /** Copy-registret äger röst och formulering. Null håller kandidaten stängd. */
 export interface NarrativePushCopy {
@@ -52,6 +51,24 @@ export interface SeasonMargin {
   toRelegation: number
 }
 
+export interface SeasonPointsTo {
+  playoff: number
+  title: number
+  safety: number
+}
+
+export interface SeasonForm {
+  result: 'W' | 'L'
+  length: number
+}
+
+export type SeasonContextKind =
+  | 'playoff_edge'
+  | 'relegation'
+  | 'title'
+  | 'streak_w'
+  | 'streak_l'
+
 /**
  * stickiness-categoryfor-tre-kallor (DOM Opus 2026-09-06): tre kategorier,
  * tre källor — inte en klassificerare över en källa den inte kan se.
@@ -63,8 +80,25 @@ export interface SeasonMargin {
  */
 export type ForwardPushPayload =
   | { category: 'narrative_return'; item: AgendaItem }
-  | { category: 'calendar_anchor'; fixture: Fixture; opponentClubId: string; kind: 'derby' | 'cup' | 'final' }
-  | { category: 'season_context'; position: number; margin: SeasonMargin }
+  | {
+      category: 'calendar_anchor'
+      fixture: Fixture
+      opponentClubId: string
+      kind: 'derby' | 'cup' | 'final'
+      daysUntil: number
+      venue: 'hemma' | 'borta'
+    }
+  | {
+      category: 'season_context'
+      kind: SeasonContextKind
+      position: number
+      margin: SeasonMargin
+      pointsTo: SeasonPointsTo
+      roundsRemaining: number
+      form: SeasonForm | null
+      nextFixture?: Fixture
+      nextOpponentClubId?: string
+    }
 
 export type NarrativePushCopyResolver = (payload: ForwardPushPayload) => NarrativePushCopy | null
 
@@ -151,9 +185,10 @@ function calendarAnchorCandidate(game: SaveGame): ForwardCandidate | null {
 
   const opponentClubId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
   const score = kind === 'final' ? 95 : kind === 'cup' ? 85 : 75
+  const venue = fixture.homeClubId === game.managedClubId ? 'hemma' : 'borta'
 
   return {
-    payload: { category: 'calendar_anchor', fixture, opponentClubId, kind },
+    payload: { category: 'calendar_anchor', fixture, opponentClubId, kind, daysUntil, venue },
     subjectId: fixture.id,
     sources: [{ kind: 'fixture', id: fixture.id }],
     unresolved: ['upcoming_fixture_not_yet_played'],
@@ -176,26 +211,95 @@ function seasonContextCandidate(game: SaveGame): ForwardCandidate | null {
   const sorted = [...game.standings].sort((a, b) => a.position - b.position)
   const totalTeams = sorted.length
   const playoffBoundary = sorted[PLAYOFF_QUALIFY_COUNT - 1]
+  const leader = sorted[0]
   const relegationSafeRank = totalTeams - RELEGATION_ZONE_SIZE
   const relegationBoundary = sorted[relegationSafeRank - 1]
-  if (!playoffBoundary || !relegationBoundary) return null
+  if (!playoffBoundary || !leader || !relegationBoundary) return null
 
   const margin: SeasonMargin = {
     toPlayoff: own.points - playoffBoundary.points,
     toRelegation: own.points - relegationBoundary.points,
   }
-  const closest = Math.min(Math.abs(margin.toPlayoff), Math.abs(margin.toRelegation))
-  if (closest > SEASON_CONTEXT_MARGIN_WINDOW) return null
+  const pointsTo: SeasonPointsTo = {
+    playoff: Math.max(0, playoffBoundary.points - own.points),
+    title: Math.max(0, leader.points - own.points),
+    safety: Math.max(0, relegationBoundary.points - own.points),
+  }
+  const roundsRemaining = game.fixtures.filter(f =>
+    f.season === game.currentSeason &&
+    f.status === 'scheduled' &&
+    !f.isCup &&
+    !f.isKnockout &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+  ).length
+  if (roundsRemaining === 0) return null
+
+  const streak = getStreakState(game)
+  const form: SeasonForm | null = streak
+    ? { result: streak.type === 'winning_streak' ? 'W' : 'L', length: streak.length }
+    : null
+  const nextFixture = getNextManagedFixture(game) ?? undefined
+  const nextOpponentClubId = nextFixture
+    ? (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)
+    : undefined
+
+  let kind: SeasonContextKind | null = null
+  if (
+    own.position > relegationSafeRank &&
+    pointsTo.safety > 0 &&
+    pointsTo.safety <= SEASON_CONTEXT_MARGIN_WINDOW
+  ) {
+    kind = 'relegation'
+  } else if (
+    own.position > PLAYOFF_QUALIFY_COUNT &&
+    pointsTo.playoff > 0 &&
+    pointsTo.playoff <= SEASON_CONTEXT_MARGIN_WINDOW
+  ) {
+    kind = 'playoff_edge'
+  } else if (own.position > 1 && pointsTo.title > 0 && pointsTo.title <= SEASON_CONTEXT_MARGIN_WINDOW) {
+    kind = 'title'
+  } else if (form?.result === 'W' && nextFixture?.date) {
+    kind = 'streak_w'
+  } else if (form?.result === 'L' && nextFixture?.date) {
+    kind = 'streak_l'
+  }
+  if (!kind) return null
+
+  const distance = kind === 'relegation'
+    ? pointsTo.safety
+    : kind === 'playoff_edge'
+      ? pointsTo.playoff
+      : kind === 'title'
+        ? pointsTo.title
+        : 0
+  const score = kind === 'relegation' ? 90 : kind === 'title' ? 85 : kind === 'playoff_edge' ? 80 : 75
 
   return {
-    payload: { category: 'season_context', position: own.position, margin },
+    payload: {
+      category: 'season_context',
+      kind,
+      position: own.position,
+      margin,
+      pointsTo,
+      roundsRemaining,
+      form,
+      nextFixture,
+      nextOpponentClubId,
+    },
     subjectId: `standing_${game.managedClubId}_s${game.currentSeason}`,
     sources: [{ kind: 'standing', id: game.managedClubId }],
     unresolved: ['season_margin_undecided'],
-    context: { position: own.position, toPlayoff: margin.toPlayoff, toRelegation: margin.toRelegation },
+    context: {
+      kind,
+      position: own.position,
+      toPlayoff: margin.toPlayoff,
+      toRelegation: margin.toRelegation,
+      roundsRemaining,
+      form: form ? `${form.length}${form.result}` : '',
+    },
     importance: 'normal',
     deepLink: '/game/tabell',
-    score: 70 - closest,
+    score: score - distance,
   }
 }
 

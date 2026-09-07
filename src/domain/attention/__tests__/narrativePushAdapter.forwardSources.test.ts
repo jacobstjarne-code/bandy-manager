@@ -1,10 +1,9 @@
 /**
  * stickiness-categoryfor-tre-kallor (DOM Opus 2026-09-06): calendar_anchor
  * och season_context är nu egna framåtblickande källor (game.fixtures/
- * game.standings), inte längre en felklassad gren av agendan. Ingen copy
- * finns än för dem (Opus skriver den senare) — testerna verifierar att
- * infrastrukturen håller "ingen copy → ingen draft"-disciplinen, och att
- * en stubbad resolver (som simulerar framtida copy) får rätt payload-form.
+ * game.standings), inte längre en felklassad gren av agendan. Testerna
+ * verifierar både "ingen resolvercopy → ingen draft"-disciplinen och att
+ * de låsta mallarna får samtliga statefält utan att själva läsa rå state.
  */
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -36,20 +35,27 @@ const alwaysNullResolver = () => null
 const acceptAnyResolver = (payload: ForwardPushPayload) => ({ title: 't', body: 'b', voice: 'assistant' as const })
 
 describe('narrativePushDrafts — calendar_anchor (familj 2)', () => {
-  it('derby inom fönstret, men ingen copy skriven än: ingen draft (infrastruktur utan dold produktionscopy)', () => {
+  it('derby inom fönstret, men en resolver som avstår: ingen draft', () => {
     const game = baseGame({ fixtures: [derbyFixture(3)] })
     expect(narrativePushDrafts(game, alwaysNullResolver)).toEqual([])
   })
 
   it('derby inom fönstret + stubbad resolver: draft med fixture-källa och /game/match-länk', () => {
     const game = baseGame({ fixtures: [derbyFixture(3)] })
-    const drafts = narrativePushDrafts(game, acceptAnyResolver)
+    const payloads: ForwardPushPayload[] = []
+    const drafts = narrativePushDrafts(game, payload => {
+      payloads.push(payload)
+      return acceptAnyResolver(payload)
+    })
     expect(drafts).toHaveLength(1)
     expect(drafts[0].type).toBe('calendar_anchor')
     expect(drafts[0].subjectId).toBe('fixture-next')
     expect(drafts[0].sources).toEqual([{ kind: 'fixture', id: 'fixture-next' }])
     expect(drafts[0].deepLink).toBe('/game/match')
     expect(drafts[0].narrativePost).toBeUndefined()
+    expect(payloads[0]).toMatchObject({
+      category: 'calendar_anchor', kind: 'derby', daysUntil: 3, venue: 'hemma',
+    })
   })
 
   it('derby UTANFÖR fönstret (för långt fram): ingen kandidat alls', () => {
@@ -116,22 +122,73 @@ describe('narrativePushDrafts — season_context (familj 3)', () => {
     expect(narrativePushDrafts(game, acceptAnyResolver)).toEqual([])
   })
 
-  it('nära slutspelsstrecket: ingen copy skriven än → ingen draft', () => {
+  it('nära slutspelsstrecket men resolver som avstår → ingen draft', () => {
     const game = baseGame({ standings: standingsWithPosition(9, 43) })
     expect(narrativePushDrafts(game, alwaysNullResolver)).toEqual([])
   })
 
   it('nära slutspelsstrecket + stubbad resolver: draft med standing-källa och /game/tabell-länk', () => {
     const game = baseGame({ standings: standingsWithPosition(9, 43) })
-    const drafts = narrativePushDrafts(game, acceptAnyResolver)
+    const payloads: ForwardPushPayload[] = []
+    const drafts = narrativePushDrafts(game, payload => {
+      payloads.push(payload)
+      return acceptAnyResolver(payload)
+    })
     expect(drafts).toHaveLength(1)
     expect(drafts[0].type).toBe('season_context')
     expect(drafts[0].sources).toEqual([{ kind: 'standing', id: MANAGED }])
     expect(drafts[0].deepLink).toBe('/game/tabell')
+    expect(payloads[0]).toMatchObject({
+      category: 'season_context',
+      kind: 'playoff_edge',
+      position: 9,
+      pointsTo: { playoff: 1 },
+      roundsRemaining: 22,
+      form: null,
+    })
   })
 
   it('own.played === 0 (säsongsstart): ingen kandidat, inga matcher spelade än', () => {
     const game = baseGame({ standings: standingsWithPosition(9, 43, 0) })
     expect(narrativePushDrafts(game, acceptAnyResolver)).toEqual([])
+  })
+
+  it('nedflyttningsläge går före slutspelsmarginal och bär poäng till säkerhet', () => {
+    const game = baseGame({ standings: standingsWithPosition(11, 39) })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return acceptAnyResolver(payload) })
+    expect(payloads.find(p => p.category === 'season_context')).toMatchObject({
+      category: 'season_context', kind: 'relegation', position: 11,
+      pointsTo: { safety: 1 },
+    })
+  })
+
+  it('tvåan inom tre poäng från ledaren bär ett sant seriesegersläge', () => {
+    const game = baseGame({ standings: standingsWithPosition(2, 56) })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return acceptAnyResolver(payload) })
+    expect(payloads.find(p => p.category === 'season_context')).toMatchObject({
+      category: 'season_context', kind: 'title', position: 2,
+      pointsTo: { title: 2 },
+    })
+  })
+
+  it('tre raka vinster blir formpayload när tabellen inte ligger vid en gräns', () => {
+    const next = { ...derbyFixture(3), awayClubId: OTHER }
+    const game = baseGame({
+      fixtures: [next],
+      standings: standingsWithPosition(6, 52),
+      trainerArc: {
+        ...baseGame().trainerArc,
+        consecutiveWins: 3,
+        consecutiveLosses: 0,
+      },
+    })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return acceptAnyResolver(payload) })
+    expect(payloads.find(p => p.category === 'season_context')).toMatchObject({
+      category: 'season_context', kind: 'streak_w', form: { result: 'W', length: 3 },
+      nextOpponentClubId: OTHER,
+    })
   })
 })
