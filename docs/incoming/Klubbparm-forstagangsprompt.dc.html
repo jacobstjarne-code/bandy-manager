@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+  </style>
+</helmet>
+<div style="min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:28px 20px 72px;">
+  <div style="display:flex; flex-wrap:wrap; gap:40px; align-items:flex-start; max-width:960px; margin:0 auto;">
+
+    <div style="flex:0 0 auto;">
+      <div class="h-label" style="color:var(--accent-dark);">KLUBBPÄRMEN · FÖRSTAGÅNGS-ERBJUDANDE (1b)</div>
+      <h1 style="font-family:var(--font-display); font-size:22px; font-weight:800; margin:6px 0 14px;">Välkommen-modalen</h1>
+
+      <!-- Phone -->
+      <div style="width:390px; height:720px; position:relative; overflow:hidden; border-radius:22px; border:1px solid var(--border-dark); background:var(--bg-portal); box-shadow:0 8px 30px rgba(0,0,0,0.25);">
+        <!-- GameHeader (dimmed behind backdrop) -->
+        <div style="height:44px; background:var(--bg-leather); border-bottom:2px solid var(--accent); display:flex; align-items:center; justify-content:space-between; padding:0 14px; filter:brightness(0.6);">
+          <span style="font-family:var(--font-display); font-weight:800; font-size:13px; color:var(--text-light);">Forsbacka BK</span>
+          <span style="font-size:11px; color:var(--text-light-secondary);">2026/27</span>
+        </div>
+        <div style="padding:12px; display:flex; flex-direction:column; gap:8px; filter:brightness(0.5);">
+          <div style="background:var(--bg-portal-surface); border-radius:8px; height:34px;"></div>
+          <div style="background:var(--bg-portal-elevated); border-radius:8px; height:120px;"></div>
+          <div style="background:var(--bg-portal-surface); border-radius:8px; height:70px;"></div>
+          <div style="background:var(--bg-portal-surface); border-radius:8px; height:70px;"></div>
+        </div>
+        <div style="position:absolute; bottom:0; left:0; right:0; height:56px; background:var(--bg-leather); filter:brightness(0.55);"></div>
+
+        <!-- Backdrop + modal -->
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; padding:0 22px;">
+          <div style="width:100%; max-width:340px; background:var(--bg); border-radius:8px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+            <div style="background:var(--bg-leather); padding:13px 16px;">
+              <div style="font-family:var(--font-display); font-weight:800; font-size:15px; color:var(--text-light);">Välkommen till klubben</div>
+              <div style="font-family:ui-monospace,monospace; font-size:8px; letter-spacing:1.5px; color:var(--text-light-secondary); margin-top:3px;">FORSBACKA BK · 2026/27</div>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:13px;">
+              <div style="display:flex; gap:10px; align-items:flex-start; background:rgba(0,0,0,0.04); border-left:2px solid var(--accent); border-radius:0 8px 8px 0; padding:11px 12px;">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--bg-leather); color:var(--accent); font-family:var(--font-display); font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">MM</div>
+                <div>
+                  <div style="font-size:9px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--accent-dark); margin-bottom:4px;">Mikael Magnusson · Assisterande tränare</div>
+                  <div style="font-family:var(--font-display); font-style:italic; font-size:14px; color:var(--text-primary); line-height:1.5;">"Är det första gången du är här? Då ska jag visa dig några viktiga spelmoment."</div>
+                </div>
+              </div>
+              <button style="width:100%; font-family:var(--font-body); font-size:13px; font-weight:700; letter-spacing:0.5px; padding:12px; border-radius:8px; border:none; color:#fff; background:linear-gradient(180deg,#DD9555,#8B4820); box-shadow:var(--shadow-primary); cursor:pointer;">Ja, visa mig pärmen</button>
+              <button style="width:100%; font-family:var(--font-body); font-size:13px; font-weight:600; padding:11px; border-radius:8px; border:1.5px solid var(--border-dark); background:transparent; color:var(--text-secondary); cursor:pointer;">Nej, jag klarar mig</button>
+              <div style="font-size:10px; color:var(--text-muted); text-align:center;">Du hittar alltid pärmen i menyn ↗</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="h-body-sm" style="max-width:390px; margin:12px 0 0;"><strong>Visad:</strong> första Portal-besöket, direkt efter Tillträdets "Första omgången". Copy (Opus) låst. Byggd på DS Overlay-mönstret — samma som KlubbparmOverlay.</p>
+    </div>
+
+    <!-- Spec för Code -->
+    <div style="flex:1 1 300px; min-width:280px; max-width:420px; display:flex; flex-direction:column; gap:14px;">
+      <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+        <div class="h-label" style="color:var(--text-secondary);">FÖR CODE — WIRING</div>
+        <ul class="h-body" style="margin:8px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:7px;">
+          <li><strong>Trigger:</strong> första gången Portalen renderas efter <code>onboardingComplete === true</code>, och endast om <code>klubbparmOfferSeen !== true</code>. Visa en gång per save.</li>
+          <li><strong>Skal:</strong> återanvänd <code>Overlay</code>-primitiven (centrerad, <code>rgba(0,0,0,.6)</code>, ingen blur, maxWidth 340–380). Läder-header-band, coach-framing = samma mönster som Tillträdets <code>CoachFraming</code>.</li>
+          <li><strong>Ja:</strong> sätt <code>klubbparmOfferSeen = true</code> (persist) och öppna befintliga <code>KlubbparmOverlay</code> direkt — bygg inget nytt innehåll.</li>
+          <li><strong>Nej:</strong> sätt <code>klubbparmOfferSeen = true</code> (persist), stäng. Pärmen ligger kvar i menyn oförändrad.</li>
+          <li><strong>Coach:</strong> namn/monogram från <code>game.assistantCoach</code> (som i TilltradeScreen), inte hårdkodat "MM".</li>
+        </ul>
+      </div>
+      <div style="background:var(--bg-surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--accent-dark);">REGELN STÅR KVAR</div>
+        <p class="h-body" style="margin:5px 0 0;">Erbjudandet flyttar ingenting. Pärmen är spelets enda instruktion och förblir en menypost som låser upp kapitel i takt. Modalen är en <em>inbjudan</em> vid första besöket — "Nej" är ett fullgott, jämnstort svar, aldrig en återvändsgränd.</p>
+      </div>
+      <div style="background:var(--bg-surface); border:1px dashed var(--border-dark); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--text-secondary);">ÖPPEN FRÅGA TILL CODE (EJ DESIGN)</div>
+        <p class="h-body" style="margin:5px 0 0;">Finns ett tvingande onboarding-steg som ändå pushar pärmen efter introt (kolla onboarding-migrationstesterna)? Om <strong>ja</strong> — det är det som mjukas upp till detta erbjudande. Om <strong>nej</strong> — dippen var en gissad övergång och detta är hela åtgärden.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
