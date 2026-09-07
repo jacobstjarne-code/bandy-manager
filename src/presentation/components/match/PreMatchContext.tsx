@@ -23,12 +23,15 @@ function shortName(name: string): string {
   return name.replace(SUFFIX_PATTERN, '')
 }
 
-interface ContextResult {
+export interface ContextResult {
   trigger: PreMatchTrigger
   subs: Omit<PreMatchSubs, 'fixtureId'>
 }
 
-function deriveContext(
+/** Exporterad åt matchflode-forbered-linjar ingrepp 3 (förmatchvinjetten)
+ *  — den ärver samma derby›streak›tabell›form-prioritering, inte en egen
+ *  kopia av logiken (DESIGN_UPPDRAG_FORMATCHVINJETT_2026-09-06.md §"variabel info"). */
+export function deriveContext(
   fixture: Fixture,
   game: SaveGame,
   isHome: boolean,

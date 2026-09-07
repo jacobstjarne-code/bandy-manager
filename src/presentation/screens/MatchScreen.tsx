@@ -30,6 +30,8 @@ import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
 import { FatigueFloorConfirm } from '../components/match/FatigueFloorConfirm'
 import { MatchFlowFrame } from '../components/match-flow/MatchFlowFrame'
+import { OpponentVignetteScene } from '../components/match/OpponentVignetteScene'
+import { isFirstMeetingWithOpponent } from '../../domain/services/opponentVignetteTrigger'
 import { getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import { shouldRouteQuicksimToCeremony } from './matchLiveHelpers'
@@ -42,7 +44,7 @@ export function MatchScreen() {
 
   const showReport = !!(location.state as { showReport?: boolean } | null)?.showReport
   const completedFixture: Fixture | null = showReport ? lastCompletedFixtureFromStore : null
-  const [matchStep, setMatchStep] = useState<'laddning' | 'lineup' | 'tactic' | 'start'>(() => {
+  const [matchStep, setMatchStep] = useState<'vignette' | 'laddning' | 'lineup' | 'tactic' | 'start'>(() => {
     if (!game) return 'lineup'
     const mid = game.managedClubId
     const bracket = game.playoffBracket
@@ -61,6 +63,10 @@ export function MatchScreen() {
       })
       .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
     if (!fixture) return 'lineup'
+    // matchflode-forbered-linjar ingrepp 3: vinjetten är fasens första
+    // andetag, före både laddningsbeat och uppställning.
+    const opponentId = fixture.homeClubId === mid ? fixture.awayClubId : fixture.homeClubId
+    if (isFirstMeetingWithOpponent(game, opponentId)) return 'vignette'
     const beat = computeLaddningBeat(game, fixture)
     return beat.tier !== 'none' ? 'laddning' : 'lineup'
   })
@@ -109,7 +115,9 @@ export function MatchScreen() {
   // A3 — Compute beat once; will be consumed by early return below.
   const beat: LaddningBeat = nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' }
   const effectiveStep =
-    matchStep === 'laddning' && beat.tier === 'none' ? 'lineup' : matchStep
+    matchStep === 'vignette' && !nextFixture ? 'lineup'
+      : matchStep === 'laddning' && beat.tier === 'none' ? 'lineup'
+      : matchStep
 
   // Persist band tracking on first render of laddning step (active streak only — broken clears on dismiss)
   useEffect(() => {
@@ -363,6 +371,31 @@ export function MatchScreen() {
       ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
       : rivalry ? `🔥 ${rivalry.name}` : getRoundLabel(nextFixture, playoffBracket).long
 
+  // matchflode-forbered-linjar ingrepp 3 — vinjetten, fasens första andetag.
+  // Renderas INOM MatchFlowFrame (masthead+RPS synliga, som mockens Phone A)
+  // men utan stepIndicator/stamp — den är en stämningsyta, inget val.
+  if (effectiveStep === 'vignette' && nextFixture && opponent) {
+    return (
+      <MatchFlowFrame
+        clubId={managedClub.id}
+        clubName={managedClub.name}
+        managerName={getManagerDisplayName(game)}
+        season={seasonSpanLabel(game.currentSeason)}
+        roundLabel={roundLabel}
+        phase="forbered"
+        stamp={null}
+      >
+        <OpponentVignetteScene
+          game={game}
+          opponent={opponent}
+          fixture={nextFixture}
+          isHome={isHome}
+          onContinue={() => setMatchStep(beat.tier !== 'none' ? 'laddning' : 'lineup')}
+        />
+      </MatchFlowFrame>
+    )
+  }
+
   // A3 — Laddning beat: full screen before lineup step
   if (effectiveStep === 'laddning' && nextFixture) {
     const oppId = nextFixture.homeClubId === managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
@@ -475,7 +508,7 @@ export function MatchScreen() {
               opponentName={opponent?.name ?? 'Okänd'}
               isHome={isHome}
               weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
-              step={effectiveStep === 'laddning' ? 'lineup' : effectiveStep}
+              step={effectiveStep === 'laddning' || effectiveStep === 'vignette' ? 'lineup' : effectiveStep}
               tactic={effectiveStep === 'start' ? tacticState : undefined}
             />
           </div>

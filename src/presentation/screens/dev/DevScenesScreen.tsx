@@ -117,6 +117,10 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'momentumbar' | 'tacticmodal' | 'submodal' | 'spakb'
   // VISUELL_AUDIT punkt 1 (2026-08-09): spelläges-fabriken (gameStateFactory.ts)
   | 'trupp-blandat' | 'trupp-kris' | 'lineup-empty' | 'lineup-filled'
+  // matchflode-forbered-linjar ingrepp 3 (2026-09-07): förmatchvinjetten,
+  // bara nåbar vid ett genuint första möte (färsk säsong 1, ingen spelad
+  // fixture mot motståndaren) — ingen befintlig scen var det.
+  | 'forbered-vignette'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed'
   // design-b4-simulera-bar-fotkrock (2026-09-04): canSimulateRemaining kräver
@@ -255,6 +259,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'trupp-kris',    label: 'Trupp/Nu — kris (alla fyra kategorier)' },
   { id: 'lineup-empty',  label: 'Uppställningen — 3 tomma slots' },
   { id: 'lineup-filled', label: 'Uppställningen — fylld, längsta efternamn' },
+  { id: 'forbered-vignette', label: 'FÖRBERED — förmatchvinjett (första mötet)' },
   { id: 'portal-tom',    label: 'Portal — tom omgång' },
   { id: 'portal-normal', label: 'Portal — normal (1 atmosfärsrad)' },
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
@@ -1912,6 +1917,7 @@ export function DevScenesScreen() {
       : scene === 'trupp-kris' ? truppKrisGame
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
+      : scene === 'forbered-vignette' ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
       : scene === 'match-live' ? matchLiveGame
       : scene === 'navgate-laddning-band' ? matchLaddningBandGame
       : scene === 'portal-tom' ? portalTomGame
@@ -2376,7 +2382,7 @@ export function DevScenesScreen() {
             <SquadScreen />
           </div>
         )}
-        {(scene === 'lineup-empty' || scene === 'lineup-filled') && (
+        {(scene === 'lineup-empty' || scene === 'lineup-filled' || scene === 'forbered-vignette') && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />
           </div>
