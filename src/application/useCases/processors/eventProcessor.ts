@@ -1,11 +1,15 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
-import type { GameEvent, TransferBid } from '../../../domain/entities/GameEvent'
+import { getEventPriority, type GameEvent, type TransferBid } from '../../../domain/entities/GameEvent'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
-import { canAddDecision } from '../../../domain/services/decisionBudgetService'
+import {
+  canAddDecision,
+  MAX_DEFERRED_DECISIONS,
+  partitionInterruptBudget,
+} from '../../../domain/services/decisionBudgetService'
 import { isInCooldown } from '../../../domain/services/sourceCooldownService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent, getMecenatSocialUsedTypes, getMecenatSocialType, MECENAT_SOCIAL_MAX_PER_SEASON } from '../../../domain/services/mecenatService'
@@ -41,6 +45,80 @@ import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventSer
 import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
 
 const BOARD_MILESTONES = [7, 14, 22]
+
+/**
+ * Applies the event queues' ordered maintenance pipeline. The order matters:
+ * cap atmospheric cards, remove resolved cards, promote/defer decisions, then
+ * revalidate injury choices in both queues after promotion.
+ */
+export function maintainEventQueues(game: SaveGame, nextMatchday: number): SaveGame {
+  let updatedGame = game
+
+  // B4: global cap for low-priority events already accumulated in the queue.
+  const MAX_LOW_IN_QUEUE = 5
+  const allPending = updatedGame.pendingEvents ?? []
+  const lowEvents = allPending.filter(
+    event => !event.resolved && (event.priority ?? getEventPriority(event.type)) === 'low',
+  )
+  if (lowEvents.length > MAX_LOW_IN_QUEUE) {
+    const toSpill = lowEvents.slice(MAX_LOW_IN_QUEUE)
+    const spillInbox: InboxItem[] = toSpill.map(event => ({
+      id: `inbox_spill_${event.id}`,
+      date: updatedGame.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: event.title,
+      body: event.body,
+      isRead: false,
+    }))
+    const toSpillIds = new Set(toSpill.map(event => event.id))
+    updatedGame = {
+      ...updatedGame,
+      pendingEvents: allPending.filter(event => !toSpillIds.has(event.id)),
+      inbox: [...updatedGame.inbox, ...spillInbox]
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 50),
+    }
+  }
+
+  // B5: resolved cards no longer need to occupy save data.
+  const beforeClean = updatedGame.pendingEvents ?? []
+  const cleaned = beforeClean.filter(event => !event.resolved)
+  if (cleaned.length < beforeClean.length) {
+    updatedGame = { ...updatedGame, pendingEvents: cleaned }
+  }
+
+  // KF3: prior deferred decisions are promoted FIFO before this round's pool.
+  const priorDeferred = updatedGame.deferredDecisions ?? []
+  const combinedPending = [...priorDeferred, ...(updatedGame.pendingEvents ?? [])]
+  const { nonActionable, surface, deferred: newDeferred } =
+    partitionInterruptBudget(combinedPending, nextMatchday)
+  if (newDeferred.length > 0 || priorDeferred.length > 0) {
+    updatedGame = {
+      ...updatedGame,
+      pendingEvents: [...nonActionable, ...surface],
+      deferredDecisions: newDeferred.slice(0, MAX_DEFERRED_DECISIONS),
+    }
+  }
+
+  // HIGH 9: a promoted play-through card must still point at an injured player.
+  const beforePending = updatedGame.pendingEvents ?? []
+  const beforeDeferred = updatedGame.deferredDecisions ?? []
+  const validPending = beforePending.filter(
+    event => event.resolved || isPlayThroughInjuryCardStillValid(event, updatedGame),
+  )
+  const validDeferred = beforeDeferred.filter(
+    event => event.resolved || isPlayThroughInjuryCardStillValid(event, updatedGame),
+  )
+  if (validPending.length < beforePending.length || validDeferred.length < beforeDeferred.length) {
+    updatedGame = {
+      ...updatedGame,
+      pendingEvents: validPending,
+      deferredDecisions: validDeferred,
+    }
+  }
+
+  return updatedGame
+}
 
 export function processRoundMilestoneInbox(
   game: SaveGame,

@@ -44,14 +44,14 @@ import {
 import { processNarrative, processPlayerArcs, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
-import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid, processBoardObjectiveCheckIn, processRoundMilestoneInbox } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processRoundMilestoneInbox } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanService'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalService'
-import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from '../../domain/services/decisionBudgetService'
+import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
@@ -1389,90 +1389,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
 
-  // ── B4: Globalt cap — low-prio events i kön (inte bara nya per omgång) ──
-  {
-    const MAX_LOW_IN_QUEUE = 5
-    const allPending = updatedGame.pendingEvents ?? []
-    const lowEvents = allPending.filter(e => !e.resolved && (e.priority ?? getEventPriority(e.type)) === 'low')
-    if (lowEvents.length > MAX_LOW_IN_QUEUE) {
-      const toSpill = lowEvents.slice(MAX_LOW_IN_QUEUE)
-      const spillInbox: InboxItem[] = toSpill.map(e => ({
-        id: `inbox_spill_${e.id}`,
-        date: updatedGame.currentDate,
-        type: InboxItemType.BoardFeedback,
-        title: e.title,
-        body: e.body,
-        isRead: false,
-      }))
-      const toSpillIds = new Set(toSpill.map(e => e.id))
-      updatedGame = {
-        ...updatedGame,
-        pendingEvents: allPending.filter(e => !toSpillIds.has(e.id)),
-        inbox: [...updatedGame.inbox, ...spillInbox]
-          .sort((a, b) => b.date.localeCompare(a.date))
-          .slice(0, MAX_INBOX),
-      }
-    }
-  }
-
-  // ── B5: Rensa resolved events från state (sparar localStorage-utrymme) ──
-  {
-    const beforeClean = updatedGame.pendingEvents ?? []
-    const cleaned = beforeClean.filter(e => !e.resolved)
-    if (cleaned.length < beforeClean.length) {
-      updatedGame = { ...updatedGame, pendingEvents: cleaned }
-    }
-  }
-
-  // ── KF3: Avbrottsbudget — batch-cap på actionable decisions per omgång ──
-  // Banden (informational/atmospheric) passerar oräknade.
-  // Deferrade beslut från föregående omgångar promotas in i poolen (FIFO).
-  {
-    const priorDeferred = updatedGame.deferredDecisions ?? []
-    // Slå ihop: äldre deferrade beslut har prioritet (prepend → surfar först)
-    const allPending = [...priorDeferred, ...(updatedGame.pendingEvents ?? [])]
-
-    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): logiken är
-    // extraherad till partitionInterruptBudget (decisionBudgetService.ts) —
-    // oförändrad, plus måste-undantaget. Det här blocket ÄR kodbasens
-    // faktiska deferrings-mekanism (tryQueueDecision har inget
-    // produktionsanropsställe), så undantaget måste bo här för att vara
-    // verkligt; extraktionen gör det testbart utan att köra en hel omgång.
-    const { nonActionable, surface, deferred: newDeferred } =
-      partitionInterruptBudget(allPending, nextMatchday)
-
-    if (newDeferred.length > 0 || priorDeferred.length > 0) {
-      updatedGame = {
-        ...updatedGame,
-        pendingEvents: [...nonActionable, ...surface],
-        deferredDecisions: newDeferred.slice(0, MAX_DEFERRED_DECISIONS),
-      }
-    }
-  }
-
-  // Audit 2026-08-29 HIGH 9 (skadad-spela-vidare-kort på en frisk spelare).
-  // Rotorsak: preconditionen prövades bara vid GENERERING, aldrig vid konsumtion.
-  // Grinden bor nu i isPlayThroughInjuryCardStillValid (eventProcessor.ts, bredvid
-  // generatorn) och körs på varje konsumtionspunkt — här, plus livematchvägen i
-  // matchActions.ts (samma två-punkts-mönster som slutspelskorten redan har).
-  //
-  // Placerad EFTER KF3-avbrottsbudgeten, inte före: den gamla spärren låg ovanför
-  // och rörde bara `pendingEvents`, så ett kort som trängts undan till
-  // `deferredDecisions` promotades tillbaka in i poolen utan att någonsin ha
-  // omprövats. Båda köerna filtreras nu, efter promoteringen.
-  {
-    const beforePending = updatedGame.pendingEvents ?? []
-    const beforeDeferred = updatedGame.deferredDecisions ?? []
-    const validPending = beforePending.filter(
-      e => e.resolved || isPlayThroughInjuryCardStillValid(e, updatedGame),
-    )
-    const validDeferred = beforeDeferred.filter(
-      e => e.resolved || isPlayThroughInjuryCardStillValid(e, updatedGame),
-    )
-    if (validPending.length < beforePending.length || validDeferred.length < beforeDeferred.length) {
-      updatedGame = { ...updatedGame, pendingEvents: validPending, deferredDecisions: validDeferred }
-    }
-  }
+  updatedGame = maintainEventQueues(updatedGame, nextMatchday)
 
   // ── Förtroendepott — apply club finance bonus if earned this check-in ──────
   if (boardObjForetroendepott > 0) {
