@@ -204,6 +204,11 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   'board_verdict',
   'license_event',
   'facility_trial_outcome',
+  // liggare-ny-letter (2026-09-07): text LÅST av Opus i switchens 'letter'-
+  // gren nedan (svensk prosa, kopierad där). Brevet bor i arkivet
+  // (bandyLetters); Krönikan minns bara GESTEN att någon skrev, inte
+  // brevets innehåll.
+  'letter',
 ])
 
 function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
@@ -319,6 +324,23 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
         type: 'youth_aged_out', season: entry.season, matchday: entry.matchday,
         text: `${playerName}, ${entry.youthAgedOut.stars} stjärnor, lämnade akademin vid tjugo.`,
         emoji: '👤', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'letter': {
+      // liggare-ny-letter DEL 2 (Krönikan): TEXT LÅST (Opus 2026-09-07).
+      // Brevet självt bor i arkivet (bandyLetters) — Krönikan återberättar
+      // det ALDRIG, den minns bara att någon skrev. En rad, klubbens torra
+      // röst, avsändaren ur subjectSnapshot (brevskribenten är ingen
+      // spårad entitet). Sann för alla tre brevmallarna (fadern i snön,
+      // brukaren vid radion, änkan med tröjan): alla skriver om det som
+      // varit och att det räknades.
+      const senderName = entry.subjectSnapshot?.name
+      if (!senderName) return null
+      return {
+        type: 'letter', season: entry.season, matchday: entry.matchday,
+        text: `${senderName} skrev. Ett brev om det som varit — och att det räknades för någon.`,
+        emoji: momentFamily('letter'), significance: entry.significance,
+        subjectClubId: managedClubId,
       }
     }
     case 'academy_promotion':

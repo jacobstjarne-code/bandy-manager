@@ -106,3 +106,23 @@ describe('Krönikan/Berättaren — facility_trial_outcome DEL 2 (återanvänder
     expect(buildMemoryEventFromLedger(makeGame(), entry, CLUB_ID)).toBeNull()
   })
 })
+
+describe('Krönikan — letter DEL 2 (text LÅST av Opus, brevets innehåll återberättas aldrig)', () => {
+  it('bygger "{Namn} skrev. Ett brev om det som varit — och att det räknades för någon." av subjectSnapshot', () => {
+    const entry = baseEntry({
+      type: 'letter',
+      subjectSnapshot: { name: 'Birger Karlsson', age: 74 },
+      letter: { letterId: 'letter_abc', kind: 'fan_mail' },
+    })
+    expect(buildMemoryEventFromLedger(makeGame(), entry, CLUB_ID)?.text)
+      .toBe('Birger Karlsson skrev. Ett brev om det som varit — och att det räknades för någon.')
+  })
+
+  it('ingen avsändare i subjectSnapshot → ingen mening hellre än falsk', () => {
+    const entry = baseEntry({
+      type: 'letter',
+      letter: { letterId: 'letter_abc', kind: 'fan_mail' },
+    })
+    expect(buildMemoryEventFromLedger(makeGame(), entry, CLUB_ID)).toBeNull()
+  })
+})
