@@ -175,6 +175,38 @@ export function buildLicenseEventLedgerEntry(input: {
   }
 }
 
+/**
+ * liggare-ny-facility-trial-outcome (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md
+ * §3): significance 50/65 per MASTER_OPPET-radens skiss — "50 (65 vid
+ * nej/nedlagd)". Ett rent röstningsbordläggning ('bordlagd'-outcome) är den
+ * enda som stannar på 50; alla nej-svar och alla nedlagd-utfall (oavsett
+ * `stage`) väger tyngre.
+ */
+export function buildFacilityTrialOutcomeLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  stage: 'bordlagd' | 'nedlagd'
+  outcome: 'bordlagd' | 'nedlagd_fall' | 'nedlagd_egen' | 'kommun_nej' | 'nedlagd_ingen_finansiering'
+  support: number
+}): EventLedgerEntry {
+  const significance = input.outcome === 'bordlagd' ? 50 : 65
+  return {
+    type: 'facility_trial_outcome',
+    semanticKey: `facility_trial_outcome_${input.clubId}_s${input.season}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance,
+    facilityTrialOutcome: {
+      stage: input.stage,
+      outcome: input.outcome,
+      support: input.support,
+    },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

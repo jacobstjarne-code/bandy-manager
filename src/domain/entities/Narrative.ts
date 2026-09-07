@@ -219,6 +219,11 @@ export type EventLedgerType =
   // årsboken kunde aldrig peka tillbaka på "det året licensen var hotad".
   // subject = managed club.
   | 'license_event'
+  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-facility-trial-
+  // outcome): ett bordlagt/nedlagt/kommun-nekat hallbygge glömdes — bara
+  // `facility_built` skrevs, och bara VID lyckat bygge. subject = managed
+  // club (hallProcessService.ts's trial är enkel-klubbsdata).
+  | 'facility_trial_outcome'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -404,6 +409,23 @@ export interface EventLedgerEntry {
     status: 'cleared' | 'first_warning' | 'point_deduction' | 'license_denied'
     deficitKr?: number
     pointsDeducted?: number
+  }
+  /**
+   * facility_trial_outcome (liggare-ny-facility-trial-outcome). `stage` är
+   * hallProcessService.ts's `HallTrialStage` vid resolutionen (bara
+   * 'bordlagd'/'nedlagd' här — de enda terminala icke-bygge-utfallen).
+   * `outcome` återanvänder `PROVNING_RESOLUTION`s FYRA befintliga nycklar
+   * ordagrant (hallProvningData.ts) plus en femte (`nedlagd_ingen_finansiering`)
+   * för den enda vägen utan egen låst text (eventResolver.ts's kommentar:
+   * "förhandlingens ANDRA nej ... rörs inte") — ingen ny etikett för de fyra
+   * som redan finns, ingen ny PROSA för den femte (bara en intern nyckel,
+   * ingen konsument renderar den ännu). `support` är trialens stödnivå vid
+   * resolutionstillfället.
+   */
+  facilityTrialOutcome?: {
+    stage: 'bordlagd' | 'nedlagd'
+    outcome: 'bordlagd' | 'nedlagd_fall' | 'nedlagd_egen' | 'kommun_nej' | 'nedlagd_ingen_finansiering'
+    support: number
   }
 
   /**

@@ -19,7 +19,7 @@ import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
 import { buildPromotedPlayerFromYouth, starsForPotential } from '../academyService'
-import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry } from '../clubHistoryLedgerService'
+import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry } from '../clubHistoryLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
@@ -1621,6 +1621,42 @@ export function resolveEvent(
                   }],
               pendingHallEcho: { text: resolutionText },
               hallEchoExpires: (updatedGame.currentMatchday ?? 0) + 1,
+            }
+          }
+
+          // liggare-ny-facility-trial-outcome: samma fyra vägar som
+          // resolutionText ovan (plus den femte, hallprocess_fhnej_s, som
+          // medvetet saknar egen PROVNING_RESOLUTION-text — se kommentaren
+          // ovan) skriver nu en kanonisk post, oavsett om kafferums-ekot
+          // finns. `newTrial.stage` är redan satt till 'bordlagd'/'nedlagd'
+          // av samma update ovan — ingen omderivering.
+          let facilityOutcome: 'bordlagd' | 'nedlagd_fall' | 'nedlagd_egen' | 'kommun_nej' | 'nedlagd_ingen_finansiering' | undefined
+          if (update.selfNedlagd) {
+            facilityOutcome = 'nedlagd_egen'
+          } else if (eventId.startsWith('hallprocess_res_s')) {
+            if (update.stage === 'bordlagd') facilityOutcome = 'bordlagd'
+            else if (update.stage === 'nedlagd') facilityOutcome = 'nedlagd_fall'
+          } else if (eventId.startsWith('hallprocess_fh1nej_s')) {
+            facilityOutcome = 'kommun_nej'
+          } else if (eventId.startsWith('hallprocess_fhnej_s')) {
+            facilityOutcome = 'nedlagd_ingen_finansiering'
+          }
+          if (facilityOutcome && (newTrial.stage === 'bordlagd' || newTrial.stage === 'nedlagd')) {
+            const facilitySemanticKey = `facility_trial_outcome_${updatedGame.managedClubId}_s${updatedGame.currentSeason}`
+            const alreadyLoggedFacility = (updatedGame.eventLedger ?? []).some(entry =>
+              entry.type === 'facility_trial_outcome' && entry.semanticKey === facilitySemanticKey)
+            if (!alreadyLoggedFacility) {
+              updatedGame = {
+                ...updatedGame,
+                eventLedger: logEvent(updatedGame, buildFacilityTrialOutcomeLedgerEntry({
+                  clubId: updatedGame.managedClubId,
+                  season: updatedGame.currentSeason,
+                  matchday: updatedGame.currentMatchday,
+                  stage: newTrial.stage,
+                  outcome: facilityOutcome,
+                  support: newTrial.support ?? 0,
+                })),
+              }
             }
           }
         } catch (e) {

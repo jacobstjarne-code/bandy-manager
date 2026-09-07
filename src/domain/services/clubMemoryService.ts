@@ -584,6 +584,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // license_event är INTE i denna statiska tabell — kind avgörs dynamiskt
   // av entry.licenseEvent.status nedan (severity finns redan på posten,
   // ingen ny text krävs för att veta om det var lättnad eller sår).
+  // facility_trial_outcome är av samma skäl INTE här — se dynamisk gren.
 }
 
 /**
@@ -594,7 +595,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
  */
 export function momentKind(
   type: EventLedgerType,
-  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent'>,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome'>,
 ): ActiveMemoryKind {
   if (type === 'decision') {
     return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
@@ -616,6 +617,17 @@ export function momentKind(
     if (status === 'cleared') return 'triumph'
     return 'neutral'
   }
+  if (type === 'facility_trial_outcome') {
+    const outcome = entry?.facilityTrialOutcome?.outcome
+    // nedlagd_egen är PROVNING_RESOLUTION.nedlagd_egen's egen ram ("Sånt
+    // glöms inte — på det bra sättet") — spelarens ärliga eget val, inte ett
+    // nederlag. bordlagd hänger olöst kvar (tension); de tre "nej"-utfallen
+    // (nedlagd_fall/kommun_nej/nedlagd_ingen_finansiering) är ett äkta sår.
+    if (outcome === 'nedlagd_egen') return 'triumph'
+    if (outcome === 'bordlagd') return 'tension'
+    if (outcome === 'nedlagd_fall' || outcome === 'kommun_nej' || outcome === 'nedlagd_ingen_finansiering') return 'scar'
+    return 'neutral'
+  }
   return STATIC_MOMENT_KIND[type] ?? 'neutral'
 }
 
@@ -635,6 +647,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',
   board_verdict: '📋', license_event: '📋',
+  facility_trial_outcome: '🏟️',
 }
 
 export function momentFamily(type: EventLedgerType): MemoryFamily {
