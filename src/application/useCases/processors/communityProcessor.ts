@@ -10,10 +10,11 @@ import { backfillActivitiesSince, getActiveStaleableActivities, ACTIVITY_CS_BOOS
 import type { CommunityActivitiesSince } from '../../../domain/entities/Community'
 import { safeStandingPosition } from '../../../domain/services/standingsService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { adjustSupporterMood } from '../../../domain/services/supporterService'
 
 export interface CommunityProcessorResult {
   csBoost: number
-  /** Klack-matchreaktion (kartfynd 8a): mood-delta för supporterGroup, egen profil skild från pulsen. Appliceras i roundProcessor. */
+  /** Klack-matchreaktion (kartfynd 8a): mood-delta för supporterGroup, egen profil skild från pulsen. */
   klackMoodDelta: number
   inboxItems: InboxItem[]
   updatedFacilityState: FacilityState | undefined
@@ -28,6 +29,78 @@ export interface CommunityProcessorResult {
    *  roundProcessor.ts. Samma referens som gick in när ingenting behövde
    *  backfyllas — ingen onödig state-skrivning. */
   updatedCommunityActivitiesSince: CommunityActivitiesSince
+}
+
+/** Applies the already-computed community and Annandagen consequences. */
+export function applyCommunityConsequences(
+  game: SaveGame,
+  nextMatchday: number,
+  klackMoodDelta: number,
+): SaveGame {
+  let updatedGame = game
+
+  // P1: choices B/C/D surface their delayed media consequence one round later.
+  if (updatedGame.pendingAnnandagsMediaRubrik
+    && nextMatchday >= updatedGame.pendingAnnandagsMediaRubrik.triggerRound) {
+    const { val } = updatedGame.pendingAnnandagsMediaRubrik
+    const clubName = updatedGame.clubs.find(club => club.id === updatedGame.managedClubId)?.name ?? 'Klubben'
+    const mediaRubrikTexts: Record<string, { title: string; body: string }> = {
+      B: {
+        title: `${clubName} gör annandagen till en folkfest`,
+        body: 'Läktaren fylldes en timme före avslag. Glögg, en klack som höll i hela matchen och fyrverkeri efter slutsignalen — annandagen blev dagen orten samlades kring laget. Lokaltidningen kallar det säsongens folkfest.',
+      },
+      C: {
+        title: `${clubName} öppnar portarna på annandagen`,
+        body: 'Fri entré drog folk som annars stannar hemma. Många hade aldrig satt sin fot på arenan förr, och några lovade att komma tillbaka. En tom biljettkassa, men fullt på läktaren.',
+      },
+      D: {
+        title: `${clubName} och mecenat firar annandag tillsammans`,
+        body: 'Mecenaten stod för glöggen och lät sig synas på läktaren för en gångs skull. Det pratades mer om stämningen än om vem som betalade, vilket nog var poängen. En annandag att ta efter, skriver tidningen.',
+      },
+    }
+    const rubrik = mediaRubrikTexts[val]
+    if (rubrik) {
+      const rubrikId = `inbox_annandagen_media_${updatedGame.currentSeason}`
+      if (!updatedGame.inbox.some(item => item.id === rubrikId)) {
+        updatedGame = {
+          ...updatedGame,
+          inbox: [{
+            id: rubrikId,
+            date: updatedGame.currentDate,
+            type: InboxItemType.Community,
+            title: rubrik.title,
+            body: rubrik.body,
+            isRead: false,
+          }, ...updatedGame.inbox],
+          pendingAnnandagsMediaRubrik: undefined,
+        }
+      }
+    }
+  }
+
+  // The supporter group has its own response curve, separate from community standing.
+  if (updatedGame.supporterGroup && klackMoodDelta !== 0) {
+    updatedGame = {
+      ...updatedGame,
+      supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, klackMoodDelta),
+    }
+  }
+
+  // P1: the supporter reaction arrives two rounds after the Annandagen choice.
+  if (updatedGame.pendingAnnandagsKlack
+    && nextMatchday >= updatedGame.pendingAnnandagsKlack.triggerRound) {
+    const { val } = updatedGame.pendingAnnandagsKlack
+    const moodBoost = val === 'C' ? 8 : val === 'B' ? 5 : val === 'D' ? 6 : 0
+    updatedGame = moodBoost > 0 && updatedGame.supporterGroup
+      ? {
+          ...updatedGame,
+          supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, moodBoost),
+          pendingAnnandagsKlack: undefined,
+        }
+      : { ...updatedGame, pendingAnnandagsKlack: undefined }
+  }
+
+  return updatedGame
 }
 
 /**

@@ -24,7 +24,7 @@ import { isPlayoffNarrativeCardStillValid } from '../../domain/services/playoffN
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { processEconomy } from './processors/economyProcessor'
-import { processCommunity } from './processors/communityProcessor'
+import { applyCommunityConsequences, processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
 import { executeAcceptedTransfers, generateDeadlineDayBidInbox, processLoans, processTransferBids } from './processors/transferProcessor'
 import { processSponsors, applyRiskySponsorMaturation } from './processors/sponsorProcessor'
@@ -57,7 +57,6 @@ import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
-import { adjustSupporterMood } from '../../domain/services/supporterService'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
 import { logEvent } from '../../domain/services/eventLedgerService'
@@ -1441,69 +1440,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // P1 — Annandagen media-rubrik konsekvens (val B/C/D triggar omg+1 mediarubrik → inbox)
-  if (updatedGame.pendingAnnandagsMediaRubrik && nextMatchday >= updatedGame.pendingAnnandagsMediaRubrik.triggerRound) {
-    const { val } = updatedGame.pendingAnnandagsMediaRubrik
-    const clubName = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)?.name ?? 'Klubben'
-    const mediaRubrikTexts: Record<string, { title: string; body: string }> = {
-      B: {
-        title: `${clubName} gör annandagen till en folkfest`,
-        body: 'Läktaren fylldes en timme före avslag. Glögg, en klack som höll i hela matchen och fyrverkeri efter slutsignalen — annandagen blev dagen orten samlades kring laget. Lokaltidningen kallar det säsongens folkfest.',
-      },
-      C: {
-        title: `${clubName} öppnar portarna på annandagen`,
-        body: 'Fri entré drog folk som annars stannar hemma. Många hade aldrig satt sin fot på arenan förr, och några lovade att komma tillbaka. En tom biljettkassa, men fullt på läktaren.',
-      },
-      D: {
-        title: `${clubName} och mecenat firar annandag tillsammans`,
-        body: 'Mecenaten stod för glöggen och lät sig synas på läktaren för en gångs skull. Det pratades mer om stämningen än om vem som betalade, vilket nog var poängen. En annandag att ta efter, skriver tidningen.',
-      },
-    }
-    const rubrik = mediaRubrikTexts[val]
-    if (rubrik) {
-      const rubrikId = `inbox_annandagen_media_${updatedGame.currentSeason}`
-      if (!updatedGame.inbox.some(i => i.id === rubrikId)) {
-        updatedGame = {
-          ...updatedGame,
-          inbox: [{
-            id: rubrikId,
-            date: updatedGame.currentDate,
-            type: InboxItemType.Community,
-            title: rubrik.title,
-            body: rubrik.body,
-            isRead: false,
-          }, ...updatedGame.inbox],
-          pendingAnnandagsMediaRubrik: undefined,
-        }
-      }
-    }
-  }
-
-  // Klack-matchreaktion (kartfynd 8a): mata supporterGroup.mood med matchutfallet.
-  // Delta beräknas i communityProcessor (egen profil, skild från pulsen). Appliceras på den
-  // narrativ-uppdaterade gruppen så medlems-/favoritändringar därifrån bevaras. Ingen mean
-  // reversion (klacken har inget naturligt mitten — tänd eller sur); setter:n klamrar 0–100.
-  if (updatedGame.supporterGroup && communityResult.klackMoodDelta !== 0) {
-    updatedGame = {
-      ...updatedGame,
-      supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, communityResult.klackMoodDelta),
-    }
-  }
-
-  // P1 — Annandagen klack-reaktion konsekvens (val B/C/D triggar omg+2 → supporterGroup.mood boost)
-  if (updatedGame.pendingAnnandagsKlack && nextMatchday >= updatedGame.pendingAnnandagsKlack.triggerRound) {
-    const { val } = updatedGame.pendingAnnandagsKlack
-    const moodBoost = val === 'C' ? 8 : val === 'B' ? 5 : val === 'D' ? 6 : 0
-    if (moodBoost > 0 && updatedGame.supporterGroup) {
-      updatedGame = {
-        ...updatedGame,
-        supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, moodBoost),
-        pendingAnnandagsKlack: undefined,
-      }
-    } else {
-      updatedGame = { ...updatedGame, pendingAnnandagsKlack: undefined }
-    }
-  }
+  updatedGame = applyCommunityConsequences(
+    updatedGame,
+    nextMatchday,
+    communityResult.klackMoodDelta,
+  )
 
   // Pre-generate weather for next matchday so dashboard/matchScreen can show it
   const nextScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
