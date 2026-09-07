@@ -283,13 +283,11 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
                   }}
                 >Avbryt</button>
                 <button
+                  className="btn btn-danger"
                   onClick={() => { void confirmMute() }}
                   disabled={isMuting}
                   style={{
-                    flex: 1, minHeight: 44, background: 'var(--danger)', border: 'none',
-                    borderRadius: 'var(--radius-sm)', color: 'var(--text-light)', fontSize: 13,
-                    fontWeight: 700, cursor: isMuting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
-                    opacity: isMuting ? 0.7 : 1,
+                    flex: 1, fontSize: 13,
                   }}
                 >{isMuting ? '…' : 'Tysta'}</button>
               </div>

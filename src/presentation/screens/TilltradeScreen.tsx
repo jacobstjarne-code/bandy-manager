@@ -264,17 +264,12 @@ export function TilltradeScreen() {
         flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            fontFamily: 'system-ui', fontSize: 9, fontWeight: 600,
-            letterSpacing: '2.5px', textTransform: 'uppercase',
-            color: 'var(--text-light-secondary)',
-          }}>
+          <span className="h-label h-label-light" style={{ margin: 0 }}>
             Steg {step} av 4 · {STEP_TITLES[step - 1]}
           </span>
           {step === 3 && (
-            <span style={{
-              fontFamily: 'ui-monospace, monospace', fontSize: 9, fontWeight: 700,
-              letterSpacing: '2px', color: 'var(--accent)',
+            <span className="h-label" style={{
+              margin: 0, fontWeight: 700, letterSpacing: '2px', color: 'var(--accent)',
               background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
               border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
               borderRadius: 3, padding: '3px 8px',

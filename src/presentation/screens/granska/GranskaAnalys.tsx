@@ -56,10 +56,12 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span className="h-micro" style={{ fontWeight: 700, color: 'var(--text-light)' }}>{coach.initials}</span>
               </div>
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: 'var(--text-light)' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
+              <span className="h-label h-label-light" style={{ fontWeight: 700, letterSpacing: '1.5px', color: 'var(--text-light)' }}>
+                {coach.name.toUpperCase()} · ASSISTENTTRÄNARE
+              </span>
             </div>
             <div style={{ padding: '12px 14px' }}>
-              <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+              <p className="h-quote" style={{ fontSize: 13, lineHeight: 1.65 }}>
                 "{quote}"
               </p>
             </div>
@@ -124,7 +126,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
             <SectionLabel style={{ marginBottom: 8 }}>MATCHENS SAMBAND</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {lines.map((line, i) => (
-                <p key={i} style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                <p key={i} className="h-quote" style={{ fontSize: 13, fontStyle: 'normal', lineHeight: 1.55 }}>
                   {line}
                 </p>
               ))}

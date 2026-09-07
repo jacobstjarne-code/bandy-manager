@@ -101,7 +101,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}
                 dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                <p className="h-name" style={{ fontSize: 12, color: 'var(--text-primary)' }}>
                   {isCap && <span style={{ marginRight: 2 }}>⭐</span>}
                   {isPOTM && <span style={{ marginRight: 2 }}>⭐</span>}
                   {p.firstName[0]}. {p.lastName}
@@ -110,7 +110,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   {positionShort(p.position)}{statParts.length > 0 ? ` · ${statParts.join(' · ')}` : ''}
                 </p>
               </div>
-              <span style={{ fontSize: 15, fontFamily: 'var(--font-display)', fontWeight: 700, color: ratingColor(r), flexShrink: 0 }}>
+              <span className="h-num" style={{ color: ratingColor(r), flexShrink: 0 }}>
                 {r > 0 ? r.toFixed(1) : '–'}
               </span>
             </div>

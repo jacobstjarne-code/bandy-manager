@@ -533,7 +533,7 @@ export function TabellScreen() {
             {/* Status */}
             <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
               {/* ds-exempt: color dynamisk ternary på cupWinner/managedLost/cupCompletedByOther */}
-              <p style={{ fontSize: 14, fontWeight: 700, color: statusColor, fontFamily: 'var(--font-display)' }}>
+              <p className="h-display-sm" style={{ fontSize: 14, color: statusColor }}>
                 {statusText}
               </p>
             </div>

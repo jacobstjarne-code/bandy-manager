@@ -725,7 +725,7 @@ export function SeasonSummaryScreen() {
               <span style={{ fontSize: summary.cupResult === 'winner' ? 32 : 24 }}>
                 {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏆'}
               </span>
-              <p style={{ fontSize: summary.cupResult === 'winner' ? 16 : 14, fontWeight: 700, color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)', marginTop: 6, fontFamily: 'var(--font-display)' }}> {/* ds-exempt: fontSize + color ternary */}
+              <p className="h-display-sm" style={{ fontSize: summary.cupResult === 'winner' ? 16 : 14, color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)', marginTop: 6 }}> {/* ds-exempt: fontSize + color ternary */}
                 {cupResultLabel(summary.cupResult)}
               </p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>

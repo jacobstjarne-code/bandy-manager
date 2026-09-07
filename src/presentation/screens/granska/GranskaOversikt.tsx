@@ -299,24 +299,24 @@ export function GranskaOversikt({
             backgroundImage: 'radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--match-gold) 8%, transparent), transparent 60%)',
             padding: '26px 20px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0',
           }}>
-            <div style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--match-gold)', opacity: 0.8, marginBottom: 20 }}>
+            <div className="h-scene-genre" style={{ color: 'var(--match-gold)', opacity: 0.8, marginBottom: 20 }}>
               ⬩ &nbsp;Slutsignal&nbsp; ⬩
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 6 }}>
               <div style={{ textAlign: 'center', width: 74 }}>
                 <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.homeClubId} name={homeClub?.name ?? ''} size={34} /></div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>{homeClub?.shortName ?? homeClub?.name}</div>
+                <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{homeClub?.shortName ?? homeClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--match-positive)', textTransform: 'uppercase', marginTop: 2 }}>Hemma</div>
               </div>
               <div
-                className="granska-hero-score"
-                style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 66, lineHeight: 1, color: 'var(--match-gold)', letterSpacing: '-1px', animation: 'scaleFlash 320ms ease-out both' }}
+                className="granska-hero-score h-display-hero"
+                style={{ fontWeight: 800, fontSize: 66, lineHeight: 1, color: 'var(--match-gold)', letterSpacing: '-1px', animation: 'scaleFlash 320ms ease-out both' }}
               >
                 {fixture.homeScore}<span style={{ opacity: 0.45, fontSize: 40, verticalAlign: 'middle', margin: '0 6px' }}>–</span>{fixture.awayScore}
               </div>
               <div style={{ textAlign: 'center', width: 74 }}>
                 <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.awayClubId} name={awayClub?.name ?? ''} size={34} /></div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>{awayClub?.shortName ?? awayClub?.name}</div>
+                <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{awayClub?.shortName ?? awayClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginTop: 2 }}>Borta</div>
               </div>
             </div>
