@@ -908,11 +908,22 @@ export function getTraitCommentary(
   eventType: 'goal' | 'assist' | 'suspension',
   players: Player[],
   durationMinutes?: 5 | 10,
+  captainPlayerId?: string,
 ): string | null {
   const player = players.find(p => p.id === playerId)
-  if (!player?.trait) return null
+  if (!player) return null
 
   const name = player.lastName
+  // Opus-dom 2026-09-07 (sluttest-missing-check-grind, item 1): "ledare"-poolen
+  // påstår ordagrant captaincy ("Kaptenen", "bara bindel") men gated tidigare
+  // på player.trait === 'ledare' — fel fält, samma proxy-buggklass som
+  // sponsor_positive/condition_0 (missing-check-grind). Bindelbäraren avgörs
+  // av captainPlayerId, inte personlighetsdraget; en ledare-trait-spelare som
+  // inte är kapten ska inte få captaincy-text, och en kapten utan ledare-
+  // trait ska.
+  const isCaptain = captainPlayerId !== undefined && playerId === captainPlayerId
+  const traitKey = isCaptain ? 'ledare' : (player.trait === 'ledare' ? undefined : player.trait)
+  if (!traitKey) return null
 
   const traitGoals: Record<string, string[]> = {
     hungrig: [
@@ -977,12 +988,12 @@ export function getTraitCommentary(
   }
 
   if (eventType === 'goal') {
-    const pool = traitGoals[player.trait]
+    const pool = traitGoals[traitKey]
     if (!pool) return null
     return pool[Math.floor(Math.random() * pool.length)]
   }
   if (eventType === 'suspension') {
-    const pool = traitSuspensions[player.trait]
+    const pool = traitSuspensions[traitKey]
     if (!pool) return null
     const pick = pool[Math.floor(Math.random() * pool.length)]
     // M15/Del 4 (2026-07-03): {minuter}-token nu inskriven i poolerna ovan —

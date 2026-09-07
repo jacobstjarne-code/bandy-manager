@@ -1699,7 +1699,7 @@ function* simulateMatchCore(
         }
         // Trait override (50%)
         if (scorerPlayerId && rand() < 0.5) {
-          const tc = getTraitCommentary(scorerPlayerId, 'goal', allPlayers)
+          const tc = getTraitCommentary(scorerPlayerId, 'goal', allPlayers, undefined, captainPlayerId)
           if (tc) commentaryText = tc
         }
       } else if (saveOccurred && gkPlayerId) {
@@ -1724,7 +1724,7 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand, commentaryHistory), templateVars)
         }
         if (rand() < 0.5) {
-          const tc = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers, suspensionDurationMinutes)
+          const tc = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers, suspensionDurationMinutes, captainPlayerId)
           if (tc) commentaryText = tc
         }
       } else if (cornerOccurred && !goalScored) {
