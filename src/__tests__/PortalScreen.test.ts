@@ -98,6 +98,17 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   } as SaveGame
 }
 
+function makeCompletedLeagueFixtures(count = 14): Fixture[] {
+  return Array.from({ length: count }, (_, index) => makeFixture({
+    id: `completed_league_${index + 1}`,
+    matchday: index + 1,
+    roundNumber: index + 1,
+    status: 'completed',
+    homeScore: 2,
+    awayScore: 1,
+  }))
+}
+
 // ── Setup ────────────────────────────────────────────────────────────────────
 
 beforeAll(() => {
@@ -161,6 +172,51 @@ describe('PortalScreen integration — primärkort per game-state', () => {
 
     const layout = buildPortal(game, makeSeed(game))
     expect(layout.primary.id).toBe('next_match_smfinal')
+  })
+
+  it('SM-final vinner över samtidig transferdeadline även när säsongsseeden ändras', () => {
+    const fixtures = [
+      ...makeCompletedLeagueFixtures(),
+      makeFixture({
+        id: 'fix_smfinal_at_deadline',
+        status: 'scheduled',
+        matchday: 37,
+        roundNumber: 37,
+        isPlayoff: true,
+        isFinaldag: true,
+      } as never),
+    ]
+
+    for (const currentSeason of [8, 2033]) {
+      const game = makeGame({ currentSeason, currentMatchday: 16, fixtures })
+      const layout = buildPortal(game, makeSeed(game))
+      expect(layout.primary.id).toBe('next_match_smfinal')
+    }
+  })
+
+  it('overlay-event och avskedsflagga ändrar inte deadline-kortets primärplats', () => {
+    const fixtures = [
+      ...makeCompletedLeagueFixtures(),
+      makeFixture({
+        id: 'fix_farewell_at_deadline',
+        status: 'scheduled',
+        matchday: 21,
+        roundNumber: 21,
+        farewellMatchForPlayerId: 'player_1',
+      }),
+    ]
+    const pendingEvents = [{
+      id: 'evt_farewell_overlay',
+      type: 'playerUnhappy',
+      priority: 'critical',
+      resolved: false,
+    }] as never
+
+    for (const currentSeason of [8, 2033]) {
+      const game = makeGame({ currentSeason, currentMatchday: 16, fixtures, pendingEvents })
+      const layout = buildPortal(game, makeSeed(game))
+      expect(layout.primary.id).toBe('transfer_deadline_close')
+    }
   })
 
   it('kritisk händelse ägs av overlayn och konkurrerar inte om portalens primary-plats', () => {

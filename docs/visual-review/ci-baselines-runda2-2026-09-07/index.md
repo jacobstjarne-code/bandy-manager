@@ -50,3 +50,45 @@ Sex namn överlappar mellan den preliminära listan och artefakten:
 Designs steg 2 ska därför pixel-döma mapparna i denna export och uppdatera
 källmappningen för de fem avvikande scenerna, inte anta att de preliminära
 namnen motsvarar artefaktens faktiska felset.
+
+## Code-läsning efter Designs pixeldom
+
+### Primärhierarkin — ingen regression
+
+Designs uppföljande dom pekade ut `primary-smfinal-vs-deadline` och
+`primary-event-vs-farewell` som möjliga byten av primärkort. Bildparen och
+koden visar att den tolkningen är fel:
+
+- `primary-smfinal-vs-deadline`: både `before.png` och `after.png` har
+  **SM-FINAL** som primärkort. `next_match_smfinal` har vikt 100 och
+  `transfer_deadline_close` vikt 90.
+- `primary-event-vs-farewell`: både `before.png` och `after.png` har
+  **DEADLINE** som primärkort. Spelareventet ligger under primärkortet i båda
+  bilderna; efterbildens tillägg är avsändarnamnet `ERIK JOHANSSON` från
+  commit `3cc76b6e`. Avskedsmatchens separata primärkort hade redan tagits
+  bort i `9fb79133`, före den baseline som jämförs här.
+- `initCardBag.ts` och `portalBuilder.ts` har ingen diff alls mellan
+  `957dfde5` och `3cd208f7`. Säsongsheltalet påverkar tie-break-seed men kan
+  inte vända dessa olika primärvikter.
+
+Två uttryckliga integrationstester provar nu båda samtidiga lägena med såväl
+gammalt ordningstal (`8`) som absolut säsongsår (`2033`). Förväntade vinnare
+är fortsatt SM-final respektive deadline.
+
+### Board A/B/C och Upptakt — avsiktlig, deterministisk reseed
+
+De fyra copy-diffarna är inte oseedad slump:
+
+- `BoardMeetingScene` bygger seeden som
+  `currentSeason * 9301 + managedClubId.length * 7` och väljer setting,
+  titel, talarrad och målmotiveringar med `seededPick` och fasta offsets.
+- `PortalUpptakt` bygger seeden som
+  `currentSeason * 9301 + currentMatchday * 31`. Både fasraden och
+  nedräkningen väljs med `seededPickNoRepeat`.
+- Mellan `957dfde5` och `3cd208f7` ändrades inte poolerna eller pickarna.
+  `4e4f3542` bytte endast dev-fixturernas säsongsskala från ordningstal till
+  absoluta år. Därför väljs andra, redan befintliga poolrader på ett helt
+  reproducerbart sätt.
+
+Dom: board-a, board-b, board-c och upptakt kan accepteras och ombaseline:as;
+ingen seed behöver pinnas och ingen produktkod ska ändras.
