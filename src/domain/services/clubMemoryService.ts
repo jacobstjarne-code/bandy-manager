@@ -25,6 +25,8 @@ import { isMatchResultEntry } from '../entities/Narrative'
 import { getRivalry } from '../data/rivalries'
 import { readClubLedger } from './eventLedgerService'
 import { buildExpectationVerdictSentence } from './seasonSummaryService'
+import { seasonVerdictText, seasonVerdictZoneLine } from './boardService'
+import { PROVNING_RESOLUTION } from '../data/hallProvningData'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -196,6 +198,12 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   // liggare-ny-community-shift (2026-09-07): text LÅST av Opus i själva
   // MASTER_OPPET-raden, kopierad ordagrant i switchens 'community_shift'-gren.
   'community_shift',
+  // liggare-ny-{board-verdict,license-event,facility-trial-outcome} DEL 2
+  // (2026-09-07): ingen ny prosa någonstans — varje gren ÅTERANVÄNDER redan
+  // låst text (se switchens tre nya case:ar för källan per typ).
+  'board_verdict',
+  'license_event',
+  'facility_trial_outcome',
 ])
 
 function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
@@ -241,6 +249,52 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       : (game.clubLegends ?? []).find(item => item.playerId === playerId)?.name)
 
   switch (entry.type) {
+    case 'board_verdict': {
+      // liggare-ny-board-verdict DEL 2(b): ingen ny prosa — samma LÅSTA
+      // funktioner boardService.ts redan använder för årsboken/inkorgen
+      // (seasonVerdictText/seasonVerdictZoneLine), körda på snapshotten
+      // postens EGEN säsong bar vid skrivtillfället (game.seasonSummaries,
+      // aldrig live game.boardPatience — en gammal post ska döma SIN
+      // säsong, inte den aktuella).
+      const boardTruth = (game.seasonSummaries ?? []).find(s => s.season === entry.season)?.boardTruth
+      if (!boardTruth) return null
+      const body = seasonVerdictText(boardTruth.statedGoal.expectation, boardTruth.outcome.finalPosition, game.clubs.length)
+      const zoneLine = seasonVerdictZoneLine(boardTruth.relationship.boardPatienceAfter)
+      return {
+        type: 'board_verdict', season: entry.season, matchday: entry.matchday,
+        text: `${body} ${zoneLine}`, emoji: momentFamily('board_verdict'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
+    case 'license_event': {
+      // liggare-ny-license-event DEL 2: ingen ny prosa — licensbrevets egen
+      // rubrik+kropp (licenseService.ts buildLicenseInboxItem), samma
+      // id-mönster (`inbox_license_status_{season}`) skrivet samma
+      // säsongsslut som posten. Rensad/arkiverad inboxpost → ingen mening
+      // hellre än falsk (samma disciplin som 'decision'-caset nedan).
+      const inboxItem = game.inbox.find(i => i.id === `inbox_license_status_${entry.season}`)
+      if (!inboxItem) return null
+      return {
+        type: 'license_event', season: entry.season, matchday: entry.matchday,
+        text: inboxItem.body, emoji: momentFamily('license_event'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
+    case 'facility_trial_outcome': {
+      // liggare-ny-facility-trial-outcome DEL 2: ingen ny prosa — samma
+      // PROVNING_RESOLUTION (hallProvningData.ts) kafferums-ekot redan
+      // använder, ordagrant. Femte utfallet (nedlagd_ingen_finansiering)
+      // saknar egen låst text (dokumenterat vid DEL 1) — ingen mening
+      // hellre än falsk.
+      const outcome = entry.facilityTrialOutcome?.outcome
+      const text = outcome && outcome !== 'nedlagd_ingen_finansiering' ? PROVNING_RESOLUTION[outcome] : undefined
+      if (!text) return null
+      return {
+        type: 'facility_trial_outcome', season: entry.season, matchday: entry.matchday,
+        text, emoji: momentFamily('facility_trial_outcome'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
     case 'community_shift': {
       // Text LÅST (Opus, MASTER_OPPET liggare-ny-community-shift-raden) —
       // kopierad ordagrant, bara {from}/{to} ifyllda.
