@@ -90,6 +90,36 @@ export interface AttentionSnapshot extends AttentionEvaluation {
   timeZone: string
 }
 
+/**
+ * stickiness-settings-kategorier (2026-09-07): spelarens egna kategori-/
+ * tystatimmar-inställningar. Local-first (localStorage), best-effort synkad
+ * till server/attention/store.js's installation.preferences — dispatcher.js
+ * läser den servade kopian vid faktisk leverans (server/attention/
+ * dispatcher.js:isQuietHours/listDispatchable).
+ */
+export interface NotificationPreferences {
+  categories: Record<AttentionCategory, boolean>
+  /** Tid-fält 0-23/0-59. Ett fönster som spänner över midnatt (start > slut
+   *  i minuter-på-dygnet, t.ex. 21.30→08.00) är det normala fallet. */
+  quietHours: { startHour: number; startMinute: number; endHour: number; endMinute: number }
+}
+
+/**
+ * Mock-lås (Notisinstallningar.dc.html): match_preparation/narrative_return
+ * PÅ, calendar_anchor/season_context AV som default — de två senare har
+ * fortfarande ingen skriven copy (se stickiness-categoryfor-tre-kallor),
+ * så av är rätt startläge oavsett.
+ */
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  categories: {
+    match_preparation: true,
+    narrative_return: true,
+    calendar_anchor: false,
+    season_context: false,
+  },
+  quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+}
+
 export type NotificationTelemetryEvent =
   | 'push_permission_prompted'
   | 'push_permission_granted'

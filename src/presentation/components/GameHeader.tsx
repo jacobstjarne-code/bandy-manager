@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Settings, BookOpen, Save, FolderOpen, Download, Upload } from 'lucide-react'
+import { Settings, BookOpen, Save, FolderOpen, Download, Upload, Bell } from 'lucide-react'
 import { Icon } from './primitives/Icon'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { TownSilhouette } from './TownSilhouette'
 import { KlubbparmOverlay } from './KlubbparmOverlay'
+import { NotisinstallningarOverlay } from './NotisinstallningarOverlay'
 import { Logo } from './Logo'
 import { PlayoffStatus } from '../../domain/enums'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
@@ -102,6 +103,7 @@ export function GameHeader() {
     text: '',
   })
   const [showKlubbparm, setShowKlubbparm] = useState(false)
+  const [showNotisinstallningar, setShowNotisinstallningar] = useState(false)
 
   function showToast(ok: boolean, text: string) {
     setSaveToast({ visible: true, ok, text })
@@ -337,6 +339,7 @@ export function GameHeader() {
             {lastConfirmedSaveAt ? `Senast sparat: ${formatRelativeSaveTime(lastConfirmedSaveAt)}` : 'Inte sparat än denna session'}
           </div>
           {[
+            { label: 'Notiser', icon: Bell, action: () => setShowNotisinstallningar(true) },
             { label: 'Spara spel', icon: Save, action: handleSaveGame },
             { label: 'Ladda spel', icon: FolderOpen, action: () => navigate('/') },
             { label: 'Exportera säkerhetskopia', icon: Download, action: handleExportSave },
@@ -359,6 +362,10 @@ export function GameHeader() {
 
       {showKlubbparm && game && (
         <KlubbparmOverlay game={game} onClose={() => setShowKlubbparm(false)} />
+      )}
+
+      {showNotisinstallningar && game && (
+        <NotisinstallningarOverlay game={game} onClose={() => setShowNotisinstallningar(false)} />
       )}
     </div>
   )

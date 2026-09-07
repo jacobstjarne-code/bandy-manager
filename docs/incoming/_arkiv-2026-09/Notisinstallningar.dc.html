@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+    /* platshållar-copy = Jacobs röst */
+    .slot { border-bottom:1px dashed var(--border-dark); color:var(--text-muted); }
+    .switch { width:42px; height:24px; border-radius:99px; flex-shrink:0; position:relative; }
+    .knob { width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:3px; box-shadow:0 1px 2px rgba(0,0,0,0.25); }
+  </style>
+</helmet>
+<div style="min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:28px 20px 72px;">
+  <div style="display:flex; flex-wrap:wrap; gap:40px; align-items:flex-start; max-width:980px; margin:0 auto;">
+
+    <div style="flex:0 0 auto;">
+      <div class="h-label" style="color:var(--accent-dark);">PUSH · ORDER 1 — KATEGORIER + TYSTA TIMMAR</div>
+      <h1 style="font-family:var(--font-display); font-size:22px; font-weight:800; margin:6px 0 14px;">Notiser — inställningsyta</h1>
+
+      <!-- Phone -->
+      <div style="width:390px; height:760px; position:relative; overflow:hidden; border-radius:22px; border:1px solid var(--border-dark); background:var(--bg-portal); box-shadow:0 8px 30px rgba(0,0,0,0.25);">
+        <!-- dimmed portal behind -->
+        <div style="height:44px; background:var(--bg-leather); border-bottom:2px solid var(--accent); filter:brightness(0.6);"></div>
+        <div style="padding:12px; display:flex; flex-direction:column; gap:8px; filter:brightness(0.5);">
+          <div style="background:var(--bg-portal-surface); border-radius:8px; height:34px;"></div>
+          <div style="background:var(--bg-portal-elevated); border-radius:8px; height:90px;"></div>
+        </div>
+
+        <!-- Overlay (top-aligned scrollable, like Klubbpärmen) -->
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:flex-start; justify-content:center; padding:44px 16px 20px;">
+          <div style="width:100%; max-width:360px; max-height:100%; background:var(--bg); border-radius:var(--radius-md); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+
+            <!-- Leather header -->
+            <div style="background:var(--bg-leather); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+              <div>
+                <div style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--text-light); line-height:1.2;">Notiser</div>
+                <div style="font-family:ui-monospace,monospace; font-size:8px; letter-spacing:1.5px; color:var(--text-light-secondary); margin-top:3px;">FORSBACKA BK · 2026/27</div>
+              </div>
+              <div style="font-size:20px; color:var(--text-light-secondary);">×</div>
+            </div>
+
+            <div style="flex:1; overflow-y:auto; background:var(--bg-surface); padding:16px 18px 18px;">
+              <!-- Intro slot -->
+              <p style="font-family:var(--font-display); font-style:italic; font-size:13px; line-height:1.5; margin:0 0 16px;"><span class="slot">Här bestämmer du vad vi hör av oss om, och när vi håller tyst.</span></p>
+
+              <!-- KATEGORIER -->
+              <div style="font-family:var(--font-body); font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Vad vi hör av oss om</div>
+              <div class="card-sharp" style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+
+                <!-- Row: match_preparation ON -->
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:44px; border-bottom:1px solid var(--border);">
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Matchförberedelse</div>
+                    <div style="font-size:11px; line-height:1.4; margin-top:2px;"><span class="slot">Påminnelse om att ta ut laget.</span></div>
+                  </div>
+                  <div class="switch" style="background:var(--accent);"><div class="knob" style="right:3px;"></div></div>
+                </div>
+
+                <!-- Row: narrative_return ON -->
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:44px; border-bottom:1px solid var(--border);">
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Klubbminne</div>
+                    <div style="font-size:11px; line-height:1.4; margin-top:2px;"><span class="slot">Berättarens återblickar.</span></div>
+                  </div>
+                  <div class="switch" style="background:var(--accent);"><div class="knob" style="right:3px;"></div></div>
+                </div>
+
+                <!-- Row: calendar_anchor OFF -->
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:44px; border-bottom:1px solid var(--border);">
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Kalenderankare</div>
+                    <div style="font-size:11px; line-height:1.4; margin-top:2px;"><span class="slot">Derby, cup och final på gång.</span></div>
+                  </div>
+                  <div class="switch" style="background:var(--border-dark);"><div class="knob" style="left:3px;"></div></div>
+                </div>
+
+                <!-- Row: season_context OFF -->
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:44px;">
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Säsongsläge</div>
+                    <div style="font-size:11px; line-height:1.4; margin-top:2px;"><span class="slot">När det stramar åt i tabellen.</span></div>
+                  </div>
+                  <div class="switch" style="background:var(--border-dark);"><div class="knob" style="left:3px;"></div></div>
+                </div>
+              </div>
+
+              <!-- TYSTA TIMMAR -->
+              <div style="font-family:var(--font-body); font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin:18px 0 8px;">Tysta timmar</div>
+              <div class="card-sharp" style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
+                <div style="display:flex; align-items:center; justify-content:center; gap:14px;">
+                  <div style="text-align:center;">
+                    <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Från</div>
+                    <div style="font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--text-primary); border:1px solid var(--border-dark); border-radius:var(--radius-sm); padding:6px 14px; background:var(--bg-surface);">21.30</div>
+                  </div>
+                  <div style="width:16px; height:1px; background:var(--border-dark); margin-top:22px;"></div>
+                  <div style="text-align:center;">
+                    <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Till</div>
+                    <div style="font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--text-primary); border:1px solid var(--border-dark); border-radius:var(--radius-sm); padding:6px 14px; background:var(--bg-surface);">08.00</div>
+                  </div>
+                </div>
+                <p style="font-size:11px; line-height:1.45; text-align:center; margin:12px 0 0;"><span class="slot">Mellan de här tiderna hör du aldrig av oss.</span></p>
+              </div>
+
+              <!-- FREKVENS — upplysning, inte kontroll -->
+              <div style="display:flex; align-items:flex-start; gap:9px; margin-top:14px; padding:11px 13px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md);">
+                <div style="width:5px; height:5px; border-radius:50%; background:var(--accent); margin-top:6px; flex-shrink:0;"></div>
+                <p style="font-family:var(--font-display); font-style:italic; font-size:12px; line-height:1.5; color:var(--text-secondary); margin:0;"><span class="slot" style="color:var(--text-secondary);">Vi skickar högst en om dagen.</span></p>
+              </div>
+
+              <!-- copy-legend -->
+              <p style="font-size:9.5px; color:var(--text-muted); margin:14px 0 0;"><span style="border-bottom:1px dashed var(--border-dark);">Streckad text</span> = platshållare i Jacobs röst; formen är låst, orden skrivs sist.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spec för Code -->
+    <div style="flex:1 1 300px; min-width:280px; max-width:430px; display:flex; flex-direction:column; gap:14px;">
+      <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+        <div class="h-label" style="color:var(--text-secondary);">FORM &amp; PLATS — DESIGNBESLUT</div>
+        <ul class="h-body" style="margin:8px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:7px;">
+          <li><strong>Plats:</strong> ny post <em>Notiser</em> i GameHeaderns befintliga inställnings-dropdown (kuggen), ovanför Spara/Ladda. Ingen ny nav-flik.</li>
+          <li><strong>Skal:</strong> samma <code>Overlay</code>-mönster som <code>KlubbparmOverlay</code> — topp-ankrad, scrollbar, läder-header, 360px, ljus kropp. Konsekvent, inte en teknisk sida.</li>
+          <li><strong>Ny komponent:</strong> en on/av-<em>switch</em> finns inte i systemet (bara SegmentedToggle). Track 42×24, knopp 18, på = <code>--accent</code>, av = <code>--border-dark</code>. Hela raden ≥44px tap-target.</li>
+        </ul>
+      </div>
+
+      <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+        <div class="h-label" style="color:var(--text-secondary);">WIRING — KATEGORI → SYSTEMNYCKEL</div>
+        <div style="display:flex; flex-direction:column; gap:5px; margin-top:8px;">
+          <div class="h-body-sm" style="display:flex; justify-content:space-between; gap:10px;"><span>Matchförberedelse</span><code style="color:var(--accent-dark);">match_preparation</code></div>
+          <div class="h-body-sm" style="display:flex; justify-content:space-between; gap:10px;"><span>Klubbminne</span><code style="color:var(--accent-dark);">narrative_return</code></div>
+          <div class="h-body-sm" style="display:flex; justify-content:space-between; gap:10px;"><span>Kalenderankare</span><code style="color:var(--accent-dark);">calendar_anchor</code></div>
+          <div class="h-body-sm" style="display:flex; justify-content:space-between; gap:10px;"><span>Säsongsläge</span><code style="color:var(--accent-dark);">season_context</code></div>
+        </div>
+        <p class="h-body-sm" style="margin:9px 0 0;">De fyra <code>AttentionCategory</code>-värdena, en växel var, oberoende. Av = kandidater i den kategorin filtreras bort före leverans.</p>
+      </div>
+
+      <div style="background:var(--bg-surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--accent-dark);">QUIET HOURS &amp; FREKVENS</div>
+        <ul class="h-body" style="margin:6px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          <li><strong>Tysta timmar:</strong> default <strong>21.30–08.00</strong>, redigerbara (tryck på tid → tidväljare). Systemet skickar aldrig utanför fönstret — visa det, låt det ändras.</li>
+          <li><strong>Frekvens är INTE en kontroll.</strong> Taket (max en/dag, tre/vecka) sitter redan i systemet — visas som en lugn upplysningsrad, aldrig som reglage.</li>
+        </ul>
+      </div>
+
+      <div style="background:var(--bg-surface); border:1px dashed var(--border-dark); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--text-secondary);">UTANFÖR ORDER 1</div>
+        <p class="h-body" style="margin:5px 0 0;">Avregistrering (stäng av allt + radera) är en egen yta — <strong>order 2</strong>. Ingen "stäng av alla"-knapp här. All streckad text väntar på Jacobs copy.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

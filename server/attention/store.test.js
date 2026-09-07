@@ -217,3 +217,61 @@ describe('InMemoryAttentionStore', () => {
     expect(store.listDispatchable(now)[0]?.candidate.id).toBe('candidate-major')
   })
 })
+
+// stickiness-settings-kategorier (2026-09-07)
+describe('InMemoryAttentionStore — notification preferences', () => {
+  it('getPreferences falls back to defaults for an unknown/unset installation', () => {
+    const store = new InMemoryAttentionStore()
+    expect(store.getPreferences('never-registered')).toMatchObject({
+      categories: { match_preparation: true, calendar_anchor: false },
+    })
+  })
+
+  it('setPreferences rejects a mismatched token, same as any other write', () => {
+    const store = new InMemoryAttentionStore()
+    store.ensureInstallation('installation-123', 'secret-one')
+    expect(store.setPreferences('installation-123', 'wrong-token', { categories: {}, quietHours: {} })).toBe(false)
+  })
+
+  it('setPreferences persists and getPreferences reflects it back', () => {
+    const store = new InMemoryAttentionStore()
+    const prefs = {
+      categories: { match_preparation: true, narrative_return: false, calendar_anchor: true, season_context: false },
+      quietHours: { startHour: 22, startMinute: 0, endHour: 7, endMinute: 0 },
+    }
+    expect(store.setPreferences('installation-123', 'secret-one', prefs)).toBe(true)
+    expect(store.getPreferences('installation-123')).toEqual(prefs)
+  })
+
+  it('setPreferences works before setSubscription — preferences can be set before push is enabled', () => {
+    const store = new InMemoryAttentionStore()
+    const prefs = {
+      categories: { match_preparation: false, narrative_return: true, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+    }
+    expect(store.setPreferences('installation-new', 'secret-two', prefs)).toBe(true)
+    expect(store.getPreferences('installation-new')).toEqual(prefs)
+  })
+
+  it('listDispatchable filters out a candidate whose category is turned off', () => {
+    const store = new InMemoryAttentionStore()
+    store.setSubscription('installation-123', 'secret-one', { endpoint: 'https://push.test' })
+    store.setPreferences('installation-123', 'secret-one', {
+      categories: { match_preparation: false, narrative_return: true, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+    })
+    store.setSnapshot('installation-123', 'secret-one', snapshot('state-1', [candidate({ category: 'match_preparation' })]))
+    expect(store.listDispatchable(new Date('2026-09-05T05:00:00.000Z'))).toEqual([])
+  })
+
+  it('listDispatchable still delivers a candidate whose category is on', () => {
+    const store = new InMemoryAttentionStore()
+    store.setSubscription('installation-123', 'secret-one', { endpoint: 'https://push.test' })
+    store.setPreferences('installation-123', 'secret-one', {
+      categories: { match_preparation: true, narrative_return: false, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+    })
+    store.setSnapshot('installation-123', 'secret-one', snapshot('state-1', [candidate({ category: 'match_preparation' })]))
+    expect(store.listDispatchable(new Date('2026-09-05T05:00:00.000Z'))).toHaveLength(1)
+  })
+})

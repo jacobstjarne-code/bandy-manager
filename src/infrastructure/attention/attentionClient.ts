@@ -5,13 +5,16 @@ import type { AttentionVoice } from '../../domain/attention/types'
 import type {
   AttentionSnapshot,
   NarrativeDeliveryReceipt,
+  NotificationPreferences,
   NotificationTelemetryEvent,
 } from '../../domain/attention/types'
+import { DEFAULT_NOTIFICATION_PREFERENCES } from '../../domain/attention/types'
 
 const IDENTITY_KEY = 'bandy-attention-installation-v1'
 const ENABLED_KEY = 'bandy-attention-enabled-v1'
 const ATTRIBUTION_KEY = 'bandy-notification-attribution-v1'
 const PUSH_COPY_ROTATION_KEY = 'bandy-attention-push-copy-rotation-v1'
+const PREFERENCES_KEY = 'bandy-attention-preferences-v1'
 
 /**
  * stickiness-copy-roster (2026-09-06) — per-installation "senast visad röst
@@ -311,6 +314,50 @@ export function consumeNotificationOpen(): boolean {
   url.searchParams.delete('candidateId')
   window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
   return true
+}
+
+/**
+ * stickiness-settings-kategorier (2026-09-07): local-first, samma princip
+ * som pushCopyRotationStore ovan — localStorage är sanningen UI:t läser
+ * direkt (ingen väntan på nätverk för att rendera switcharna), servern
+ * (server/attention/store.js/dispatcher.js) är vart syncNotificationPreferences
+ * skickar den så faktisk leverans respekterar den.
+ */
+export function getNotificationPreferences(): NotificationPreferences {
+  try {
+    const raw = localStorage.getItem(PREFERENCES_KEY)
+    if (!raw) return DEFAULT_NOTIFICATION_PREFERENCES
+    const parsed = JSON.parse(raw) as Partial<NotificationPreferences>
+    if (!parsed.categories || !parsed.quietHours) return DEFAULT_NOTIFICATION_PREFERENCES
+    return { categories: { ...DEFAULT_NOTIFICATION_PREFERENCES.categories, ...parsed.categories }, quietHours: parsed.quietHours }
+  } catch {
+    return DEFAULT_NOTIFICATION_PREFERENCES
+  }
+}
+
+/**
+ * Skriver lokalt omedelbart (optimistiskt — switcharna ska kännas direkta),
+ * synkar sen server-kopian bäst-möjligt. En nätverksmiss här ska aldrig
+ * hindra spelaren från att ändra en inställning; dispatcher.js faller
+ * tillbaka till DEFAULT_PREFERENCES tills nästa lyckade sync.
+ */
+export async function setNotificationPreferences(preferences: NotificationPreferences): Promise<void> {
+  try {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences))
+  } catch {
+    // Läses om vid nästa sidladdning ur DEFAULT_NOTIFICATION_PREFERENCES om detta missar.
+  }
+  try {
+    const identity = getOrCreateIdentity()
+    await api(`/api/notifications/installations/${identity.installationId}/preferences`, {
+      method: 'PUT',
+      headers: authHeaders(identity),
+      body: JSON.stringify(preferences),
+    })
+  } catch {
+    // Best-effort synk — se funktionskommentaren ovan. En nätverksmiss får
+    // aldrig studsa upp som en ohanterad promise-rejection i UI:t.
+  }
 }
 
 export function recordMeaningfulNotificationAction(action: MeaningfulNotificationAction): void {

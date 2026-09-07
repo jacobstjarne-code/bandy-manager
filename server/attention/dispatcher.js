@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import webpush from 'web-push'
+import { DEFAULT_PREFERENCES } from './store.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEK_MS = 7 * DAY_MS
@@ -26,9 +27,18 @@ function localTime(date, timeZone) {
   }
 }
 
-function isQuietHours(date, timeZone) {
+// stickiness-settings-kategorier: tysta timmar är nu spelarens eget
+// fönster (default 21.30-08.00, samma som tidigare hårdkodat). Fönster som
+// spänner midnatt (start > slut i minuter-på-dygnet) är det normala fallet;
+// ett icke-spännande fönster (start <= slut) stöds ändå symmetriskt.
+export function isQuietHours(date, timeZone, quietHours = DEFAULT_PREFERENCES.quietHours) {
   const { hour, minute } = localTime(date, timeZone)
-  return hour > 21 || (hour === 21 && minute >= 30) || hour < 8
+  const minutesOfDay = hour * 60 + minute
+  const startMinutes = quietHours.startHour * 60 + quietHours.startMinute
+  const endMinutes = quietHours.endHour * 60 + quietHours.endMinute
+  return startMinutes > endMinutes
+    ? minutesOfDay >= startMinutes || minutesOfDay < endMinutes
+    : minutesOfDay >= startMinutes && minutesOfDay < endMinutes
 }
 
 function deliveryToken() {
@@ -63,10 +73,11 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
 
       for (const { installation, candidate } of store.listDispatchable(currentTime)) {
         const timeZone = installation.snapshot.timeZone || installation.metadata.timeZone
+        const quietHours = (installation.preferences ?? DEFAULT_PREFERENCES).quietHours
         const sentToday = store.deliveryCountSince(installation, currentTime.getTime() - DAY_MS)
         const sentThisWeek = store.deliveryCountSince(installation, currentTime.getTime() - WEEK_MS)
         const breaksOrdinaryCooldown = candidate.importance === 'major'
-        if (inHoldout(installation.id) || isQuietHours(currentTime, timeZone) ||
+        if (inHoldout(installation.id) || isQuietHours(currentTime, timeZone, quietHours) ||
             (!breaksOrdinaryCooldown && sentToday >= 1) || sentThisWeek >= 3) {
           skipped++
           continue

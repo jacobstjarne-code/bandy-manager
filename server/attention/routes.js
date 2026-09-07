@@ -65,6 +65,19 @@ function validSnapshot(snapshot, installationId) {
     snapshot.candidates.every(candidate => validCandidate(candidate, snapshot.stateVersion))
 }
 
+function validPreferences(preferences) {
+  if (!preferences || typeof preferences !== 'object') return false
+  const { categories, quietHours } = preferences
+  if (!categories || typeof categories !== 'object') return false
+  if (![...ALLOWED_CATEGORIES].every(key => typeof categories[key] === 'boolean')) return false
+  if (Object.keys(categories).length !== ALLOWED_CATEGORIES.size) return false
+  if (!quietHours || typeof quietHours !== 'object') return false
+  const { startHour, startMinute, endHour, endMinute } = quietHours
+  const validHour = value => Number.isInteger(value) && value >= 0 && value <= 23
+  const validMinute = value => Number.isInteger(value) && value >= 0 && value <= 59
+  return validHour(startHour) && validMinute(startMinute) && validHour(endHour) && validMinute(endMinute)
+}
+
 function validSubscription(subscription) {
   return subscription && typeof subscription.endpoint === 'string' &&
     subscription.endpoint.startsWith('https://') && subscription.endpoint.length <= 2_048 &&
@@ -91,6 +104,24 @@ export function createAttentionRouter({
       timeZone: req.body?.timeZone,
     })
     return installation ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
+  })
+
+  router.get('/notifications/installations/:installationId/preferences', (req, res) => {
+    const { installationId } = req.params
+    if (!validId(installationId)) return res.status(400).json({ error: 'invalid_installation' })
+    if (!store.authenticateInstallation(installationId, tokenFrom(req))) {
+      return res.status(403).json({ error: 'forbidden' })
+    }
+    return res.json(store.getPreferences(installationId))
+  })
+
+  router.put('/notifications/installations/:installationId/preferences', (req, res) => {
+    const { installationId } = req.params
+    if (!validId(installationId) || !validPreferences(req.body)) {
+      return res.status(400).json({ error: 'invalid_preferences' })
+    }
+    const saved = store.setPreferences(installationId, tokenFrom(req), req.body)
+    return saved ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
   })
 
   router.put('/notifications/subscriptions/:installationId', (req, res) => {

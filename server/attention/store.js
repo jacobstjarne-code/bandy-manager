@@ -18,6 +18,17 @@ function secretsMatch(value, expectedHash) {
   return actual.length === expectedHash.length && timingSafeEqual(actual, expectedHash)
 }
 
+// stickiness-settings-kategorier: samma default som klienten
+// (src/domain/attention/types.ts's DEFAULT_NOTIFICATION_PREFERENCES) och
+// samma tysta-timmar-fönster dispatcher.js hittills hade hårdkodat.
+export const DEFAULT_PREFERENCES = {
+  categories: {
+    match_preparation: true, narrative_return: true,
+    calendar_anchor: false, season_context: false,
+  },
+  quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+}
+
 /**
  * Utbytbar repository-gräns för Attention Engine. In-memory-adaptern gör
  * kontraktet körbart lokalt men är avsiktligt inte maskerad som hållbar
@@ -51,6 +62,7 @@ export class InMemoryAttentionStore {
       activeCandidates: new Map(),
       sentDedupeKeys: new Set(),
       deliveryTimes: [],
+      preferences: null,
       updatedAt: new Date().toISOString(),
     }
     this.#installations.set(installationId, created)
@@ -63,6 +75,20 @@ export class InMemoryAttentionStore {
     installation.subscription = subscription
     installation.updatedAt = new Date().toISOString()
     return true
+  }
+
+  /** Genereras/valideras av anroparen (routes.js) — store:n litar på formen den får. */
+  setPreferences(installationId, token, preferences) {
+    const installation = this.ensureInstallation(installationId, token)
+    if (!installation) return false
+    installation.preferences = preferences
+    installation.updatedAt = new Date().toISOString()
+    return true
+  }
+
+  getPreferences(installationId) {
+    const installation = this.#installations.get(installationId)
+    return installation?.preferences ?? DEFAULT_PREFERENCES
   }
 
   removeSubscription(installationId, token) {
@@ -117,11 +143,16 @@ export class InMemoryAttentionStore {
       if (!installation.subscription || !installation.snapshot) continue
       installation.deliveryTimes = installation.deliveryTimes.filter(time => time >= weekAgo)
       const response = this.responseProfile(installation.id, now)
+      const categoryPrefs = (installation.preferences ?? DEFAULT_PREFERENCES).categories
       const due = [...installation.activeCandidates.values()]
         .filter(candidate => !installation.sentDedupeKeys.has(candidate.dedupeKey))
         .filter(candidate => Date.parse(candidate.availableAfter) <= nowMs)
         .filter(candidate => Date.parse(candidate.expiresAt) > nowMs)
         .filter(candidate => candidate.stateVersion === installation.snapshot.stateVersion)
+        // stickiness-settings-kategorier: av = filtreras bort FÖRE leverans,
+        // per registrets §7. Okänd/odefinierad kategori antas PÅ (samma
+        // fail-open-princip som frånvarande preferences helt).
+        .filter(candidate => categoryPrefs[candidate.category] !== false)
         .filter(candidate =>
           candidate.importance === 'major' ||
           response.backoffUntil === null ||
