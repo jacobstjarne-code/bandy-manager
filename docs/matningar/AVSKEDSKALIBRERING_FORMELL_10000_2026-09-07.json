@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 2,
+  "sharded": true,
+  "config": {
+    "seeds": 10000,
+    "seasons": 6,
+    "seedStart": 90000,
+    "shardSize": 20,
+    "workers": 8,
+    "clubIds": [
+      "club_heros",
+      "club_soderfors",
+      "club_lesjofors",
+      "club_forsbacka"
+    ]
+  },
+  "clubs": [
+    {
+      "clubId": "club_heros",
+      "clubName": "Heros",
+      "reputation": 45,
+      "boardExpectation": "survive",
+      "requestedRuns": 10000,
+      "validRuns": 10000,
+      "firedRuns": 5900,
+      "firingRate": 0.59,
+      "reasons": {
+        "boardPatience": 2,
+        "consecutiveFailures": 4119,
+        "licenseDenied": 1779,
+        "bankruptcy": 0,
+        "unknown": 0
+      },
+      "firedBySeason": {
+        "2028": 2007,
+        "2029": 1983,
+        "2030": 586,
+        "2031": 1324
+      },
+      "crashes": [],
+      "unknownReasonSeeds": []
+    },
+    {
+      "clubId": "club_soderfors",
+      "clubName": "Söderfors",
+      "reputation": 55,
+      "boardExpectation": "midTable",
+      "requestedRuns": 10000,
+      "validRuns": 10000,
+      "firedRuns": 2878,
+      "firingRate": 0.2878,
+      "reasons": {
+        "boardPatience": 1518,
+        "consecutiveFailures": 0,
+        "licenseDenied": 1360,
+        "bankruptcy": 0,
+        "unknown": 0
+      },
+      "firedBySeason": {
+        "2026": 137,
+        "2027": 430,
+        "2028": 367,
+        "2029": 1129,
+        "2030": 160,
+        "2031": 655
+      },
+      "crashes": [],
+      "unknownReasonSeeds": []
+    },
+    {
+      "clubId": "club_lesjofors",
+      "clubName": "Lesjöfors",
+      "reputation": 62,
+      "boardExpectation": "midTable",
+      "requestedRuns": 10000,
+      "validRuns": 10000,
+      "firedRuns": 3361,
+      "firingRate": 0.3361,
+      "reasons": {
+        "boardPatience": 2047,
+        "consecutiveFailures": 1,
+        "licenseDenied": 1313,
+        "bankruptcy": 0,
+        "unknown": 0
+      },
+      "firedBySeason": {
+        "2026": 175,
+        "2027": 573,
+        "2028": 612,
+        "2029": 1190,
+        "2030": 158,
+        "2031": 653
+      },
+      "crashes": [],
+      "unknownReasonSeeds": []
+    },
+    {
+      "clubId": "club_forsbacka",
+      "clubName": "Forsbacka",
+      "reputation": 85,
+      "boardExpectation": "winLeague",
+      "requestedRuns": 10000,
+      "validRuns": 10000,
+      "firedRuns": 3496,
+      "firingRate": 0.3496,
+      "reasons": {
+        "boardPatience": 66,
+        "consecutiveFailures": 0,
+        "licenseDenied": 3430,
+        "bankruptcy": 0,
+        "unknown": 0
+      },
+      "firedBySeason": {
+        "2026": 19,
+        "2027": 29,
+        "2028": 5,
+        "2029": 2016,
+        "2030": 2,
+        "2031": 1425
+      },
+      "crashes": [],
+      "unknownReasonSeeds": []
+    }
+  ]
+}

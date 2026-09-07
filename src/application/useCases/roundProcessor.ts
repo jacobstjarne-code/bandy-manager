@@ -44,7 +44,7 @@ import {
 import { processNarrative, processPlayerArcs, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
-import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processRoundMilestoneInbox } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processPendingFollowUps, processRoundMilestoneInbox } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanService'
@@ -1408,37 +1408,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // ── Process pending follow-ups ──────────────────────────────────────────
-  const followUps = updatedGame.pendingFollowUps ?? []
-  if (followUps.length > 0) {
-    const followUpInbox: InboxItem[] = []
-    const remaining = followUps.filter(fu => {
-      const elapsed = nextMatchday - fu.createdMatchday
-      if (elapsed >= fu.matchdaysDelay) {
-        // Follow-up triggered — create inbox notification
-        const text = (fu.data?.text as string) ?? 'Uppföljning från tidigare händelse.'
-        followUpInbox.push({
-          id: `inbox_fu_${fu.id}`,
-          date: updatedGame.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: 'Uppföljning',
-          body: text,
-          isRead: false,
-        })
-        return false // remove from pending
-      }
-      return true // keep
-    })
-    if (followUpInbox.length > 0) {
-      updatedGame = {
-        ...updatedGame,
-        inbox: [...updatedGame.inbox, ...followUpInbox],
-        pendingFollowUps: remaining,
-      }
-    } else {
-      updatedGame = { ...updatedGame, pendingFollowUps: remaining }
-    }
-  }
+  updatedGame = processPendingFollowUps(updatedGame, nextMatchday)
 
   updatedGame = applyCommunityConsequences(
     updatedGame,

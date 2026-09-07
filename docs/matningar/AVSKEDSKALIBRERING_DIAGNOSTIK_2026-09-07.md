@@ -1,5 +1,7 @@
 # Avskedskalibrering — diagnostisk baslinje 2026-09-07
 
+> **Korrigerad efter rotutredning:** Slutsatsen nedan att spelmodellen var för hård var falsk. Kalibreringsspelaren löste `pendingScreen` men inte `pendingEvents` och lämnade bland annat licensens handlingsplan obesvarad. Efter harnessfixen `afa52a86` gav det lilla passet 55/20/45 procent för Heros/Söderfors/Lesjöfors och den formella 10 000-seedsmätningen på `3b78737e` gav 59,00/28,78/33,61 procent — alla mål godkända utan ändrade spelparametrar. Se `AVSKEDSKALIBRERING_FORMELL_10000_2026-09-07.md`. Dokumentet bevaras som diagnostiskt felspår och ska inte citeras som aktuell modellmätning.
+
 ## Revision och körning
 
 - Gren: `release`

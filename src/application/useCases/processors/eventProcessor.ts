@@ -120,6 +120,35 @@ export function maintainEventQueues(game: SaveGame, nextMatchday: number): SaveG
   return updatedGame
 }
 
+/** Resolves delayed event follow-ups whose matchday delay has elapsed. */
+export function processPendingFollowUps(game: SaveGame, nextMatchday: number): SaveGame {
+  const followUps = game.pendingFollowUps ?? []
+  if (followUps.length === 0) return game
+
+  const followUpInbox: InboxItem[] = []
+  const remaining = followUps.filter(followUp => {
+    const elapsed = nextMatchday - followUp.createdMatchday
+    if (elapsed < followUp.matchdaysDelay) return true
+
+    const text = (followUp.data?.text as string) ?? 'Uppföljning från tidigare händelse.'
+    followUpInbox.push({
+      id: `inbox_fu_${followUp.id}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: 'Uppföljning',
+      body: text,
+      isRead: false,
+    })
+    return false
+  })
+
+  return {
+    ...game,
+    inbox: followUpInbox.length > 0 ? [...game.inbox, ...followUpInbox] : game.inbox,
+    pendingFollowUps: remaining,
+  }
+}
+
 export function processRoundMilestoneInbox(
   game: SaveGame,
   standings: SaveGame['standings'],
