@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+    .phone { width:380px; flex:0 0 380px; height:830px; position:relative; overflow:hidden; border-radius:20px; border:1px solid var(--border-dark); background:var(--bg); box-shadow:0 8px 30px rgba(0,0,0,0.22); display:flex; flex-direction:column; }
+    .mast { background:#0E0D0B; display:flex; align-items:center; gap:8px; padding:9px 12px; flex-shrink:0; }
+    .crest { width:24px; height:24px; border-radius:3px; background:var(--bg-leather); border:1px solid rgba(196,122,58,0.4); flex-shrink:0; }
+    .mclub { flex:1; min-width:0; }
+    .mname { font-family:var(--font-display); font-size:12px; color:var(--text-light); line-height:1.2; }
+    .msub { font-family:ui-monospace,monospace; font-size:7px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); }
+    .mround { font-family:ui-monospace,monospace; font-size:8px; font-weight:600; color:var(--accent); border:1px solid rgba(196,122,58,0.4); border-radius:3px; padding:2px 6px; flex-shrink:0; }
+    .rps { display:flex; align-items:center; padding:7px 12px; background:#1E1D19; border-bottom:2px solid var(--accent); flex-shrink:0; font-family:ui-monospace,monospace; font-size:8.5px; letter-spacing:1px; text-transform:uppercase; }
+    .rps .a { color:var(--accent); font-weight:700; }
+    .rps .p { color:var(--text-muted); }
+    .rps .d { color:color-mix(in srgb,var(--accent) 50%,transparent); }
+    .rps .sep { color:rgba(255,255,255,0.14); margin:0 6px; }
+    .sub { display:flex; background:var(--bg-surface); border-bottom:1px solid var(--border-dark); flex-shrink:0; }
+    .sub div { flex:1; text-align:center; padding:9px 6px; font-family:ui-monospace,monospace; font-size:9px; letter-spacing:1.2px; text-transform:uppercase; position:relative; }
+    .sub .cur { color:var(--accent); font-weight:700; }
+    .sub .cur::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--accent); }
+    .sub .don { color:color-mix(in srgb,var(--accent) 55%,transparent); }
+    .sub .pen { color:var(--text-muted); }
+    .body { flex:1; display:flex; overflow:hidden; }
+    .margin { width:18px; flex-shrink:0; border-right:1.5px solid var(--accent); background:linear-gradient(to right,#DCD3C3,var(--bg)); display:flex; flex-direction:column; justify-content:space-evenly; align-items:center; padding:10px 0; }
+    .perf { width:6px; height:6px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(139,72,32,0.3); }
+    .content { flex:1; overflow-y:auto; overflow-x:hidden; padding:12px; display:flex; flex-direction:column; gap:9px; }
+    .prow { display:flex; align-items:center; gap:6px; padding:6px 8px; background:var(--bg-surface); border-radius:0 8px 8px 0; margin-bottom:3px; font-size:12px; }
+    .pnum { font-family:var(--font-display); font-weight:700; width:15px; color:var(--text-secondary); font-size:12px; }
+    .ppos { font-size:9px; letter-spacing:1px; color:var(--text-muted); width:20px; }
+    .pname { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pca { font-family:var(--font-display); font-weight:700; width:22px; text-align:right; font-size:12px; }
+    .pproj { font-family:ui-monospace,monospace; font-size:9px; color:var(--text-muted); width:42px; text-align:right; white-space:nowrap; }
+    .ptag { font-size:8px; font-weight:600; letter-spacing:.3px; border-radius:99px; padding:2px 6px; white-space:nowrap; }
+    .glabel { font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin:3px 0 2px 2px; }
+    .fchip { font-size:11px; font-weight:600; border-radius:5px; padding:6px 10px; cursor:pointer; }
+    .fchip.on { color:#fff; background:var(--accent); }
+    .fchip.off { color:var(--accent-dark); background:var(--bg-surface); border:1px solid var(--accent); }
+    .stamp { margin:10px 13px 12px; padding:13px; background:var(--accent); color:var(--paper-warm,#F5F1EB); font-family:var(--font-body); font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-align:center; border-radius:3px; flex-shrink:0; }
+    .shead { font-family:ui-monospace,monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); padding-bottom:4px; border-bottom:1px solid rgba(196,122,58,0.25); display:flex; justify-content:space-between; align-items:baseline; }
+    .fillrow { display:flex; gap:7px; }
+    .fillbtn { flex:1; min-height:46px; border-radius:8px; font-family:var(--font-body); font-size:11px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:6px 4px; text-align:center; line-height:1.2; }
+    .fillbtn.rec { background:linear-gradient(180deg,#DD9555,#8B4820); color:#fff; border:none; box-shadow:var(--shadow-primary); }
+    .fillbtn.alt { background:var(--bg-surface); border:1.5px solid var(--border-dark); color:var(--accent-dark); }
+    .vseg { display:inline-flex; background:var(--bg); border:1px solid var(--border-dark); border-radius:8px; padding:2px; gap:2px; }
+    .vseg span { font-size:11px; font-weight:600; padding:5px 16px; border-radius:6px; cursor:pointer; }
+    .vseg .on { background:var(--accent); color:#fff; }
+    .vseg .off { color:var(--text-secondary); }
+    .rectag { font-size:7px; letter-spacing:1px; text-transform:uppercase; opacity:0.9; font-weight:700; }
+    .badge { display:inline-block; font-family:var(--font-body); font-size:11px; font-weight:700; letter-spacing:1px; color:var(--bg-surface); background:var(--accent); border-radius:5px; padding:3px 8px; }
+    .capt { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--text-primary); margin:0 0 2px; }
+    .capt-sub { font-size:12px; color:var(--text-secondary); line-height:1.45; margin:0; }
+    .slot { border-bottom:1px dashed var(--border-dark); color:var(--text-muted); }
+  </style>
+</helmet>
+<div style="min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:28px 24px 80px;">
+
+  <div style="max-width:820px; margin:0 0 24px;">
+    <div class="h-label" style="color:var(--accent-dark);">MATCHFLÖDE · FÖRBERED-FASEN — HELA SVEPET</div>
+    <h1 style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:6px 0 8px; line-height:1.15;">Förbered blir en linjär sekvens</h1>
+    <p class="h-body" style="margin:0; max-width:660px;">Tre ingrepp i ett flöde, vänster→höger: <strong>vinjetten</strong> (första mötet) passeras → <strong>Uppställning</strong> → <strong>Taktik</strong> → SPELA. Flik-hoppandet är borta: taktiken är ett steg man passerar, inte en flik man kanske aldrig öppnar. Autofyllen är ett klick i stället för två. Knapptexterna är låsta.</p>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:40px; align-items:flex-start;">
+
+    <!-- PHONE A — Vinjett -->
+    <div style="flex:0 0 auto;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <span class="badge">Vinjett</span>
+        <div><div class="capt">Motståndaren — första mötet</div><div class="capt-sub">Stämningsyta, inget val. Passeras. Ligger före uppställningen.</div></div>
+      </div>
+      <div class="phone">
+        <div class="mast"><div class="crest"></div><div class="mclub"><div class="mname">Forsbacka BK</div><div class="msub">B. Lund · 2026/27</div></div><div class="mround">OMG. 2</div></div>
+        <div class="rps"><span class="a">⬡ FÖRBERED</span><span class="sep">—</span><span class="p">SPELA</span><span class="sep">—</span><span class="p">GRANSKA</span></div>
+        <!-- full-bleed ort illustration -->
+        <div style="flex:1; position:relative; background:linear-gradient(160deg,#2b2f3a,#161a22 60%,#0f1319); display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;">
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(245,241,235,0.18); font-family:ui-monospace,monospace; font-size:10px; letter-spacing:1px;">intro_skutskar.jpg · Sulfatvallen</div>
+          <div style="position:relative; background:linear-gradient(to top,rgba(10,8,12,0.9),rgba(10,8,12,0.5) 70%,transparent); padding:22px 18px 16px; display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <div style="font-family:var(--font-body); font-size:9px; font-weight:600; letter-spacing:4px; text-transform:uppercase; color:var(--accent); opacity:0.75; margin-bottom:6px;">⬩ Motståndaren ⬩</div>
+              <div style="font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--text-light); line-height:1.1;">Skutskär</div>
+              <div style="font-family:var(--font-display); font-style:italic; font-size:12px; color:var(--text-light-secondary); margin-top:2px;">Sulfatvallen · Fabrikskurvan</div>
+            </div>
+            <p style="font-family:var(--font-display); font-style:italic; font-size:13px; line-height:1.55; color:var(--text-light); margin:0;">Pappersbrukets ort vid Dalälvens mynning, med gammal storhet i väggarna. Grannen vinner allt; Fabrikskurvan har gjort skuggan till en identitet. Här luktar det fabrik.</p>
+            <!-- variabel info: EN kontextrad + tränarcitat -->
+            <div style="display:flex; flex-direction:column; gap:8px; border-top:1px solid rgba(245,241,235,0.12); padding-top:11px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-family:ui-monospace,monospace; font-size:8px; font-weight:700; letter-spacing:1.5px; color:var(--accent); border:1px solid rgba(196,122,58,0.4); border-radius:3px; padding:2px 7px;">TABELL</span>
+                <span style="font-size:11px; color:var(--text-light-secondary);">De ligger 3:a, ni 5:a — två poäng upp.</span>
+              </div>
+              <div style="display:flex; gap:9px; align-items:flex-start;">
+                <div style="width:26px; height:26px; border-radius:50%; background:var(--bg-leather); color:var(--accent); font-family:var(--font-display); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">TÖ</div>
+                <div style="font-family:var(--font-display); font-style:italic; font-size:12px; color:var(--text-light); line-height:1.45;">"Vi vet vad vi är. Vi behöver inte spela snyggt, bara vinna." <span style="color:var(--text-muted); font-style:normal; font-size:10px;">— Torsten Öberg, 4:e året</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- pass, not stamp -->
+        <div style="padding:12px 13px; background:#0E0D0B; flex-shrink:0;">
+          <div style="width:100%; padding:12px; text-align:center; border:1.5px solid var(--accent); border-radius:8px; color:var(--text-light); font-family:var(--font-body); font-size:13px; font-weight:600; letter-spacing:0.5px;">Ta ut laget →</div>
+        </div>
+      </div>
+      <p class="h-body-sm" style="max-width:380px; margin:10px 0 0;"><strong>Passeras:</strong> kort dwell, sedan sveps bort / tap på "Ta ut laget". <strong>Inte</strong> ett delsteg i FÖRBERED-progressen — annars blir den friktion. Ärver PreMatchContexts prioritet (derby › streak › tabell › form) och visar EN kontextrad + tränarcitatet. Bild/text = låst; variabel info ur befintlig kod.</p>
+    </div>
+
+    <!-- PHONE B — Uppställning -->
+    <div style="flex:0 0 auto;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <span class="badge">Steg 1</span>
+        <div><div class="capt">Uppställning</div><div class="capt-sub">Delsteg 1 av FÖRBERED. Stämpeln för till Taktik.</div></div>
+      </div>
+      <div class="phone">
+        <div class="mast"><div class="crest"></div><div class="mclub"><div class="mname">Forsbacka BK</div><div class="msub">B. Lund · 2026/27</div></div><div class="mround">OMG. 2</div></div>
+        <div class="rps"><span class="a">⬡ FÖRBERED</span><span class="sep">—</span><span class="p">SPELA</span><span class="sep">—</span><span class="p">GRANSKA</span></div>
+        <div class="sub"><div class="cur">① Uppställning</div><div class="pen">② Taktik</div></div>
+        <div class="body">
+          <div class="margin"><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div></div>
+          <div class="content">
+            <!-- kontextremsa -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px 12px; background:var(--bg-surface); border-left:2px solid var(--accent); border-radius:0 8px 8px 0; padding:8px 12px;">
+              <div><div style="font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Matchdag</div><div style="font-size:11.5px; margin-top:2px;">❄️ Kallt · −4°C</div></div>
+              <div><div style="font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Gagnef</div><div style="font-size:11.5px; margin-top:2px;">Ojämn form · 5-2-3 hög</div></div>
+            </div>
+            <!-- motståndaranalys -->
+            <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted);">Motståndaren</span><span style="font-family:var(--font-display); font-size:11px; color:var(--text-muted);">#8 · tabell</span></div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:15px; margin:1px 0 4px;">Gagnef</div>
+              <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;">Nyckelspelare: H. Lindqvist (B) ~65 · F. Karlsson (YH) ~60</div>
+              <div style="margin-top:6px; font-size:11px; color:var(--accent-dark); font-weight:600;">🔍 Fördjupad analys (1 budget) ›</div>
+            </div>
+                        <!-- ÄNDRING 2: ett-kliks autofyll -->
+            <div class="shead"><span>Fyll laget automatiskt</span><span style="font-size:8px; color:var(--text-muted); letter-spacing:0; text-transform:none;">ett tryck fyller — inget läge att välja</span></div>
+            <div class="fillrow">
+              <div class="fillbtn alt">Starkast</div>
+              <div class="fillbtn alt">Mest<br>utvilad</div>
+              <div class="fillbtn rec"><span class="rectag">Rekommenderad</span>Bäst för dagens match</div>
+            </div>
+            <!-- formationsval + status -->
+            <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:9px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); white-space:nowrap;">⚙ Formation</span><div style="flex:1; display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:11px; font-weight:600;">5-3-2 två toppar <span style="color:var(--text-muted);">▾</span></div></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--success);">11 av 11 placerade</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:2px;"><span style="font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted);">Vy</span><span class="vseg"><span class="off">Lista</span><span class="on">Plan</span></span></div>
+            <!-- PLACERINGSÖVERSIKT (Plan-vyn) -->
+            <div style="border-radius:8px; border:1px solid var(--border); background:repeating-linear-gradient(0deg,#eef2ef,#eef2ef 24px,#e6ece8 24px,#e6ece8 48px); position:relative; height:322px; display:flex; flex-direction:column; justify-content:space-between; padding:14px 6px;">
+              <div style="position:absolute; top:8px; left:8px; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ice-dark); font-weight:600;">5-3-2 två toppar</div>
+              <div style="display:flex; justify-content:center;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">1</span><span style="font-size:8px;color:var(--text-secondary);">Sundström</span></div>
+              </div>
+              <div style="display:flex; justify-content:space-around; padding:0 4px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">2</span><span style="font-size:8px;color:var(--text-secondary);">Berg</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">4</span><span style="font-size:8px;color:var(--text-secondary);">Lindqvist</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">6</span><span style="font-size:8px;color:var(--text-secondary);">Ek</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--warm,#8c6e3a);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">5</span><span style="font-size:8px;color:var(--warm,#8c6e3a);font-weight:600;">Modin</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">3</span><span style="font-size:8px;color:var(--text-secondary);">Holm</span></div>
+              </div>
+              <div style="display:flex; justify-content:space-around; padding:0 40px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">7</span><span style="font-size:8px;color:var(--text-secondary);">Andersson</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">8</span><span style="font-size:8px;color:var(--text-secondary);">Nyström</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">10</span><span style="font-size:8px;color:var(--text-secondary);">Ny</span></div>
+              </div>
+              <div style="display:flex; justify-content:space-around; padding:0 66px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">11</span><span style="font-size:8px;color:var(--text-secondary);">Sjö</span></div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:30px;height:30px;border-radius:50%;background:var(--success);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;">9</span><span style="font-size:8px;color:var(--text-secondary);">Berglund</span></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center; font-size:10px; color:var(--text-secondary);"><span style="display:flex; gap:4px; align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:var(--success);"></span>Rätt plats</span><span style="display:flex; gap:4px; align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:var(--warm,#8c6e3a);"></span>Fel position / låg ork</span><span style="margin-left:auto; font-style:italic; color:var(--text-muted);">Dra för att byta</span></div>
+            <div style="font-size:9px; color:var(--text-muted); line-height:1.4;">Lista-vyn ger samma elva som rader med kondition nu → efter match och skade-/vilostatus.</div>
+          </div>
+        </div>
+        <div class="stamp">Nästa: Taktik →</div>
+      </div>
+      <p class="h-body-sm" style="max-width:380px; margin:10px 0 0;"><strong>Autofyll = ett klick.</strong> De tre lägesknapparna fyller var för sig direkt — den separata "Fyll bästa elvan" är borta. "Bäst för dagens match" är den rekommenderade (koppar-fylld).</p>
+    </div>
+
+    <!-- PHONE C — Taktik -->
+    <div style="flex:0 0 auto;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <span class="badge">Steg 2</span>
+        <div><div class="capt">Taktik</div><div class="capt-sub">Delsteg 2 — nu ett obligatoriskt steg, inte en flik. Stämpeln startar matchen.</div></div>
+      </div>
+      <div class="phone">
+        <div class="mast"><div class="crest"></div><div class="mclub"><div class="mname">Forsbacka BK</div><div class="msub">B. Lund · 2026/27</div></div><div class="mround">OMG. 2</div></div>
+        <div class="rps"><span class="a">⬡ FÖRBERED</span><span class="sep">—</span><span class="p">SPELA</span><span class="sep">—</span><span class="p">GRANSKA</span></div>
+        <div class="sub"><div class="don">① Uppställning ✓</div><div class="cur">② Taktik</div></div>
+        <div class="body">
+          <div class="margin"><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div><div class="perf"></div></div>
+          <div class="content">
+            <!-- taktik-översikt (read-only) -->
+            <div style="display:flex; align-items:center; gap:6px; background:var(--bg-elevated); border:0.5px solid var(--border); border-radius:4px; padding:6px 10px;"><span style="font-size:10px; font-weight:600; color:var(--text-muted);">Defensiv</span><span style="color:var(--border-dark);">·</span><span style="font-size:10px; font-weight:600; color:var(--text-muted);">Tempo: Högt</span><span style="margin-left:auto; font-size:10px; color:var(--accent); text-decoration:underline;">ändras i lineup</span></div>
+            <!-- ÄNDRING 2: ett-kliks autofyll -->
+            <div class="shead"><span>Fyll laget automatiskt</span><span style="font-size:8px; color:var(--text-muted); letter-spacing:0; text-transform:none;">ett tryck fyller — inget läge att välja</span></div>
+            <div class="fillrow">
+              <div class="fillbtn alt">Starkast</div>
+              <div class="fillbtn alt">Mest<br>utvilad</div>
+              <div class="fillbtn rec"><span class="rectag">Rekommenderad</span>Bäst för dagens match</div>
+            </div>
+            <!-- uppställning -->
+            <div style="font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--accent);">Uppställning</div>
+            <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;">Femman bak är alltid femman bak. Det du väljer är hur de fem främre står — och hur högt laget försvarar.</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px 6px; align-items:flex-start;">
+              <span class="fchip off">5-3-2 två toppar</span>
+              <span class="fchip off">5-3-2 triangel</span>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span class="fchip on">5-3-2 ytterben</span><span style="font-size:8px; color:var(--success); font-weight:700; letter-spacing:.5px;">★ COACH</span></div>
+              <span class="fchip off">5-3-2 höga halvor</span>
+              <span class="fchip off">5-2-3 hög</span>
+              <span class="fchip off">5-4-1 hem</span>
+            </div>
+            <!-- anatomi (text ur FORMATION_META, låst) -->
+            <div>
+              <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;"><span style="font-size:10px; color:var(--text-secondary); border:1px solid var(--border-dark); border-radius:99px; padding:2px 8px;"><span class="slot">tag</span></span><span style="font-size:10px; color:var(--text-secondary); border:1px solid var(--border-dark); border-radius:99px; padding:2px 8px;"><span class="slot">tag</span></span><span style="font-size:10px; color:var(--text-secondary); border:1px solid var(--border-dark); border-radius:99px; padding:2px 8px;"><span class="slot">tag</span></span></div>
+              <div style="font-family:var(--font-display); font-style:italic; font-size:12px; color:var(--text-secondary); line-height:1.5;">"<span class="slot">coach-mening ur FORMATION_META</span>"</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">— Coachen</div>
+              <div style="font-size:10px; color:var(--text-secondary); margin-top:6px;">Kräver: <span class="slot">truppkrav</span></div>
+            </div>
+            <!-- plan (tactical) -->
+            <div style="border-radius:8px; border:1px solid var(--border); background:linear-gradient(180deg,#eef2ef,#e6ece8); position:relative; height:168px; overflow:hidden;">
+              <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:20px;height:20px;border-radius:50%;background:var(--accent);border:2px solid #fff;"></div>
+              <div style="position:absolute; top:48px; left:0; right:0; display:flex; justify-content:space-around; padding:0 10px;"><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--warm,#8c6e3a);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span></div>
+              <div style="position:absolute; top:96px; left:0; right:0; display:flex; justify-content:space-around; padding:0 60px;"><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span></div>
+              <div style="position:absolute; bottom:12px; left:0; right:0; display:flex; justify-content:space-around; padding:0 90px;"><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span><span style="width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid #fff;"></span></div>
+              <div style="position:absolute; top:58px; left:34%; width:120px; height:1.5px; background:var(--success); opacity:.5; transform:rotate(22deg); transform-origin:left;"></div>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center; font-size:10px; color:var(--text-secondary);"><span style="display:flex; gap:4px; align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:var(--success);"></span>Rätt plats</span><span style="display:flex; gap:4px; align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:var(--warm,#8c6e3a);"></span>Fel position / låg ork</span><span style="margin-left:auto; font-style:italic; color:var(--text-muted);">Dra för att byta</span></div>
+            <!-- lagstyrka -->
+            <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted);">Lagstyrka</span><span style="font-size:12px;"><span style="font-family:var(--font-display); font-weight:800;">62</span><span style="color:var(--text-muted);"> / 68 utvilat</span></span></div>
+            <!-- bänken -->
+            <div><div style="font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">Bänken</div><div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;"><div style="flex-shrink:0; width:54px; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated);"><span style="font-size:8px; letter-spacing:1px; color:var(--text-muted);">MF</span><span style="font-size:10px; font-weight:600; max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Hallgren</span><span style="font-size:9px; color:var(--text-muted);">54</span></div><div style="flex-shrink:0; width:54px; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated);"><span style="font-size:8px; letter-spacing:1px; color:var(--text-muted);">YH</span><span style="font-size:10px; font-weight:600; max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Andersson</span><span style="font-size:9px; color:var(--text-muted);">54</span></div><div style="flex-shrink:0; width:54px; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated);"><span style="font-size:8px; letter-spacing:1px; color:var(--text-muted);">A</span><span style="font-size:10px; font-weight:600; max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Berglund</span><span style="font-size:9px; color:var(--text-muted);">60</span></div><div style="flex-shrink:0; width:54px; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated);"><span style="font-size:8px; letter-spacing:1px; color:var(--text-muted);">MV</span><span style="font-size:10px; font-weight:600; max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Gabrielsson</span><span style="font-size:9px; color:var(--text-muted);">54</span></div></div></div>
+          </div>
+        </div>
+        <div class="stamp">Spela →</div>
+      </div>
+      <p class="h-body-sm" style="max-width:380px; margin:10px 0 0;"><strong>Taktik kan inte längre missas.</strong> Man kommer hit via stämpeln från elvan, inte via en flik. Samma tre-knapps-autofyll. Stämpeln "Spela →" startar matchen (RPS → SPELA).</p>
+    </div>
+
+    <!-- SPEC -->
+    <div style="flex:1 1 320px; min-width:300px; max-width:440px; display:flex; flex-direction:column; gap:14px;">
+      <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+        <div class="h-label" style="color:var(--text-secondary);">1 · LINJÄR SEKVENS</div>
+        <ul class="h-body" style="margin:8px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          <li><strong>subTabs för FÖRBERED tas bort.</strong> Ersätts av en <em>läsbar</em> två-stegs-indikator (① Uppställning · ② Taktik) — samma plats, men inte klickbar. Done = ✓, current = kopparunderstruken, pending = dämpad.</li>
+          <li><strong>Progression via stämpeln:</strong> elvan → "Nästa: Taktik →" → taktik → "Spela →". Bakåt tillåts (rör inte committad elva); framåt bara via stämpel.</li>
+          <li><strong>Valt framför alternativet:</strong> sekventiella skärmar hellre än att RPS-stripen visar FÖRBERED som två delsteg — tydligare "var är jag", mindre att tolka i stripen. (RPS-varianten kan byggas om du hellre vill ha den.)</li>
+        </ul>
+      </div>
+      <div class="card-round" style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+        <div class="h-label" style="color:var(--text-secondary);">2 · AUTOFYLL — ETT KLICK</div>
+        <ul class="h-body" style="margin:8px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          <li>De tre lägesknapparna blir <strong>fyll-knappar</strong> — var och en tillämpar sitt läge direkt. "Fyll bästa elvan" försvinner.</li>
+          <li>"Bäst för dagens match" = rekommenderad, koppar-fylld primär; Starkast / Mest utvilad = outline.</li>
+          <li>Samma mönster på <strong>både</strong> Uppställning och Taktik. Wiring: varje knapp → befintlig <code>handleAutoFill(mode)</code> med sitt läge.</li>
+        </ul>
+      </div>
+      <div style="background:var(--bg-surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--accent-dark);">3 · VINJETT (placering + passage)</div>
+        <ul class="h-body" style="margin:6px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          <li><strong>Plats:</strong> före Uppställning, som fasens första andetag. Inte mellan elva och taktik (skulle bryta den täta 1→2-rytmen).</li>
+          <li><strong>Passage:</strong> kort dwell → svep/tap på "Ta ut laget →". Ljusare pass-affordans, inte kopparstämpeln — den är för steg med val.</li>
+          <li><strong>Bara första mötet</strong> mot varje klubb (samma krok som Berättaren-callbacken); filtrera <code>managedClubId</code>. Layout: full-bleed ortbild, vinjett-text, EN kontextrad + tränarcitat (ärver PreMatchContext-prioriteten).</li>
+        </ul>
+      </div>
+      <div style="background:var(--bg-surface); border:1px dashed var(--border-dark); border-radius:var(--radius-md); padding:12px 14px;">
+        <div class="h-label" style="color:var(--text-secondary);">DESIGN vs CODE</div>
+        <p class="h-body" style="margin:5px 0 0;">Design: steg-progressionen + tre-knapps-autofyllen + vinjett-ramen (ovan). Code: ta bort subTabs för FÖRBERED → linjär sekvens, koppla varje fyll-knapp till sitt läge, wira vinjett-triggern. Knapptexter låsta — "Bäst för dagens match" är din dom. Vinjett-texterna klara (Opus).</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
