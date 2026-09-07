@@ -19,7 +19,7 @@ import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
 import { buildPromotedPlayerFromYouth, starsForPotential } from '../academyService'
-import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry } from '../clubHistoryLedgerService'
+import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry, buildLetterLedgerEntry } from '../clubHistoryLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
@@ -1739,6 +1739,20 @@ export function resolveEvent(
         ...updatedGame,
         bandyLetters: [...(updatedGame.bandyLetters ?? []), letter],
         bandyLetterThisSeason: updatedGame.currentSeason,
+        // liggare-ny-letter: dual-write, aldrig flytt (samma disciplin som
+        // facility_built-migreringen). bandyLetters-fickan är ORÖRD —
+        // Brevarkivet läser den fortfarande direkt (radens egen instruktion:
+        // "Brevarkivet som yta orört"). Liggarposten ger Efterklang/Krönikan/
+        // Berättaren en riktig, rankbar ingång i stället för en egen ficka.
+        eventLedger: logEvent(updatedGame, buildLetterLedgerEntry({
+          clubId: updatedGame.managedClubId,
+          season: updatedGame.currentSeason,
+          matchday: updatedGame.currentMatchday,
+          letterId: letter.id,
+          kind: 'fan_mail',
+          senderName: letter.senderName,
+          senderAge: letter.senderAge,
+        })),
       }
       break
     }

@@ -325,6 +325,31 @@ describe('pickEfterklang — Berättarens agenda', () => {
     expect(nextDay.type).toBe('economicScar')
   })
 
+  it('liggare-ny-letter: followUp läser letter-liggarposten (B) i stället för bandyLetters (F) när båda finns', () => {
+    const letterPost: EventLedgerEntry = {
+      type: 'letter',
+      semanticKey: 'letter_club_managed_letter_1',
+      clubId: MANAGED,
+      season: 3,
+      matchday: 9,
+      subject: { kind: 'club', id: MANAGED },
+      subjectSnapshot: { name: 'Gösta i klacken' },
+      significance: 40,
+      letter: { letterId: 'letter_1', kind: 'fan_mail' },
+    }
+    // bandyLetters-fickan finns OCKSÅ (dual-write i verkligheten) med ett
+    // ANNAT namn — om ledger-vägen faktiskt används vinner den, inte fickan.
+    const game = canonicalGame({
+      eventLedger: [letterPost],
+      bandyLetters: [{ season: 3, senderName: 'Fickans gamla namn' }] as never,
+    })
+
+    const memory = pickEfterklang(game, 8).find(item => item.type === 'followUp')
+
+    expect(memory?.premiss).toBe('Gösta i klacken skrev till dig tidigare i säsongen.')
+    expect(memory?.sourcePost).toBe(letterPost)
+  })
+
   it('kopplar journalistens livepresentation till den kanoniska resolutionen', () => {
     const resolution: EventLedgerEntry = {
       type: 'storyline_resolution',

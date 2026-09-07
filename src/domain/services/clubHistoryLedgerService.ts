@@ -251,6 +251,29 @@ export function buildCommunityShiftLedgerEntry(input: {
   }
 }
 
+/** liggare-ny-letter: significance 40 per MASTER_OPPET-radens skiss. */
+export function buildLetterLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  letterId: string
+  kind: 'fan_mail'
+  senderName: string
+  senderAge?: number
+}): EventLedgerEntry {
+  return {
+    type: 'letter',
+    semanticKey: `letter_${input.clubId}_${input.letterId}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    subjectSnapshot: { name: input.senderName, ...(input.senderAge !== undefined ? { age: input.senderAge } : {}) },
+    significance: 40,
+    letter: { letterId: input.letterId, kind: input.kind },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

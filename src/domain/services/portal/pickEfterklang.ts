@@ -228,21 +228,43 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     })
   }
 
-  // Follow-up (bandyLetters from this season — fan mail still resonating)
-  const thisSeasonLetters = (game.bandyLetters ?? []).filter(l => l.season === season)
-  if (thisSeasonLetters.length > 0) {
-    const letter = thisSeasonLetters[0]
+  // Follow-up (liggare-ny-letter, 2026-09-07): läser nu `letter`-liggarposten
+  // (B) i stället för `game.bandyLetters` (F) direkt — samma säsongsfilter
+  // gamla ficka-läsningen hade. Fallback till fickan kvar för saves sparade
+  // FÖRE migreringen, som saknar en matchande liggarpost (dual-write, ingen
+  // backfyllning) — Brevarkivet självt läser fortsatt fickan direkt, orört.
+  const letterAgendaItem = agenda.find(item => item.post.type === 'letter' && item.post.season === season)
+  if (letterAgendaItem) {
+    const senderName = letterAgendaItem.post.subjectSnapshot?.name ?? 'Brevskrivaren'
     const echo = pickEcho('followUp', seed + 3)
-    const premiss = `${letter.senderName} skrev till dig tidigare i säsongen.`  // B4
+    const premiss = `${senderName} skrev till dig tidigare i säsongen.`  // B4
     candidates.push({
       type: 'followUp',
-      score: 40,
+      score: letterAgendaItem.scoresBySurface.efterklang.total,
       memory: {
-        type: 'followUp', primaryText: letter.senderName, premiss, echo,
-        objectName: letter.senderName,
-        threadEntries: [{ matchday: round, season, text: letter.senderName }],
+        type: 'followUp', primaryText: senderName, premiss, echo,
+        objectName: senderName,
+        threadEntries: [{ matchday: letterAgendaItem.post.matchday, season: letterAgendaItem.post.season, text: senderName }],
+        sourcePost: letterAgendaItem.post,
+        sourcePostKey: letterAgendaItem.postKey,
       },
     })
+  } else {
+    const thisSeasonLetters = (game.bandyLetters ?? []).filter(l => l.season === season)
+    if (thisSeasonLetters.length > 0) {
+      const letter = thisSeasonLetters[0]
+      const echo = pickEcho('followUp', seed + 3)
+      const premiss = `${letter.senderName} skrev till dig tidigare i säsongen.`  // B4
+      candidates.push({
+        type: 'followUp',
+        score: 40,
+        memory: {
+          type: 'followUp', primaryText: letter.senderName, premiss, echo,
+          objectName: letter.senderName,
+          threadEntries: [{ matchday: round, season, text: letter.senderName }],
+        },
+      })
+    }
   }
 
   // Board objective history

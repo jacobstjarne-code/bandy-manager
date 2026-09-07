@@ -236,6 +236,12 @@ export type EventLedgerType =
   // kunde inte minnas. Spegel av repMilestone-mönstret (reputationMilestone-
   // Service.ts), fast på communityStanding-axeln. subject = managed club.
   | 'community_shift'
+  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 + SPEC_BERATTAREN §5
+  // (liggare-ny-letter): brevet skrivs idag BARA till `game.bandyLetters`
+  // (en ficka) — Efterklangs followUp läser fickan direkt, Berättaren ser
+  // den aldrig. subject = managed club (avsändaren är namngiven i
+  // subjectSnapshot, inte en spårad entitet med egen kind).
+  | 'letter'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -448,6 +454,19 @@ export interface EventLedgerEntry {
     from: number
     to: number
     direction: 'up' | 'down'
+  }
+  /**
+   * letter (liggare-ny-letter). `kind` har idag bara ETT verkligt medlem —
+   * `saveBandyLetter` (DREAM-010) producerar enbart fanpost — men är en
+   * union, inte en enkel boolean, så nästa brevtyp (SPEC_BERATTAREN §5
+   * nämner fler) inte kräver ett schemabrott. `letterId` = BandyLetter.id
+   * (== eventId vid skrivtillfället). Avsändaren bärs av `subjectSnapshot`
+   * ({name, age}), inte av `subject` — brevskribenten är ingen spårad
+   * entitet med egen `subject.kind`.
+   */
+  letter?: {
+    letterId: string
+    kind: 'fan_mail'
   }
 
   /**

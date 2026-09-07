@@ -602,6 +602,9 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // av entry.licenseEvent.status nedan (severity finns redan på posten,
   // ingen ny text krävs för att veta om det var lättnad eller sår).
   // facility_trial_outcome är av samma skäl INTE här — se dynamisk gren.
+  // liggare-ny-letter: neutral tills Krönikans egen brevtext finns (kind
+  // är idag alltid 'fan_mail', bär ingen sentiment att klassificera på).
+  letter: 'neutral',
 }
 
 /**
@@ -672,6 +675,8 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   // FAMILY_BY_MEMORY_STAMP mappar 🤝 till 'relations_money' — exakt den
   // Krönika-familjen raden begär, ingen ny mappning behövs där.
   community_shift: '🤝',
+  // liggare-ny-letter: 👤 → Krönikans "people"-familj (raden: "Krönikan (people)").
+  letter: '👤',
 }
 
 export function momentFamily(type: EventLedgerType): MemoryFamily {
