@@ -124,11 +124,11 @@ export function evaluateAttention(
 ): AttentionEvaluation {
   const evaluatedAt = now.toISOString()
   const stateVersion = attentionStateVersion(game)
+  // stickiness-categoryfor-tre-kallor: draften bär numera sin egen källa
+  // (ledger/fixture/standing) — inte längre hårdkodat 'ledger' för alla tre
+  // familjer, calendar_anchor/season_context är fixture-/standings-drivna.
   const narrativeDrafts: CandidateDraft[] = options.narrativePushCopy
-    ? narrativePushDrafts(game, options.narrativePushCopy).map(draft => ({
-        ...draft,
-        sources: [{ kind: 'ledger', id: draft.subjectId }],
-      }))
+    ? narrativePushDrafts(game, options.narrativePushCopy)
     : []
   const drafts = [...stateOpenLoopDrafts(game), ...narrativeDrafts]
   const openLoops = drafts.map(draft => makeOpenLoop(draft, stateVersion, evaluatedAt))

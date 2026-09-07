@@ -1,9 +1,8 @@
 import type { SaveGame } from '../entities/SaveGame'
-import type { AgendaItem } from '../services/redaktorenService'
 import { resolveSubjectName } from '../services/momentLedgerService'
 import { getNextManagedFixture } from '../services/portal/triggers/matchTriggers'
-import type { AttentionCategory, AttentionVoice } from './types'
-import type { NarrativePushCopy, NarrativePushCopyResolver } from './narrativePushAdapter'
+import type { AttentionVoice } from './types'
+import type { ForwardPushPayload, NarrativePushCopy, NarrativePushCopyResolver } from './narrativePushAdapter'
 
 /**
  * Läser/skriver "vilken röst visades sist för detta scenario" så resolvern
@@ -61,22 +60,23 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  *
  * `calendar_anchor`/`season_context`-kategorierna (registrets familjer 2
  * "Kalenderankare" och 3 "Säsongsläge") lämnas MEDVETET oresolverade (retur
- * null) — se MASTER_OPPET `stickiness-copy-roster`: adapterns egen
- * `categoryFor()` (narrativePushAdapter.ts) grundar dem på
- * `freshnessQueue==='anniversary'`/`family==='decisions_era'`, en
- * BAKÅTBLICKANDE minnestaxonomi (liggarposter om det som HÄNT) — medan
- * registrets familjer 2/3 är FRAMÅTBLICKANDE (en kommande derby/final,
- * aktuell tabellplacering), data som kommer ur `game.fixtures`/
- * `game.standings`, inte ur en `AgendaItem`. Att bygga dem kräver ett
- * arkitekturbeslut om `categoryFor()`/adaptern själv, inte bara copy —
- * flaggat, inte tyst ihopklämt mot fel datakälla.
+ * null) — se MASTER_OPPET `stickiness-categoryfor-tre-kallor`: adaptern
+ * (narrativePushAdapter.ts) bygger nu en egen framåtblickande kandidat per
+ * familj (`calendarAnchorCandidate`/`seasonContextCandidate`, ur
+ * `game.fixtures`/`game.standings` — inte längre en gissning ur en
+ * `AgendaItem`), men ingen låst copy finns än för dem. Opus skriver
+ * familjernas 2/3-copy mot `ForwardPushPayload`s `calendar_anchor`/
+ * `season_context`-varianter när den texten är dömd; fram tills dess
+ * returnerar den här resolvern null för dem — infrastruktur utan dold
+ * produktionscopy, samma disciplin som narrative_return alltid haft.
  */
 export function createNarrativePushCopyResolver(
   game: SaveGame,
   rotation: PushCopyRotationStore,
 ): NarrativePushCopyResolver {
-  return (item: AgendaItem, category: AttentionCategory): NarrativePushCopy | null => {
-    if (category !== 'narrative_return') return null
+  return (payload: ForwardPushPayload): NarrativePushCopy | null => {
+    if (payload.category !== 'narrative_return') return null
+    const item = payload.item
 
     const fixture = getNextManagedFixture(game)
     if (!fixture?.date) return null

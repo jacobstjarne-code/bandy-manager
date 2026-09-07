@@ -60,11 +60,11 @@ function memoryRotation(): PushCopyRotationStore {
 }
 
 describe('createNarrativePushCopyResolver', () => {
-  it('returnerar null för calendar_anchor/season_context — MEDVETET oresolverat (fel datakälla, se filhuvudet)', () => {
+  it('returnerar null för calendar_anchor/season_context — MEDVETET oresolverat, ingen copy skriven än (se filhuvudet)', () => {
     const resolver = createNarrativePushCopyResolver(gameFixture(), memoryRotation())
-    const item = agendaItem({ type: 'derby_result', season: 3, matchday: 1, outcome: 'lost', subject: { kind: 'club', id: 'club_skutskar' } })
-    expect(resolver(item, 'calendar_anchor')).toBeNull()
-    expect(resolver(item, 'season_context')).toBeNull()
+    const fixture = gameFixture().fixtures[0]
+    expect(resolver({ category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar', kind: 'derby' })).toBeNull()
+    expect(resolver({ category: 'season_context', position: 3, margin: { toPlayoff: 2, toRelegation: 10 } })).toBeNull()
   })
 
   it('revansch: big_loss mot exakt nästa motstånd, samma säsong ("i höstas") — pressens variant först', () => {
@@ -74,7 +74,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 2, goalsAgainst: 6, opponentClubId: 'club_skutskar', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    const copy = resolver(item, 'narrative_return')
+    const copy = resolver({ category: 'narrative_return', item: item })
     expect(copy).toEqual({
       voice: 'press',
       title: 'Revanschen väntar.',
@@ -90,8 +90,8 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 2, goalsAgainst: 6, opponentClubId: 'club_skutskar', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    const first = resolver(item, 'narrative_return')
-    const second = resolver(item, 'narrative_return')
+    const first = resolver({ category: 'narrative_return', item: item })
+    const second = resolver({ category: 'narrative_return', item: item })
     expect(first?.voice).toBe('press')
     expect(second?.voice).toBe('club')
     expect(second?.title).toBe('Skutskärs IF. Igen.')
@@ -104,7 +104,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 1, goalsAgainst: 3, opponentClubId: 'club_skutskar', home: false, competition: 'league', stage: 'Omgång 10' },
     })
-    expect(resolver(item, 'narrative_return')?.body).toContain('förra säsongen')
+    expect(resolver({ category: 'narrative_return', item: item })?.body).toContain('förra säsongen')
   })
 
   it('revansch: vunnen derby (outcome=won) triggar aldrig revansch-texten', () => {
@@ -114,7 +114,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 5, goalsAgainst: 1, opponentClubId: 'club_skutskar', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    expect(resolver(item, 'narrative_return')).toBeNull()
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
   it('revansch: mer än en säsong gammal — för gammal, ingen text', () => {
@@ -124,7 +124,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 2, goalsAgainst: 6, opponentClubId: 'club_skutskar', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    expect(resolver(item, 'narrative_return')).toBeNull()
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
   it('revansch: fel motstånd (inte samma som nästa fixture) — ingen text', () => {
@@ -134,7 +134,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_annat' },
       result: { goalsFor: 2, goalsAgainst: 6, opponentClubId: 'club_annat', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    expect(resolver(item, 'narrative_return')).toBeNull()
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
   it('ex-spelare: transfer_sold till exakt nästa motstånd, samma säsong ("i somras")', () => {
@@ -147,7 +147,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'player', id: 'p1' },
       subject2: { kind: 'club', id: 'club_skutskar' },
     })
-    const copy = resolver(item, 'narrative_return')
+    const copy = resolver({ category: 'narrative_return', item: item })
     expect(copy).toEqual({
       voice: 'press',
       title: 'Karl Nilsson kommer tillbaka.',
@@ -165,7 +165,7 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'player', id: 'p1' },
       subject2: { kind: 'club', id: 'club_annat' },
     })
-    expect(resolver(item, 'narrative_return')).toBeNull()
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
   it('saknad fixture.date (t.ex. äldre save) — hellre ingen text än en mening utan veckodag', () => {
@@ -182,6 +182,6 @@ describe('createNarrativePushCopyResolver', () => {
       subject: { kind: 'club', id: 'club_skutskar' },
       result: { goalsFor: 2, goalsAgainst: 6, opponentClubId: 'club_skutskar', home: true, competition: 'league', stage: 'Omgång 1' },
     })
-    expect(resolver(item, 'narrative_return')).toBeNull()
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 })
