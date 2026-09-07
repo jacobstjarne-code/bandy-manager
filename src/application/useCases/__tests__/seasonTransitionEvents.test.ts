@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { handleSeasonEnd } from '../seasonEndProcessor'
 import { deriveEpokVariant, seasonOrdinalSwedish } from '../../../domain/services/seasonTransitionService'
+import { getSeasonGoalOffers } from '../../../domain/services/seasonGoalService'
 import { contractRequestEvent } from '../../../domain/services/events/eventFactories'
 import { resolveEvent } from '../../../domain/services/events/eventResolver'
 
@@ -35,6 +36,71 @@ describe('seasonEndProcessor — pendingSeasonTransitionEvents (5.1 Sommaren)', 
     const contractEvent = events.find(e => e.type === 'contractExpired' && e.playerId === targetPlayer.id)
     expect(contractEvent).toBeDefined()
     expect(contractEvent?.playerLastName).toBe(targetPlayer.lastName)
+  })
+
+  it('Sommaren erbjuder inte hålla-ihop-målet för spelare som redan lämnat på utgående kontrakt', () => {
+    const base = makeGame()
+    const managedPlayers = base.players.filter(p => p.clubId === base.managedClubId)
+    const departingIds = new Set(managedPlayers.slice(0, 8).map(p => p.id))
+    const game = {
+      ...base,
+      facilityState: undefined,
+      players: base.players.map(p => p.clubId !== base.managedClubId
+        ? p
+        : {
+            ...p,
+            age: 22,
+            isClubLegend: false,
+            potentialAbility: Math.min(p.potentialAbility, 40),
+            contractUntilSeason: departingIds.has(p.id)
+              ? base.currentSeason
+              : base.currentSeason + 2,
+          }),
+    }
+
+    const rolled = handleSeasonEnd(game, 1).game
+    const departedEvents = (rolled.pendingSeasonTransitionEvents ?? [])
+      .filter(event => event.type === 'contractExpired' && departingIds.has(event.playerId))
+    const keepSquad = getSeasonGoalOffers(rolled).find(offer => offer.type === 'keepSquad')
+
+    expect(departedEvents).toHaveLength(8)
+    expect(keepSquad).toBeUndefined()
+    for (const playerId of departingIds) {
+      // AI-transferpasset kan värva en nyligen frisläppt spelare direkt under
+      // samma rollover. Invarianten är att han har lämnat OSS, inte att han
+      // nödvändigtvis fortfarande står som fri agent när Sommaren visas.
+      expect(rolled.players.find(player => player.id === playerId)?.clubId).not.toBe(base.managedClubId)
+    }
+  })
+
+  it('Sommaren kan efter många avgångar erbjuda ett sant nytt hålla-ihop-mål för de kvarvarande', () => {
+    const base = makeGame()
+    const managedPlayers = base.players.filter(p => p.clubId === base.managedClubId)
+    const departingIds = new Set(managedPlayers.slice(0, 8).map(p => p.id))
+    const nextExpiringIds = new Set(managedPlayers.slice(8, 11).map(p => p.id))
+    const game = {
+      ...base,
+      facilityState: undefined,
+      players: base.players.map(p => p.clubId !== base.managedClubId
+        ? p
+        : {
+            ...p,
+            age: 22,
+            isClubLegend: false,
+            potentialAbility: Math.min(p.potentialAbility, 40),
+            contractUntilSeason: departingIds.has(p.id)
+              ? base.currentSeason
+              : nextExpiringIds.has(p.id)
+                ? base.currentSeason + 1
+                : base.currentSeason + 2,
+          }),
+    }
+
+    const rolled = handleSeasonEnd(game, 1).game
+    const keepSquad = getSeasonGoalOffers(rolled).find(offer => offer.type === 'keepSquad')
+
+    expect(keepSquad?.trackedPlayerIds?.sort()).toEqual([...nextExpiringIds].sort())
+    expect(keepSquad?.trackedPlayerIds?.some(playerId => departingIds.has(playerId))).toBe(false)
   })
 
   it('avslaget contractRequest markerar frågan hanterad men låter ändå det oförlängda kontraktet löpa ut', () => {
