@@ -139,6 +139,42 @@ export function buildBoardVerdictLedgerEntry(input: {
   }
 }
 
+/**
+ * liggare-ny-license-event (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * significance 50/75/95 per MASTER_OPPET-radens skiss. 'cleared' delar
+ * 'first_warning'-tröskeln (50) — båda är "zonen ändrades, måttligt
+ * anmärkningsvärt", inte de eskalerande brotten 'point_deduction'/
+ * 'license_denied' bär (75/95). Ett medvetet val (radens tre siffror
+ * täcker fyra statusar), inte en gissning — dokumenterat här i stället för
+ * en fjärde uppfunnen nivå.
+ */
+export function buildLicenseEventLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  status: 'cleared' | 'first_warning' | 'point_deduction' | 'license_denied'
+  deficitKr?: number
+  pointsDeducted?: number
+}): EventLedgerEntry {
+  const significance = input.status === 'point_deduction' ? 75
+    : input.status === 'license_denied' ? 95
+    : 50
+  return {
+    type: 'license_event',
+    semanticKey: `license_event_${input.clubId}_s${input.season}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance,
+    licenseEvent: {
+      status: input.status,
+      ...(input.deficitKr !== undefined ? { deficitKr: input.deficitKr } : {}),
+      ...(input.pointsDeducted !== undefined ? { pointsDeducted: input.pointsDeducted } : {}),
+    },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

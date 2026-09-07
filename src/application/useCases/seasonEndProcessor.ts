@@ -6,7 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
-import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry, buildLicenseEventLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -1478,6 +1478,25 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     newInboxItems.push(buildLicenseInboxItem(licenseCheck.action, game.currentDate, game.currentSeason, licenseCheck.newLicenseStatus))
   }
 
+  // liggare-ny-license-event: licensnämndens dom i kanon, inte bara ett
+  // Inbox-brev + en frusen zon på game.licenseStatus. Skrivs bara vid en
+  // FAKTISK zonövergång (licenseCheck.action är null annars — samma villkor
+  // som inbox-brevet ovan, ingen ny tröskel). deficitKr läser
+  // checkLicenseStatus's egna netResult (ingen ny beräkning); pointsDeducted
+  // läser den redan satta licensePendingDeductions-magnituden (3) rakt av.
+  const licenseEventEntry = licenseCheck.action
+    ? buildLicenseEventLedgerEntry({
+        clubId: game.managedClubId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        status: licenseCheck.action.type,
+        ...(licenseCheck.netResult < 0 ? { deficitKr: Math.abs(licenseCheck.netResult) } : {}),
+        ...(licenseCheck.action.type === 'point_deduction'
+          ? { pointsDeducted: licensePendingDeductions[game.managedClubId] }
+          : {}),
+      })
+    : null
+
   // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): namngiven avskedsorsak, satt
   // HÄR (samma svep som managerFired ovan) för SeasonSummary.boardTruth —
   // aldrig omderiverad senare av en läsare. Samma prioritetsordning som
@@ -2332,7 +2351,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     eventLedger: appendMomentsAndEntriesToLedger(
       seasonEndLedger,
       seasonHighlightMoments,
-      [boardVerdictEntry],
+      licenseEventEntry ? [boardVerdictEntry, licenseEventEntry] : [boardVerdictEntry],
       game.managedClubId,
       game.id,
     ),

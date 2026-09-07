@@ -581,6 +581,9 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // kan verdict/patienceBand motivera en dynamisk gren, som decision/
   // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
   board_verdict: 'neutral',
+  // license_event är INTE i denna statiska tabell — kind avgörs dynamiskt
+  // av entry.licenseEvent.status nedan (severity finns redan på posten,
+  // ingen ny text krävs för att veta om det var lättnad eller sår).
 }
 
 /**
@@ -591,7 +594,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
  */
 export function momentKind(
   type: EventLedgerType,
-  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey'>,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent'>,
 ): ActiveMemoryKind {
   if (type === 'decision') {
     return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
@@ -605,6 +608,12 @@ export function momentKind(
     const key = entry?.semanticKey ?? ''
     if (key.includes(':mark:')) return 'scar'
     if (key.includes(':close:')) return 'triumph'
+    return 'neutral'
+  }
+  if (type === 'license_event') {
+    const status = entry?.licenseEvent?.status
+    if (status === 'point_deduction' || status === 'license_denied') return 'scar'
+    if (status === 'cleared') return 'triumph'
     return 'neutral'
   }
   return STATIC_MOMENT_KIND[type] ?? 'neutral'
@@ -625,7 +634,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',
-  board_verdict: '📋',
+  board_verdict: '📋', license_event: '📋',
 }
 
 export function momentFamily(type: EventLedgerType): MemoryFamily {

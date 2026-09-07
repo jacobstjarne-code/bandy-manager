@@ -213,6 +213,12 @@ export type EventLedgerType =
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
   // styrelsen tappade tålamodet ett visst år. subject = managed club.
   | 'board_verdict'
+  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-license-event):
+  // licensnämndens dom (varning/poängavdrag/nekad/cleared) fanns bara som
+  // ett Inbox-brev + en frusen zon på game.licenseStatus — Krönikan/
+  // årsboken kunde aldrig peka tillbaka på "det året licensen var hotad".
+  // subject = managed club.
+  | 'license_event'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -384,6 +390,20 @@ export interface EventLedgerEntry {
     verdict: 'exceeded' | 'met' | 'failed'
     objectiveStatus: 'met' | 'partial' | 'failed'
     patienceBand: 'stabilt' | 'under_press' | 'ultimatum'
+  }
+  /**
+   * license_event (liggare-ny-license-event). `status` är licenseService.ts's
+   * FAKTISKA `LicenseActionType` (inte importerad — entities importerar
+   * aldrig services, samma mönster som boardVerdict ovan), inte en ny
+   * etikettuppsättning. `deficitKr` sätts bara vid ett underskottsår
+   * (`checkLicenseStatus`s netResult < 0). `pointsDeducted` sätts bara vid
+   * `status: 'point_deduction'` och återanvänder den redan hårdkodade
+   * straffmagnituden (3) från `licensePendingDeductions`, ingen ny siffra.
+   */
+  licenseEvent?: {
+    status: 'cleared' | 'first_warning' | 'point_deduction' | 'license_denied'
+    deficitKr?: number
+    pointsDeducted?: number
   }
 
   /**

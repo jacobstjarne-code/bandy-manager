@@ -136,7 +136,7 @@ function computeNetResult(game: SaveGame): number {
 export function checkLicenseStatus(
   game: SaveGame,
   seasonSeed: number,
-): { action: LicenseAction | null; newLicenseRiskScore: number; newLicenseStatus: LicenseStatus } {
+): { action: LicenseAction | null; newLicenseRiskScore: number; newLicenseStatus: LicenseStatus; netResult: number } {
   const netResult = computeNetResult(game)
   const currentScore = game.licenseRiskScore ?? 0
   const currentZone = licenseZoneFromScore(currentScore)
@@ -148,7 +148,7 @@ export function checkLicenseStatus(
 
   if (newZone === currentZone) {
     // Ingen zonövergång — poängen rör sig men inget att meddela spelaren om.
-    return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone }
+    return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone, netResult }
   }
 
   // Tillbaka till clear från en sämre zon — samma "cleared"-narrativ som förut.
@@ -162,6 +162,7 @@ export function checkLicenseStatus(
       },
       newLicenseRiskScore: newScore,
       newLicenseStatus: newZone,
+      netResult,
     }
   }
 
@@ -181,6 +182,7 @@ export function checkLicenseStatus(
       },
       newLicenseRiskScore: newScore,
       newLicenseStatus: newZone,
+      netResult,
     }
   }
 
@@ -200,10 +202,11 @@ export function checkLicenseStatus(
       },
       newLicenseRiskScore: newScore,
       newLicenseStatus: newZone,
+      netResult,
     }
   }
 
-  return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone }
+  return { action: null, newLicenseRiskScore: newScore, newLicenseStatus: newZone, netResult }
 }
 
 export function buildLicenseInboxItem(
