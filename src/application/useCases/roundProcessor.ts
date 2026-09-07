@@ -9,7 +9,6 @@ import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
-import { updateRunningBoardPatience } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
@@ -24,7 +23,6 @@ import { processPlayoffRound } from './processors/playoffProcessor'
 import { isPlayoffNarrativeCardStillValid } from '../../domain/services/playoffNarrativeService'
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
-import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -80,6 +78,7 @@ import { processNationalTeamRound } from './processors/nationalTeamProcessor'
 import { processRoundNotifications } from './processors/notificationProcessor'
 import { processManagedMatchOutcome } from './processors/matchOutcomeProcessor'
 import { processMarketValues } from './processors/marketValueProcessor'
+import { processTrainerState } from './processors/trainerProcessor'
 
 export type { AdvanceResult }
 
@@ -397,17 +396,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const newPrevValues = marketValueResult.previousMarketValues
   const marketValueInbox = marketValueResult.inboxItems
 
-  // ── Player availability + trainer arc ──────────────────────────────────
-  const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
-  // U1 andra halvan (2026-08-22): löpande boardPatience, samma omgång/samma
-  // fixture-underlag som trainerArc — se boardService.ts:s egen kommentar
-  // för rotorsaken (boardPatience kunde tidigare bara röra sig vid
-  // säsongsslut). consecutiveLosses skickas in explicit (inte läst från
-  // game.trainerArc, som fortfarande är FÖRRA omgångens värde här).
-  const runningPatienceUpdate = updateRunningBoardPatience(
-    { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings },
-    updatedArc.consecutiveLosses,
-  )
+  const trainerState = processTrainerState(game, availabilityUpdatedPlayers, finalAllFixtures, standings)
 
   // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
   const leagueRound = currentLeagueRound ?? 0
@@ -1113,9 +1102,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     volunteers: updatedVolunteers,
     volunteerMorale: updatedVolunteerMorale,
     communityActivitiesSince: updatedCommunityActivitiesSince,
-    trainerArc: updatedArc,
-    boardPatience: runningPatienceUpdate.boardPatience,
-    boardPatienceLastCountedFixtureId: runningPatienceUpdate.boardPatienceLastCountedFixtureId,
+    trainerArc: trainerState.trainerArc,
+    boardPatience: trainerState.boardPatience,
+    boardPatienceLastCountedFixtureId: trainerState.boardPatienceLastCountedFixtureId,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
     patron: updatedPatron,
