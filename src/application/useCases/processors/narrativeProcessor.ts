@@ -3,11 +3,14 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { VictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
 import type { SupporterGroup } from '../../../domain/entities/SaveGame'
 import { InboxItemType, MatchEventType, FixtureStatus } from '../../../domain/enums'
+import { getEventPriority } from '../../../domain/entities/GameEvent'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../../domain/services/supporterService'
 import { classifyVictory, generateVictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
 import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { detectArcTriggers, progressArcs } from '../../../domain/services/arcService'
+import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
 
 export interface NarrativeResult {
   fanMood: number
@@ -231,6 +234,79 @@ export function processNarrative(
     rivalryHistory,
     nemesisTracker,
     inboxItems,
+  }
+}
+
+/**
+ * Progresses the player-arc state machine and applies its presentation output.
+ * Kept as one processor boundary so trigger, progression, queue capping,
+ * storyline persistence and narrative cooldown cannot drift apart.
+ */
+export function processPlayerArcs(
+  game: SaveGame,
+  justCompletedManagedFixture: Fixture | undefined,
+  nextMatchday: number,
+): SaveGame {
+  const existingArcs = game.activeArcs ?? []
+  const newTriggers = detectArcTriggers(game, justCompletedManagedFixture)
+  const allArcs = [...existingArcs, ...newTriggers]
+  const arcResult = progressArcs(
+    { ...game, activeArcs: allArcs },
+    nextMatchday,
+  )
+  const arcInbox: InboxItem[] = arcResult.newInboxItems.map(item => ({
+    ...item,
+    date: game.currentDate,
+    isRead: false,
+  }))
+
+  // BUG-009: prune stale resolving arcs (keep 2 matchdays for DEV-003 notification window).
+  const cleanedArcs = arcResult.updatedArcs.filter(arc => {
+    if (arc.phase !== 'resolving') return true
+    return nextMatchday <= arc.expiresMatchday + 2
+  })
+
+  // B4 (arc): low-priority arc events pass through the same queue cap.
+  const MAX_LOW_IN_QUEUE = 5
+  const existingLowCount = (game.pendingEvents ?? []).filter(
+    event => !event.resolved && (event.priority ?? getEventPriority(event.type)) === 'low',
+  ).length
+  const arcLowEvents = arcResult.newEvents.filter(
+    event => (event.priority ?? getEventPriority(event.type)) === 'low',
+  )
+  const arcOtherEvents = arcResult.newEvents.filter(
+    event => (event.priority ?? getEventPriority(event.type)) !== 'low',
+  )
+  const availableLowSlots = Math.max(0, MAX_LOW_IN_QUEUE - existingLowCount)
+  const arcLowAllowed = arcLowEvents.slice(0, availableLowSlots)
+  const arcLowDropped = arcLowEvents.slice(availableLowSlots)
+  const arcDroppedInbox: InboxItem[] = arcLowDropped.map(event => ({
+    id: `inbox_arc_drop_${event.id}`,
+    date: game.currentDate,
+    type: InboxItemType.BoardFeedback,
+    title: event.title,
+    body: event.body,
+    isRead: false,
+  }))
+
+  // U5: one cooldown entry per new storyline when its narrative beat is created.
+  let narrativeBeatLogWithArcs = game.narrativeBeatLog
+  for (const storyline of arcResult.newStorylines) {
+    narrativeBeatLogWithArcs = logNarrativeBeat(
+      { ...game, narrativeBeatLog: narrativeBeatLogWithArcs },
+      storyline.type,
+      storyline.season,
+      storyline.matchday,
+    )
+  }
+
+  return {
+    ...game,
+    activeArcs: cleanedArcs,
+    pendingEvents: [...(game.pendingEvents ?? []), ...arcOtherEvents, ...arcLowAllowed],
+    storylines: [...(game.storylines ?? []), ...arcResult.newStorylines],
+    inbox: [...game.inbox, ...arcInbox, ...arcDroppedInbox],
+    narrativeBeatLog: narrativeBeatLogWithArcs,
   }
 }
 

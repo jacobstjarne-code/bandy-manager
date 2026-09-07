@@ -32,7 +32,6 @@ import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/se
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
-import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { logNarrativeBeat, filterSystemhandelseBudget } from '../../domain/services/narrativeLogService'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import {
@@ -42,7 +41,7 @@ import {
   CHANNEL_BY_EVENT_TYPE,
   RECENCY_WINDOW_BY_CHANNEL,
 } from '../../domain/services/narrativeCoordinatorService'
-import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
+import { processNarrative, processPlayerArcs, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, isPlayThroughInjuryCardStillValid, processBoardObjectiveCheckIn, processRoundMilestoneInbox } from './processors/eventProcessor'
@@ -1384,64 +1383,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Arc processing ──────────────────────────────────────────────────────
-  {
-    const existingArcs = updatedGame.activeArcs ?? []
-    const newTriggers = detectArcTriggers(updatedGame, justCompletedManagedFixture ?? undefined)
-    const allArcs = [...existingArcs, ...newTriggers]
-    const arcResult = progressArcs(
-      { ...updatedGame, activeArcs: allArcs },
-      nextMatchday,
-    )
-    const arcInbox: InboxItem[] = arcResult.newInboxItems.map(item => ({
-      ...item,
-      date: updatedGame.currentDate,
-      isRead: false,
-    }))
-    // BUG-009: prune stale resolving arcs (keep 2 matchdays for DEV-003 notification window)
-    const cleanedArcs = arcResult.updatedArcs.filter(arc => {
-      if (arc.phase !== 'resolving') return true
-      return nextMatchday <= arc.expiresMatchday + 2
-    })
-    // B4 (arc): arc-events med low-prio går genom samma cap — slå inte igenom capet
-    const MAX_LOW_IN_QUEUE = 5
-    const existingLowCount = (updatedGame.pendingEvents ?? []).filter(
-      e => !e.resolved && (e.priority ?? getEventPriority(e.type)) === 'low'
-    ).length
-    const arcLowEvents = arcResult.newEvents.filter(e => (e.priority ?? getEventPriority(e.type)) === 'low')
-    const arcOtherEvents = arcResult.newEvents.filter(e => (e.priority ?? getEventPriority(e.type)) !== 'low')
-    const arcLowAllowed = arcLowEvents.slice(0, Math.max(0, MAX_LOW_IN_QUEUE - existingLowCount))
-    const arcLowDropped = arcLowEvents.slice(Math.max(0, MAX_LOW_IN_QUEUE - existingLowCount))
-    const arcDroppedInbox: InboxItem[] = arcLowDropped.map(e => ({
-      id: `inbox_arc_drop_${e.id}`,
-      date: updatedGame.currentDate,
-      type: InboxItemType.BoardFeedback,
-      title: e.title,
-      body: e.body,
-      isRead: false,
-    }))
-
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 5/9. En post per
-    // ny storyline (den faktiska narrativa "beat" som visas för spelaren) —
-    // semanticKey = storyline.type, grovkornigt (skiljer inte per spelare;
-    // det finkorniga per-karaktär-beslutet är medvetet skjutet till senare,
-    // per DOM:en). Detta är exakt felklassen "Finalen. Birger…" upprepades.
-    let narrativeBeatLogWithArcs = updatedGame.narrativeBeatLog
-    for (const storyline of arcResult.newStorylines) {
-      narrativeBeatLogWithArcs = logNarrativeBeat(
-        { ...updatedGame, narrativeBeatLog: narrativeBeatLogWithArcs },
-        storyline.type, storyline.season, storyline.matchday,
-      )
-    }
-
-    updatedGame = {
-      ...updatedGame,
-      activeArcs: cleanedArcs,
-      pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcOtherEvents, ...arcLowAllowed],
-      storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
-      inbox: [...updatedGame.inbox, ...arcInbox, ...arcDroppedInbox],
-      narrativeBeatLog: narrativeBeatLogWithArcs,
-    }
-  }
+  updatedGame = processPlayerArcs(
+    updatedGame,
+    justCompletedManagedFixture ?? undefined,
+    nextMatchday,
+  )
 
   // ── B4: Globalt cap — low-prio events i kön (inte bara nya per omgång) ──
   {
