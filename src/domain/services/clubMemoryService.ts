@@ -577,6 +577,10 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   voice_introduced: 'neutral',
   // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
   youth_aged_out: 'neutral',
+  // liggare-ny-board-verdict: neutral tills Krönikans egen text finns (då
+  // kan verdict/patienceBand motivera en dynamisk gren, som decision/
+  // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
+  board_verdict: 'neutral',
 }
 
 /**
@@ -621,6 +625,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',
+  board_verdict: '📋',
 }
 
 export function momentFamily(type: EventLedgerType): MemoryFamily {

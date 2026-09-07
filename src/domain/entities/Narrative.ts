@@ -208,6 +208,11 @@ export type EventLedgerType =
   // försvann tidigare ljudlöst (game.youthTeam.players filtrerades bort,
   // ingen post, ingen konsument). subject = junioren.
   | 'youth_aged_out'
+  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
+  // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
+  // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
+  // styrelsen tappade tålamodet ett visst år. subject = managed club.
+  | 'board_verdict'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -365,6 +370,21 @@ export interface EventLedgerEntry {
   matchCategory?: MatchHighlightCategory  // season_highlight — Code-fynd, flaggat till Opus
   /** youth_aged_out (DOM_AKADEMI_LIGGARE §4). `other_club` reserverat, produceras inte i v1. */
   youthAgedOut?: { outcome: 'released' | 'other_club'; stars: number; caAtExit: number }
+  /**
+   * board_verdict (liggare-ny-board-verdict). `verdict` återanvänder
+   * `expectationVerdictFromRating`s befintliga tre värden ordagrant —
+   * INTE omspårningsradens skiss ('over'/'as_expected'/'under'), som var en
+   * ogenomförd nyuppfinning av en etikett koden redan hade. `objectiveStatus`
+   * är en tre-vägs sammanfattning av säsongens `boardObjectives`-status
+   * (finns 'failed' → 'failed'; annars finns 'at_risk'/'active' → 'partial';
+   * annars → 'met'), ur samma `objectiveOutcome`-räkning seasonEndProcessor.ts
+   * redan bygger. `patienceBand` = `boardPatienceZoneFromScore`s zon.
+   */
+  boardVerdict?: {
+    verdict: 'exceeded' | 'met' | 'failed'
+    objectiveStatus: 'met' | 'partial' | 'failed'
+    patienceBand: 'stabilt' | 'under_press' | 'ultimatum'
+  }
 
   /**
    * liggare-k9-doda-typer (DOM 2026-09-04, Opus): matchresultatet ÄR rå

@@ -107,6 +107,38 @@ export function buildYouthAgedOutLedgerEntry(input: {
   }
 }
 
+/**
+ * liggare-ny-board-verdict (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * styrelsens säsongsdom, satt vid säsongsslut ur samma redan beräknade
+ * `boardTruth`/`objectiveOutcome` seasonEndProcessor.ts fryser till
+ * `SeasonSummary`. En post, inte en ny modell.
+ */
+export function buildBoardVerdictLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  verdict: 'exceeded' | 'met' | 'failed'
+  objectiveStatus: 'met' | 'partial' | 'failed'
+  patienceBand: 'stabilt' | 'under_press' | 'ultimatum'
+  /** Höjer significance till 60 när förra säsongens post också var 'failed' — se anropsstället. */
+  repeatedFailure: boolean
+}): EventLedgerEntry {
+  return {
+    type: 'board_verdict',
+    semanticKey: `board_verdict_${input.clubId}_s${input.season}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance: input.repeatedFailure ? 60 : 45,
+    boardVerdict: {
+      verdict: input.verdict,
+      objectiveStatus: input.objectiveStatus,
+      patienceBand: input.patienceBand,
+    },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

@@ -6,7 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
-import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -1870,6 +1870,29 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     firedReason,
   })
 
+  // liggare-ny-board-verdict: styrelsens dom i kanon, inte bara i den
+  // frusna SeasonSummary-projektionen ovan. objectiveOutcome är samma
+  // räkning boardAssessment-avsnittet redan byggde (rad ~1185) — ingen ny
+  // tröskeltabell. `repeatedFailure` läser FÖRRA säsongens board_verdict-
+  // post direkt ur liggaren (kanon frågar kanon, inte en sidoficka).
+  const boardVerdictObjectiveStatus: 'met' | 'partial' | 'failed' =
+    objectiveOutcome.failed > 0 ? 'failed'
+      : (objectiveOutcome.atRisk > 0 || objectiveOutcome.active > 0) ? 'partial'
+      : 'met'
+  const priorBoardVerdict = (game.eventLedger ?? []).find(entry =>
+    entry.type === 'board_verdict' && entry.clubId === game.managedClubId && entry.season === game.currentSeason - 1
+  )
+  const boardVerdictEntry = buildBoardVerdictLedgerEntry({
+    clubId: game.managedClubId,
+    season: game.currentSeason,
+    matchday: game.currentMatchday,
+    verdict: seasonSummary.boardTruth.outcome.verdict,
+    objectiveStatus: boardVerdictObjectiveStatus,
+    patienceBand: seasonSummary.boardTruth.relationship.zone,
+    repeatedFailure: seasonSummary.boardTruth.outcome.verdict === 'failed'
+      && priorBoardVerdict?.boardVerdict?.verdict === 'failed',
+  })
+
   const nextAiTransferLog = [
     ...(game.aiTransferLog ?? []),
     ...aiTransferResult.transfers.map(transfer => ({ ...transfer, season: nextSeason })),
@@ -2309,7 +2332,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     eventLedger: appendMomentsAndEntriesToLedger(
       seasonEndLedger,
       seasonHighlightMoments,
-      [],
+      [boardVerdictEntry],
       game.managedClubId,
       game.id,
     ),
