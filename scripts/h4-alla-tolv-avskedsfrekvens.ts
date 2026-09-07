@@ -20,7 +20,8 @@ import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import { storedFiringReason } from '../src/domain/services/firingFrequencyService'
 import { CLUB_TEMPLATES } from '../src/domain/services/worldGenerator'
-import { autoBuildCheapestAffordableFacility, autoResolvePendingScreen, autoSelectLineup } from './stress/fixtures'
+import { mulberry32 } from '../src/domain/utils/random'
+import { autoBuildCheapestAffordableFacility, autoResolvePendingEvents, autoResolvePendingScreen, autoSelectLineup } from './stress/fixtures'
 
 const DEFAULT_CLUB_IDS = [
   'club_heros',
@@ -130,6 +131,7 @@ function parseConfig(args: string[]): CalibrationConfig | null {
 function runOne(clubId: string, seed: number, seasons: number): RunResult {
   let game: SaveGame = createNewGame({ managerName: `FiringCalibration-${seed}`, clubId, seed })
   game = { ...game, pendingScreen: null }
+  const eventRand = mulberry32(seed ^ 0x46_49_52_45)
 
   try {
     for (let season = 1; season <= seasons; season++) {
@@ -141,6 +143,13 @@ function runOne(clubId: string, seed: number, seasons: number): RunResult {
         guardRounds++
         if (guardRounds > 2000) throw new Error(`season ${season} never ended — round guard tripped`)
 
+        // pendingScreen och pendingEvents är två skilda köer. Utan denna
+        // resolution låg bland annat licensnämndens handlingsplan obesvarad
+        // i hela karriären, så mätningen beskrev en passiv zombiepolicy i
+        // stället för stressharnessens definierade minsta-avtryck-policy.
+        // Separat seedad RNG gör eventvalens följdeffekter reproducerbara
+        // utan att flytta matchmotorns stepSeed-sekvens.
+        game = autoResolvePendingEvents(game, eventRand)
         game = autoSelectLineup(game)
         game = autoBuildCheapestAffordableFacility(game)
         const result = advanceToNextEvent(game, stepSeed++)
