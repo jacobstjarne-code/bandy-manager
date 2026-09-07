@@ -1,7 +1,9 @@
 # Avskedskalibrering — formell 10 000-seedsverifiering 2026-09-07
 
-**Status:** GODKÄND  
-**Formell revision:** `3b78737eff06b6106d55529f83b748cb08b31fe0`  
+**Status:** GODKÄND
+
+**Formell revision:** `3b78737eff06b6106d55529f83b748cb08b31fe0`
+
 **Aktuell HEAD-kontroll:** `b5973a95` — det lilla kontrollpasset är bitidentiskt
 
 ## Slutsats
