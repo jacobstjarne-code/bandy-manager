@@ -1,15 +1,10 @@
 {
-  "reviewedAt": "2026-09-03",
+  "reviewedAt": "2026-09-07",
   "pairs": [
     {
       "id": "src/domain/services/counterAttackInteractionService.ts#assistantPickCounter <> src/domain/services/freeKickInteractionService.ts#assistantPickFreeKick",
       "disposition": "consolidate",
       "rationale": "Identisk viktad assistentlogik; kandidat för delad interaktionshelper."
-    },
-    {
-      "id": "src/domain/services/worldGenerator.ts#pickArchetype <> src/domain/services/youthIntakeService.ts#pickArchetype",
-      "disposition": "ambiguous-canonical",
-      "rationale": "Exakt dublett men trösklarna i akademins tredje variant har drivit isär; kanon måste beslutas före sammanslagning."
     },
     {
       "id": "src/domain/services/matchUtils.ts#countGoalsByPlayer <> src/domain/services/seasonSummaryService.ts#countSeasonGoalsByPlayer",
@@ -20,11 +15,6 @@
       "id": "src/domain/services/matchUtils.ts#countGoalsByPlayer <> src/domain/services/seasonSummaryService.ts#countSeasonAssistsByPlayer",
       "disposition": "false-positive",
       "rationale": "Lik struktur men avsiktligt olika händelsetyper och säsongsfilter."
-    },
-    {
-      "id": "src/domain/services/worldGenerator.ts#generateAttributes <> src/domain/services/youthIntakeService.ts#generateYouthAttributes",
-      "disposition": "ambiguous-canonical",
-      "rationale": "Hög likhet men olika generationskontext; tidigare uttryckligen flaggad som oklar kanon."
     },
     {
       "id": "src/domain/services/matchCore.ts#getIceHardnessMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
@@ -62,11 +52,6 @@
       "rationale": "Tre arketypimplementationer har divergerande trösklar; ingen mekanisk kanon."
     },
     {
-      "id": "src/domain/services/academyService.ts#archetypeForPosition <> src/domain/services/youthIntakeService.ts#pickArchetype",
-      "disposition": "ambiguous-canonical",
-      "rationale": "Tre arketypimplementationer har divergerande trösklar; ingen mekanisk kanon."
-    },
-    {
       "id": "src/domain/data/seasonPhases.ts#getFunctionaryPhase <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
       "disposition": "false-positive",
       "rationale": "Likformade trappor för fas respektive ålder; ingen gemensam domänsanning."
@@ -85,6 +70,11 @@
       "id": "src/domain/services/clubHistoryLedgerService.ts#buildScandalLedgerEntry <> src/domain/services/clubMemoryEventBuilders.ts#buildEventFromStoryline",
       "disposition": "false-positive",
       "rationale": "Likformade objektbyggare men olika domänkontrakt: den ena skapar en prosa-fri skandalliggarpost, den andra projicerar en redan kanoniserad storyline till en textbärande MemoryEvent."
+    },
+    {
+      "id": "src/domain/data/seasonPhases.ts#getCurrentLeagueRound <> src/domain/services/currentChronology.ts#leagueRoundAtMatchday",
+      "disposition": "false-positive",
+      "rationale": "Lik filter/reduce-form men olika tidskontrakt: getCurrentLeagueRound läser faktiskt färdigspelade ligafixtures i den laddade säsongen, medan leagueRoundAtMatchday projicerar en godtycklig säsongs matchdag genom den deterministiska kalendern så historiska datum fungerar efter fixture-rollover. En sammanslagning skulle sudda ut skillnaden mellan observerat nuläge och säsongsagnostisk kronologi."
     },
     {
       "id": "src/domain/data/scenes/boardMeetingScene.ts#shouldTriggerBoardMeeting <> src/domain/data/scenes/valetScene.ts#shouldTriggerValet",
