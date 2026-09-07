@@ -10,7 +10,7 @@ import { csColor, formatFinance, formatFinanceAbs, positionShort, playoffResultL
 import type { PlayerPosition } from '../../domain/enums'
 import { shareSeasonImage, downloadSeasonImage } from '../utils/seasonShareImage'
 import { shareMatchImage } from '../utils/matchShareImage'
-import { collectSeasonDecisions, getSeasonLicenseConsequence } from '../../domain/services/seasonDecisionsService'
+import { collectSeasonDecisions, getSeasonLicenseConsequence, getSeasonCommunityShiftHighlights, getSeasonFacilityOutcome } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
 import { pickSeasonElimText } from '../../domain/data/seasonSummaryElimText'
@@ -850,31 +850,34 @@ export function SeasonSummaryScreen() {
         )}
 
         {/* COMMUNITY STANDING */}
-        {summary.communityStandingEnd !== undefined && (
-          <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
-            <SectionLabel>ORTEN</SectionLabel>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokalstöd vid säsongsslut</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: csColor(summary.communityStandingEnd) }}>
-                {summary.communityStandingEnd}
-              </span>
+        {summary.communityStandingEnd !== undefined && (() => {
+          const shiftTexts = getSeasonCommunityShiftHighlights(game, summary)
+          return (
+            <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <SectionLabel>ORTEN</SectionLabel>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokalstöd vid säsongsslut</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: csColor(summary.communityStandingEnd) }}>
+                  {summary.communityStandingEnd}
+                </span>
+              </div>
+              <div style={{ height: 6, background: 'color-mix(in srgb, var(--ink) 8%, transparent)', borderRadius: 3 }}>
+                <div style={{
+                  height: '100%',
+                  width: `${summary.communityStandingEnd}%`,
+                  background: csColor(summary.communityStandingEnd),
+                  borderRadius: 3,
+                  transition: 'width 0.6s ease',
+                }} />
+              </div>
+              {shiftTexts.length > 0 && (
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+                  {shiftTexts.join(' · ')}
+                </p>
+              )}
             </div>
-            <div style={{ height: 6, background: 'color-mix(in srgb, var(--ink) 8%, transparent)', borderRadius: 3 }}>
-              <div style={{
-                height: '100%',
-                width: `${summary.communityStandingEnd}%`,
-                background: csColor(summary.communityStandingEnd),
-                borderRadius: 3,
-                transition: 'width 0.6s ease',
-              }} />
-            </div>
-            {(summary.communityHighlights ?? []).length > 0 && (
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
-                {summary.communityHighlights.join(' · ')}
-              </p>
-            )}
-          </div>
-        )}
+          )
+        })()}
 
         {/* AVSLUTADE KARRIÄRER */}
         {(summary.retiredPlayers ?? []).length > 0 && (
@@ -1014,6 +1017,19 @@ export function SeasonSummaryScreen() {
               <SectionLabel style={{ marginBottom: 6 }}>LICENSNÄMNDEN</SectionLabel>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                 {licenseConsequence.icon} {licenseConsequence.text}
+              </p>
+            </div>
+          )
+        })()}
+
+        {(() => {
+          const facilityOutcome = getSeasonFacilityOutcome(game, summary)
+          if (!facilityOutcome) return null
+          return (
+            <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <SectionLabel style={{ marginBottom: 6 }}>HALLFRÅGAN</SectionLabel>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                {facilityOutcome.icon} {facilityOutcome.text}
               </p>
             </div>
           )

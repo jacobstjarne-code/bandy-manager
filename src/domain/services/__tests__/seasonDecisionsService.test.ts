@@ -8,10 +8,11 @@
  * typ bara syns en gång per skärm — excludeStorylineTypes är den mekanismen.
  */
 import { describe, it, expect } from 'vitest'
-import { collectSeasonDecisions, getSeasonLicenseConsequence } from '../seasonDecisionsService'
+import { collectSeasonDecisions, getSeasonLicenseConsequence, getSeasonCommunityShiftHighlights, getSeasonFacilityOutcome } from '../seasonDecisionsService'
 import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { StorylineEntry } from '../../entities/Narrative'
+import type { EventLedgerEntry } from '../../entities/Narrative'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -99,5 +100,66 @@ describe('getSeasonLicenseConsequence', () => {
   it('skriver ingen konsekvensrad när licenseStatus saknas', () => {
     const game = makeGame({})
     expect(getSeasonLicenseConsequence(game)).toBeNull()
+  })
+})
+
+describe('getSeasonCommunityShiftHighlights — liggare-ny-community-shift DEL 2 (årsboken)', () => {
+  const CLUB_ID = 'club_home'
+  const summary = { season: 8, clubId: CLUB_ID, communityHighlights: [] as string[] }
+
+  it('läser säsongens community_shift-poster ur liggaren, sorterade på matchdag', () => {
+    const later: EventLedgerEntry = {
+      type: 'community_shift', semanticKey: 'x2', clubId: CLUB_ID, season: 8, matchday: 15,
+      subject: { kind: 'club', id: CLUB_ID }, significance: 55,
+      communityShift: { from: 52, to: 48, direction: 'down' },
+    } as EventLedgerEntry
+    const earlier: EventLedgerEntry = {
+      type: 'community_shift', semanticKey: 'x1', clubId: CLUB_ID, season: 8, matchday: 5,
+      subject: { kind: 'club', id: CLUB_ID }, significance: 55,
+      communityShift: { from: 48, to: 52, direction: 'up' },
+    } as EventLedgerEntry
+    const game = makeGame({ eventLedger: [later, earlier] })
+    expect(getSeasonCommunityShiftHighlights(game, summary)).toEqual([
+      'Orten vände. 48→52 — det märks på läktaren först.',
+      'Orten drog sig undan. 52→48. Det märks på läktaren först.',
+    ])
+  })
+
+  it('en annan säsongs post filtreras bort', () => {
+    const otherSeason: EventLedgerEntry = {
+      type: 'community_shift', semanticKey: 'x3', clubId: CLUB_ID, season: 7, matchday: 20,
+      subject: { kind: 'club', id: CLUB_ID }, significance: 55,
+      communityShift: { from: 48, to: 52, direction: 'up' },
+    } as EventLedgerEntry
+    const game = makeGame({ eventLedger: [otherSeason] })
+    expect(getSeasonCommunityShiftHighlights(game, summary)).toEqual([])
+  })
+
+  it('redan populerat summary.communityHighlights vinner över liggarfallback', () => {
+    const game = makeGame({ eventLedger: [] })
+    expect(getSeasonCommunityShiftHighlights(game, { ...summary, communityHighlights: ['Stannad text.'] }))
+      .toEqual(['Stannad text.'])
+  })
+})
+
+describe('getSeasonFacilityOutcome — liggare-ny-facility-trial-outcome DEL 2 (årsboken)', () => {
+  const CLUB_ID = 'club_home'
+  const summary = { season: 8, clubId: CLUB_ID }
+
+  it('läser säsongens facility_trial_outcome-post, samma text som kafferums-ekot', () => {
+    const entry: EventLedgerEntry = {
+      type: 'facility_trial_outcome', semanticKey: 'y1', clubId: CLUB_ID, season: 8, matchday: 10,
+      subject: { kind: 'club', id: CLUB_ID }, significance: 65,
+      facilityTrialOutcome: { stage: 'nedlagd', outcome: 'kommun_nej', support: 20 },
+    } as EventLedgerEntry
+    const game = makeGame({ eventLedger: [entry] })
+    expect(getSeasonFacilityOutcome(game, summary)).toEqual({
+      icon: '🏟️', text: 'Kommunen sa nej. Inte till hallen. Till oss.',
+    })
+  })
+
+  it('ingen post den säsongen → null, ingen mening hellre än falsk', () => {
+    const game = makeGame({ eventLedger: [] })
+    expect(getSeasonFacilityOutcome(game, summary)).toBeNull()
   })
 })

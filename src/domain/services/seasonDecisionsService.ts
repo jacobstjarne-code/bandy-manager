@@ -1,7 +1,10 @@
 import type { SaveGame } from '../entities/SaveGame'
+import type { SeasonSummary } from '../entities/SeasonSummary'
 import { FACILITY_NODE_DEFS } from './facilityService'
 import { LICENSE_ZONE_TEXT } from './licenseService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
+import { readClubLedger } from './eventLedgerService'
+import { buildMemoryEventFromLedger } from './clubMemoryService'
 
 function objectiveDisplayName(game: SaveGame, objectiveId: string): string {
   const liveLabel = game.boardObjectives?.find(o => o.id === objectiveId)?.label
@@ -105,4 +108,40 @@ export interface SeasonLicenseConsequence {
 export function getSeasonLicenseConsequence(game: SaveGame): SeasonLicenseConsequence | null {
   if (!game.licenseStatus || game.licenseStatus === 'clear') return null
   return { icon: '📋', text: `Licensnämnden: ${LICENSE_ZONE_TEXT[game.licenseStatus]}` }
+}
+
+/**
+ * liggare-ny-community-shift DEL 2 (årsboken, konsument 4 av 4): ingen ny
+ * prosa — summary.communityHighlights byggs alltid tom vid genererings-
+ * tillfället (seasonSummaryService.ts) och renderas därför aldrig; ledgeren
+ * bär redan den låsta texten (samma buildMemoryEventFromLedger som
+ * Krönikan/Orten-vyn/Berättaren använder). Fallback dit när det lagrade
+ * fältet är tomt, säsongsäkert via summary.season/summary.clubId (aldrig
+ * game.currentSeason — en gammal årsbok ska visa SIN säsongs vändningar).
+ */
+export function getSeasonCommunityShiftHighlights(game: SaveGame, summary: Pick<SeasonSummary, 'season' | 'clubId' | 'communityHighlights'>): string[] {
+  if ((summary.communityHighlights ?? []).length > 0) return summary.communityHighlights
+  return readClubLedger(game, summary.clubId)
+    .filter(e => e.type === 'community_shift' && e.season === summary.season)
+    .sort((a, b) => a.matchday - b.matchday)
+    .map(e => buildMemoryEventFromLedger(game, e, summary.clubId)?.text)
+    .filter((t): t is string => !!t)
+}
+
+export interface SeasonFacilityOutcome {
+  icon: string
+  text: string
+}
+
+/**
+ * liggare-ny-facility-trial-outcome DEL 2 (årsboken): ingen ny prosa —
+ * samma PROVNING_RESOLUTION-text buildMemoryEventFromLedger redan renderar
+ * för Krönikan/Berättaren. Ingen post den säsongen (inget terminalt
+ * hallProcess-utfall) → null, ingen mening hellre än falsk.
+ */
+export function getSeasonFacilityOutcome(game: SaveGame, summary: Pick<SeasonSummary, 'season' | 'clubId'>): SeasonFacilityOutcome | null {
+  const entry = readClubLedger(game, summary.clubId)
+    .find(e => e.type === 'facility_trial_outcome' && e.season === summary.season)
+  const text = entry ? buildMemoryEventFromLedger(game, entry, summary.clubId)?.text : undefined
+  return text ? { icon: '🏟️', text } : null
 }
