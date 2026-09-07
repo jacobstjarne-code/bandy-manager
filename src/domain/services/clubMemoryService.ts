@@ -193,6 +193,9 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   // spelare som lämnar akademin vid tjugo ska minnas — inte försvinna
   // ljudlöst ur game.youthTeam.players.
   'youth_aged_out',
+  // liggare-ny-community-shift (2026-09-07): text LÅST av Opus i själva
+  // MASTER_OPPET-raden, kopierad ordagrant i switchens 'community_shift'-gren.
+  'community_shift',
 ])
 
 function opponentNameAt(game: SaveGame, season: number, matchday: number, managedClubId: string): string {
@@ -238,6 +241,20 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       : (game.clubLegends ?? []).find(item => item.playerId === playerId)?.name)
 
   switch (entry.type) {
+    case 'community_shift': {
+      // Text LÅST (Opus, MASTER_OPPET liggare-ny-community-shift-raden) —
+      // kopierad ordagrant, bara {from}/{to} ifyllda.
+      if (!entry.communityShift) return null
+      const { from, to, direction } = entry.communityShift
+      const text = direction === 'up'
+        ? `Orten vände. ${from}→${to} — det märks på läktaren först.`
+        : `Orten drog sig undan. ${from}→${to}. Det märks på läktaren först.`
+      return {
+        type: 'community_shift', season: entry.season, matchday: entry.matchday,
+        text, emoji: momentFamily('community_shift'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
     case 'youth_aged_out': {
       // Text LÅST (DOM_AKADEMI_LIGGARE §4). Namnet kommer nästan alltid ur
       // subjectSnapshot — en åldrats-ut junior finns aldrig i game.players
@@ -595,7 +612,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
  */
 export function momentKind(
   type: EventLedgerType,
-  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome'>,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome' | 'communityShift'>,
 ): ActiveMemoryKind {
   if (type === 'decision') {
     return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
@@ -628,6 +645,9 @@ export function momentKind(
     if (outcome === 'nedlagd_fall' || outcome === 'kommun_nej' || outcome === 'nedlagd_ingen_finansiering') return 'scar'
     return 'neutral'
   }
+  if (type === 'community_shift') {
+    return entry?.communityShift?.direction === 'up' ? 'triumph' : 'scar'
+  }
   return STATIC_MOMENT_KIND[type] ?? 'neutral'
 }
 
@@ -648,6 +668,10 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',
   board_verdict: '📋', license_event: '📋',
   facility_trial_outcome: '🏟️',
+  // liggare-ny-community-shift: 🤝 → redaktorenService.ts's
+  // FAMILY_BY_MEMORY_STAMP mappar 🤝 till 'relations_money' — exakt den
+  // Krönika-familjen raden begär, ingen ny mappning behövs där.
+  community_shift: '🤝',
 }
 
 export function momentFamily(type: EventLedgerType): MemoryFamily {

@@ -111,9 +111,16 @@ export type StorylineType =
   | 'contract_drama_resolved'
   | 'derby_echo_resolved'
 
-export interface StorylineEntry {
+export interface StorylineEntry extends BaseArc {
   id: string
   type: StorylineType
+  /** BaseArc-projektion: storylines har ingen separat fas-state. */
+  phase?: 'building' | 'resolved'
+  /** BaseArc-projektion: person-, klubb- eller relationsankare när sådan finns. */
+  subject?: string
+  /** BaseArc-projektion av den befintliga tidsaxeln. */
+  startedSeason?: number
+  startedMatchday?: number
   season: number
   matchday: number
   playerId?: string
@@ -224,6 +231,11 @@ export type EventLedgerType =
   // `facility_built` skrevs, och bara VID lyckat bygge. subject = managed
   // club (hallProcessService.ts's trial är enkel-klubbsdata).
   | 'facility_trial_outcome'
+  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-community-shift):
+  // när orten korsar 30/50/70 finns ingen post — "orten vände i februari"
+  // kunde inte minnas. Spegel av repMilestone-mönstret (reputationMilestone-
+  // Service.ts), fast på communityStanding-axeln. subject = managed club.
+  | 'community_shift'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -426,6 +438,16 @@ export interface EventLedgerEntry {
     stage: 'bordlagd' | 'nedlagd'
     outcome: 'bordlagd' | 'nedlagd_fall' | 'nedlagd_egen' | 'kommun_nej' | 'nedlagd_ingen_finansiering'
     support: number
+  }
+  /**
+   * community_shift (liggare-ny-community-shift). `from`/`to` är de faktiska
+   * communityStanding-talen omgången skiftade mellan (inte tröskelvärdet
+   * 30/50/70 som utlöste posten) — samma sak den låsta texten fyller i.
+   */
+  communityShift?: {
+    from: number
+    to: number
+    direction: 'up' | 'down'
   }
 
   /**

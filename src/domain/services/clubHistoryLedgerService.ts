@@ -207,6 +207,50 @@ export function buildFacilityTrialOutcomeLedgerEntry(input: {
   }
 }
 
+/**
+ * liggare-ny-community-shift: de tre trösklarna radens beskrivning namnger
+ * ordagrant ("när orten korsar 30/50/70"). En ren tröskel-korsning, INTE en
+ * ny amount/probability-ramp — D031:s "gata aldrig en effekt bakom cs>N"
+ * (communityStandingScaling.ts) gäller inte här, samma sak repMilestone-
+ * mönstret (cs>55/cs<45-band) redan är undantaget: en diskret narrativ
+ * milstolpe, inte en gömd effekt-vägg.
+ *
+ * Returnerar null om `from`/`to` inte korsar någon av de tre trösklarna
+ * (t.ex. en liten rörelse inom samma band) — anropsstället skriver då ingen
+ * post, samma "max en per omgång, bara vid faktisk händelse"-disciplin som
+ * hallProcess-utfallen.
+ */
+const COMMUNITY_SHIFT_THRESHOLDS = [30, 50, 70]
+
+export function detectCommunityShiftDirection(from: number, to: number): 'up' | 'down' | null {
+  if (to === from) return null
+  for (const threshold of COMMUNITY_SHIFT_THRESHOLDS) {
+    if (from < threshold && to >= threshold) return 'up'
+    if (from >= threshold && to < threshold) return 'down'
+  }
+  return null
+}
+
+export function buildCommunityShiftLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  from: number
+  to: number
+  direction: 'up' | 'down'
+}): EventLedgerEntry {
+  return {
+    type: 'community_shift',
+    semanticKey: `community_shift_${input.clubId}_s${input.season}_m${input.matchday}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance: 55,
+    communityShift: { from: input.from, to: input.to, direction: input.direction },
+  }
+}
+
 export function buildNationalTeamCallupLedgerEntry(input: {
   playerId: string
   clubId: string

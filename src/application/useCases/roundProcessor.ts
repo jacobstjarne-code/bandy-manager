@@ -81,7 +81,7 @@ import { canAddDecision, partitionInterruptBudget, MAX_DEFERRED_DECISIONS } from
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
-import { buildFacilityBuiltLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
@@ -1550,6 +1550,24 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     communityStandingDelta: csBoost,
     supporterGroupFallback: updatedSupporterGroup,
   })
+
+  // liggare-ny-community-shift: samma before/after-jämförelse M15 precis
+  // gjorde för ripple-fälten, återanvänd rakt av (ingen ny beräkning av
+  // communityStanding). Bara vid en FAKTISK tröskelkorsning (30/50/70) —
+  // små rörelser inom samma band skriver ingen post.
+  const csFrom = game.communityStanding ?? 50
+  const csTo = rippleMerged.communityStanding ?? csFrom
+  const communityShiftDirection = detectCommunityShiftDirection(csFrom, csTo)
+  if (communityShiftDirection) {
+    roundLedgerEntries.push(buildCommunityShiftLedgerEntry({
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: nextMatchday,
+      from: csFrom,
+      to: csTo,
+      direction: communityShiftDirection,
+    }))
+  }
 
   // M14: check for era shift and push era_shift Moment. Beräknad EN gång här
   // (inte i en IIFE inne i recentMoments längre) så samma lista kan mata
