@@ -15,15 +15,15 @@ import { seededPick } from '../../../domain/utils/random'
 import { getClubIntroIllustrationAssetName, getClubIntroIllustrationSrc, IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 
-// Assets confirmed in repo; missing occasions fall back to the opponent's
+// Assets confirmed in repo; missing future occasions fall back to the opponent's
 // club illustration and finally to the deliberate typographic scene.
-const OCCASION_ASSET: Partial<Record<LaddningOccasion, string>> = {
+export const MATCH_LADDNING_OCCASION_ASSET: Partial<Record<LaddningOccasion, string>> = {
   annandagen: 'annandagen',
   derby: 'derby',
   cup: 'cup',
   premiar: 'premiar',
   final: 'final',
-  // nyar: 'nyar', // ordered, placeholder until dropped
+  nyar: 'nyar',
 }
 
 interface Props {
@@ -106,13 +106,13 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
     ? seededPick(STAKE_TEXT[seasonCtx], seed + 13)
     : null
 
-  // Levererade tillfällesbilder går före motståndarens ortbild. För nyår,
-  // vars motiv ännu saknas, får den faktiska motståndarklubben bära scenen.
-  // Saknas även den ligger den medvetna typografiska fonden kvar.
-  const assetName = OCCASION_ASSET[occasion]
+  // Levererade tillfällesbilder går före motståndarens ortbild. Saknas en
+  // framtida tillfällesbild får den faktiska motståndarklubben bära scenen;
+  // saknas även den ligger den medvetna typografiska fonden kvar.
+  const assetName = MATCH_LADDNING_OCCASION_ASSET[occasion]
     ?? (opponent ? getClubIntroIllustrationAssetName(opponent.id) : undefined)
-  const assetSrc = OCCASION_ASSET[occasion]
-    ? `/assets/illustrations/${OCCASION_ASSET[occasion]}.jpg`
+  const assetSrc = MATCH_LADDNING_OCCASION_ASSET[occasion]
+    ? `/assets/illustrations/${MATCH_LADDNING_OCCASION_ASSET[occasion]}.jpg`
     : opponent && getClubIntroIllustrationAssetName(opponent.id)
       ? getClubIntroIllustrationSrc(opponent.id)
       : undefined
