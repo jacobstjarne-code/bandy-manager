@@ -8,6 +8,11 @@ import { canAddDecision } from '../../../domain/services/decisionBudgetService'
 import { checkReputationMilestones, milestonesToInbox } from '../../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../../domain/services/transferDeadlineService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { InboxItemType } from '../../../domain/enums'
+import {
+  appendJournalistRelationshipStoryline,
+  detectRelationshipEvent,
+} from '../../../domain/services/journalistVisibilityService'
 
 export interface MediaResult {
   inboxItems: InboxItem[]
@@ -15,6 +20,57 @@ export interface MediaResult {
   resolvedEventIds: string[]
   reputationDelta: number
   lastRumorRound: number | undefined
+}
+
+/**
+ * Freezes a newly crossed journalist-relationship threshold into both the
+ * storyline ledger and the journalist inbox, then acknowledges the crossing.
+ */
+export function processJournalistRelationshipRound(game: SaveGame): SaveGame {
+  const relationshipEvent = detectRelationshipEvent(game)
+  if (!relationshipEvent) return game
+
+  let updatedGame = appendJournalistRelationshipStoryline(game, relationshipEvent)
+  const journalist = updatedGame.journalist
+  if (!journalist) return updatedGame
+
+  if (relationshipEvent === 'broken_under_20') {
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `journalist_broken_${updatedGame.currentSeason}_${updatedGame.currentMatchday}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `${journalist.name} · ${journalist.outlet}`,
+        body: 'Jag har försökt nå er i två veckor. Min chefredaktör börjar undra. Det går rykten i orten — och jag är den som ska skriva om dem. Hör av er innan veckan är slut.',
+        isRead: false,
+      }],
+      journalist: {
+        ...journalist,
+        lastTriggeredRelationship: journalist.relationship,
+      },
+    }
+  }
+
+  if (relationshipEvent === 'recovered_above_75') {
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `journalist_recovered_${updatedGame.currentSeason}_${updatedGame.currentMatchday}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `${journalist.name} · ${journalist.outlet}`,
+        body: 'Tack för intervjun igår. Det märktes att ni var ärliga. Jag tänkte ringa om ett uppslag — kan vi prata?',
+        isRead: false,
+      }],
+      journalist: {
+        ...journalist,
+        lastTriggeredRelationship: journalist.relationship,
+      },
+    }
+  }
+
+  return updatedGame
 }
 
 export function processMedia(
