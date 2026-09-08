@@ -115,6 +115,7 @@ describe('generatePostAdvanceEvents', () => {
       id: 'event_star_p1_6',
       relatedPlayerId: 'p1',
       rotationKey: 'star_performance_p1',
+      proofSource: { form: 'state-predicate', evaluatedTrue: true },
       choices: [{ id: 'ok', effect: { type: 'boostMorale', targetPlayerId: 'p1', value: 5 } }],
     })
     expect(event?.body).toContain('8,7')

@@ -130,12 +130,18 @@ export function generatePostAdvanceEvents(
       const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
       const clubName = buyingClub?.name ?? 'Köparklubben'
       const playerName = player ? `${player.firstName} ${player.lastName}` : 'spelaren'
-      if (bid.offerAmount >= marketVal * 1.5) {
+      const counterOfferAccepted = bid.offerAmount >= marketVal * 1.5
+      if (counterOfferAccepted) {
         events.push({
           id: `event_bid_aiaccept_${bid.id}`,
           type: 'transferBidReceived',
           title: `${clubName} accepterar ditt motbud`,
           body: `${clubName} godkänner det höjda kravet på ${formatValue(bid.offerAmount)} för ${playerName}. Bekräfta försäljningen.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'motbudet är minst 1,5 gånger spelarens marknadsvärde',
+            evaluatedTrue: counterOfferAccepted,
+          },
           choices: [{
             id: 'confirm',
             label: `Genomför transfer (${formatValue(bid.offerAmount)})`,
@@ -152,6 +158,11 @@ export function generatePostAdvanceEvents(
           type: 'transferBidReceived',
           title: `${clubName} drar sig ur`,
           body: `${clubName} accepterar inte din prissättning på ${formatValue(bid.offerAmount)} för ${playerName} och drar tillbaka budet.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'motbudet är lägre än 1,5 gånger spelarens marknadsvärde',
+            evaluatedTrue: !counterOfferAccepted,
+          },
           choices: [{
             id: 'ok',
             label: 'OK',
@@ -234,8 +245,10 @@ export function generatePostAdvanceEvents(
   // trycks aldrig bort, bara ORDNINGEN mellan flera samtidiga kandidater
   // påverkas.
   const lastFixture = recentFixtures[0]
-  if (lastFixture?.report?.playerRatings && rand() > 0.5) {
-    const eligibleStars = Object.entries(lastFixture.report.playerRatings)
+  const lastPlayerRatings = lastFixture?.report?.playerRatings
+  const starPerformanceWindow = Boolean(lastPlayerRatings) && rand() > 0.5
+  if (starPerformanceWindow) {
+    const eligibleStars = Object.entries(lastPlayerRatings!)
       .filter(([pid, rating]) => {
         if (rating < 8.5) return false
         const player = game.players.find(p => p.id === pid)
@@ -254,11 +267,17 @@ export function generatePostAdvanceEvents(
         candidates => candidates.reduce((best, c) => (c.rating > best.rating ? c : best), candidates[0]),
       )
       if (picked) {
+        const starPerformanceDue = starPerformanceWindow && eligibleStars.length > 0 && events.length < 2
         events.push({
           id: `event_star_${picked.pid}_${roundPlayed}`,
           type: 'starPerformance',
           title: `⭐ Stjärnprestation — ${picked.player.firstName} ${picked.player.lastName}`,
           body: pickStarPerformanceText(picked.player, picked.rating, roundPlayed),
+          proofSource: {
+            form: 'state-predicate',
+            description: 'senaste matchen har en vald spelare i egna laget med minst 8,5 i betyg',
+            evaluatedTrue: starPerformanceDue,
+          },
           choices: [
             {
               id: 'ok',
@@ -659,18 +678,24 @@ export function generatePostAdvanceEvents(
   if (events.length < 2) {
     const spookId = 'ghostSponsorOffered'
     const managedClubForSpook = game.clubs.find(c => c.id === game.managedClubId)
-    if (
+    const ghostSponsorDue = (
       !alreadyQueued.has(spookId) &&
       (managedClubForSpook?.finances ?? 0) < 0 &&
       (managedClubForSpook?.reputation ?? 0) > 60 &&
       !game.patron &&
       (game.currentSeason ?? 1) >= 2
-    ) {
+    )
+    if (ghostSponsorDue) {
       events.push({
         id: spookId,
         type: 'spoksponsor',
         title: 'Okänt nummer',
         body: 'En affärsman ringer. Han har hört om er situation och vill investera 150 000 kr. I gengäld vill han sitta med på styrelsemöten och ha inflytande.',
+        proofSource: {
+          form: 'state-predicate',
+          description: 'klubben har underskott, rykte över 60, ingen patron och är i minst säsong 2',
+          evaluatedTrue: ghostSponsorDue,
+        },
         choices: [
           {
             id: 'accept',
@@ -707,23 +732,30 @@ export function generatePostAdvanceEvents(
   if (events.length < 2) {
     const omojligId = `detOmojligaValet_${game.currentSeason}`
     const managedClubOmojlig = game.clubs.find(c => c.id === game.managedClubId)
-    if (
+    const impossibleChoiceWindow = (
       !alreadyQueued.has(omojligId) &&
       (managedClubOmojlig?.finances ?? 0) < -50000 &&
       rand() < getCsDetOmojligaValetProbability(game.communityStanding ?? 50)
-    ) {
+    )
+    if (impossibleChoiceWindow) {
       const academyProspect = game.players.find(p =>
         p.clubId === game.managedClubId &&
         p.promotedFromAcademy === true &&
         (p.currentAbility ?? 0) > 50
       )
       if (academyProspect) {
+        const impossibleChoiceDue = impossibleChoiceWindow && academyProspect.promotedFromAcademy === true && academyProspect.currentAbility > 50
         const playerName = `${academyProspect.firstName} ${academyProspect.lastName}`
         events.push({
           id: omojligId,
           type: 'detOmojligaValet',
           title: 'Det omöjliga valet',
           body: `Licensnämnden kräver positivt kapital. Du har en akademiprodukt värd pengar — ${playerName}. Hela orten älskar honom. Säljer du honom stärker du kassan, men skadar ditt rykte.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'klubben har mer än 50 000 kr i underskott och en egen akademispelare med CA över 50',
+            evaluatedTrue: impossibleChoiceDue,
+          },
           relatedPlayerId: academyProspect.id,
           choices: [
             {
@@ -839,6 +871,11 @@ export function buildSponsorOfferEvent(
   managedClubName: string | undefined,
   maxSponsors?: number,
 ): GameEvent {
+  const sponsorOfferIsActionable = offer.weeklyIncome > 0 && offer.contractRounds > 0
+  if (!sponsorOfferIsActionable) {
+    throw new Error('Sponsorerbjudanden måste ha positiv veckoersättning och löptid')
+  }
+
   // 2026-08-17 (Stickiness-audit): weeklyFmt rundade till närmsta heltal-k
   // medan totalFmt räknade totalValue exakt ur samma (orundade) weeklyIncome
   // — vid t.ex. 1500 kr/vecka visade kortet "2k kr/vecka" men en total som
@@ -889,6 +926,11 @@ export function buildSponsorOfferEvent(
     body: rivalSponsor
       ? `${offer.name} vill synas på tröjan. De betalar ${weeklyFmt} — mer än ${rivalSponsor.name} någonsin gjorde. Men de gör samma sak i den här bygden, och de tänker inte dela på platsen. Tar ni deras pengar får ${rivalSponsor.name} beskedet av er, inte av dem.`
       : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'sponsorerbjudandet har positiv veckoersättning och positiv löptid',
+      evaluatedTrue: sponsorOfferIsActionable,
+    },
     relatedPlayerId: undefined,
     relatedClubId: undefined,
     choices: [

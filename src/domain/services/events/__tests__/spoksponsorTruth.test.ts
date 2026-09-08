@@ -28,6 +28,7 @@ describe('spoksponsor — den permanenta styrelseeffekten är deklarerad', () =>
       .find(candidate => candidate.type === 'spoksponsor')!
 
     expect(event.id).toBe('ghostSponsorOffered')
+    expect(event.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
     expect(event.choices[0].subtitle).toContain('ny styrelseledamot')
     expect(generatePostAdvanceEvents({ ...game, resolvedEventIds: [event.id] }, [], 6, () => 0.99)
       .some(candidate => candidate.type === 'spoksponsor')).toBe(false)

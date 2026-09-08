@@ -41,6 +41,12 @@ describe('buildSponsorOfferEvent — konfliktdetektering', () => {
     expect(event.title).toBe(`Sponsorerbjudande — ${offer.name}`)
     expect(event.choices.find(c => c.id === 'accept')!.label).toMatch(/^Acceptera/)
     expect(event.choices.find(c => c.id === 'reject')!.label).toBe('Avslå')
+    expect(event.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
+  })
+
+  it('avvisar erbjudanden vars belopp eller löptid inte kan bära kortets påstående', () => {
+    expect(() => buildSponsorOfferEvent(makeSponsor({ weeklyIncome: 0 }), [], 'Testklubben')).toThrow(/positiv veckoersättning/)
+    expect(() => buildSponsorOfferEvent(makeSponsor({ contractRounds: 0 }), [], 'Testklubben')).toThrow(/positiv veckoersättning/)
   })
 
   it('rival i samma kategori → konfliktvarianten, terminateSponsorId pekar på rivalen och texten interpolerar båda namnen', () => {
