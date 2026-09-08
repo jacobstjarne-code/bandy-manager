@@ -40,15 +40,14 @@ endast D2 därför att spelets kritiska ekonomiväg var synlig före den låsta
 djup-negativ-gränsen. Testet verifierar alltså domens två alternativa vägar,
 inte att alla klubbar kan ignorera ekonomin i två säsonger.
 
-## Sidofynd: erbjudandenas LÄTT-fallback
+## Kontroll av erbjudandenas svårighetsnivå
 
-Den råa svårighetsklassningen har för närvarande ingen klubb över
-LÄTT-tröskeln. `selectThreeOffers` fyller därför den synliga LÄTT-platsen med
-en klubb ur MEDEL-poolen men märker erbjudandet `easy`. D2-mätningen använder
-medvetet den nivå spelaren faktiskt ser och bevisar därför akademiekonomin för
-det nuvarande erbjudandeflödet. Själva skillnaden mellan beräknad och visad
-svårighet är däremot ett separat produkt-/kalibreringsfynd och inte en del av
-denna prisdom.
+En separat kontroll efter mätningen räknade klubbmallarna genom den kanoniska
+`getDifficulty`-funktionen: två LÄTT, sex MEDEL och fyra SVÅR. För seeds 3, 11
+och 29 kom varje erbjudandes visade etikett från samma grupp som klubbens
+beräknade klass; reservvägen för en tom grupp aktiverades inte. En preliminär
+tolkning att LÄTT-poolen var tom var alltså fel och ska inte användas som ett
+produkt- eller kalibreringsfynd.
 
 ## Verifierad wiring
 
