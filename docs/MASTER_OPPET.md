@@ -295,7 +295,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| akademi-ekonomirad | Satsning 5 tkr/omg + normala beslut gav 340→60→−258 tkr över två säsonger; årsboken visar bara totalen, akademin läses som en svart kostnad (GPT MEDIUM 6) | verifierad | Code | DOM_AKADEMI_LIGGARE §5 | Två delar. (a) Årsbokens ekonomirad bryter ut akademin — text LÅST: *Akademin: {start} + {drift} tkr. Gav {N} uppflyttade och {M} i utveckling.* Code, efter `akademi-liggare-dom` steg 2. (b) Tvåsäsongssolvens → kalibreringsrundan D (`DOM_KALIBRERING_AVSKED_HEROS` D uppdaterad): Satsning + normala beslut ska vara solvent eller utlösa den kritiska ekonomivägen synligt före djup negativ kassa. Mäts, inte döms. |
+| akademi-ekonomirad | Satsning 5 tkr/omg + normala beslut gav 340→60→−258 tkr över två säsonger; årsboken visar bara totalen, akademin läses som en svart kostnad (GPT MEDIUM 6) | in_progress | Codex | DOM_AKADEMI_LIGGARE §5 | CLAIM 2026-09-08T19:37:28Z — Codex. Två delar. (a) Årsbokens ekonomirad bryter ut akademin — text LÅST: *Akademin: {start} + {drift} tkr. Gav {N} uppflyttade och {M} i utveckling.* Code, efter `akademi-liggare-dom` steg 2. (b) Tvåsäsongssolvens → kalibreringsrundan D (`DOM_KALIBRERING_AVSKED_HEROS` D uppdaterad): Satsning + normala beslut ska vara solvent eller utlösa den kritiska ekonomivägen synligt före djup negativ kassa. Mäts, inte döms. |
 
 ---
 
