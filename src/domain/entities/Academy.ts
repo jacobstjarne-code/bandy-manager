@@ -91,7 +91,12 @@ export interface LoanReport {
 
 export interface LoanDeal {
   playerId: string
+  /** Stabil identitet; optional bara för saves skapade före 2026-09-08. */
+  destinationClubId?: string
+  /** Fryst etikett — externa utvecklingsklubbar har ingen full Club-entitet. */
   destinationClubName: string
+  /** Fryst CA när lånet startade, för ärlig retur-attribution. */
+  caAtStart?: number
   startRound: number
   /**
    * Historisk, beräknad slutpunkt för äldre saves och diagnostik. Lånets

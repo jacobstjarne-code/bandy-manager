@@ -340,7 +340,7 @@ export function academyActions(get: Get, set: Set) {
       set({ game: { ...game, ...closed } })
     },
 
-    loanOutPlayer: (playerId: string, destinationClubName: string, rounds: number) => {
+    loanOutPlayer: (playerId: string, destinationClubId: string, destinationClubName: string, rounds: number) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
 
@@ -349,6 +349,7 @@ export function academyActions(get: Get, set: Set) {
       if (player.clubId !== game.managedClubId) return { success: false, error: 'Spelaren tillhör inte din klubb' }
       if (player.age > 23) return { success: false, error: 'Lån är bara för spelare under 24 år' }
       if (player.isOnLoan) return { success: false, error: 'Spelaren är redan på lån' }
+      if (destinationClubId === game.managedClubId) return { success: false, error: 'Du kan inte låna ut till den egna klubben' }
 
       // Lånets klocka är kalenderns matchday, även när senaste spelade match
       // var cup. SaveGame.currentMatchday är den kanoniska källan; att härleda
@@ -357,7 +358,9 @@ export function academyActions(get: Get, set: Set) {
 
       const loanDeal: LoanDeal = {
         playerId,
+        destinationClubId,
         destinationClubName,
+        caAtStart: player.currentAbility,
         startRound: currentRound,
         endRound: currentRound + rounds,
         remainingRounds: rounds,

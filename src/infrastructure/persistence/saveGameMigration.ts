@@ -14,6 +14,7 @@ import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStart
 import { backfillClubHistoryLedger } from '../../domain/services/clubHistoryLedgerService'
 import type { FormationType } from '../../domain/entities/Formation'
 import { buildLegacyIntroducedVoices } from '../../domain/services/voiceIntroductionService'
+import { migrateLoanDestinationId } from '../../domain/services/loanDestinationService'
 
 /**
  * DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
@@ -542,10 +543,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.loanDeals === undefined) data.loanDeals = []
   if (Array.isArray(data.loanDeals)) {
     data.loanDeals = (data.loanDeals as Record<string, unknown>[]).map(deal => {
-      if (typeof deal.remainingRounds === 'number') return deal
+      const destinationClubName = typeof deal.destinationClubName === 'string' ? deal.destinationClubName : 'Okänd klubb'
+      const destinationClubId = typeof deal.destinationClubId === 'string'
+        ? deal.destinationClubId
+        : migrateLoanDestinationId(destinationClubName)
+      if (typeof deal.remainingRounds === 'number') return { ...deal, destinationClubId, destinationClubName }
       const totalMatches = typeof deal.totalMatches === 'number' ? deal.totalMatches : 0
       const reports = Array.isArray(deal.reports) ? deal.reports.length : 0
-      return { ...deal, remainingRounds: Math.max(0, totalMatches - reports) }
+      return { ...deal, destinationClubId, destinationClubName, remainingRounds: Math.max(0, totalMatches - reports) }
     })
   }
   if (data.talentSearchResults === undefined) data.talentSearchResults = []

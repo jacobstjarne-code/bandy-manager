@@ -191,7 +191,7 @@ interface GameState {
   promoteYouthPlayer: (youthPlayerId: string) => { success: boolean; error?: string; timing?: 'early' | 'good' | 'late' }
   assignMentor: (seniorPlayerId: string, youthPlayerId: string) => { success: boolean; error?: string }
   removeMentor: (youthPlayerId: string) => void
-  loanOutPlayer: (playerId: string, destinationClubName: string, rounds: number) => { success: boolean; error?: string }
+  loanOutPlayer: (playerId: string, destinationClubId: string, destinationClubName: string, rounds: number) => { success: boolean; error?: string }
   recallLoan: (playerId: string) => void
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void

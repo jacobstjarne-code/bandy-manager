@@ -7,8 +7,9 @@ import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } 
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
 import { starsForPotential } from '../../../domain/services/academyService'
+import { externalLoanDestinationId } from '../../../domain/services/loanDestinationService'
 
-const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
+const EXTERNAL_LOAN_CLUB_NAMES = ['Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
 interface AkademiTabProps {
   club: Club
@@ -17,7 +18,7 @@ interface AkademiTabProps {
   promoteYouthPlayer: (id: string) => { success: boolean; error?: string; timing?: string }
   assignMentor: (seniorId: string, youthId: string) => { error?: string }
   removeMentor: (youthId: string) => void
-  loanOutPlayer: (playerId: string, club: string, rounds: number) => { error?: string }
+  loanOutPlayer: (playerId: string, destinationClubId: string, destinationClubName: string, rounds: number) => { error?: string }
   recallLoan: (playerId: string) => void
 }
 
@@ -32,7 +33,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const [selectedMentorYouthId, setSelectedMentorYouthId] = useState<string>('')
   const [loanMsg, setLoanMsg] = useState<string | null>(null)
   const [selectedLoanPlayerId, setSelectedLoanPlayerId] = useState<string>('')
-  const [selectedLoanClub, setSelectedLoanClub] = useState<string>('')
+  const [selectedLoanClubId, setSelectedLoanClubId] = useState<string>('')
   const [selectedLoanRounds, setSelectedLoanRounds] = useState<number>(4)
 
   const youthTeam = game.youthTeam
@@ -63,6 +64,11 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
   const activeLoanDeals = game.loanDeals ?? []
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
+  const skutskar = game.clubs.find(candidate => candidate.id === 'club_skutskar')
+  const loanDestinations = [
+    ...(skutskar && skutskar.id !== game.managedClubId ? [{ id: skutskar.id, name: skutskar.name }] : []),
+    ...EXTERNAL_LOAN_CLUB_NAMES.map(name => ({ id: externalLoanDestinationId(name), name })),
+  ]
 
   return (
     <div>
@@ -378,13 +384,13 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
                 ))}
               </select>
               <select
-                value={selectedLoanClub}
-                onChange={e => setSelectedLoanClub(e.target.value)}
+                value={selectedLoanClubId}
+                onChange={e => setSelectedLoanClubId(e.target.value)}
                 style={{ flex: 1, minWidth: 120, padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
               >
                 <option value="">Välj mottagarklubb</option>
-                {LOAN_CLUBS.map(c => (
-                  <option key={c} value={c}>{c}</option>
+                {loanDestinations.map(destination => (
+                  <option key={destination.id} value={destination.id}>{destination.name}</option>
                 ))}
               </select>
               <select
@@ -398,12 +404,13 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
               </select>
               <button
                 onClick={() => {
-                  if (!selectedLoanPlayerId || !selectedLoanClub) return
-                  const result = loanOutPlayer(selectedLoanPlayerId, selectedLoanClub, selectedLoanRounds)
+                  const destination = loanDestinations.find(candidate => candidate.id === selectedLoanClubId)
+                  if (!selectedLoanPlayerId || !destination) return
+                  const result = loanOutPlayer(selectedLoanPlayerId, destination.id, destination.name, selectedLoanRounds)
                   setLoanMsg(result.error ?? 'Spelare utlånad!')
                   setTimeout(() => setLoanMsg(null), 4000)
                   setSelectedLoanPlayerId('')
-                  setSelectedLoanClub('')
+                  setSelectedLoanClubId('')
                 }}
                 className="btn btn-outline"
                 style={{ padding: '4px 12px', fontSize: 12 }}

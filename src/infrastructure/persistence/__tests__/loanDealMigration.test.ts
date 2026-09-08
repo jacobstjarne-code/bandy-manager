@@ -22,5 +22,30 @@ describe('migrateSaveGame — kvarvarande låneomgångar', () => {
     })
 
     expect(migrated.loanDeals[0].remainingRounds).toBe(3)
+    expect(migrated.loanDeals[0].destinationClubId).toBe('ext:testklubben')
+  })
+
+  it('kopplar det äldre Skutskärsnamnet till den verkliga ligaklubben', () => {
+    const migrated = migrateSaveGame({
+      id: 'legacy-skutskar-loan',
+      version: '0.1.0',
+      fixtures: [],
+      pendingEvents: [],
+      loanDeals: [{
+        playerId: 'p1',
+        destinationClubName: 'Skutskärs IF',
+        startRound: 0,
+        endRound: 2,
+        remainingRounds: 2,
+        salaryShare: 0.5,
+        matchesPlayed: 0,
+        totalMatches: 2,
+        averageRating: 0,
+        reports: [],
+      }],
+    })
+
+    expect(migrated.loanDeals[0].destinationClubId).toBe('club_skutskar')
+    expect(migrated.loanDeals[0].destinationClubName).toBe('Skutskärs IF')
   })
 })
