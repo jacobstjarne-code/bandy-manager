@@ -139,7 +139,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
 | b2-ej-byggd | Re-speca B2 mot vad som nu finns snarare än den ursprungliga majpremissen | verifierad | Opus | BACKLOG.md:531 | **ÄGARE → OPUS 2026-09-07 (Jacob delegerade):** inte ett Jacob-beslut — en Opus-uppgift. B2:s ursprungspremiss är fem månader gammal; Opus läser vad som finns nu (annandagsVal-fältet dött, men phase mark/scene-trigger/calendar-anchor/inbox/dev-scen har vuxit) och re-specar mot verkligheten. Står i Opus-tråden tills gjord. |
-| b4-designdel-ej-gjord | B4:s design-del ej gjord sedan auditen | verifierad | Design | BACKLOG.md:531 | verifiera mot kod [Verifierat 2026-09-01 (Code): docs/BACKLOG.md:531 säger ordagrant "B4 design-del ej gjord sedan auditen" — ingen senare uppdatering ändrar detta.] |
+| b4-designdel-ej-gjord | B4:s design-del ej gjord sedan auditen | in_progress | Codex | BACKLOG.md:531 | CLAIM 2026-09-08T12:01:41Z — Codex. Verifierar den senare, uttryckliga P2-leveransen mot main. |
 
 ## C. IDÉER UTAN SPEC
 
