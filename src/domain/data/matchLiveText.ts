@@ -43,7 +43,7 @@ export const PAUSSNACK: Record<MatchSituation, PepOption[]> = {
   ],
   leading: [
     { line: 'Håll i det. Inga dumheter bakåt.', effect: '↓ deras tryck i andra · stabilare', lean: 'calm' },
-    { line: 'Nöj er inte. En till så är den död.', effect: '↑ jakt även i ledning · ↑ varians', lean: 'push' },
+    { line: 'Ett mål till så är matchen död.', effect: '↑ jakt även i ledning · ↑ varians', lean: 'push' },
   ],
 }
 

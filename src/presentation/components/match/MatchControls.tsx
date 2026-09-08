@@ -33,9 +33,7 @@ export function MatchControls({
   return (
     <div className="match-controls-stalvallen">
       <div className="match-controls-row">
-        <span className="match-controls-label">
-          🏛️ MATCH
-        </span>
+        <span className="match-controls-label">MATCH</span>
 
         <button
           onClick={onTogglePause}

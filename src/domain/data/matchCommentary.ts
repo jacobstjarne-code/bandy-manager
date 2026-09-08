@@ -164,7 +164,7 @@ export const commentary = {
     "Hörna för {team}.",
     "{team} får hörna.",
     "Ny hörna till {team}. Försöker hitta ett läge.",
-    "Hörna {team}. Klacken stiger upp.",
+    "Hörna {team}. Hela klacken reser sig.",
   ],
 
   corner_miss: [
@@ -287,7 +287,7 @@ export const commentary = {
   weather_miss_heavySnow: [
     "Bollen slirar bort i snön — avslutet hamnar helt fel.",
     "Omöjligt att sikta i det här! Skottet flyger iväg.",
-    "Snön spelar sitt spratt — bollen svänger i sista stund.",
+    "Snön spelar spelaren ett spratt — bollen svänger i sista stund.",
   ],
   weather_miss_thaw: [
     "Bollen fastnade i en vattenpöl — avslutet dog innan det nådde mål.",

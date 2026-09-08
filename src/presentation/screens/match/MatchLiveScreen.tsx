@@ -128,20 +128,22 @@ function interactionSeed(fixtureId: string, step: number, kind: InteractionRandK
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, advance, markMatchStarted, simulateAbandonedMatch } = useGameStore()
+  const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
   const dismissHint = useGameStore(s => s.dismissHint)
   const recordFinalIntroShown = useGameStore(s => s.recordFinalIntroShown)
   const managedClub = useManagedClub()
 
   const state = location.state as LocationState | null
-  const fixture = state?.fixture
-  const recoverableFixture = !fixture && game
+  const routedFixture = state?.fixture
+  const recoverableFixture = !routedFixture && game
     ? findRecoverableLiveFixture(game.fixtures)
     : undefined
-  const homeLineup = state?.homeLineup
-  const awayLineup = state?.awayLineup
-  const homeClubName = state?.homeClubName ?? ''
-  const awayClubName = state?.awayClubName ?? ''
+  const fixture = routedFixture ?? recoverableFixture
+  const isRecoveredMatch = !routedFixture && !!recoverableFixture
+  const homeLineup = state?.homeLineup ?? fixture?.homeLineup
+  const awayLineup = state?.awayLineup ?? fixture?.awayLineup
+  const homeClubName = state?.homeClubName ?? game?.clubs.find(c => c.id === fixture?.homeClubId)?.name ?? ''
+  const awayClubName = state?.awayClubName ?? game?.clubs.find(c => c.id === fixture?.awayClubId)?.name ?? ''
   const matchWeather = state?.matchWeather ?? (
     fixture ? (game?.matchWeathers ?? []).find(mw => mw.fixtureId === fixture.id) : undefined
   )
@@ -184,7 +186,7 @@ export function MatchLiveScreen() {
     isCeremonyOnly && fixture ? [buildCeremonyOnlyStep(fixture)] : []
   )
   const [currentStep, setCurrentStep] = useState(-1)
-  const [isPaused, setIsPaused] = useState(false)
+  const [isPaused, setIsPaused] = useState(isRecoveredMatch)
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
   const [halftimeModalShown, setHalftimeModalShown] = useState(false)
@@ -257,19 +259,10 @@ export function MatchLiveScreen() {
       navigate('/game', { replace: true })
       return
     }
-    // Övergiven match (started i tidigare session, aldrig slutförd — t.ex. reload mitt i):
-    // återställ via assistenten, bryt soft-lock-loopen.
-    if (liveFixture?.matchStartedAt && liveFixture.status === 'scheduled') {
-      simulateAbandonedMatch(liveFixture.id)
-      // advance()-flytten (Audit-syntes yta 5, 2026-07-07): till skillnad från matchDone-
-      // effekten nedan (rad ~333, som redan kör advance(true) innan "TILL GRANSKNING"-
-      // knappen ens blir klickbar) satte den här återhämtningsvägen ALDRIG roundSummary
-      // eller körde omgångsprocessningen — simulateAbandonedMatch gör bara själva
-      // matchsimuleringen. Utan denna rad var GranskaScreens mount-effekt den ENDA
-      // platsen som täckte just den här vägen.
-      advance(true)
-      navigate('/game/review', { replace: true })
-    }
+    // En startad men ofullbordad match återställs från fixturens durabla
+    // laguppställningar. Den startar pausad och simuleras aldrig bort bara för
+    // att en flik stängts eller laddats om. Matchförloppet startas om från
+    // avslag; exakt live-minut är ännu inte en del av saven.
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -385,7 +378,7 @@ export function MatchLiveScreen() {
     if (matchDone || isCeremonyOnly) return
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault()
-      e.returnValue = 'Matchen pågår. Lämnar du nu simuleras resten automatiskt.'
+      e.returnValue = 'Matchen pågår. Om du lämnar kan den startas om från avslag.'
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)

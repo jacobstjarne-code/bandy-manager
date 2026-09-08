@@ -1,6 +1,6 @@
 /**
- * NextOpponentHook — B3 (Spår B, 2026-07-20). Granskas sista innehållsblock,
- * direkt ovanför CTA:n. Förbereder, avancerar inte — sidfotens .btn-cta
+ * NextOpponentHook — B3 (Spår B, 2026-07-20). Granskas sista scrollbara
+ * innehållsblock, efter andra matcher. Förbereder, avancerar inte — sidfotens .btn-cta
  * äger fortfarande den enda framåt-handlingen.
  *
  * B5 nivå 2–4 (aldrig nivå 1): is-tonad, dämpad, formrutor + rad, ingen

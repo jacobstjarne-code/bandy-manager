@@ -13,7 +13,6 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 import { getFormResults } from '../../utils/formUtils'
 import { NEXT_MATCH_POINTER } from '../../../domain/data/nextMatchPointerText'
-import { seededPick } from '../../../domain/utils/random'
 import { SectionLabel } from '../../components/SectionLabel'
 import { ScoreBlock } from '../../components/primitives'
 import { ClubBadge } from '../../components/ClubBadge'
@@ -34,9 +33,9 @@ import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktSer
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
 import { useGameStore } from '../../store/gameStore'
-import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { canEventPassVoiceGate } from '../../../domain/services/voiceIntroductionService'
 import { chronologyPointLabel } from '../../../domain/services/currentChronology'
+import { NextOpponentHook } from './NextOpponentHook'
 
 const TRAINING_LABEL: Record<string, string> = {
   [TrainingType.Skating]: 'Skridskoteknik', [TrainingType.BallControl]: 'Bollkontroll',
@@ -302,19 +301,19 @@ export function GranskaOversikt({
             <div className="h-scene-genre" style={{ color: 'var(--match-gold)', opacity: 0.8, marginBottom: 20 }}>
               ⬩ &nbsp;Slutsignal&nbsp; ⬩
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 6 }}>
-              <div style={{ textAlign: 'center', width: 74 }}>
+            <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(7px, 2.5vw, 18px)', marginBottom: 6 }}>
+              <div style={{ textAlign: 'center', width: 'clamp(58px, 18vw, 74px)', flexShrink: 1 }}>
                 <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.homeClubId} name={homeClub?.name ?? ''} size={34} /></div>
                 <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{homeClub?.shortName ?? homeClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--match-positive)', textTransform: 'uppercase', marginTop: 2 }}>Hemma</div>
               </div>
               <div
                 className="granska-hero-score h-display-hero"
-                style={{ fontWeight: 800, fontSize: 66, lineHeight: 1, color: 'var(--match-gold)', letterSpacing: '-1px', animation: 'scaleFlash 320ms ease-out both' }}
+                style={{ fontWeight: 800, fontSize: 'clamp(44px, 14vw, 66px)', lineHeight: 1, color: 'var(--match-gold)', letterSpacing: '-1px', animation: 'scaleFlash 320ms ease-out both', whiteSpace: 'nowrap', flexShrink: 0 }}
               >
-                {fixture.homeScore}<span style={{ opacity: 0.45, fontSize: 40, verticalAlign: 'middle', margin: '0 6px' }}>–</span>{fixture.awayScore}
+                {fixture.homeScore}<span style={{ opacity: 0.45, fontSize: '0.62em', verticalAlign: 'middle', margin: '0 clamp(2px, 1vw, 6px)' }}>–</span>{fixture.awayScore}
               </div>
-              <div style={{ textAlign: 'center', width: 74 }}>
+              <div style={{ textAlign: 'center', width: 'clamp(58px, 18vw, 74px)', flexShrink: 1 }}>
                 <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.awayClubId} name={awayClub?.name ?? ''} size={34} /></div>
                 <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{awayClub?.shortName ?? awayClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginTop: 2 }}>Borta</div>
@@ -454,45 +453,16 @@ export function GranskaOversikt({
         </div>
   )
 
-  // §11.3 — Granska-slutets framåtpekare. Avslutande viskning, inget kort/rubrik.
+  // §11.3 — Granska-slutets framåtpekare. Ligger i den scrollbara rapporten,
+  // efter omvärldsblocket, så sidfoten bara äger navigation och CTA.
   // ✕ bara på den säsongsavslutande finalen (slutspel+final) — en cupfinal
   // spelas i augusti, ligasäsongen fortsätter direkt efteråt, så den behåller
   // pekaren (nextFixture finns naturligt ändå). Avsked ✓ (matrisen).
-  const nastaMatchPekareLine = visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) && (() => {
-    const nextFixture = getNextManagedFixture(game)
-    if (!nextFixture) return null
-
-    const isNextHome = nextFixture.homeClubId === game.managedClubId
-    const oppId = isNextHome ? nextFixture.awayClubId : nextFixture.homeClubId
-    const venue = isNextHome ? 'hemma' : 'borta'
-
-    const nextSlot = (game.seasonCalendar ?? []).find(s => s.matchday === nextFixture.matchday)
-    const calendarFlag = nextSlot?.isAnnandagen ? 'annandag' as const
-      : nextSlot?.isNyarsbandy ? 'nyar' as const
-      : nextSlot?.isCupFinalhelgen ? 'cupfinalhelg' as const
-      : null
-    // Formkollen körs på MOTSTÅNDAREN, inte managed club.
-    const oppFormLast5 = getFormResults(oppId, game.fixtures, game.clubs, 5).map(r => r.result)
-    const oppPosition = getCurrentLeaguePosition(oppId, game)
-
-    const pointerType = selectNextMatchPointerType({
-      isDerby: getRivalry(game.managedClubId, oppId) !== null,
-      calendarFlag,
-      oppFormLast5,
-      managedPosition: leaguePosition,
-      oppPosition,
-    })
-
-    const line = seededPick(NEXT_MATCH_POINTER[pointerType], nextFixture.matchday)
-      .replaceAll('{opp}', getClubShort(oppId))
-      .replaceAll('{venue}', venue)
-
-    return (
-      <p data-granska-section="nastaMatchPekare" style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
-        {line}
-      </p>
-    )
-  })()
+  const nastaMatchPekareLine = visasFor('nastaMatchPekare', axes.tavlingstyp, axes.skede) ? (
+    <div data-granska-section="nastaMatchPekare" style={{ marginTop: 12 }}>
+      <NextOpponentHook game={game} />
+    </div>
+  ) : null
 
   // GRANSKA DEL 4 steg 3 (2026-08-11): ett första försök att gren:a av avsked
   // som en helt egen return tidigt i funktionen visade sig DROPPA innehåll
@@ -1105,10 +1075,15 @@ export function GranskaOversikt({
           .map(e => e.minute)
         const text = dittValCornerText({ cornerStrategy, totalCorners, cornerGoalMinutes })
         if (!text) return null
+        const strategyLabel = cornerStrategy === CornerStrategy.Safe ? 'Säker'
+          : cornerStrategy === CornerStrategy.Aggressive ? 'Aggressiv'
+          : 'Standard'
+        const outcomeText = text.slice(text.indexOf('.') + 1).trim()
         return (
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.5) }}>
-            <SectionLabel style={{ marginBottom: 6 }}>DITT VAL</SectionLabel>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{text}</p>
+            <SectionLabel style={{ marginBottom: 6 }}>HÖRNSTRATEGI</SectionLabel>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.35, margin: '0 0 2px' }}>{strategyLabel}</p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{outcomeText}</p>
           </div>
         )
       })()}

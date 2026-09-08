@@ -278,17 +278,6 @@ export function PortalScreen() {
   // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
   const weeklyDecisionPending = game.pendingWeeklyDecision != null
 
-  // Grind-läget leder ögat: klick på den låsta CTA:n scrollar till beslutskortet
-  // istället för att vara en död spärr. Målet är WeeklyDecisionSecondary (data-decision-anchor).
-  const scrollToDecision = useCallback(() => {
-    const el = document.querySelector('[data-decision-anchor]')
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      el.classList.add('decision-flash')
-      setTimeout(() => el.classList.remove('decision-flash'), 1200)
-    }
-  }, [])
-
   // PORTAL-TAKREGEL (2026-08-09), REVIDERAD AUDIT DEL 2 (2026-08-09): marks
   // blir data före de blir JSX. Budgeten (ATMOSPHERE_CAP, default 2) gäller
   // atmosfärslagret — Situation, Beat, Anniversary, Upptakt, Spectator, och
@@ -421,14 +410,17 @@ export function PortalScreen() {
         <ClubNotificationPrompt game={game} />
       </div>
 
-      {/* STICKY CTA — alltid synlig ovanför BottomNav.
+      {/* STICKY CTA — synlig ovanför BottomNav när inget veckobeslut pågår.
+          Ett aktivt beslut äger ytan: en låst CTA gav ingen handling och täckte
+          i mobilformat det nedersta svarsalternativet. När beslutet är löst
+          återkommer CTA:n automatiskt.
           Tap-target-fyndet (geometrigrinden breddad till nav-bärande scener,
           2026-08-17): bara +8px — inte bara i "Simulera"-fallet (redan fixat
           separat), utan för HELA containern, i VARJE portal-tillstånd
           ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
           --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
           redan etablerade för exakt den här bugklassen. */}
-      <div ref={ctaRef} data-fixed-bottom-bar style={{
+      {!weeklyDecisionPending && <div ref={ctaRef} data-fixed-bottom-bar style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: 14,
@@ -471,14 +463,13 @@ export function PortalScreen() {
         })()}
         <button
           data-coach-id="cta-button"
-          onClick={weeklyDecisionPending ? scrollToDecision : handleAdvance}
-          disabled={(!canClickAdvance || isAdvancing) && !weeklyDecisionPending}
-          aria-disabled={weeklyDecisionPending || undefined}
-          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing && !weeklyDecisionPending ? ' btn-pulse' : ''}${weeklyDecisionPending ? ' btn-cta-locked' : isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
+          onClick={handleAdvance}
+          disabled={!canClickAdvance || isAdvancing}
+          className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
-          {isAdvancing ? '···' : weeklyDecisionPending ? 'Hantera veckans beslut först ↑' : advanceButtonText}
+          {isAdvancing ? '···' : advanceButtonText}
         </button>
-      </div>
+      </div>}
     </>
   )
 }

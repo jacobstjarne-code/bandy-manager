@@ -166,7 +166,15 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       const inSemi = bracket.matches.some(
         m => m.round === 3 && (m.homeClubId === club || m.awayClubId === club)
       )
-      if (inSemi && !seen.includes('cup_finalweekend_pre')) {
+      // Ett förhandsanslag får bara visas medan semifinalen faktiskt ligger
+      // framför spelaren. Om vyn inte hann visas före avslag ska den förfalla,
+      // inte dyka upp efter att laget redan slagits ut.
+      const semiUpcoming = game.fixtures.some(
+        f => f.isCup && f.roundNumber === 3 && f.season === game.currentSeason &&
+          f.status === FixtureStatus.Scheduled &&
+          (f.homeClubId === club || f.awayClubId === club)
+      )
+      if (inSemi && semiUpcoming && !seen.includes('cup_finalweekend_pre')) {
         return 'cup_finalweekend_pre'
       }
 

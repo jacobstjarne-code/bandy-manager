@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canScoreGate, getGoalScorerWeight, pickMatchProfileFromSeed, MATCH_TOTAL_GOAL_CAP, MATCH_GOAL_DIFFERENCE_CAP, pickLegendCommentary } from '../matchCore'
+import { canScoreGate, getGoalScorerWeight, pickMatchProfileFromSeed, MATCH_TOTAL_GOAL_CAP, MATCH_GOAL_DIFFERENCE_CAP, pickLegendCommentary, suspensionCommentarySides } from '../matchCore'
 import type { Player } from '../../entities/Player'
 
 describe('canScoreGate', () => {
@@ -45,6 +45,22 @@ describe('canScoreGate', () => {
   it('blockerar exakt vid totalCap-gränsen (>=, inte >)', () => {
     expect(canScoreGate(8, 9, true, 17, 6)).toBe(false) // 8+9=17 === totalCap
     expect(canScoreGate(8, 8, true, 17, 6)).toBe(true)  // 8+8=16 < totalCap
+  })
+})
+
+describe('suspensionCommentarySides', () => {
+  it('namnger bortalaget när en bortaspelare utvisas under hemmalagets anfall', () => {
+    expect(suspensionCommentarySides(true, 'Målilla', 'Gagnef')).toEqual({
+      team: 'Gagnef',
+      opponent: 'Målilla',
+    })
+  })
+
+  it('namnger hemmalaget när en hemmaspelare utvisas under bortalagets anfall', () => {
+    expect(suspensionCommentarySides(false, 'Målilla', 'Gagnef')).toEqual({
+      team: 'Målilla',
+      opponent: 'Gagnef',
+    })
   })
 })
 

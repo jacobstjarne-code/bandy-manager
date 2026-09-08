@@ -10,7 +10,6 @@ import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
-import { NextOpponentHook } from './NextOpponentHook'
 import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
 import { canEventPassVoiceGate, getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
 
@@ -36,6 +35,8 @@ export function GranskaScreen() {
   const [soundsPlayed, setSoundsPlayed] = useState(false)
   const [step, setStep] = useState<GranskaStep>('oversikt')
   const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
+  const [hasMoreContent, setHasMoreContent] = useState(false)
+  const contentRef = useRef<HTMLDivElement | null>(null)
   const didRedirect = useRef(false)
   // M10 (audit 5c9a7a8, 2026-08-24): FRUSEN vid mount, inte game.pendingEvents
   // läst live. handleChoice nedan löser domänen (resolveEvent) SYNKRONT nu —
@@ -62,6 +63,17 @@ export function GranskaScreen() {
     const t = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(t)
   }, [])
+
+  const updateScrollCue = () => {
+    const el = contentRef.current
+    if (!el) return
+    setHasMoreContent(el.scrollTop + el.clientHeight < el.scrollHeight - 8)
+  }
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(updateScrollCue)
+    return () => cancelAnimationFrame(frame)
+  }, [step, visible, roundSummary])
 
   // Notifieringsdomen 2026-09-04: permission-frågan får tidigast visas
   // efter en faktiskt läst första Granska och när nästa lag ännu är öppet.
@@ -227,7 +239,12 @@ export function GranskaScreen() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Content */}
-      <div className="texture-wood card-stack" style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}>
+      <div
+        ref={contentRef}
+        onScroll={updateScrollCue}
+        className="texture-wood card-stack"
+        style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}
+      >
         {step === 'oversikt' && (
           <GranskaOversikt
             game={game}
@@ -296,12 +313,28 @@ export function GranskaScreen() {
       {/* Bottom nav + CTA */}
       <div style={{
         flexShrink: 0,
+        position: 'relative',
         background: 'var(--bg)',
         borderTop: '1px solid var(--border)',
         paddingBottom: 'var(--safe-bottom, 0px)',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.3s ease 0.3s',
       }}>
+        {hasMoreContent && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', left: 0, right: 0, top: -22, height: 22,
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+              paddingBottom: 2,
+              color: 'var(--accent)', fontSize: 12,
+              background: 'linear-gradient(to bottom, transparent, var(--bg))',
+              pointerEvents: 'none',
+            }}
+          >
+            ↓
+          </div>
+        )}
         {/* Step label */}
         <p className="h-label" style={{ textAlign: 'center', paddingTop: 8, marginBottom: 2 }}>
           FÖRDJUPA
@@ -339,9 +372,6 @@ export function GranskaScreen() {
             )
           })}
         </div>
-
-        {/* B3 — framåtkroken: sista innehållsblocket, direkt ovanför CTA:n */}
-        <NextOpponentHook game={game} />
 
         {/* CTA */}
         <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>

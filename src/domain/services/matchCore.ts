@@ -145,6 +145,17 @@ function chemMultiplier(pairs: PairChemistry[] | undefined): number {
   return clamp(1 + avg * CHEM_K, 0.94, 1.06)
 }
 
+/** Lagorden i en utvisningskommentar följer den utvisade spelarens lag. */
+export function suspensionCommentarySides(
+  isHomeAttacking: boolean,
+  homeTeam: string,
+  awayTeam: string,
+): { team: string; opponent: string } {
+  return isHomeAttacking
+    ? { team: awayTeam, opponent: homeTeam }
+    : { team: homeTeam, opponent: awayTeam }
+}
+
 // ── Match profile ─────────────────────────────────────────────────────────────
 // Rolled once per match from seed — creates natural goal distribution across a
 // season while keeping the calibrated season average (~10 goals/match).
@@ -1259,8 +1270,11 @@ function* simulateMatchCore(
       // Interactive corner (full mode, managed club only)
       if (!isFast) {
         const isManagedCorner = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
-        const totalCornersThisMatch = cornersHome + cornersAway
-        if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, totalCornersThisMatch, interactiveCornersUsed, rand)) {
+        // Räknaren ovan har redan registrerat den pågående hörnan. Tjänsten
+        // förväntar sig antalet hörnor FÖRE den aktuella, så att matchens första
+        // hörna verkligen träffar sin garanterade interaktionsregel.
+        const previousCornersThisMatch = cornersHome + cornersAway - 1
+        if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, previousCornersThisMatch, interactiveCornersUsed, rand)) {
           interactiveCornersUsed++
           const gk         = getGK(defendingStarters)
           const cornerTaker = attackingStarters.filter(p => p.position !== PlayerPosition.Goalkeeper).sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
@@ -1716,7 +1730,15 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.save, rand, commentaryHistory), templateVars)
         }
       } else if (suspensionOccurred && suspendedPlayerId) {
-        templateVars = { ...templateVars, player: findPlayerName(suspendedPlayerId) }
+        // Utvisningen tillhör det FÖRSVARANDE laget. Grundvariablerna ovan
+        // beskriver anfallssidan, vilket gav korrekt spelare/grafik men fel lag
+        // i kommentarer som "Tuffa tag kostar {team}".
+        const suspensionSides = suspensionCommentarySides(isHomeAttacking, homeTeamRef, awayTeamRef)
+        templateVars = {
+          ...templateVars,
+          player: findPlayerName(suspendedPlayerId),
+          ...suspensionSides,
+        }
         if (rivalry && rand() < 0.50) {
           commentaryText = fillTemplate(pickCommentary(commentary.derby_suspension, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true

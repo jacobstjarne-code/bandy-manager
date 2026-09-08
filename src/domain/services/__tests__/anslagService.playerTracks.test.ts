@@ -155,6 +155,54 @@ describe('Spår: direktkvalad → cupvinnare', () => {
   })
 })
 
+describe('Cuphelgen — förhandsanslagets livslängd', () => {
+  it('visas inför en schemalagd semifinal', () => {
+    const semi = makeCupMatch(3, '')
+    const game = makeGame({
+      seenAnslag: ['cup_start', 'cup_first_match'],
+      fixtures: [{
+        id: semi.fixtureId, leagueId: 'cup', season: 1, roundNumber: 3, matchday: 3,
+        homeClubId: 'managed', awayClubId: 'other', status: FixtureStatus.Scheduled,
+        homeScore: 0, awayScore: 0, events: [], isCup: true, isKnockout: true,
+      } as Fixture],
+      cupBracket: {
+        season: 1,
+        matches: [
+          { ...makeCupMatch(2, 'managed'), id: 'qf-managed', fixtureId: 'qf-managed' },
+          { id: 'qf-other', round: 2, fixtureId: 'qf-other', homeClubId: 'a', awayClubId: 'b', winnerId: 'a' },
+          semi,
+        ],
+        byeTeamIds: [],
+        completed: false,
+      },
+    })
+    expect(computeNextAnslag(game)).toBe('cup_finalweekend_pre')
+  })
+
+  it('förfaller efter en redan spelad semifinal och visas inte efter uttåg', () => {
+    const semiLoss = makeCupMatch(3, 'other')
+    const game = makeGame({
+      seenAnslag: ['cup_start', 'cup_first_match'],
+      fixtures: [{
+        id: semiLoss.fixtureId, leagueId: 'cup', season: 1, roundNumber: 3, matchday: 3,
+        homeClubId: 'managed', awayClubId: 'other', status: FixtureStatus.Completed,
+        homeScore: 2, awayScore: 5, events: [], isCup: true, isKnockout: true,
+      } as Fixture],
+      cupBracket: {
+        season: 1,
+        matches: [
+          { ...makeCupMatch(2, 'managed'), id: 'qf-managed', fixtureId: 'qf-managed' },
+          { id: 'qf-other', round: 2, fixtureId: 'qf-other', homeClubId: 'a', awayClubId: 'b', winnerId: 'a' },
+          semiLoss,
+        ],
+        byeTeamIds: [],
+        completed: false,
+      },
+    })
+    expect(computeNextAnslag(game)).toBe('cup_done')
+  })
+})
+
 describe('Liga-anslag: season_done', () => {
   it('triggas när alla fixtures är spelade och playoff-bracket är completed', () => {
     const completedFixtures = Array.from({ length: 22 }, (_, i) => makeLeagueFixture(i + 1))
