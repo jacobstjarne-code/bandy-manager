@@ -47,7 +47,7 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  * clubMemoryEventBuilders.ts, skrivs i roundProcessor.ts) och ex-spelare i
  * motståndarlaget (`transferProcessor.ts:521`).
  *
- * Tre av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
+ * Två av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
  * ingen producent finns att läsa från, en gissad payload-form hade varit
  * påhittad data:
  *  - "återkomst till gamla klubben" — ingen liggartyp bär managerns
@@ -55,22 +55,22 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  *  - "återkommande taktiskt misslyckande" (B12-mönster) — kräver en ny
  *    treomgångars-detektor mot MatchEvent.contributingFactors; ingen
  *    liggarpost existerar för detta ännu.
- *  - nemesis — KORRIGERAT 2026-09-07 (Code, PRE-SPEC CROSS-CHECK): "noll
- *    skrivvägar" höll inte. `nemesis_signed` HAR en producent sedan
- *    2026-04-25 (`transferProcessor.ts:458-473`, `git log -S` bekräftar) och
- *    flödar redan till Krönikan/`reviewCallbackService.ts` — men den
- *    berättar MOTSATT historia mot registrets låsta text. Koden: "en
- *    tidigare tormentor (3+ mål mot oss) är nu VÅR" (triumf). Registrets
- *    §7-rad ("Han valde {Motståndare}. {Namn}, som {Klubb} jagade. På {dag}
- *    står han på andra sidan.") beskriver motsatsen: ett mål vi JAGADE som
- *    valde RIVALEN och nu står emot oss — samma koncept som
- *    `liggare-ny-transfer-target-missed`/`liggare-k12-missad-varvning-mot-
- *    dig` (MASTER_OPPET), inte `nemesis_signed`. Registrets rad är alltså
- *    fel-etiketterad mot fel liggartyp, inte skriven mot en obyggd. Ingen av
- *    de två är wirebar idag: k12 väntar Opus vägval (ny typ eller
- *    TransferRole-gren), och `nemesis_signed`s EGEN, verkliga historia
- *    saknar egen låst push-text (ny text, inte Code). Se
- *    MASTER_OPPET.md#stickiness-copy-roster.
+ *
+ * Nemesis — WIRAD 2026-09-08 (Code), sedan k12 (`DOM_K12_TRANSFER_TARGET_
+ * MISSED_2026-09-08.md`, commit `c71b4d3e`) gav rätt liggartyp ett verkligt
+ * producentspår. KORRIGERAT 2026-09-07 (Code, PRE-SPEC CROSS-CHECK, kvar som
+ * historik): "noll skrivvägar" höll aldrig för `nemesis_signed` — den har en
+ * producent sedan 2026-04-25 (`transferProcessor.ts:458-473`) och flödar
+ * redan till Krönikan/`reviewCallbackService.ts`, men berättar MOTSATT
+ * historia mot registrets låsta text ("en tidigare tormentor (3+ mål mot
+ * oss) är nu VÅR", triumf). Registrets §7-rad ("Han valde {Motståndare}.
+ * {Namn}, som {Klubb} jagade. På {dag} står han på andra sidan.") beskriver
+ * en spelare VI jagade och missade som nu står emot oss — exakt
+ * `transfer_target_missed` (subject=den jagade spelaren, subject2=hans klubb
+ * vid budtillfället), inte `nemesis_signed`. Grenen nedan läser den rätta
+ * typen; `nemesis_signed`s egen, sanna historia ("triumf över en gammal
+ * plågoande") saknar fortfarande egen låst push-text — ingen ny gren utan
+ * Opus-text.
  *
  * Kalenderankare och säsongsläge läser sina egna framåtblickande payloads.
  * Mallarna är ordagrant låsta i copy-registrets §2–§3. Varje gren avstår om
@@ -277,6 +277,28 @@ export function createNarrativePushCopyResolver(
             title: `${playerName} i fel tröja.`,
             body: 'Ni sålde honom. Nu möter ni honom.',
           }
+    }
+
+    // Nemesis (register §4, "Han valde {Motståndare}") — DOM_K12_TRANSFER_
+    // TARGET_MISSED_2026-09-08: en spelare vi bjöd på och missade, vars klubb
+    // vid budtillfället är exakt nästa motstånd. Registret ger bara EN röst
+    // (press) för detta scenario — ingen rotation.
+    if (
+      item.post.type === 'transfer_target_missed' &&
+      item.post.subject?.kind === 'player' &&
+      item.post.subject2?.kind === 'club' &&
+      item.post.subject2.id === opponentId
+    ) {
+      const seasonsAgo = game.currentSeason - item.post.season
+      if (seasonsAgo < 0 || seasonsAgo > 1) return null
+      const playerName = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
+      const opponentName = resolveSubjectName(game, item.post.subject2, item.post.subject2Snapshot)
+      if (!playerName || !opponentName) return null
+      return {
+        voice: 'press',
+        title: `Han valde ${opponentName}.`,
+        body: `${playerName}, som ${ownClubName} jagade. På ${dag} står han på andra sidan.`,
+      }
     }
 
     return null

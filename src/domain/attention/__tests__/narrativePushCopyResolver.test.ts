@@ -282,6 +282,69 @@ describe('createNarrativePushCopyResolver', () => {
     expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: registrets §7 "nemesis"-rad
+  // ("Han valde {Motståndare}") beskriver spelaren VI bjöd på och missade,
+  // vars klubb vid budtillfället nu är nästa motstånd — transfer_target_missed,
+  // inte nemesis_signed (som berättar motsatsen). Bara press-rösten, ingen rotation.
+  it('nemesis: transfer_target_missed till exakt nästa motstånd, samma säsong', () => {
+    const resolver = createNarrativePushCopyResolver(
+      gameFixture({ players: [{ id: 'p1', firstName: 'Elias', lastName: 'Grafström' }] as SaveGame['players'] }),
+      memoryRotation(),
+    )
+    const item = agendaItem({
+      type: 'transfer_target_missed', season: 3, matchday: 1,
+      subject: { kind: 'player', id: 'p1' },
+      subject2: { kind: 'club', id: 'club_skutskar' },
+    })
+    const copy = resolver({ category: 'narrative_return', item: item })
+    expect(copy).toEqual({
+      voice: 'press',
+      title: 'Han valde Skutskärs IF.',
+      body: 'Elias Grafström, som Söderfors jagade. På lördag står han på andra sidan.',
+    })
+  })
+
+  it('nemesis: två leveranser i rad ger fortfarande press — registret ger bara en röst, ingen rotation', () => {
+    const rotation = memoryRotation()
+    const resolver = createNarrativePushCopyResolver(
+      gameFixture({ players: [{ id: 'p1', firstName: 'Elias', lastName: 'Grafström' }] as SaveGame['players'] }),
+      rotation,
+    )
+    const item = agendaItem({
+      type: 'transfer_target_missed', season: 3, matchday: 1,
+      subject: { kind: 'player', id: 'p1' },
+      subject2: { kind: 'club', id: 'club_skutskar' },
+    })
+    expect(resolver({ category: 'narrative_return', item: item })?.voice).toBe('press')
+    expect(resolver({ category: 'narrative_return', item: item })?.voice).toBe('press')
+  })
+
+  it('nemesis: hans klubb vid budtillfället var ett ANNAT lag än nästa motstånd — ingen text', () => {
+    const resolver = createNarrativePushCopyResolver(
+      gameFixture({ players: [{ id: 'p1', firstName: 'Elias', lastName: 'Grafström' }] as SaveGame['players'] }),
+      memoryRotation(),
+    )
+    const item = agendaItem({
+      type: 'transfer_target_missed', season: 3, matchday: 1,
+      subject: { kind: 'player', id: 'p1' },
+      subject2: { kind: 'club', id: 'club_annat' },
+    })
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
+  })
+
+  it('nemesis: mer än en säsong gammalt missat bud — för gammalt, ingen text', () => {
+    const resolver = createNarrativePushCopyResolver(
+      gameFixture({ currentSeason: 5, players: [{ id: 'p1', firstName: 'Elias', lastName: 'Grafström' }] as SaveGame['players'] }),
+      memoryRotation(),
+    )
+    const item = agendaItem({
+      type: 'transfer_target_missed', season: 3, matchday: 1,
+      subject: { kind: 'player', id: 'p1' },
+      subject2: { kind: 'club', id: 'club_skutskar' },
+    })
+    expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
+  })
+
   it('saknad fixture.date (t.ex. äldre save) — hellre ingen text än en mening utan veckodag', () => {
     const resolver = createNarrativePushCopyResolver(
       gameFixture({ fixtures: [{
