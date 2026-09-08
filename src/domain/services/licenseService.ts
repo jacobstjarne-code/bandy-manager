@@ -43,6 +43,23 @@ export const LICENSE_RISK_DENIED_THRESHOLD = 80
 export const LICENSE_RISK_SCORE_CAP = 100
 export const LICENSE_ACTION_PLAN_CAPITAL_INCOME = 40_000
 
+// Formellt behållna i avskedskalibreringen 2026-09-07: hela A-kedjan
+// klarade Heros 55–65 % och båda mittklubbarna <50 % utan parameterändring.
+export const LICENSE_REPUTATION_DEFICIT_BASELINE = -200_000
+export const LICENSE_REPUTATION_LOSS_BASE = 5
+export const LICENSE_REPUTATION_DEFICIT_STEP = 50_000
+export const LICENSE_REPUTATION_LOSS_PER_STEP = 5
+export const LICENSE_REPUTATION_LOSS_CAP = 30
+
+export function calculateLicenseReputationLoss(finances: number): number {
+  const deficitDepth = Math.max(0, LICENSE_REPUTATION_DEFICIT_BASELINE - finances)
+  return Math.min(
+    LICENSE_REPUTATION_LOSS_CAP,
+    LICENSE_REPUTATION_LOSS_BASE
+      + Math.floor(deficitDepth / LICENSE_REPUTATION_DEFICIT_STEP) * LICENSE_REPUTATION_LOSS_PER_STEP,
+  )
+}
+
 /**
  * Zon-texten, LÅST av Jacob (2026-08-26, samma dom som magnituderna) — "ingen
  * siffra visas, poängen är ett internt tal... zonen och tidshorisonten

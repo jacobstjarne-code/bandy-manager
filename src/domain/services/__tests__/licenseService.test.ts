@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkLicenseStatus, buildLicenseInboxItem, licenseZoneFromScore, LICENSE_ZONE_TEXT } from '../licenseService'
+import { calculateLicenseReputationLoss, checkLicenseStatus, buildLicenseInboxItem, licenseZoneFromScore, LICENSE_ZONE_TEXT } from '../licenseService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { LicenseStatus } from '../licenseService'
 
@@ -62,6 +62,19 @@ describe('licenseZoneFromScore — trösklarna 40/60/80', () => {
   it('80+ är license_denied', () => {
     expect(licenseZoneFromScore(80)).toBe('license_denied')
     expect(licenseZoneFromScore(100)).toBe('license_denied')
+  })
+})
+
+describe('calculateLicenseReputationLoss — formellt behållen skala 2026-09-07', () => {
+  it.each([
+    [-200_000, 5],
+    [-249_999, 5],
+    [-250_000, 10],
+    [-300_000, 15],
+    [-450_000, 30],
+    [-900_000, 30],
+  ])('kassa %i ger exakt %i i ryktesförlust', (finances, expectedLoss) => {
+    expect(calculateLicenseReputationLoss(finances)).toBe(expectedLoss)
   })
 })
 

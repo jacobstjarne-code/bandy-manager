@@ -40,7 +40,7 @@ import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
-import { checkLicenseStatus, buildLicenseInboxItem, isActiveLicenseWarning, LICENSE_ACTION_PLAN_CAPITAL_INCOME } from '../../domain/services/licenseService'
+import { calculateLicenseReputationLoss, checkLicenseStatus, buildLicenseInboxItem, isActiveLicenseWarning, LICENSE_ACTION_PLAN_CAPITAL_INCOME } from '../../domain/services/licenseService'
 import type { AdvanceResult } from './advanceTypes'
 import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
 import { appendFinanceLog, applyFinanceChange, deriveSeasonTransferBudget, type FinanceEntry } from '../../domain/services/economyService'
@@ -1278,11 +1278,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // "tvinga fram ett val" — den finns.
   if (licenseCheck.action?.type === 'license_denied' && managedClubForLicense) {
     // Ryktesförlust skalar med underskottets djup istf ett fast tal.
-    // Magnitud FÖRESLAGEN, inte dömd: -5 vid tröskeln, +5 extra per
-    // ytterligare 50 000 kr under -200 000, tak -30 (samma golv som förut
-    // var det enda möjliga utfallet, nu det VÄRSTA möjliga).
-    const deficitDepth = Math.max(0, -200_000 - managedClubForLicense.finances)
-    const reputationLoss = Math.min(30, 5 + Math.floor(deficitDepth / 50_000) * 5)
+    // Skalan behölls formellt i avskedskalibreringen 2026-09-07: -5 vid
+    // baslinjen, +5 per ytterligare 50 000 kr i underskott, med tak -30.
+    const reputationLoss = calculateLicenseReputationLoss(managedClubForLicense.finances)
     clubsAfterLicense = clubsAfterLicense.map(c =>
       c.id === game.managedClubId
         ? { ...c, reputation: Math.max(0, (c.reputation ?? 50) - reputationLoss) }

@@ -90,3 +90,5 @@ Detta är bitidentiskt med det lilla passet på `3b78737e`: samma totalsiffror, 
 ## Dom för fortsatt arbete
 
 Den beslutade avskedskalibreringen är klar. Det finns inget belägg för att röra `licenseRiskScore`-magnituderna eller `RUNNING_LOSS_EXPECTATION_MULTIPLIER` för att nå de tre låsta målen. Eventuella framtida mål för Forsbacka eller andra klubbprofiler är en ny produktdom och ska inte bakas in retroaktivt i denna acceptans.
+
+Det omfattar också licensens befintliga ryktesskala: −5 vid underskottsbaslinjen, ytterligare −5 per 50 000 kr och tak −30. Skalan ingick i A-kedjan som skulle bli dom i rundan; baslinjen nådde stoppvillkoret utan parameterändring och värdena behålls därför. De är namngivna och exakt testlåsta i `licenseService.ts`.
