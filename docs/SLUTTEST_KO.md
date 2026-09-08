@@ -462,7 +462,7 @@ Behåll kompakt sammanfattning per säsong för **hela** karriären: säsong, pl
 | 1.1 | `seasonEndProcessor.ts:1178` — `resolveContractExtension` saknade fjärde argument (`managerName`) | `KLAR (73a98e14)` |
 | 1.2 | `tsc --noEmit` + Vite-build som obligatoriska CI-grindar | `KLAR (f9a3358a)` |
 | 1.3 | Deploy-sync som synlig releasegrind — live mot main på en rad | `DELVIS KLAR (39770cd0 + d068f867)` — grinden jämför origin/main mot Vercel och gör det korrekt, men var riktad åt fel håll för felet som faktiskt inträffade 2026-08-18 (51 commits opushade — den körs bara på push, aldrig när problemet är att push uteblir). Två nya lager täcker den andra riktningen: post-commit-hook (`scripts/git-hooks/post-commit`, tröskel 1 opushad commit) + sessionsstart-steg 5 (`CLAUDE.md`, arbetsdags-koll mot `origin/main`) |
-| 1.4 | Visual-baselines regenerering. **Väntar på min styckvisa kvittering** — rapportera vad som ska ha ändrats, post för post, så jag kan godkänna per ändring och inte som klump | `PÅGÅR` — 21 diffar kartlagda i tre bekräftade + en obekräftad batch, se nedan. Aldrig triggad |
+| 1.4 | Visual-baselines regenerering. **Väntar på min styckvisa kvittering** — rapportera vad som ska ha ändrats, post för post, så jag kan godkänna per ändring och inte som klump | `KLAR` — efterföljande Design-rundor granskade diffarna; Linux-baselines finns i `4de165a1`/`dc07f5ef`/`2e358abc` och aktuell visuell CI är grön. Se MASTER-arkivet. |
 | 1.5 | `tranare`-scenens timeout | `KLAR (f72c30b4)` |
 
 **Varför 1.4 inte får godkännas i klump:** en oförklarad diff som godkänns blir baseline, och då är en regression osynlig för alltid. Det var precis vad de 16 falska diffarna visade — de var en artefakt av sticky dev-nav, inte produktfel, och hade vi godkänt dem hade vi mätt allt framtida mot brus.
@@ -472,7 +472,7 @@ Behåll kompakt sammanfattning per säsong för **hela** karriären: säsong, pl
 1. **14× `--cta-nav-clearance` (`eeab2a62`), avsedda.** 12× `baseline.visual.ts` (portal-tom/normal/full/grind/bid-single/bid-multi × 375/390px) + 2× `scenes.visual.ts` (`portal`, `finalhelg` — verifierat direkt: `finalhelg`s diff visar exakt CTA-knappen "Säsong över →").
 2. **3× KapitelPunkt (`fc6f5015`), avsedda.** `granska-cup-final`, `granska-sm-final`, `granska-avsked`.
 3. **1× `upptakt`, avsedd.** Bisektat mot 13-commit-intervallet `c5fa24f7`→`0b325c10`: passerar genomgående (den enda avvikande datapunkten var en kallstarts-artefakt i bisektions-riggningen, inte ett fynd). Orsaken ligger EFTER `0b325c10`: `f72c30b4` (tranare-fixet) lade till `managerName` i `DevScenesScreen.tsx`s delade `makeGame()` — `NextMatchCard.tsx:322` har `{game.managerName && (...)}`, tidigare tyst dolt, nu korrekt synligt. `upptakt` renderar `NextMatchPrimary` → `NextMatchCard`.
-4. **3× förbaseline-drift, OBEKRÄFTAD, egen batch.** `granska-spelare`, `granska-shotmap`, `granska-analys` — failade på VARJE commit i hela bisektionen (`73a98e14`→`0b325c10`, ingen passerar-punkt), och ingen commit efter `0b325c10` rör de tre komponenterna. Drift som fanns **före** hela sessionen — baselinerna har varit inaktuella längre än auditerna, exakt din andra hypotes.
+4. **3× förbaseline-drift — senare stängd.** `granska-spelare`, `granska-shotmap`, `granska-analys` failade på varje commit i den ursprungliga bisektionen, men fick därefter granskade Linux-baselines i `4de165a1`/`dc07f5ef`/`2e358abc`. Aktuell visuell CI är grön.
 
 ---
 
