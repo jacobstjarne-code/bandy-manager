@@ -19,10 +19,7 @@ import type { Referee, RefereeRelation } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
-
-const AI_FITNESS_FLOOR = 40
-const AI_ROTATION_CA_TOLERANCE = 8
-const AI_REPLACEMENT_MIN_FITNESS = 60
+import { pickBestEleven } from '../../../domain/services/squadEvaluator'
 
 // DOM_FORMATIONER_V2_2026-09-04.md: samma stil→formation-mappning som
 // worldGenerator.ts's buildTactic, för konsekvens (bevarar heightMode-hinken
@@ -72,29 +69,12 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
       (p.restGamesRemaining ?? 0) === 0,
   )
 
-  const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
-
-  const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-  const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-
-  const starters: Player[] = []
+  // C-FT1: AI:n och spelarens "Fyll bästa" använder samma matchformsurval.
+  // Fitnessgolvet och den multiplikativa CA×form×fitness-kurvan bor i
+  // domain-lagret; AI:n ska inte ha tre egna 40/60/8-specialtrösklar.
+  const picked = pickBestEleven(available)
+  const starters: Player[] = [...picked.starters]
   const regenPlayers: Player[] = []
-
-  if (gkPool.length > 0) {
-    starters.push(gkPool[0])
-  }
-
-  for (const p of outfieldPool) {
-    if (starters.length >= 11) break
-    starters.push(p)
-  }
-
-  if (starters.length < 11) {
-    for (const p of gkPool.slice(1)) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
-  }
 
   let regenIndex = 0
   while (starters.length < 11) {
@@ -103,34 +83,8 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     regenPlayers.push(regen)
   }
 
-  // Fitness floor: only swap out genuine exhaustion cases (< 40) — not proactive rotation.
-  // Regen players have no entry in sorted, so guard with regenIds before querying benchPool.
-  const regenIds = regenPlayers.length > 0 ? new Set(regenPlayers.map(p => p.id)) : null
-  const starterIdsTemp = new Set(starters.map(p => p.id))
-  const benchPool = sorted.filter(p => !starterIdsTemp.has(p.id))
-
-  for (let i = 0; i < starters.length; i++) {
-    const s = starters[i]
-    if (regenIds?.has(s.id) || s.fitness >= AI_FITNESS_FLOOR) continue
-    const replacement = benchPool.find(
-      b =>
-        b.position === s.position &&
-        b.fitness >= AI_REPLACEMENT_MIN_FITNESS &&
-        Math.abs(b.currentAbility - s.currentAbility) <= AI_ROTATION_CA_TOLERANCE,
-    )
-    if (!replacement) continue
-    starters[i] = replacement
-    benchPool.splice(benchPool.indexOf(replacement), 1)
-  }
-
   const starterIds = new Set(starters.map(p => p.id))
-  const bench: Player[] = []
-  for (const p of sorted) {
-    if (bench.length >= 5) break
-    if (!starterIds.has(p.id)) {
-      bench.push(p)
-    }
-  }
+  const bench = picked.rest.filter(player => !starterIds.has(player.id)).slice(0, 5)
 
   const captain = starters.reduce(
     (best, p) => (p.currentAbility > (best?.currentAbility ?? -1) ? p : best),
@@ -140,8 +94,7 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
   // previously chose a formation but omitted the slot map, which made
   // effectivePlayerModifier() skip position fit for every AI player while the
   // managed team paid it. Derive the map from the already selected eleven so
-  // rotation policy and squad membership remain unchanged; only the chosen
-  // formation's actual positional meaning is restored.
+  // the chosen formation's actual positional meaning disappear.
   const lineupSlots = autoAssignFormation(FORMATIONS[formation], starters)
 
   return {

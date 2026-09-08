@@ -11,17 +11,27 @@ import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation
 import type { Tactic } from '../../domain/entities/Club'
 import type { TeamSelection } from '../../domain/entities/Fixture'
 import { fixtureSeed, mulberry32 } from '../../domain/utils/random'
-import { getSelectionScore, FATIGUE_AVAILABILITY_FLOOR } from '../../domain/services/squadEvaluator'
+import {
+  assessFatigueFloorBreach,
+  FATIGUE_AVAILABILITY_FLOOR,
+  getSelectionScore,
+  pickBestEleven,
+  prioritizeLineupCandidates,
+  type BestElevenSelection,
+  type LineupSelectionMode,
+} from '../../domain/services/squadEvaluator'
+
+export { assessFatigueFloorBreach, pickBestEleven }
 
 export const PREFILL_COUNT = 8
 export const EMPTY_SLOTS = 3
 
 /**
  * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom). En spelare under detta
- * fitness-golv utesluts ur "bästa 11"-poolen om ett rimligt alternativ finns
- * — samma etablerade idiom som `AI_FITNESS_FLOOR=40` (matchSimProcessor.ts)
- * redan använder för AI-lagens rotation. Spelaren ska lyda samma regel som
- * AI:n, inte en mildare. En tunn trupp (Skutskär-scenariot) tvingas ändå
+ * fitness-golv utesluts ur "bästa 11"-poolen om ett rimligt alternativ finns.
+ * C-FT1 flyttade 2026-09-08 hela urvalet till domain-lagret, så spelarens
+ * autofyllnad och AI:n nu lyder samma golv och matchformskurva. En tunn trupp
+ * (Skutskär-scenariot) tvingas ändå
  * välja NÅGON — poolen under golvet finns kvar som fallback, den kastas
  * aldrig, bara nedprioriteras.
  *
@@ -48,7 +58,7 @@ export const SPELKLARHET_FITNESS_FLOOR = FATIGUE_AVAILABILITY_FLOOR
  * "Fyll bästa elvan"-ytor EN funktion, som `pickBestEleven`-docstringen
  * redan påstod.
  */
-export type AutoFillMode = 'strongest' | 'rested' | 'matchfit'
+export type AutoFillMode = LineupSelectionMode
 
 export const AUTOFILL_MODE_LABELS: Record<AutoFillMode, string> = {
   strongest: 'Starkast',
@@ -57,74 +67,10 @@ export const AUTOFILL_MODE_LABELS: Record<AutoFillMode, string> = {
 }
 
 export function prioritizeByFitnessFloor(players: Player[], mode: AutoFillMode = 'matchfit'): Player[] {
-  const byScore = mode === 'strongest'
-    ? (a: Player, b: Player) => b.currentAbility - a.currentAbility
-    : mode === 'rested'
-      ? (a: Player, b: Player) => b.fitness - a.fitness || getSelectionScore(b) - getSelectionScore(a)
-      : (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
-  const aboveFloor = players.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).sort(byScore)
-  const belowFloor = players.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR).sort(byScore)
-  return [...aboveFloor, ...belowFloor]
+  return prioritizeLineupCandidates(players, mode)
 }
 
-export interface BestElevenResult {
-  starters: Player[]
-  /** Resten, sorterad bästa-först — anroparen trimmar till bänkstorlek själv. */
-  rest: Player[]
-  /**
-   * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1. Blocket under golvet
-   * fanns redan som fallback (HIGH2) — men fyllningen därifrån var TYST. Nu
-   * rapporteras den: vilka som togs under golvet, och hur många spelare över
-   * golvet som saknades. `forced` är sant exakt när urvalet inte hade elva
-   * spelklara över golvet att välja bland.
-   */
-  belowFloorStarters: Player[]
-  shortfall: number
-  forced: boolean
-}
-
-/**
- * A3 krav 1 — samma bedömning som `pickBestEleven` gör internt, men körbar mot
- * en GODTYCKLIG elva. Behövs för att grinden ska sitta på beslutet ("dessa elva
- * startar"), inte bara på autofyll-knappen: en manuellt ihopsatt elva under
- * golvet är exakt samma dolda straff, och skulle annars gå obemärkt förbi.
- */
-export function assessFatigueFloorBreach(
-  starters: Player[],
-  available: Player[],
-): { belowFloorStarters: Player[]; shortfall: number; forced: boolean } {
-  const belowFloorStarters = starters.filter(p => p.fitness < SPELKLARHET_FITNESS_FLOOR)
-  const aboveFloorAvailable = available.filter(p => p.fitness >= SPELKLARHET_FITNESS_FLOOR).length
-  const shortfall = Math.max(0, 11 - aboveFloorAvailable)
-  return { belowFloorStarters, shortfall, forced: shortfall > 0 }
-}
-
-/**
- * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): DEN gemensamma "bästa
- * 11"-urvalslogiken. Fanns tidigare duplicerad två gånger (denna fil OCH
- * useLineupEditor.ts:s handleAutoFill — "Fyll bästa elvan"-knappen auditen
- * testade) med en TREDJE, oberoende formel (spelklarhet) än den matchmotorn
- * faktiskt använder. Nu: en källa, en formel (getSelectionScore), delad.
- */
-export function pickBestEleven(available: Player[], mode: AutoFillMode = 'matchfit'): BestElevenResult {
-  const sorted = prioritizeByFitnessFloor(available, mode)
-  const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-  const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-
-  const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
-  for (const p of outfieldPool) {
-    if (starters.length >= 11) break
-    starters.push(p)
-  }
-  for (const p of gkPool.slice(1)) {
-    if (starters.length >= 11) break
-    starters.push(p)
-  }
-
-  const starterSet = new Set(starters.map(p => p.id))
-  const rest = sorted.filter(p => !starterSet.has(p.id))
-  return { starters, rest, ...assessFatigueFloorBreach(starters, available) }
-}
+export type BestElevenResult = BestElevenSelection
 
 export interface NudgeLineup {
   starterIds: string[]

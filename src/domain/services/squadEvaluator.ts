@@ -50,8 +50,8 @@ function playerModifier(player: Player): number {
  * currentAbility ersätter attributeScore (ingen formation/slot är känd
  * ännu vid urvalstillfället, CA är den holistiska proxyn) och multipliceras
  * mot samma playerModifier() matchmotorn använder, inte en linjär blandning.
- * Exporterad så lineupNudge.ts (Fyll bästa-sorteringen) kan använda EXAKT
- * samma viktning som matchvärderingen, inte en egen andra sanning.
+ * Exporterad så både spelarens autofyllnad och AI-laguttagningen använder
+ * EXAKT samma viktning som matchvärderingen, inte varsin andra sanning.
  */
 export function getSelectionScore(player: Player): number {
   return player.currentAbility * playerModifier(player)
@@ -65,11 +65,76 @@ export function getSelectionScore(player: Player): number {
  * (setLineup.ts, playerStateProcessor.ts, båda application-lager) inte kan
  * importera från presentation/utils utan att bryta lagerriktningen.
  * `lineupNudge.ts`s `SPELKLARHET_FITNESS_FLOOR` är nu en re-export av denna
- * — EN sanning, ETT värde (22, mitten av Jacobs låsta 20–25%-spann), två
- * konsekvenser: under den exkluderas spelaren ur "Fyll bästa" (HIGH2) OCH
- * riskerar att stå över nästa match (A-H3 ben 2).
+ * — EN sanning, ETT värde (22, mitten av Jacobs låsta 20–25%-spann), tre
+ * konsekvenser: under den nedprioriteras spelaren i "Fyll bästa" (HIGH2)
+ * OCH AI-laguttagningen (C-FT1), samt riskerar att stå över nästa match
+ * (A-H3 ben 2).
  */
 export const FATIGUE_AVAILABILITY_FLOOR = 22
+
+export type LineupSelectionMode = 'strongest' | 'rested' | 'matchfit'
+
+/**
+ * Gemensam rangordning för både den hanterade klubbens autofyllnad och
+ * AI-klubbarnas laguttagning. Fitnessgolvet är en prioriteringsgräns, inte
+ * ett förbud: spelare under golvet hamnar sist men finns kvar som reserv när
+ * truppen annars inte räcker till elva.
+ */
+export function prioritizeLineupCandidates(
+  players: Player[],
+  mode: LineupSelectionMode = 'matchfit',
+): Player[] {
+  const byScore = mode === 'strongest'
+    ? (a: Player, b: Player) => b.currentAbility - a.currentAbility
+    : mode === 'rested'
+      ? (a: Player, b: Player) => b.fitness - a.fitness || getSelectionScore(b) - getSelectionScore(a)
+      : (a: Player, b: Player) => getSelectionScore(b) - getSelectionScore(a)
+  const aboveFloor = players.filter(p => p.fitness >= FATIGUE_AVAILABILITY_FLOOR).sort(byScore)
+  const belowFloor = players.filter(p => p.fitness < FATIGUE_AVAILABILITY_FLOOR).sort(byScore)
+  return [...aboveFloor, ...belowFloor]
+}
+
+export interface BestElevenSelection {
+  starters: Player[]
+  /** Resten, sorterad bästa-först — anroparen trimmar till bänkstorlek själv. */
+  rest: Player[]
+  belowFloorStarters: Player[]
+  shortfall: number
+  forced: boolean
+}
+
+export function assessFatigueFloorBreach(
+  starters: Player[],
+  available: Player[],
+): Pick<BestElevenSelection, 'belowFloorStarters' | 'shortfall' | 'forced'> {
+  const belowFloorStarters = starters.filter(p => p.fitness < FATIGUE_AVAILABILITY_FLOOR)
+  const aboveFloorAvailable = available.filter(p => p.fitness >= FATIGUE_AVAILABILITY_FLOOR).length
+  const shortfall = Math.max(0, 11 - aboveFloorAvailable)
+  return { belowFloorStarters, shortfall, forced: shortfall > 0 }
+}
+
+export function pickBestEleven(
+  available: Player[],
+  mode: LineupSelectionMode = 'matchfit',
+): BestElevenSelection {
+  const sorted = prioritizeLineupCandidates(available, mode)
+  const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
+  const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
+
+  const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
+  for (const player of outfieldPool) {
+    if (starters.length >= 11) break
+    starters.push(player)
+  }
+  for (const player of gkPool.slice(1)) {
+    if (starters.length >= 11) break
+    starters.push(player)
+  }
+
+  const starterIds = new Set(starters.map(player => player.id))
+  const rest = sorted.filter(player => !starterIds.has(player.id))
+  return { starters, rest, ...assessFatigueFloorBreach(starters, available) }
+}
 
 function effectivePlayerModifier(player: Player, tactic: Tactic): number {
   const base = playerModifier(player)
