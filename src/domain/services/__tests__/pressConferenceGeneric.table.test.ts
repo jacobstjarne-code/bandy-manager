@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { isGenericMatch, ALL_PRESS_TAGS } from '../pressConferenceService'
+import {
+  isGenericMatch,
+  ALL_PRESS_TAGS,
+  TAG_DEFS,
+  evaluatePressTagProof,
+  type PressContext,
+} from '../pressConferenceService'
 
 // M-refaktor (Jacob 2026-08-17): isGenericMatch bytte från en
 // prefix-heuristik (tag.startsWith('win_'/'loss_'/'draw_')) till en
@@ -98,5 +104,70 @@ describe('isGenericMatch — table-driven klassificering per tagg', () => {
     expect(isGenericMatch('nagon_ny_tagg_som_inte_klassificerats', true, false, false)).toBe(false)
     expect(isGenericMatch('nagon_ny_tagg_som_inte_klassificerats', false, true, false)).toBe(false)
     expect(isGenericMatch('nagon_ny_tagg_som_inte_klassificerats', false, false, true)).toBe(false)
+  })
+})
+
+describe('TAG_DEFS — deklarerat genereringskontrakt', () => {
+  const baseContext: PressContext = {
+    won: false,
+    lost: false,
+    draw: false,
+    margin: 0,
+    isDerby: false,
+    isHome: true,
+    isPlayoff: false,
+    isCup: false,
+    isFinal: false,
+    gavLigapoang: true,
+    streak: 0,
+    lossStreak: 0,
+    drawStreak: 0,
+    opponentPosition: 6,
+    position: 5,
+    trailedAtHalf: false,
+    lateEqualizer: false,
+    youngsterScored: false,
+    midfieldDominance: false,
+    rand: () => 0.5,
+  }
+
+  it('låser den verkliga populationen: 24 state-predikat och 5 tidlösa routingtaggar', () => {
+    const definitions = Object.values(TAG_DEFS)
+    expect(definitions).toHaveLength(29)
+    expect(definitions.filter(definition => definition.proofSource.form === 'state-predicate')).toHaveLength(24)
+    expect(definitions.filter(definition => definition.proofSource.form === 'timeless')).toHaveLength(5)
+  })
+
+  it('varje state-predikat har en namngiven beviskälla som faktiskt utvärderas', () => {
+    for (const [tag, definition] of Object.entries(TAG_DEFS)) {
+      if (definition.proofSource.form !== 'state-predicate') continue
+      expect(definition.proofSource.description.trim(), tag).not.toBe('')
+      const proof = evaluatePressTagProof(tag, baseContext)
+      expect(proof?.form, tag).toBe('state-predicate')
+      if (proof?.form === 'state-predicate') {
+        expect(typeof proof.evaluatedTrue, tag).toBe('boolean')
+      }
+    }
+  })
+
+  it('använder samma predikat för beviset som för taggens deklarerade villkor', () => {
+    const winningDerby = { ...baseContext, won: true, isDerby: true }
+    expect(evaluatePressTagProof('win_derby', winningDerby)).toEqual({
+      form: 'state-predicate',
+      description: 'matchen vanns och var ett derby',
+      evaluatedTrue: true,
+    })
+    expect(evaluatePressTagProof('loss_derby', winningDerby)).toMatchObject({
+      form: 'state-predicate',
+      evaluatedTrue: false,
+    })
+  })
+
+  it('klassificerar bara any som alltid tillgänglig och topic-taggarna som prefer-only', () => {
+    expect(TAG_DEFS.any.proofSource).toEqual({ form: 'timeless', availability: 'always' })
+    for (const tag of ['topic_person', 'topic_town', 'topic_doubt', 'topic_player']) {
+      expect(TAG_DEFS[tag].proofSource).toEqual({ form: 'timeless', availability: 'prefer-only' })
+      expect(evaluatePressTagProof(tag, baseContext)).toEqual({ form: 'timeless' })
+    }
   })
 })

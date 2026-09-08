@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { Fixture } from '../entities/Fixture'
+import type { ProofSource } from '../entities/ProofSource'
 import { getRivalry } from '../data/rivalries'
 import { FixtureStatus, MatchEventType } from '../enums'
 import { deriveUtfall, computeTrailedAtHalf } from './matchTypeAxes'
@@ -521,55 +522,105 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
 //                 medvetet, den kan inte "råka" bli återanvändbar.
 type GenericBucket = 'win' | 'loss' | 'draw' | 'universal' | 'none'
 
+type PressTagProof =
+  | {
+      form: 'state-predicate'
+      description: string
+      evaluate: (ctx: PressContext) => boolean
+    }
+  | {
+      form: 'timeless'
+      availability: 'always' | 'prefer-only'
+    }
+
+interface PressTagDef {
+  proofSource: PressTagProof
+  generic: GenericBucket
+}
+
+function stateTag(
+  description: string,
+  evaluate: (ctx: PressContext) => boolean,
+  generic: GenericBucket,
+): PressTagDef {
+  return { proofSource: { form: 'state-predicate', description, evaluate }, generic }
+}
+
+function timelessTag(availability: 'always' | 'prefer-only', generic: GenericBucket): PressTagDef {
+  return { proofSource: { form: 'timeless', availability }, generic }
+}
+
 // Exporterad enbart för tabelltestet (storylineArcPreferIds.table.test.ts) —
 // samma undantag som ALL_PRESS_TAGS/PLAYER_RESPONSES ovan.
-export const TAG_DEFS: Record<string, { matches: (ctx: PressContext) => boolean; generic: GenericBucket }> = {
-  win_any:      { matches: ctx => ctx.won,                                        generic: 'win' },
-  win_big:      { matches: ctx => ctx.won && ctx.margin >= 3,                      generic: 'win' },
-  win_streak:   { matches: ctx => ctx.won && ctx.streak >= 3,                      generic: 'win' },
-  win_away:     { matches: ctx => ctx.won && !ctx.isHome,                          generic: 'win' },
+export const TAG_DEFS: Record<string, PressTagDef> = {
+  win_any:      stateTag('matchen vanns', ctx => ctx.won, 'win'),
+  win_big:      stateTag('matchen vanns med minst tre måls marginal', ctx => ctx.won && ctx.margin >= 3, 'win'),
+  win_streak:   stateTag('matchen vanns och segersviten är minst tre matcher', ctx => ctx.won && ctx.streak >= 3, 'win'),
+  win_away:     stateTag('matchen vanns på bortaplan', ctx => ctx.won && !ctx.isHome, 'win'),
   // U2 (SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg i sina
   // egna generic-buckets ('win'/'loss') — en icke-derbymatch som föll tillbaka
   // på generic-fallbacken kunde då få ett derby-svar. Samma disciplin som
   // playoff_loss_not_final (raden nedanför) redan tillämpar: generic:'none'.
-  win_derby:    { matches: ctx => ctx.won && ctx.isDerby,                          generic: 'none' },
-  win_top3:     { matches: ctx => ctx.won && ctx.position <= 3,                    generic: 'win' },
-  win_comeback: { matches: ctx => ctx.won && ctx.trailedAtHalf,                    generic: 'win' },
-  loss_any:     { matches: ctx => ctx.lost,                                        generic: 'loss' },
-  loss_big:     { matches: ctx => ctx.lost && ctx.margin >= 3,                     generic: 'loss' },
-  loss_streak:  { matches: ctx => ctx.lost && ctx.lossStreak >= 3,                 generic: 'loss' },
-  loss_home:    { matches: ctx => ctx.lost && ctx.isHome,                          generic: 'loss' },
-  loss_close:   { matches: ctx => ctx.lost && ctx.margin === 1,                    generic: 'loss' },
-  loss_derby:   { matches: ctx => ctx.lost && ctx.isDerby,                         generic: 'none' },
-  loss_referee: { matches: ctx => ctx.lost && ctx.rand() < 0.15,                   generic: 'loss' },
-  draw_any:     { matches: ctx => ctx.draw,                                        generic: 'draw' },
-  draw_away_top:{ matches: ctx => ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3, generic: 'draw' },
-  draw_boring:  { matches: ctx => ctx.draw && (ctx.totalShots ?? 99) < 10,          generic: 'draw' },
-  playoff_win:  { matches: ctx => ctx.won && ctx.isPlayoff,                        generic: 'win' },
+  win_derby:    stateTag('matchen vanns och var ett derby', ctx => ctx.won && ctx.isDerby, 'none'),
+  win_top3:     stateTag('matchen vanns och klubben ligger topp tre', ctx => ctx.won && ctx.position <= 3, 'win'),
+  win_comeback: stateTag('matchen vanns efter underläge i halvtid', ctx => ctx.won && ctx.trailedAtHalf, 'win'),
+  loss_any:     stateTag('matchen förlorades', ctx => ctx.lost, 'loss'),
+  loss_big:     stateTag('matchen förlorades med minst tre måls marginal', ctx => ctx.lost && ctx.margin >= 3, 'loss'),
+  loss_streak:  stateTag('matchen förlorades och förlustsviten är minst tre matcher', ctx => ctx.lost && ctx.lossStreak >= 3, 'loss'),
+  loss_home:    stateTag('matchen förlorades på hemmaplan', ctx => ctx.lost && ctx.isHome, 'loss'),
+  loss_close:   stateTag('matchen förlorades med ett måls marginal', ctx => ctx.lost && ctx.margin === 1, 'loss'),
+  loss_derby:   stateTag('matchen förlorades och var ett derby', ctx => ctx.lost && ctx.isDerby, 'none'),
+  loss_referee: stateTag('matchen förlorades och domarfrågan valdes av den seedade slumpen', ctx => ctx.lost && ctx.rand() < 0.15, 'loss'),
+  draw_any:     stateTag('matchen slutade oavgjort', ctx => ctx.draw, 'draw'),
+  draw_away_top: stateTag('matchen slutade oavgjort borta mot ett topp tre-lag', ctx => ctx.draw && !ctx.isHome && ctx.opponentPosition <= 3, 'draw'),
+  draw_boring:  stateTag('matchen slutade oavgjort med färre än tio avslut', ctx => ctx.draw && (ctx.totalShots ?? 99) < 10, 'draw'),
+  playoff_win:  stateTag('matchen vanns och var en slutspelsmatch', ctx => ctx.won && ctx.isPlayoff, 'win'),
   // M54(g): playoff_loss_not_final medvetet UTESLUTEN från generic — cl25
   // ska inte slinka in via generic-fallbacken när matchen var finalen.
-  playoff_loss_not_final: { matches: ctx => ctx.lost && ctx.isPlayoff && !ctx.isFinal, generic: 'none' },
-  cup_win:      { matches: ctx => ctx.won && ctx.isCup,                            generic: 'win' },
-  final_pre:    { matches: ctx => ctx.isPlayoff && ctx.isFinal,                    generic: 'win' },
-  winter:       { matches: ctx => (ctx.temperature ?? 0) < -10,                    generic: 'none' },
-  relegation:   { matches: ctx => ctx.position >= 10,                              generic: 'none' },
-  youngster:    { matches: ctx => ctx.youngsterScored,                             generic: 'none' },
-  any:          { matches: () => true,                                            generic: 'universal' },
+  playoff_loss_not_final: stateTag('matchen förlorades i slutspelet men var inte finalen', ctx => ctx.lost && ctx.isPlayoff && !ctx.isFinal, 'none'),
+  cup_win:      stateTag('matchen vanns och var en cupmatch', ctx => ctx.won && ctx.isCup, 'win'),
+  final_pre:    stateTag('matchen var en slutspelsfinal', ctx => ctx.isPlayoff && ctx.isFinal, 'win'),
+  winter:       stateTag('matchtemperaturen var lägre än minus tio grader', ctx => (ctx.temperature ?? 0) < -10, 'none'),
+  relegation:   stateTag('klubben ligger på plats tio eller sämre', ctx => ctx.position >= 10, 'none'),
+  youngster:    stateTag('en ung spelare gjorde mål i matchen', ctx => ctx.youngsterScored, 'none'),
+  any:          timelessTag('always', 'universal'),
   // 4.2 (SLUTTEST_KO, 2026-08-19): topic_*-svar hör till en specifik fråga, inte
-  // ett matchutfall. matches: () => false stänger kontextmatchning; generic: 'none'
+  // ett matchutfall. prefer-only stänger kontextmatchning; generic: 'none'
   // stänger generic-fallbacken. Enda vägen in är explicit preferIds.
-  topic_person: { matches: () => false,                                           generic: 'none' },
-  topic_town:   { matches: () => false,                                           generic: 'none' },
-  topic_doubt:  { matches: () => false,                                           generic: 'none' },
-  topic_player: { matches: () => false,                                           generic: 'none' },
+  topic_person: timelessTag('prefer-only', 'none'),
+  topic_town:   timelessTag('prefer-only', 'none'),
+  topic_doubt:  timelessTag('prefer-only', 'none'),
+  topic_player: timelessTag('prefer-only', 'none'),
 }
 
 // Exporterad enbart för tabelltestet (isGenericMatch.table.test.ts) — inte
 // avsedd som allmän API-yta för resten av appen.
 export const ALL_PRESS_TAGS = Object.keys(TAG_DEFS)
 
+/**
+ * Kör den deklarerade beviskällan en gång och returnerar samma generiska
+ * ProofSource-form som events/* använder. Matchningen och beviset kan därför
+ * inte glida isär: state-predikatet nedan ÄR urvalsvillkoret.
+ */
+export function evaluatePressTagProof(tag: string, ctx: PressContext): ProofSource | undefined {
+  const source = TAG_DEFS[tag]?.proofSource
+  if (!source) return undefined
+  if (source.form === 'timeless') return { form: 'timeless' }
+  return {
+    form: 'state-predicate',
+    description: source.description,
+    evaluatedTrue: source.evaluate(ctx),
+  }
+}
+
 function matchesContext(tag: string, ctx: PressContext): boolean {
-  return TAG_DEFS[tag]?.matches(ctx) ?? false
+  const definition = TAG_DEFS[tag]
+  if (!definition) return false
+  if (definition.proofSource.form === 'timeless') {
+    return definition.proofSource.availability === 'always'
+  }
+  const proof = evaluatePressTagProof(tag, ctx)
+  return proof?.form === 'state-predicate' && proof.evaluatedTrue
 }
 
 export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: boolean): boolean {
@@ -593,7 +644,7 @@ export function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: b
 // 1. preferIds kringgick ALL kontextkontroll. cl07 ("Derby vinner man med
 //    hjärtat") låg i preferIds på FYRA icke-derby-frågor (rad ~39/47/52/91,
 //    "Tidningarna pratar mer om ekonomi...", "Publiken sjöng hela vägen") —
-//    tag win_derby/TAG_DEFS.matches() spelade ingen roll, för preferIds-
+//    tag win_derby/TAG_DEFS.proofSource spelade ingen roll, för preferIds-
 //    slotten (buildPressResponses nedan) läste bara `preferredById`, aldrig
 //    matchesContext(). Samma sak för cl14 ("Att förlora hemma...") i den
 //    ogaterade 'loss'-frågan "Supportrarna är besvikna" (rad ~71) — kunde

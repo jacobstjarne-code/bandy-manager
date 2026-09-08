@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PLAYER_RESPONSES, TAG_DEFS, type PressContext } from '../pressConferenceService'
+import { PLAYER_RESPONSES, TAG_DEFS } from '../pressConferenceService'
 
 // 4.2 (SLUTTEST_KO.md, 2026-08-19): de kvarvarande storyline-/arc-/community-standing-
 // frågornas preferIds ärvde tidigare ordagrant `question.preferIds` från
@@ -43,27 +43,19 @@ describe('storyline-/arc-frågornas preferIds — tabelltest', () => {
 
   const TOPIC_TAGS = ['topic_person', 'topic_town', 'topic_doubt', 'topic_player']
 
-  it('alla topic_*-taggar är klassificerade i TAG_DEFS med matches:()=>false och generic:none', () => {
+  it('alla topic_*-taggar är klassificerade som tidlösa prefer-only-taggar med generic:none', () => {
     for (const tag of TOPIC_TAGS) {
       expect(TAG_DEFS[tag]).toBeDefined()
       expect(TAG_DEFS[tag].generic).toBe('none')
+      expect(TAG_DEFS[tag].proofSource).toEqual({ form: 'timeless', availability: 'prefer-only' })
     }
   })
 
   it('inget topic_*-svar kan nås via kontextmatchning på en vanlig matchfråga', () => {
-    // "Vanlig matchfråga" — en normal hemmavinst, ingen derby/cup/slutspel,
-    // exakt den typ av kontext som "Han går till jobbet klockan sex" INTE
-    // fick dyka upp efter (Jacobs exempel i ordern).
-    const normalMatchCtx: PressContext = {
-      won: true, lost: false, draw: false, margin: 1,
-      isDerby: false, isHome: true, isPlayoff: false, isCup: false, isFinal: false,
-      gavLigapoang: true, streak: 0, lossStreak: 0, drawStreak: 0,
-      opponentPosition: 6, position: 5,
-      trailedAtHalf: false, lateEqualizer: false, youngsterScored: false, midfieldDominance: false,
-      rand: () => 0.5,
-    }
     for (const tag of TOPIC_TAGS) {
-      expect(TAG_DEFS[tag].matches(normalMatchCtx)).toBe(false)
+      const source = TAG_DEFS[tag].proofSource
+      expect(source.form).toBe('timeless')
+      if (source.form === 'timeless') expect(source.availability).toBe('prefer-only')
     }
   })
 
