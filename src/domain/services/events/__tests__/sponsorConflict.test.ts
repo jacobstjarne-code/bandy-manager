@@ -70,6 +70,17 @@ describe('buildSponsorOfferEvent — konfliktdetektering', () => {
     expect(reject.subtitle).toBe('Ni behåller det ni har.')
   })
 
+  it('påstår inte att ett lägre konfliktbud betalar mer än den befintliga sponsorn', () => {
+    const rival = makeSponsor({ category: 'Bygg', weeklyIncome: 1500 })
+    const offer = makeSponsor({ id: 'sponsor_new', category: 'Bygg', weeklyIncome: 500 })
+    const event = buildSponsorOfferEvent(offer, [rival], 'Testklubben')
+
+    expect(event.terminateSponsorId).toBe(rival.id)
+    expect(event.body).toContain('De betalar 500 kr.')
+    expect(event.body).not.toContain('mer än')
+    expect(event.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
+  })
+
   it('inte systemhandelse — 4/5, inte 5/5 (punkt 2, spelare/funktionär, ouppfylld)', () => {
     const rival = makeSponsor({ id: 'sponsor_rival', category: 'Bygg' })
     const offer = makeSponsor({ id: 'sponsor_new', category: 'Bygg' })

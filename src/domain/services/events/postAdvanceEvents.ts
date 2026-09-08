@@ -899,8 +899,11 @@ export function buildSponsorOfferEvent(
   managedClubName: string | undefined,
   maxSponsors?: number,
 ): GameEvent {
+  const rivalSponsor = activeSponsors.find(s => s.category === offer.category)
   const sponsorOfferIsActionable = offer.weeklyIncome > 0 && offer.contractRounds > 0
-  if (!sponsorOfferIsActionable) {
+  const sponsorOfferClaimIsGrounded = sponsorOfferIsActionable &&
+    (!rivalSponsor || rivalSponsor.category === offer.category)
+  if (!sponsorOfferClaimIsGrounded) {
     throw new Error('Sponsorerbjudanden måste ha positiv veckoersättning och löptid')
   }
 
@@ -921,7 +924,6 @@ export function buildSponsorOfferEvent(
     ? formatK(totalValue)
     : `${totalValue} kr`
 
-  const rivalSponsor = activeSponsors.find(s => s.category === offer.category)
   const COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT = -6
 
   // Påståendesvepet #16 (MASTER.md, 2026-08-24), Jacobs dom 2026-08-26:
@@ -952,12 +954,12 @@ export function buildSponsorOfferEvent(
     type: 'sponsorOffer',
     title: rivalSponsor ? `${offer.name} vill in` : `Sponsorerbjudande — ${offer.name}`,
     body: rivalSponsor
-      ? `${offer.name} vill synas på tröjan. De betalar ${weeklyFmt} — mer än ${rivalSponsor.name} någonsin gjorde. Men de gör samma sak i den här bygden, och de tänker inte dela på platsen. Tar ni deras pengar får ${rivalSponsor.name} beskedet av er, inte av dem.`
+      ? `${offer.name} vill synas på tröjan. De betalar ${weeklyFmt}. De gör samma sak i den här bygden, och de tänker inte dela på platsen. Tar ni deras pengar får ${rivalSponsor.name} beskedet av er, inte av dem.`
       : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
     proofSource: {
       form: 'state-predicate',
-      description: 'sponsorerbjudandet har positiv veckoersättning och positiv löptid',
-      evaluatedTrue: sponsorOfferIsActionable,
+      description: 'sponsorerbjudandet har positiv ersättning/löptid och eventuell konfliktpartner har samma kategori',
+      evaluatedTrue: sponsorOfferClaimIsGrounded,
     },
     relatedPlayerId: undefined,
     relatedClubId: undefined,

@@ -88,6 +88,38 @@ describe('generatePostAdvanceEvents', () => {
     expect(bidEvent!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 
+  it('accepterat motbud bär samma sanna beloppspredikat som gejtar kortet', () => {
+    const bid: TransferBid = {
+      id: 'b-counter-accept', playerId: 'p1', buyingClubId: 'c2', sellingClubId: 'c1',
+      offerAmount: 300000, offeredSalary: 12000, contractYears: 3,
+      direction: 'incoming', status: 'pending', createdRound: 5, expiresRound: 8,
+      counterCount: 1,
+    }
+    const game = makeGame({ transferBids: [bid] })
+    const event = generatePostAdvanceEvents(game, [], 6, noRand)
+      .find(candidate => candidate.id === `event_bid_aiaccept_${bid.id}`)
+
+    expect(event).toBeDefined()
+    expect(event!.body).toContain('godkänner')
+    expect(event!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
+  })
+
+  it('avvisat motbud bär samma sanna beloppspredikat som gejtar kortet', () => {
+    const bid: TransferBid = {
+      id: 'b-counter-reject', playerId: 'p1', buyingClubId: 'c2', sellingClubId: 'c1',
+      offerAmount: 299999, offeredSalary: 12000, contractYears: 3,
+      direction: 'incoming', status: 'pending', createdRound: 5, expiresRound: 8,
+      counterCount: 1,
+    }
+    const game = makeGame({ transferBids: [bid] })
+    const event = generatePostAdvanceEvents(game, [], 6, noRand)
+      .find(candidate => candidate.id === `event_bid_aireject_${bid.id}`)
+
+    expect(event).toBeDefined()
+    expect(event!.body).toContain('accepterar inte')
+    expect(event!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
+  })
+
   it('contract request generated when player has < 1 season left and CA > 50', () => {
     const player = makePlayer({ currentAbility: 60, contractUntilSeason: 2025 })
     const game = makeGame({ players: [player] })

@@ -106,6 +106,50 @@ describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
     }
   })
 
+  it('meta: state-predicate utan evaluatedTrue fångas', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'genereringskontrakt-meta-'))
+    const file = join(dir, 'unevaluatedPredicate.ts')
+    writeFileSync(file, `
+      export function generateSomethingEvent(game) {
+        return {
+          id: 'x',
+          type: 'patronEvent',
+          body: 'Något har hänt.',
+          proofSource: { form: 'state-predicate', description: 'game-villkoret håller' },
+          choices: [],
+        }
+      }
+    `)
+    try {
+      const violations = checkGenereringskontrakt(file)
+      expect(violations.some(v => v.kind === 'proofSource-ofullstandig')).toBe(true)
+    } finally {
+      unlinkSync(file)
+    }
+  })
+
+  it('meta: ledger utan ledgerType fångas', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'genereringskontrakt-meta-'))
+    const file = join(dir, 'unboundLedger.ts')
+    writeFileSync(file, `
+      export function generateSomethingEvent(game) {
+        return {
+          id: 'x',
+          type: 'patronEvent',
+          body: 'Något har hänt.',
+          proofSource: { form: 'ledger' },
+          choices: [],
+        }
+      }
+    `)
+    try {
+      const violations = checkGenereringskontrakt(file)
+      expect(violations.some(v => v.kind === 'proofSource-ofullstandig')).toBe(true)
+    } finally {
+      unlinkSync(file)
+    }
+  })
+
   it('friskt: en giltig proofSource (state-predicate) flaggas inte', () => {
     const dir = mkdtempSync(join(tmpdir(), 'genereringskontrakt-meta-'))
     const file = join(dir, 'validProof.ts')

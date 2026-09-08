@@ -30,13 +30,14 @@ export interface EventConstructionSite {
   line: number
   hasProofSource: boolean
   proofSourceFormLiteral: string | null
+  proofSourceHasRequiredFields: boolean
   snippet: string
 }
 
 export interface GenereringskontraktViolation {
   file: string
   line: number
-  kind: 'proofSource-saknas' | 'proofSource-ogiltig-form'
+  kind: 'proofSource-saknas' | 'proofSource-ogiltig-form' | 'proofSource-ofullstandig'
   detail: string
 }
 
@@ -50,20 +51,44 @@ function isEventLiteral(node: ts.Node): node is ts.ObjectLiteralExpression {
   return keys.includes('id') && keys.includes('body')
 }
 
-function extractProofSource(node: ts.ObjectLiteralExpression): { present: boolean; formLiteral: string | null } {
+function extractProofSource(node: ts.ObjectLiteralExpression): {
+  present: boolean
+  formLiteral: string | null
+  hasRequiredFields: boolean
+} {
   const prop = node.properties.find(
     p => p.name && ts.isIdentifier(p.name) && p.name.text === 'proofSource'
   )
-  if (!prop || !ts.isPropertyAssignment(prop)) return { present: false, formLiteral: null }
+  if (!prop || !ts.isPropertyAssignment(prop)) {
+    return { present: false, formLiteral: null, hasRequiredFields: false }
+  }
   const init = prop.initializer
-  if (!ts.isObjectLiteralExpression(init)) return { present: true, formLiteral: null }
+  if (!ts.isObjectLiteralExpression(init)) {
+    return { present: true, formLiteral: null, hasRequiredFields: false }
+  }
   const formProp = init.properties.find(
     p => p.name && ts.isIdentifier(p.name) && p.name.text === 'form'
   )
-  if (!formProp || !ts.isPropertyAssignment(formProp)) return { present: true, formLiteral: null }
+  if (!formProp || !ts.isPropertyAssignment(formProp)) {
+    return { present: true, formLiteral: null, hasRequiredFields: false }
+  }
   const formInit = formProp.initializer
-  if (ts.isStringLiteral(formInit)) return { present: true, formLiteral: formInit.text }
-  return { present: true, formLiteral: null }
+  if (!ts.isStringLiteral(formInit)) {
+    return { present: true, formLiteral: null, hasRequiredFields: false }
+  }
+
+  const fields = new Set(init.properties.flatMap(p => {
+    if (!p.name) return []
+    if (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) return [p.name.text]
+    return []
+  }))
+  const hasRequiredFields = formInit.text === 'state-predicate'
+    ? fields.has('description') && fields.has('evaluatedTrue')
+    : formInit.text === 'ledger'
+    ? fields.has('ledgerType')
+    : formInit.text === 'timeless'
+
+  return { present: true, formLiteral: formInit.text, hasRequiredFields }
 }
 
 export function findEventConstructionSites(file: string): EventConstructionSite[] {
@@ -87,13 +112,14 @@ export function findEventConstructionSites(file: string): EventConstructionSite[
     }
 
     if (candidate) {
-      const { present, formLiteral } = extractProofSource(candidate)
+      const { present, formLiteral, hasRequiredFields } = extractProofSource(candidate)
       const { line } = sf.getLineAndCharacterOfPosition(candidate.getStart(sf))
       out.push({
         file,
         line: line + 1,
         hasProofSource: present,
         proofSourceFormLiteral: formLiteral,
+        proofSourceHasRequiredFields: hasRequiredFields,
         snippet: strippedForDisplay.split('\n')[line]?.trim() ?? '',
       })
     }
@@ -118,6 +144,13 @@ export function checkGenereringskontrakt(file: string): GenereringskontraktViola
       violations.push({
         file: site.file, line: site.line, kind: 'proofSource-ogiltig-form',
         detail: `proofSource.form är inte en av 'state-predicate'|'ledger'|'timeless' (rad ${site.line}): "${site.snippet}"`,
+      })
+      continue
+    }
+    if (!site.proofSourceHasRequiredFields) {
+      violations.push({
+        file: site.file, line: site.line, kind: 'proofSource-ofullstandig',
+        detail: `proofSource.${site.proofSourceFormLiteral} saknar obligatoriskt utvärderingsfält (rad ${site.line}): "${site.snippet}"`,
       })
     }
   }
