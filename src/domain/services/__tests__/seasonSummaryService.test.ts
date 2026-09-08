@@ -505,6 +505,32 @@ describe('Berättaren steg 4 — Säsongens person', () => {
     expect(selectYearbookPerson(game as never)?.text).toBe(expected)
   })
 
+  // TEXTLEVERANS_OPUS_2026-09-08 (transfer-arsbok-minns-fel Del 2): {Namn}
+  // ur subject (spelaren), {Klubb} ur subject2 (hans klubb vid budtillfället).
+  it('använder låst text för transfer_target_missed (subject=spelare, subject2=klubb)', () => {
+    const base = personGame()
+    const player = base.players.find(p => p.clubId === base.managedClubId)!
+    const opponent = base.clubs.find(c => c.id !== base.managedClubId)!
+    const game = {
+      ...base,
+      players: base.players.map(p => p.id === player.id ? { ...p, firstName: 'Elias', lastName: 'Grafström' } : p),
+      eventLedger: [{
+        type: 'transfer_target_missed' as const,
+        semanticKey: 'transfer_target_missed:test',
+        clubId: base.managedClubId,
+        season: base.currentSeason,
+        matchday: base.currentMatchday,
+        subject: { kind: 'player' as const, id: player.id },
+        subject2: { kind: 'club' as const, id: opponent.id },
+        significance: 70,
+      }],
+    }
+
+    expect(selectYearbookPerson(game as never)?.text).toBe(
+      `Du jagade Elias Grafström i somras. Det blev ${opponent.name}, inte ni.`,
+    )
+  })
+
   it('använder journalistens låsta rad för journalistens lösta storyline', () => {
     const base = personGame()
     const game = {

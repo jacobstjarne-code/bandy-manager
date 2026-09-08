@@ -341,6 +341,9 @@ const YEARBOOK_PERSON_TYPES: ReadonlySet<string> = new Set([
   'transfer_sold',
   'referee_feud',
   'referee_trust',
+  // TEXTLEVERANS_OPUS_2026-09-08 (transfer-arsbok-minns-fel Del 2): Opus
+  // skrev årsboksraden DOM_K12_TRANSFER_TARGET_MISSED lovade "på begäran".
+  'transfer_target_missed',
 ] as const)
 
 function yearbookPersonText(game: SaveGame, item: AgendaItem): string | null {
@@ -381,6 +384,11 @@ function yearbookPersonText(game: SaveGame, item: AgendaItem): string | null {
     case 'referee_feud':
     case 'referee_trust':
       return `${name} i svart. Ni pratade mer om honom än om något annat lag.`
+    case 'transfer_target_missed': {
+      const clubName = resolveSubjectName(game, post.subject2, post.subject2Snapshot)
+      if (!clubName) return null
+      return `Du jagade ${name} i somras. Det blev ${clubName}, inte ni.`
+    }
     default:
       return null
   }
