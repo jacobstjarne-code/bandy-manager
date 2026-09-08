@@ -53,12 +53,15 @@ function expectationSeverity(exp: ClubExpectation): 0 | 1 | 2 | 3 {
  * den är den bäst belagda kvarvarande signalen för avskedsrisk, se
  * RAPPORT_SURVIVE_VERIFIERAD_OCH_ROGLE_TIERFRAGAN_2026-08-25.md.
  *
- * Löser INTE hela etikett-avskedsrisk-gapet: MidTable-klubbar med sund
- * marginal men ändå hög uppmätt avskedsfrekvens (Söderfors 85%, Lesjöfors
- * 90%) drivs av styrelsemodellens boardPatience-formel, som är avstängd
- * för vidare kalibrering ("sluta bygga i den", Jacobs dom samma dag). Den
- * här fixen fångar den finansiella klassen felmärkning (Rögle/Skutskär),
- * inte den boardPatience-drivna.
+ * Löser INTE hela etikett-avskedsrisk-gapet: MidTable-klubbar drivs delvis
+ * av styrelsemodellens boardPatience-formel. Den formella 10 000-
+ * seedsmätningen (2026-09-07/08, docs/matningar/
+ * AVSKEDSKALIBRERING_FORMELL_10000_2026-09-07.md, GODKÄND) friade
+ * formeln: Söderfors 28,78%/Lesjöfors 33,61%, båda under 50%-målet — de
+ * tidigare siffrorna (85%/90%) kom från en 20-seedsdiagnostik med en
+ * kalibreringsspelare-bugg, inte en för hård modell. Den här fixen fångar
+ * den finansiella klassen felmärkning (Rögle/Skutskär), boardPatience-
+ * formeln är sedan verifierad separat och lämnad orörd.
  */
 export function computeDifficultyScore(t: DifficultyInput): number {
   let score = t.reputation
