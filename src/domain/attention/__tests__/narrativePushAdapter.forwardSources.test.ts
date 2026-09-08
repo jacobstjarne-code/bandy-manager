@@ -122,6 +122,46 @@ describe('narrativePushDrafts — calendar_anchor (familj 2)', () => {
       category: 'calendar_anchor', kind: 'annandag', venue: 'hemma',
     })
   })
+
+  // stickiness-copy-roster: "återkomst till gamla klubben" — managerReturnService.ts:s
+  // egen detektor, återanvänd (samma en som reviewCallbackService.ts:s manager_return).
+  it('första matchen mot förra klubben, samma säsong som klubbytet: kind:return', () => {
+    const fixture = { ...derbyFixture(3), awayClubId: OTHER }
+    const game = baseGame({
+      fixtures: [fixture],
+      managerProfile: {
+        firstName: 'Test', lastName: 'Manager', age: 40, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 0, careerDraws: 0, careerLosses: 0,
+        seasonsAtClub: 1, contractUntilSeason: 5, monthlySalary: 30, coachRivalries: [],
+        clubSpells: [
+          { clubId: OTHER, clubName: 'Gammalklubben', fromSeason: 1, toSeason: 2, endedBy: 'fired' },
+          { clubId: MANAGED, clubName: 'Nyaklubben', fromSeason: 3 },
+        ],
+      } as SaveGame['managerProfile'],
+    })
+    const payloads: ForwardPushPayload[] = []
+    narrativePushDrafts(game, payload => { payloads.push(payload); return null })
+    expect(payloads.find(p => p.category === 'calendar_anchor')).toMatchObject({
+      category: 'calendar_anchor', kind: 'return',
+    })
+  })
+
+  it('inget klubbyte denna säsong (redan flera säsonger i nuvarande klubb): ingen return-kandidat', () => {
+    const fixture = { ...derbyFixture(3), awayClubId: OTHER }
+    const game = baseGame({
+      fixtures: [fixture],
+      managerProfile: {
+        firstName: 'Test', lastName: 'Manager', age: 40, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 0, careerDraws: 0, careerLosses: 0,
+        seasonsAtClub: 2, contractUntilSeason: 5, monthlySalary: 30, coachRivalries: [],
+        clubSpells: [
+          { clubId: OTHER, clubName: 'Gammalklubben', fromSeason: 1, toSeason: 2, endedBy: 'fired' },
+          { clubId: MANAGED, clubName: 'Nyaklubben', fromSeason: 2 },
+        ],
+      } as SaveGame['managerProfile'],
+    })
+    expect(narrativePushDrafts(game, acceptAnyResolver)).toEqual([])
+  })
 })
 
 describe('narrativePushDrafts — season_context (familj 3)', () => {

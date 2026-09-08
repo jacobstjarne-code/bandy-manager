@@ -154,6 +154,46 @@ describe('createNarrativePushCopyResolver', () => {
     })
   })
 
+  // stickiness-copy-roster: "återkomst till gamla klubben" (register §4).
+  // managerReturnService.ts:s getManagerReturnContext äger sanningen om
+  // ATT det är återkomsten (testad separat, narrativePushAdapter.forwardSources.test.ts)
+  // — resolvern bär bara namnet + rösten när adaptern redan bestämt kind:'return'.
+  it('återkomst: pressens variant först, sedan klubbens — aldrig samma två gånger i rad', () => {
+    const rotation = memoryRotation()
+    const game = gameFixture({
+      managerProfile: {
+        firstName: 'Anna', lastName: 'Berg', age: 40, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 0, careerDraws: 0, careerLosses: 0,
+        seasonsAtClub: 1, contractUntilSeason: 5, monthlySalary: 30, coachRivalries: [],
+      } as SaveGame['managerProfile'],
+    })
+    const resolver = createNarrativePushCopyResolver(game, rotation)
+    const fixture = game.fixtures[0]
+    const payload = {
+      category: 'calendar_anchor' as const, fixture, opponentClubId: 'club_skutskar',
+      kind: 'return' as const, daysUntil: 3, venue: 'hemma' as const,
+    }
+    expect(resolver(payload)).toEqual({
+      voice: 'press',
+      title: 'Anna Berg tillbaka i Skutskär.',
+      body: 'Första gången mot Skutskär sedan avskedet. Läktaren minns.',
+    })
+    expect(resolver(payload)).toEqual({
+      voice: 'club',
+      title: 'Tillbaka till Skutskär.',
+      body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
+    })
+  })
+
+  it('återkomst: saknat managerProfile — hellre ingen text än ett gissat namn', () => {
+    const resolver = createNarrativePushCopyResolver(gameFixture({ managerProfile: undefined }), memoryRotation())
+    const fixture = gameFixture().fixtures[0]
+    expect(resolver({
+      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
+      kind: 'return', daysUntil: 3, venue: 'hemma',
+    })).toBeNull()
+  })
+
   it('säsongsläge: nedflyttning och förlustsvit använder varsin låst mall', () => {
     const game = gameFixture()
     const resolver = createNarrativePushCopyResolver(game, memoryRotation())

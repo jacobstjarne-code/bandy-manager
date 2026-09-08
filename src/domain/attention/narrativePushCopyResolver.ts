@@ -47,14 +47,20 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  * clubMemoryEventBuilders.ts, skrivs i roundProcessor.ts) och ex-spelare i
  * motståndarlaget (`transferProcessor.ts:521`).
  *
- * Två av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
+ * ETT av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
  * ingen producent finns att läsa från, en gissad payload-form hade varit
  * påhittad data:
- *  - "återkomst till gamla klubben" — ingen liggartyp bär managerns
- *    klubbhistorik idag.
  *  - "återkommande taktiskt misslyckande" (B12-mönster) — kräver en ny
  *    treomgångars-detektor mot MatchEvent.contributingFactors; ingen
  *    liggarpost existerar för detta ännu.
+ *
+ * "Återkomst till gamla klubben" — WIRAD 2026-09-08 (Code). Ingen liggartyp
+ * behövdes: `managerReturnService.getManagerReturnContext` (redan byggd för
+ * `reviewCallbackService.ts`s manager_return-callback) läser
+ * `managerProfile.clubSpells` direkt. Samma form som derby/cup/final
+ * (framåtblickande, ingen AgendaItem) — hör hem i `calendar_anchor`, inte
+ * `narrative_return`. Se `kind: 'return'`-grenen nedan och
+ * `calendarAnchorCandidate` (narrativePushAdapter.ts).
  *
  * Nemesis — WIRAD 2026-09-08 (Code), sedan k12 (`DOM_K12_TRANSFER_TARGET_
  * MISSED_2026-09-08.md`, commit `c71b4d3e`) gav rätt liggartyp ett verkligt
@@ -135,6 +141,27 @@ export function createNarrativePushCopyResolver(
           title: 'Annandagen.',
           body: `${opponentName} ${payload.venue}. Som varje år.`,
         }
+      }
+
+      // Återkomst till gamla klubben (register §4). managerReturnService.ts:s
+      // getManagerReturnContext äger sanningen om DET HÄR är återkomsten
+      // (adaptern läser den); resolvern bär bara namnet + rösten.
+      if (payload.kind === 'return') {
+        const manager = game.managerProfile
+        if (!manager) return null
+        const managerName = `${manager.firstName} ${manager.lastName}`
+        const returnVoice = pickVoice(rotation, 'anchor_return', ['press', 'club'])
+        return returnVoice === 'press'
+          ? {
+              voice: returnVoice,
+              title: `${managerName} tillbaka i ${opponentName}.`,
+              body: `Första gången mot ${opponentName} sedan avskedet. Läktaren minns.`,
+            }
+          : {
+              voice: returnVoice,
+              title: `Tillbaka till ${opponentName}.`,
+              body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
+            }
       }
 
       const voices: [AttentionVoice, ...AttentionVoice[]] = (game.fanMood ?? 50) >= 60
