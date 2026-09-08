@@ -119,7 +119,12 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     {
       id: 'reject',
       label: 'Avslå',
-      subtitle: 'Spelaren stannar',
+      // DOM_CHOICE_SELL_STAR_OCH_TRANSFERAVSLAG (2026-09-08): undertexten
+      // visade bara "Spelaren stannar" men rejectTransfer sänker morale med
+      // round(5 × transferRejectMoraleWeight) (eventResolver.ts). Motiverad
+      // konsekvens (spelaren ville bort, du sa nej) → deklareras kvalitativt,
+      // aldrig siffran. Strängen är låst ordagrant (skrivuppgift, Opus).
+      subtitle: 'Spelaren stannar · risk för missnöje',
       effect: { type: 'rejectTransfer', bidId: bid.id, targetPlayerId: bid.playerId },
     },
   ]

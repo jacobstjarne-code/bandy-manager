@@ -222,6 +222,17 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
     expect(after.eventLedger?.[0].consequences).toEqual([{ field: 'playerMorale', dir: 'down', magnitude: 'knappt' }])
   })
 
+  // DOM_CHOICE_SELL_STAR_OCH_TRANSFERAVSLAG (2026-09-08): reject-valet visade
+  // bara "Spelaren stannar" trots dold moralkonsekvens — deklarerad, strängen
+  // låst ordagrant. Regressionstest för den exakta ordalydelsen.
+  it('reject-valets subtitle deklarerar moralrisken ordagrant, mekaniken orörd', () => {
+    const bid = makeBid()
+    const game = makeGame({ transferBids: [bid] })
+    const event = bidReceivedEvent(bid, game)
+    const reject = event.choices.find(c => c.id === 'reject')!
+    expect(reject.subtitle).toBe('Spelaren stannar · risk för missnöje')
+  })
+
   it('kräv mer: skriver INGEN liggarpost (tom kedja, trivial-brus-golvet)', () => {
     const bid = makeBid()
     const game = makeGame({ transferBids: [bid] })
