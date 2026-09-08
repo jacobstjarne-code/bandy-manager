@@ -6,19 +6,25 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildWeeklyDecisionLedgerEntry,
+  WEEKLY_DECISION_IDS,
   resolveWeeklyDecision,
   generateWeeklyDecision,
   hasAcceptedWeeklyDecision,
 } from '../domain/services/weeklyDecisionService'
 import { createNewGame } from '../application/useCases/createNewGame'
 import { PlayerPosition } from '../domain/enums'
-import type { WeeklyDecision } from '../domain/services/weeklyDecisionService'
+import type { WeeklyDecision, WeeklyDecisionId } from '../domain/services/weeklyDecisionService'
 
 const game = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 5 })
-const decision = (id: string): WeeklyDecision =>
-  ({ id, question: '', category: 'training', optionA: { label: '', effect: '' }, optionB: { label: '', effect: '' } } as WeeklyDecision)
+const decision = (id: WeeklyDecisionId): WeeklyDecision =>
+  ({ id, question: '', category: 'training', optionA: { label: '', effect: '' }, optionB: { label: '', effect: '' } })
 
 describe('Fynd 11 — veckans beslut-effekter', () => {
+  it('har en sluten katalog med alla fjorton resolver-id:n', () => {
+    expect(WEEKLY_DECISION_IDS).toHaveLength(14)
+    expect(new Set(WEEKLY_DECISION_IDS).size).toBe(WEEKLY_DECISION_IDS.length)
+  })
+
   it('respekterar en cooldown som rebasats till negativ matchday vid säsongsskifte', () => {
     expect(generateWeeklyDecision({
       ...game,
@@ -168,6 +174,11 @@ describe('Throw-guard (SLUTTEST_KO.md, 2026-08-17) — samma mönster som eventR
 
   it('training_corners_vs_matchprep A utan cornerCandidate kastar', () => {
     expect(() => resolveWeeklyDecision(noQualifyingPlayers, decision('training_corners_vs_matchprep'), 'A')).toThrow(/cornerCandidate/)
+  })
+
+  it('okända besluts-id:n kastar i stället för att tyst bli noop', () => {
+    const unknownDecision = { ...decision('ismaskin_offer'), id: 'framtida_okant_beslut' } as unknown as WeeklyDecision
+    expect(() => resolveWeeklyDecision(game, unknownDecision, 'A')).toThrow(/Okänt weeklyDecision-id/)
   })
 
   it('rotorsak-fix: generateWeeklyDecision väljer aldrig player_weekend_off när ingen wearyPlayer finns', () => {

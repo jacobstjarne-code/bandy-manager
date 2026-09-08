@@ -7,6 +7,25 @@ import type { EventLedgerEntry, LedgerConsequence } from '../entities/Narrative'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
 
+export const WEEKLY_DECISION_IDS = [
+  'corner_extra_training',
+  'player_weekend_off',
+  'away_trip_bus',
+  'tifo_contribution',
+  'supporter_conflict_mediate',
+  'reporter_klacken',
+  'training_corners_vs_matchprep',
+  'scout_opponent_corners',
+  'ismaskin_offer',
+  'family_section_request',
+  'legacy_naming_arena',
+  'legacy_youth_showcase',
+  'survival_wage_freeze',
+  'survival_emergency_lotto',
+] as const
+
+export type WeeklyDecisionId = typeof WEEKLY_DECISION_IDS[number]
+
 export interface WeeklyDecisionOption {
   label: string
   effect: string
@@ -14,7 +33,7 @@ export interface WeeklyDecisionOption {
 }
 
 export interface WeeklyDecision {
-  id: string
+  id: WeeklyDecisionId
   question: string
   optionA: WeeklyDecisionOption
   optionB: WeeklyDecisionOption
@@ -403,6 +422,7 @@ export function resolveWeeklyDecision(
     .filter(p => p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper)
     .sort((a, b) => (a.attributes.cornerRecovery ?? 50) - (b.attributes.cornerRecovery ?? 50))[0]
 
+  const decisionId = decision.id
   switch (decision.id) {
     case 'corner_extra_training':
       // Throw-guard (SLUTTEST_KO.md, 2026-08-17): generateWeeklyDecision döljer
@@ -439,7 +459,7 @@ export function resolveWeeklyDecision(
       if (choice === 'A')
         return [{ type: 'supporterMood', delta: 5 }]
       // 50/50
-      return [{ type: 'supporterMood', delta: mulberry32(game.currentMatchday * 9301 + decision.id.length * 37)() < 0.5 ? 3 : -4 }]
+      return [{ type: 'supporterMood', delta: mulberry32(game.currentMatchday * 9301 + decisionId.length * 37)() < 0.5 ? 3 : -4 }]
 
     case 'reporter_klacken':
       if (choice === 'A')
@@ -505,13 +525,15 @@ export function resolveWeeklyDecision(
       // 80% ger den fulla potten, 20% ger bara en mindre arrangemangskostnad
       // i stället för vinst — aldrig ett stort minus.
       if (choice === 'A') {
-        const roll = mulberry32(game.currentMatchday * 9301 + decision.id.length * 37)()
+        const roll = mulberry32(game.currentMatchday * 9301 + decisionId.length * 37)()
         if (roll < 0.8) return [{ type: 'finances', delta: 5_000 }, { type: 'supporterMood', delta: 3 }]
         return [{ type: 'finances', delta: -1_000 }]
       }
       return [{ type: 'supporterMood', delta: -2 }]
 
-    default:
-      return [{ type: 'noop' }]
+    default: {
+      const unhandledDecisionId: never = decision.id
+      throw new Error(`Okänt weeklyDecision-id: ${String(unhandledDecisionId)}`)
+    }
   }
 }
