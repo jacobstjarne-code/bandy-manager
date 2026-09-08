@@ -28,7 +28,7 @@ import type { KvittoOutcomeDir, CaptainContext } from '../../../domain/data/mana
 import type { MatchTypeAxes } from '../../../domain/services/matchTypeAxes'
 import { visasFor } from '../../../domain/services/granskaSectionRegistry'
 import { getDecisionConsequenceSinceLastMatch, describeRippleChainForGranska } from '../../../domain/services/orsakVerkanService'
-import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../../../domain/services/turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo, getMidSeriesTurneringslageText } from '../../../domain/services/turneringslageService'
 import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktService'
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
@@ -586,12 +586,17 @@ export function GranskaOversikt({
         // kapitelPunktKind alltid är null — ingen krock där.
         if (kapitelPunktKind && kapitelPunktKind !== 'avsked') return null
         const mode = deriveTurneringslageMode(game, axes.tavlingstyp)
-        if (mode) {
+        // sluttest-o8-turneringslage, 5.3-luckan: mode är null MITT i en
+        // pågående bäst-av-fem-slutspelsserie (de sex terminala lägena
+        // täcker bara vunnet/förlorat/final) — samma TURNERINGSLÄGE-kort,
+        // egen textkälla (getMidSeriesTurneringslageText).
+        const midSeriesText = !mode ? getMidSeriesTurneringslageText(game, axes.tavlingstyp) : null
+        if (mode || midSeriesText) {
           return (
             <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>
               <SectionLabel style={{ marginBottom: 6 }}>TURNERINGSLÄGE</SectionLabel>
               <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                {getTurneringslageText(mode, axes.tavlingstyp)}
+                {mode ? getTurneringslageText(mode, axes.tavlingstyp) : midSeriesText}
               </p>
             </div>
           )

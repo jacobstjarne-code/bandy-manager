@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo } from '../turneringslageService'
+import { deriveTurneringslageMode, getTurneringslageText, getAwaitingNextRoundInfo, getMidSeriesTurneringslageText } from '../turneringslageService'
 import type { TurneringslageMode } from '../turneringslageService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { CupBracket } from '../../entities/Cup'
@@ -200,5 +200,79 @@ describe('getAwaitingNextRoundInfo', () => {
       title: 'Nästa rond: IFK Testby',
       body: 'om 3 omgångar. Tills dess är det serien som räknas.',
     })
+  })
+})
+
+// sluttest-o8-turneringslage, 5.3-luckan — TEXT LÅST 2026-09-08 (TEXTLEVERANS_OPUS_2026-09-08.md).
+describe('getMidSeriesTurneringslageText', () => {
+  function completedFixture(id: string, homeScore: number, awayScore: number, homeIsManaged = true) {
+    return {
+      id,
+      homeClubId: homeIsManaged ? MANAGED : OPP,
+      awayClubId: homeIsManaged ? OPP : MANAGED,
+      status: 'completed',
+      homeScore,
+      awayScore,
+    } as unknown as SaveGame['fixtures'][number]
+  }
+
+  function gameWithSeries(fixtureResults: Array<{ id: string; managedWon: boolean }>): SaveGame {
+    const fixtures = fixtureResults.map(r => completedFixture(r.id, r.managedWon ? 3 : 1, r.managedWon ? 1 : 3))
+    const s = series(PlayoffRound.SemiFinal, { fixtures: fixtureResults.map(r => r.id) })
+    return makeGame({
+      fixtures,
+      playoffBracket: playoffBracketWith({ semiFinals: [s] }),
+    })
+  }
+
+  it('liga/cup/avsked — alltid null, bara slutspel har en bäst-av-fem-serie', () => {
+    expect(getMidSeriesTurneringslageText(makeGame(), 'liga')).toBeNull()
+    expect(getMidSeriesTurneringslageText(makeGame(), 'cup')).toBeNull()
+    expect(getMidSeriesTurneringslageText(makeGame(), 'avsked')).toBeNull()
+  })
+
+  it('slutspel, ingen aktiv serie (ingen bracket) — null', () => {
+    expect(getMidSeriesTurneringslageText(makeGame(), 'slutspel')).toBeNull()
+  })
+
+  it('matchboll (2 vinster) — låst rad ordagrant', () => {
+    const game = gameWithSeries([
+      { id: 'f1', managedWon: true }, { id: 'f2', managedWon: true }, { id: 'f3', managedWon: false },
+    ])
+    expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBe(
+      'Serien står 2–1. En vinst till, sedan är ni vidare.',
+    )
+  })
+
+  it('utslagningshotad (2 förluster) — låst rad ordagrant', () => {
+    const game = gameWithSeries([
+      { id: 'f1', managedWon: false }, { id: 'f2', managedWon: false }, { id: 'f3', managedWon: true },
+    ])
+    expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBe(
+      'Serien står 1–2. Förlust ikväll och säsongen är slut.',
+    )
+  })
+
+  it('jämnt (1–1) — låst rad ordagrant', () => {
+    const game = gameWithSeries([{ id: 'f1', managedWon: true }, { id: 'f2', managedWon: false }])
+    expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBe(
+      'Serien står 1–1. Det avgörs inte ikväll, men det väger.',
+    )
+  })
+
+  it('avgörande match (2–2) — matchboll-grenen vinner (samma ordning Opus listade dem i)', () => {
+    const game = gameWithSeries([
+      { id: 'f1', managedWon: true }, { id: 'f2', managedWon: true },
+      { id: 'f3', managedWon: false }, { id: 'f4', managedWon: false },
+    ])
+    expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBe(
+      'Serien står 2–2. En vinst till, sedan är ni vidare.',
+    )
+  })
+
+  it('serien redan avgjord (winnerId satt) — null, deriveTurneringslageMode täcker det terminala läget', () => {
+    const s = series(PlayoffRound.SemiFinal, { winnerId: MANAGED, loserId: OPP })
+    const game = makeGame({ playoffBracket: playoffBracketWith({ semiFinals: [s] }) })
+    expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBeNull()
   })
 })

@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getManagedClubCupStatus } from './cupService'
 import { getManagedClubPlayoffStatus } from './playoffService'
+import { getPlayoffSeriesContext } from './portal/playoffSeriesContext'
 import { PlayoffRound } from '../enums'
 import type { Tavlingstyp } from './matchTypeAxes'
 
@@ -77,6 +78,28 @@ export function getTurneringslageText(mode: TurneringslageMode, tavlingstyp: Tav
   // Strukturellt onåbart — deriveTurneringslageMode returnerar aldrig
   // 'ut_forstarunda' för slutspel eller något läge alls för liga/avsked.
   return '[Opus]'
+}
+
+/**
+ * sluttest-o8-turneringslage, 5.3-luckan (TEXTLEVERANS_OPUS_2026-09-08):
+ * de sex terminala lägena ovan (vunnet/förlorat/final) täcker inte MITTEN av
+ * en pågående bäst-av-fem-slutspelsserie — `deriveTurneringslageMode`
+ * returnerade `null` där, samma "live-lucka"-klass som steg 5 ursprungligen
+ * fixade. Egen funktion (delar inte `TurneringslageMode`s slutna sextal) —
+ * `getPlayoffSeriesContext` bär redan wins/losses för den aktiva serien,
+ * ingen ny mekanik, bara en textgren på den. Bara slutspel har en
+ * bäst-av-fem-serie att vara mitt i (cupen är enskilda knockout-matcher).
+ * Tre låsta grenar; vid 2–2 (avgörande sista match, båda villkoren sanna)
+ * vinner "matchboll"-grenen — samma ordning Opus listade dem i.
+ */
+export function getMidSeriesTurneringslageText(game: SaveGame, tavlingstyp: Tavlingstyp): string | null {
+  if (tavlingstyp !== 'slutspel') return null
+  const series = getPlayoffSeriesContext(game)
+  if (!series) return null
+  const { wins, losses } = series
+  if (wins === 2) return `Serien står ${wins}–${losses}. En vinst till, sedan är ni vidare.`
+  if (losses === 2) return `Serien står ${wins}–${losses}. Förlust ikväll och säsongen är slut.`
+  return `Serien står ${wins}–${losses}. Det avgörs inte ikväll, men det väger.`
 }
 
 export interface AwaitingNextRoundInfo {
