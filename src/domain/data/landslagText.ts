@@ -68,31 +68,24 @@ export const SNUB_SCENE_LINES: string[] = [
 ]
 
 /**
- * LobbyPress — weekly-decision. Spelare ber dig höra av dig till förbundskaptenen.
- * body = uppmaningen; Code bygger valen. accept-text/decline-text för knapparnas efterspel.
- *
- * TEXT-UTAN-YTA (VILANDE), klassad i release-svepet 2026-07-21 (CLAUDE.md
- * §"TVÅ SORTERS DÖD KOD"). RADERA INTE. Kortets SKALA (prompt+optionA/B) kan
- * rida weeklyDecisionService.ts som ren data (ett nytt switch-case, kategori
- * är bara kosmetisk filter-etikett) — men HANDOFF-C-K1-LANDSLAG-2026-05-23.md
- * är explicit att LobbyPress ska "påverka uttagningschans", vilket kräver nytt
- * persistent per-spelare-state + en ny WeeklyDecisionEffect-variant + en
- * läs-hook i nationalTeamService.ts:s selectNationalTeam — mekanikutökning,
- * uttryckligen utanför release-svepets scope (Jacobs gräns, 2026-07-21).
- * Se docs/BACKLOG.md → BYGGT MEN OSYNLIGT för stäng-villkor.
+ * LOBBY_PRESS_FLAVOUR — TEXTLEVERANS_OPUS_2026-09-08 (lobbypress-mekanik-spec,
+ * Jacobs beslut 2026-09-07: nedgradera till flavour nu). Ersätter den gamla
+ * `LOBBY_PRESS` (interaktivt weekly-decision-kort med accepted/declined) —
+ * den påstod en manager-handling ("Du ringde…") som aldrig fick ytas
+ * automatiskt (INSTRUKTIONER_2026-09-08). Detta är en PASSIV journalistnotis:
+ * pressen noterar att spelaren är i uttagningssnacket. Ingen spelarförfrågan,
+ * ingen manager-handling, inga `choices`. Full uttagningsmekanik (LobbyPress
+ * påverkar faktisk uttagningschans) är POST_LAUNCH (Jacobs beslut) — se
+ * docs/BACKLOG.md → BYGGT MEN OSYNLIGT för den gamla, nu superseterade, radens
+ * historik. Tokens: {spelare}, {klubb}, {paper} (ur befintlig uppsättning,
+ * pressConferenceService.ts:s JOURNALISTS/game.localPaperName).
  */
-export const LOBBY_PRESS = {
-  prompt: [
-    '{spelare} undrar om du kan höra av dig till förbundskaptenen inför uttagningen. Han tycker att han förtjänar en chans.',
-    '{spelare} har snackat om VM hela veckan. Nu frågar han rakt ut om du vill lägga ett gott ord.',
-  ],
-  accepted: [
-    'Du ringde förbundskaptenen. Han lovade ingenting, men han lyssnade.',
-  ],
-  declined: [
-    'Du lät det vara. {spelare} sa inget, men han förstod nog vad tystnaden betydde.',
-  ],
-}
+export const LOBBY_PRESS_FLAVOUR = [
+  '"{spelare} nämns i uttagningssnacket" — {paper}',
+  '"Det pratas landslag kring {spelare}" — kort i {paper}',
+  '"{klubb}s {spelare} med i resonemanget inför uttagningen" — {paper}',
+  '"Förbundskaptenen lär ha {spelare} på bevakning" — {paper}',
+]
 
 /** MemoryEvent (klubbminne, sig 60) vid första uttagningen någonsin för en spelare. */
 export const FIRST_CALLUP_MEMORY_LINES: string[] = [

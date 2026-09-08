@@ -5,7 +5,15 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
-import { selectNationalTeam, applyCallupEffects, applyReturnEffects, LANDSLAGS_CA_TROSKEL, CALLUP_CAP } from '../nationalTeamService'
+import {
+  selectNationalTeam,
+  applyCallupEffects,
+  applyReturnEffects,
+  getLobbyPressCandidate,
+  generateLobbyPressFlavourNotice,
+  LANDSLAGS_CA_TROSKEL,
+  CALLUP_CAP,
+} from '../nationalTeamService'
 
 const base = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 3 })
 
@@ -186,5 +194,54 @@ describe('applyCallupEffects/applyReturnEffects — konsoliderad (2026-07-18)', 
     expect(result.returnLine).toContain(player.lastName)
     expect(result.returnLine).not.toContain('{spelare}')
     expect(result.inboxItems[0].body).toBe(result.returnLine)
+  })
+})
+
+/**
+ * lobbypress-mekanik-spec (TEXTLEVERANS_OPUS_2026-09-08). Passiv pressnotis
+ * för en kvalificerad spelare som CALLUP_CAP trängde ut — skild från
+ * SNUB_SCENE_LINES (under tröskeln, i nationalTeamProcessor.ts).
+ */
+describe('getLobbyPressCandidate/generateLobbyPressFlavourNotice — lobbypress-mekanik-spec', () => {
+  it('returnerar den högst rankade kvalificerade spelaren som inte kallades in', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const game = withSquadCAs([80, 79, 78])
+    const calledUpIds = [managedIds[0], managedIds[1]]
+
+    const candidate = getLobbyPressCandidate(game, calledUpIds)
+    expect(candidate?.id).toBe(managedIds[2])
+  })
+
+  it('returnerar undefined när ingen kvalificerad spelare finns kvar utanför uttagningen', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const game = withSquadCAs([80, 79])
+    const calledUpIds = [managedIds[0], managedIds[1]]
+
+    expect(getLobbyPressCandidate(game, calledUpIds)).toBeUndefined()
+  })
+
+  it('generateLobbyPressFlavourNotice bygger en engångs-inboxnotis med spelarnamn insatt', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const game = { ...withSquadCAs([80, 79, 78]), currentSeason: 2025, inbox: [] }
+    const candidate = game.players.find(p => p.id === managedIds[2])!
+
+    const notice = generateLobbyPressFlavourNotice(game, candidate)
+    expect(notice).not.toBeNull()
+    expect(notice!.body).toContain(candidate.lastName)
+    expect(notice!.body).not.toContain('{spelare}')
+    expect(notice!.body).not.toContain('{klubb}')
+    expect(notice!.body).not.toContain('{paper}')
+  })
+
+  it('generateLobbyPressFlavourNotice dedupar om samma säsongs-id redan finns i inkorgen', () => {
+    const managedIds = base.players.filter(p => p.clubId === base.managedClubId).map(p => p.id)
+    const game = {
+      ...withSquadCAs([80, 79, 78]),
+      currentSeason: 2025,
+      inbox: [{ id: 'inbox_vm_lobbypress_2025', date: '2025-01-01', type: 0, title: '', body: '', isRead: false }] as any,
+    }
+    const candidate = game.players.find(p => p.id === managedIds[2])!
+
+    expect(generateLobbyPressFlavourNotice(game, candidate)).toBeNull()
   })
 })

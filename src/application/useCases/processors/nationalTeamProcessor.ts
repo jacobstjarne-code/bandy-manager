@@ -9,6 +9,8 @@ import {
   CALLUP_CAP,
   LANDSLAGS_CA_TROSKEL,
   selectNationalTeam,
+  getLobbyPressCandidate,
+  generateLobbyPressFlavourNotice,
 } from '../../../domain/services/nationalTeamService'
 
 export interface NationalTeamRoundResult {
@@ -51,6 +53,12 @@ export function processNationalTeamRound(
       callupBonusTkr = callupResult.callupModal.bonusTkr
       pendingCallupModal = callupResult.callupModal
       ledgerEntries.push(...callupResult.ledgerEntries)
+    }
+
+    const lobbyPressCandidate = getLobbyPressCandidate(game, calledUpIds)
+    if (lobbyPressCandidate) {
+      const lobbyPressNotice = generateLobbyPressFlavourNotice(game, lobbyPressCandidate)
+      if (lobbyPressNotice) inboxItems.push(lobbyPressNotice)
     }
 
     if (calledUpIds.length < CALLUP_CAP) {

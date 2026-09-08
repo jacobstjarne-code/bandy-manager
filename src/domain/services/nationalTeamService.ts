@@ -2,7 +2,7 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
-import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES } from '../data/landslagText'
+import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES, LOBBY_PRESS_FLAVOUR } from '../data/landslagText'
 import { buildNationalTeamCallupLedgerEntry } from './clubHistoryLedgerService'
 
 // Release-svepet 2026-07-21 (Block 2c): HANDOFF-C-K1-LANDSLAG-2026-05-23.md
@@ -166,4 +166,47 @@ export function applyReturnEffects(
   }
 
   return { players: updatedPlayers, inboxItems, returnLine }
+}
+
+/**
+ * lobbypress-mekanik-spec (TEXTLEVERANS_OPUS_2026-09-08). Passiv journalistnotis,
+ * ingen mekanik: en spelare som klarar tröskeln men inte får plats innanför
+ * CALLUP_CAP (samma landslagsuppehåll-runda) nämns i uttagningssnacket. Skild
+ * från SNUB_SCENE_LINES (nationalTeamProcessor.ts) — den handlar om en spelare
+ * UNDER tröskeln som redan facit den faktiska uttagningen; det här är bara
+ * pressens spekulation om en spelare som ÄR kvalificerad men trängdes ut av
+ * cap:et. Ingen `choices`, ingen form/moral-effekt — bara en notis.
+ */
+export function getLobbyPressCandidate(game: SaveGame, calledUpIds: string[]): Player | undefined {
+  const squad = game.players.filter(p =>
+    p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining === 0
+  )
+
+  return squad
+    .filter(p => p.currentAbility >= LANDSLAGS_CA_TROSKEL && !calledUpIds.includes(p.id))
+    .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+}
+
+export function generateLobbyPressFlavourNotice(game: SaveGame, candidate: Player): InboxItem | null {
+  const inboxId = `inbox_vm_lobbypress_${game.currentSeason}`
+  if (game.inbox.some(item => item.id === inboxId)) return null
+
+  const club = game.clubs.find(c => c.id === game.managedClubId)
+  const paper = game.localPaperName ?? 'Lokaltidningen'
+  const nameStr = `${candidate.firstName} ${candidate.lastName}`
+
+  const template = LOBBY_PRESS_FLAVOUR[game.currentSeason % LOBBY_PRESS_FLAVOUR.length]
+  const body = template
+    .replace('{spelare}', nameStr)
+    .replace('{klubb}', club?.name ?? 'Klubben')
+    .replace('{paper}', paper)
+
+  return {
+    id: inboxId,
+    date: game.currentDate,
+    type: InboxItemType.Media,
+    title: 'I uttagningssnacket',
+    body,
+    isRead: false,
+  }
 }
