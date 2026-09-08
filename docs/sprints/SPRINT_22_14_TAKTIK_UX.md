@@ -110,8 +110,8 @@ Kemi visar vad som ÄR men föreslår inte vad man ska GÖRA. "Andersson × Berg
 
 ---
 
-## ÖPPNA FRÅGOR (även om B1–B4 skjuts upp)
+## TIDIGARE ÖPPNA FRÅGOR — STÄNGDA 2026-09-08
 
-- Finns fler komponenter med palette-drift? Bör kollas med grep innan vi säger att det är klart.
-- Ska fliken "ANTECKNINGAR" vara alltid-synlig eller endast när det finns notes? Nu visas den alltid, även med "Inga särskilda anteckningar just nu".
-- Formation-valet påverkar nästa match — bör det finnas "spara som standard"-knapp eller är det automatiskt? (Läs `autoAssignFormation` i Formation-entiteten innan vi ändrar något här.)
+- Palette-driften stängdes av Del A (`6695491c`) och senare token-/designgrindar. De nuvarande `--text-light`-användningarna ligger semantiskt på mörka eller accentfärgade ytor, inte som återfallen dark-palette.
+- ANTECKNINGAR är efter taktiktavlans konsolidering inte längre en flik. `TacticBoardCard` visar assistentens anteckningar som ett alltid synligt kort, inklusive det avsiktliga tomläget.
+- Uppställningsval sparas automatiskt: `FormationView.changeFormation` anropar den delade `onTacticChange`, som skriver `club.activeTactic`; Zustand-persistensen lagrar `game`. Ingen separat "spara som standard"-knapp behövs.
