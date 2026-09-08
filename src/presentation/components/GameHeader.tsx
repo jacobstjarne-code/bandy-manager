@@ -47,6 +47,26 @@ export function getPlayoffHeaderLabel(game: SaveGame, reviewedFixtureId?: string
   return `${playoffRoundName(playoffCtx.round)} · ${suffix}`
 }
 
+/** Tävlingsidentiteten för matchen som Granska faktiskt visar.
+ *
+ * `currentMatchday` och nästa schemalagda fixture har redan flyttat vidare när
+ * rundan processats. De beskriver därför NÄSTA stopp i kalendern, inte matchen
+ * som fortfarande ligger kvar på Granska. Läs alltid den frysta, avslutade
+ * fixturen här; slutspel behåller dessutom sitt matchnummer i serien. */
+export function getReviewedFixtureHeaderLabel(game: SaveGame, reviewedFixtureId?: string | null): string | null {
+  if (!reviewedFixtureId) return null
+
+  const reviewedPlayoff = getPlayoffFixtureContext(game, reviewedFixtureId)
+  if (reviewedPlayoff) {
+    return `${playoffRoundName(reviewedPlayoff.round)} · match ${reviewedPlayoff.gameNumber}`
+  }
+
+  const reviewedFixture = game.fixtures.find(fixture => fixture.id === reviewedFixtureId)
+  return reviewedFixture
+    ? getRoundLabel(reviewedFixture, game.playoffBracket).short
+    : null
+}
+
 // C1 (5c9a7a8, 2026-08-24) — "senast bekräftad sparningstid" i UI.
 function formatRelativeSaveTime(iso: string): string {
   const deltaMs = Date.now() - new Date(iso).getTime()
@@ -184,9 +204,12 @@ export function GameHeader() {
   const reviewedFixtureId = location.pathname === '/game/review'
     ? game.lastCompletedFixtureId
     : null
-  const playoffLabel = getPlayoffHeaderLabel(game, reviewedFixtureId)
+  const reviewedFixtureLabel = getReviewedFixtureHeaderLabel(game, reviewedFixtureId)
+  const playoffLabel = reviewedFixtureId ? null : getPlayoffHeaderLabel(game)
 
-  const roundChipLabel = playoffLabel ?? (nextManagedFixture ? getRoundLabel(nextManagedFixture, game.playoffBracket).short : null)
+  const roundChipLabel = reviewedFixtureLabel
+    ?? playoffLabel
+    ?? (nextManagedFixture ? getRoundLabel(nextManagedFixture, game.playoffBracket).short : null)
 
   return (
     <div style={{

@@ -10,7 +10,7 @@
  * spelgång idag, men kollen i sig var falsk trygghet. Fixat med `!= null`.
  */
 import { describe, it, expect } from 'vitest'
-import { getPlayoffHeaderLabel, isInPlayoffBracket } from '../GameHeader'
+import { getPlayoffHeaderLabel, getReviewedFixtureHeaderLabel, isInPlayoffBracket } from '../GameHeader'
 import { PlayoffRound, PlayoffStatus } from '../../../domain/enums'
 import type { PlayoffBracket } from '../../../domain/entities/Playoff'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -58,5 +58,32 @@ describe('GameHeader — isInPlayoffBracket', () => {
     }
 
     expect(getPlayoffHeaderLabel(game, fixtureId)).toBe('Semifinal · match 3')
+    expect(getReviewedFixtureHeaderLabel(game, fixtureId)).toBe('Semifinal · match 3')
+  })
+
+  it('Granska visar den avslutade ligamatchens omgång, inte nästa ligacursor', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', seed: 2 })
+    const reviewed = game.fixtures.find(fixture => !fixture.isCup && !fixture.isKnockout)
+    expect(reviewed).toBeDefined()
+
+    game.currentMatchday = (reviewed?.matchday ?? 0) + 1
+    expect(getReviewedFixtureHeaderLabel(game, reviewed?.id)).toBe(`Omg ${reviewed?.roundNumber}`)
+  })
+
+  it('Granska visar cupronden även när ligans nästa omgång redan står på tur', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', seed: 3 })
+    const leagueFixture = game.fixtures.find(fixture => !fixture.isCup && !fixture.isKnockout)!
+    const reviewed = {
+      ...leagueFixture,
+      id: 'reviewed-cup-final',
+      roundNumber: 4,
+      matchday: 4,
+      isCup: true,
+      isKnockout: true,
+    }
+    game.fixtures.push(reviewed)
+
+    game.currentMatchday = reviewed.matchday + 1
+    expect(getReviewedFixtureHeaderLabel(game, reviewed.id)).toBe('Cup · final')
   })
 })

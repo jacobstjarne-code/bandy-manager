@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 import { OPPONENT_VIGNETTE_TEXT } from '../../../domain/data/opponentVignetteText'
 import { pickPreMatchContextText, type PreMatchTrigger } from '../../../domain/data/preMatchContextStrings'
-import { IllustrationScene, getClubIntroIllustrationAssetName } from '../illustration/IllustrationScene'
+import { IllustrationScene, getClubIntroIllustrationAssetName, getClubIntroIllustrationSrc } from '../illustration/IllustrationScene'
 import { deriveContext } from './PreMatchContext'
 
 interface Props {
@@ -64,6 +64,7 @@ export function OpponentVignetteScene({ game, opponent, fixture, isHome, onConti
       <IllustrationScene
         mode="fullbleed"
         name={getClubIntroIllustrationAssetName(opponent.id) ?? 'intro'}
+        src={getClubIntroIllustrationSrc(opponent.id)}
         style={{ flex: 1, minHeight: 0 }}
       >
         <div style={{
