@@ -669,6 +669,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   voice_introduced: 'neutral',
   // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
   youth_aged_out: 'neutral',
+  academy_upgrade_started: 'neutral', academy_upgrade_completed: 'triumph',
   // liggare-ny-board-verdict: neutral tills Krönikans egen text finns (då
   // kan verdict/patienceBand motivera en dynamisk gren, som decision/
   // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
@@ -736,7 +737,7 @@ export type MemoryFamily = '⚔️' | '🏟️' | '👤' | '🤝' | '📋'
 const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   derby_win: '⚔️', season_highlight: '⚔️', season_finish: '⚔️', cup_final: '⚔️', sm_final: '⚔️',
   derby_result: '⚔️', big_win: '⚔️', big_loss: '⚔️',
-  facility_built: '🏟️',
+  facility_built: '🏟️', academy_upgrade_started: '🏟️', academy_upgrade_completed: '🏟️',
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',

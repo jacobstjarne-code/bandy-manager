@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
+import type { AcademyLevel } from '../entities/Academy'
 import type { ClubLegend, EventLedgerEntry, StorylineEntry } from '../entities/Narrative'
 import type { Scandal } from './scandalService'
 import { facilityCompletedBeatKey } from './facilityService'
@@ -76,6 +77,52 @@ export function buildAcademyPromotionLedgerEntry(input: {
     subject: { kind: 'player', id: input.playerId },
     subject2: { kind: 'club', id: input.clubId },
     significance: 55,
+  }
+}
+
+/** DOM_AKADEMI_LIGGARE §1: betalningen och löftet om nästa nivå. */
+export function buildAcademyUpgradeStartedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  fromLevel: Exclude<AcademyLevel, 'elite'>
+  toLevel: Exclude<AcademyLevel, 'basic'>
+  costKr: number
+  readySeason: number
+}): EventLedgerEntry {
+  return {
+    type: 'academy_upgrade_started',
+    semanticKey: `academy_upgrade_started_${input.clubId}_s${input.season}_${input.fromLevel}_${input.toLevel}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance: 40,
+    academyUpgrade: {
+      fromLevel: input.fromLevel,
+      toLevel: input.toLevel,
+      costKr: input.costKr,
+      readySeason: input.readySeason,
+    },
+  }
+}
+
+/** DOM_AKADEMI_LIGGARE §1: sommaren då den köpta nivån faktiskt slår till. */
+export function buildAcademyUpgradeCompletedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  level: Exclude<AcademyLevel, 'basic'>
+}): EventLedgerEntry {
+  return {
+    type: 'academy_upgrade_completed',
+    semanticKey: `academy_upgrade_completed_${input.clubId}_s${input.season}_${input.level}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance: 55,
+    academyUpgrade: { level: input.level },
   }
 }
 

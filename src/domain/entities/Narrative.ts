@@ -1,6 +1,7 @@
 import type { ClubEra } from './SaveGame'
 import type { MatchHighlightCategory } from './SeasonSummary'
 import type { TransferRole } from './Moment'
+import type { AcademyLevel } from './Academy'
 
 /**
  * Gemensam basstruktur för alla arc-lika system.
@@ -215,6 +216,10 @@ export type EventLedgerType =
   // försvann tidigare ljudlöst (game.youthTeam.players filtrerades bort,
   // ingen post, ingen konsument). subject = junioren.
   | 'youth_aged_out'
+  // DOM_AKADEMI_LIGGARE_2026-09-04 §1: investeringen och den senare
+  // färdigställningen är två verkliga tidpunkter. Båda ägs av klubben;
+  // payloaden nedan bär betalad nivåväxling respektive nivån som slog till.
+  | 'academy_upgrade_started' | 'academy_upgrade_completed'
   // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
   // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
@@ -412,6 +417,10 @@ export interface EventLedgerEntry {
   matchCategory?: MatchHighlightCategory  // season_highlight — Code-fynd, flaggat till Opus
   /** youth_aged_out (DOM_AKADEMI_LIGGARE §4). `other_club` reserverat, produceras inte i v1. */
   youthAgedOut?: { outcome: 'released' | 'other_club'; stars: number; caAtExit: number }
+  /** DOM_AKADEMI_LIGGARE §1. Formen skiljs av vilka fält händelsetypen kräver. */
+  academyUpgrade?:
+    | { fromLevel: Exclude<AcademyLevel, 'elite'>; toLevel: Exclude<AcademyLevel, 'basic'>; costKr: number; readySeason: number }
+    | { level: Exclude<AcademyLevel, 'basic'> }
   /**
    * board_verdict (liggare-ny-board-verdict). `verdict` återanvänder
    * `expectationVerdictFromRating`s befintliga tre värden ordagrant —

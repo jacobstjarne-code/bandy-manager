@@ -6,7 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
-import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry, buildLicenseEventLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry, buildLicenseEventLedgerEntry, buildAcademyUpgradeCompletedLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -641,6 +641,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   const nextSeason = game.currentSeason + 1
+  const academyUpgradeCompletes = game.academyUpgradeInProgress === true
+    && game.academyUpgradeSeason === nextSeason
+  const nextAcademyLevel = academyUpgradeCompletes
+    ? (game.academyLevel === 'basic' ? 'developing' : 'elite')
+    : (game.academyLevel ?? 'basic')
 
   // H4 Heros-uppföljning (Jacobs dom 2026-08-25): boardExpectation-stegningen
   // körde tidigare BARA den hanterade klubben — precis som renommédeltat
@@ -1774,10 +1779,23 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       caAtExit: p.currentAbility,
     })
   )
+  const academyUpgradeCompletedEntry = academyUpgradeCompletes
+    ? buildAcademyUpgradeCompletedLedgerEntry({
+        clubId: game.managedClubId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        level: nextAcademyLevel as 'developing' | 'elite',
+      })
+    : undefined
   const seasonEndLedger = appendMomentsAndEntriesToLedger(
     game.eventLedger ?? [],
     [],
-    [...retirementLedgerEntries, ...galaLedgerEntriesForSeason, ...youthAgedOutLedgerEntries],
+    [
+      ...retirementLedgerEntries,
+      ...galaLedgerEntriesForSeason,
+      ...youthAgedOutLedgerEntries,
+      ...(academyUpgradeCompletedEntry ? [academyUpgradeCompletedEntry] : []),
+    ],
     game.managedClubId,
     game.id,
   )
@@ -2272,12 +2290,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       : game.communityActivities,
     youthTeam: (() => {
       const managedClub = updatedClubs.find(c => c.id === game.managedClubId) ?? game.clubs.find(c => c.id === game.managedClubId)!
-      const nextAcademyLevel = (() => {
-        if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
-          return game.academyLevel === 'basic' ? 'developing' : 'elite'
-        }
-        return game.academyLevel ?? 'basic'
-      })()
       // Carry over existing youth players (age them up, retain under-20s) rather than generating fresh
       if (game.youthTeam && game.youthTeam.players.length > 0) {
         const carried = carryOverYouthTeam(game.youthTeam, managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
@@ -2288,15 +2300,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
       return generateYouthTeam(managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
     })(),
-    academyLevel: (() => {
-      // If upgrade was scheduled for this season, apply it
-      if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
-        return game.academyLevel === 'basic' ? 'developing' : 'elite'
-      }
-      return game.academyLevel ?? 'basic'
-    })(),
-    academyUpgradeInProgress: game.academyUpgradeSeason === nextSeason ? false : game.academyUpgradeInProgress,
-    academyUpgradeSeason: game.academyUpgradeSeason === nextSeason ? undefined : game.academyUpgradeSeason,
+    academyLevel: nextAcademyLevel,
+    academyUpgradeInProgress: academyUpgradeCompletes ? false : game.academyUpgradeInProgress,
+    academyUpgradeSeason: academyUpgradeCompletes ? undefined : game.academyUpgradeSeason,
     mentorships: [],
     mentorshipHistory: (() => {
       // Alla aktiva mentorskap avslutas vid rollover. Historikposten får inte

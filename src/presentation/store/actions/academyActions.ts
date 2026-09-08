@@ -5,7 +5,7 @@ import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS, applyFinanceChange, appendFinanceL
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
-import { buildAcademyPromotionLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { buildAcademyPromotionLedgerEntry, buildAcademyUpgradeStartedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 import { getPromotionTiming, buildPromotedPlayerFromYouth } from '../../../domain/services/academyService'
 
 interface GetState { game: SaveGame | null }
@@ -112,6 +112,8 @@ export function academyActions(get: Get, set: Set) {
       if (game.academyUpgradeInProgress) return { success: false, error: 'Uppgradering pågår redan' }
 
       const cost = currentLevel === 'basic' ? 50000 : 150000
+      const nextLevel = currentLevel === 'basic' ? 'developing' : 'elite'
+      const readySeason = game.currentSeason + 1
 
       if (currentLevel === 'developing' && club.facilities <= 50) {
         return { success: false, error: 'Elitnivå kräver anläggning > 50' }
@@ -133,13 +135,22 @@ export function academyActions(get: Get, set: Set) {
           ...game,
           clubs: updatedClubs,
           academyUpgradeInProgress: true,
-          academyUpgradeSeason: game.currentSeason + 1,
+          academyUpgradeSeason: readySeason,
           financeLog: appendFinanceLog(game.financeLog ?? [], {
             round: game.currentMatchday ?? 0,
             amount: -cost,
             reason: 'academy',
             label: `Akademiuppgradering (${currentLevel === 'basic' ? 'satsningsnivå' : 'elitnivå'})`,
           }),
+          eventLedger: logEvent(game, buildAcademyUpgradeStartedLedgerEntry({
+            clubId: game.managedClubId,
+            season: game.currentSeason,
+            matchday: game.currentMatchday,
+            fromLevel: currentLevel,
+            toLevel: nextLevel,
+            costKr: cost,
+            readySeason,
+          })),
         }
       })
       return { success: true }
