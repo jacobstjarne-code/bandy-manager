@@ -27,6 +27,7 @@ import { readClubLedger } from './eventLedgerService'
 import { buildExpectationVerdictSentence } from './seasonSummaryService'
 import { seasonVerdictText, seasonVerdictZoneLine } from './boardService'
 import { PROVNING_RESOLUTION } from '../data/hallProvningData'
+import { getSeasonLicenseConsequence } from './licenseService'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -272,16 +273,17 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       }
     }
     case 'license_event': {
-      // liggare-ny-license-event DEL 2: ingen ny prosa — licensbrevets egen
-      // rubrik+kropp (licenseService.ts buildLicenseInboxItem), samma
-      // id-mönster (`inbox_license_status_{season}`) skrivet samma
-      // säsongsslut som posten. Rensad/arkiverad inboxpost → ingen mening
-      // hellre än falsk (samma disciplin som 'decision'-caset nedan).
-      const inboxItem = game.inbox.find(i => i.id === `inbox_license_status_${entry.season}`)
-      if (!inboxItem) return null
+      // DOM_LICENSE_EVENT_KALLVAL_2026-09-08: Krönikan går genom samma
+      // tidsrouter som årsboken. Den här postens frusna action måste vinna
+      // över dagens levande zon; saknad historisk brevtext faller aldrig
+      // tillbaka till en nutida standing.
+      const consequence = getSeasonLicenseConsequence(game, entry.season, managedClubId)
+      if (consequence.source !== 'eventLedger'
+        || consequence.entry.semanticKey !== entry.semanticKey
+        || !consequence.text) return null
       return {
         type: 'license_event', season: entry.season, matchday: entry.matchday,
-        text: inboxItem.body, emoji: momentFamily('license_event'), significance: entry.significance,
+        text: consequence.text, emoji: momentFamily('license_event'), significance: entry.significance,
         subjectClubId: managedClubId,
       }
     }

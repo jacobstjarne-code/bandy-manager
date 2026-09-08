@@ -84,22 +84,60 @@ describe('collectSeasonDecisions — excludeStorylineTypes', () => {
 })
 
 describe('getSeasonLicenseConsequence', () => {
-  it('läser licenskonsekvensen från den kanoniska licenseStatus-zonen', () => {
-    const game = makeGame({ licenseStatus: 'point_deduction' })
-    expect(getSeasonLicenseConsequence(game)).toEqual({
+  it('utan säsongspost läser den levande zonen från licenseRiskScore, inte stale licenseStatus', () => {
+    const game = makeGame({ licenseRiskScore: 65, licenseStatus: 'clear' })
+    expect(getSeasonLicenseConsequence(game, 8)).toEqual({
+      source: 'liveZone',
+      standing: 'point_deduction',
       icon: '📋',
       text: 'Licensnämnden: Licensen är hotad. Vänd resultatet inom två säsonger.',
     })
   })
 
-  it('skriver ingen konsekvensrad för clear', () => {
-    const game = makeGame({ licenseStatus: 'clear' })
-    expect(getSeasonLicenseConsequence(game)).toBeNull()
+  it('clear är ett levande standing, inte den historiska actionen cleared', () => {
+    const game = makeGame({ licenseRiskScore: 0 })
+    expect(getSeasonLicenseConsequence(game, 8)).toEqual({
+      source: 'liveZone',
+      standing: 'clear',
+      icon: '📋',
+      text: 'Licensnämnden: Ekonomin bär.',
+    })
   })
 
-  it('skriver ingen konsekvensrad när licenseStatus saknas', () => {
-    const game = makeGame({})
-    expect(getSeasonLicenseConsequence(game)).toBeNull()
+  it('en fryst säsongspost vinner över dagens zon och bär action-ontologin', () => {
+    const entry: EventLedgerEntry = {
+      type: 'license_event', semanticKey: 'license_event_club_home_s7', clubId: 'club_home',
+      season: 7, matchday: 22, subject: { kind: 'club', id: 'club_home' }, significance: 50,
+      licenseEvent: { status: 'cleared' },
+    } as EventLedgerEntry
+    const game = makeGame({
+      licenseRiskScore: 65,
+      eventLedger: [entry],
+      inbox: [{
+        id: 'inbox_license_status_7', date: '2032-06-01', type: 'license_review',
+        title: 'Licensnämnden', body: 'Den frysta domen från säsong sju.', isRead: true,
+      }] as unknown as SaveGame['inbox'],
+    })
+
+    const consequence = getSeasonLicenseConsequence(game, 7)
+    expect(consequence).toMatchObject({
+      source: 'eventLedger', action: 'cleared', entry,
+      icon: '📋', text: 'Den frysta domen från säsong sju.',
+    })
+    expect('standing' in consequence).toBe(false)
+  })
+
+  it('nyss avslutad current-season använder posten så snart den skrivits', () => {
+    const entry: EventLedgerEntry = {
+      type: 'license_event', semanticKey: 'license_event_club_home_s8', clubId: 'club_home',
+      season: 8, matchday: 22, subject: { kind: 'club', id: 'club_home' }, significance: 75,
+      licenseEvent: { status: 'point_deduction', pointsDeducted: 3 },
+    } as EventLedgerEntry
+    const game = makeGame({ licenseRiskScore: 0, eventLedger: [entry], inbox: [] })
+
+    expect(getSeasonLicenseConsequence(game, 8)).toMatchObject({
+      source: 'eventLedger', action: 'point_deduction', entry, text: null,
+    })
   })
 })
 

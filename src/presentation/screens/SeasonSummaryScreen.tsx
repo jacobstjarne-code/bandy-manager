@@ -1010,8 +1010,9 @@ export function SeasonSummaryScreen() {
             ett val. Egen konsekvensrad bredvid Ekonomi, som är den yta
             licensnämnden faktiskt reagerar på. */}
         {(() => {
-          const licenseConsequence = getSeasonLicenseConsequence(game)
-          if (!licenseConsequence) return null
+          const licenseConsequence = getSeasonLicenseConsequence(game, summary.season, summary.clubId)
+          if (!licenseConsequence.text
+            || (licenseConsequence.source === 'liveZone' && licenseConsequence.standing === 'clear')) return null
           return (
             <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
               <SectionLabel style={{ marginBottom: 6 }}>LICENSNÄMNDEN</SectionLabel>

@@ -1,10 +1,12 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import { FACILITY_NODE_DEFS } from './facilityService'
-import { LICENSE_ZONE_TEXT } from './licenseService'
 import { getResolvedStorylineProjections } from './storylineLedgerService'
 import { readClubLedger } from './eventLedgerService'
 import { buildMemoryEventFromLedger } from './clubMemoryService'
+
+export { getSeasonLicenseConsequence } from './licenseService'
+export type { SeasonLicenseConsequence } from './licenseService'
 
 function objectiveDisplayName(game: SaveGame, objectiveId: string): string {
   const liveLabel = game.boardObjectives?.find(o => o.id === objectiveId)?.label
@@ -87,11 +89,6 @@ export function collectSeasonDecisions(game: SaveGame, excludeStorylineTypes?: S
   return decisions.sort((a, b) => (a.round ?? 99) - (b.round ?? 99)).slice(0, 8)
 }
 
-export interface SeasonLicenseConsequence {
-  icon: string
-  text: string
-}
-
 /**
  * arsbok-dina-val-licensstatus (GPT styrelse-test 2026-09-04, PRIO 3):
  * licensstatus är ett SYSTEMTILLSTÅND, inte ett val spelaren gjorde —
@@ -104,11 +101,11 @@ export interface SeasonLicenseConsequence {
  * `resolvedChoices` för den specifika eventet) är INTE byggd här; PRIO 3-
  * raden är märkt "Liten" för statusflytten, inte för handlingsplan-vägen.
  * Flaggat, inte tyst utelämnat — egen rad om Jacob vill ha den.
+ *
+ * Själva källvalet ägs nu av licenseService.ts:s
+ * `getSeasonLicenseConsequence(game, season)`: årsboken får aldrig läsa en
+ * historisk säsong ur dagens levande zon.
  */
-export function getSeasonLicenseConsequence(game: SaveGame): SeasonLicenseConsequence | null {
-  if (!game.licenseStatus || game.licenseStatus === 'clear') return null
-  return { icon: '📋', text: `Licensnämnden: ${LICENSE_ZONE_TEXT[game.licenseStatus]}` }
-}
 
 /**
  * liggare-ny-community-shift DEL 2 (årsboken, konsument 4 av 4): ingen ny

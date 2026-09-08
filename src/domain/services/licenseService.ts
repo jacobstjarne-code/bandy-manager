@@ -1,5 +1,7 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
+import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
+import { readClubLedger } from './eventLedgerService'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,59 @@ export const LICENSE_ZONE_TEXT: Record<LicenseStatus, string> = {
   first_warning: 'Ekonomin är ansträngd.',
   point_deduction: 'Licensen är hotad. Vänd resultatet inom två säsonger.',
   license_denied: 'Licensen dras in om ni inte vänder det i år.',
+}
+
+export type SeasonLicenseConsequence =
+  | {
+      source: 'eventLedger'
+      /** Fryst action: vad licensnämnden gjorde den här säsongen. */
+      action: LicenseActionType | undefined
+      entry: EventLedgerEntry
+      icon: string
+      /** Samma frusna brevtext som tidigare; null om inboxretentionen tagit bort den. */
+      text: string | null
+    }
+  | {
+      source: 'liveZone'
+      /** Levande standing: var klubben befinner sig nu. Aldrig ett historiskt utfall. */
+      standing: LicenseStatus
+      icon: string
+      text: string
+    }
+
+/**
+ * DOM_LICENSE_EVENT_KALLVAL_2026-09-08: välj licenskällan efter tidsfråga.
+ * En fryst `license_event` för säsongen vinner alltid. Bara när en sådan post
+ * saknas får den levande riskzonen svara. `action` (`cleared`) och `standing`
+ * (`clear`) ligger medvetet på olika grenar så ontologierna inte kan blandas.
+ */
+export function getSeasonLicenseConsequence(
+  game: SaveGame,
+  season: number,
+  clubId = game.seasonSummaries?.find(summary => summary.season === season)?.clubId
+    ?? game.managedClubId,
+): SeasonLicenseConsequence {
+  const entry = readClubLedger(game, clubId)
+    .find(candidate => candidate.type === 'license_event' && candidate.season === season)
+
+  if (entry) {
+    const inboxItem = (game.inbox ?? []).find(item => item.id === `inbox_license_status_${season}`)
+    return {
+      source: 'eventLedger',
+      action: entry.licenseEvent?.status,
+      entry,
+      icon: '📋',
+      text: inboxItem?.body ?? null,
+    }
+  }
+
+  const standing = licenseZoneFromScore(game.licenseRiskScore ?? 0)
+  return {
+    source: 'liveZone',
+    standing,
+    icon: '📋',
+    text: `Licensnämnden: ${LICENSE_ZONE_TEXT[standing]}`,
+  }
 }
 
 export function licenseZoneFromScore(score: number): LicenseStatus {

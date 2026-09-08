@@ -64,6 +64,7 @@ describe('Krönikan/Berättaren — license_event DEL 2 (återanvänder licensbr
       licenseEvent: { status: 'point_deduction', deficitKr: -120000, pointsDeducted: 3 },
     })
     const game = makeGame({
+      eventLedger: [entry],
       inbox: [{
         id: 'inbox_license_status_4', date: '2028-06-01', type: 'license_review',
         title: 'Licensnämnden: poängavdrag', body: 'Klubben fick tre poängs avdrag efter underskottet.', isRead: true,
@@ -75,7 +76,15 @@ describe('Krönikan/Berättaren — license_event DEL 2 (återanvänder licensbr
 
   it('rensad/saknad inboxpost → ingen mening hellre än falsk', () => {
     const entry = baseEntry({ type: 'license_event', season: 4, licenseEvent: { status: 'cleared' } })
-    expect(buildMemoryEventFromLedger(makeGame({ inbox: [] }), entry, CLUB_ID)).toBeNull()
+    expect(buildMemoryEventFromLedger(makeGame({ inbox: [], eventLedger: [entry] }), entry, CLUB_ID)).toBeNull()
+  })
+
+  it('saknad historisk brevtext faller inte tillbaka till dagens levande zon', () => {
+    const entry = baseEntry({ type: 'license_event', season: 4, licenseEvent: { status: 'cleared' } })
+    const game = makeGame({
+      eventLedger: [entry], inbox: [], licenseRiskScore: 65, licenseStatus: 'point_deduction',
+    })
+    expect(buildMemoryEventFromLedger(game, entry, CLUB_ID)).toBeNull()
   })
 })
 
