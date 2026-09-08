@@ -174,8 +174,8 @@ describe('boardGraceState — DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ENDA defin
 
 // Fjärde koefficientrundan (Jacobs dom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
 // O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades efter en
-// normal svacka två säsonger senare). PROPOSAL — magnituderna (MERIT_BUFFER_CAP=20)
-// är Codes förslag, inte Jacobs låsta dom.
+// normal svacka två säsonger senare). MERIT_BUFFER_CAP=20 behölls formellt
+// när A-kedjan klarade avskedskalibreringens stoppvillkor 2026-09-07.
 /**
  * H4 Heros-uppföljning (Jacobs dom 2026-08-25): stegkedjan täckte tidigare
  * bara MidTable↔ChallengeTop↔WinLeague fullt ut. AvoidBottom kunde befordras

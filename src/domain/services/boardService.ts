@@ -371,8 +371,9 @@ export const GRACE_MULTIPLIER = 0.5
 // "Samma princip som streak-taket" (Jacobs ord): styrelsen har ett minne,
 // inte bara ett omdöme om senaste säsongen.
 //
-// PROPOSAL, inte låst — Jacob dömer magnituderna. Föreslagna värden nedan
-// verifierade mot Grind 1 v3-stresstestets Skutskär-data (AvoidBottom,
+// Formellt behållen i avskedskalibreringen 2026-09-07: A-kedjan klarade
+// Heros 55–65 % och båda mittklubbarna <50 % utan parameterändring. Värdet
+// verifierades ursprungligen mot Grind 1 v3-stresstestets Skutskär-data (AvoidBottom,
 // gap oftast -1 till -3, delta -4 till -12) och O5-acceptanstestets
 // Västanfors-data (ChallengeTop, treepeat-scenariot seed 70014: tre säsonger
 // gap=+3, delta=+7,5 vardera, sedan en 8:e-plats-säsong gap=-4, delta=-16):
