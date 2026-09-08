@@ -164,7 +164,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| kf4-styrelse-playtest | KF4 styrelse-konsolidering byggd men "awaiting playtest-verification" — namn/pronomen i ArrivalScene S1 + BoardMeetingScene S2+ | verifierad | Jacob | BACKLOG.md:674 | Jacob playtestar [Verifierat 2026-09-01 (Code): BACKLOG.md:674 säger fortfarande explicit "awaiting playtest-verification" för ArrivalScene/BoardMeetingScene namn+pronomen, ingen senare logg bekräftar att Jacob playtestat detta.] |
+| kf4-styrelse-playtest | KF4 styrelse-konsolidering byggd men "awaiting playtest-verification" — namn/pronomen i ArrivalScene S1 + BoardMeetingScene S2+ | in_progress | Codex | BACKLOG.md:674 | CLAIM 2026-09-08T11:15Z — Codex. Jacob playtestar [Verifierat 2026-09-01 (Code): BACKLOG.md:674 säger fortfarande explicit "awaiting playtest-verification" för ArrivalScene/BoardMeetingScene namn+pronomen, ingen senare logg bekräftar att Jacob playtestat detta.] |
 | kf8-fanmood-kalibrering | KF8 fanMood byggd; kvar är kalibrering mot nästa genomspelning (06-18-spec §B punkt 3) | verifierad | Jacob | BACKLOG.md:672 | Jacob genomspelar [Verifierat 2026-09-01 (Code): BACKLOG.md:672 säger fortfarande "Kvar enbart kalibrering mot NÄSTA genomspelning (06-18-spec §B punkt 3)" — ingen senare post bekräftar att den kalibreringsomgången genomförts.] |
 
 ## KF2. ÖVERLÄMNING 2 — TRE ÅTERSTÅENDE POSTER (2026-09-03 incoming-svep)
