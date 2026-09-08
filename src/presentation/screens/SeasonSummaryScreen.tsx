@@ -830,13 +830,19 @@ export function SeasonSummaryScreen() {
           )}
         </div>
 
-        {/* YOUTH INTAKE */}
-        {summary.youthIntakeCount > 0 && (
+        {/* DOM_AKADEMI_LIGGARE §3/§6: en gemensam akademidel ur kanon. */}
+        {(summary.youthIntakeCount > 0 || (summary.academyHighlights?.length ?? 0) > 0) && (
           <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
-            <SectionLabel>UNGDOMSKULL</SectionLabel>
-            <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
-              {summary.youthIntakeCount} nya spelare rekryterades
-            </p>
+            <SectionLabel>AKADEMIN</SectionLabel>
+            {(summary.academyHighlights?.length ?? 0) > 0 ? summary.academyHighlights!.map((line, index) => (
+              <p key={`${index}-${line}`} style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {line}
+              </p>
+            )) : (
+              <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {summary.youthIntakeCount} nya spelare rekryterades
+              </p>
+            )}
             {summary.bestYouthProspect && (
               <div style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', borderRadius: 'var(--radius-md)', padding: '10px 12px', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>

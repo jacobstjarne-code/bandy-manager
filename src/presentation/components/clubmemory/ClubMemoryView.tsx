@@ -135,7 +135,7 @@ export function ClubMemoryView({ game }: Props) {
           <div className="moment-block-header">Det som hänt</div>
           <div className="moment-block-subheader">Säsongen</div>
           {recentMoments.map(entry => {
-            const kind = momentKind(entry.type)
+            const kind = momentKind(entry.type, entry)
             const text = renderMomentViewFromLedger(entry, {
               subjectName: resolveSubjectName(game, entry.subject, entry.subjectSnapshot),
               subject2Name: resolveSubjectName(game, entry.subject2, entry.subject2Snapshot),

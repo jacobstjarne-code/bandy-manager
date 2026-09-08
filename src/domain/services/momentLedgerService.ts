@@ -158,7 +158,8 @@ export function getRecentMomentsFromLedger(game: SaveGame, limit = 5): MomentLed
  * anroparen kopplar rätt par, funktionen känner inte till entry-formen.
  * Läses FÖRST för `kind==='player'` (en avliden/uppflyttad/såld spelares
  * namn överlever), `game.players`/`youthTeam` som fallback för äldre poster
- * som saknar fältet.
+ * som saknar fältet. För `club` vinner den kanoniska entiteten om den finns;
+ * externa klubbar utan entitet läser sitt frysta snapshot-namn.
  */
 export function resolveSubjectName(
   game: SaveGame,
@@ -175,7 +176,7 @@ export function resolveSubjectName(
       return youth ? `${youth.firstName} ${youth.lastName}` : undefined
     }
     case 'club':
-      return game.clubs.find(c => c.id === subject.id)?.name
+      return game.clubs.find(c => c.id === subject.id)?.name ?? snapshot?.name
     case 'mecenat':
       return (game.mecenater ?? []).find(m => m.id === subject.id)?.name
     case 'patron':

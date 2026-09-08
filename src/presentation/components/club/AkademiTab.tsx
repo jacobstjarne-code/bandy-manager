@@ -8,6 +8,7 @@ import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConsta
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
 import { starsForPotential } from '../../../domain/services/academyService'
 import { externalLoanDestinationId } from '../../../domain/services/loanDestinationService'
+import { latestLoanReturnAttribution } from '../../../domain/services/academyLedgerPresentationService'
 
 const EXTERNAL_LOAN_CLUB_NAMES = ['Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -63,6 +64,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   ]
 
   const activeLoanDeals = game.loanDeals ?? []
+  const latestLoanReturn = latestLoanReturnAttribution(game)
   const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
   const skutskar = game.clubs.find(candidate => candidate.id === 'club_skutskar')
   const loanDestinations = [
@@ -330,6 +332,11 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
         </p>
         {loanMsg && (
           <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {loanMsg}</p>
+        )}
+        {latestLoanReturn && (
+          <div style={{ marginBottom: 12, padding: '9px 11px', borderLeft: '2px solid var(--accent)', background: 'color-mix(in srgb, var(--accent) 7%, transparent)' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>{latestLoanReturn}</p>
+          </div>
         )}
         {activeLoanDeals.length > 0 && (
           <div style={{ marginBottom: 12 }}>

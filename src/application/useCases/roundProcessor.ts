@@ -495,6 +495,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Loan deal processing ─────────────────────────────────────────────────
   const loanResult = processLoans(game, availabilityUpdatedPlayers, socialMediaBoostedClubs, nextMatchday, newDate, localRand)
   newInboxItems.push(...loanResult.inboxItems)
+  roundLedgerEntries.push(...loanResult.ledgerEntries)
   const loanUpdatedPlayers = loanResult.loanUpdatedPlayers
   const managedClubAfterLoan = loanResult.updatedClubs
   const updatedLoanDeals = loanResult.updatedLoanDeals

@@ -159,6 +159,8 @@ export interface SeasonSummary {
 
   youthIntakeCount: number
   bestYouthProspect: { name: string; position: string; potential: number } | null
+  /** DOM_AKADEMI_LIGGARE §3/§6: högst tre betydelseviktade rader, frysta ur liggaren. */
+  academyHighlights?: string[]
 
   roundPoints: number[]   // points per round for chart (cumulative)
 

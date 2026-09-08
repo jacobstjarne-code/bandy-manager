@@ -14,7 +14,9 @@ describe('processLoans — lånets omgångskontrakt', () => {
         : c),
       loanDeals: [{
         playerId: player.id,
+        destinationClubId: 'ext:testklubben',
         destinationClubName: 'Testklubben',
+        caAtStart: player.currentAbility,
         startRound: 0,
         endRound: 4,
         remainingRounds: 4,
@@ -52,7 +54,9 @@ describe('processLoans — lånets omgångskontrakt', () => {
         : c),
       loanDeals: [{
         playerId: player.id,
+        destinationClubId: 'ext:testklubben',
         destinationClubName: 'Testklubben',
+        caAtStart: initialAbility,
         startRound: 0,
         endRound: 4,
         remainingRounds: 4,
@@ -64,8 +68,10 @@ describe('processLoans — lånets omgångskontrakt', () => {
       }],
     }
 
+    let returnLedger = null as ReturnType<typeof processLoans>['ledgerEntries'][number] | null
     for (let matchday = 1; matchday <= 4; matchday++) {
       const result = processLoans(game, game.players, game.clubs, matchday, `2026-01-${matchday.toString().padStart(2, '0')}`, () => 0.9)
+      returnLedger = result.ledgerEntries[0] ?? returnLedger
       game = {
         ...game,
         players: result.loanUpdatedPlayers,
@@ -86,6 +92,23 @@ describe('processLoans — lånets omgångskontrakt', () => {
     expect(returned.seasonStats.gamesPlayed).toBe(player.seasonStats.gamesPlayed + 4)
     expect(returned.currentAbility).toBe(Math.min(player.potentialAbility, initialAbility + 5))
     expect(game.clubs.find(c => c.id === game.managedClubId)!.squadPlayerIds).toContain(player.id)
+    expect(returnLedger).toMatchObject({
+      type: 'loan_returned',
+      clubId: game.managedClubId,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: 'ext:testklubben' },
+      subjectSnapshot: { name: `${player.firstName} ${player.lastName}` },
+      subject2Snapshot: { name: 'Testklubben' },
+      loan: {
+        caAtStart: initialAbility,
+        caAtReturn: returned.currentAbility,
+        loanBonus: returned.currentAbility - initialAbility,
+        matches: 4,
+        goals: 4,
+        avgRating: 7.7,
+      },
+    })
+    expect(returnLedger?.significance).toBe(returned.currentAbility - initialAbility >= 5 ? 65 : 50)
   })
 
   it('ett åttaronderslån behåller alla rapporter när returstatistiken summeras', () => {

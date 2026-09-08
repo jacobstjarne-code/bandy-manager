@@ -224,6 +224,7 @@ export type EventLedgerType =
   // subject = junior, subject2 = mentor; båda snapshotas av logEvent.
   | 'mentorship_started' | 'mentorship_ended'
   | 'youth_intake'
+  | 'loan_started' | 'loan_returned'
   // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
   // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
@@ -444,6 +445,10 @@ export interface EventLedgerEntry {
     academyLevel: AcademyLevel
     source: 'summer' | 'school' | 'partner'
   }
+  /** DOM_AKADEMI_LIGGARE §1/§3: start respektive mätbart returutfall. */
+  loan?:
+    | { toClubId: string; occasions: number; caAtStart: number }
+    | { caAtStart: number; caAtReturn: number; loanBonus: number; matches: number; goals: number; avgRating: number }
   /**
    * board_verdict (liggare-ny-board-verdict). `verdict` återanvänder
    * `expectationVerdictFromRating`s befintliga tre värden ordagrant —

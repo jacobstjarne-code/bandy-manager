@@ -26,6 +26,15 @@ describe('academyActions.loanOutPlayer — kanonisk matchday-klocka', () => {
       endRound: 13,
       totalMatches: 4,
     })
+    expect(game?.eventLedger?.at(-1)).toMatchObject({
+      type: 'loan_started',
+      clubId: game.managedClubId,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: 'ext:testklubben' },
+      subject2Snapshot: { name: 'Testklubben' },
+      significance: 30,
+      loan: { toClubId: 'ext:testklubben', occasions: 4, caAtStart: player.currentAbility },
+    })
   })
 
   it('avvisar managerklubben även om ett felaktigt UI skulle skicka dess id', () => {
@@ -40,5 +49,40 @@ describe('academyActions.loanOutPlayer — kanonisk matchday-klocka', () => {
 
     expect(result).toEqual({ success: false, error: 'Du kan inte låna ut till den egna klubben' })
     expect(game.loanDeals).toEqual([])
+  })
+
+  it('skriver en sann returpost även när managern återkallar lånet', () => {
+    let game: SaveGame | null = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 4 })
+    const player = game.players.find(item => item.clubId === game!.managedClubId && item.age <= 23)!
+    const get = () => ({ game })
+    const set = (partial: Partial<{ game: SaveGame | null }>) => {
+      if ('game' in partial) game = partial.game ?? null
+    }
+    const actions = academyActions(get, set)
+
+    actions.loanOutPlayer(player.id, 'ext:testklubben', 'Testklubben', 4)
+    game = {
+      ...game!,
+      loanDeals: game!.loanDeals.map(deal => deal.playerId === player.id
+        ? { ...deal, matchesPlayed: 1, averageRating: 6.4, reports: [{ round: 10, played: true, rating: 6.4, goals: 1, assists: 0 }] }
+        : deal),
+    }
+    actions.recallLoan(player.id)
+
+    expect(game?.loanDeals).toHaveLength(0)
+    expect(game?.eventLedger?.at(-1)).toMatchObject({
+      type: 'loan_returned',
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: 'ext:testklubben' },
+      subject2Snapshot: { name: 'Testklubben' },
+      loan: {
+        caAtStart: player.currentAbility,
+        caAtReturn: player.currentAbility,
+        loanBonus: 0,
+        matches: 1,
+        goals: 1,
+        avgRating: 6.4,
+      },
+    })
   })
 })

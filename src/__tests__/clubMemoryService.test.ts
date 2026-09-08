@@ -1,4 +1,4 @@
-import { getClubMemory, scoreEvent, momentKind, momentFamily } from '../domain/services/clubMemoryService'
+import { buildMemoryEventFromLedger, getClubMemory, scoreEvent, momentKind, momentFamily } from '../domain/services/clubMemoryService'
 import type { MemoryEvent } from '../domain/services/clubMemoryService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { EventLedgerEntry } from '../domain/entities/Narrative'
@@ -613,6 +613,49 @@ describe('momentKind — breddad till hela EventLedgerType-unionen', () => {
     expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:mark:hog' })).toBe('scar')
     expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:close:frisk' })).toBe('triumph')
     expect(momentKind('manager_burnout', { semanticKey: 'manager_burnout:relief:markbar' })).toBe('neutral')
+  })
+
+  it('loan_returned: triumph först vid minst fem i total utveckling', () => {
+    expect(momentKind('loan_returned', {
+      semanticKey: 'loan_returned_p1_ext:test_s2025_m8',
+      loan: { caAtStart: 40, caAtReturn: 45, loanBonus: 3, matches: 4, goals: 1, avgRating: 7.1 },
+    })).toBe('triumph')
+    expect(momentKind('loan_returned', {
+      semanticKey: 'loan_returned_p1_ext:test_s2025_m8',
+      loan: { caAtStart: 40, caAtReturn: 44, loanBonus: 3, matches: 4, goals: 1, avgRating: 7.1 },
+    })).toBe('neutral')
+  })
+})
+
+describe('akademiposter i Krönikan', () => {
+  it('renderar lånereturen från samma snapshot och attribution som Akademi-vyn', () => {
+    const game = makeMinimalGame()
+    const entry: EventLedgerEntry = {
+      type: 'loan_returned', semanticKey: 'loan_returned_p1_ext:test_s1_m8', season: 1, matchday: 8,
+      clubId: MANAGED_CLUB_ID, subject: { kind: 'player', id: 'p1' }, subject2: { kind: 'club', id: 'ext:test' },
+      subjectSnapshot: { name: 'Torsten Isaksson' }, subject2Snapshot: { name: 'Testklubben' }, significance: 65,
+      loan: { caAtStart: 43, caAtReturn: 54, loanBonus: 5, matches: 4, goals: 2, avgRating: 7.4 },
+    }
+    expect(buildMemoryEventFromLedger(game, entry, MANAGED_CLUB_ID)).toMatchObject({
+      type: 'loan_returned',
+      text: 'Torsten Isaksson tillbaka från Testklubben: 43→54. Lånet gav 5, träningen resten.',
+      emoji: '👤',
+      significance: 65,
+    })
+  })
+
+  it('släpper igenom deklarerade akademiposter till säsongens minnen', () => {
+    const game = makeMinimalGame({
+      currentSeason: 2,
+      eventLedger: [{
+        type: 'youth_intake', semanticKey: 'youth_intake_club_test_s2_summer', season: 2, matchday: 1,
+        clubId: MANAGED_CLUB_ID, subject: { kind: 'club', id: MANAGED_CLUB_ID }, significance: 35,
+        youthIntake: { count: 5, academyLevel: 'basic', source: 'summer' },
+      }],
+    })
+    expect(getClubMemory(game).seasons.find(season => season.season === 2)?.events).toContainEqual(expect.objectContaining({
+      type: 'youth_intake', text: '5 nya spelare rekryterades',
+    }))
   })
 })
 

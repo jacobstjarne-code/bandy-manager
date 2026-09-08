@@ -5,9 +5,10 @@ import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS, applyFinanceChange, appendFinanceL
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
-import { buildAcademyPromotionLedgerEntry, buildAcademyUpgradeStartedLedgerEntry, buildMentorshipStartedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { buildAcademyPromotionLedgerEntry, buildAcademyUpgradeStartedLedgerEntry, buildLoanReturnedLedgerEntry, buildLoanStartedLedgerEntry, buildMentorshipStartedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 import { getPromotionTiming, buildPromotedPlayerFromYouth } from '../../../domain/services/academyService'
 import { closeActiveMentorshipForYouth } from '../../../domain/services/academyMentorshipService'
+import { migrateLoanDestinationId } from '../../../domain/services/loanDestinationService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -386,6 +387,16 @@ export function academyActions(get: Get, set: Set) {
           players: updatedPlayers,
           clubs: updatedClubs,
           loanDeals: [...(game.loanDeals ?? []), loanDeal],
+          eventLedger: logEvent(game, buildLoanStartedLedgerEntry({
+            clubId: game.managedClubId,
+            season: game.currentSeason,
+            matchday: game.currentMatchday,
+            playerId,
+            destinationClubId,
+            destinationClubName,
+            occasions: rounds,
+            caAtStart: player.currentAbility,
+          })),
         }
       })
       return { success: true }
@@ -394,6 +405,10 @@ export function academyActions(get: Get, set: Set) {
     recallLoan: (playerId: string) => {
       const { game } = get()
       if (!game) return
+
+      const player = game.players.find(candidate => candidate.id === playerId)
+      const deal = (game.loanDeals ?? []).find(candidate => candidate.playerId === playerId)
+      if (!player || !deal) return
 
       const updatedPlayers = game.players.map(p =>
         p.id === playerId ? { ...p, isOnLoan: false, loanClubName: undefined } : p
@@ -405,7 +420,31 @@ export function academyActions(get: Get, set: Set) {
       )
       const updatedLoanDeals = (game.loanDeals ?? []).filter(d => d.playerId !== playerId)
 
-      set({ game: { ...game, players: updatedPlayers, clubs: updatedClubs, loanDeals: updatedLoanDeals } })
+      const destinationClubId = deal.destinationClubId ?? migrateLoanDestinationId(deal.destinationClubName)
+      const loanGoals = deal.reports.reduce((sum, report) => sum + (report.goals ?? 0), 0)
+      set({ game: {
+        ...game,
+        players: updatedPlayers,
+        clubs: updatedClubs,
+        loanDeals: updatedLoanDeals,
+        eventLedger: logEvent(game, buildLoanReturnedLedgerEntry({
+          clubId: game.managedClubId,
+          season: game.currentSeason,
+          matchday: game.currentMatchday,
+          playerId: player.id,
+          playerName: `${player.firstName} ${player.lastName}`,
+          playerPosition: player.position,
+          playerAge: player.age,
+          destinationClubId,
+          destinationClubName: deal.destinationClubName,
+          caAtStart: deal.caAtStart ?? player.currentAbility,
+          caAtReturn: player.currentAbility,
+          loanBonus: 0,
+          matches: deal.matchesPlayed,
+          goals: loanGoals,
+          avgRating: deal.averageRating,
+        })),
+      } })
     },
   }
 }

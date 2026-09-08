@@ -210,6 +210,71 @@ export function buildYouthIntakeLedgerEntry(input: {
   }
 }
 
+/** DOM_AKADEMI_LIGGARE + DOM_LANEKLUBB_IDENTITET: ett påbörjat utvecklingslån. */
+export function buildLoanStartedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  playerId: string
+  destinationClubId: string
+  destinationClubName: string
+  occasions: number
+  caAtStart: number
+}): EventLedgerEntry {
+  return {
+    type: 'loan_started',
+    semanticKey: `loan_started_${input.playerId}_${input.destinationClubId}_s${input.season}_m${input.matchday}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'player', id: input.playerId },
+    subject2: { kind: 'club', id: input.destinationClubId },
+    subject2Snapshot: { name: input.destinationClubName },
+    significance: 30,
+    loan: { toClubId: input.destinationClubId, occasions: input.occasions, caAtStart: input.caAtStart },
+  }
+}
+
+/** DOM_AKADEMI_LIGGARE §1/§3: lånets faktiska utfall när spelaren återvänder. */
+export function buildLoanReturnedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  playerId: string
+  playerName: string
+  playerPosition: string
+  playerAge: number
+  destinationClubId: string
+  destinationClubName: string
+  caAtStart: number
+  caAtReturn: number
+  loanBonus: number
+  matches: number
+  goals: number
+  avgRating: number
+}): EventLedgerEntry {
+  return {
+    type: 'loan_returned',
+    semanticKey: `loan_returned_${input.playerId}_${input.destinationClubId}_s${input.season}_m${input.matchday}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'player', id: input.playerId },
+    subject2: { kind: 'club', id: input.destinationClubId },
+    subjectSnapshot: { name: input.playerName, position: input.playerPosition, age: input.playerAge },
+    subject2Snapshot: { name: input.destinationClubName },
+    significance: input.caAtReturn - input.caAtStart >= 5 ? 65 : 50,
+    loan: {
+      caAtStart: input.caAtStart,
+      caAtReturn: input.caAtReturn,
+      loanBonus: input.loanBonus,
+      matches: input.matches,
+      goals: input.goals,
+      avgRating: input.avgRating,
+    },
+  }
+}
+
 /**
  * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE_2026-09-04 §4/§1). subject
  * = junioren; `subjectSnapshot` fylls av `logEvent` vid skrivtillfället

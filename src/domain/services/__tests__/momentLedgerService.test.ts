@@ -311,6 +311,11 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(resolveSubjectName(game, { kind: 'player', id: 'p1' })).toBe('Sten Ek')
   })
 
+  it('resolveSubjectName använder fryst namn för en extern klubb utan entitet', () => {
+    const game = makeMinimalGame()
+    expect(resolveSubjectName(game, { kind: 'club', id: 'ext:tillberga' }, { name: 'Tillberga IK' })).toBe('Tillberga IK')
+  })
+
   it('resolveSubjectName faller tillbaka till game.youthTeam.players för en spelare som aldrig fanns i game.players (P19)', () => {
     const game = makeMinimalGame({
       players: [],

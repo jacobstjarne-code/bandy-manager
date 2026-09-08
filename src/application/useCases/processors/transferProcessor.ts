@@ -16,6 +16,8 @@ import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_R
 import { seededPick } from '../../../domain/utils/random'
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
 import { DEADLINE_AI_BID_TEXT } from '../../../domain/data/windowDeadlineText'
+import { buildLoanReturnedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { migrateLoanDestinationId } from '../../../domain/services/loanDestinationService'
 
 const BUD_WITHDRAWN_POOL = [
   (klubb: string, namn: string) => `${klubb} drog tillbaka budet på ${namn}. De tröttnade på att vänta.`,
@@ -50,6 +52,7 @@ export interface LoanProcessorResult {
   updatedClubs: Club[]
   updatedLoanDeals: LoanDeal[]
   inboxItems: InboxItem[]
+  ledgerEntries: EventLedgerEntry[]
 }
 
 /**
@@ -378,6 +381,7 @@ export function processLoans(
   localRand: () => number,
 ): LoanProcessorResult {
   const inboxItems: InboxItem[] = []
+  const ledgerEntries: EventLedgerEntry[] = []
 
   let loanUpdatedPlayers = [...availabilityUpdatedPlayers]
   const returnedLoanPlayerIds: string[] = []
@@ -456,6 +460,27 @@ export function processLoans(
       })
       const returnedPlayer = loanUpdatedPlayers.find(p => p.id === deal.playerId)
       if (returnedPlayer) {
+        const playerBeforeLoanReturn = availabilityUpdatedPlayers.find(p => p.id === deal.playerId)
+        const caAtStart = deal.caAtStart ?? playerBeforeLoanReturn?.currentAbility ?? returnedPlayer.currentAbility
+        const loanBonus = Math.max(0, returnedPlayer.currentAbility - (playerBeforeLoanReturn?.currentAbility ?? returnedPlayer.currentAbility))
+        const destinationClubId = deal.destinationClubId ?? migrateLoanDestinationId(deal.destinationClubName)
+        ledgerEntries.push(buildLoanReturnedLedgerEntry({
+          clubId: game.managedClubId,
+          season: game.currentSeason,
+          matchday: nextMatchday,
+          playerId: returnedPlayer.id,
+          playerName: `${returnedPlayer.firstName} ${returnedPlayer.lastName}`,
+          playerPosition: returnedPlayer.position,
+          playerAge: returnedPlayer.age,
+          destinationClubId,
+          destinationClubName: deal.destinationClubName,
+          caAtStart,
+          caAtReturn: returnedPlayer.currentAbility,
+          loanBonus,
+          matches: updatedDeal.matchesPlayed,
+          goals: loanGoals,
+          avgRating: updatedDeal.averageRating,
+        }))
         const confStr = participationRate >= 0.75 ? 'spelade regelbundet och kom tillbaka stärkt'
           : participationRate >= 0.5 ? 'fick speltid och har utvecklats'
           : 'satt mest på bänken och är lite besviken'
@@ -482,7 +507,7 @@ export function processLoans(
       })
     : clubs
 
-  return { loanUpdatedPlayers, updatedClubs, updatedLoanDeals, inboxItems }
+  return { loanUpdatedPlayers, updatedClubs, updatedLoanDeals, inboxItems, ledgerEntries }
 }
 
 // ── Apply accepted transfer bids (nemesis, mecenat cost-share, sponsor reactions) ──

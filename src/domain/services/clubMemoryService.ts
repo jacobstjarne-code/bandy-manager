@@ -28,6 +28,7 @@ import { buildExpectationVerdictSentence } from './seasonSummaryService'
 import { seasonVerdictText, seasonVerdictZoneLine } from './boardService'
 import { PROVNING_RESOLUTION } from '../data/hallProvningData'
 import { getSeasonLicenseConsequence } from './licenseService'
+import { loanReturnAttribution } from './academyLedgerPresentationService'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -196,6 +197,13 @@ const LEDGER_CLUB_MEMORY_TYPES = new Set<EventLedgerEntry['type']>([
   // spelare som lämnar akademin vid tjugo ska minnas — inte försvinna
   // ljudlöst ur game.youthTeam.players.
   'youth_aged_out',
+  // DOM_AKADEMI_LIGGARE §1: de akademihändelser som uttryckligen har
+  // Krönikan som konsument. Mentorskapets egen historik bor i Blodslinjen.
+  'academy_upgrade_started',
+  'academy_upgrade_completed',
+  'loan_started',
+  'loan_returned',
+  'youth_intake',
   // liggare-ny-community-shift (2026-09-07): text LÅST av Opus i själva
   // MASTER_OPPET-raden, kopierad ordagrant i switchens 'community_shift'-gren.
   'community_shift',
@@ -326,6 +334,53 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
         type: 'youth_aged_out', season: entry.season, matchday: entry.matchday,
         text: `${playerName}, ${entry.youthAgedOut.stars} stjärnor, lämnade akademin vid tjugo.`,
         emoji: '👤', significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'academy_upgrade_started': {
+      const upgrade = entry.academyUpgrade && 'fromLevel' in entry.academyUpgrade ? entry.academyUpgrade : undefined
+      if (!upgrade) return null
+      const level = upgrade.toLevel === 'elite' ? 'elitnivå' : 'satsningsnivå'
+      return {
+        type: 'academy_upgrade_started', season: entry.season, matchday: entry.matchday,
+        text: `Akademiuppgradering till ${level} beställd för ${Math.round(upgrade.costKr / 1000)} tkr.`,
+        emoji: momentFamily('academy_upgrade_started'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
+    case 'academy_upgrade_completed': {
+      const upgrade = entry.academyUpgrade && 'level' in entry.academyUpgrade ? entry.academyUpgrade : undefined
+      if (!upgrade) return null
+      const key = upgrade.level === 'elite' ? 'akademi_3' : 'akademi_2'
+      return {
+        type: 'academy_upgrade_completed', season: entry.season, matchday: entry.matchday,
+        text: FACILITY_COMPLETED_BEATS[key], emoji: momentFamily('academy_upgrade_completed'), significance: entry.significance,
+        subjectClubId: managedClubId,
+      }
+    }
+    case 'loan_started': {
+      const loan = entry.loan && 'toClubId' in entry.loan ? entry.loan : undefined
+      const destinationName = resolveSubjectName(game, entry.subject2, entry.subject2Snapshot)
+      if (!loan || !playerName || !destinationName) return null
+      return {
+        type: 'loan_started', season: entry.season, matchday: entry.matchday,
+        text: `${playerName} lånades ut till ${destinationName} i ${loan.occasions} omgångar.`,
+        emoji: momentFamily('loan_started'), significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'loan_returned': {
+      const text = loanReturnAttribution(game, entry)
+      if (!text) return null
+      return {
+        type: 'loan_returned', season: entry.season, matchday: entry.matchday,
+        text, emoji: momentFamily('loan_returned'), significance: entry.significance, subjectPlayerId: playerId,
+      }
+    }
+    case 'youth_intake': {
+      if (!entry.youthIntake) return null
+      return {
+        type: 'youth_intake', season: entry.season, matchday: entry.matchday,
+        text: `${entry.youthIntake.count} nya spelare rekryterades`,
+        emoji: momentFamily('youth_intake'), significance: entry.significance, subjectClubId: managedClubId,
       }
     }
     case 'letter': {
@@ -675,6 +730,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   academy_upgrade_started: 'neutral', academy_upgrade_completed: 'triumph',
   mentorship_started: 'neutral',
   youth_intake: 'neutral',
+  loan_started: 'neutral',
   // liggare-ny-board-verdict: neutral tills Krönikans egen text finns (då
   // kan verdict/patienceBand motivera en dynamisk gren, som decision/
   // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
@@ -690,13 +746,13 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
 
 /**
  * `entry` krävs bara för de tre dynamiska typerna (storyline_resolution/
- * decision/manager_burnout) — övriga läser den statiska tabellen och
+ * decision/manager_burnout/loan_returned) — övriga läser den statiska tabellen och
  * ignorerar parametern. Given okänt/oklassat `type`: 'neutral' (aldrig en
  * gissning uppåt mot triumph/scar).
  */
 export function momentKind(
   type: EventLedgerType,
-  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome' | 'communityShift' | 'mentorship'>,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome' | 'communityShift' | 'mentorship' | 'loan'>,
 ): ActiveMemoryKind {
   if (type === 'decision') {
     return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
@@ -736,6 +792,10 @@ export function momentKind(
     const reason = entry?.mentorship && 'reason' in entry.mentorship ? entry.mentorship.reason : undefined
     return reason === 'graduated' || reason === 'promoted' ? 'triumph' : 'neutral'
   }
+  if (type === 'loan_returned') {
+    const loan = entry?.loan && 'caAtReturn' in entry.loan ? entry.loan : undefined
+    return loan && loan.caAtReturn - loan.caAtStart >= 5 ? 'triumph' : 'neutral'
+  }
   return STATIC_MOMENT_KIND[type] ?? 'neutral'
 }
 
@@ -750,6 +810,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
   mentorship_started: '👤', mentorship_ended: '👤',
   youth_intake: '👤',
+  loan_started: '👤', loan_returned: '👤',
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
