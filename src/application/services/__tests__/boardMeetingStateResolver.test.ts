@@ -20,6 +20,15 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 describe('resolveBoardMeetingState — kopplad till boardPatience (PÅSTÅENDEKARTAN)', () => {
+  it('visar exakt samma ordförandenamn som den kanoniska game.board-posten', () => {
+    const game = makeGame()
+    const chair = game.board?.find(member => member.role === 'ordförande')
+
+    expect(chair).toBeDefined()
+    expect(resolveBoardMeetingState(game).chairmanName)
+      .toBe(`${chair!.firstName} ${chair!.lastName}`)
+  })
+
   it('säsong 2 (första mötet): alltid A, oavsett boardPatience', () => {
     const game = makeGame({ seasonSummaries: [{ season: 1 } as never], boardPatience: 10 })
     expect(resolveBoardMeetingState(game).state).toBe('A')
