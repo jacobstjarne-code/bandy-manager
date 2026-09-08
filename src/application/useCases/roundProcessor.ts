@@ -10,7 +10,6 @@ import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { mulberry32 } from '../../domain/utils/random'
-import { deriveUtfall } from '../../domain/services/matchTypeAxes'
 
 import type { AdvanceResult } from './advanceTypes'
 import { derivePreRoundContext } from './processors/preRoundContextProcessor'
@@ -51,15 +50,9 @@ import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalService'
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
-import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
-import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
-import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
-import { logEvent } from '../../domain/services/eventLedgerService'
-import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTalkService'
-import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
 import { recordPressLedgerQuestionShown } from '../../domain/services/pressConferenceService'
 import {
   ensureManagerChoiceLog,
@@ -73,6 +66,7 @@ import { processRoundNotifications } from './processors/notificationProcessor'
 import { processManagedMatchOutcome } from './processors/matchOutcomeProcessor'
 import { processMarketValues } from './processors/marketValueProcessor'
 import { processTrainerState } from './processors/trainerProcessor'
+import { processManagerRoundState } from './processors/managerRoundProcessor'
 
 export type { AdvanceResult }
 
@@ -1407,192 +1401,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Uppdatera beslutsbörda varje omgång (ej dubbelkörning vid andra passet)
-  if (!isSecondPassForManagedMatch) {
-    const { meter, pressure } = getFatigueState(updatedGame)
-    const newHistory = [...(updatedGame.fatigueHistory ?? []), meter].slice(-7)
-    const prevStreak = updatedGame.fatigueHotStreak ?? 0
-    const newStreak = pressure === 'hot' ? prevStreak + 1 : 0
-    updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
-
-    // Manager burnout sampling + narrative log (burnout_peak, era_shift)
-    const eraChanged = !!(game.currentEra && game.currentEra !== newClubEra)
-    const updatedManagerProfile = updateManagerBurnout(updatedGame)
-    if (updatedManagerProfile) {
-      let enrichedProfile = updatedManagerProfile
-      const newBurnoutZone = getBurnoutZone(enrichedProfile.burnoutScore)
-      if (eraChanged) {
-        const alreadyLogged = (enrichedProfile.diary ?? []).some(
-          e => e.type === 'era_shift' && e.season === game.currentSeason)
-        if (!alreadyLogged) {
-          enrichedProfile = { ...enrichedProfile, diary: [
-            ...(enrichedProfile.diary ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'era_shift' as const, text: newClubEra === 'establishment' ? 'Klubben reste sig under dig. Orten började tro igen.' : newClubEra === 'legacy' ? 'Det blev mer än bandy under dig. Det blev ortens identitet.' : 'Tunga tider kom. Det var nu det gällde.' },
-          ]}
-        }
-      }
-      // DOM_BURNOUT_TAK_2026-09-02 (A) — stämpla episoden som erbjuden SAMMA
-      // omgång eventet faktiskt genereras (eventProcessor.ts). Ingen source-
-      // cooldown/budget skyddar detta eventet (avsiktligt, se dess trigger) —
-      // profil-stämpeln är den ENDA spärren mot att samma episod erbjuds om
-      // och om igen så länge scoret ligger kvar på taket.
-      if (allNewEvents.some(e => e.type === 'burnoutCeiling')) {
-        enrichedProfile = { ...enrichedProfile, burnoutCeilingChoiceOffered: true }
-      }
-
-      // HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29) — bågens tre beats,
-      // ömsesidigt uteslutande i prioritetsordningen slut → lättnad →
-      // eskalering. Villkoren kan per konstruktion inte överlappa (slut
-      // kräver frisk, lättnad kräver sjunkande men inte frisk, eskalering
-      // kräver ihållande hög), men ordningen är explicit if/else-if så att
-      // en framtida villkorsändring inte tyst kan fyra två beats samma
-      // omgång.
-      //
-      // Vilken som än fyrar stämplas lastShownBurnoutZone till NUVARANDE
-      // zon i samma profiluppdatering. Det är hela systemets invariant:
-      // fältet betyder alltid "zonen vi senast berättade om för spelaren",
-      // och det är den som hindrar att ett oförändrat tillstånd
-      // återpresenteras som en ny händelse varje omgång.
-      //
-      // lastBurnoutCause stämplas inte här — updateManagerBurnout sätter
-      // det redan, på det enda stället där press-komponenterna räknas.
-      const showBurnoutClose = shouldShowBurnoutClose(enrichedProfile)
-      const showBurnoutRelief = !showBurnoutClose && shouldShowBurnoutRelief(enrichedProfile)
-      const showBurnoutMark = !showBurnoutClose && !showBurnoutRelief &&
-        shouldShowBurnoutMark(enrichedProfile) && newBurnoutZone !== 'frisk'
-      if (showBurnoutClose || showBurnoutRelief || showBurnoutMark) {
-        enrichedProfile = { ...enrichedProfile, lastShownBurnoutZone: newBurnoutZone }
-      }
-
-      updatedGame = { ...updatedGame, managerProfile: enrichedProfile }
-
-      // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): loggar BurnoutMark.tsx:s
-      // visade citat/hjälprad NÄR DE VISAS (samma skrivmönster som
-      // coffee_pool_/journalist_exclusive_ ovan) — pickBurnoutQuoteIndex/
-      // pickBurnoutHelperIndex läser samma logg för att undvika rader som
-      // redan visats denna säsong.
-      //
-      // HIGH 10-FÖLJDFIX (2026-08-30, upptäckt vid granskning): utöver
-      // citat/hjälprad loggas nu också en FAST nyckel per beat-typ
-      // (BURNOUT_*_FIRED_KEY). Anledning: portalkorten (BurnoutMark.tsx,
-      // BurnoutReliefMark.tsx) kan INTE avgöra "fyrade det HÄR just nu"
-      // genom att återköra shouldShowBurnoutMark/Relief/Close mot det
-      // lagrade profil-tillståndet — lastShownBurnoutZone stämplas till
-      // NUVARANDE zon i samma steg ovan, så en sådan återkörning skulle
-      // alltid ge nej (before===after efter stämplingen). Utan denna logg
-      // hade korten aldrig renderats en enda gång — verifierat innan denna
-      // fix landade. Se wasLoggedThisRound (narrativeLogService.ts).
-      if (showBurnoutMark) {
-        // Återfalls-läsningen (2026-09-02, Opus dom) — säsongsöverskridande,
-        // se isBurnoutRelapse (managerProfileService.ts). Tom återfallspool
-        // (Opus fyller den) degraderar säkert till intro-mallen, samma
-        // "tom pool"-golv BURNOUT_CAUSE_LINES redan följer.
-        const relapse = isBurnoutRelapse(enrichedProfile, updatedGame.currentSeason, updatedGame.eventLedger)
-        const relapseQuotePool = BURNOUT_MARK_RELAPSE.quotesByZone[newBurnoutZone]
-        const relapseHelperPool = BURNOUT_MARK_RELAPSE.helpersByZone[newBurnoutZone]
-        const useRelapse = relapse && relapseQuotePool.length > 0 && relapseHelperPool.length > 0
-
-        const quoteIdx = useRelapse
-          ? pickBurnoutRelapseQuoteIndex(updatedGame, newBurnoutZone, relapseQuotePool.length)
-          : pickBurnoutQuoteIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.quotesByZone[newBurnoutZone].length)
-        const helperIdx = useRelapse
-          ? pickBurnoutRelapseHelperIndex(updatedGame, newBurnoutZone, relapseHelperPool.length)
-          : pickBurnoutHelperIndex(updatedGame, newBurnoutZone, BURNOUT_MARK.helpersByZone[newBurnoutZone].length)
-        const quoteKey = useRelapse
-          ? `${BURNOUT_RELAPSE_QUOTE_PREFIX}${newBurnoutZone}_${quoteIdx}`
-          : `${BURNOUT_QUOTE_PREFIX}${newBurnoutZone}_${quoteIdx}`
-        const helperKey = useRelapse
-          ? `${BURNOUT_RELAPSE_HELPER_PREFIX}${newBurnoutZone}_${helperIdx}`
-          : `${BURNOUT_HELPER_PREFIX}${newBurnoutZone}_${helperIdx}`
-
-        let burnoutLog = logNarrativeBeat(updatedGame, quoteKey, updatedGame.currentSeason, nextMatchday)
-        burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, helperKey, updatedGame.currentSeason, nextMatchday)
-        burnoutLog = logNarrativeBeat({ ...updatedGame, narrativeBeatLog: burnoutLog }, BURNOUT_MARK_FIRED_KEY, updatedGame.currentSeason, nextMatchday)
-        updatedGame = {
-          ...updatedGame,
-          narrativeBeatLog: burnoutLog,
-          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
-            'mark', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
-          )),
-        }
-      } else if (showBurnoutRelief) {
-        updatedGame = {
-          ...updatedGame,
-          narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_RELIEF_FIRED_KEY, updatedGame.currentSeason, nextMatchday),
-          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
-            'relief', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
-          )),
-        }
-      } else if (showBurnoutClose) {
-        updatedGame = {
-          ...updatedGame,
-          narrativeBeatLog: logNarrativeBeat(updatedGame, BURNOUT_CLOSE_FIRED_KEY, updatedGame.currentSeason, nextMatchday),
-          eventLedger: logEvent(updatedGame, buildBurnoutBeatLedgerEntry(
-            'close', newBurnoutZone, updatedGame.currentSeason, nextMatchday,
-          )),
-        }
-      }
-    }
-
-    // H2H rivalry update after managed match result + rivalry narrative log
-    if (
-      justCompletedManagedFixture &&
-      justCompletedManagedFixture.homeScore !== undefined &&
-      justCompletedManagedFixture.awayScore !== undefined &&
-      updatedGame.managerProfile?.coachRivalries?.length
-    ) {
-      const isHome = justCompletedManagedFixture.homeClubId === updatedGame.managedClubId
-      const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
-      const h2hOutcome = deriveUtfall(justCompletedManagedFixture, updatedGame.managedClubId)
-      let profileWithH2H = updateH2HRecord(
-        updatedGame.managerProfile,
-        opponentClubId,
-        h2hOutcome === 'vunnet' ? 1 : 0,
-        h2hOutcome === 'forlorat' ? 1 : 0,
-      )
-      // Log rivalry once when a clear nemesis emerges (3+ losses, losses > wins)
-      const existingRivalryLog = (profileWithH2H.diary ?? []).some(e => e.type === 'rivalry')
-      if (!existingRivalryLog) {
-        const nemesisCandidate = deriveCoachNemesis(
-          (profileWithH2H.coachRivalries ?? []).filter(r => r.h2hLosses >= 3),
-        )
-        if (nemesisCandidate) {
-          profileWithH2H = { ...profileWithH2H, diary: [
-            ...(profileWithH2H.diary ?? []),
-            { season: game.currentSeason, matchday: nextMatchday, type: 'rivalry' as const, text: `${game.clubs.find(c => c.id === nemesisCandidate.clubId)?.name ?? 'rivalen'} blev din nemesis.` },
-          ]}
-        }
-      }
-      updatedGame = { ...updatedGame, managerProfile: profileWithH2H }
-    }
-
-    // DOM_PEPTALK_YTA_2026-09-02, Beslut 3 — loggar det VISADE citatets
-    // semanticKey NÄR matchen avgörs (samma "logga NÄR DE VISAS"-mönster som
-    // burnout ovan), inte varje omgångspassering. Gated på
-    // justCompletedManagedFixture: en repeterad körning mot SAMMA senaste
-    // match (ingen ny match spelad denna omgång) hade annars fått sin egen
-    // tidigare skrivning att visa som on-cooldown för sig själv och drivit
-    // fram ett annat index än det som faktiskt en gång loggades.
-    if (justCompletedManagedFixture) {
-      const pepSelection = selectPepTalk(updatedGame)
-      if (pepSelection) {
-        const pepKey = `${PEPTALK_QUOTE_PREFIX}${pepSelection.category}_${pepSelection.index}`
-        updatedGame = { ...updatedGame, narrativeBeatLog: logNarrativeBeat(updatedGame, pepKey, updatedGame.currentSeason, nextMatchday) }
-      }
-    }
-
-    // Squad-pulse sampling — samlas på samma ställe som fatigueHistory
-    const squadPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
-    if (squadPlayers.length > 0) {
-      const avgFitness = Math.round(squadPlayers.reduce((s, p) => s + p.fitness, 0) / squadPlayers.length)
-      const avgMorale = Math.round(squadPlayers.reduce((s, p) => s + p.morale, 0) / squadPlayers.length)
-      const avgSeasonForm = Math.round(squadPlayers.reduce((s, p) => s + (p.seasonForm ?? 60), 0) / squadPlayers.length)
-      const avgSharpness = Math.round(squadPlayers.reduce((s, p) => s + p.sharpness, 0) / squadPlayers.length)
-      const injuryCount = squadPlayers.filter(p => p.isInjured).length
-      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, avgSeasonForm, avgSharpness, injuryCount }].slice(-12)
-      updatedGame = { ...updatedGame, teamFitnessHistory: newTFH }
-    }
-  }
+  updatedGame = processManagerRoundState({
+    previousGame: game,
+    game: updatedGame,
+    justCompletedManagedFixture,
+    nextMatchday,
+    newClubEra,
+    burnoutCeilingQueuedThisRound: allNewEvents.some(event => event.type === 'burnoutCeiling'),
+    skipSideEffects: isSecondPassForManagedMatch,
+  })
 
   // U5 forts (SLUTTEST_KO.md, 2026-08-20): systemhandelseBudgetOk:s faktiska
   // gating (se filterSystemhandelseBudget, narrativeLogService.ts, för
