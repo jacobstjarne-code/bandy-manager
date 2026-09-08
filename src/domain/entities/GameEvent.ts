@@ -1,4 +1,5 @@
 import type { VoiceId } from './Voice'
+import type { ProofSource } from './ProofSource'
 
 export type GameEventType =
   | 'transferBidReceived'
@@ -464,6 +465,11 @@ export interface GameEvent {
    *  exkluderingsstorlek (se rotateSubject-dokumentationen) och ska inte
    *  blandas ihop med den generiska K=5-poolen detta fält loggar för. */
   rotationKey?: string
+  /** DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08: deklarerad belägning för
+   *  eventets genererings-tids-påstående (se ProofSource.ts). Pilot: bara
+   *  patronEvents.ts sätter fältet; övriga events/*-filer kommer i nästa
+   *  domade skiva. undefined = inte ännu annoterat. */
+  proofSource?: ProofSource
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

@@ -1,11 +1,18 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { TacticMentality } from '../../enums'
-import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
+import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES, PATRON_EMERGE_CS } from '../../data/patronData'
 import { isVoiceIntroduced, patronVoiceId } from '../voiceIntroductionService'
+import { calculateClubEra } from '../clubEraService'
 
 /**
  * @cites patronGame.totalContributed, patronGame.contribution
+ *
+ * DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08 (pilot, patronEvents.ts):
+ * varje event nedan bär nu `proofSource` (ProofSource.ts). Alla sju kort i
+ * denna funktion är redan strukturellt gejtade av sin omslutande `if` —
+ * annoteringen hoisar samma boolean till en named const som återanvänds i
+ * BÅDE villkoret och `proofSource.evaluatedTrue`, så de inte kan glida isär.
  */
 export function generatePatronEvents(
   game: SaveGame,
@@ -24,7 +31,8 @@ export function generatePatronEvents(
     // Patron intro — normally round 3. If an established runtime path reaches
     // a later round without the intro, recreate the missing card instead of
     // leaving every subsequent patron event permanently deferred.
-    if (!patronAlreadyIntroduced && currentRound >= 3) {
+    const patronIntroDue = !patronAlreadyIntroduced && currentRound >= 3
+    if (patronIntroDue) {
       const eid = `patron_intro_${game.currentSeason}`
       // En patron som nyss accepterats via patron_emerge har redan fått sin
       // introduktion. Utan den här grinden kom samma person tillbaka två
@@ -37,6 +45,11 @@ export function generatePatronEvents(
           title: `💼 ${patron.name} visar intresse`,
           sender: { name: patron.name, role: `ägare, ${patron.business}` },
           body: `${patron.name} från ${patron.business} har hört om er förening och vill diskutera ett samarbete.\n\n"Jag har alltid brunnit för bandy. Ni gör ett fantastiskt jobb — jag vill hjälpa till."`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'patron är aktiv och detta är dennes ännu ointroducerade första kort vid omgång ≥3',
+            evaluatedTrue: patronIntroDue,
+          },
           choices: [
             {
               id: 'welcome',
@@ -59,7 +72,8 @@ export function generatePatronEvents(
     }
 
     // Patron unhappy — round 5–10, happiness < 60
-    if (currentRound >= 5 && currentRound <= 10 && (patron.happiness ?? 50) < 60) {
+    const patronUnhappyDue = currentRound >= 5 && currentRound <= 10 && (patron.happiness ?? 50) < 60
+    if (patronUnhappyDue) {
       const eid = `patron_unhappy_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_UNHAPPY_QUOTES.length)
@@ -69,6 +83,11 @@ export function generatePatronEvents(
           type: 'patronEvent',
           title: `${patron.name} är missnöjd`,
           body: quote,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'happiness < 60 i omgångsfönstret 5–10',
+            evaluatedTrue: patronUnhappyDue,
+          },
           choices: [
             {
               id: 'promise',
@@ -89,7 +108,8 @@ export function generatePatronEvents(
     }
 
     // Patron about to withdraw — round >= 8, happiness < 30
-    if (currentRound >= 8 && (patron.happiness ?? 50) < 30) {
+    const patronWithdrawDue = currentRound >= 8 && (patron.happiness ?? 50) < 30
+    if (patronWithdrawDue) {
       const eid = `patron_withdraw_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         events.push({
@@ -97,6 +117,11 @@ export function generatePatronEvents(
           type: 'patronEvent',
           title: `${patron.name} hotar dra sig ur`,
           body: 'Patronen överväger att avsluta sin sponsring. Ni kan försöka rädda relationen med ett möte — eller acceptera förlusten.',
+          proofSource: {
+            form: 'state-predicate',
+            description: 'happiness < 30 vid omgång ≥8',
+            evaluatedTrue: patronWithdrawDue,
+          },
           choices: [
             {
               id: 'meet',
@@ -122,12 +147,12 @@ export function generatePatronEvents(
     // anfallsbandyn") — orimligt om laget redan spelar offensivt. Gatead på
     // att den faktiska taktiken inte redan är offensiv.
     const managedClubTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
-    if (
-      patron.wantsStyle &&
+    const patronStyleDue =
+      !!patron.wantsStyle &&
       managedClubTactic?.mentality !== TacticMentality.Offensive &&
       currentRound >= 11 && currentRound <= 13 &&
       (patron.happiness ?? 50) >= 30 && (patron.happiness ?? 50) <= 70
-    ) {
+    if (patronStyleDue) {
       const eid = `patron_style_s${game.currentSeason}_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_STYLE_COMPLAINTS.length)
@@ -136,6 +161,11 @@ export function generatePatronEvents(
           type: 'patronEvent',
           title: `${patron.name} om spelstilen`,
           body: PATRON_STYLE_COMPLAINTS[quoteIdx],
+          proofSource: {
+            form: 'state-predicate',
+            description: 'patron vill ha annan stil än lagets faktiska (icke-offensiva) taktik, omgång 11–13, happiness 30–70',
+            evaluatedTrue: patronStyleDue,
+          },
           choices: [
             {
               id: 'agree',
@@ -168,7 +198,8 @@ export function generatePatronEvents(
     }
 
     // Patron bonus — once per season, round 10–14, happiness > 80
-    if (currentRound >= 10 && currentRound <= 14 && (patron.happiness ?? 50) > 80) {
+    const patronBonusDue = currentRound >= 10 && currentRound <= 14 && (patron.happiness ?? 50) > 80
+    if (patronBonusDue) {
       const eid = `patron_bonus_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_HAPPY_QUOTES.length)
@@ -178,6 +209,11 @@ export function generatePatronEvents(
           type: 'patronEvent',
           title: `${patron.name} bjuder på bonus`,
           body: `${quote} Patronen skänker 20 000 kr i extra bidrag.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'happiness > 80 i omgångsfönstret 10–14',
+            evaluatedTrue: patronBonusDue,
+          },
           choices: [
             {
               id: 'thank',
@@ -205,7 +241,8 @@ export function generatePatronEvents(
     const goodwill = patronGame.goodwill ?? 80
 
     // Influence crosses 60 — wants to affect decisions
-    if (influence >= 60 && influence < 80 && goodwill >= 20) {
+    const patronInfluenceRisingDue = influence >= 60 && influence < 80 && goodwill >= 20
+    if (patronInfluenceRisingDue) {
       const eid = `patron_influence_60_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({
@@ -213,6 +250,11 @@ export function generatePatronEvents(
           type: 'patronInfluence',
           title: `${patronGame.name} vill påverka beslut`,
           body: `${patronGame.name} har bidragit med ${(patronGame.totalContributed ?? patronGame.contribution).toLocaleString('sv-SE')} kr totalt och börjar känna att han borde ha mer att säga till om.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'influence 60–79 och goodwill ≥20; kr-beloppet läses direkt ur totalContributed (fallback contribution)',
+            evaluatedTrue: patronInfluenceRisingDue,
+          },
           choices: [
             {
               id: 'listen',
@@ -236,7 +278,8 @@ export function generatePatronEvents(
     }
 
     // Patron ignored — goodwill < 20 and influence > 30
-    if (goodwill < 20 && influence > 30) {
+    const patronIgnoredDue = goodwill < 20 && influence > 30
+    if (patronIgnoredDue) {
       const eid = `patron_ignored_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({
@@ -244,6 +287,11 @@ export function generatePatronEvents(
           type: 'patronInfluence',
           title: `${patronGame.name} känner sig ignorerad`,
           body: `${patronGame.name} har investerat i klubben men märker att hans synpunkter aldrig tas på allvar. Han funderar på att dra sig tillbaka.`,
+          proofSource: {
+            form: 'state-predicate',
+            description: 'goodwill < 20 och influence > 30',
+            evaluatedTrue: patronIgnoredDue,
+          },
           choices: [
             {
               id: 'apologize',
@@ -309,6 +357,19 @@ export function generatePatronEmergenceEvent(
   const patronId = `patron_${String(patronData.name).split(' ')[0].toLowerCase()}_${game.currentSeason}`
   const voiceId = patronVoiceId(game.managedClubId, patronId)
 
+  // DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08: den faktiska "varför nu"-
+  // grinden (era + communityStanding-tröskel) ägs av eventProcessor.ts, den
+  // enda anroparen i produktionsflödet — den avgör NÄR den här funktionen
+  // ens kallas (cooldown + ingen redan-aktiv-patron ligger också där, ren
+  // dedup, inte en sanningsclaim). patronEventTruth.test.ts kallar funktionen
+  // direkt utan att sätta upp den gaten (avsiktligt — testar generatorn
+  // isolerat), så detta LÄSER samma exporterade källor (ingen omdömd
+  // tröskel, ingen duplicerad anropslogik) utan att kasta om de inte håller.
+  // Offertbeloppet ({tkr}) är alltid grundat i faktisk reputation; "varför
+  // nu"-predikatet redovisas ärligt, gejtar inte pushen här.
+  const patronEmergeWhyNow = calculateClubEra(game) !== 'survival'
+    && (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
+
   return {
     id: emergeId,
     type: 'patronEvent' as const,
@@ -317,6 +378,11 @@ export function generatePatronEmergenceEvent(
     voiceId,
     introducesVoiceId: voiceId,
     body: `${patronData.backstory ?? 'En stillsam figur i bygden har följt klubbens resa.'}\n\n"Jag har sett vad ni byggt. Jag vill stötta er vidare — ${tkr} tkr/säsong."`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'klubbens era har lämnat survival och communityStanding når patronens tröskel (PATRON_EMERGE_CS) — gejtas av eventProcessor.ts, den enda produktionsanroparen',
+      evaluatedTrue: patronEmergeWhyNow,
+    },
     choices: [
       {
         id: 'welcome',
