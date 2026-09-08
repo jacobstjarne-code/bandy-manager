@@ -4,7 +4,7 @@
 
 **Formell revision:** `3b78737eff06b6106d55529f83b748cb08b31fe0`
 
-**Aktuell HEAD-kontroll:** `b5973a95` — det lilla kontrollpasset är bitidentiskt
+**Aktuell HEAD-kontroll:** `1bb4c172` — det lilla kontrollpasset är bitidentiskt
 
 ## Slutsats
 
@@ -76,7 +76,7 @@ Experiment med licensmagnitud och boardPatience-multiplikator gjordes bara diagn
 
 ## Kontroll mot senare HEAD
 
-Efter den formella checkpointen landade flera refaktorer på `main`, bland annat i rund- och eventhantering. Därför kördes samma lilla pass igen på `b5973a95`:
+Efter den formella checkpointen landade flera refaktorer på `main`, bland annat i rund- och eventhantering. Därför kördes samma lilla pass igen på `1bb4c172` den 8 september:
 
 | Klubb | Avsked | Frekvens | Orsaker |
 |---|---:|---:|---|
