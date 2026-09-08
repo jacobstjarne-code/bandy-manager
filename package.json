@@ -31,6 +31,7 @@
     "calibrate:firing": "node_modules/.bin/vite-node scripts/h4-alla-tolv-avskedsfrekvens.ts",
     "calibrate:firing:sharded": "node scripts/run-firing-calibration-sharded.mjs",
     "calibrate:firing:verify": "node_modules/.bin/vite-node scripts/verify-firing-calibration.ts",
+    "calibrate:firing:formal": "node scripts/run-firing-calibration-sharded.mjs --seeds=10000 --seasons=6 --seed-start=90000 --shard-size=20 --workers=8 --assert-targets",
     "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
     "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts",
     "check:deploy-sync": "node scripts/check-deploy-sync.mjs"

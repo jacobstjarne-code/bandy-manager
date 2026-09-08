@@ -4,7 +4,7 @@
  * eller seedföljden, utan parallelliserar och summerar identiska delmängder.
  */
 
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
@@ -26,17 +26,32 @@ function stringOption(args, name, fallback) {
 }
 
 const args = process.argv.slice(2)
+const assertTargets = args.includes('--assert-targets')
+const allowDirty = args.includes('--allow-dirty')
 const seeds = integerOption(args, 'seeds', 10_000)
 const seasons = integerOption(args, 'seasons', 6)
 const seedStart = integerOption(args, 'seed-start', 90_000)
 const shardSize = integerOption(args, 'shard-size', 100)
 const workers = integerOption(args, 'workers', 8)
 const clubs = stringOption(args, 'clubs', DEFAULT_CLUBS.join(',')).split(',').map(value => value.trim()).filter(Boolean)
-const outputDir = path.resolve(stringOption(
-  args,
-  'output-dir',
-  `/private/tmp/bandy-firing-calibration-${seedStart}-${seeds}x${seasons}`,
-))
+const codeRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+const dirtyCalibrationCode = execFileSync(
+  'git',
+  ['status', '--porcelain', '--', 'src', 'scripts', 'package.json'],
+  { encoding: 'utf8' },
+).trim()
+if (dirtyCalibrationCode && !allowDirty) {
+  throw new Error(
+    'Kalibreringsrelevant kod är ocommittad. Committa eller använd --allow-dirty för ett uttryckligen icke-formellt pass.\n'
+    + dirtyCalibrationCode,
+  )
+}
+
+const outputDir = path.resolve(stringOption(args, 'output-dir', [
+  '/private/tmp/bandy-firing-calibration',
+  codeRevision.slice(0, 8),
+  `${seedStart}-${seeds}x${seasons}`,
+].join('-')))
 
 await mkdir(outputDir, { recursive: true })
 
@@ -51,6 +66,25 @@ for (const clubId of clubs) {
 
 function shardPath(task) {
   return path.join(outputDir, `${task.clubId}_s${seasons}_${task.start}_${task.count}.json`)
+}
+
+const manifestPath = path.join(outputDir, 'manifest.json')
+const manifest = {
+  schemaVersion: 1,
+  codeRevision,
+  config: { seeds, seasons, seedStart, shardSize, clubIds: clubs },
+}
+if (existsSync(manifestPath)) {
+  const existingManifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  if (JSON.stringify(existingManifest) !== JSON.stringify(manifest)) {
+    throw new Error(`Checkpointmappen tillhör en annan körning: ${manifestPath}`)
+  }
+} else {
+  const orphanedShard = tasks.find(task => existsSync(shardPath(task)))
+  if (orphanedShard) {
+    throw new Error(`Checkpointmappen innehåller shards men saknar revisionsmanifest: ${outputDir}`)
+  }
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
 }
 
 function runShard(task) {
@@ -133,6 +167,7 @@ for (const task of tasks) {
 const report = {
   schemaVersion: 2,
   sharded: true,
+  codeRevision,
   config: { seeds, seasons, seedStart, shardSize, workers, clubIds: clubs },
   clubs: clubs.map(clubId => {
     const club = aggregate.get(clubId)
@@ -144,3 +179,15 @@ const finalPath = path.join(outputDir, 'final.json')
 await writeFile(finalPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)
 process.stderr.write(`SLUTRAPPORT ${finalPath}\n`)
+
+if (assertTargets) {
+  const exitCode = await new Promise((resolve, reject) => {
+    const child = spawn('node_modules/.bin/vite-node', [
+      'scripts/verify-firing-calibration.ts',
+      finalPath,
+    ], { cwd: process.cwd(), stdio: 'inherit' })
+    child.on('error', reject)
+    child.on('close', resolve)
+  })
+  if (exitCode !== 0) process.exitCode = exitCode ?? 1
+}
