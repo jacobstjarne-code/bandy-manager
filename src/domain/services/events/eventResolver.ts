@@ -18,6 +18,7 @@ import { getCurrentLeagueRound } from '../../data/seasonPhases'
 import { logNarrativeBeat } from '../narrativeLogService'
 import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisionCaptureService'
 import { logEvent } from '../eventLedgerService'
+import { closeActiveMentorshipForYouth } from '../academyMentorshipService'
 import { buildPromotedPlayerFromYouth, starsForPotential } from '../academyService'
 import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry, buildLetterLedgerEntry } from '../clubHistoryLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
@@ -2186,11 +2187,15 @@ export function resolveEvent(
     const youthPlayer = updatedGame.youthTeam.players.find(p => p.id === youthPlayerId)
     if (youthPlayer) {
       if (choiceId === 'flytta_upp') {
+        const mentorshipEnd = closeActiveMentorshipForYouth(updatedGame, youthPlayerId, 'promoted')
+        const gameWithMentorshipEnd = { ...updatedGame, ...mentorshipEnd }
         const newPlayer = buildPromotedPlayerFromYouth(
           youthPlayer, updatedGame.managedClubId, updatedGame.currentSeason, updatedGame.currentMatchday,
         )
         updatedGame = {
           ...updatedGame,
+          mentorships: mentorshipEnd.mentorships,
+          mentorshipHistory: mentorshipEnd.mentorshipHistory,
           players: [...updatedGame.players, newPlayer],
           youthTeam: {
             ...updatedGame.youthTeam,
@@ -2201,7 +2206,7 @@ export function resolveEvent(
               ? { ...c, squadPlayerIds: [...c.squadPlayerIds, newPlayer.id] }
               : c
           ),
-          eventLedger: logEvent(updatedGame, buildAcademyPromotionLedgerEntry({
+          eventLedger: logEvent(gameWithMentorshipEnd, buildAcademyPromotionLedgerEntry({
             playerId: newPlayer.id,
             clubId: updatedGame.managedClubId,
             season: updatedGame.currentSeason,
@@ -2210,8 +2215,12 @@ export function resolveEvent(
         }
       } else if (choiceId === 'slapp') {
         const stars = starsForPotential(youthPlayer.potentialAbility)
+        const mentorshipEnd = closeActiveMentorshipForYouth(updatedGame, youthPlayerId, 'aged_out')
+        const gameWithMentorshipEnd = { ...updatedGame, ...mentorshipEnd }
         updatedGame = {
           ...updatedGame,
+          mentorships: mentorshipEnd.mentorships,
+          mentorshipHistory: mentorshipEnd.mentorshipHistory,
           youthTeam: {
             ...updatedGame.youthTeam,
             players: updatedGame.youthTeam.players.filter(p => p.id !== youthPlayerId),
@@ -2226,7 +2235,7 @@ export function resolveEvent(
             body: `${youthPlayer.firstName} ${youthPlayer.lastName} släppt. Tjugo år, ${stars} stjärnor. Det var ditt val — och det kan ha varit rätt.`,
             isRead: false,
           }],
-          eventLedger: logEvent(updatedGame, buildYouthAgedOutLedgerEntry({
+          eventLedger: logEvent(gameWithMentorshipEnd, buildYouthAgedOutLedgerEntry({
             playerId: youthPlayerId,
             clubId: updatedGame.managedClubId,
             season: updatedGame.currentSeason,

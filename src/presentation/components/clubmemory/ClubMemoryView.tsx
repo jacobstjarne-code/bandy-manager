@@ -11,6 +11,7 @@ import { ClubMemoryEmpty } from './ClubMemoryEmpty'
 import { Spine } from '../shared/Spine'
 import type { SpineItem } from '../shared/Spine'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
+import { readClubLedger } from '../../../domain/services/eventLedgerService'
 
 const KIND_LABEL: Record<string, string> = {
   triumph: 'Triumf',
@@ -47,11 +48,56 @@ interface Props {
 }
 
 export function buildBlodslinje(game: SaveGame): SpineItem[] {
+  const mentorshipLedger = readClubLedger(game).filter(entry =>
+    entry.type === 'mentorship_started' || entry.type === 'mentorship_ended'
+  )
   const history = game.mentorshipHistory ?? []
-  if (history.length === 0) return []
   const legends = game.clubLegends ?? []
   const items: SpineItem[] = []
+
+  const ledgerPairs = new Set<string>()
+  for (const [entryIndex, entry] of mentorshipLedger.entries()) {
+    if (entry.type !== 'mentorship_started' || entry.subject?.kind !== 'player' || entry.subject2?.kind !== 'player') continue
+    const pairKey = `${entry.subject.id}:${entry.subject2.id}`
+    ledgerPairs.add(pairKey)
+    // Samma duo kan bilda ett nytt band en senare säsong. Para därför varje
+    // start med det FÖRSTA efterföljande slutet, inte parets senaste någonsin.
+    const ended = mentorshipLedger.slice(entryIndex + 1).find(candidate =>
+      candidate.type === 'mentorship_ended'
+      && candidate.subject?.kind === 'player'
+      && candidate.subject.id === entry.subject!.id
+      && candidate.subject2?.kind === 'player'
+      && candidate.subject2.id === entry.subject2!.id
+    )
+    const juniorName = resolveSubjectName(game, entry.subject, entry.subjectSnapshot) ?? 'En spelare'
+    const mentorName = resolveSubjectName(game, entry.subject2, entry.subject2Snapshot) ?? 'Okänd mentor'
+    if (!ended) {
+      items.push({ label: mentorName, season: entry.season, text: `${juniorName} är ${mentorName}s adept.` })
+      continue
+    }
+    const startedPayload = entry.mentorship && 'juniorCaAtStart' in entry.mentorship ? entry.mentorship : undefined
+    const endedPayload = ended.mentorship && 'reason' in ended.mentorship ? ended.mentorship : undefined
+    if (!startedPayload || !endedPayload) continue
+    const seasonWord = endedPayload.seasons === 1 ? 'säsong' : 'säsonger'
+    const outcome = endedPayload.reason === 'promoted'
+      ? 'Klar för A-laget.'
+      : endedPayload.reason === 'graduated'
+        ? 'Uppflyttad.'
+        : endedPayload.reason === 'aged_out'
+          ? 'Fyllde 20 utan plats.'
+          : 'Bandet bröts.'
+    items.push({
+      label: mentorName,
+      season: ended.season,
+      text: `${juniorName}, mentor ${mentorName} ${endedPayload.seasons} ${seasonWord}: ${startedPayload.juniorCaAtStart}→${endedPayload.juniorCaAtEnd}. ${outcome}`,
+      dimmed: endedPayload.reason === 'cancelled' || endedPayload.reason === 'aged_out',
+    })
+  }
+
+  // Retire-last: gamla sparfiler saknar mentorship_*-poster. Läs den äldre
+  // historiken bara för par som ännu inte finns i den kanoniska liggaren.
   for (const record of history) {
+    if (ledgerPairs.has(`${record.youthPlayerId}:${record.seniorPlayerId}`)) continue
     const seniorLegend = legends.find(l => l.playerId === record.seniorPlayerId)
     const seniorPlayer = game.players.find(p => p.id === record.seniorPlayerId)
     const seniorName = seniorPlayer

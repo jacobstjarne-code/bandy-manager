@@ -55,6 +55,7 @@ import type { PendingDemand } from '../../domain/entities/Demand'
 import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoomService'
 import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
 import { appendNewlyResolvedStorylines, getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
+import { closeActiveMentorshipForYouth } from '../../domain/services/academyMentorshipService'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -1787,8 +1788,21 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         level: nextAcademyLevel as 'developing' | 'elite',
       })
     : undefined
+  let mentorshipClosureGame = game
+  for (const active of (game.mentorships ?? []).filter(item => item.isActive)) {
+    const youth = game.youthTeam?.players.find(player => player.id === active.youthPlayerId)
+    const reason = game.players.some(player => player.id === active.youthPlayerId)
+      ? 'promoted'
+      : youth?.age === 19
+        ? 'aged_out'
+        : 'cancelled'
+    mentorshipClosureGame = {
+      ...mentorshipClosureGame,
+      ...closeActiveMentorshipForYouth(mentorshipClosureGame, active.youthPlayerId, reason),
+    }
+  }
   const seasonEndLedger = appendMomentsAndEntriesToLedger(
-    game.eventLedger ?? [],
+    mentorshipClosureGame.eventLedger ?? [],
     [],
     [
       ...retirementLedgerEntries,
@@ -2304,20 +2318,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     academyUpgradeInProgress: academyUpgradeCompletes ? false : game.academyUpgradeInProgress,
     academyUpgradeSeason: academyUpgradeCompletes ? undefined : game.academyUpgradeSeason,
     mentorships: [],
-    mentorshipHistory: (() => {
-      // Alla aktiva mentorskap avslutas vid rollover. Historikposten får inte
-      // lämnas öppen bara för att adepten fortfarande låg kvar i P19.
-      const mainPlayerIds = new Set(game.players.map(p => p.id))
-      return (game.mentorshipHistory ?? []).map(r =>
-        !r.endSeason
-          ? {
-              ...r,
-              endSeason: game.currentSeason,
-              outcome: mainPlayerIds.has(r.youthPlayerId) ? 'graduated' as const : 'ended' as const,
-            }
-          : r,
-      )
-    })(),
+    mentorshipHistory: mentorshipClosureGame.mentorshipHistory ?? [],
     loanDeals: [],
     // V0.9 fields
     namedCharacters: updatedNamedCharacters,

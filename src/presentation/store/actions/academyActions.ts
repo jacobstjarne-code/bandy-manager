@@ -5,8 +5,9 @@ import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS, applyFinanceChange, appendFinanceL
 import { STALEABLE_ACTIVITY_KEYS } from '../../../domain/services/communityRenewalService'
 import type { StaleableActivityKey } from '../../../domain/entities/Community'
 import { logEvent } from '../../../domain/services/eventLedgerService'
-import { buildAcademyPromotionLedgerEntry, buildAcademyUpgradeStartedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { buildAcademyPromotionLedgerEntry, buildAcademyUpgradeStartedLedgerEntry, buildMentorshipStartedLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 import { getPromotionTiming, buildPromotedPlayerFromYouth } from '../../../domain/services/academyService'
+import { closeActiveMentorshipForYouth } from '../../../domain/services/academyMentorshipService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -255,6 +256,8 @@ export function academyActions(get: Get, set: Set) {
       const transitionEvent: import('../../../domain/entities/SaveGame').SeasonTransitionEvent = {
         type: 'promoted', playerId: newPlayer.id, playerLastName: newPlayer.lastName,
       }
+      const mentorshipEnd = closeActiveMentorshipForYouth(game, youthPlayerId, 'promoted', currentRound)
+      const gameWithMentorshipEnd = { ...game, ...mentorshipEnd }
 
       set({
         game: {
@@ -262,9 +265,11 @@ export function academyActions(get: Get, set: Set) {
           players: updatedPlayers,
           clubs: updatedClubs,
           youthTeam: updatedYouthTeam,
+          mentorships: mentorshipEnd.mentorships,
+          mentorshipHistory: mentorshipEnd.mentorshipHistory,
           inbox: [inboxItem, ...game.inbox],
           pendingSeasonTransitionEvents: [...(game.pendingSeasonTransitionEvents ?? []), transitionEvent],
-          eventLedger: logEvent(game, buildAcademyPromotionLedgerEntry({
+          eventLedger: logEvent(gameWithMentorshipEnd, buildAcademyPromotionLedgerEntry({
             playerId: newPlayer.id,
             clubId: game.managedClubId,
             season: game.currentSeason,
@@ -315,6 +320,15 @@ export function academyActions(get: Get, set: Set) {
       set({ game: { ...game,
         mentorships: [...(game.mentorships ?? []), mentorship],
         mentorshipHistory: [...(game.mentorshipHistory ?? []), historyRecord],
+        eventLedger: logEvent(game, buildMentorshipStartedLedgerEntry({
+          clubId: game.managedClubId,
+          season: game.currentSeason,
+          matchday: game.currentMatchday,
+          juniorId: youthPlayerId,
+          mentorId: seniorPlayerId,
+          juniorCaAtStart: youthPlayer!.currentAbility,
+          developmentRateAtStart: youthPlayer!.developmentRate,
+        })),
       } })
       return { success: true }
     },
@@ -322,15 +336,8 @@ export function academyActions(get: Get, set: Set) {
     removeMentor: (youthPlayerId: string) => {
       const { game } = get()
       if (!game) return
-      const updatedMentorships = (game.mentorships ?? []).map(m =>
-        m.youthPlayerId === youthPlayerId && m.isActive ? { ...m, isActive: false } : m
-      )
-      const updatedMentorshipHistory = (game.mentorshipHistory ?? []).map(r =>
-        r.youthPlayerId === youthPlayerId && !r.endSeason
-          ? { ...r, endSeason: game.currentSeason, outcome: 'ended' as const }
-          : r
-      )
-      set({ game: { ...game, mentorships: updatedMentorships, mentorshipHistory: updatedMentorshipHistory } })
+      const closed = closeActiveMentorshipForYouth(game, youthPlayerId, 'cancelled')
+      set({ game: { ...game, ...closed } })
     },
 
     loanOutPlayer: (playerId: string, destinationClubName: string, rounds: number) => {

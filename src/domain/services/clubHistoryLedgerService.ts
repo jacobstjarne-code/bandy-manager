@@ -126,6 +126,61 @@ export function buildAcademyUpgradeCompletedLedgerEntry(input: {
   }
 }
 
+/** DOM_AKADEMI_LIGGARE §1: ett nytt mentorband, med startvärdena frusna. */
+export function buildMentorshipStartedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  juniorId: string
+  mentorId: string
+  juniorCaAtStart: number
+  developmentRateAtStart: number
+}): EventLedgerEntry {
+  return {
+    type: 'mentorship_started',
+    semanticKey: `mentorship_started_${input.juniorId}_${input.mentorId}_s${input.season}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'player', id: input.juniorId },
+    subject2: { kind: 'player', id: input.mentorId },
+    significance: 35,
+    mentorship: {
+      mentorId: input.mentorId,
+      juniorCaAtStart: input.juniorCaAtStart,
+      developmentRateAtStart: input.developmentRateAtStart,
+    },
+  }
+}
+
+/** DOM_AKADEMI_LIGGARE §1: utfallet när ett befintligt mentorband stängs. */
+export function buildMentorshipEndedLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  juniorId: string
+  mentorId: string
+  reason: 'graduated' | 'promoted' | 'aged_out' | 'cancelled'
+  juniorCaAtEnd: number
+  seasons: number
+}): EventLedgerEntry {
+  return {
+    type: 'mentorship_ended',
+    semanticKey: `mentorship_ended_${input.juniorId}_${input.mentorId}_s${input.season}_${input.reason}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'player', id: input.juniorId },
+    subject2: { kind: 'player', id: input.mentorId },
+    significance: 50,
+    mentorship: {
+      reason: input.reason,
+      juniorCaAtEnd: input.juniorCaAtEnd,
+      seasons: input.seasons,
+    },
+  }
+}
+
 /**
  * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE_2026-09-04 §4/§1). subject
  * = junioren; `subjectSnapshot` fylls av `logEvent` vid skrivtillfället

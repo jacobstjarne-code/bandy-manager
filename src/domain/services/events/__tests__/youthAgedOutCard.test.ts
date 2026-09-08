@@ -3,6 +3,8 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { resolveEvent } from '../eventResolver'
 import type { GameEvent } from '../../../entities/GameEvent'
+import { buildMentorshipStartedLedgerEntry } from '../../clubHistoryLedgerService'
+import { logEvent } from '../../eventLedgerService'
 
 function makeGame() {
   const template = CLUB_TEMPLATES[0]
@@ -31,9 +33,40 @@ function makeGame() {
   }
 }
 
+function withActiveMentorship(fixture: ReturnType<typeof makeGame>) {
+  const senior = fixture.game.players[0]
+  const game = {
+    ...fixture.game,
+    mentorships: [{ seniorPlayerId: senior.id, youthPlayerId: fixture.youthPlayer.id, startRound: 1, isActive: true }],
+    mentorshipHistory: [{
+      seniorPlayerId: senior.id,
+      youthPlayerId: fixture.youthPlayer.id,
+      seniorName: `${senior.firstName} ${senior.lastName}`,
+      youthName: `${fixture.youthPlayer.firstName} ${fixture.youthPlayer.lastName}`,
+      startRound: 1,
+    }],
+  }
+  return {
+    ...fixture,
+    senior,
+    game: {
+      ...game,
+      eventLedger: logEvent(game, buildMentorshipStartedLedgerEntry({
+        clubId: game.managedClubId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        juniorId: fixture.youthPlayer.id,
+        mentorId: senior.id,
+        juniorCaAtStart: fixture.youthPlayer.currentAbility,
+        developmentRateAtStart: fixture.youthPlayer.developmentRate,
+      })),
+    },
+  }
+}
+
 describe('resolveEvent — event_youth_aged_out_* (DOM_AKADEMI_LIGGARE §4)', () => {
   it('"Flytta upp" promoverar spelaren till A-laget och tar bort honom ur youthTeam', () => {
-    const { game, youthPlayer, card } = makeGame()
+    const { game, youthPlayer, senior, card } = withActiveMentorship(makeGame())
     const result = resolveEvent(game, card.id, 'flytta_upp', () => 0, true)
 
     expect(result.youthTeam?.players.some(p => p.id === youthPlayer.id)).toBe(false)
@@ -44,10 +77,15 @@ describe('resolveEvent — event_youth_aged_out_* (DOM_AKADEMI_LIGGARE §4)', ()
     const club = result.clubs.find(c => c.id === game.managedClubId)
     expect(club?.squadPlayerIds).toContain(promoted!.id)
     expect(result.eventLedger?.some(e => e.type === 'academy_promotion' && e.subject?.id === promoted!.id)).toBe(true)
+    expect(result.mentorships.find(item => item.youthPlayerId === youthPlayer.id)?.isActive).toBe(false)
+    expect(result.eventLedger?.find(e => e.type === 'mentorship_ended' && e.subject?.id === youthPlayer.id)).toEqual(expect.objectContaining({
+      subject2: { kind: 'player', id: senior.id },
+      mentorship: { reason: 'promoted', juniorCaAtEnd: youthPlayer.currentAbility, seasons: 1 },
+    }))
   })
 
   it('"Släpp" friar spelaren direkt, skriver youth_aged_out och inboxtext med fullt namn', () => {
-    const { game, youthPlayer, card } = makeGame()
+    const { game, youthPlayer, senior, card } = withActiveMentorship(makeGame())
     const result = resolveEvent(game, card.id, 'slapp', () => 0, true)
 
     expect(result.youthTeam?.players.some(p => p.id === youthPlayer.id)).toBe(false)
@@ -60,5 +98,10 @@ describe('resolveEvent — event_youth_aged_out_* (DOM_AKADEMI_LIGGARE §4)', ()
     expect(inboxItem?.body).toBe(
       `${youthPlayer.firstName} ${youthPlayer.lastName} släppt. Tjugo år, 3 stjärnor. Det var ditt val — och det kan ha varit rätt.`
     )
+    expect(result.mentorships.find(item => item.youthPlayerId === youthPlayer.id)?.isActive).toBe(false)
+    expect(result.eventLedger?.find(e => e.type === 'mentorship_ended' && e.subject?.id === youthPlayer.id)).toEqual(expect.objectContaining({
+      subject2: { kind: 'player', id: senior.id },
+      mentorship: { reason: 'aged_out', juniorCaAtEnd: youthPlayer.currentAbility, seasons: 1 },
+    }))
   })
 })

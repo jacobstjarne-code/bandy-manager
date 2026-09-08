@@ -220,6 +220,9 @@ export type EventLedgerType =
   // färdigställningen är två verkliga tidpunkter. Båda ägs av klubben;
   // payloaden nedan bär betalad nivåväxling respektive nivån som slog till.
   | 'academy_upgrade_started' | 'academy_upgrade_completed'
+  // DOM_AKADEMI_LIGGARE §1/§3: ett mentorband är en tvåpersonshändelse.
+  // subject = junior, subject2 = mentor; båda snapshotas av logEvent.
+  | 'mentorship_started' | 'mentorship_ended'
   // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
   // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
@@ -421,6 +424,10 @@ export interface EventLedgerEntry {
   academyUpgrade?:
     | { fromLevel: Exclude<AcademyLevel, 'elite'>; toLevel: Exclude<AcademyLevel, 'basic'>; costKr: number; readySeason: number }
     | { level: Exclude<AcademyLevel, 'basic'> }
+  /** DOM_AKADEMI_LIGGARE §1/§3. Händelsetypen avgör vilken gren som gäller. */
+  mentorship?:
+    | { mentorId: string; juniorCaAtStart: number; developmentRateAtStart: number }
+    | { reason: 'graduated' | 'promoted' | 'aged_out' | 'cancelled'; juniorCaAtEnd: number; seasons: number }
   /**
    * board_verdict (liggare-ny-board-verdict). `verdict` återanvänder
    * `expectationVerdictFromRating`s befintliga tre värden ordagrant —

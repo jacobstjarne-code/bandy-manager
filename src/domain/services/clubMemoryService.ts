@@ -670,6 +670,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
   youth_aged_out: 'neutral',
   academy_upgrade_started: 'neutral', academy_upgrade_completed: 'triumph',
+  mentorship_started: 'neutral',
   // liggare-ny-board-verdict: neutral tills Krönikans egen text finns (då
   // kan verdict/patienceBand motivera en dynamisk gren, som decision/
   // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
@@ -691,7 +692,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
  */
 export function momentKind(
   type: EventLedgerType,
-  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome' | 'communityShift'>,
+  entry?: Pick<EventLedgerEntry, 'irreversible' | 'tension' | 'semanticKey' | 'licenseEvent' | 'facilityTrialOutcome' | 'communityShift' | 'mentorship'>,
 ): ActiveMemoryKind {
   if (type === 'decision') {
     return entry?.irreversible && entry?.tension ? 'tension' : 'neutral'
@@ -727,6 +728,10 @@ export function momentKind(
   if (type === 'community_shift') {
     return entry?.communityShift?.direction === 'up' ? 'triumph' : 'scar'
   }
+  if (type === 'mentorship_ended') {
+    const reason = entry?.mentorship && 'reason' in entry.mentorship ? entry.mentorship.reason : undefined
+    return reason === 'graduated' || reason === 'promoted' ? 'triumph' : 'neutral'
+  }
   return STATIC_MOMENT_KIND[type] ?? 'neutral'
 }
 
@@ -739,6 +744,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   derby_result: '⚔️', big_win: '⚔️', big_loss: '⚔️',
   facility_built: '🏟️', academy_upgrade_started: '🏟️', academy_upgrade_completed: '🏟️',
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
+  mentorship_started: '👤', mentorship_ended: '👤',
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
