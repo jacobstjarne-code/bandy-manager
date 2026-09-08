@@ -99,6 +99,7 @@ import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, with
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
+import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -188,7 +189,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'game-over' | 'game-over-historik' | 'game-over-historik-tvaklubb'
   // Mobilhierarki-regressioner (2026-08-31): riktiga, deterministiska lägen
   // för månadskön och DecisionCards tre visuella vikter.
-  | 'portal-month-decisions' | 'decision-modes' | 'event-overlay-breakpoint'
+  | 'portal-month-decisions' | 'portal-interruption-budget' | 'decision-modes' | 'event-overlay-breakpoint'
   // DOM_SPONSOR_MOTBUD_2026-08-31.md: verifiering av motbudsflödet (egen
   // scen, rör inte portal-month-decisions befintliga baseline).
   | 'sponsor-motbud'
@@ -290,6 +291,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'game-over-historik', label: 'HistoryScreen (snapshot-prop) — avslutad karriär, "Se karriären"' },
   { id: 'game-over-historik-tvaklubb', label: 'HistoryScreen — två klubbar, managerns liggaravtryck (DOM_LIGGARE_CLUBID steg 3)' },
   { id: 'portal-month-decisions', label: 'Portal — tre månadsbeslut (1 primärt + 2 väntar)' },
+  { id: 'portal-interruption-budget', label: 'Portal — avbrottsbudget (3 aktiva + 2 i kö)' },
   { id: 'decision-modes', label: 'DecisionCard — notis, dilemma, brytpunkt' },
   { id: 'event-overlay-breakpoint', label: 'EventOverlay — brytpunkt med accentkant' },
   { id: 'sponsor-motbud', label: 'Sponsor-motbud (DOM_SPONSOR_MOTBUD)' },
@@ -1149,6 +1151,19 @@ const portalMonthDecisionsGame = {
   pendingEvents: mobileDecisionEvents,
 } as unknown as SaveGame
 
+// KF3:s manuella acceptanstest: fem samtidiga val går genom samma produktions-
+// partition som omgångsprocessorn. Tre ligger aktiva och två i FIFO-kön; när
+// ett kort löses använder gameStore samma promoteFromQueue-väg som i spelet.
+const portalInterruptionBudgetGame = applyDecisionBudget({
+  ...factoryMidSeasonGame,
+  pendingEvents: [
+    ...mobileDecisionEvents,
+    { ...mobileDecisionEvents[0], id: 'dev-budget-sponsor-2' },
+    { ...mobileDecisionEvents[1], id: 'dev-budget-hall-2' },
+  ],
+  deferredDecisions: [],
+} as unknown as SaveGame, factoryMidSeasonGame.currentMatchday ?? 1)
+
 // DOM_SPONSOR_MOTBUD_2026-08-31.md — verifiering. Realistisk sponsorData
 // (personality satt, matchar generateSponsorOffer:s form) så motbudsknappen
 // och SponsorCounterModal går att klicka igenom med riktig kod, inte en
@@ -1929,6 +1944,7 @@ export function DevScenesScreen() {
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
       : scene === 'portal-month-decisions' ? portalMonthDecisionsGame
+      : scene === 'portal-interruption-budget' ? portalInterruptionBudgetGame
       : scene === 'sponsor-motbud' ? sponsorMotbudGame
       : scene === 'club-fresh' ? clubFreshGame
       : scene === 'club-established' ? clubEstablishedGame
@@ -2130,7 +2146,7 @@ export function DevScenesScreen() {
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
           || scene === 'portal-facility-completed' || scene === 'portal-midseason'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
-          || scene === 'portal-month-decisions' || scene === 'sponsor-motbud'
+          || scene === 'portal-month-decisions' || scene === 'portal-interruption-budget' || scene === 'sponsor-motbud'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
