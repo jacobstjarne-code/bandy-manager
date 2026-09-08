@@ -3,7 +3,8 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { rolloverFacilityState } from '../../../../application/useCases/seasonEndProcessor'
 import type { Mecenat } from '../../../entities/Mecenat'
 import type { HallTrial } from '../../../entities/Community'
-import { advanceFacilityState } from '../../facilityService'
+import type { GameEvent } from '../../../entities/GameEvent'
+import { advanceFacilityState, getOrdinaryFacilityNodeDefs } from '../../facilityService'
 import { generateHallProcessEvent, formatHallNodeSub } from '../hallProcessService'
 import { resolveEvent } from '../eventResolver'
 
@@ -28,20 +29,60 @@ function activeMecenat(): Mecenat {
   }
 }
 
+function expectStatePredicateTrue(event: GameEvent | null | undefined): void {
+  expect(event).toBeDefined()
+  expect(event?.proofSource?.form).toBe('state-predicate')
+  if (event?.proofSource?.form === 'state-predicate') {
+    expect(event.proofSource.evaluatedTrue, event.proofSource.description).toBe(true)
+  }
+}
+
 describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () => {
   it('kräver att förankringsbeslut 1–3 löses i ordning före röstningen', () => {
     const trial: HallTrial = { stage: 'forankring', support: 50, startedSeason: 2026, stageStartedRound: 0 }
     const base = makeGame(trial)
 
+    const d1 = generateHallProcessEvent(base, 3, new Set())
     const d2 = generateHallProcessEvent({ ...base, resolvedEventIds: ['hallprocess_d1_s2026'] }, 6, new Set(['hallprocess_d1_s2026']))
     const d3 = generateHallProcessEvent({ ...base, resolvedEventIds: ['hallprocess_d1_s2026', 'hallprocess_d2_s2026'] }, 8, new Set(['hallprocess_d1_s2026', 'hallprocess_d2_s2026']))
     const waiting = generateHallProcessEvent({ ...base, resolvedEventIds: ['hallprocess_d1_s2026', 'hallprocess_d2_s2026'] }, 10, new Set(['hallprocess_d1_s2026', 'hallprocess_d2_s2026', 'hallprocess_d3_s2026']))
     const resolution = generateHallProcessEvent({ ...base, resolvedEventIds: ['hallprocess_d1_s2026', 'hallprocess_d2_s2026', 'hallprocess_d3_s2026'] }, 10, new Set(['hallprocess_d1_s2026', 'hallprocess_d2_s2026', 'hallprocess_d3_s2026']))
 
+    expect(d1?.id).toBe('hallprocess_d1_s2026')
     expect(d2?.id).toBe('hallprocess_d2_s2026')
     expect(d3?.id).toBe('hallprocess_d3_s2026')
     expect(waiting).toBeNull()
     expect(resolution?.id).toBe('hallprocess_res_s2026')
+    ;[d1, d2, d3, resolution].forEach(expectStatePredicateTrue)
+  })
+
+  it('start- och kravkorten bär sina faktiskt uppfyllda state-predikat', () => {
+    const startBase = makeGame({ stage: 'vilande', startedSeason: 2025, stageStartedRound: 0 })
+    const startGame = {
+      ...startBase,
+      facilityState: { builtNodeIds: getOrdinaryFacilityNodeDefs().map(def => def.id) },
+      clubs: startBase.clubs.map((club, index) => index === 1 ? { ...club, hasIndoorArena: true } : club),
+    }
+    const startEvent = generateHallProcessEvent(startGame, 1, new Set())
+    expect(startEvent?.id).toBe('hallprocess_start_s2026')
+    expectStatePredicateTrue(startEvent)
+
+    const kravBase = makeGame({ stage: 'krav', support: 70, startedSeason: 2026, stageStartedRound: 0 })
+    const historical = kravBase.fixtures.slice(0, 11).map(fixture => ({
+      ...fixture,
+      season: 2025,
+      status: 'completed' as const,
+      homeClubId: kravBase.managedClubId,
+      attendance: 100,
+    }))
+    const kravEvent = generateHallProcessEvent({
+      ...kravBase,
+      fixtures: historical,
+      averageAttendance: 120,
+      boardObjectiveHistory: [],
+    }, 10, new Set())
+    expect(kravEvent?.id).toBe('hallprocess_krav_adv_s2026')
+    expectStatePredicateTrue(kravEvent)
   })
 
   it('kommunfinansiering startar bygget, drar kanoniska 60 % av 1,8 mkr och visar kostnaden', () => {
@@ -52,6 +93,7 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     const before = game.clubs.find(club => club.id === game.managedClubId)!.finances
 
     expect(event.id).toBe('hallprocess_fh1_s2026')
+    expectStatePredicateTrue(event)
     expect(event.choices).toHaveLength(1)
     expect(event.choices[0].subtitle).toContain('Kassa −1 080 tkr')
 
@@ -70,6 +112,7 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     const event = generateHallProcessEvent(game, 10, new Set())!
 
     expect(event.id).toBe('hallprocess_fh1nej_s2026')
+    expectStatePredicateTrue(event)
     expect(event.title).toBe('Kommunen säger nej')
     expect(event.choices).toHaveLength(1)
     expect(event.choices[0].subtitle).toBe('Bordlagd till nästa säsong. Orten avgör.')
@@ -88,6 +131,7 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     const event = generateHallProcessEvent(game, 10, new Set())!
 
     expect(event.id).toBe('hallprocess_fh1_s2026')
+    expectStatePredicateTrue(event)
   })
 
   it('låg kommunrelation når patronreservvägen med olika verkliga klubbkostnader', () => {
@@ -101,6 +145,7 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     const event = generateHallProcessEvent(game, 10, new Set())!
 
     expect(event.id).toBe('hallprocess_fh2_s2026')
+    expectStatePredicateTrue(event)
     expect(event.choices.find(choice => choice.id === 'borgen')?.subtitle).toContain('1 080 tkr')
     expect(event.choices.find(choice => choice.id === 'tacka_nej')?.subtitle).toContain('1 800 tkr')
 
@@ -119,7 +164,21 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
       mecenater: [],
     }
 
-    expect(generateHallProcessEvent(game, 10, new Set())?.id).toBe('hallprocess_fhnej_s2026')
+    const event = generateHallProcessEvent(game, 10, new Set())
+    expect(event?.id).toBe('hallprocess_fhnej_s2026')
+    expectStatePredicateTrue(event)
+  })
+
+  it('ett redan köat patronerbjudande blir inte ett falskt "ingen patron"-kort', () => {
+    const trial: HallTrial = { stage: 'forhandling', support: 70, startedSeason: 2026, stageStartedRound: 4 }
+    const base = makeGame(trial)
+    const game = {
+      ...base,
+      localPolitician: { ...base.localPolitician!, relationship: 20 },
+      mecenater: [activeMecenat()],
+    }
+
+    expect(generateHallProcessEvent(game, 10, new Set(['hallprocess_fh2_s2026']))).toBeNull()
   })
 
   it('fördyringsvalet pausa stoppar completion till nästa säsong och statusytan säger det', () => {
@@ -134,6 +193,7 @@ describe('hallProcess — sekvens, finansiering och byggpaus håller ihop', () =
     }
     // 2026*31 + 0*13 ger ett seed under 25 och därmed fördyringskortet.
     const event = generateHallProcessEvent(game, 11, new Set())!
+    expectStatePredicateTrue(event)
     const paused = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'pausa', undefined, true)
 
     expect(paused.facilityState?.hallTrial?.buildPausedUntilSeason).toBe(2027)

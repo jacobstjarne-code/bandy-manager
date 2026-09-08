@@ -10,7 +10,8 @@ import { generatePatronEvents, generatePatronEmergenceEvent } from '../domain/se
 import type { SaveGame } from '../domain/entities/SaveGame'
 
 /**
- * PÅSTÅENDEGRINDEN, genererings-tids-lagret — pilot patronEvents.ts
+ * PÅSTÅENDEGRINDEN, genererings-tids-lagret — patronEvents.ts-piloten
+ * plus den första utvidgade skivan, hallProcessService.ts
  * (DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08).
  *
  * Två halvor, samma disciplin som nivå 1/2: en STATISK del (varje
@@ -24,23 +25,26 @@ import type { SaveGame } from '../domain/entities/SaveGame'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '../..')
 
-const PILOT_FILES = [
+const PARTICIPATING_FILES = [
   'src/domain/services/events/patronEvents.ts',
+  'src/domain/services/events/hallProcessService.ts',
 ].map(p => join(REPO_ROOT, p))
 
 function makeGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
 }
 
-describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet (pilot: patronEvents.ts)', () => {
-  it('statisk baseline: varje GameEvent-konstruktion i patronEvents.ts bär en giltig proofSource', () => {
-    const violations = scanGenereringskontrakt(PILOT_FILES)
+describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
+  it('statisk baseline: varje GameEvent-konstruktion i deltagande filer bär en giltig proofSource', () => {
+    const violations = scanGenereringskontrakt(PARTICIPATING_FILES)
     expect(violations, JSON.stringify(violations, null, 2)).toHaveLength(0)
   })
 
   it('rapporterar hur många event-konstruktioner som faktiskt granskades', () => {
-    const sites = PILOT_FILES.flatMap(f => findEventConstructionSites(f))
-    expect(sites.length).toBeGreaterThanOrEqual(8) // 7 i generatePatronEvents + 1 i generatePatronEmergenceEvent
+    const sites = PARTICIPATING_FILES.flatMap(f => findEventConstructionSites(f))
+    // 8 patronkonstruktioner + 10 hallprocesskonstruktioner. Ett lägre tal
+    // betyder att en fil eller en konstruktionsform fallit ur svepet.
+    expect(sites.length).toBeGreaterThanOrEqual(18)
   })
 
   it('meta: en GameEvent-konstruktion utan proofSource fångas', () => {
