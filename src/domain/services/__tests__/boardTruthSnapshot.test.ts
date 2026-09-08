@@ -137,7 +137,7 @@ describe('gameOverBoardStatement — samma tre låsta texter som GameOverScreen.
     )
   })
 
-  it('licenseDenied-vägen (generisk text, ingen av de två sportsliga skälen)', () => {
+  it('licenseDenied-vägen anger licensen i stället för ett generiskt eller sportsligt skäl', () => {
     const truth = buildSeasonBoardTruth({
       expectation: ClubExpectation.Survive,
       finalPosition: 12,
@@ -149,7 +149,7 @@ describe('gameOverBoardStatement — samma tre låsta texter som GameOverScreen.
       firedReason: 'licenseDenied',
     })
     expect(gameOverBoardStatement(truth, 'Heros BK')).toBe(
-      'Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i Heros BK.'
+      'Licensen drogs in. Det var aldrig resultaten — utan licens finns ingen klubb kvar att träna.'
     )
   })
 

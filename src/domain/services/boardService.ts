@@ -983,10 +983,13 @@ export function gameOverBoardStatement(
     }
     return `Styrelsen har förlorat förtroendet för dig som tränare efter de ihållande besvikelserna. Beslutet är fattat — du lämnar ${clubName ?? 'klubben'} med omedelbar verkan.`
   }
+  if (firedReason === 'licenseDenied') {
+    return 'Licensen drogs in. Det var aldrig resultaten — utan licens finns ingen klubb kvar att träna.'
+  }
   if (firedReason === 'bankruptcy') {
     return `Det fanns inga pengar kvar. En klubb kan överleva dåliga resultat, men inte en tom kassa — och när ekonomin brast fanns inget val kvar för styrelsen. ${clubName ?? 'Klubben'} går vidare utan dig, med skulderna kvar att reda ut.`
   }
-  // 'bankruptcy' har nu en egen rad ovan (Opus-text 2026-09-02). Övriga
-  // oattribuerade avsked faller på den generiska raden nedan.
+  // `licenseDenied` och `bankruptcy` har egna administrativa orsaksrader.
+  // Bara verkligt oattribuerade avsked faller på den generiska raden nedan.
   return `Styrelsen har beslutat att göra en förändring i tränarrollen. Tack för din tid i ${clubName ?? 'klubben'}.`
 }
