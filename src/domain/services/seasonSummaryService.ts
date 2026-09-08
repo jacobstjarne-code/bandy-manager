@@ -22,6 +22,7 @@ import { resolveSubjectName } from './momentLedgerService'
 import { currentChronology } from './currentChronology'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getStorylineTypeFromLedger } from './storylineLedgerService'
+import { readClubLedger } from './eventLedgerService'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -525,7 +526,19 @@ export function buildExpectationVerdictSentence(
  *
  * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, SaveGame.seasonStartBoardExpectation, Club.boardExpectation, Fixture.roundNumber, Club.finances, ManagerProfile.diary
  */
-export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: number): SeasonSummary {
+type IntakeProspect = {
+  id: string
+  firstName: string
+  lastName: string
+  position: string
+  potentialAbility: number
+}
+
+export function generateSeasonSummary(
+  game: SaveGame,
+  communityStandingEnd?: number,
+  intakeProspects: readonly IntakeProspect[] = [],
+): SeasonSummary {
   const managedClubId = game.managedClubId
   const club = game.clubs.find(c => c.id === managedClubId)!
   const managedPlayers = game.players.filter(p => p.clubId === managedClubId)
@@ -824,14 +837,23 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   const endFinances = club.finances
   const financialChange = endFinances - startFinances
 
-  // Youth intake for this season
-  const youthRecords = game.youthIntakeHistory.filter(
-    r => r.season === game.currentSeason && r.clubId === managedClubId
+  // DOM_AKADEMI_LIGGARE §6: årsboken läser den kanoniska liggaren. Den
+  // äldre youthIntakeHistory-fickan skrivs ännu under retire-last, men får
+  // inte längre vara sanningskälla för en ny SeasonSummary.
+  const youthIntakes = readClubLedger(game, managedClubId).filter(entry =>
+    entry.type === 'youth_intake' && entry.season === game.currentSeason && entry.youthIntake
   )
-  const youthIntakeCount = youthRecords.reduce((sum, r) => sum + r.playerIds.length, 0)
+  const youthIntakeCount = youthIntakes.reduce((sum, entry) => sum + (entry.youthIntake?.count ?? 0), 0)
 
-  const topProspectId = youthRecords.find(r => r.topProspectId)?.topProspectId
-  const topProspectPlayer = topProspectId ? game.players.find(p => p.id === topProspectId) : null
+  const topIntake = [...youthIntakes]
+    .filter(entry => entry.youthIntake?.topProspectId)
+    .sort((a, b) => (b.youthIntake?.topProspectStars ?? 0) - (a.youthIntake?.topProspectStars ?? 0))[0]
+  const topProspectId = topIntake?.youthIntake?.topProspectId
+  const topProspectPlayer = topProspectId
+    ? game.players.find(p => p.id === topProspectId)
+      ?? game.youthTeam?.players.find(p => p.id === topProspectId)
+      ?? intakeProspects.find(p => p.id === topProspectId)
+    : null
   const bestYouthProspect = topProspectPlayer ? {
     name: `${topProspectPlayer.firstName} ${topProspectPlayer.lastName}`,
     position: topProspectPlayer.position,

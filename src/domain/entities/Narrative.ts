@@ -223,6 +223,7 @@ export type EventLedgerType =
   // DOM_AKADEMI_LIGGARE §1/§3: ett mentorband är en tvåpersonshändelse.
   // subject = junior, subject2 = mentor; båda snapshotas av logEvent.
   | 'mentorship_started' | 'mentorship_ended'
+  | 'youth_intake'
   // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
   // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
@@ -428,6 +429,14 @@ export interface EventLedgerEntry {
   mentorship?:
     | { mentorId: string; juniorCaAtStart: number; developmentRateAtStart: number }
     | { reason: 'graduated' | 'promoted' | 'aged_out' | 'cancelled'; juniorCaAtEnd: number; seasons: number }
+  /** DOM_AKADEMI_LIGGARE §1/§6: en gemensam form för varje verklig kullväg. */
+  youthIntake?: {
+    count: number
+    topProspectId?: string
+    topProspectStars?: number
+    academyLevel: AcademyLevel
+    source: 'summer' | 'school' | 'partner'
+  }
   /**
    * board_verdict (liggare-ny-board-verdict). `verdict` återanvänder
    * `expectationVerdictFromRating`s befintliga tre värden ordagrant —

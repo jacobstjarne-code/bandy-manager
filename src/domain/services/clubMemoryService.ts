@@ -671,6 +671,7 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   youth_aged_out: 'neutral',
   academy_upgrade_started: 'neutral', academy_upgrade_completed: 'triumph',
   mentorship_started: 'neutral',
+  youth_intake: 'neutral',
   // liggare-ny-board-verdict: neutral tills Krönikans egen text finns (då
   // kan verdict/patienceBand motivera en dynamisk gren, som decision/
   // manager_burnout ovan — ingen gissning uppåt förrän den domen är skriven.
@@ -745,6 +746,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   facility_built: '🏟️', academy_upgrade_started: '🏟️', academy_upgrade_completed: '🏟️',
   player_milestone: '👤', academy_promotion: '👤', retirement: '👤', transfer_story: '👤',
   mentorship_started: '👤', mentorship_ended: '👤',
+  youth_intake: '👤',
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',

@@ -20,7 +20,7 @@ import { captureSystemDecision, buildDecisionLedgerEntry } from '../seasonDecisi
 import { logEvent } from '../eventLedgerService'
 import { closeActiveMentorshipForYouth } from '../academyMentorshipService'
 import { buildPromotedPlayerFromYouth, starsForPotential } from '../academyService'
-import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry, buildLetterLedgerEntry } from '../clubHistoryLedgerService'
+import { buildYouthAgedOutLedgerEntry, buildAcademyPromotionLedgerEntry, buildFacilityTrialOutcomeLedgerEntry, buildLetterLedgerEntry, buildYouthIntakeLedgerEntry } from '../clubHistoryLedgerService'
 import { captureDecisionRipple } from '../orsakVerkanService'
 import { applyPatronHappinessTransition } from '../patronWithdrawalService'
 import { findEmployerForJob } from '../../data/localEmployers'
@@ -2163,16 +2163,35 @@ export function resolveEvent(
             .slice(0, 2)
         : []
     const existingIds = new Set(updatedGame.youthTeam.players.map(player => player.id))
-    updatedGame = {
+    const selectedToAdd = selected.filter(player => !existingIds.has(player.id))
+    const topProspect = selectedToAdd.length > 0
+      ? selectedToAdd.reduce((best, player) => player.potentialAbility > best.potentialAbility ? player : best)
+      : undefined
+    const gameWithSelectedYouth = {
       ...updatedGame,
       youthTeam: {
         ...updatedGame.youthTeam,
         players: [
           ...updatedGame.youthTeam.players,
-          ...selected.filter(player => !existingIds.has(player.id)),
+          ...selectedToAdd,
         ],
       },
     }
+    updatedGame = selectedToAdd.length > 0
+      ? {
+          ...gameWithSelectedYouth,
+          eventLedger: logEvent(gameWithSelectedYouth, buildYouthIntakeLedgerEntry({
+            clubId: updatedGame.managedClubId,
+            season: updatedGame.currentSeason,
+            matchday: updatedGame.currentMatchday,
+            count: selectedToAdd.length,
+            topProspectId: topProspect?.id,
+            topProspectStars: topProspect ? starsForPotential(topProspect.potentialAbility) : undefined,
+            academyLevel: updatedGame.academyLevel ?? 'basic',
+            source: 'school',
+          })),
+        }
+      : gameWithSelectedYouth
   }
 
   // akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4) — beslutskortets två

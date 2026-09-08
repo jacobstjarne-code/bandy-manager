@@ -181,6 +181,35 @@ export function buildMentorshipEndedLedgerEntry(input: {
   }
 }
 
+/** DOM_AKADEMI_LIGGARE §1/§6: alla kullvägar skriver samma kanoniska typ. */
+export function buildYouthIntakeLedgerEntry(input: {
+  clubId: string
+  season: number
+  matchday: number
+  count: number
+  topProspectId?: string
+  topProspectStars?: number
+  academyLevel: AcademyLevel
+  source: 'summer' | 'school' | 'partner'
+}): EventLedgerEntry {
+  return {
+    type: 'youth_intake',
+    semanticKey: `youth_intake_${input.clubId}_s${input.season}_${input.source}`,
+    season: input.season,
+    matchday: input.matchday,
+    clubId: input.clubId,
+    subject: { kind: 'club', id: input.clubId },
+    significance: 35 + ((input.topProspectStars ?? 0) >= 4 ? 15 : 0),
+    youthIntake: {
+      count: input.count,
+      topProspectId: input.topProspectId,
+      topProspectStars: input.topProspectStars,
+      academyLevel: input.academyLevel,
+      source: input.source,
+    },
+  }
+}
+
 /**
  * akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE_2026-09-04 §4/§1). subject
  * = junioren; `subjectSnapshot` fylls av `logEvent` vid skrivtillfället

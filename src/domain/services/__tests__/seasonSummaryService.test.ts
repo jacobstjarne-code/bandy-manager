@@ -5,6 +5,8 @@ import { deriveBoardLeagueContext, generateSeasonSummary, getClubPositionTrend, 
 import { buildStorylineResolutionLedgerEntry } from '../storylineLedgerService'
 import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
+import { buildYouthIntakeLedgerEntry } from '../clubHistoryLedgerService'
+import { logEvent } from '../eventLedgerService'
 
 function makeFullSeasonGame() {
   let game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
@@ -32,6 +34,39 @@ function makeFullSeasonGame() {
 }
 
 describe('generateSeasonSummary', () => {
+  it('fryser ungdomsintaget från liggaren och ignorerar den äldre historikfickan', () => {
+    const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 43 })
+    const prospect = game.youthTeam!.players[0]
+    const eventLedger = logEvent(game, buildYouthIntakeLedgerEntry({
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: 16,
+      count: 2,
+      topProspectId: prospect.id,
+      topProspectStars: 4,
+      academyLevel: game.academyLevel ?? 'basic',
+      source: 'school',
+    }))
+
+    const summary = generateSeasonSummary({
+      ...game,
+      eventLedger,
+      youthIntakeHistory: [{
+        season: game.currentSeason,
+        clubId: game.managedClubId,
+        date: game.currentDate,
+        playerIds: Array.from({ length: 99 }, (_, index) => `legacy-${index}`),
+      }],
+    })
+
+    expect(summary.youthIntakeCount).toBe(2)
+    expect(summary.bestYouthProspect).toEqual({
+      name: `${prospect.firstName} ${prospect.lastName}`,
+      position: prospect.position,
+      potential: Math.round(prospect.potentialAbility),
+    })
+  })
+
   it('fryser faktisk snitt-CA för en AI-klubb i befintlig standingsSnapshot', () => {
     const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
     const aiClub = game.clubs.find(club => club.id !== game.managedClubId)!

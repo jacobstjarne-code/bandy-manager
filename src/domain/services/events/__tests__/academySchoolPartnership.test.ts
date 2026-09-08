@@ -67,6 +67,20 @@ describe('C-T6 bandyskola → P19', () => {
       .toEqual(event.schoolIntakeCandidates!.map(player => player.id))
     expect(result.clubs.find(club => club.id === result.managedClubId)!.finances).toBe(beforeFinances - 8_000)
     expect(result.financeLog.at(-1)?.amount).toBe(-8_000)
+    const intake = result.eventLedger?.find(entry => entry.type === 'youth_intake')
+    const topProspect = event.schoolIntakeCandidates!.reduce((best, player) =>
+      player.potentialAbility > best.potentialAbility ? player : best
+    )
+    expect(intake).toEqual(expect.objectContaining({
+      semanticKey: `youth_intake_${game.managedClubId}_s2026_school`,
+      subject: { kind: 'club', id: game.managedClubId },
+      significance: 35 + (topProspect.potentialAbility >= 70 ? 15 : 0),
+      youthIntake: expect.objectContaining({
+        count: 3,
+        topProspectId: topProspect.id,
+        source: 'school',
+      }),
+    }))
   })
 
   it('de två bästa väljer högst potential ur den frysta trion och debiterar 5 tkr', () => {
@@ -82,6 +96,7 @@ describe('C-T6 bandyskola → P19', () => {
     expect(result.youthTeam!.players).toHaveLength(beforeCount + 2)
     expect(result.youthTeam!.players.slice(-2).map(player => player.id)).toEqual(expectedIds)
     expect(result.financeLog.at(-1)?.amount).toBe(-5_000)
+    expect(result.eventLedger?.find(entry => entry.type === 'youth_intake')?.youthIntake?.count).toBe(2)
   })
 
   it('grannklubben ger engångsersättning och sänker CS utan att lägga till P19-spelare', () => {
@@ -95,5 +110,6 @@ describe('C-T6 bandyskola → P19', () => {
     expect(result.clubs.find(club => club.id === result.managedClubId)!.finances).toBe(beforeFinances + 8_000)
     expect(result.communityStanding).toBe(55)
     expect(result.financeLog.at(-1)?.amount).toBe(8_000)
+    expect(result.eventLedger?.some(entry => entry.type === 'youth_intake')).toBe(false)
   })
 })

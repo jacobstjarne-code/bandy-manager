@@ -6,7 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Moment } from '../../domain/entities/Moment'
 import { appendMomentsAndEntriesToLedger } from '../../domain/services/momentLedgerService'
 import type { EventLedgerEntry } from '../../domain/entities/Narrative'
-import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry, buildLicenseEventLedgerEntry, buildAcademyUpgradeCompletedLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
+import { buildRetirementLedgerEntry, buildYouthAgedOutLedgerEntry, buildBoardVerdictLedgerEntry, buildLicenseEventLedgerEntry, buildAcademyUpgradeCompletedLedgerEntry, buildYouthIntakeLedgerEntry } from '../../domain/services/clubHistoryLedgerService'
 import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
@@ -647,6 +647,25 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const nextAcademyLevel = academyUpgradeCompletes
     ? (game.academyLevel === 'basic' ? 'developing' : 'elite')
     : (game.academyLevel ?? 'basic')
+
+  // DOM_AKADEMI_LIGGARE §6: de två äldre sommarvägarna (direktintag till
+  // spelarlistan och P19:s roster-fill) är EN kull i kanon. Generera P19
+  // exakt en gång här och återanvänd resultatet när nästa SaveGame byggs.
+  const managedClubForYouth = updatedClubs.find(c => c.id === game.managedClubId)
+    ?? game.clubs.find(c => c.id === game.managedClubId)!
+  const nextYouthTeamBase = game.youthTeam && game.youthTeam.players.length > 0
+    ? carryOverYouthTeam(game.youthTeam, managedClubForYouth, nextAcademyLevel, nextSeason, baseSeed + 77777)
+    : generateYouthTeam(managedClubForYouth, nextAcademyLevel, nextSeason, baseSeed + 77777)
+  const nextYouthTeam = {
+    ...nextYouthTeamBase,
+    players: rolloverYouthAvailability(nextYouthTeamBase.players, game.currentMatchday),
+  }
+  const previousYouthIds = new Set((game.youthTeam?.players ?? []).map(player => player.id))
+  const newP19Players = nextYouthTeam.players.filter(player => !previousYouthIds.has(player.id))
+  const summerIntakeProspects = [
+    ...(youthIntakeResultForManagedClub?.newPlayers ?? []),
+    ...newP19Players,
+  ]
 
   // H4 Heros-uppföljning (Jacobs dom 2026-08-25): boardExpectation-stegningen
   // körde tidigare BARA den hanterade klubben — precis som renommédeltat
@@ -1788,6 +1807,23 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         level: nextAcademyLevel as 'developing' | 'elite',
       })
     : undefined
+  const summerTopProspect = summerIntakeProspects.length > 0
+    ? summerIntakeProspects.reduce((best, player) =>
+        player.potentialAbility > best.potentialAbility ? player : best
+      )
+    : undefined
+  const summerIntakeEntry = summerIntakeProspects.length > 0
+    ? buildYouthIntakeLedgerEntry({
+        clubId: game.managedClubId,
+        season: game.currentSeason,
+        matchday: game.currentMatchday,
+        count: summerIntakeProspects.length,
+        topProspectId: summerTopProspect?.id,
+        topProspectStars: summerTopProspect ? starsForPotential(summerTopProspect.potentialAbility) : undefined,
+        academyLevel: nextAcademyLevel,
+        source: 'summer',
+      })
+    : undefined
   let mentorshipClosureGame = game
   for (const active of (game.mentorships ?? []).filter(item => item.isActive)) {
     const youth = game.youthTeam?.players.find(player => player.id === active.youthPlayerId)
@@ -1809,6 +1845,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...galaLedgerEntriesForSeason,
       ...youthAgedOutLedgerEntries,
       ...(academyUpgradeCompletedEntry ? [academyUpgradeCompletedEntry] : []),
+      ...(summerIntakeEntry ? [summerIntakeEntry] : []),
     ],
     game.managedClubId,
     game.id,
@@ -1825,6 +1862,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ...generateSeasonSummary(
       seasonEndGameView,
       Math.min(100, newCommunityStanding + communityStandingDelta),
+      summerIntakeProspects,
     ),
     retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
     matchOfTheSeason: matchHighlight ?? undefined,
@@ -2302,18 +2340,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     communityActivities: game.communityActivities
       ? { ...game.communityActivities, julmarknad: false }
       : game.communityActivities,
-    youthTeam: (() => {
-      const managedClub = updatedClubs.find(c => c.id === game.managedClubId) ?? game.clubs.find(c => c.id === game.managedClubId)!
-      // Carry over existing youth players (age them up, retain under-20s) rather than generating fresh
-      if (game.youthTeam && game.youthTeam.players.length > 0) {
-        const carried = carryOverYouthTeam(game.youthTeam, managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
-        return {
-          ...carried,
-          players: rolloverYouthAvailability(carried.players, game.currentMatchday),
-        }
-      }
-      return generateYouthTeam(managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
-    })(),
+    youthTeam: nextYouthTeam,
     academyLevel: nextAcademyLevel,
     academyUpgradeInProgress: academyUpgradeCompletes ? false : game.academyUpgradeInProgress,
     academyUpgradeSeason: academyUpgradeCompletes ? undefined : game.academyUpgradeSeason,
