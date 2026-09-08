@@ -1,5 +1,7 @@
 import type { SaveGame, InboxItem, FacilityState, StandingRow } from '../../../domain/entities/SaveGame'
+import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
+import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { advanceFacilityState } from '../../../domain/services/facilityService'
@@ -11,6 +13,8 @@ import type { CommunityActivitiesSince } from '../../../domain/entities/Communit
 import { safeStandingPosition } from '../../../domain/services/standingsService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { adjustSupporterMood } from '../../../domain/services/supporterService'
+import { applyFinanceChange } from '../../../domain/services/economyService'
+import { buildFacilityBuiltLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -29,6 +33,83 @@ export interface CommunityProcessorResult {
    *  roundProcessor.ts. Samma referens som gick in när ingenting behövde
    *  backfyllas — ingen onödig state-skrivning. */
   updatedCommunityActivitiesSince: CommunityActivitiesSince
+}
+
+export interface AppliedCommunityRoundResult {
+  clubs: Club[]
+  csBoost: number
+  facilityState: FacilityState | undefined
+  ledgerEntries: EventLedgerEntry[]
+}
+
+/**
+ * Applies the state changes produced by `processCommunity`.
+ *
+ * ARCH-001: this domain-specific completion step used to live in
+ * roundProcessor after the calculation had already moved here. Keeping the
+ * calculation and its application together prevents the orchestrator from
+ * owning facility, finance and community-ledger rules.
+ */
+export function applyCommunityRoundResult(
+  game: SaveGame,
+  clubs: Club[],
+  result: CommunityProcessorResult,
+  kommunstodBonus: number,
+  nextMatchday: number,
+): AppliedCommunityRoundResult {
+  // Sprint 26: mean reversion — puls driftar mot 60 med 3% per omgång.
+  // Tillämpas före senare community-standing-konsekvenser i roundProcessor.
+  const driftDelta = (60 - (game.communityStanding ?? 50)) * 0.03
+  const csBoost = result.csBoost + driftDelta
+  let updatedClubs = clubs
+  let facilityState = result.updatedFacilityState
+
+  if (result.facilityBonusTotal > 0 || result.facilityCapacityBonus > 0) {
+    updatedClubs = updatedClubs.map(club =>
+      club.id === game.managedClubId
+        ? {
+            ...club,
+            facilities: Math.min(100, club.facilities + result.facilityBonusTotal),
+            // En byggd anläggning höjer kapacitetstaket permanent, en gång.
+            ...(result.facilityCapacityBonus > 0
+              ? {
+                  arenaCapacity: (club.arenaCapacity ?? Math.round(club.reputation * 7 + 150))
+                    + result.facilityCapacityBonus,
+                }
+              : {}),
+          }
+        : club
+    )
+  }
+
+  if (kommunstodBonus > 0) {
+    updatedClubs = applyFinanceChange(updatedClubs, game.managedClubId, kommunstodBonus)
+  }
+
+  if (result.completedNodeId === 'matchhall' && facilityState?.hallTrial) {
+    facilityState = {
+      ...facilityState,
+      hallTrial: {
+        ...facilityState.hallTrial,
+        stage: 'klar',
+        completedSeason: game.currentSeason,
+      },
+    }
+    updatedClubs = updatedClubs.map(club =>
+      club.id === game.managedClubId ? { ...club, hasIndoorArena: true } : club
+    )
+  }
+
+  const ledgerEntries = result.completedNodeId
+    ? [buildFacilityBuiltLedgerEntry({
+        nodeId: result.completedNodeId,
+        season: game.currentSeason,
+        matchday: nextMatchday,
+        clubId: game.managedClubId,
+      })]
+    : []
+
+  return { clubs: updatedClubs, csBoost, facilityState, ledgerEntries }
 }
 
 /** Applies the already-computed community and Annandagen consequences. */

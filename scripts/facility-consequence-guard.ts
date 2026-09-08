@@ -23,11 +23,11 @@ const HOOK_ANCHORS = {
   ],
   capacity_bonus: [
     { file: 'src/domain/services/facilityService.ts', tokens: ['capacityBonus: def?.capacityBonus ?? 0'] },
-    { file: 'src/application/useCases/roundProcessor.ts', tokens: ['arenaCapacity:', 'facilityCapacityBonus'] },
+    { file: 'src/application/useCases/processors/communityProcessor.ts', tokens: ['arenaCapacity:', 'facilityCapacityBonus'] },
   ],
   facilities_training_bonus: [
     { file: 'src/domain/services/facilityService.ts', tokens: ['facilitiesBonus: def?.facilitiesBonus ?? 0'] },
-    { file: 'src/application/useCases/roundProcessor.ts', tokens: ['facilities:', 'facilityBonusTotal'] },
+    { file: 'src/application/useCases/processors/communityProcessor.ts', tokens: ['facilities:', 'facilityBonusTotal'] },
     { file: 'src/domain/services/trainingService.ts', tokens: ['facilityMultiplier', 'facilities / 100'] },
   ],
   kiosk_sales_bonus: [

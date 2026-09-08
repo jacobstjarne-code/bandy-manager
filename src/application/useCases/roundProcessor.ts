@@ -24,7 +24,7 @@ import { isPlayoffNarrativeCardStillValid } from '../../domain/services/playoffN
 import { processCupRound } from './processors/cupProcessor'
 import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { processEconomy } from './processors/economyProcessor'
-import { applyCommunityConsequences, processCommunity } from './processors/communityProcessor'
+import { applyCommunityConsequences, applyCommunityRoundResult, processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
 import { executeAcceptedTransfers, generateDeadlineDayBidInbox, processLoans, processTransferBids } from './processors/transferProcessor'
 import { processSponsors, applyRiskySponsorMaturation } from './processors/sponsorProcessor'
@@ -54,7 +54,7 @@ import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalSer
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
-import { buildFacilityBuiltLedgerEntry, buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
+import { buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
@@ -728,61 +728,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
   newInboxItems.push(...communityResult.inboxItems)
-  let { csBoost, updatedFacilityState, facilityBonusTotal, facilityCapacityBonus, updatedVolunteers, updatedVolunteerMorale } = communityResult
-  if (communityResult.completedNodeId) {
-    roundLedgerEntries.push(buildFacilityBuiltLedgerEntry({
-        nodeId: communityResult.completedNodeId,
-        season: game.currentSeason,
-        matchday: nextMatchday,
-        clubId: game.managedClubId,
-    }))
-  }
+  const appliedCommunity = applyCommunityRoundResult(
+    game,
+    postTransferClubs,
+    communityResult,
+    kommunstodBonus,
+    nextMatchday,
+  )
+  let { csBoost } = appliedCommunity
+  let updatedFacilityState = appliedCommunity.facilityState
+  postTransferClubs = appliedCommunity.clubs
+  roundLedgerEntries.push(...appliedCommunity.ledgerEntries)
+  const { updatedVolunteers, updatedVolunteerMorale } = communityResult
   // ANSPRÅK 4, spak 3: staleness-klockan (backfylld i processCommunity).
   const updatedCommunityActivitiesSince = communityResult.updatedCommunityActivitiesSince
-
-  // Sprint 26: mean reversion — puls driftar mot 60 med 3% per omgång.
-  // Tillämpas INNAN övriga puls-ändringar så att matchresultat/aktiviteter aktivt motverkar driften.
-  const DRIFT_TARGET = 60
-  const DRIFT_STRENGTH = 0.03
-  const currentCs = game.communityStanding ?? 50
-  const driftDelta = (DRIFT_TARGET - currentCs) * DRIFT_STRENGTH
-  csBoost += driftDelta
-
-  if (facilityBonusTotal > 0 || facilityCapacityBonus > 0) {
-    postTransferClubs = postTransferClubs.map(c =>
-      c.id === game.managedClubId
-        ? {
-            ...c,
-            facilities: Math.min(100, c.facilities + facilityBonusTotal),
-            // B1 §3 (close-out): en byggd anläggning höjer kapacitetstaket PERMANENT, engång
-            // vid completion. arenaCapacity = lagrad bas + Σ facility-bonusar (init från
-            // reputation-deriverad bas om ostörd). Närvaron cappas dynamiskt mot taket.
-            ...(facilityCapacityBonus > 0
-              ? { arenaCapacity: (c.arenaCapacity ?? Math.round(c.reputation * 7 + 150)) + facilityCapacityBonus }
-              : {}),
-          }
-        : c
-    )
-  }
-  // M13: apply kommunstöd one-time bonus to club finances
-  // §6-arkitekturen (D042-fyndet, Jacobs körorder 2026-09-01): routad genom
-  // applyFinanceChange, economyService.ts:s ENDA dokumenterade mutationspunkt.
-  if (kommunstodBonus > 0) {
-    postTransferClubs = applyFinanceChange(postTransferClubs, game.managedClubId, kommunstodBonus)
-  }
-
-  // ── Matchhall completion: stage → 'klar' + hasIndoorArena ─────────────────
-  if (communityResult.completedNodeId === 'matchhall' && updatedFacilityState?.hallTrial) {
-    updatedFacilityState = {
-      ...updatedFacilityState,
-      // completedSeason (Block 3e): enda platsen stage sätts till 'klar' —
-      // riktig säsong, inte en gissning (se HallTrial.completedSeason).
-      hallTrial: { ...updatedFacilityState.hallTrial, stage: 'klar', completedSeason: game.currentSeason },
-    }
-    postTransferClubs = postTransferClubs.map(c =>
-      c.id === game.managedClubId ? { ...c, hasIndoorArena: true } : c
-    )
-  }
 
   // ── Scandals (Lager 1 — Världshändelser) ──────────────────────────────────
   const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
