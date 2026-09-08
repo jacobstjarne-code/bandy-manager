@@ -34,3 +34,25 @@ Code granskar de 11 hall-annoteringarna mot den BEVISADE formen, på samma sätt
 ## Ägarskap
 
 Code: granska de 11 hall-annoteringarna mot formen, rätta ev. avvikare, bekräfta grönt + vilka grenar som träffades. Codex: speltesta empiriskt efter (hall-påståendena fyrar med sina guards). Opus: denna dom + nästa skivas dom när hall är grön. Jacob: ratificeringen given.
+
+## Verifieringsutfall — Code 2026-09-08
+
+**GRÖNT, ingen kodändring krävdes.** Alla 11 `GameEvent`-konstruktioner i
+`hallProcessService.ts` granskades mot sina faktiska genereringsguards och
+runtime-prover. Varje `proofSource.evaluatedTrue` återanvänder den namngivna
+boolean som gejtar samma konstruktion.
+
+Grenfördelningen blev **11 `state-predicate`, 0 `ledger`, 0 `timeless`**.
+Domens förväntan att hallhistoriken möjligen skulle träffa `ledger` infriades
+inte, men det är korrekt ontologi: `facility_trial_outcome` skrivs först när
+ett hallval har lösts. De elva påståendena görs före resolution och handlar om
+levande FSM-state — frister, lösta delbeslut, stöd, krav, kommunrelation,
+ortsstöd, aktiv patron och deterministisk fördyringsrisk. Ingen historisk post
+finns ännu att belägga dem med. Inget påstående saknade state och behövde
+`timeless`.
+
+Verifiering: 41/41 fokustester gröna (kontrakt, hallsekvens, resolution och
+`facility_trial_outcome`-liggare), TypeScript rent, produktionsbuild samt alla
+fyra lintgrindar gröna. Empirisk 390 px-browserkontroll visade den verkliga
+hallprövningsytan i `FÖRANKRING` med `STÖD I BYGDEN 56/100`. Ytans stora tomma
+fält är redan spårat av `design-p1-tysta-ytor`; ingen dubblettpunkt skapades.
