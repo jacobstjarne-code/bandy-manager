@@ -91,7 +91,7 @@ export function NameInputScreen() {
         )}
       </div>
 
-      <div style={{ padding: '20px 32px', paddingBottom: 'calc(20px + var(--safe-bottom))' }}>
+      <div style={{ padding: '20px 32px' }}>
         <button
           onClick={tryAdvance}
           disabled={!managerName.trim()}
@@ -108,6 +108,20 @@ export function NameInputScreen() {
         </button>
       </div>
 
+      <footer style={{
+        minHeight: 52,
+        paddingBottom: 'var(--safe-bottom)',
+        background: 'var(--bg-dark)',
+        borderTop: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <img
+          src="/buryfen-logo.png"
+          alt="Bury Fen"
+          style={{ width: 38, height: 'auto', opacity: 0.52 }}
+        />
+      </footer>
     </div>
   )
 }

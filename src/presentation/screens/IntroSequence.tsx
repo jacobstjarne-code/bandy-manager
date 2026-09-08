@@ -285,16 +285,6 @@ export function IntroSequence() {
               Byt karriär
             </button>
           )}
-          <img
-            src="/buryfen-logo.png"
-            alt="Bury Fen"
-            style={{
-              width: 52,
-              opacity: s1 ? 0.32 : 0,
-              transition: 'opacity 700ms ease',
-              transitionDelay: s1 ? '2000ms' : '0ms',
-            }}
-          />
         </div>
       </div>
     </div>
