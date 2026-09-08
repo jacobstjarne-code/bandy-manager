@@ -43,6 +43,9 @@ import { generateRosterVoiceIntroductions } from '../../../domain/services/voice
 import { evaluateBoard, generateBoardMessage } from '../../../domain/services/boardService'
 import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
 import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
+import { calculateClubEra } from '../../../domain/services/clubEraService'
+import { generatePatronEmergenceEvent } from '../../../domain/services/events/patronEvents'
+import { PATRON_EMERGE_CS } from '../../../domain/data/patronData'
 
 const BOARD_MILESTONES = [7, 14, 22]
 
@@ -146,6 +149,96 @@ export function processPendingFollowUps(game: SaveGame, nextMatchday: number): S
     ...game,
     inbox: followUpInbox.length > 0 ? [...game.inbox, ...followUpInbox] : game.inbox,
     pendingFollowUps: remaining,
+  }
+}
+
+export interface PatronCommunityEventResult {
+  updatedPatron: Patron | undefined
+  patronWithdrawnSeason: number | undefined
+  gameEvents: GameEvent[]
+  ledgerEntries: EventLedgerEntry[]
+}
+
+/**
+ * Applies the patron lifecycle tied to the club's saved community standing.
+ * Emergence and withdrawal are event-domain transitions; the round processor
+ * only merges their returned events, patron state and canonical ledger entry.
+ */
+export function processPatronCommunityEvents(
+  game: SaveGame,
+  patron: Patron | undefined,
+  patronWithdrawnSeason: number | undefined,
+  nextMatchday: number,
+  localRand: () => number,
+  queuedThisRound: readonly GameEvent[],
+): PatronCommunityEventResult {
+  const gameEvents: GameEvent[] = []
+  const ledgerEntries: EventLedgerEntry[] = []
+  let updatedPatron = patron
+  let updatedWithdrawnSeason = patronWithdrawnSeason
+
+  // Patron emergence: era ≥ fotfäste, CS threshold met, no active patron,
+  // and the explicit two-season withdrawal cooldown has elapsed.
+  if (
+    calculateClubEra(game) !== 'survival' &&
+    !game.patron?.isActive &&
+    (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
+  ) {
+    const patronCooldownOk = !game.patronWithdrawnSeason ||
+      game.currentSeason > game.patronWithdrawnSeason + 2
+    if (patronCooldownOk) {
+      const emergeId = `patron_emerge_${game.currentSeason}`
+      const alreadyQueued = (game.pendingEvents ?? []).some(event => event.id === emergeId) ||
+        (game.resolvedEventIds ?? []).includes(emergeId) ||
+        game.inbox.some(item => item.id === emergeId) ||
+        queuedThisRound.some(event => event.id === emergeId)
+      if (!alreadyQueued) {
+        const emergeEvent = generatePatronEmergenceEvent(game, localRand)
+        if (emergeEvent) gameEvents.push(emergeEvent)
+      }
+    }
+  }
+
+  // The same community premise is bidirectional: once an introduced patron's
+  // threshold is lost, the relationship ends and the withdrawal becomes canon.
+  if (
+    updatedPatron?.isActive &&
+    updatedPatron.introducedSeason !== undefined &&
+    (game.communityStanding ?? 50) < PATRON_EMERGE_CS
+  ) {
+    const evictionId = `patron_cs_eviction_${game.currentSeason}`
+    const alreadyQueued = (game.pendingEvents ?? []).some(event => event.id === evictionId) ||
+      game.inbox.some(item => item.id === evictionId) ||
+      queuedThisRound.some(event => event.id === evictionId) ||
+      gameEvents.some(event => event.id === evictionId)
+    if (!alreadyQueued) {
+      const evictedPatronId = updatedPatron.id
+      updatedPatron = { ...updatedPatron, isActive: false }
+      updatedWithdrawnSeason = game.currentSeason
+      gameEvents.push({
+        id: evictionId,
+        type: 'patronWithdrawal',
+        title: `${updatedPatron.name ?? 'Patronen'} drar sig ur`,
+        body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
+        choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
+        resolved: false,
+      })
+      ledgerEntries.push({
+        type: 'patron_withdrawal',
+        semanticKey: evictionId,
+        season: game.currentSeason,
+        matchday: nextMatchday,
+        subject: { kind: 'patron', id: evictedPatronId },
+        significance: 95,
+      })
+    }
+  }
+
+  return {
+    updatedPatron,
+    patronWithdrawnSeason: updatedWithdrawnSeason,
+    gameEvents,
+    ledgerEntries,
   }
 }
 

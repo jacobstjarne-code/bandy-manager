@@ -44,7 +44,7 @@ import {
 import { processNarrative, processPlayerArcs, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { appendJournalistRelationshipStoryline, detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
-import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processPendingFollowUps, processRoundMilestoneInbox } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processPatronCommunityEvents, processPendingFollowUps, processRoundMilestoneInbox } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
 import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanService'
@@ -62,8 +62,6 @@ import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIn
 import { logEvent } from '../../domain/services/eventLedgerService'
 import { selectPepTalk, PEPTALK_QUOTE_PREFIX } from '../../domain/services/pepTalkService'
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE } from '../../domain/data/managerKaraktarText'
-import { generatePatronEmergenceEvent } from '../../domain/services/events/patronEvents'
-import { PATRON_EMERGE_CS } from '../../domain/data/patronData'
 import { recordPressLedgerQuestionShown } from '../../domain/services/pressConferenceService'
 import {
   ensureManagerChoiceLog,
@@ -844,74 +842,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const newClubEra = calculateClubEra(game)
 
-  // Del 1: Patron emergence — triggers when era ≥ fotfäste, CS threshold met, no active patron, not in cooldown
-  if (
-    newClubEra !== 'survival' &&
-    !game.patron?.isActive &&
-    (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
-  ) {
-    const patronCooldownOk = !game.patronWithdrawnSeason ||
-      game.currentSeason > game.patronWithdrawnSeason + 2
-    if (patronCooldownOk) {
-      const emergeId = `patron_emerge_${game.currentSeason}`
-      const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === emergeId) ||
-        (game.resolvedEventIds ?? []).includes(emergeId) ||
-        game.inbox.some(i => i.id === emergeId) ||
-        allNewEvents.some(e => e.id === emergeId)
-      if (!alreadyQueued) {
-        const emergeEvent = generatePatronEmergenceEvent(game, localRand)
-        if (emergeEvent) allNewEvents.push(emergeEvent)
-      }
-    }
-  }
-
-  // "Takmodellen", patronens del (Jacobs dom 2026-08-26, RAPPORT_FYRA_
-  // UTREDNINGAR_2026-08-26.md punkt 4): relationen var bekräftat
-  // enkelriktad — communityStanding avgjorde bara ANKOMST (PATRON_EMERGE_CS
-  // ovan), aldrig AVHOPP. Om ortstödet faller under samma tröskel medan en
-  // patron är aktiv ska den lämna — annars är orten en spärr man passerar
-  // en gång, inte en spak i båda riktningarna. Samma effekttyp
-  // ('patronWithdrawn') som den befintliga happiness-baserade avgångsvägen
-  // återanvänds för resolutionen — ETT ställe sätter patronWithdrawnSeason.
-  let patronWithdrawnSeasonAfterCsEviction = eventResult.patronWithdrawnSeason
-  if (
-    updatedPatron?.isActive &&
-    updatedPatron.introducedSeason !== undefined &&
-    (game.communityStanding ?? 50) < PATRON_EMERGE_CS
-  ) {
-    const evictionId = `patron_cs_eviction_${game.currentSeason}`
-    const alreadyQueued = (game.pendingEvents ?? []).some(e => e.id === evictionId) ||
-      game.inbox.some(i => i.id === evictionId) ||
-      allNewEvents.some(e => e.id === evictionId)
-    if (!alreadyQueued) {
-      const evictedPatronId = updatedPatron.id
-      updatedPatron = { ...updatedPatron, isActive: false }
-      patronWithdrawnSeasonAfterCsEviction = game.currentSeason
-      allNewEvents.push({
-        id: evictionId,
-        type: 'patronWithdrawal',
-        // Orsaken är orten, inte relationen till patronen själv: ortstödet
-        // (communityStanding) har fallit under tröskeln som förde patronen
-        // hit, så premissen — en klubb bygden bär — är borta. Skild från den
-        // happiness-baserade avgångstexten.
-        title: `${updatedPatron.name ?? 'Patronen'} drar sig ur`,
-        body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
-        choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
-        resolved: false,
-      })
-      // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, samma
-      // significance som den happiness-baserade avhoppsvägen
-      // (patronWithdrawalService.ts) — samma händelseklass, olika orsak.
-      roundLedgerEntries.push({
-        type: 'patron_withdrawal',
-        semanticKey: evictionId,
-        season: game.currentSeason,
-        matchday: nextMatchday,
-        subject: { kind: 'patron', id: evictedPatronId },
-        significance: 95,
-      })
-    }
-  }
+  const patronCommunityResult = processPatronCommunityEvents(
+    game,
+    updatedPatron,
+    eventResult.patronWithdrawnSeason,
+    nextMatchday,
+    localRand,
+    allNewEvents,
+  )
+  updatedPatron = patronCommunityResult.updatedPatron
+  const patronWithdrawnSeasonAfterCsEviction = patronCommunityResult.patronWithdrawnSeason
+  allNewEvents.push(...patronCommunityResult.gameEvents)
+  roundLedgerEntries.push(...patronCommunityResult.ledgerEntries)
 
   // ÖVERLÄMNING 2 (2026-08-17, Jacobs korrigering): ingen kedja kastas
   // längre — alla sparas rangordnade. Rangordningen (rippleChainSignificance,
