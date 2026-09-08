@@ -13,6 +13,12 @@ import {
   appendJournalistRelationshipStoryline,
   detectRelationshipEvent,
 } from '../../../domain/services/journalistVisibilityService'
+import {
+  buildCSPressEvent,
+  computeCSStreak,
+  pickCSPressPlayer,
+  shouldTriggerCSPress,
+} from '../../../domain/services/csPressEventService'
 
 export interface MediaResult {
   inboxItems: InboxItem[]
@@ -71,6 +77,44 @@ export function processJournalistRelationshipRound(game: SaveGame): SaveGame {
   }
 
   return updatedGame
+}
+
+/** Queues the contextual clean-sheet press question after an eligible home league match. */
+export function processCommunityStandingPress(
+  game: SaveGame,
+  justCompletedManagedFixture: Fixture | null | undefined,
+  nextMatchday: number,
+  localRand: () => number,
+): SaveGame {
+  if (
+    !justCompletedManagedFixture ||
+    justCompletedManagedFixture.isCup ||
+    justCompletedManagedFixture.homeClubId !== game.managedClubId
+  ) return game
+
+  // Include the canonical completed fixture even before the round's final save
+  // assembly so the streak calculation reads this match exactly once.
+  const gameWithFixture: SaveGame = {
+    ...game,
+    fixtures: [
+      ...game.fixtures.filter(fixture => fixture.id !== justCompletedManagedFixture.id),
+      justCompletedManagedFixture,
+    ],
+  }
+  const csStreak = computeCSStreak(gameWithFixture, justCompletedManagedFixture)
+  if (
+    csStreak <= 0 ||
+    !shouldTriggerCSPress(gameWithFixture, justCompletedManagedFixture, csStreak, localRand)
+  ) return game
+
+  const player = pickCSPressPlayer(gameWithFixture, justCompletedManagedFixture, localRand)
+  if (!player) return game
+
+  return {
+    ...game,
+    pendingCSPress: buildCSPressEvent(gameWithFixture, justCompletedManagedFixture, player),
+    lastCSPressMatchday: nextMatchday,
+  }
 }
 
 export function processMedia(

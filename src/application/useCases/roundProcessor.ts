@@ -42,7 +42,7 @@ import {
   RECENCY_WINDOW_BY_CHANNEL,
 } from '../../domain/services/narrativeCoordinatorService'
 import { processNarrative, processPlayerArcs, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
-import { processJournalistRelationshipRound, processMedia } from './processors/mediaProcessor'
+import { processCommunityStandingPress, processJournalistRelationshipRound, processMedia } from './processors/mediaProcessor'
 import { processGameEvents, applyMecenatSpawn, applyMecenatCapEviction, processScandals, checkForPlayThroughInjuryOffer, maintainEventQueues, processBoardObjectiveCheckIn, processPatronCommunityEvents, processPendingFollowUps, processRoundMilestoneInbox } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas, describeRippleChain, rippleChainSignificance } from '../../domain/services/rippleEffectService'
@@ -55,7 +55,6 @@ import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
-import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 import { updateManagerBurnout, updateH2HRecord, deriveCoachNemesis, getBurnoutZone, shouldShowBurnoutMark, shouldShowBurnoutRelief, shouldShowBurnoutClose, isBurnoutRelapse, BURNOUT_MARK_FIRED_KEY, BURNOUT_RELIEF_FIRED_KEY, BURNOUT_CLOSE_FIRED_KEY } from '../../domain/services/managerProfileService'
 import { buildBurnoutBeatLedgerEntry, pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex, BURNOUT_QUOTE_PREFIX, BURNOUT_HELPER_PREFIX, BURNOUT_RELAPSE_QUOTE_PREFIX, BURNOUT_RELAPSE_HELPER_PREFIX } from '../../domain/services/burnoutReliefService'
 import { logEvent } from '../../domain/services/eventLedgerService'
@@ -1379,30 +1378,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   updatedGame = processJournalistRelationshipRound(updatedGame)
 
-  // C-B1 — CS-villkorad pressfråga
-  if (justCompletedManagedFixture && !justCompletedManagedFixture.isCup &&
-      justCompletedManagedFixture.homeClubId === updatedGame.managedClubId) {
-    // Build a synthetic game view with completed fixture included so computeCSStreak can see it
-    const gameWithFixture: SaveGame = {
-      ...updatedGame,
-      fixtures: [
-        ...updatedGame.fixtures.filter(f => f.id !== justCompletedManagedFixture.id),
-        justCompletedManagedFixture,
-      ],
-    }
-    const csStreak = computeCSStreak(gameWithFixture, justCompletedManagedFixture)
-    if (csStreak > 0 && shouldTriggerCSPress(gameWithFixture, justCompletedManagedFixture, csStreak, localRand)) {
-      const csPressPlayer = pickCSPressPlayer(gameWithFixture, justCompletedManagedFixture, localRand)
-      if (csPressPlayer) {
-        const csPressEvent = buildCSPressEvent(gameWithFixture, justCompletedManagedFixture, csPressPlayer)
-        updatedGame = {
-          ...updatedGame,
-          pendingCSPress: csPressEvent,
-          lastCSPressMatchday: nextMatchday,
-        }
-      }
-    }
-  }
+  updatedGame = processCommunityStandingPress(
+    updatedGame,
+    justCompletedManagedFixture,
+    nextMatchday,
+    localRand,
+  )
 
   // Spara senaste 22 liga-omgångars tabellplats/journalistrelation/lagform för trendgrafer
   if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && !isSecondPassForManagedMatch) {
