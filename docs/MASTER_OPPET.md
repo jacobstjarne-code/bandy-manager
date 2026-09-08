@@ -4,14 +4,14 @@
 
 ## Regler för den här filen
 
-**Tillstånds-maskinen (regel 8):** `rapporterad → verifierad → bygger → klar` (eller `stale`, om posten visar sig redan vara löst/överspelad vid verifiering — se INVENTERING_2026-08-31.md:s "prövad och friad"-mönster för exempel).
+**Tillstånds-maskinen (regel 8):** `rapporterad → verifierad → in_progress → klar` (eller `stale`, om posten visar sig redan vara löst/överspelad vid verifiering — se INVENTERING_2026-08-31.md:s "prövad och friad"-mönster för exempel).
 - **Varenda post föds `rapporterad`.** Ingen post ärver `verifierad` för att en källa (BACKLOG, SLUTTEST_KO, en audit, en agent) påstod ett faktum om den. Det gäller även när tre olika källor råkar säga samma sak — konsensus mellan rapporter är inte verifiering.
-- En post får inte flyttas till `bygger` förrän den är `verifierad` — det betyder: kodläst mot arbetsträdet OCH mot `git log`, av en människa eller Code, med resultatet skrivet i posten.
+- En post får inte flyttas till `in_progress` förrän den är `verifierad` — det betyder: kodläst mot arbetsträdet OCH mot `git log`, av en människa eller Code, med resultatet skrivet i posten.
 - **Code kör bara mot `verifierad`-rader.** En `rapporterad`-rad är inte en arbetsorder.
 - En post som verifieras och visar sig redan vara löst (som fyra av sju stickprov i INVENTERING_2026-08-31.md var) sätts till `stale` med en rad om vad som faktiskt hände, inte raderas tyst.
 
-**`in_progress`-claim (2026-09-08) — kollisionsskydd, egen mekanism vid sidan av tillstånds-maskinen.** Filen delas av flera agenter samtidigt (Code, Codex) som kan plocka samma rad utan att veta om varandra. Regeln:
-- **Innan arbetet påbörjas:** agenten sätter `in_progress | <ägare> | <timestamp>` på raden (ersätter status-cellen tillfälligt) och PUSHAR den claimen som en EGEN commit — INNAN själva arbetet, inte efteråt. En claim som bara finns i arbetsträdet skyddar ingen.
+**`in_progress`-claim (2026-09-08) — kollisionsskyddets claimsteg i tillstånds-maskinen.** Filen delas av flera agenter samtidigt (Code, Codex) som kan plocka samma rad utan att veta om varandra. Regeln:
+- **Innan arbetet påbörjas:** agenten sätter `status = in_progress`, befintligt `ägare`-fält till `<agent>` och inleder `nästa-åtgärd` med `CLAIM <ISO-8601-timestamp> — <agent>.` Den tidigare åtgärdstexten bevaras efter claimen. Agenten PUSHAR claimen som en EGEN commit — INNAN själva arbetet, inte efteråt. En claim som bara finns i arbetsträdet skyddar ingen.
 - **Andra agenter hoppar `in_progress`-rader.** En rad med en aktiv claim är inte ledig, oavsett hur länge sedan agenten senast syntes.
 - **Vid klar:** flytta till `MASTER_ARKIV.md` samma pass (befintlig regel ovan) — `in_progress` går aldrig direkt till `klar`/`stale` på plats, precis som ingen annan terminal status gör.
 - **Vid avbrott/krasch:** en claim äldre än ETT PASS räknas som övergiven och får övertas av en annan agent (som då sätter en ny claim, samma protokoll).
@@ -25,7 +25,7 @@
 
 **MASTER-split genomförd 2026-09-08 (Code, reconcile-fönster).** Filen bar tidigare alla ~653 poster oavsett status — varje session-start drog in 517 stängda/stale rader i kontexten för att komma åt 136 aktiva. De 517 (336 `klar` + 181 `stale`) är flyttade till `docs/MASTER_ARKIV.md`, kollapsade till id + status + commit-hash + källpekare, ingen fulltext. Fulltexten finns kvar i git-historiken och i respektive DOM-/RAPPORT-/RECON-fil — arkivraden är bara ett register, inte en andra sanning.
 
-**133 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`bygger`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen.
+**133 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen.
 
 **Stående regel (2026-09-08):** att stänga en rad = FLYTTA den till `MASTER_ARKIV.md`, aldrig bara stämpla om den `klar`/`stale` på plats. En rad som blir terminal och inte flyttas samma pass är en läckt regel, inte en genväg.
 
@@ -340,7 +340,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| omsparning-system-v2 | Omspårning per system: skriver/minns/talar, via Berättaren eller vid sidan av. 20 system kartlagda, `[verifiera]`-celler markerade | bygger | Opus | RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md | Code: RAW enligt §5 (per system, per yta, ledgerTold-täckning, schemafält, Krönikans matchkälla, producenter utan prior-check). Opus reviderar samma dag och filar/justerar raderna nedan. **STATUSKONTROLL 2026-09-07:** behålls som enda `bygger`-post; RAW-rapporten finns, men källrapportens verifieringsceller och de utbrutna liggarposterna är ännu inte terminala. **UPPDATERING 2026-09-07 (Code):** alla sex `liggare-ny-*`-rader (board-verdict, license-event, facility-trial-outcome, community-shift, letter, personal-goal-set) är nu terminala — fem `delvis klar`/`klar` med skrivväg byggd och minst en läsande yta (community-shift och letter fick även en riktig konsument, texten var redan låst), en (`personal-goal-set`) stängd utan ny kod eftersom premissen redan var löst. Kvarstår innan hela raden kan bli `klar`: källrapportens egna `[verifiera]`-celler (§5 RAW) — en Opus-bedömning, inte kodfakta. Fakta rapporterat, stängningsbeslutet är Opus's. |
+| omsparning-system-v2 | Omspårning per system: skriver/minns/talar, via Berättaren eller vid sidan av. 20 system kartlagda, `[verifiera]`-celler markerade | verifierad | Opus | RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md | Code: RAW enligt §5 (per system, per yta, ledgerTold-täckning, schemafält, Krönikans matchkälla, producenter utan prior-check). Opus reviderar samma dag och filar/justerar raderna nedan. **STATUSKONTROLL 2026-09-08:** den äldre `bygger`-statusen saknade claim-timestamp och återställs därför till `verifierad` när claim-protokollet införs; ingen aktiv claim finns. RAW-rapporten finns, men källrapportens verifieringsceller och de utbrutna liggarposterna är ännu inte terminala. **UPPDATERING 2026-09-07 (Code):** alla sex `liggare-ny-*`-rader (board-verdict, license-event, facility-trial-outcome, community-shift, letter, personal-goal-set) är nu terminala — fem `delvis klar`/`klar` med skrivväg byggd och minst en läsande yta (community-shift och letter fick även en riktig konsument, texten var redan låst), en (`personal-goal-set`) stängd utan ny kod eftersom premissen redan var löst. Kvarstår innan hela raden kan bli `klar`: källrapportens egna `[verifiera]`-celler (§5 RAW) — en Opus-bedömning, inte kodfakta. Fakta rapporterat, stängningsbeslutet är Opus's. |
 
 ---
 
