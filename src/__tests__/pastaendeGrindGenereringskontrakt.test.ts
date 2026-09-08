@@ -12,7 +12,8 @@ import type { SaveGame } from '../domain/entities/SaveGame'
 /**
  * PÅSTÅENDEGRINDEN, genererings-tids-lagret — patronEvents.ts-piloten
  * plus de utvidgade skivorna hallProcessService.ts, postAdvanceEvents.ts
- * och eventFactories.ts
+ * och eventFactories.ts. eventResolver.ts ingår också i populationen men
+ * bygger inga GameEvent-kort; dess nollresultat låses uttryckligen nedan.
  * (DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08).
  *
  * Två halvor, samma disciplin som nivå 1/2: en STATISK del (varje
@@ -31,7 +32,10 @@ const PARTICIPATING_FILES = [
   'src/domain/services/events/hallProcessService.ts',
   'src/domain/services/events/postAdvanceEvents.ts',
   'src/domain/services/events/eventFactories.ts',
+  'src/domain/services/events/eventResolver.ts',
 ].map(p => join(REPO_ROOT, p))
+
+const EVENT_RESOLVER_FILE = join(REPO_ROOT, 'src/domain/services/events/eventResolver.ts')
 
 function makeGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
@@ -49,6 +53,10 @@ describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
     // postAdvance-konstruktioner + 17 fabriker. Ett lägre tal
     // betyder att en fil eller en konstruktionsform fallit ur svepet.
     expect(sites.length).toBeGreaterThanOrEqual(41)
+  })
+
+  it('eventResolver muterar state men konstruerar inga nya GameEvent-kort', () => {
+    expect(findEventConstructionSites(EVENT_RESOLVER_FILE)).toHaveLength(0)
   })
 
   it('meta: en GameEvent-konstruktion utan proofSource fångas', () => {
