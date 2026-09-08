@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { resolveSubjectName } from '../services/momentLedgerService'
 import { getNextManagedFixture } from '../services/portal/triggers/matchTriggers'
+import { getManagerReturnContext } from '../services/managerReturnService'
 import type { AttentionVoice } from './types'
 import type { ForwardPushPayload, NarrativePushCopy, NarrativePushCopyResolver } from './narrativePushAdapter'
 
@@ -42,10 +43,11 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
 
 /**
  * stickiness-copy-roster (register LÅST 2026-09-04, wiring 2026-09-06) —
- * löser `narrative_return`-kategorins två sub-scenarier som har en verklig,
- * levande liggarproducent idag: revansch (`buildMatchResultLedgerEntry`,
- * clubMemoryEventBuilders.ts, skrivs i roundProcessor.ts) och ex-spelare i
- * motståndarlaget (`transferProcessor.ts:521`).
+ * löser `narrative_return`-kategorins scenarier som har en verklig, levande
+ * liggarproducent idag: revansch (`buildMatchResultLedgerEntry`,
+ * clubMemoryEventBuilders.ts, skrivs i roundProcessor.ts), ex-spelare i
+ * motståndarlaget (`transferProcessor.ts:521`) och manager-återkomst
+ * (`switchManagedClub.ts`, se nedan).
  *
  * ETT av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
  * ingen producent finns att läsa från, en gissad payload-form hade varit
@@ -54,13 +56,19 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  *    treomgångars-detektor mot MatchEvent.contributingFactors; ingen
  *    liggarpost existerar för detta ännu.
  *
- * "Återkomst till gamla klubben" — WIRAD 2026-09-08 (Code). Ingen liggartyp
- * behövdes: `managerReturnService.getManagerReturnContext` (redan byggd för
- * `reviewCallbackService.ts`s manager_return-callback) läser
- * `managerProfile.clubSpells` direkt. Samma form som derby/cup/final
- * (framåtblickande, ingen AgendaItem) — hör hem i `calendar_anchor`, inte
- * `narrative_return`. Se `kind: 'return'`-grenen nedan och
- * `calendarAnchorCandidate` (narrativePushAdapter.ts).
+ * "Återkomst till gamla klubben" — WIRAD 2026-09-08 (Code),
+ * DOM_MANAGER_ATERKOMST_2026-09-08.md. Byggdes FÖRST som ett state-undantag
+ * i `calendar_anchor` (läste `clubSpells` direkt i pushadaptern) — Opus
+ * dömde det fel: händelsen ÄR en händelse (skedde vid signeringen), hör
+ * ontologiskt i liggaren som license_event/board_verdict, och ett
+ * state-undantag hade kringgått redaktörens dirigent-koordinering. Rättad
+ * till en kanonisk `manager_return`-liggarpost (`switchManagedClub.ts`,
+ * subject=klubben som tas över). Grenen nedan verifierar ÄNDÅ "första
+ * gången" via `managerReturnService.getManagerReturnContext` innan den
+ * renderar — inte för att välja kandidaten (det gör agendan/redaktören),
+ * utan för att redaktörens untoldness är en mjuk nedprioritering, inte en
+ * hård spärr, och den låsta texten kräver att "första gången" är ordagrant
+ * sant varje gång den visas.
  *
  * Nemesis — WIRAD 2026-09-08 (Code), sedan k12 (`DOM_K12_TRANSFER_TARGET_
  * MISSED_2026-09-08.md`, commit `c71b4d3e`) gav rätt liggartyp ett verkligt
@@ -141,27 +149,6 @@ export function createNarrativePushCopyResolver(
           title: 'Annandagen.',
           body: `${opponentName} ${payload.venue}. Som varje år.`,
         }
-      }
-
-      // Återkomst till gamla klubben (register §4). managerReturnService.ts:s
-      // getManagerReturnContext äger sanningen om DET HÄR är återkomsten
-      // (adaptern läser den); resolvern bär bara namnet + rösten.
-      if (payload.kind === 'return') {
-        const manager = game.managerProfile
-        if (!manager) return null
-        const managerName = `${manager.firstName} ${manager.lastName}`
-        const returnVoice = pickVoice(rotation, 'anchor_return', ['press', 'club'])
-        return returnVoice === 'press'
-          ? {
-              voice: returnVoice,
-              title: `${managerName} tillbaka i ${opponentName}.`,
-              body: `Första gången mot ${opponentName} sedan avskedet. Läktaren minns.`,
-            }
-          : {
-              voice: returnVoice,
-              title: `Tillbaka till ${opponentName}.`,
-              body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
-            }
       }
 
       const voices: [AttentionVoice, ...AttentionVoice[]] = (game.fanMood ?? 50) >= 60
@@ -326,6 +313,42 @@ export function createNarrativePushCopyResolver(
         title: `Han valde ${opponentName}.`,
         body: `${playerName}, som ${ownClubName} jagade. På ${dag} står han på andra sidan.`,
       }
+    }
+
+    // Återkomst till gamla klubben (register §4) — DOM_MANAGER_ATERKOMST_
+    // 2026-09-08: kanonisk liggarpost (switchManagedClub.ts), inte ett
+    // state-undantag. Kandidaten kommer via agendan (item.post); den låsta
+    // texten kräver "första gången" ordagrant sant, så resolvern verifierar
+    // det via managerReturnService.ts:s egen detektor (samma en som
+    // reviewCallbackService.ts:s review-callback) INNAN den renderar — en
+    // post kan i teorin ligga kvar i liggaren och återfå poäng långt efter
+    // att återkomsten redan skett (redaktörens untoldness är en mjuk
+    // nedprioritering, ingen hård spärr), och "första gången" får aldrig
+    // bli en osann rad.
+    if (
+      item.post.type === 'manager_return' &&
+      item.post.subject?.kind === 'club' &&
+      item.post.subject.id === opponentId
+    ) {
+      const manager = game.managerProfile
+      if (!manager) return null
+      const returnContext = getManagerReturnContext(game, fixture)
+      if (!returnContext || returnContext.formerClubId !== opponentId) return null
+      const opponentName = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
+      if (!opponentName) return null
+      const managerName = `${manager.firstName} ${manager.lastName}`
+      const voice = pickVoice(rotation, 'memory_manager_return', ['press', 'club'])
+      return voice === 'press'
+        ? {
+            voice,
+            title: `${managerName} tillbaka i ${opponentName}.`,
+            body: `Första gången mot ${opponentName} sedan avskedet. Läktaren minns.`,
+          }
+        : {
+            voice,
+            title: `Tillbaka till ${opponentName}.`,
+            body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
+          }
     }
 
     return null

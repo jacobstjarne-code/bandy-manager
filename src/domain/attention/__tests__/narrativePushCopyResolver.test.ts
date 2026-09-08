@@ -155,43 +155,88 @@ describe('createNarrativePushCopyResolver', () => {
   })
 
   // stickiness-copy-roster: "återkomst till gamla klubben" (register §4).
-  // managerReturnService.ts:s getManagerReturnContext äger sanningen om
-  // ATT det är återkomsten (testad separat, narrativePushAdapter.forwardSources.test.ts)
-  // — resolvern bär bara namnet + rösten när adaptern redan bestämt kind:'return'.
+  // DOM_MANAGER_ATERKOMST_2026-09-08: kanonisk manager_return-liggarpost
+  // (switchManagedClub.ts), inte ett state-undantag — kandidaten kommer via
+  // agendan (item.post), precis som revansch/ex-spelare/nemesis. Resolvern
+  // verifierar ÄNDÅ "första gången" via managerReturnService.ts:s egen
+  // detektor innan den renderar (untoldness är mjuk, inte en hård spärr).
+  function managerReturnProfile(overrides: Partial<NonNullable<SaveGame['managerProfile']>> = {}) {
+    return {
+      firstName: 'Anna', lastName: 'Berg', age: 40, hometown: 'Ort',
+      burnoutScore: 0, burnoutHistory: [], careerWins: 0, careerDraws: 0, careerLosses: 0,
+      seasonsAtClub: 1, contractUntilSeason: 5, monthlySalary: 30, coachRivalries: [],
+      clubSpells: [
+        { clubId: 'club_skutskar', clubName: 'Skutskärs IF', fromSeason: 1, toSeason: 2, endedBy: 'fired' as const },
+        { clubId: 'club_soderfors', clubName: 'Söderfors GoIF', fromSeason: 3 },
+      ],
+      ...overrides,
+    } as SaveGame['managerProfile']
+  }
+
   it('återkomst: pressens variant först, sedan klubbens — aldrig samma två gånger i rad', () => {
     const rotation = memoryRotation()
-    const game = gameFixture({
-      managerProfile: {
-        firstName: 'Anna', lastName: 'Berg', age: 40, hometown: 'Ort',
-        burnoutScore: 0, burnoutHistory: [], careerWins: 0, careerDraws: 0, careerLosses: 0,
-        seasonsAtClub: 1, contractUntilSeason: 5, monthlySalary: 30, coachRivalries: [],
-      } as SaveGame['managerProfile'],
-    })
+    const game = gameFixture({ managerProfile: managerReturnProfile() })
     const resolver = createNarrativePushCopyResolver(game, rotation)
-    const fixture = game.fixtures[0]
-    const payload = {
-      category: 'calendar_anchor' as const, fixture, opponentClubId: 'club_skutskar',
-      kind: 'return' as const, daysUntil: 3, venue: 'hemma' as const,
-    }
-    expect(resolver(payload)).toEqual({
-      voice: 'press',
-      title: 'Anna Berg tillbaka i Skutskär.',
-      body: 'Första gången mot Skutskär sedan avskedet. Läktaren minns.',
+    const item = agendaItem({
+      type: 'manager_return', season: 3, matchday: 0,
+      subject: { kind: 'club', id: 'club_skutskar' },
     })
-    expect(resolver(payload)).toEqual({
+    expect(resolver({ category: 'narrative_return', item })).toEqual({
+      voice: 'press',
+      title: 'Anna Berg tillbaka i Skutskärs IF.',
+      body: 'Första gången mot Skutskärs IF sedan avskedet. Läktaren minns.',
+    })
+    expect(resolver({ category: 'narrative_return', item })).toEqual({
       voice: 'club',
-      title: 'Tillbaka till Skutskär.',
+      title: 'Tillbaka till Skutskärs IF.',
       body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
     })
   })
 
   it('återkomst: saknat managerProfile — hellre ingen text än ett gissat namn', () => {
     const resolver = createNarrativePushCopyResolver(gameFixture({ managerProfile: undefined }), memoryRotation())
-    const fixture = gameFixture().fixtures[0]
-    expect(resolver({
-      category: 'calendar_anchor', fixture, opponentClubId: 'club_skutskar',
-      kind: 'return', daysUntil: 3, venue: 'hemma',
-    })).toBeNull()
+    const item = agendaItem({
+      type: 'manager_return', season: 3, matchday: 0,
+      subject: { kind: 'club', id: 'club_skutskar' },
+    })
+    expect(resolver({ category: 'narrative_return', item })).toBeNull()
+  })
+
+  it('återkomst: klubbytet var en annan säsong än nästa fixture — inte längre "första gången", ingen text', () => {
+    const game = gameFixture({
+      managerProfile: managerReturnProfile({
+        clubSpells: [
+          { clubId: 'club_skutskar', clubName: 'Skutskärs IF', fromSeason: 1, toSeason: 2, endedBy: 'fired' as const },
+          { clubId: 'club_soderfors', clubName: 'Söderfors GoIF', fromSeason: 2 },
+        ],
+      }),
+    })
+    const resolver = createNarrativePushCopyResolver(game, memoryRotation())
+    const item = agendaItem({
+      type: 'manager_return', season: 3, matchday: 0,
+      subject: { kind: 'club', id: 'club_skutskar' },
+    })
+    expect(resolver({ category: 'narrative_return', item })).toBeNull()
+  })
+
+  it('återkomst: redan mötts en gång sedan bytet (completed tidigare fixture) — ingen text', () => {
+    const game = gameFixture({
+      managerProfile: managerReturnProfile(),
+      fixtures: [
+        {
+          id: 'fixture-earlier', leagueId: 'l1', season: 3, roundNumber: 1, matchday: 1,
+          date: '2027-01-02', homeClubId: 'club_soderfors', awayClubId: 'club_skutskar',
+          status: FixtureStatus.Completed, homeScore: 1, awayScore: 1, events: [],
+        } as unknown as SaveGame['fixtures'][number],
+        ...gameFixture().fixtures,
+      ],
+    })
+    const resolver = createNarrativePushCopyResolver(game, memoryRotation())
+    const item = agendaItem({
+      type: 'manager_return', season: 3, matchday: 0,
+      subject: { kind: 'club', id: 'club_skutskar' },
+    })
+    expect(resolver({ category: 'narrative_return', item })).toBeNull()
   })
 
   it('säsongsläge: nedflyttning och förlustsvit använder varsin låst mall', () => {

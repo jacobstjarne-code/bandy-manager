@@ -13,7 +13,6 @@ import {
   daysUntilNextMatch,
 } from '../services/portal/triggers/matchTriggers'
 import { RELEGATION_ZONE_SIZE } from '../services/boardService'
-import { getManagerReturnContext } from '../services/managerReturnService'
 import { getStreakState } from '../data/roundCharacter'
 import { deriveMatchTypeAxes, type Skede } from '../services/matchTypeAxes'
 import type {
@@ -85,7 +84,7 @@ export type ForwardPushPayload =
       category: 'calendar_anchor'
       fixture: Fixture
       opponentClubId: string
-      kind: 'derby' | 'cup' | 'playoff' | 'final' | 'annandag' | 'return'
+      kind: 'derby' | 'cup' | 'playoff' | 'final' | 'annandag'
       playoffStage?: Extract<Skede, 'kvartsfinal' | 'semifinal'>
       daysUntil: number
       venue: 'hemma' | 'borta'
@@ -187,33 +186,21 @@ function calendarAnchorCandidate(game: SaveGame): ForwardCandidate | null {
     (axes.skede === 'kvartsfinal' || axes.skede === 'semifinal')
     ? axes.skede
     : undefined
-  // "Återkomst till gamla klubben" (STICKINESS_COPY_REGISTER §4,
-  // stickiness-copy-roster): en managerns-karriärhändelse, inte en
-  // liggarpost — samma form som derby/cup/final (framåtblickande, ingen
-  // AgendaItem, se stickiness-categoryfor-tre-kallor). Återanvänder
-  // managerReturnService.ts:s redan byggda detektor (samma en som
-  // reviewCallbackService.ts:s manager_return-callback), inte en ny
-  // duplicerad kontroll.
-  const returnContext = getManagerReturnContext(game, fixture)
-
   const kind = nextMatchIsSMFinal(game)
     ? 'final'
     : fixture.isCup
       ? 'cup'
       : playoffStage
         ? 'playoff'
-        : returnContext
-          ? 'return'
-          : nextMatchIsDerby(game)
-            ? 'derby'
-            : fixture.isAnnandagen
-              ? 'annandag'
-              : null
+        : nextMatchIsDerby(game)
+          ? 'derby'
+          : fixture.isAnnandagen
+            ? 'annandag'
+            : null
   if (!kind) return null
 
   const opponentClubId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
-  const score = kind === 'final' ? 95 : kind === 'playoff' ? 90 : kind === 'cup' ? 85
-    : kind === 'return' ? 82 : kind === 'annandag' ? 80 : 75
+  const score = kind === 'final' ? 95 : kind === 'playoff' ? 90 : kind === 'cup' ? 85 : kind === 'annandag' ? 80 : 75
   const venue = fixture.homeClubId === game.managedClubId ? 'hemma' : 'borta'
 
   return {

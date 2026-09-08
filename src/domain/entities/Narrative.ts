@@ -259,6 +259,13 @@ export type EventLedgerType =
   // aldrig vår). subject = den jagade spelaren, subject2 = hans klubb vid
   // budtillfället (bägge snapshotas av logEvent).
   | 'transfer_target_missed'
+  // DOM_MANAGER_ATERKOMST_2026-09-08 (stickiness-copy-roster §4, "återkomst
+  // till gamla klubben"): managern tar en klubb hen tränat förr — sant och
+  // bevisbart via managerProfile.clubSpells, men skedde vid signeringen och
+  // hör därför ontologiskt i liggaren, inte som ett state-undantag pushen
+  // läser direkt (skulle kringgå redaktören/dirigenten). subject = klubben
+  // som tas över. Skrivs av switchManagedClub.ts.
+  | 'manager_return'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut

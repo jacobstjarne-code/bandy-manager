@@ -723,6 +723,10 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // transfer_story/rival_sale — den jagade spelaren gör ont mot dig.
   transfer_target_missed: 'scar',
   nemesis_signed: 'tension', referee_feud: 'tension',
+  // DOM_MANAGER_ATERKOMST_2026-09-08: registrets egen text ("Åt båda
+  // hållen") — varken ren triumf eller rent sår, samma laddade klass som
+  // nemesis/referee_feud.
+  manager_return: 'tension',
   mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
   voice_introduced: 'neutral',
   // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
@@ -815,6 +819,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
   transfer_target_missed: '👤',
+  manager_return: '👤',
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',

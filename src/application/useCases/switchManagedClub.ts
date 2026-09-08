@@ -33,6 +33,7 @@
 
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { ManagerProfile, ManagerClubSpell } from '../../domain/entities/ManagerProfile'
+import type { EventLedgerEntry } from '../../domain/entities/Narrative'
 import { TrainingType, TrainingIntensity } from '../../domain/enums'
 import { mulberry32 } from '../../domain/utils/random'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
@@ -97,6 +98,34 @@ export function advanceProfileToNewClub(
 }
 
 /**
+ * DOM_MANAGER_ATERKOMST_2026-09-08: karriärhändelsen "du tar en klubb du
+ * tränat förr" hör i liggaren (den ÄR en händelse, skedde vid signeringen),
+ * inte som ett state-undantag pushadaptern läser direkt ur clubSpells (skulle
+ * kringgå redaktören/dirigenten — se domen). subject = klubben som tas över.
+ * Kontrollerar profilen INNAN `advanceProfileToNewClub` stänger/lägger till
+ * spells — annars skulle den nya spellen trivialt matcha sig själv.
+ */
+function buildManagerReturnLedgerEntry(
+  profile: ManagerProfile | undefined,
+  newClubId: string,
+  season: number,
+  managerId: string,
+): EventLedgerEntry | null {
+  const priorSpellAtNewClub = (profile?.clubSpells ?? []).some(spell => spell.clubId === newClubId)
+  if (!priorSpellAtNewClub) return null
+  return {
+    type: 'manager_return',
+    semanticKey: `manager_return_${newClubId}_s${season}`,
+    clubId: newClubId,
+    managerId,
+    season,
+    matchday: 0,
+    subject: { kind: 'club', id: newClubId },
+    significance: 65,
+  }
+}
+
+/**
  * Byter managed klubb i en BEFINTLIG värld. Anropas när spelaren tackat ja
  * till ett erbjudande på tränarmarknaden.
  */
@@ -141,6 +170,8 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     generateMecenatIntroEvent(mecenat, newClubId),
   )
 
+  const managerReturnEntry = buildManagerReturnLedgerEntry(game.managerProfile, newClubId, season, game.id)
+
   const managerProfile = game.managerProfile
     ? advanceProfileToNewClub(
         game.managerProfile,
@@ -168,9 +199,10 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     // Liggaren följer karriären, men varje post måste behålla klubben den
     // skapades för. Äldre poster saknar clubId; vid själva klubbytet vet vi
     // säkert att samtliga sådana poster tillhör klubben vi just lämnar.
-    eventLedger: (game.eventLedger ?? []).map(entry =>
-      entry.clubId ? entry : { ...entry, clubId: oldClubId }
-    ),
+    eventLedger: [
+      ...(game.eventLedger ?? []).map(entry => entry.clubId ? entry : { ...entry, clubId: oldClubId }),
+      ...(managerReturnEntry ? [managerReturnEntry] : []),
+    ],
 
     // ── KLUBB: nollställd och omgenererad ────────────────────────────────
     clubs,
