@@ -15,8 +15,9 @@
 
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
-import { autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
+import { autoSelectLineup, autoResolvePendingEvents, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
 import { evaluateFinanceStatus } from '../src/domain/services/economyService'
+import { mulberry32 } from '../src/domain/utils/random'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
 type FiredReason = 'boardPatience<=15' | 'consecutiveFailures>=3' | 'bankruptcy' | 'licenseDenial' | 'unknown' | null
@@ -48,6 +49,7 @@ interface RunResult {
 function runOne(clubId: string, seed: number, communityStanding: number): RunResult {
   let game: SaveGame = createNewGame({ managerName: `H5-${seed}`, clubId, seed })
   game = { ...game, pendingScreen: null, communityStanding }
+  const eventRand = mulberry32(seed ^ 0x48_35_43_53)
 
   let firedSeason: number | null = null
   let firedReason: FiredReason = null
@@ -62,6 +64,10 @@ function runOne(clubId: string, seed: number, communityStanding: number): RunRes
         guardRounds++
         if (guardRounds > 2000) throw new Error(`season ${season} never ended — round guard tripped`)
 
+        // pendingEvents ar en egen ko, skild fran pendingScreen. Utan detta
+        // beskriver matningen en spelare som aldrig svarar pa beslut (bland
+        // annat licensnamndens handlingsplan), inte stressharnessens policy.
+        game = autoResolvePendingEvents(game, eventRand)
         game = autoSelectLineup(game)
         game = autoBuildCheapestAffordableFacility(game)
         game = { ...game, communityStanding }  // pinnad — kontrollerat experiment
@@ -99,6 +105,8 @@ function main(): void {
   const FRAGILE_CLUBS = ['club_heros', 'club_rogle', 'club_slottsbron', 'club_skutskar']
   const SCENARIOS: Array<{ label: string; standing: number }> = [
     { label: 'LÅG (15) — ignorerar orten', standing: 15 },
+    { label: 'KLIPPKONTROLL (70)', standing: 70 },
+    { label: 'KLIPPKONTROLL (71)', standing: 71 },
     { label: 'HÖG (90) — sköter orten', standing: 90 },
   ]
 
