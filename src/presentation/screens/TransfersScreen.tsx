@@ -307,7 +307,8 @@ export function TransfersScreen() {
         // ÖVERLÄMNING 2 (2026-08-12): samma choices resolveEvent-vägen visar
         // (bidReceivedEvent, eventFactories.ts) — Marknad och HÄNDELSE-kortet
         // erbjuder nu identiska val, inklusive "Kräv mer" när canCounter.
-        const choices = bidReceivedEvent(bid, game).choices
+        const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending'
+        const choices = bidReceivedEvent(bid, game, incomingBidDue).choices
         return (
           <IncomingBidCard
             key={bid.id}

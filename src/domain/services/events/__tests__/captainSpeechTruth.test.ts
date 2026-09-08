@@ -51,6 +51,7 @@ describe('captainSpeech — trigger, text och state', () => {
     expect(event).toMatchObject({
       id: `event_captain_speech_s${high.game.currentSeason}`,
       relatedPlayerId: high.captainId,
+      proofSource: { form: 'state-predicate', evaluatedTrue: true },
     })
   })
 

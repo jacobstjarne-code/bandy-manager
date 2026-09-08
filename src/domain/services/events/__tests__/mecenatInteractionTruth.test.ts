@@ -35,6 +35,7 @@ describe('mecenatInteraction — säsongs-ID och verklig interaktionstid', () =>
     const event = generatePostAdvanceEvents(game, [], 6, () => 0.99)
       .find(candidate => candidate.type === 'mecenatInteraction')!
     expect(event.id).toBe(`event_mec_intervention_mec_truth_s${game.currentSeason}_r6`)
+    expect(event.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
 
     const sameSeason = generatePostAdvanceEvents({ ...game, resolvedEventIds: [event.id] }, [], 7, () => 0.99)
     expect(sameSeason.some(candidate => candidate.type === 'mecenatInteraction')).toBe(false)

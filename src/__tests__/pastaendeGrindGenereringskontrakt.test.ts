@@ -11,7 +11,8 @@ import type { SaveGame } from '../domain/entities/SaveGame'
 
 /**
  * PÅSTÅENDEGRINDEN, genererings-tids-lagret — patronEvents.ts-piloten
- * plus de utvidgade skivorna hallProcessService.ts och postAdvanceEvents.ts
+ * plus de utvidgade skivorna hallProcessService.ts, postAdvanceEvents.ts
+ * och eventFactories.ts
  * (DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08).
  *
  * Två halvor, samma disciplin som nivå 1/2: en STATISK del (varje
@@ -29,6 +30,7 @@ const PARTICIPATING_FILES = [
   'src/domain/services/events/patronEvents.ts',
   'src/domain/services/events/hallProcessService.ts',
   'src/domain/services/events/postAdvanceEvents.ts',
+  'src/domain/services/events/eventFactories.ts',
 ].map(p => join(REPO_ROOT, p))
 
 function makeGame(): SaveGame {
@@ -44,9 +46,9 @@ describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
   it('rapporterar hur många event-konstruktioner som faktiskt granskades', () => {
     const sites = PARTICIPATING_FILES.flatMap(f => findEventConstructionSites(f))
     // 8 patronkonstruktioner + 10 hallprocesskonstruktioner + 6 direkta
-    // postAdvance-konstruktioner. Ett lägre tal
+    // postAdvance-konstruktioner + 17 fabriker. Ett lägre tal
     // betyder att en fil eller en konstruktionsform fallit ur svepet.
-    expect(sites.length).toBeGreaterThanOrEqual(24)
+    expect(sites.length).toBeGreaterThanOrEqual(41)
   })
 
   it('meta: en GameEvent-konstruktion utan proofSource fångas', () => {

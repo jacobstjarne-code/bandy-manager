@@ -63,6 +63,7 @@ describe('playerMediaComment — text, state och deduplicering', () => {
       id: `event_media_${subjectId}_r6`,
       relatedPlayerId: subjectId,
       rotationKey: `player_media_${subjectId}`,
+      proofSource: { form: 'state-predicate', evaluatedTrue: true },
     })
     expect(event?.body).toContain('sällan få starta')
     expect(event?.body).not.toContain('sitter bara på bänken')

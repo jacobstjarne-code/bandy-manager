@@ -434,7 +434,8 @@ export function transferActions(get: Get, set: Set) {
         createdRound: currentRound,
         expiresRound: currentRound + 2,
       }
-      const event = bidReceivedEvent(bid, game)
+      const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending'
+      const event = bidReceivedEvent(bid, game, incomingBidDue)
       set({
         game: {
           ...game,
@@ -472,7 +473,8 @@ export function transferActions(get: Get, set: Set) {
       const bid = (game.transferBids ?? []).find(b => b.id === bidId)
       if (!bid) return { success: false, error: 'Budet hittades inte' }
 
-      const event = bidReceivedEvent(bid, game)
+      const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending'
+      const event = bidReceivedEvent(bid, game, incomingBidDue)
       if (!event.choices.some(c => c.id === choiceId)) {
         return { success: false, error: 'Det alternativet är inte tillgängligt för det här budet' }
       }

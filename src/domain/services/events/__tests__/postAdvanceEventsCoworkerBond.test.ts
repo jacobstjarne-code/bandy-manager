@@ -58,5 +58,6 @@ describe('coworker bond — ankare och ködedup', () => {
     const coworkerEvents = generated.filter(event => event.id.startsWith('event_bond_'))
 
     expect(coworkerEvents).toHaveLength(1)
+    expect(coworkerEvents[0].proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 })

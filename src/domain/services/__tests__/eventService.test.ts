@@ -85,13 +85,16 @@ describe('generatePostAdvanceEvents', () => {
     const bidEvent = events.find(e => e.type === 'transferBidReceived')
     expect(bidEvent).toBeDefined()
     expect(bidEvent!.choices.length).toBe(3)
+    expect(bidEvent!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 
   it('contract request generated when player has < 1 season left and CA > 50', () => {
     const player = makePlayer({ currentAbility: 60, contractUntilSeason: 2025 })
     const game = makeGame({ players: [player] })
     const events = generatePostAdvanceEvents(game, [], 5, noRand)
-    expect(events.some(e => e.type === 'contractRequest')).toBe(true)
+    const event = events.find(e => e.type === 'contractRequest')
+    expect(event).toBeDefined()
+    expect(event!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 
   it('no contract request when CA <= 50', () => {

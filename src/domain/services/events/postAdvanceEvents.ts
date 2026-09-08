@@ -110,8 +110,9 @@ export function generatePostAdvanceEvents(
   for (const bid of newBids) {
     if (events.length >= 2) break
     const eid = `event_bid_${bid.id}`
-    if (!alreadyQueued.has(eid)) {
-      events.push(bidReceivedEvent(bid, game))
+    const incomingBidDue = !alreadyQueued.has(eid)
+    if (incomingBidDue) {
+      events.push(bidReceivedEvent(bid, game, incomingBidDue))
     }
   }
 
@@ -175,7 +176,8 @@ export function generatePostAdvanceEvents(
         })
       }
     } else {
-      events.push(bidReceivedEvent(bid, game))
+      const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending' && !alreadyQueued.has(eid)
+      events.push(bidReceivedEvent(bid, game, incomingBidDue))
     }
   }
 
@@ -196,7 +198,9 @@ export function generatePostAdvanceEvents(
 
     if (contractCandidates.length > 0 && events.length < 2) {
       const p = contractCandidates[0]
-      events.push(contractRequestEvent(game, p.id))
+      const contractRequestDue = p.clubId === game.managedClubId && p.currentAbility > 50 &&
+        p.contractUntilSeason <= game.currentSeason + 1 && !handledIds.has(p.id)
+      events.push(contractRequestEvent(game, p.id, contractRequestDue))
     }
   }
 
@@ -226,8 +230,9 @@ export function generatePostAdvanceEvents(
 
     if (benchedCount >= 2) {
       const eid = `event_unhappy_${p.id}_${game.currentSeason}`
-      if (!alreadyQueued.has(eid)) {
-        events.push(unhappyPlayerEvent(game, p.id))
+      const unhappyPlayerDue = p.morale < 35 && benchedCount >= 2 && !alreadyQueued.has(eid)
+      if (unhappyPlayerDue) {
+        events.push(unhappyPlayerEvent(game, p.id, unhappyPlayerDue))
       }
     }
   }
@@ -297,7 +302,8 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 5. Day job conflict (~15% chance per round, max one per 5-round period per player)
-  if (events.length < 2 && rand() < 0.15) {
+  const dayJobWindow = events.length < 2 && rand() < 0.15
+  if (dayJobWindow) {
     const recentCompleted = game.fixtures
       .filter(f =>
         f.status === 'completed' &&
@@ -322,8 +328,9 @@ export function generatePostAdvanceEvents(
       if (gamesInLast5 >= 3) {
         const period = Math.floor(roundPlayed / 5)
         const eid = `event_dayjob_${p.id}_period${period}`
-        if (!alreadyQueued.has(eid)) {
-          events.push(generateDayJobConflictEvent(p, roundPlayed))
+        const dayJobConflictDue = dayJobWindow && gamesInLast5 >= 3 && !alreadyQueued.has(eid)
+        if (dayJobConflictDue) {
+          events.push(generateDayJobConflictEvent(p, roundPlayed, dayJobConflictDue))
         }
       }
     }
@@ -332,7 +339,8 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 5b. Promotion offer (~5% per round, player with dayJob, flexibility > 60, morale > 50)
-  if (events.length < 2 && rand() < 0.05) {
+  const promotionWindow = events.length < 2 && rand() < 0.05
+  if (promotionWindow) {
     const promoCandidates = game.players.filter(p =>
       p.clubId === game.managedClubId &&
       !p.isFullTimePro &&
@@ -343,14 +351,16 @@ export function generatePostAdvanceEvents(
     if (promoCandidates.length > 0) {
       const pick = promoCandidates[Math.floor(rand() * promoCandidates.length)]
       const eid = `event_promotion_${pick.id}_s${game.currentSeason}`
-      if (!alreadyQueued.has(eid)) {
-        events.push(generatePromotionOfferEvent(pick, game.currentSeason))
+      const promotionDue = promotionWindow && !alreadyQueued.has(eid)
+      if (promotionDue) {
+        events.push(generatePromotionOfferEvent(pick, game.currentSeason, promotionDue))
       }
     }
   }
 
   // 5c. Shift conflict (~8% per round, day job + low flexibility)
-  if (events.length < 2 && rand() < 0.08) {
+  const shiftWindow = events.length < 2 && rand() < 0.08
+  if (shiftWindow) {
     const shiftCandidates = game.players.filter(p =>
       p.clubId === game.managedClubId &&
       !p.isFullTimePro &&
@@ -360,14 +370,16 @@ export function generatePostAdvanceEvents(
     if (shiftCandidates.length > 0) {
       const pick = shiftCandidates[Math.floor(rand() * shiftCandidates.length)]
       const eid = `event_shift_${pick.id}_r${roundPlayed}`
-      if (!alreadyQueued.has(eid)) {
-        events.push(generateShiftConflictEvent(pick, roundPlayed))
+      const shiftConflictDue = shiftWindow && !alreadyQueued.has(eid)
+      if (shiftConflictDue) {
+        events.push(generateShiftConflictEvent(pick, roundPlayed, shiftConflictDue))
       }
     }
   }
 
   // 5d. Coworker bond (~3% per round, two non-pro players at same employer)
-  if (events.length < 2 && rand() < 0.03) {
+  const coworkerWindow = events.length < 2 && rand() < 0.03
+  if (coworkerWindow) {
     const nonProPlayers = game.players.filter(p =>
       p.clubId === game.managedClubId &&
       !p.isFullTimePro &&
@@ -380,8 +392,9 @@ export function generatePostAdvanceEvents(
         const emp2 = findEmployerForJob(game.managedClubId, nonProPlayers[j].dayJob!.title)
         if (emp1 && emp2 && emp1.name === emp2.name) {
           const eid = coworkerBondEventId(nonProPlayers[i].id, nonProPlayers[j].id)
-          if (!alreadyQueued.has(eid)) {
-            events.push(generateCoworkerBondEvent(nonProPlayers[i], nonProPlayers[j], emp1.name))
+          const coworkerBondDue = coworkerWindow && emp1.name === emp2.name && !alreadyQueued.has(eid)
+          if (coworkerBondDue) {
+            events.push(generateCoworkerBondEvent(nonProPlayers[i], nonProPlayers[j], emp1.name, coworkerBondDue))
             coworkerBondAdded = true
             break
           }
@@ -391,7 +404,8 @@ export function generatePostAdvanceEvents(
   }
 
   // 5e. Varsel (once per season, round 8-14, 10% chance, affects large employer)
-  if (events.length < 2 && roundPlayed >= 8 && roundPlayed <= 14 && rand() < 0.10) {
+  const varselWindow = events.length < 2 && roundPlayed >= 8 && roundPlayed <= 14 && rand() < 0.10
+  if (varselWindow) {
     const eid = varselEventId(game.currentSeason)
     if (!alreadyQueued.has(eid)) {
       const nonProWithJob = game.players.filter(p =>
@@ -416,7 +430,8 @@ export function generatePostAdvanceEvents(
         if (group.length > bestCount) { bestKey = key; bestCount = group.length }
       }
       if (bestKey && bestCount >= 1) {
-        events.push(generateVarselEvent(byEmployer.get(bestKey)!, bestKey, game.currentSeason))
+        const varselDue = varselWindow && bestCount >= 1
+        events.push(generateVarselEvent(byEmployer.get(bestKey)!, bestKey, game.currentSeason, varselDue))
       }
     }
   }
@@ -424,7 +439,8 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 5f. Player media comment — unhappy benched player talks to press
-  if (events.length < 2 && rand() < 0.12) {
+  const playerMediaWindow = events.length < 2 && rand() < 0.12
+  if (playerMediaWindow) {
     const mediaWindow = game.fixtures
       .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
       .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
@@ -456,16 +472,18 @@ export function generatePostAdvanceEvents(
       )
       if (pick) {
         const eid = `event_media_${pick.id}_r${roundPlayed}`
-        if (!alreadyQueued.has(eid)) {
+        const playerMediaDue = playerMediaWindow && !alreadyQueued.has(eid)
+        if (playerMediaDue) {
           const journalist = game.localPaperName ?? 'Lokaltidningen'
-          events.push({ ...generatePlayerMediaEvent(pick, journalist, roundPlayed), rotationKey: `${PLAYER_MEDIA_PREFIX}${pick.id}` })
+          events.push({ ...generatePlayerMediaEvent(pick, journalist, roundPlayed, playerMediaDue), rotationKey: `${PLAYER_MEDIA_PREFIX}${pick.id}` })
         }
       }
     }
   }
 
   // 5g. Player praise — happy player praises teammate (15% per match with goals)
-  if (events.length < 2 && justCompletedFixture && rand() < 0.15) {
+  const playerPraiseWindow = events.length < 2 && Boolean(justCompletedFixture) && rand() < 0.15
+  if (playerPraiseWindow && justCompletedFixture) {
     const happyPlayers = game.players.filter(p =>
       p.clubId === game.managedClubId && p.morale > 75
     )
@@ -488,8 +506,9 @@ export function generatePostAdvanceEvents(
       )
       if (praised && praiser.id !== praised.id) {
         const eid = `event_praise_${praiser.id}_${praised.id}_s${game.currentSeason}`
-        if (!alreadyQueued.has(eid)) {
-          events.push({ ...generatePlayerPraiseEvent(praiser, praised), rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
+        const playerPraiseDue = playerPraiseWindow && praiser.morale > 75 && !alreadyQueued.has(eid)
+        if (playerPraiseDue) {
+          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue), rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
         }
       }
     }
@@ -532,7 +551,8 @@ export function generatePostAdvanceEvents(
         // eller fallback-urvalet. Tidigare kunde en explicit satt kapten med
         // låg moral kringgå regeln som kommentaren och eventpremissen anger.
         if (captain && captain.morale > 50 && managedClub) {
-          events.push(generateCaptainSpeechEvent(captain, managedClub.id, game.currentSeason))
+          const captainSpeechDue = allLosses && !alreadyQueued.has(eid) && captain.morale > 50
+          events.push(generateCaptainSpeechEvent(captain, managedClub.id, game.currentSeason, captainSpeechDue))
         }
       }
     }
@@ -591,7 +611,8 @@ export function generatePostAdvanceEvents(
     const interventionPrefix = `event_mec_intervention_${mec.id}_s${game.currentSeason}_`
     const eid = `${interventionPrefix}r${roundPlayed}`
     const alreadyHasIntervention = [...alreadyQueued].some(id => id.startsWith(interventionPrefix))
-    if (!alreadyQueued.has(eid) && !alreadyHasIntervention) {
+    const interventionDue = mec.isActive && mec.happiness < 40 && !alreadyQueued.has(eid) && !alreadyHasIntervention
+    if (interventionDue) {
       events.push(generateMecenatInterventionEvent(mec, game.currentSeason, roundPlayed))
     }
   }
@@ -610,14 +631,17 @@ export function generatePostAdvanceEvents(
   // nuvarande truppen rullat ett varv (pickJournalistExclusiveSubject).
   if (events.length < 2) {
     const j = game.journalist
-    if (j && j.relationship >= 65 && rand() < 0.15 && !journalistExclusiveFiredThisSeason(game, game.currentSeason)) {
+    const journalistExclusiveWindow = Boolean(j) && (j?.relationship ?? 0) >= 65 && rand() < 0.15 &&
+      !journalistExclusiveFiredThisSeason(game, game.currentSeason)
+    if (j && journalistExclusiveWindow) {
       const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
       const subject = pickJournalistExclusiveSubject(game, managedPlayers)
       if (subject) {
         const eid = `event_journalist_exclusive_${subject.id}_r${roundPlayed}`
-        if (!alreadyQueued.has(eid)) {
+        const journalistExclusiveDue = journalistExclusiveWindow && !alreadyQueued.has(eid)
+        if (journalistExclusiveDue) {
           events.push({
-            ...generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed, game.managedClubId),
+            ...generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed, game.managedClubId, journalistExclusiveDue),
             journalistExclusiveKey: `${JOURNALIST_EXCLUSIVE_PREFIX}${subject.id}`,
           })
         }
@@ -633,10 +657,12 @@ export function generatePostAdvanceEvents(
   )
   for (const bid of pendingOutgoing) {
     if (events.length >= 2) break
-    if (rand() > 0.20) continue
+    const bidWarWindow = rand() <= 0.20
+    if (!bidWarWindow) continue
     const eid = `event_bidwar_${bid.id}`
-    if (!alreadyQueued.has(eid)) {
-      events.push(bidWarEvent(bid, game))
+    const bidWarDue = bid.direction === 'outgoing' && bid.status === 'pending' && !alreadyQueued.has(eid)
+    if (bidWarDue) {
+      events.push(bidWarEvent(bid, game, bidWarDue))
     }
   }
 
@@ -661,8 +687,10 @@ export function generatePostAdvanceEvents(
       const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
       if (!sellingClub || !buyingClub || buyingClub.reputation >= sellingClub.reputation) continue
       const eid = `event_hesitant_${bid.id}`
-      if (!alreadyQueued.has(eid)) {
-        events.push(hesitantPlayerEvent(bid, game))
+      const hesitantPlayerDue = bid.status === 'accepted' && bid.expiresRound === roundPlayed &&
+        buyingClub.reputation < sellingClub.reputation && !alreadyQueued.has(eid)
+      if (hesitantPlayerDue) {
+        events.push(hesitantPlayerEvent(bid, game, hesitantPlayerDue))
       }
     }
   }

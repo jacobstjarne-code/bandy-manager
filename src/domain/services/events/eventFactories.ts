@@ -10,7 +10,7 @@ import { JOBBET_FORSVANN_TEXT } from '../../data/contractTermText'
 import { localPressVoiceId } from '../voiceIntroductionService'
 
 // ── Transfer drama events ──────────────────────────────────────────────────
-export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
+export function bidWarEvent(bid: TransferBid, game: SaveGame, triggerProof: boolean): GameEvent {
   const player = game.players.find(p => p.id === bid.playerId)
   const sellingClub = game.clubs.find(c => c.id === bid.sellingClubId)
   const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
@@ -21,6 +21,11 @@ export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
     type: 'bidWar',
     title: `⚔️ Budkrig — ${playerName}`,
     body: `${sellingClub?.name ?? 'Klubben'} uppges ha fått intresse från ytterligare en klubb för ${playerName}. Vill du höja budet från ${formatValue(bid.offerAmount)} till ${formatValue(raisedAmount)}?`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'ett väntande utgående bud träffade budkrigets genereringsgate',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'raise',
@@ -51,7 +56,7 @@ export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
  *
  * @cites bid.buyingClubId
  */
-export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent {
+export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame, triggerProof: boolean): GameEvent {
   const player = game.players.find(p => p.id === bid.playerId)
   const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
   const managedClub = game.clubs.find(c => c.id === bid.buyingClubId)
@@ -61,6 +66,11 @@ export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent
     type: 'hesitantPlayer',
     title: `🤔 Tveksam spelare — ${playerName}`,
     body: `${playerName} är intresserad men tveksam — din klubb är ett steg ner i ambitionsnivå. Vill du lova honom en nyckelroll för att övertala honom?`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'accepterat utgående bud där köpande klubb har lägre rykte än säljande klubb',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'convince',
@@ -89,7 +99,7 @@ export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent
 }
 
 // ── Generate events from incoming bids ────────────────────────────────────
-export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
+export function bidReceivedEvent(bid: TransferBid, game: SaveGame, triggerProof: boolean): GameEvent {
   const player = game.players.find(p => p.id === bid.playerId)
   const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
   const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
@@ -134,6 +144,11 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     type: 'transferBidReceived',
     title: `📨 Transferbud — ${playerName}`,
     body: `${clubName} vill köpa ${playerName} för ${formatValue(bid.offerAmount)}.\n${mvText}\n${contractInfo}`.trim(),
+    proofSource: {
+      form: 'state-predicate',
+      description: 'ett nytt eller väntande inkommande transferbud finns för spelaren',
+      evaluatedTrue: triggerProof,
+    },
     choices,
     relatedPlayerId: bid.playerId,
     relatedClubId: bid.buyingClubId,
@@ -146,7 +161,7 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
 /**
  * @cites player.contractUntilSeason
  */
-export function contractRequestEvent(game: SaveGame, playerId: string): GameEvent {
+export function contractRequestEvent(game: SaveGame, playerId: string, triggerProof: boolean): GameEvent {
   const player = game.players.find(p => p.id === playerId)!
   const playerName = `${player.firstName} ${player.lastName}`
   const newSalaryLow = player.salary
@@ -180,6 +195,11 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
     // design-d2 (sluttest-narrative-truth-grind R1, 2026-09-06): bandyårs-span,
     // inte ett naket kalenderår.
     body: `${playerName} vill diskutera ett nytt kontrakt. Nuvarande kontrakt löper ut efter säsong ${seasonSpanLabel(player.contractUntilSeason)}.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'kontraktsmogen spelare i egna laget träffade kontraktsgaten',
+      evaluatedTrue: triggerProof,
+    },
     choices,
     relatedPlayerId: playerId,
     resolved: false,
@@ -192,7 +212,7 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
   }
 }
 
-export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent {
+export function unhappyPlayerEvent(game: SaveGame, playerId: string, triggerProof: boolean): GameEvent {
   const player = game.players.find(p => p.id === playerId)!
   const playerName = `${player.firstName} ${player.lastName}`
 
@@ -227,6 +247,11 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent 
     type: 'playerUnhappy',
     title: `😤 Missnöjd spelare — ${playerName}`,
     body: `${playerName} är missnöjd med sin speltid. Morale: ${player.morale}.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'spelaren har moral under 35 och har bänkats i minst två av de tre senaste matcherna',
+      evaluatedTrue: triggerProof,
+    },
     choices,
     relatedPlayerId: playerId,
     resolved: false,
@@ -235,7 +260,7 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent 
 }
 
 // ── Day job conflict event ─────────────────────────────────────────────────
-export function generateDayJobConflictEvent(player: Player, roundNumber: number): GameEvent {
+export function generateDayJobConflictEvent(player: Player, roundNumber: number, triggerProof: boolean): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const dayJobTitle = player.dayJob?.title ?? 'jobbet'
   const period = Math.floor(roundNumber / 5)
@@ -245,6 +270,11 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
     type: 'dayJobConflict',
     title: 'Jobbet kolliderar med träningen',
     body: `${playerName} kämpar med att kombinera sin roll som ${dayJobTitle} med det tuffa matchschemat. Något måste ge.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'icke-professionell spelare med låg jobbflexibilitet har startat minst tre av fem matcher och träffade konfliktgaten',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'vila',
@@ -282,6 +312,7 @@ export function generatePlayerMediaEvent(
   player: Player,
   journalistName: string,
   roundPlayed: number,
+  triggerProof: boolean,
 ): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   return {
@@ -292,6 +323,11 @@ export function generatePlayerMediaEvent(
     type: 'playerMediaComment',
     title: `📰 ${playerName} till ${journalistName}: "Jag vill spela"`,
     body: `${playerName} har pratat med ${journalistName} och uttryckt frustration över att sällan få starta.\n\n"Jag tränar varje dag och gör mitt bästa. Men jag får inte den startplats jag vill ha. Det är klart att jag funderar på min framtid."`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'spelare med låg moral och hög förmåga har färre än tre starter i ett minst tre matcher långt fönster',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'talk',
@@ -321,6 +357,7 @@ export function generatePlayerMediaEvent(
 export function generatePlayerPraiseEvent(
   praiser: Player,
   praised: Player,
+  triggerProof: boolean,
 ): GameEvent {
   const name1 = `${praiser.firstName} ${praiser.lastName}`
   const name2 = `${praised.firstName} ${praised.lastName}`
@@ -329,6 +366,11 @@ export function generatePlayerPraiseEvent(
     type: 'playerPraise',
     title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
     body: pickPlayerPraiseText(praiser, praised),
+    proofSource: {
+      form: 'state-predicate',
+      description: 'spelaren som berömmer har hög moral och den berömda lagkamraten gjorde mål i den just spelade matchen',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'great',
@@ -380,13 +422,18 @@ export function generatePlayerPraiseEvent(
 // (Jacobs order: återanvänd, skriv inte nytt) — subtitle-strängarna nedan
 // är ordagranna kopior av give_word/take_charge (arcService.ts, före denna
 // commit).
-export function generateCaptainSpeechEvent(captain: Player, clubId: string, season: number): GameEvent {
+export function generateCaptainSpeechEvent(captain: Player, clubId: string, season: number, triggerProof: boolean): GameEvent {
   const isHighForm = captain.morale >= 70
   return {
     id: `event_captain_speech_s${season}`,
     type: 'captainSpeech',
     title: `📣 Kaptenen vill ta ton`,
     body: pickCaptainSpeechText(captain, season),
+    proofSource: {
+      form: 'state-predicate',
+      description: 'laget har tre raka ligaförluster och den valda kaptenens moral är över 50',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'support',
@@ -434,6 +481,7 @@ export function generateVarselEvent(
   players: { id: string; firstName: string; lastName: string; dayJob?: { title: string }; salary: number }[],
   employerName: string,
   season: number,
+  triggerProof: boolean,
 ): GameEvent {
   const names = players.map(p => `${p.firstName} ${p.lastName} (${p.dayJob?.title ?? 'anställd'})`).join(', ')
   return {
@@ -441,6 +489,11 @@ export function generateVarselEvent(
     type: 'varsel',
     title: `Varsel på ${employerName}`,
     body: `${employerName} har meddelat varsel. ${players.length === 1 ? 'En spelare' : `${players.length} spelare`} i truppen berörs: ${names}. De riskerar att förlora jobbet — och kanske behöva flytta.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'varslets säsongsfönster och sannolikhetsgate träffade en verklig arbetsgivargrupp',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         // 2.5 (choice-label-svepet, 2026-08-17): var 'boostMorale' UTAN
@@ -490,7 +543,7 @@ export function generateVarselEvent(
 }
 
 // ── Promotion offer — player's boss offers career advancement ─────────────
-export function generatePromotionOfferEvent(player: Player, season: number): GameEvent {
+export function generatePromotionOfferEvent(player: Player, season: number, triggerProof: boolean): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const jobTitle = player.dayJob?.title ?? 'jobbet'
   return {
@@ -498,6 +551,11 @@ export function generatePromotionOfferEvent(player: Player, season: number): Gam
     type: 'dayJobConflict',
     title: `${playerName} erbjuds befordran`,
     body: `${playerName} har erbjudits en befordran som ${jobTitle}. Det innebär mer ansvar, bättre lön — men sämre flexibilitet för bandy. Han behöver ditt råd.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'anställd deltidsbandyspelare med tillräcklig flexibilitet och moral träffade befordringsgaten',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'encourage',
@@ -518,7 +576,7 @@ export function generatePromotionOfferEvent(player: Player, season: number): Gam
 }
 
 // ── Workplace scheduling conflict — specific shift/meeting clash ──────────
-export function generateShiftConflictEvent(player: Player, matchRound: number): GameEvent {
+export function generateShiftConflictEvent(player: Player, matchRound: number, triggerProof: boolean): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const jobTitle = player.dayJob?.title ?? 'jobbet'
   return {
@@ -526,6 +584,11 @@ export function generateShiftConflictEvent(player: Player, matchRound: number): 
     type: 'dayJobConflict',
     title: `Schemakrock för ${playerName}`,
     body: `${playerName} har ett obligatoriskt möte på ${jobTitle} samma dag som nästa match. Han kan inte vara med på uppvärmningen.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'anställd deltidsbandyspelare med låg flexibilitet träffade schemakrockens gate',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'skip_warmup',
@@ -557,6 +620,7 @@ export function generateCoworkerBondEvent(
   player1: Player,
   player2: Player,
   employerName: string,
+  triggerProof: boolean,
 ): GameEvent {
   const name1 = `${player1.firstName} ${player1.lastName}`
   const name2 = `${player2.firstName} ${player2.lastName}`
@@ -565,6 +629,11 @@ export function generateCoworkerBondEvent(
     type: 'communityEvent',
     title: `Arbetskamrater på ${employerName}`,
     body: `${name1} och ${name2} jobbar båda på ${employerName}. De pendlar tillsammans och har börjat träna extra på lunchen. Kemin på planen har blivit bättre.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'två deltidsbandyspelare har samma verkliga arbetsgivare och träffade samhörighetsgaten',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'great',
@@ -595,6 +664,7 @@ export function generateJournalistExclusiveEvent(
   player: Player,
   roundNumber: number,
   clubId: string,
+  triggerProof: boolean,
 ): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   return {
@@ -602,6 +672,11 @@ export function generateJournalistExclusiveEvent(
     type: 'journalistExclusive',
     title: `📰 ${journalistName} vill göra ett reportage`,
     body: `${journalistName} från ${outlet} hör av sig.\n\n"Jag tänkte skriva ett djupdyk om ${playerName} — karriären, drivkraften, vad bandy betyder. Är ni okej med det?"\n\nEtt positivt reportage skulle stärka spelaren och klubben i orten.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'journalistrelationen är minst 65, säsongsbudgeten är ledig och reportagets sannolikhetsgate träffade',
+      evaluatedTrue: triggerProof,
+    },
     choices: [
       {
         id: 'accept',
@@ -632,6 +707,7 @@ export function generateJournalistExclusiveEvent(
 
 // ── Mecenat cooling-off intervention ─────────────────────────────────────────
 export function generateMecenatInterventionEvent(mec: Mecenat, season: number, roundNumber: number): GameEvent {
+  const interventionDue = mec.isActive && mec.happiness < 40
   const isShowman = mec.personality === 'showman'
   const isTystKraft = mec.personality === 'tyst_kraft'
   const eventLabel = isShowman ? 'en VIP-kväll på arenan' : isTystKraft ? 'en privat middag' : 'en golfrunda'
@@ -644,6 +720,11 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
     type: 'mecenatInteraction',
     title: `⚠️ ${mec.name} är på väg att tappa tron`,
     body: `${mec.name} från ${mec.business} har blivit allt tystare på sistone. Happiness: ${mec.happiness}/100.\n\nDu kan ta initiativet och bjuda in till ${eventLabel} (kostnad: ${eventCost.toLocaleString('sv')} kr), eller låta det rinna av.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'mecenaten är aktiv och happiness är under 40',
+      evaluatedTrue: interventionDue,
+    },
     choices: [
       {
         id: 'invite_right',
@@ -672,10 +753,9 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
 // DEV-012: Economic stress micro-decisions (only active in -100k to +50k zone)
 export function createEconomicStressEvent(game: SaveGame, currentMatchday: number, localRand: () => number): GameEvent | null {
   const finances = game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
-  if (finances >= 50000 || finances < -100000) return null
-
-  // Max 1 stress-event per 6 omgångar
-  if (game.lastEconomicStressRound && (currentMatchday - game.lastEconomicStressRound) < 6) return null
+  const economicStressDue = finances < 50000 && finances >= -100000 &&
+    (!game.lastEconomicStressRound || (currentMatchday - game.lastEconomicStressRound) >= 6)
+  if (!economicStressDue) return null
 
   const options: Array<{ id: string; title: string; body: string; choices: GameEvent['choices'] }> = [
     {
@@ -718,6 +798,11 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
     type: 'economicStress',
     title: chosen.title,
     body: chosen.body,
+    proofSource: {
+      form: 'state-predicate',
+      description: 'klubbkassan ligger i stresszonen och minst sex omgångar har gått sedan senaste stresskort',
+      evaluatedTrue: economicStressDue,
+    },
     choices: chosen.choices,
     resolved: false,
   }
@@ -739,11 +824,17 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
 export function jobbetForsvannEvent(player: Player, sponsorName: string, game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'resolvedEventIds'>): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const isRelapse = (game.resolvedEventIds ?? []).some(id => id.startsWith(`jobbet_forsvann_${player.id}_`))
+  const jobLossDue = Boolean(player.jobGuaranteeSponsorId)
   return {
     id: `jobbet_forsvann_${player.id}_${game.currentSeason}_${game.currentMatchday ?? 0}`,
     type: 'jobbet_forsvann',
     title: JOBBET_FORSVANN_TEXT.title(playerName),
     body: (isRelapse ? JOBBET_FORSVANN_TEXT.relapsePrefix : '') + JOBBET_FORSVANN_TEXT.body(sponsorName, playerName),
+    proofSource: {
+      form: 'state-predicate',
+      description: 'spelarens jobbgaranti pekar på sponsorn eller patronen som just har lämnat',
+      evaluatedTrue: jobLossDue,
+    },
     choices: [
       {
         id: 'raiseSalary',

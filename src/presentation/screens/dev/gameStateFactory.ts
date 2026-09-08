@@ -367,6 +367,7 @@ export function withIncomingBids(game: SaveGame, count: number): SaveGame {
 export function withActiveIncomingBidEvent(game: SaveGame): SaveGame {
   const bid = [...(game.transferBids ?? [])].reverse().find(b => b.direction === 'incoming' && b.status === 'pending')
   if (!bid) return game
-  const event = bidReceivedEvent(bid, game)
+  const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending'
+  const event = bidReceivedEvent(bid, game, incomingBidDue)
   return { ...game, pendingEvents: [...(game.pendingEvents ?? []), event] }
 }

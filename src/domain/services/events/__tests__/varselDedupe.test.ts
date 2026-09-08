@@ -33,7 +33,9 @@ describe('varsel — en gång per säsong-spärren', () => {
     // (samma spelares flexibility=70 matchar bara varsel/5b:s villkor,
     // inte 5/5c/5d — se kommentarerna i postAdvanceEvents.ts:190-280).
     const events = generatePostAdvanceEvents(game, [], 8, () => 0.07)
-    expect(events.some(e => e.type === 'varsel')).toBe(true)
+    const event = events.find(e => e.type === 'varsel')
+    expect(event).toBeDefined()
+    expect(event!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 
   it('genererar INTE ett andra varsel-event samma säsong, ens för en annan omgång inom fönstret', () => {
