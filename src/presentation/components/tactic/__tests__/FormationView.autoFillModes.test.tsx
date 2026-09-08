@@ -25,13 +25,22 @@ afterEach(() => {
   container.remove()
 })
 
-function renderFormation(tactic: Tactic, players: Player[]) {
+function renderFormation(
+  tactic: Tactic,
+  players: Player[],
+  lineupConfirmedThisRound = false,
+) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
   act(() => root.render(
     <MemoryRouter>
-      <FormationView tactic={tactic} players={players} onChange={t => { latestTactic = t }} />
+      <FormationView
+        tactic={tactic}
+        players={players}
+        onChange={t => { latestTactic = t }}
+        lineupConfirmedThisRound={lineupConfirmedThisRound}
+      />
     </MemoryRouter>,
   ))
 }
@@ -117,6 +126,18 @@ function clickFill(mode: 'Starkast' | 'Mest utvilad' | 'Bäst för dagens match'
 
 // taktik-fyll-elvan-tre-lagen (DOM 2026-09-03) — tre lägen för autofyll.
 describe('FormationView — autofyll-lägen', () => {
+  it('fryser coachmarkeringen till spelarens uppställning när elvan är bekräftad', () => {
+    const confirmedFormation = '541_hem'
+    renderFormation(baseTactic({ formation: confirmedFormation }), [], true)
+
+    const coachBadge = Array.from(container.querySelectorAll('span'))
+      .find(element => element.textContent?.trim() === '★ COACH')
+
+    expect(coachBadge?.parentElement?.textContent).toContain(
+      FORMATIONS[confirmedFormation].label,
+    )
+  })
+
   it('Starkast: exakt positionsmatch, väljer högre styrka trots lägre kondition', () => {
     const { players: fillers, lineupSlots } = fillerPlayers('mid-r')
     const strong = makePlayer('cand-strong', PlayerPosition.Midfielder, { currentAbility: 99, fitness: 60 })
