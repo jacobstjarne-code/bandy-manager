@@ -76,7 +76,7 @@ function selectCoffeeRoomLedgerEcho(game: SaveGame): CoffeeScene['ledgerEcho'] {
   for (const item of agenda) {
     if (item.scoresBySurface.coffee_room.total < COFFEE_ROOM_LEDGER_MIN_WEIGHT) continue
     if (item.toldBefore.some(mark => mark.surface === 'coffee_room')) continue
-    const name = resolveSubjectName(game, item.post.subject)
+    const name = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
     if (name) return { text: `Det pratas om ${name}.`, postKey: item.postKey }
   }
 

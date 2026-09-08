@@ -112,7 +112,15 @@ describe('logEvent', () => {
     })
   })
 
-  it('prioriterar subject över subject2 när båda är spelare (enda subjectSnapshot-fältet)', () => {
+  /**
+   * DOM_SUBJECT2SNAPSHOT_2026-09-08: subject och subject2 kan BÅDA vara
+   * spelare samtidigt (akademins mentorship_started/ended — junior=subject,
+   * mentor=subject2). Ett enda subjectSnapshot-fält kunde inte bära två namn
+   * — regressionen den gamla `?? subject2`-fallbacken hade var att mentorns
+   * namn aldrig sparades alls när subject redan var en spelare (junioren
+   * vann alltid). subject2Snapshot är det egna, oberoende syskonfältet.
+   */
+  it('fyller BÅDA subjectSnapshot och subject2Snapshot oberoende när subject och subject2 båda är spelare', () => {
     const game = makeGame()
     const [playerA, playerB] = game.players
     const updated = logEvent(game, {
@@ -121,6 +129,7 @@ describe('logEvent', () => {
       subject2: { kind: 'player', id: playerB.id },
     })
     expect(updated[0].subjectSnapshot?.name).toBe(`${playerA.firstName} ${playerA.lastName}`)
+    expect(updated[0].subject2Snapshot?.name).toBe(`${playerB.firstName} ${playerB.lastName}`)
   })
 
   it('lämnar subjectSnapshot orört om anroparen redan satt en (t.ex. seasonEndProcessor för en spelare på väg ut ur saven)', () => {
@@ -134,9 +143,32 @@ describe('logEvent', () => {
     expect(updated[0].subjectSnapshot).toEqual(explicit)
   })
 
+  it('lämnar subject2Snapshot orört om anroparen redan satt en', () => {
+    const game = makeGame()
+    const explicit = { name: 'Frusen Mentor', position: game.players[1].position, age: 30 }
+    const updated = logEvent(game, {
+      ...minimalEntry,
+      subject: { kind: 'player', id: game.players[0].id },
+      subject2: { kind: 'player', id: game.players[1].id },
+      subject2Snapshot: explicit,
+    })
+    expect(updated[0].subject2Snapshot).toEqual(explicit)
+    expect(updated[0].subjectSnapshot?.name).toBe(`${game.players[0].firstName} ${game.players[0].lastName}`)
+  })
+
   it('sätter ingen subjectSnapshot när subject saknas eller inte är en spelare', () => {
     const game = makeGame()
     const updated = logEvent(game, { ...minimalEntry, subject: { kind: 'club', id: game.managedClubId! } })
     expect(updated[0].subjectSnapshot).toBeUndefined()
+  })
+
+  it('sätter ingen subject2Snapshot när subject2 saknas eller inte är en spelare (t.ex. transfer_story: subject2=club)', () => {
+    const game = makeGame()
+    const updated = logEvent(game, {
+      ...minimalEntry,
+      subject: { kind: 'player', id: game.players[0].id },
+      subject2: { kind: 'club', id: game.managedClubId! },
+    })
+    expect(updated[0].subject2Snapshot).toBeUndefined()
   })
 })

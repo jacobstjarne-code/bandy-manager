@@ -293,4 +293,29 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(resolveSubjectName(game, { kind: 'patron', id: 'patron_annan' })).toBeUndefined()
     expect(resolveSubjectName(makeMinimalGame({ patron: undefined }), { kind: 'patron', id: 'patron_karl' })).toBeUndefined()
   })
+
+  // DOM_SUBJECT2SNAPSHOT_2026-09-08: snapshotet är namnets primära källa för
+  // ett spelar-subjekt — en spelare som lämnat game.players/youthTeam sedan
+  // posten skrevs ska ändå kunna namnges.
+  it('resolveSubjectName läser snapshot FÖRST för en spelare, oavsett vad game.players säger nu', () => {
+    const game = makeMinimalGame({
+      players: [{ id: 'p1', firstName: 'Sten', lastName: 'Ek' }] as unknown as SaveGame['players'],
+    })
+    expect(resolveSubjectName(game, { kind: 'player', id: 'p1' }, { name: 'Frusna Namnet' })).toBe('Frusna Namnet')
+  })
+
+  it('resolveSubjectName faller tillbaka till game.players när snapshot saknas (bakåtkompatibelt, äldre poster)', () => {
+    const game = makeMinimalGame({
+      players: [{ id: 'p1', firstName: 'Sten', lastName: 'Ek' }] as unknown as SaveGame['players'],
+    })
+    expect(resolveSubjectName(game, { kind: 'player', id: 'p1' })).toBe('Sten Ek')
+  })
+
+  it('resolveSubjectName faller tillbaka till game.youthTeam.players för en spelare som aldrig fanns i game.players (P19)', () => {
+    const game = makeMinimalGame({
+      players: [],
+      youthTeam: { players: [{ id: 'y1', firstName: 'Ung', lastName: 'Talang' }] } as unknown as SaveGame['youthTeam'],
+    })
+    expect(resolveSubjectName(game, { kind: 'player', id: 'y1' })).toBe('Ung Talang')
+  })
 })

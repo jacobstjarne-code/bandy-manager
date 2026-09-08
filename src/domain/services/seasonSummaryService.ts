@@ -306,8 +306,8 @@ function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): Ke
 
   return candidates.flatMap(entry => {
     const ctx = {
-      subjectName: resolveSubjectName(game, entry.subject),
-      subject2Name: resolveSubjectName(game, entry.subject2),
+      subjectName: resolveSubjectName(game, entry.subject, entry.subjectSnapshot),
+      subject2Name: resolveSubjectName(game, entry.subject2, entry.subject2Snapshot),
       matchday: entry.matchday,
       season: entry.season,
       significance: entry.significance,
@@ -359,7 +359,7 @@ function yearbookPersonText(game: SaveGame, item: AgendaItem): string | null {
         ? 'referee'
         : 'player'
   if (post.subject?.kind !== expectedSubjectKind) return null
-  const name = resolveSubjectName(game, post.subject)
+  const name = resolveSubjectName(game, post.subject, post.subjectSnapshot)
   if (!name) return null
 
   switch (post.type) {

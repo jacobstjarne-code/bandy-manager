@@ -322,18 +322,31 @@ export interface EventLedgerEntry {
   // identiteter — ALDRIG en dumpningsplats för en andra godtycklig referens.
   subject2?: { kind: 'player' | 'club' | 'mecenat'; id: string }
   /**
-   * DOM_AKADEMI_LIGGARE_2026-09-04 §2: en spelares namn ska överleva att
-   * personen försvinner ur den array subject.id pekar in i (game.players
-   * för en såld/pensionerad spelare, game.youthTeam.players för en P19-
-   * spelare som åldras ut eller flyttas upp — ingen av arrayerna behåller
-   * en post för den som lämnat). Fyllt av `logEvent` vid skrivtillfället
-   * för alla spelar-subjekt (subject OCH subject2 om `kind==='player'`) —
-   * inte en ny mall per producent. `resolveSubjectName` läser snapshotet
-   * FÖRST, `game.players` som fallback (bakåtkompatibelt, äldre poster
-   * saknar fältet). Bara namn/position/ålder — inga andra fält, ingen
-   * duplicering av spelarschemat.
+   * DOM_AKADEMI_LIGGARE_2026-09-04 §2 + DOM_SUBJECT2SNAPSHOT_2026-09-08: en
+   * spelares namn ska överleva att personen försvinner ur den array
+   * subject.id pekar in i (game.players för en såld/pensionerad spelare,
+   * game.youthTeam.players för en P19-spelare som åldras ut eller flyttas
+   * upp — ingen av arrayerna behåller en post för den som lämnat). Fyllt av
+   * `logEvent` vid skrivtillfället, ENDAST när `subject.kind === 'player'`
+   * — subject2:s spelarnamn (om `subject2.kind === 'player'`) bärs av det
+   * SEPARATA syskonfältet `subject2Snapshot` nedan, inte av detta fält (ett
+   * enda platt fält kan inte bära två namn — se subject2Snapshot). Bara
+   * namn/position/ålder — inga andra fält, ingen duplicering av
+   * spelarschemat. `resolveSubjectName` läser snapshotet FÖRST, `game.players`
+   * som fallback (bakåtkompatibelt, äldre poster saknar fältet).
    */
   subjectSnapshot?: { name: string; position?: string; age?: number }
+  /**
+   * DOM_SUBJECT2SNAPSHOT_2026-09-08: speglar `subjectSnapshot` exakt, men
+   * för `subject2` — fyllt av `logEvent` ENDAST när `subject2.kind ===
+   * 'player'` (t.ex. akademins mentorship_started/ended, där subject=junior
+   * och subject2=mentor, båda spelare, båda kan lämna sina arrayer). Två
+   * platta fält, inte en nycklad/array-struktur — schemat har redan bundit
+   * sig vid platt subject+subject2, och detta speglar den formen. Icke-
+   * spelare (club/mecenat) slås upp via id vid vy-tillfället, snapshotas
+   * aldrig — bara spelare lämnar en array på det sätt som kräver det.
+   */
+  subject2Snapshot?: { name: string; position?: string; age?: number }
 
   // ── VAD BLEV DET ──
   outcome?: 'won' | 'lost' | 'neutral'

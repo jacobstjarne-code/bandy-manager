@@ -41,16 +41,20 @@ export function logEvent(game: SaveGame, entry: EventLedgerEntry): EventLedgerEn
     && !withClub.managerId
     ? { ...withClub, managerId: game.id }
     : withClub
-  const withSnapshot = withManager.subjectSnapshot
-    ? withManager
-    : {
-        ...withManager,
-        subjectSnapshot: snapshotForPlayerSubject(game, withManager.subject)
-          ?? snapshotForPlayerSubject(game, withManager.subject2),
-      }
+  // DOM_SUBJECT2SNAPSHOT_2026-09-08: två SEPARATA fält, inte en fallback-
+  // kedja — subject och subject2 kan BÅDA vara spelare samtidigt (akademins
+  // mentorship_*: junior=subject, mentor=subject2), och en `??`-kedja tappar
+  // den ena namnen tyst. Varje fält speglar sin egen källa, oberoende.
+  const withSnapshots = {
+    ...withManager,
+    subjectSnapshot: withManager.subjectSnapshot
+      ?? snapshotForPlayerSubject(game, withManager.subject),
+    subject2Snapshot: withManager.subject2Snapshot
+      ?? snapshotForPlayerSubject(game, withManager.subject2),
+  }
   return [
     ...(game.eventLedger ?? []),
-    withSnapshot,
+    withSnapshots,
   ]
 }
 

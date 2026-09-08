@@ -451,8 +451,8 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       // plus den nya LEDGER_ONLY_VIEW_TEMPLATES (k3, TEXT LÅST) — Krönikan
       // skriver ALDRIG egen text, bara dispatchar till befintlig källa.
       const ctx = {
-        subjectName: resolveSubjectName(game, entry.subject),
-        subject2Name: resolveSubjectName(game, entry.subject2),
+        subjectName: resolveSubjectName(game, entry.subject, entry.subjectSnapshot),
+        subject2Name: resolveSubjectName(game, entry.subject2, entry.subject2Snapshot),
         matchday: entry.matchday,
         season: entry.season,
         significance: entry.significance,

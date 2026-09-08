@@ -920,7 +920,7 @@ function buildLedgerPressQuestion(
   item: AgendaItem,
   chronology: CurrentChronology,
 ): string | null {
-  const name = resolveSubjectName(game, item.post.subject)
+  const name = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
   switch (item.post.type) {
     case 'referee_feud':
       return name

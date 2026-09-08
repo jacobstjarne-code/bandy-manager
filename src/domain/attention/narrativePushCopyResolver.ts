@@ -234,7 +234,7 @@ export function createNarrativePushCopyResolver(
     ) {
       const seasonsAgo = game.currentSeason - item.post.season
       if (seasonsAgo < 0 || seasonsAgo > 1) return null
-      const opponentName = resolveSubjectName(game, item.post.subject)
+      const opponentName = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
       if (!opponentName) return null
       const resultat = `${item.post.result.goalsFor}–${item.post.result.goalsAgainst}`
       const timeframe = seasonsAgo === 0 ? 'i höstas' : 'förra säsongen'
@@ -261,8 +261,8 @@ export function createNarrativePushCopyResolver(
     ) {
       const seasonsAgo = game.currentSeason - item.post.season
       if (seasonsAgo < 0 || seasonsAgo > 1) return null
-      const playerName = resolveSubjectName(game, item.post.subject)
-      const opponentName = resolveSubjectName(game, item.post.subject2)
+      const playerName = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
+      const opponentName = resolveSubjectName(game, item.post.subject2, item.post.subject2Snapshot)
       if (!playerName || !opponentName) return null
       const timeframe = seasonsAgo === 0 ? 'i somras' : 'förra året'
       const voice = pickVoice(rotation, 'memory_ex_player', ['press', 'club'])

@@ -91,8 +91,8 @@ export function ClubMemoryView({ game }: Props) {
           {recentMoments.map(entry => {
             const kind = momentKind(entry.type)
             const text = renderMomentViewFromLedger(entry, {
-              subjectName: resolveSubjectName(game, entry.subject),
-              subject2Name: resolveSubjectName(game, entry.subject2),
+              subjectName: resolveSubjectName(game, entry.subject, entry.subjectSnapshot),
+              subject2Name: resolveSubjectName(game, entry.subject2, entry.subject2Snapshot),
               matchday: entry.matchday,
               season: entry.season,
               significance: entry.significance,

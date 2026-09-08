@@ -324,7 +324,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const outcome = economicDecisionItem.post.semanticKey.slice('criticalEconomy:'.length) as 'sold_star' | 'take_loan' | 'ask_mecenat'
     const resolutionType = outcome === 'take_loan' ? 'loan' : outcome === 'ask_mecenat' ? 'mecenat' : 'sold_star'
     const aftermath = ECONOMIC_SCAR_AFTERMATH[resolutionType]
-    const soldPlayerName = resolveSubjectName(game, economicDecisionItem.post.subject)
+    const soldPlayerName = resolveSubjectName(game, economicDecisionItem.post.subject, economicDecisionItem.post.subjectSnapshot)
       ?? crisis?.soldToSurvivePlayerName
       ?? ''
     const echo = aftermath.echoes[Math.floor(mulberry32(seed + 6)() * aftermath.echoes.length)]
@@ -383,9 +383,9 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   // only for legacy saves until the agenda path has a post.
   const rivalSaleItem = agenda.find(item => item.post.type === 'rival_sale')
   if (rivalSaleItem) {
-    const soldPlayerName = resolveSubjectName(game, rivalSaleItem.post.subject)
+    const soldPlayerName = resolveSubjectName(game, rivalSaleItem.post.subject, rivalSaleItem.post.subjectSnapshot)
       ?? game.lastRivalSaleInfo?.soldPlayerName
-    const buyerClubName = resolveSubjectName(game, rivalSaleItem.post.subject2)
+    const buyerClubName = resolveSubjectName(game, rivalSaleItem.post.subject2, rivalSaleItem.post.subject2Snapshot)
       ?? game.lastRivalSaleInfo?.buyerClubName
     const echo = interpolate(pickEcho('rivalSale', seed + 7), {
       spelare: soldPlayerName ?? 'en spelare',

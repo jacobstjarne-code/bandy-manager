@@ -149,13 +149,30 @@ export function getRecentMomentsFromLedger(game: SaveGame, limit = 5): MomentLed
     .slice(0, limit)
 }
 
-/** VEM: slår upp ett namn ur subject/subject2's polymorfa id, för vyns textinterpolation. */
-export function resolveSubjectName(game: SaveGame, subject?: EventLedgerEntry['subject']): string | undefined {
+/**
+ * VEM: slår upp ett namn ur subject/subject2's polymorfa id, för vyns
+ * textinterpolation. DOM_SUBJECT2SNAPSHOT_2026-09-08: `snapshot` är den
+ * postens EGNA `subjectSnapshot` (vid `resolveSubjectName(game, entry.subject,
+ * entry.subjectSnapshot)`) eller `subject2Snapshot` (vid
+ * `resolveSubjectName(game, entry.subject2, entry.subject2Snapshot)`) —
+ * anroparen kopplar rätt par, funktionen känner inte till entry-formen.
+ * Läses FÖRST för `kind==='player'` (en avliden/uppflyttad/såld spelares
+ * namn överlever), `game.players`/`youthTeam` som fallback för äldre poster
+ * som saknar fältet.
+ */
+export function resolveSubjectName(
+  game: SaveGame,
+  subject?: EventLedgerEntry['subject'],
+  snapshot?: EventLedgerEntry['subjectSnapshot'],
+): string | undefined {
   if (!subject) return undefined
   switch (subject.kind) {
     case 'player': {
+      if (snapshot?.name) return snapshot.name
       const p = game.players.find(p => p.id === subject.id)
-      return p ? `${p.firstName} ${p.lastName}` : undefined
+      if (p) return `${p.firstName} ${p.lastName}`
+      const youth = game.youthTeam?.players.find(p => p.id === subject.id)
+      return youth ? `${youth.firstName} ${youth.lastName}` : undefined
     }
     case 'club':
       return game.clubs.find(c => c.id === subject.id)?.name
