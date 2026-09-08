@@ -23,7 +23,7 @@ import { currentChronology } from './currentChronology'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getStorylineTypeFromLedger } from './storylineLedgerService'
 import { readClubLedger } from './eventLedgerService'
-import { academyYearbookLines } from './academyLedgerPresentationService'
+import { academyEconomyYearbookLine, academyYearbookLines } from './academyLedgerPresentationService'
 
 /**
  * @cites Player.promotedFromAcademy, Player.seasonStats.gamesPlayed, Player.seasonStats.averageRating, Player.seasonStats.goals, Player.careerMilestones, Player.diary, Player.isInjured
@@ -1052,6 +1052,7 @@ export function generateSeasonSummary(
     youthIntakeCount,
     bestYouthProspect,
     academyHighlights: academyYearbookLines(game),
+    academyEconomyLine: academyEconomyYearbookLine(game),
     roundPoints,
     narrativeSummary: narrative,
     cupResult,

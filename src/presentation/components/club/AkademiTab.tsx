@@ -6,7 +6,7 @@ import { positionShort } from '../../utils/formatters'
 import { mentorshipPreview, mentorshipActiveInForm, mentorshipActiveOutOfForm } from '../../../domain/data/mentorshipStrings'
 import { MENTOR_FORM_THRESHOLD } from '../../../domain/services/mentorshipConstants'
 import { getLoanRoundsRemaining } from '../../../domain/services/loanService'
-import { starsForPotential } from '../../../domain/services/academyService'
+import { academyOperatingCostPerRound, starsForPotential } from '../../../domain/services/academyService'
 import { externalLoanDestinationId } from '../../../domain/services/loanDestinationService'
 import { latestLoanReturnAttribution } from '../../../domain/services/academyLedgerPresentationService'
 
@@ -40,7 +40,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const youthTeam = game.youthTeam
   const academyLevel = game.academyLevel ?? 'basic'
   const levelLabel = academyLevel === 'elite' ? 'Elitakademi' : academyLevel === 'developing' ? 'Satsning' : 'Grundverksamhet'
-  const levelDrift = academyLevel === 'elite' ? 10000 : academyLevel === 'developing' ? 5000 : 2000
+  const levelDrift = academyOperatingCostPerRound(academyLevel)
   const nextLevelLabel = academyLevel === 'basic' ? 'Satsning (50 tkr)' : academyLevel === 'developing' ? 'Elitakademi (150 tkr)' : null
 
   function handleUpgrade() {

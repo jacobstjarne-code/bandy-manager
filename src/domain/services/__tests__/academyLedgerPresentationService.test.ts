@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 import type { EventLedgerEntry } from '../../entities/Narrative'
-import { academyYearbookLines, latestLoanReturnAttribution, loanReturnAttribution } from '../academyLedgerPresentationService'
+import { academyEconomyYearbookLine, academyYearbookLines, latestLoanReturnAttribution, loanReturnAttribution } from '../academyLedgerPresentationService'
 
 function loanEntry(overrides: Partial<EventLedgerEntry> = {}): EventLedgerEntry {
   return {
@@ -21,6 +21,31 @@ function loanEntry(overrides: Partial<EventLedgerEntry> = {}): EventLedgerEntry 
 }
 
 describe('akademins liggarpresentation', () => {
+  it('fryser domens ekonomirad ur samma driftpris och säsongens liggarutfall', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 2 })
+    const game = {
+      ...base,
+      currentMatchday: 22,
+      academyLevel: 'developing' as const,
+      eventLedger: [
+        {
+          type: 'academy_upgrade_started', semanticKey: 'academy_upgrade_started_test', season: 2025, matchday: 4,
+          clubId: base.managedClubId, subject: { kind: 'club', id: base.managedClubId }, significance: 40,
+          academyUpgrade: { fromLevel: 'developing', toLevel: 'elite', costKr: 150_000, readySeason: 2026 },
+        } satisfies EventLedgerEntry,
+        {
+          type: 'academy_promotion', semanticKey: 'academy_promotion_test', season: 2025, matchday: 8,
+          clubId: base.managedClubId, subject: { kind: 'player', id: 'y1' }, significance: 40,
+        } satisfies EventLedgerEntry,
+        loanEntry(),
+      ],
+    }
+
+    expect(academyEconomyYearbookLine(game)).toBe(
+      'Akademin: 150 + 110 tkr. Gav 1 uppflyttade och 11 i utveckling.',
+    )
+  })
+
   it('skriver domens tre attributionsgrenar ordagrant ur returpayloaden', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 2 })
     expect(loanReturnAttribution(game, loanEntry())).toBe(

@@ -161,6 +161,8 @@ export interface SeasonSummary {
   bestYouthProspect: { name: string; position: string; potential: number } | null
   /** DOM_AKADEMI_LIGGARE §3/§6: högst tre betydelseviktade rader, frysta ur liggaren. */
   academyHighlights?: string[]
+  /** DOM_AKADEMI_LIGGARE §5: frusen kostnad/utfallsrad från avslutad säsong. */
+  academyEconomyLine?: string
 
   roundPoints: number[]   // points per round for chart (cumulative)
 

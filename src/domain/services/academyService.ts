@@ -21,6 +21,21 @@ export function starsForPotential(potentialAbility: number): number {
   return 1
 }
 
+/**
+ * En enda prislista för akademins löpande kostnad. Samma tal används av
+ * ekonomimotorn, Akademi-vyn och årsbokens frusna bokslutsrad, så den
+ * synliga "tkr/omg"-etiketten aldrig kan glida isär från kassaeffekten.
+ */
+export const ACADEMY_OPERATING_COST_PER_ROUND: Record<AcademyLevel, number> = {
+  basic: 2_000,
+  developing: 5_000,
+  elite: 10_000,
+}
+
+export function academyOperatingCostPerRound(level: AcademyLevel = 'basic'): number {
+  return ACADEMY_OPERATING_COST_PER_ROUND[level]
+}
+
 // Fictional opposing youth teams from Swedish bandy regions
 const YOUTH_OPPONENTS = [
   'Norrala P19', 'Gagnefs P19', 'Bollnäs P19', 'Alfta P19', 'Delsbo P19',

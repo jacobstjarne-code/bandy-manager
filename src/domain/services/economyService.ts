@@ -12,6 +12,8 @@ import { safeStandingPosition } from './standingsService'
 import { getOrtFreshnessFactor, getSeasonsActive } from './communityRenewalService'
 import { getActivityStalenessMultiplier, getCsDiminishingFactor, getMatchRevenueRepDampFactor } from './communityStandingScaling'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
+import type { AcademyLevel } from '../entities/Academy'
+import { academyOperatingCostPerRound } from './academyService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -219,6 +221,7 @@ export interface RoundIncomeBreakdown {
   weeklyWages: number            // monthly salary total / 4
   weeklyArenaCost: number        // arenaCapacity × 5 per round
   weeklyLegendCost: number       // 500 kr/omgång per aktiv legend (youth_coach | scout)
+  academyOperatingCost: number  // akademinivåns faktiska kostnad per omgång
   facilityUpkeep: number         // O5 kraft 2: summa upkeepCost för byggda noder (once at round 1)
   municipalLoanCost: number      // kommunlånets årskostnad / 22 serieomgångar
   busContractCost: number        // låst resekostnad per omgång under bussavtalet
@@ -271,6 +274,7 @@ export interface CalcRoundIncomeParams {
   streamingFreshnessMultiplier?: number
   municipalLoanAnnualCost?: number
   busContractRoundCost?: number
+  academyLevel?: AcademyLevel
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
@@ -419,6 +423,7 @@ export interface RoundIncomeParamsForNextFixture {
   builtNodeIds: string[]
   municipalLoanAnnualCost: number
   busContractRoundCost: number
+  academyLevel: AcademyLevel
 }
 
 /**
@@ -480,6 +485,7 @@ export function buildRoundIncomeParamsForNextFixture(game: SaveGame): RoundIncom
     busContractRoundCost: game.currentSeason < (game.busContractUntilSeason ?? 0)
       ? (game.busContractRoundCost ?? 0)
       : 0,
+    academyLevel: game.academyLevel ?? 'basic',
   }
 }
 
@@ -789,10 +795,13 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   const municipalLoanCost = Math.round((params.municipalLoanAnnualCost ?? 0) / 22)
   const busContractCost = params.busContractRoundCost ?? 0
+  const academyOperatingCost = params.academyLevel == null
+    ? 0
+    : academyOperatingCostPerRound(params.academyLevel)
 
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
     + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost
-    - weeklyLegendCost - facilityUpkeep - municipalLoanCost - busContractCost
+    - weeklyLegendCost - facilityUpkeep - municipalLoanCost - busContractCost - academyOperatingCost
 
   return {
     weeklyBase,
@@ -808,6 +817,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     facilityUpkeep,
     municipalLoanCost,
     busContractCost,
+    academyOperatingCost,
     netPerRound,
   }
 }

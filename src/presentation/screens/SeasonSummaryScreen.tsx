@@ -831,7 +831,7 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* DOM_AKADEMI_LIGGARE §3/§6: en gemensam akademidel ur kanon. */}
-        {(summary.youthIntakeCount > 0 || (summary.academyHighlights?.length ?? 0) > 0) && (
+        {(summary.youthIntakeCount > 0 || (summary.academyHighlights?.length ?? 0) > 0 || summary.academyEconomyLine) && (
           <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
             <SectionLabel>AKADEMIN</SectionLabel>
             {(summary.academyHighlights?.length ?? 0) > 0 ? summary.academyHighlights!.map((line, index) => (
@@ -841,6 +841,11 @@ export function SeasonSummaryScreen() {
             )) : (
               <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
                 {summary.youthIntakeCount} nya spelare rekryterades
+              </p>
+            )}
+            {summary.academyEconomyLine && (
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, marginBottom: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                {summary.academyEconomyLine}
               </p>
             )}
             {summary.bestYouthProspect && (

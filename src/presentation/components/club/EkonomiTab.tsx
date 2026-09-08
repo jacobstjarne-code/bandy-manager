@@ -115,7 +115,8 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     income.volunteerIncome, income.kommunBidrag,
   ]
   const projectedIncome = variableCashflows.reduce((sum, amount) => sum + Math.max(0, amount), 0)
-  const projectedCosts = income.weeklyWages + income.weeklyArenaCost + income.weeklyLegendCost + income.facilityUpkeep
+  const projectedCosts = income.weeklyWages + income.weeklyArenaCost + income.weeklyLegendCost
+    + income.academyOperatingCost + income.facilityUpkeep
     + income.municipalLoanCost + income.busContractCost
     + variableCashflows.reduce((sum, amount) => sum + Math.max(0, -amount), 0)
   const weeklyWages = income.weeklyWages

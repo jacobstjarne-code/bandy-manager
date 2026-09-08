@@ -3,6 +3,7 @@ import type { EventLedgerEntry } from '../entities/Narrative'
 import { FACILITY_COMPLETED_BEATS } from '../data/facilityPortalBeats'
 import { readClubLedger } from './eventLedgerService'
 import { resolveSubjectName } from './momentLedgerService'
+import { academyOperatingCostPerRound } from './academyService'
 
 type LoanReturnedEntry = EventLedgerEntry & {
   loan: Extract<NonNullable<EventLedgerEntry['loan']>, { caAtReturn: number }>
@@ -34,6 +35,28 @@ export function latestLoanReturnAttribution(game: SaveGame): string | null {
     .filter(candidate => candidate.season === game.currentSeason && isLoanReturnedEntry(candidate))
     .sort((a, b) => (b.matchday - a.matchday) || b.semanticKey.localeCompare(a.semanticKey))[0]
   return entry ? loanReturnAttribution(game, entry) : null
+}
+
+/**
+ * DOM_AKADEMI_LIGGARE §5: årsbokens låsta ekonomirad, fryst medan den
+ * avslutade säsongens matchday och liggare fortfarande är intakta.
+ * Drift använder samma prisfunktion som den faktiska ekonomimutationen.
+ */
+export function academyEconomyYearbookLine(game: SaveGame, season = game.currentSeason): string {
+  const seasonEntries = readClubLedger(game).filter(entry => entry.season === season)
+  const startCost = seasonEntries.reduce((sum, entry) => {
+    if (entry.type !== 'academy_upgrade_started' || !entry.academyUpgrade || !('costKr' in entry.academyUpgrade)) return sum
+    return sum + entry.academyUpgrade.costKr
+  }, 0)
+  const promotedCount = seasonEntries.filter(entry => entry.type === 'academy_promotion').length
+  const developmentGain = seasonEntries.reduce((sum, entry) => {
+    if (!isLoanReturnedEntry(entry)) return sum
+    return sum + Math.max(0, entry.loan.caAtReturn - entry.loan.caAtStart)
+  }, 0)
+  const completedRounds = season === game.currentSeason ? Math.max(0, game.currentMatchday ?? 0) : 0
+  const operatingCost = academyOperatingCostPerRound(game.academyLevel ?? 'basic') * completedRounds
+
+  return `Akademin: ${Math.round(startCost / 1_000)} + ${Math.round(operatingCost / 1_000)} tkr. Gav ${promotedCount} uppflyttade och ${developmentGain} i utveckling.`
 }
 
 interface RankedAcademyLine {

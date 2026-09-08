@@ -109,6 +109,7 @@ export function processEconomy(
     busContractRoundCost: game.currentSeason < (game.busContractUntilSeason ?? 0)
       ? (game.busContractRoundCost ?? 0)
       : 0,
+    academyLevel: game.academyLevel ?? 'basic',
   })
 
   if (processManaged && managedIncome.weeklyBase !== 0) {
@@ -151,6 +152,9 @@ export function processEconomy(
   }
   if (processManaged && managedIncome.weeklyLegendCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyLegendCost, reason: 'wages', label: 'Legendlöner' })
+  }
+  if (processManaged && managedIncome.academyOperatingCost !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.academyOperatingCost, reason: 'academy', label: 'Akademidrift' })
   }
 
   // P1 — Annandagen val C (gratisentré): nollsätt biljettintäkt och justera net
