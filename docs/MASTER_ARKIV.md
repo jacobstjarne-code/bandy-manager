@@ -529,3 +529,4 @@ Sorterad i samma ordning posterna låg i MASTER_OPPET.md vid arkiveringstillfäl
 | ci-visuell-harness-attention-proxy | klar | `29345071` | GitHub Actions 34040419661/34040569759 |
 | ci-en-primary-ekonomi-dubbel | klar | `29345071` | GitHub Actions 34040419661/34040569759 |
 | systemaudit-det-som-bar | klar | — | Systemaudit §Sådant som fungerade |
+| choice-weeklydecision-exhaustiveness | klar | `7e2bec7a` | RECON_CHOICE_LABEL_SVANS_2026-09-08.md §Tre egna MASTER-rader — sluten 14-id-katalog, exhaustiv resolver och högt fel för okänt id; 34 fokustester + TypeScript + build gröna |
