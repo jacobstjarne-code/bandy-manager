@@ -10,7 +10,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
-3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/BACKLOG.md` och läs (a) listan "BYGGT MEN OSYNLIGT/ONÅBART" överst och (b) sektion A (aktiva sprintar + sessionsfynd). Detta är obligatoriskt, inte orientering-vid-behov. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i BACKLOG.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; BACKLOG visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i BACKLOG är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst BACKLOG, inte istället för.
+3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/MASTER_OPPET.md` (INTE `docs/BACKLOG.md` — degraderat 2026-08-31, nu bara changelog + parkerad-idé-katalog) och läs (a) sektionen "BYGGT MEN OSYNLIGT / ONÅBART" och (b) sektion A (aktiva sprintar + sessionsfynd). Filen bär sedan 2026-09-08 (MASTER-splitten) BARA aktiva rader (`rapporterad`/`verifierad`/`bygger`) — hela filen är läsbar på under en minut. Detta är obligatoriskt, inte orientering-vid-behov. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i MASTER_OPPET.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; MASTER_OPPET visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i MASTER_OPPET.md är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst MASTER_OPPET.md, inte istället för. **Läs ALDRIG `docs/MASTER_ARKIV.md` rutinmässigt** — det är de ~517 stängda/stale raderna, kollapsade till pekare, och hör bara hemma i kontexten när du EXPLICIT letar historik ("var det här redan löst?").
 
 4. **Incoming-koll.** `docs/incoming/` är drop-zon, inte arkiv. Lista den. Baslinje = `README.md` (mappens manual). (`2026-06-11_design_b1_klubbutveckling.html` var tidigare baslinje-referens men är konsumerad — alla tre ytor byggda — och flyttad till `docs/mockups/` 2026-06-23; den är inte längre en incoming-baslinje.) Allt ANNAT triageras SAMMA session till sitt hem: mock → `docs/mockups/`, design-brief/handoff → `design-system/briefs/`, analys/flödesgenomgång → `docs/`, dubblett/äldre snapshot → `docs/incoming/_RADERAS/` (Opus saknar delete; Jacob kör `git rm` på _RADERAS). **Batcha aldrig.** En hög på 27 filer kostade en vecka i verifiera-mot-källan-arkeologi (2026-06-20); vid drop-tillfället är samma bedömning 30 sekunder för att kontexten är färsk. Nya drops filas vid drop-tillfället, inte "senare". Avgör mot KÄLLAN (är det byggt/stale/konsumerat?), inte mot minnet.
 
@@ -309,42 +309,26 @@ En worktree stängs när dess arbete är klart. 24 kvarliggande sedan april (upp
 
 ---
 
-## DEPLOY (Vercel-MCP) — AUTOMATISK STATUS, HALVAUTOMATISK FIX
+## DEPLOY — AUTO-DEPLOY AVSTÄNGD (2026-09-07), MANUELL PUBLICERING
 
-Vercel-MCP är ansluten (claude.ai-integrationen, `https://mcp.vercel.com`). Code kan deploya och läsa build-/runtime-loggar direkt — ingen manuell dashboard-koll, ingen copy-paste av felmeddelanden.
+**HÅRD REGEL (sedan `fdedd509`, 2026-09-07):** push till `main` deployar INGENTING. `vercel.json` har `git.deploymentEnabled.main = false` — varken preview eller produktion byggs automatiskt av en push. Detta löste `sluttest-vercel-autoprod`: tidigare gick varje agent-push rakt till produktion, vilket inte var avsett (två agenter, 24 commits till main samma dag). Vercel-UI:t saknade en Production-Branch-inställning att hitta, så skyddet ligger i `vercel.json`, inte i dashboarden.
 
-### Känd begränsning: Vercels kostnadsfria plans dags-kvot (bekräftat 2026-08-18)
-Projektet ligger på Vercels gratisnivå, som har ett dagligt tak på antal deployar. Nås taket slutar Vercel trigga nya builds **tyst** — ingen ERROR-post, inget i deployment-listan alls, symptomen är identiska med en trasig GitHub↔Vercel-koppling. Det kostade en hel diagnosrunda 2026-08-18 (sex pushar, noll deploy-aktivitet) innan Jacob bekräftade den verkliga orsaken var kvoten, inte en trasig integration. **Innan du misstänker en trasig koppling eller ett byggfel:** om `list_deployments`/GitHubs Deployments-API visar noll aktivitet för flera pushar i rad SAMMA DAG, trots att tidigare pushar samma dag deployade normalt — anta kvot, inte trasig koppling. Fortsätt committa och pusha som vanligt (GitHub självt är opåverkat, deploy-sync-hooken i sessionsstart steg 5 bryr sig bara om origin/main, inte Vercel) — deployen kommer ikapp när kvoten återställs. Rapportera kort, gräv inte vidare.
+**Vad det betyder för Code:**
+- Committa och pusha till `main` som vanligt — GitHub är opåverkat, deploy-sync-hooken (sessionsstart steg 5) gäller fortfarande.
+- En push bygger ingen deploy. Det finns ingen automatisk preview-URL att rapportera längre. Räkna INTE med att en push ger en URL.
+- **Publicering till produktion är ett MEDVETET, MANUELLT steg** — `vercel --prod` i terminalen eller Vercel-dashboardens Promote to Production. Det är ett releasebeslut, Jacobs bord. Code publicerar aldrig till prod utan Jacobs explicita ja.
+- Vill Jacob se en RC innan release: be om en manuell preview-deploy (`vercel` utan `--prod`), inte en push.
 
-### Manuell deploy-sync-koll — Vercel MCP är den kanoniska vägen (beslut 2026-08-22)
-`scripts/check-deploy-sync.mjs` kräver `VERCEL_TOKEN`, som inte finns i den lokala utvecklarmiljön — skriptet fungerar därför bara i CI (på push), aldrig i en session som vill VERIFIERA innan ett speltest utan att själv pusha något nytt. En grind som kräver en token någon måste minnas att sätta är en grind som tystnar. **Vercel MCP fungerade i praktiken (2026-08-22) i exakt det ögonblick skriptet inte gjorde det.**
+**`main` är ensam sanning.** En `release`-branch skapades kort 2026-09-07 som en tidig lösningsansats och raderades sedan — använd den inte, allt arbete lever på main.
 
-Vid manuell koll (t.ex. "är produktionen i synk med main innan ett speltest?"): använd MCP-verktygen direkt, inte skriptet.
-```
-list_deployments(projectId, teamId)   // senaste deploy + githubCommitSha
-git rev-parse origin/main             // jämför mot detta
-```
-`.vercel/project.json` har `projectId`/`orgId` (orgId = teamId). Skriptet (`check-deploy-sync.mjs`) lever kvar oförändrat som CI-variant (den HAR token där) — den här sektionen dokumenterar bara vilken väg som gäller vid manuell/lokal kontroll.
-
-### Det som ALLTID är automatiskt
-- Efter en RC-relevant push: deploya till en **preview**-URL, läs build-loggen, rapportera URL + build-status + hash. Detta är ren vinst och kräver inget go.
-- Vid grön build: rapportera URL, klart.
-
-### Vid FAILAD build — EN diagnostiserad retry, sen STANNA (hård regel)
-En auto-fix-loop på byggfel har en känd failure-mode: modellen ser ett fel, gissar en fix, deployar om, ser ett nytt fel, gissar igen — och kan snurra flera deploys djupt på en feldiagnos. Värre: en "fix" som får bygget grönt är inte garanterat rätt (en `as any`, en bortkommenterad import tystar symptomet, löser inte orsaken — samma klass som Math.random-buggen: lokalt grönt, globalt fel). Därför:
-
-1. Build failar → läs felmeddelandet via MCP, formulera rotorsaken i EN mening (samma krav som ROTORSAK FÖRE FIX).
-2. Om rotorsaken är trivial och säker (glömd import, saknat tomt-värde, typfel med uppenbar fix): gör fixen, deploya OM **en gång**.
-3. Om andra deployen också failar — eller om rotorsaken inte är trivial/säker — **STANNA**. Rapportera båda felen + din rotorsaksanalys till Jacob (eller Opus för diagnos). Gräv inte djupare på egen hand.
-4. Tysta ALDRIG ett byggfel för att få grönt (`as any`, bortkommenterad kod, borttaget test). Ett grönt bygge som döljer ett riktigt fel är värre än ett rött.
-
-Regeln i en mening: **deploya + läs status alltid automatiskt; vid fail, en diagnostiserad retry, sen stanna och rapportera.**
-
-### Production-deploy KRÄVER Jacobs go
-Code deployar **preview** fritt. **Production-deploy kräver Jacobs explicita ja** — en production-URL är vad externa testare får, det är ett releasebeslut, inte ett byggsteg. Vercel-account/domän-inställningar är Jacobs bord, inte Code:s.
+### Vid FAILAD manuell deploy — EN diagnostiserad retry, sen STANNA (oförändrad regel)
+Om en manuell `vercel`/`vercel --prod` failar: läs felet, formulera rotorsaken i EN mening (ROTORSAK FÖRE FIX). Trivial+säker fix (glömd import, typfel med uppenbar fix) → fixa, deploya om EN gång. Andra failet, eller icke-trivial rotorsak → STANNA, rapportera båda felen + analysen till Jacob/Opus. Tysta ALDRIG ett byggfel för att få grönt (`as any`, bortkommenterad kod, borttaget test).
 
 ### Runtime-loggar vid distansfelsökning (när extern RC är ute)
-När en testare rapporterar via GAP-2-knappen (build-hash + skärm + fritext): matcha hash mot deploy, läs runtime-loggen för den sessionen. Rapport + logg = rotorsak utan repro-gissning.
+När en testare rapporterar via GAP-2-knappen (build-hash + skärm + fritext): matcha hash mot deployen, läs runtime-loggen för den sessionen via Vercel-MCP. Rapport + logg = rotorsak utan repro-gissning. (Vercel-MCP är fortfarande ansluten för LOGGLÄSNING och manuell deploy — det som ändrats är att PUSH inte längre auto-deployar.)
+
+### Känd begränsning: Vercels gratisplans dags-kvot (bekräftat 2026-08-18)
+Manuella deployar räknas fortfarande mot ett dagligt tak. Nås taket slutar Vercel bygga tyst — ingen ERROR-post. Når en manuell deploy inte dyker upp trots att tidigare samma dag gick igenom: anta kvot, inte trasig koppling. Deployen kommer ikapp när kvoten återställs.
 
 ---
 
