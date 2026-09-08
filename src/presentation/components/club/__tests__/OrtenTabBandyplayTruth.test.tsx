@@ -24,5 +24,13 @@ describe('OrtenTab — bandyskola och Bandyplay är separata verksamheter', () =
     expect(html).toContain('Bandyskola för barn')
     expect(html).toContain('Bandyplay')
     expect(html).toContain('Bandyskola avancerad')
+
+    const basicRow = html.slice(
+      html.indexOf('Bandyskola för barn'),
+      html.indexOf('Bandyplay'),
+    )
+    expect(basicRow).toContain('✓')
+    expect(basicRow).not.toContain('Ekonomi →')
+    expect(html.match(/Ekonomi →/g)).toHaveLength(2)
   })
 })
