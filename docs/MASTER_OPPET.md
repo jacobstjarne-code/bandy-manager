@@ -120,7 +120,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| pt2-liga-advance-otestad | Automatisk testtäckning finns nu för LIGA-advance (tabelluppdatering efter cup+liga-rundor, `advanceToNextEvent.test.ts`); det som återstår är den MANUELLA browserverifieringen av live/sim→Granska-flödet, inte kod | verifierad | Jacob | BACKLOG.md:296 | **Förtydligat 2026-09-07: detta är ett litet PLAYTEST, inte ett beslut och inte en Code-koll.** Koden är testtäckt (advanceToNextEvent.test.ts bevisar tabelluppdatering); det enda kvar är att Jacob spelar en ligamatch live→Granska + en simmad→Granska och känner efter att UI/flödet stämmer. Jacobs playtest-trav. |
+| pt2-liga-advance-otestad | Automatisk testtäckning finns nu för LIGA-advance (tabelluppdatering efter cup+liga-rundor, `advanceToNextEvent.test.ts`); det som återstår är den MANUELLA browserverifieringen av live/sim→Granska-flödet, inte kod | in_progress | Codex | BACKLOG.md:296 | CLAIM 2026-09-08T11:54:20+02:00 — Codex. **Förtydligat 2026-09-07: detta är ett litet PLAYTEST, inte ett beslut och inte en Code-koll.** Koden är testtäckt (advanceToNextEvent.test.ts bevisar tabelluppdatering); det enda kvar är att Jacob spelar en ligamatch live→Granska + en simmad→Granska och känner efter att UI/flödet stämmer. Jacobs playtest-trav. |
 | pt6-nedslackning-timing | Nedsläckning av matchhändelser går för långsamt i live-flödet | verifierad | Design | BACKLOG.md:300 | verifiera mot kod (timing-just) [Verifierat 2026-09-01 (Code): BACKLOG.md rad ~300 (PT-6) listar posten fortfarande öppen ("design/Code", ej STÄNGT), samma beskrivning om långsam nedsläckning.] |
 
 ## A. AKTIVA SPRINTAR
