@@ -173,7 +173,8 @@ export function AppRouter() {
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
           <Route path="review" element={<GranskaScreen />} />
-          {/* Bygget = kanonisk flik-destination; facility behålls för deep-links (push) */}
+          {/* Klubb → Bygget är den kanoniska fliken. Båda rutterna nedan är
+              push-/bakåtkompatibla djuplänkar och renderar därför tillbaka-pil. */}
           <Route path="bygget" element={<FacilityScreen />} />
           <Route path="facility" element={<FacilityScreen />} />
           <Route path="hall-provning" element={<HallProvningScreen />} />
