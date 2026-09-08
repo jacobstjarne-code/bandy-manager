@@ -233,3 +233,42 @@ describe('A-H10 invariant: unresolvedBlockingCount > 0 ⇒ minst en synlig enabl
     expect(event!.choices.map(c => c.id)).toContain('take_loan')
   })
 })
+
+// DOM_CHOICE_SELL_STAR_OCH_TRANSFERAVSLAG (2026-09-08): säljvalet byggdes
+// tidigare ovillkorligt via bestPlayer?.id — utan en säljbar icke-legendspelare
+// nådde ett tomt removePlayerId eventResolver, som kastade. Fixen filtrerar
+// bort valet i generatorn och härleder brödtextens vägantal ur choices.length.
+describe('sell_star (fas 3) — döljs utan säljbar spelare, aldrig ett skenval', () => {
+  const crisisAtPhase3Start: SaveGame['economicCrisisState'] = {
+    startedSeason: 1, startedMatchday: 1, phase: 'pressure', eventsFired: ['pressure'],
+  }
+
+  it('ingen icke-legendspelare i truppen: sell_star saknas helt ur choices', () => {
+    const game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [], players: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    expect(event!.choices.map(c => c.id)).not.toContain('sell_star')
+    expect(event!.choices.map(c => c.id)).toEqual(['take_loan'])
+  })
+
+  it('tomt säljspår: brödtexten erkänner klämman istället för att tyst hoppa över spåret', () => {
+    const game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [], players: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    expect(event!.body).toContain('Ingen i truppen går att sälja')
+    expect(event!.body).not.toContain('Sälj')
+  })
+
+  it('med säljbar spelare: brödtexten härleder vägantal ur faktiska val (två val, ingen mecenat)', () => {
+    const game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [] })
+    const { event } = checkEconomicCrisis(game, 10)
+    expect(event!.choices.map(c => c.id)).toEqual(['sell_star', 'take_loan'])
+    expect(event!.body).toContain('Det finns två vägar')
+  })
+
+  it('med säljbar spelare och aktiv mecenat: brödtexten räknar tre vägar', () => {
+    const mec = makeMecenat()
+    const game = makeGame({ economicCrisisState: crisisAtPhase3Start, mecenater: [mec] })
+    const { event } = checkEconomicCrisis(game, 10)
+    expect(event!.choices.map(c => c.id)).toEqual(['sell_star', 'take_loan', 'ask_mecenat'])
+    expect(event!.body).toContain('Det finns tre vägar')
+  })
+})

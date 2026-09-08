@@ -137,56 +137,79 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
       ? [...activeMecenater].sort((a, b) => b.happiness - a.happiness)[0]
       : undefined
 
+    // DOM_CHOICE_SELL_STAR_OCH_TRANSFERAVSLAG (2026-09-08): säljvalet byggdes
+    // tidigare ovillkorligt via bestPlayer?.id — saknades en säljbar
+    // icke-legendspelare fick eventResolver ett tomt removePlayerId och
+    // kastade. Roten är här: valet filtreras bort ur choices redan i
+    // generatorn, når aldrig resolvern utan removePlayerId. Brödtexten
+    // härleds ur choices.length, aldrig hårdkodat — och när säljspåret är
+    // tomt erkänner texten klämman istället för att tyst hoppa över den
+    // (ärlighetsregeln, inga falska/dolda vägar).
+    const choices: GameEvent['choices'] = []
+    if (bestPlayer) {
+      choices.push({
+        id: 'sell_star',
+        label: `Sälj ${bestName} (+350 000 kr)`,
+        // L4 (2026-08-26): D1 punkt 3s fält var byggda men ospårade tills
+        // nu (contentContract.ts:287) — sell_star är det enda av de tre
+        // valen som är irreversibelt (spelaren försvinner permanent), och
+        // etiketten visar bara vinsten. Utan en egen konsekvensrad ser
+        // valet ut som ett rent plus. consequenceLevel='costly' + ett
+        // namngivet resurs-costLabel (samma mönster som D1s eget exempel
+        // "Kostar en plats i truppen") gör den verkliga kostnaden synlig
+        // utan att märka ut valet som "fel" (facit-förbudet, O12).
+        consequenceLevel: 'costly',
+        costLabel: `Kostar ${bestName} i truppen`,
+        irreversible: true,
+        effect: { type: 'resolveEconomicCrisis', value: 350_000, crisisPhase: 'sold_star', removePlayerId: bestPlayer.id },
+      })
+    }
+    choices.push({
+      id: 'take_loan',
+      label: 'Kommunlån (+300 000 kr, löpande kostnad)',
+      effect: { type: 'resolveEconomicCrisis', value: 300_000, crisisPhase: 'loan' },
+    })
+    if (richestMecenat) {
+      choices.push({
+        id: 'ask_mecenat',
+        label: 'Be mecenaten (+200 000 kr, lojalitet −30)',
+        // targetMecenatId + mecenatHappinessDelta läses av
+        // resolveEconomicCrisis-hanteraren själv (eventResolver.ts) —
+        // INTE multiEffect/subEffects. resolveEconomicCrisis saknar en
+        // gren i multiEffect-undertypsswitchen (samma felklass 2.5/O2
+        // redan fångat två gånger denna vecka), så effekten hade blivit
+        // en tyst no-op om den lindats in i multiEffect istället.
+        effect: {
+          type: 'resolveEconomicCrisis' as const,
+          value: 200_000,
+          crisisPhase: 'mecenat',
+          targetMecenatId: richestMecenat.id,
+          mecenatHappinessDelta: -30,
+        },
+      })
+    }
+
+    const pathLetters = ['A', 'B', 'C']
+    const pathTexts: string[] = []
+    if (bestPlayer) pathTexts.push(`**${pathLetters[pathTexts.length]}. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.`)
+    pathTexts.push(`**${pathLetters[pathTexts.length]}. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.`)
+    if (richestMecenat) pathTexts.push(`**${pathLetters[pathTexts.length]}. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`)
+
+    const pathCountWord = pathTexts.length === 3 ? 'tre' : pathTexts.length === 2 ? 'två' : 'en'
+    const pathWord = pathTexts.length === 1 ? 'väg' : 'vägar'
+    const intro = bestPlayer
+      ? `Ekonomichefen har räknat. Det finns ${pathCountWord} ${pathWord}:`
+      : `Ekonomichefen har räknat. Ingen i truppen går att sälja utan att röra legendstatusen — kvar finns ${pathCountWord} ${pathWord}:`
+
     return {
       event: {
         id: eventId,
         type: 'criticalEconomy',
         title: 'Två vägar ur krisen',
-        body: richestMecenat
-          ? `Ekonomichefen har räknat. Det finns tre vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.\n\n**C. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`
-          : `Ekonomichefen har räknat. Det finns två vägar:\n\n**A. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.\n\n**B. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.`,
+        body: `${intro}\n\n${pathTexts.join('\n\n')}`,
         sender: { name: 'Johan Bergstedt', role: 'Ekonomichef' },
         relatedPlayerId: bestPlayer?.id,
-        choices: [
-          {
-            id: 'sell_star',
-            label: `Sälj ${bestName} (+350 000 kr)`,
-            // L4 (2026-08-26): D1 punkt 3s fält var byggda men ospårade tills
-            // nu (contentContract.ts:287) — sell_star är det enda av de tre
-            // valen som är irreversibelt (spelaren försvinner permanent), och
-            // etiketten visar bara vinsten. Utan en egen konsekvensrad ser
-            // valet ut som ett rent plus. consequenceLevel='costly' + ett
-            // namngivet resurs-costLabel (samma mönster som D1s eget exempel
-            // "Kostar en plats i truppen") gör den verkliga kostnaden synlig
-            // utan att märka ut valet som "fel" (facit-förbudet, O12).
-            consequenceLevel: 'costly',
-            costLabel: `Kostar ${bestName} i truppen`,
-            irreversible: true,
-            effect: { type: 'resolveEconomicCrisis', value: 350_000, crisisPhase: 'sold_star', removePlayerId: bestPlayer?.id },
-          },
-          {
-            id: 'take_loan',
-            label: 'Kommunlån (+300 000 kr, löpande kostnad)',
-            effect: { type: 'resolveEconomicCrisis', value: 300_000, crisisPhase: 'loan' },
-          },
-          ...(richestMecenat ? [{
-            id: 'ask_mecenat',
-            label: 'Be mecenaten (+200 000 kr, lojalitet −30)',
-            // targetMecenatId + mecenatHappinessDelta läses av
-            // resolveEconomicCrisis-hanteraren själv (eventResolver.ts) —
-            // INTE multiEffect/subEffects. resolveEconomicCrisis saknar en
-            // gren i multiEffect-undertypsswitchen (samma felklass 2.5/O2
-            // redan fångat två gånger denna vecka), så effekten hade blivit
-            // en tyst no-op om den lindats in i multiEffect istället.
-            effect: {
-              type: 'resolveEconomicCrisis' as const,
-              value: 200_000,
-              crisisPhase: 'mecenat',
-              targetMecenatId: richestMecenat.id,
-              mecenatHappinessDelta: -30,
-            },
-          }] : []),
-        ],
+        choices,
         resolved: false,
         priority: 'critical',
         systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
