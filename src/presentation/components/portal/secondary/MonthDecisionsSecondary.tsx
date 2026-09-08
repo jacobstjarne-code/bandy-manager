@@ -10,10 +10,9 @@ import { selectDashboardDecisions } from '../../../../domain/services/decisionTi
  * All text här är domens egen: rubriknivåns namn ("Denna månad", domens §2)
  * och räkneraden ("N väntar", domens ordagranna exempel). Ingen ny prosa.
  *
- * SKILT FRÅN deferred_queue-kortet (DeferredQueueSecondary): det räknar
- * `deferredDecisions` — beslut som throttlen trängt undan och som inte är
- * synliga alls. Det här räknar SYNLIGA månadsbeslut som ligger bakom det
- * primära kortet.
+ * SKILT FRÅN KF3:s diskreta väntanderad i PortalInboxCounter: den räknar
+ * undanträngda beslut. Det här räknar SYNLIGA månadsbeslut som ligger bakom
+ * det primära kortet.
  */
 export function MonthDecisionsSecondary({ game }: CardRenderProps) {
   const { batched } = selectDashboardDecisions(game)

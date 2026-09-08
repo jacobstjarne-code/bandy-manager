@@ -55,7 +55,6 @@ import { ActiveArcsSecondary } from '../../../presentation/components/portal/sec
 import { BoardObjectivesSecondary, getSecondaryBoardObjectives } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
-import { DeferredQueueSecondary } from '../../../presentation/components/portal/secondary/DeferredQueueSecondary'
 import { MonthDecisionsSecondary } from '../../../presentation/components/portal/secondary/MonthDecisionsSecondary'
 import { MustDeadlineWarning } from '../../../presentation/components/portal/secondary/MustDeadlineWarning'
 import { MemorySecondary } from '../../../presentation/components/portal/secondary/MemorySecondary'
@@ -386,24 +385,15 @@ const PORTAL_CARDS: DashboardCard[] = [
     triggers: [(game) => getUpcomingMustDeadlines(game).length > 0],
     Component: MustDeadlineWarning,
   },
-  // HIGH 11 — det ENDA batchade månadskortet ("3 väntar"). Vikt 46, strax
-  // över deferred_queue (45): båda är räknekort om beslut som väntar, och det
-  // SYNLIGA (månad, går att öppna nu) ska stå före det undanträngda (kön).
+  // HIGH 11 — det ENDA batchade månadskortet ("3 väntar"). KF3:s separata
+  // köantal visas numera som en diskret rad i PortalInboxCounter, inte som
+  // ett konkurrerande sekundärkort.
   {
     id: 'month_decisions_batch',
     tier: 'secondary',
     weight: 46,
     triggers: [(game) => selectDashboardDecisions(game).batched.length > 0],
     Component: MonthDecisionsSecondary,
-  },
-
-  // §D avbrottsbudget — beslut i kö, synliggörs på portalen
-  {
-    id: 'deferred_queue',
-    tier: 'secondary',
-    weight: 45,
-    triggers: [(game) => (game.deferredDecisions?.length ?? 0) > 0],
-    Component: DeferredQueueSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

@@ -657,7 +657,7 @@ export interface SaveGame {
 
   // Beslutsekonomi — throttling (decisionBudgetService)
   pendingDecisions?: unknown[]       // reserved for future use (deferred display)
-  deferredDecisions: GameEvent[]     // queue for decisions blocked by budget cap (max 10)
+  deferredDecisions: GameEvent[]     // FIFO queue for decisions waiting on the round budget
   lastRumorRound?: number            // round when last transfer rumor was generated (cooldown: 3)
   lastEventQueueRound?: number       // round when last community event was generated (cooldown: 2)
 

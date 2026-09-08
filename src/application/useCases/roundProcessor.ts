@@ -49,7 +49,6 @@ import { buildSystemRippleLedgerEntry } from '../../domain/services/orsakVerkanS
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { checkSeasonGoalHalfwayEvent } from '../../domain/services/seasonGoalService'
-import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLedgerService'
@@ -1017,9 +1016,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       return { previousAverageAttendance: prev, averageAttendance: newAvg }
     })(),
     ...(() => {
-      // Beslutsekonomi: only generate a weekly decision if budget allows.
-      // Note: canAddDecision uses game state BEFORE this round's events are merged,
-      // so allNewEvents count is not yet reflected — this is intentional (conservative).
+      // KF3: generate the weekly decision from its own cooldown/domain rules.
+      // The shared final partition reserves its slot and queues event overflow.
       const gameWithNewEvents: SaveGame = {
         ...game,
         pendingEvents: [
@@ -1028,10 +1026,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         ],
         resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [],
       }
-      const budgetOk = canAddDecision(gameWithNewEvents, nextMatchday)
-      const rawNewDecision = budgetOk
-        ? generateWeeklyDecision(gameWithNewEvents, nextMatchday)
-        : null
+      const rawNewDecision = generateWeeklyDecision(gameWithNewEvents, nextMatchday)
       // U5 forts (2026-08-20): systemhandelseBudgetOk gäller decisions också
       // (aggregat över events+decisions, samma säsongsbudget) — canAddDecision
       // ovan är en annan, redan befintlig spärr (allmän beslutskadens), inte
@@ -1281,8 +1276,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
 
-  updatedGame = maintainEventQueues(updatedGame, nextMatchday)
-
   // ── Förtroendepott — apply club finance bonus if earned this check-in ──────
   if (boardObjForetroendepott > 0) {
     updatedGame = {
@@ -1418,6 +1411,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const budgetedNewEvents = filterSystemhandelseBudget(allNewEvents, updatedGame, game.currentSeason, nextMatchday)
 
   updatedGame = appendNewlyResolvedStorylines(game, updatedGame, nextMatchday)
+
+  // KF3's post-ARCH choke point: all event producers, the weekly decision and
+  // the scene trigger have now written their state. Re-run the same canonical
+  // maintenance here immediately before the result is persisted.
+  updatedGame = maintainEventQueues(updatedGame, nextMatchday)
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: budgetedNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }

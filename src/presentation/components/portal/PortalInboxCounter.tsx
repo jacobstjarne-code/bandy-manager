@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { getActiveDecisionCount } from '../../../domain/services/decisionBudgetService'
+import {
+  getActiveDecisionCount,
+  getWaitingDecisionCount,
+} from '../../../domain/services/decisionBudgetService'
 
 interface Props {
   game: SaveGame
@@ -10,7 +13,7 @@ export function PortalInboxCounter({ game }: Props) {
   const navigate = useNavigate()
 
   const activeCount = getActiveDecisionCount(game)
-  const deferredCount = (game.deferredDecisions ?? []).length
+  const waitingCount = getWaitingDecisionCount(game)
   const inboxCount = (game.inbox ?? []).filter(i => !i.isRead).length
 
   const parts: Array<React.ReactNode> = []
@@ -18,8 +21,8 @@ export function PortalInboxCounter({ game }: Props) {
   if (activeCount > 0) {
     parts.push(<><strong>{activeCount}</strong> aktiv{activeCount === 1 ? '' : 'a'}</>)
   }
-  if (deferredCount > 0) {
-    parts.push(<><strong>{deferredCount}</strong> i kö</>)
+  if (waitingCount > 0) {
+    parts.push(<><strong>{waitingCount}</strong> beslut väntar</>)
   }
   if (inboxCount > 0) {
     parts.push(<><strong>{inboxCount}</strong> notis{inboxCount === 1 ? '' : 'er'} i inboxen</>)

@@ -1,116 +1,100 @@
 /**
- * decisionBudgetService — throttling gate for pending decisions.
+ * decisionBudgetService — KF3's actionable interruption budget.
  *
- * Prevents decision-overload by capping the number of active decisions
- * the player faces simultaneously. Max 3 active (season 1 round 1: max 1).
- *
- * "Active decisions" = unresolved pendingEvents WITH choices + pendingWeeklyDecision.
- * Atmospheric/informational events (no choices) bypass the budget — "banden passerar oräknade".
- *
- * When budget is full, tryQueueDecision defers to deferredDecisions (max 10, sorted oldest-first).
- * When an active decision resolves, promoteFromQueue lifts the oldest deferred one.
+ * The budget limits decisions, never narrative/informational bands. Prior
+ * deferred events are considered before newly generated events, deadlines are
+ * protected, and no queued decision is dropped.
  */
 
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, DecisionTier } from '../entities/GameEvent'
-import { isMustDecision, getEventDecisionTier } from './decisionTierService'
+import { classifyInterrupt, isPendingSceneActionable } from './interruptClassifier'
 
-export const MAX_ACTIVE_DECISIONS = 3
-export const MAX_ACTIVE_SEASON_1_ROUND_1 = 1
-export const MAX_DEFERRED_DECISIONS = 10
+export const MAX_DECISIONS_PER_ROUND = 3
+/** Kept as an API alias for older callers. */
+export const MAX_ACTIVE_DECISIONS = MAX_DECISIONS_PER_ROUND
 
-/**
- * Returns the number of active (unresolved) actionable decisions the player currently has.
- * Only events with choices count — informational/atmospheric events bypass the budget.
- */
-export function getActiveDecisionCount(game: SaveGame): number {
-  const pendingEventsCount = (game.pendingEvents ?? []).filter(e => !e.resolved && (e.choices?.length ?? 0) > 0).length
-  const weeklyDecisionCount = game.pendingWeeklyDecision ? 1 : 0
-  return pendingEventsCount + weeklyDecisionCount
+function isActionableEvent(event: GameEvent): boolean {
+  return !event.resolved && classifyInterrupt({
+    category: 'event',
+    hasChoices: Array.isArray(event.choices) && event.choices.length > 0,
+  }) === 'actionable'
 }
 
 /**
- * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): antalet aktiva beslut
- * SOM THROTTLEN RÄKNAR. Måste-nivån (kontraktsdeadline, licenskrav) är
- * undantagen — "En deadline kan inte vänta på budget." Bakgrundsnivån
- * (press, orten, småval) är undantagen av samma skäl fast åt andra hållet
- * (KLARGÖRANDE 2026-08-30/31, doktrinfilen): den tar aldrig en dashboard-
- * yta och ska därför inte heller kunna TRÄNGA UNDAN en synlig månads-yta.
- * Mätt i simulering (HIGH 11-rapporten): bakgrundshändelser nådde 3
- * samtidiga — hela taket — och kunde svälta ut månadskön inom en säsong.
- *
- * Varför en EGEN funktion i stället för att ändra getActiveDecisionCount:
- * den funktionen svarar på en annan fråga ("hur många beslut har spelaren
- * framför sig") och läses av två UI-räknare (PortalActiveBudget,
- * PortalInboxCounter) samt decisionFatigueService. Ett måste- eller
- * bakgrundsevent ÄR ett beslut spelaren har framför sig — det ska synas i
- * räknaren; det ska bara inte kunna tränga undan andra beslut ur budgeten.
+ * GameEvent's canonical field is deadlineRound. The fallback keeps legacy
+ * expiresRound saves safe without adding a second deadline concept.
  */
+function getDeadlineRound(event: GameEvent): number | undefined {
+  return event.deadlineRound
+    ?? (event as GameEvent & { expiresRound?: number }).expiresRound
+}
+
+function getSingularDecisionCount(game: SaveGame): number {
+  return (game.pendingWeeklyDecision ? 1 : 0)
+    + (isPendingSceneActionable(game) ? 1 : 0)
+}
+
+/**
+ * Returns active event cards plus the weekly decision. Scene reservation is
+ * deliberately resolved only inside the budget/waiting selectors: coffee-room
+ * construction itself reads this active count for its fatigue copy.
+ */
+export function getActiveDecisionCount(game: SaveGame): number {
+  const pendingEventsCount = (game.pendingEvents ?? []).filter(isActionableEvent).length
+  return pendingEventsCount + (game.pendingWeeklyDecision ? 1 : 0)
+}
+
+/** Compatibility selector: KF3 now has one definition of actionable. */
 export function getThrottledActiveDecisionCount(game: SaveGame): number {
-  const pendingEventsCount = (game.pendingEvents ?? [])
-    .filter(e => !e.resolved && (e.choices?.length ?? 0) > 0)
-    .filter(e => {
-      const tier = getEventDecisionTier(e)
-      return tier !== 'must' && tier !== 'background'
-    })
-    .length
-  const weeklyDecisionCount = game.pendingWeeklyDecision ? 1 : 0
-  return pendingEventsCount + weeklyDecisionCount
+  return getActiveDecisionCount(game)
 }
 
 /**
  * Returns the number of decisions waiting in the deferred queue.
  */
 export function getDeferredDecisionCount(game: SaveGame): number {
-  return (game.deferredDecisions ?? []).length
+  return (game.deferredDecisions ?? []).filter(isActionableEvent).length
 }
 
 /**
- * Returns true if a new decision can be added to the queue.
- * Season 1 Round 1 has a stricter limit of 1 active decision.
- *
- * HIGH 11: `tier` är valfri och defaultar till 'month' — samtliga fyra
- * befintliga anropsställen (roundProcessor.ts:s veckobeslut,
- * mediaProcessor.ts:s transferrykte, eventProcessor.ts:s community-event,
- * mecenatmiddag och burnout-lättnad) grindar icke-måste-beslut, så
- * defaulten bevarar deras beteende exakt. Ett 'must' passerar alltid:
- * domen, ordagrant — "Måste-nivån är UNDANTAGEN throttlen ... defereras
- * aldrig."
- *
- * HIGH 11-följdfix (2026-08-30/31): 'background' passerar av samma skäl,
- * åt andra hållet — den tar aldrig en dashboard-yta och ska därför inte
- * kunna blockeras AV, eller själv blockera, budgeten. Inget nuvarande
- * anropsställe skickar 'background' explicit (eventProcessor.ts:81
- * genererar en BLANDAD batch av flera tiers och kan därför inte tier-
- * taggas som en enhet — det är `partitionInterruptBudget`, inte den här
- * funktionen, som gör bakgrunds-undantaget verkligt i produktion, se dess
- * docstring). Grenen finns ändå här för att signaturens `DecisionTier`-
- * kontrakt ska vara symmetriskt och sant oavsett anropsställe.
+ * Decisions not currently surfaced as ordinary event cards. Normally this is
+ * exactly the deferred FIFO. If protected deadlines consume the whole budget,
+ * a retained weekly decision/actionable scene is also waiting.
  */
+export function getWaitingDecisionCount(game: SaveGame): number {
+  const deferred = getDeferredDecisionCount(game)
+  const singular = getSingularDecisionCount(game)
+  if (singular === 0) return deferred
+
+  const currentMatchday = game.currentMatchday ?? 0
+  const imminent = (game.pendingEvents ?? [])
+    .filter(isActionableEvent)
+    .filter(event => {
+      const deadline = getDeadlineRound(event)
+      return deadline != null && deadline <= currentMatchday + 1
+    })
+    .length
+  const singularOverflow = Math.min(
+    singular,
+    Math.max(0, imminent + singular - MAX_DECISIONS_PER_ROUND),
+  )
+  return deferred + singularOverflow
+}
+
+/** Compatibility gate for isolated callers; production uses the final partition. */
 export function canAddDecision(game: SaveGame, nextRound: number, tier: DecisionTier = 'month'): boolean {
-  if (tier === 'must' || tier === 'background') return true
-  const limit = ((game.seasonSummaries?.length ?? 0) === 0 && nextRound === 1)
-    ? MAX_ACTIVE_SEASON_1_ROUND_1
-    : MAX_ACTIVE_DECISIONS
-  return getThrottledActiveDecisionCount(game) < limit
+  void nextRound
+  void tier
+  return getActiveDecisionCount(game) < MAX_DECISIONS_PER_ROUND
 }
 
-/**
- * Tries to add a GameEvent as an active decision. If the budget is full,
- * the event is deferred to deferredDecisions (capped at MAX_DEFERRED_DECISIONS,
- * oldest dropped if overflow).
- */
+/** Adds an event and applies the same canonical partition immediately. */
 export function tryQueueDecision(game: SaveGame, event: GameEvent): SaveGame {
-  if (canAddDecision(game, game.currentMatchday ?? 1, isMustDecision(event) ? 'must' : 'month')) {
-    return { ...game, pendingEvents: [...(game.pendingEvents ?? []), event] }
-  }
-  const withTimestamp = { ...event, deferredAt: game.currentMatchday ?? 1 }
-  const newDeferred = [...(game.deferredDecisions ?? []), withTimestamp]
-    .sort((a, b) => (a.deferredAt ?? 0) - (b.deferredAt ?? 0))
-  const capped = newDeferred.length > MAX_DEFERRED_DECISIONS
-    ? newDeferred.slice(newDeferred.length - MAX_DEFERRED_DECISIONS)
-    : newDeferred
-  return { ...game, deferredDecisions: capped }
+  return applyDecisionBudget({
+    ...game,
+    pendingEvents: [...(game.pendingEvents ?? []), event],
+  }, game.currentMatchday ?? 0)
 }
 
 export interface InterruptBudgetPartition {
@@ -118,64 +102,59 @@ export interface InterruptBudgetPartition {
   nonActionable: GameEvent[]
   /** Det som ska ligga i pendingEvents efter throttlen. */
   surface: GameEvent[]
-  /** Det som trängs undan till deferredDecisions (ännu ocappat). */
+  /** Det som trängs undan till deferredDecisions. */
   deferred: GameEvent[]
 }
 
 /**
- * KF3-avbrottsbudgeten som REN funktion (extraherad ur roundProcessor.ts
- * 2026-08-31 för HIGH 11). Det här — inte tryQueueDecision, som saknar
- * produktionsanropsställe — är kodbasens faktiska deferrings-mekanism, och
- * därför det enda ställe där måste- och bakgrunds-undantaget kan vara
- * verkligt.
- *
- * Ordningen i `surface` är avsiktlig: måste och bakgrund först (ingendera
- * konkurrerar om den synliga dashboard-platsen — måste FÅR den alltid,
- * bakgrund får den ALDRIG — så ingen av dem ska heller kunna tränga undan
- * ett månadsbeslut ur budgeten), sedan imminenta (expiresRound ≤ nästa
- * omgång + 1), sedan så mycket av den flexibla kön som budgeten rymmer.
- * Måste och bakgrund räknas ALDRIG mot MAX_ACTIVE_DECISIONS och hamnar
- * aldrig i `deferred` (2026-08-31, KLARGÖRANDE i doktrinfilen — bakgrunds-
- * händelser mätta till 3 samtidiga, hela taket, i HIGH 11-simuleringen).
- * Bakgrund resolveras där den hör hemma (Granska, presskonferensskärmen),
- * inte via dashboardens budget — att defereras den hade bara skjutit upp
- * samma icke-problem.
+ * Pure KF3 partition. `reservedSlots` represents the singular weekly decision
+ * and actionable scene. Imminent deadlines always surface; flexible events use
+ * the remaining slots in deadline order, with stable FIFO for equal deadlines.
  */
 export function partitionInterruptBudget(
   allPending: GameEvent[],
-  nextMatchday: number,
+  currentMatchday: number,
+  reservedSlots = 0,
 ): InterruptBudgetPartition {
-  const allActionable = allPending.filter(e => (e.choices?.length ?? 0) > 0)
-  const nonActionable = allPending.filter(e => (e.choices?.length ?? 0) === 0)
+  const actionable = allPending.filter(isActionableEvent)
+  const nonActionable = allPending.filter(event => !isActionableEvent(event))
 
-  const exempt = allActionable.filter(e => {
-    const tier = getEventDecisionTier(e)
-    return tier === 'must' || tier === 'background'
-  })
-  const actionable = allActionable.filter(e => {
-    const tier = getEventDecisionTier(e)
-    return tier !== 'must' && tier !== 'background'
-  })
-
-  // Imminent-skydd: event med expiresRound ≤ nextMatchday+1 surfar alltid.
-  // (expiresRound finns ej på GameEvent ännu — imminentSet är alltid tom tills tillagt.)
-  const expiresRoundOf = (e: GameEvent): number | undefined =>
-    (e as unknown as { expiresRound?: number }).expiresRound
+  // Deadline-skydd: event vars deadline infaller senast nästa omgång surfar alltid.
   const imminentSet = new Set(
     actionable
-      .filter(e => expiresRoundOf(e) != null && expiresRoundOf(e)! <= nextMatchday + 1)
+      .filter(e => getDeadlineRound(e) != null && getDeadlineRound(e)! <= currentMatchday + 1)
       .map(e => e.id)
   )
   const imminent = actionable.filter(e => imminentSet.has(e.id))
   const flexible = actionable
     .filter(e => !imminentSet.has(e.id))
-    .sort((a, b) => (expiresRoundOf(a) ?? Infinity) - (expiresRoundOf(b) ?? Infinity))
+    .sort((a, b) => (getDeadlineRound(a) ?? Infinity) - (getDeadlineRound(b) ?? Infinity))
 
-  const budget = Math.max(0, MAX_ACTIVE_DECISIONS - imminent.length)
+  const budget = Math.max(0, MAX_DECISIONS_PER_ROUND - reservedSlots - imminent.length)
   return {
     nonActionable,
-    surface: [...exempt, ...imminent, ...flexible.slice(0, budget)],
+    surface: [...imminent, ...flexible.slice(0, budget)],
     deferred: flexible.slice(budget),
+  }
+}
+
+/** Applies the pure partition to all three decision-bearing SaveGame fields. */
+export function applyDecisionBudget(game: SaveGame, currentMatchday: number): SaveGame {
+  const priorDeferred = game.deferredDecisions ?? []
+  const combined = [...priorDeferred, ...(game.pendingEvents ?? [])]
+  const { nonActionable, surface, deferred } = partitionInterruptBudget(
+    combined,
+    currentMatchday,
+    getSingularDecisionCount(game),
+  )
+
+  return {
+    ...game,
+    pendingEvents: [...surface, ...nonActionable],
+    deferredDecisions: deferred.map(event => ({
+      ...event,
+      deferredAt: event.deferredAt ?? currentMatchday,
+    })),
   }
 }
 
@@ -184,7 +163,6 @@ export function partitionInterruptBudget(
  * No-op if deferredDecisions is empty.
  */
 export function promoteFromQueue(game: SaveGame): SaveGame {
-  const [next, ...rest] = game.deferredDecisions ?? []
-  if (!next) return game
-  return { ...game, pendingEvents: [...(game.pendingEvents ?? []), next], deferredDecisions: rest }
+  if ((game.deferredDecisions ?? []).length === 0) return game
+  return applyDecisionBudget(game, game.currentMatchday ?? 0)
 }

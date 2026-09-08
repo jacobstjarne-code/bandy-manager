@@ -13,6 +13,7 @@
  */
 
 import type { SaveGame } from '../entities/SaveGame'
+import { getCoffeeRoomScene } from './coffeeRoomService'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -69,6 +70,30 @@ export function classifyInterrupt(item: InterruptItem): InterruptKind {
     default:
       return 'informational'
   }
+}
+
+/**
+ * Resolves whether the concrete pending scene in a save requires a player
+ * choice. PendingScene deliberately stores only the scene id, so this is the
+ * single adapter between scene state and the generic interrupt classifier.
+ */
+export function isPendingSceneActionable(game: SaveGame): boolean {
+  const sceneId = game.pendingScene?.sceneId
+  if (!sceneId) return false
+
+  if (sceneId === 'sunday_training' || sceneId === 'valet') {
+    return classifyInterrupt({ category: 'scene', sceneChoices: ['choice'] }) === 'actionable'
+  }
+
+  if (sceneId === 'coffee_room') {
+    const hasQuestion = getCoffeeRoomScene(game)?.question != null
+    return classifyInterrupt({
+      category: 'scene',
+      sceneChoices: hasQuestion ? ['choice'] : [],
+    }) === 'actionable'
+  }
+
+  return false
 }
 
 // ── Queue measurement ────────────────────────────────────────────────────────
@@ -159,21 +184,9 @@ export function countPendingInterrupts(game: SaveGame): Record<InterruptCategory
 
   // ── scene ─────────────────────────────────────────────────────────────────
   if (game.pendingScene) {
-    const choices = (game.sceneChoices != null)
-      // sceneChoices is Record<string, string> — a pending scene that already
-      // has a choice recorded counts as resolved; otherwise actionable if scene
-      // has choices at all. We treat pendingScene as potentially actionable
-      // since we can't cheaply inspect its choice list without importing
-      // sceneTriggerService. Conservative: mark as informational unless
-      // sceneChoices record is empty (meaning no choice yet made).
-      ? Object.keys(game.sceneChoices)
-      : []
-    const alreadyChosen = choices.includes(game.pendingScene.sceneId)
     tally('scene', {
       category: 'scene',
-      // If no choice has been made for this scene yet, treat as potentially
-      // actionable — worst-case over-count, safe for Design's audit purpose.
-      sceneChoices: alreadyChosen ? [] : ['pending'],
+      sceneChoices: isPendingSceneActionable(game) ? ['pending'] : [],
     })
   }
 

@@ -157,11 +157,6 @@ export function gameFlowActions(get: Get, set: Set) {
       const communityStandingBefore = game.communityStanding ?? 50
       const inboxCountBefore = game.inbox.length
 
-      // Snapshot pendingEvents before any advance — used after auto-loops to prevent
-      // intermediate cup-round events from stacking (each auto-iteration adds events,
-      // resulting in 7+ decisions piled up at the first managed-fixture round).
-      const pendingEventsBeforeAdvance = game.pendingEvents ?? []
-
       let result = advanceToNextEvent(game)
       const firstRoundPlayed = result.roundPlayed
 
@@ -192,21 +187,9 @@ export function gameFlowActions(get: Get, set: Set) {
         autoLoops++
       }
 
-      // If we auto-looped, restore pendingEvents to original (unresolved) + only last iteration's
-      // new events. Prevents intermediate cup-round event generation from stacking.
-      if (autoLoops > 0) {
-        const lastIterationNewEvents = result.pendingEvents ?? []
-        result = {
-          ...result,
-          game: {
-            ...result.game,
-            pendingEvents: [
-              ...pendingEventsBeforeAdvance.filter(e => !e.resolved),
-              ...lastIterationNewEvents,
-            ],
-          },
-        }
-      }
+      // KF3 owns decision pressure across auto-advanced cup rounds. Earlier code
+      // rebuilt pendingEvents from only the final iteration and silently lost
+      // intermediate decisions; the canonical queue now preserves and defers them.
 
       const multiWeekPeriod = buildMultiWeekPeriod(autoLoops, firstRoundPlayed, result.roundPlayed, result.game.financeLog ?? [])
 

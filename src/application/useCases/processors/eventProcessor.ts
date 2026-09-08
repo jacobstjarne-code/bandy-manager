@@ -6,9 +6,7 @@ import type { Player } from '../../../domain/entities/Player'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
 import {
-  canAddDecision,
-  MAX_DEFERRED_DECISIONS,
-  partitionInterruptBudget,
+  applyDecisionBudget,
 } from '../../../domain/services/decisionBudgetService'
 import { isInCooldown } from '../../../domain/services/sourceCooldownService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
@@ -91,17 +89,8 @@ export function maintainEventQueues(game: SaveGame, nextMatchday: number): SaveG
   }
 
   // KF3: prior deferred decisions are promoted FIFO before this round's pool.
-  const priorDeferred = updatedGame.deferredDecisions ?? []
-  const combinedPending = [...priorDeferred, ...(updatedGame.pendingEvents ?? [])]
-  const { nonActionable, surface, deferred: newDeferred } =
-    partitionInterruptBudget(combinedPending, nextMatchday)
-  if (newDeferred.length > 0 || priorDeferred.length > 0) {
-    updatedGame = {
-      ...updatedGame,
-      pendingEvents: [...nonActionable, ...surface],
-      deferredDecisions: newDeferred.slice(0, MAX_DEFERRED_DECISIONS),
-    }
-  }
+  // Weekly decisions and actionable scenes reserve their own budget slots.
+  updatedGame = applyDecisionBudget(updatedGame, nextMatchday)
 
   // HIGH 9: a promoted play-through card must still point at an injured player.
   const beforePending = updatedGame.pendingEvents ?? []
@@ -374,11 +363,12 @@ export function processGameEvents(
 
   const newEvents = generatePostAdvanceEvents(game, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
 
-  // Beslutsekonomi: community events get a 2-round cooldown + budget gate
+  // Community events keep their 2-round source cooldown. Actionable overflow
+  // is generated truthfully and queued by the shared final KF3 partition.
   const EVENT_QUEUE_COOLDOWN = 2
   const lastEventQueueRoundPrev = game.lastEventQueueRound ?? 0
   const eventQueueCooledDown = nextMatchday - lastEventQueueRoundPrev >= EVENT_QUEUE_COOLDOWN
-  const communityEvents = (eventQueueCooledDown && canAddDecision(game, nextMatchday))
+  const communityEvents = eventQueueCooledDown
     ? generateEvents(game, nextMatchday, localRand)
     : []
   const lastEventQueueRound: number | undefined = (communityEvents.length > 0)
@@ -428,14 +418,14 @@ export function processGameEvents(
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
   if (schoolEvent) gameEvents.push(schoolEvent)
 
-  // DREAM-017: Mecenatens middag (omgång 20) — budget gate + source cooldown
-  if (nextMatchday === 20 && canAddDecision(game, nextMatchday) && !isInCooldown(game.sourceCooldowns ?? {}, 'mecenat')) {
+  // DREAM-017: Mecenatens middag (omgång 20) — source cooldown; KF3 queues overflow.
+  if (nextMatchday === 20 && !isInCooldown(game.sourceCooldowns ?? {}, 'mecenat')) {
     const dinnerEvent = generateDinnerEvent(game, nextMatchday)
     if (dinnerEvent) gameEvents.push(dinnerEvent)
   }
 
   // O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23): burnout-relief —
-  // budget gate + source cooldown, samma mönster som mecenatens middag ovan.
+  // source cooldown; KF3 queues actionable overflow after all producers.
   // Aldrig i 'frisk'-zonen (ingen effekt att lätta på), aldrig oftare än
   // var 6:e omgång (SOURCE_COOLDOWN_ROUNDS.burnout) så länge zonen håller i sig.
   const managerProfile = game.managerProfile
@@ -451,7 +441,6 @@ export function processGameEvents(
     (burnoutZone === 'markbar' || burnoutZone === 'hog') &&
     !burnoutReliefQueued &&
     !burnoutCeilingShouldQueue &&
-    canAddDecision(game, nextMatchday) &&
     !isInCooldown(game.sourceCooldowns ?? {}, 'burnout')
   ) {
     gameEvents.push(generateBurnoutReliefEvent(
@@ -477,11 +466,11 @@ export function processGameEvents(
 
   // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
   // nyhetstretmillen. Samma mönster som burnout-relief och mecenatens middag —
-  // budget gate + source cooldown ('orten', 6 omgångar). Domens "synligt val,
+  // source cooldown ('orten', 6 omgångar); KF3 owns the shared budget. Domens "synligt val,
   // inte dränering": kostnaden är ALDRIG en automatisk avdragspost, alltid ett
   // kort spelaren svarar på. Genereras aldrig för en klubb under rykte 80
   // (staleness-multiplikatorn är då konstant 1,0 → inga kandidater).
-  if (canAddDecision(game, nextMatchday) && !isInCooldown(game.sourceCooldowns ?? {}, 'orten')) {
+  if (!isInCooldown(game.sourceCooldowns ?? {}, 'orten')) {
     const renewalEvent = generateCommunityRenewalEvent(game, nextMatchday)
     if (renewalEvent) gameEvents.push(renewalEvent)
   }

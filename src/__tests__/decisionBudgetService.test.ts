@@ -4,7 +4,7 @@
  * Verifierar:
  * 1. tryQueueDecision lägger i pendingEvents när budget tillgänglig
  * 2. tryQueueDecision lägger i deferredDecisions när budget full
- * 3. deferredDecisions capas vid 10 (äldsta droppas)
+ * 3. deferredDecisions är ocappad — inget beslut tappas
  * 4. promoteFromQueue lyfter första från kön till pendingEvents
  */
 
@@ -15,8 +15,9 @@ import {
   canAddDecision,
   getActiveDecisionCount,
   getThrottledActiveDecisionCount,
+  getWaitingDecisionCount,
+  applyDecisionBudget,
   partitionInterruptBudget,
-  MAX_DEFERRED_DECISIONS,
 } from '../domain/services/decisionBudgetService'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { GameEvent, GameEventType } from '../domain/entities/GameEvent'
@@ -113,7 +114,7 @@ describe('tryQueueDecision', () => {
     expect(result.deferredDecisions).toContainEqual({ ...event, deferredAt: game.currentMatchday ?? 1 })
   })
 
-  it('lägger event i deferredDecisions i säsong 1 omg 1 om 1 aktiv', () => {
+  it('använder samma trebudget i säsong 1 omgång 1', () => {
     const game = makeGame({
       currentSeason: 1,
       currentMatchday: 1,
@@ -122,14 +123,14 @@ describe('tryQueueDecision', () => {
     })
     const event = makeEvent('evt4')
     const result = tryQueueDecision(game, event)
-    expect(result.pendingEvents).toHaveLength(1)
-    expect(result.deferredDecisions).toContainEqual({ ...event, deferredAt: 1 })
+    expect(result.pendingEvents).toHaveLength(2)
+    expect(result.deferredDecisions).toHaveLength(0)
   })
 })
 
-describe('tryQueueDecision — cap vid 10', () => {
-  it('cappar deferredDecisions vid MAX_DEFERRED_DECISIONS och droppar äldsta', () => {
-    const existingDeferred = Array.from({ length: MAX_DEFERRED_DECISIONS }, (_, i) =>
+describe('tryQueueDecision — inget tappas', () => {
+  it('bevarar hela kön även när fler än tio beslut väntar', () => {
+    const existingDeferred = Array.from({ length: 10 }, (_, i) =>
       makeEvent(`old_${i}`)
     )
     const game = makeGame({
@@ -142,17 +143,15 @@ describe('tryQueueDecision — cap vid 10', () => {
     })
     const newEvent = makeEvent('newest')
     const result = tryQueueDecision(game, newEvent)
-    expect(result.deferredDecisions).toHaveLength(MAX_DEFERRED_DECISIONS)
-    // Äldsta droppat — 'old_0' ska inte finnas
-    expect(result.deferredDecisions.map(e => e.id)).not.toContain('old_0')
-    // Nyaste ska finnas
-    expect(result.deferredDecisions.map(e => e.id)).toContain('newest')
+    const allIds = [...result.pendingEvents, ...result.deferredDecisions].map(e => e.id)
+    expect(allIds).toHaveLength(14)
+    expect(allIds).toContain('old_0')
+    expect(allIds).toContain('newest')
   })
 })
 
-// ── HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) ─────────────────────
-// "Måste-nivån är UNDANTAGEN throttlen — den surfar alltid som det primära
-// kortet, throttlas aldrig bakom 3-taket, defereras aldrig."
+// Latest ratification of KF3 (2026-09-08): tier does not redefine actionable;
+// deadlineRound is the sole reason an event may exceed the cap.
 
 function makeTypedEvent(id: string, type: GameEventType): GameEvent {
   return {
@@ -176,37 +175,40 @@ function fullBudgetGame(): SaveGame {
   })
 }
 
-describe('HIGH 11 — måste-nivån undantagen throttlen', () => {
-  it('canAddDecision: månad nekas vid fullt tak, måste släpps alltid igenom', () => {
+describe('KF3 — en gemensam actionable-budget', () => {
+  it('canAddDecision nekar alla tiers vid fullt tak', () => {
     const game = fullBudgetGame()
     expect(canAddDecision(game, 5)).toBe(false)
     expect(canAddDecision(game, 5, 'month')).toBe(false)
-    expect(canAddDecision(game, 5, 'must')).toBe(true)
+    expect(canAddDecision(game, 5, 'must')).toBe(false)
   })
 
-  it('canAddDecision: måste passerar även säsong 1 omgång 1 (tak = 1)', () => {
+  it('använder trebudgeten även i säsong 1 omgång 1', () => {
     const game = makeGame({
       currentSeason: 1,
       currentMatchday: 1,
       seasonSummaries: [],
       pendingEvents: [makeTypedEvent('a', 'sponsorOffer')],
     })
-    expect(canAddDecision(game, 1)).toBe(false)
+    expect(canAddDecision(game, 1)).toBe(true)
     expect(canAddDecision(game, 1, 'must')).toBe(true)
   })
 
-  it('tryQueueDecision: ett kontraktskrav blir AKTIVT trots fullt tak — aldrig deferrerat', () => {
+  it('tryQueueDecision: ett imminent kontraktskrav surfar och skjuter undan en flexibel post', () => {
     const game = fullBudgetGame()
-    const must = makeTypedEvent('contract', 'contractRequest')
+    const must = { ...makeTypedEvent('contract', 'contractRequest'), deadlineRound: 6 }
     const result = tryQueueDecision(game, must)
     expect(result.pendingEvents.map(e => e.id)).toContain('contract')
-    expect(result.deferredDecisions).toHaveLength(0)
+    expect(result.deferredDecisions).toHaveLength(1)
   })
 
-  it('tryQueueDecision: ett licenskrav blir AKTIVT trots fullt tak', () => {
-    const result = tryQueueDecision(fullBudgetGame(), makeTypedEvent('lic', 'licenseHandlingsplan'))
+  it('tryQueueDecision: ett imminent licenskrav skyddas av deadline, inte av tier', () => {
+    const result = tryQueueDecision(fullBudgetGame(), {
+      ...makeTypedEvent('lic', 'licenseHandlingsplan'),
+      deadlineRound: 6,
+    })
     expect(result.pendingEvents.map(e => e.id)).toContain('lic')
-    expect(result.deferredDecisions).toHaveLength(0)
+    expect(result.deferredDecisions).toHaveLength(1)
   })
 
   it('tryQueueDecision: ett månadsbeslut deferreras fortfarande vid fullt tak (throttlen står kvar)', () => {
@@ -215,7 +217,7 @@ describe('HIGH 11 — måste-nivån undantagen throttlen', () => {
     expect(result.deferredDecisions.map(e => e.id)).toContain('sponsor')
   })
 
-  it('måste räknas inte mot budgeten — ett aktivt kontraktskrav blockerar inte nya månadsbeslut', () => {
+  it('alla event med val räknas oavsett tier', () => {
     const game = makeGame({
       pendingEvents: [
         makeTypedEvent('must1', 'contractRequest'),
@@ -223,26 +225,21 @@ describe('HIGH 11 — måste-nivån undantagen throttlen', () => {
         makeTypedEvent('a', 'sponsorOffer'),
       ],
     })
-    // Spelaren SER tre beslut (UI-räknaren är oförändrad) ...
     expect(getActiveDecisionCount(game)).toBe(3)
-    // ... men bara ett av dem tär på budgeten.
-    expect(getThrottledActiveDecisionCount(game)).toBe(1)
-    expect(canAddDecision(game, 5)).toBe(true)
+    expect(getThrottledActiveDecisionCount(game)).toBe(3)
+    expect(canAddDecision(game, 5)).toBe(false)
   })
 })
 
-// KLARGÖRANDE 2026-08-30/31 (doktrinfilen): bakgrundsnivån är undantagen
-// throttlen av samma skäl som måste, fast åt andra hållet — den tar aldrig
-// en dashboard-yta och ska därför inte kunna TRÄNGA UNDAN en synlig
-// månads-yta. Mätt i HIGH 11-simuleringen: bakgrundshändelser nådde 3
-// samtidiga (hela taket) och kunde svälta ut månadskön inom en säsong.
-describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttlen', () => {
-  it('canAddDecision: bakgrund passerar alltid, oavsett tak', () => {
+// Background remains a presentation tier. An event in it with choices is still
+// an actionable interruption and therefore uses the same queue.
+describe('KF3 — event med val är actionable även i background-tier', () => {
+  it('canAddDecision nekar background vid fullt tak', () => {
     const game = fullBudgetGame()
-    expect(canAddDecision(game, 5, 'background')).toBe(true)
+    expect(canAddDecision(game, 5, 'background')).toBe(false)
   })
 
-  it('bakgrund räknas inte mot budgeten — tre aktiva bakgrundsevent blockerar inte ett nytt månadsbeslut', () => {
+  it('bakgrund med val räknas mot budgeten', () => {
     const game = makeGame({
       pendingEvents: [
         makeTypedEvent('bg1', 'communityEvent'),
@@ -251,14 +248,12 @@ describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttle
         makeTypedEvent('a', 'sponsorOffer'),
       ],
     })
-    // Spelaren SER fyra beslut (UI-räknaren är oförändrad) ...
     expect(getActiveDecisionCount(game)).toBe(4)
-    // ... men bara ett av dem (månadsbeslutet) tär på budgeten.
-    expect(getThrottledActiveDecisionCount(game)).toBe(1)
-    expect(canAddDecision(game, 5)).toBe(true)
+    expect(getThrottledActiveDecisionCount(game)).toBe(4)
+    expect(canAddDecision(game, 5)).toBe(false)
   })
 
-  it('partitionInterruptBudget: bakgrund surfar alltid, tränger aldrig undan ett månadsbeslut och defereras aldrig', () => {
+  it('partitionInterruptBudget använder samma FIFO för background med val', () => {
     const pending = [
       makeTypedEvent('bg1', 'communityEvent'),
       makeTypedEvent('bg2', 'fanLetter'),
@@ -266,14 +261,69 @@ describe('HIGH 11-följdfix (2026-08-31) — bakgrundsnivån undantagen throttle
       ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer')),
     ]
     const { surface, deferred } = partitionInterruptBudget(pending, 5)
-    // Alla tre bakgrundsevent surfar, plus de tre första månadsplatserna.
-    expect(surface.map(e => e.id)).toEqual(['bg1', 'bg2', 'bg3', 'a', 'b', 'c'])
-    // Bara den fjärde MÅNADS-posten trängs undan — inget bakgrundsevent.
-    expect(deferred.map(e => e.id)).toEqual(['d'])
+    expect(surface.map(e => e.id)).toEqual(['bg1', 'bg2', 'bg3'])
+    expect(deferred.map(e => e.id)).toEqual(['a', 'b', 'c', 'd'])
   })
 })
 
 describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors faktiska mekanism)', () => {
+  it('5 actionable med en imminent ger 3 surfade och 2 deferrade; de 2 surfar nästa omgång', () => {
+    const events = [
+      makeTypedEvent('later_1', 'sponsorOffer'),
+      { ...makeTypedEvent('imminent', 'contractRequest'), deadlineRound: 6 },
+      { ...makeTypedEvent('sooner_1', 'sponsorOffer'), deadlineRound: 9 },
+      { ...makeTypedEvent('sooner_2', 'sponsorOffer'), deadlineRound: 10 },
+      makeTypedEvent('later_2', 'sponsorOffer'),
+    ]
+    const first = applyDecisionBudget(makeGame({ pendingEvents: events }), 5)
+
+    expect(first.pendingEvents.map(event => event.id)).toEqual(['imminent', 'sooner_1', 'sooner_2'])
+    expect(first.deferredDecisions.map(event => event.id)).toEqual(['later_1', 'later_2'])
+
+    const next = applyDecisionBudget({
+      ...first,
+      currentMatchday: 6,
+      pendingEvents: [],
+    }, 6)
+    expect(next.pendingEvents.map(event => event.id)).toEqual(['later_1', 'later_2'])
+    expect(next.deferredDecisions).toHaveLength(0)
+  })
+
+  it('imminenta beslut deferreras aldrig även när de överskrider trebudgeten', () => {
+    const pending = ['a', 'b', 'c', 'd'].map(id => ({
+      ...makeTypedEvent(id, 'contractRequest'),
+      deadlineRound: 6,
+    }))
+    const { surface, deferred } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(event => event.id)).toEqual(['a', 'b', 'c', 'd'])
+    expect(deferred).toHaveLength(0)
+  })
+
+  it('weekly decision reserverar en av tre platser', () => {
+    const game = makeGame({
+      pendingEvents: ['a', 'b', 'c'].map(id => makeTypedEvent(id, 'sponsorOffer')),
+      pendingWeeklyDecision: { id: 'weekly' } as never,
+    })
+    const result = applyDecisionBudget(game, 5)
+    expect(result.pendingEvents.map(event => event.id)).toEqual(['a', 'b'])
+    expect(result.deferredDecisions.map(event => event.id)).toEqual(['c'])
+    expect(getWaitingDecisionCount(result)).toBe(1)
+  })
+
+  it('räknar retained weekly som väntande när tre imminenta redan fyller budgeten', () => {
+    const game = makeGame({
+      pendingEvents: ['a', 'b', 'c'].map(id => ({
+        ...makeTypedEvent(id, 'contractRequest'),
+        deadlineRound: 6,
+      })),
+      pendingWeeklyDecision: { id: 'weekly' } as never,
+    })
+    const result = applyDecisionBudget(game, 5)
+    expect(result.pendingEvents).toHaveLength(3)
+    expect(result.pendingWeeklyDecision).toEqual({ id: 'weekly' })
+    expect(getWaitingDecisionCount(result)).toBe(1)
+  })
+
   it('cappar månadsbeslut vid 3 och deferrerar resten', () => {
     const pending = ['a', 'b', 'c', 'd', 'e'].map(id => makeTypedEvent(id, 'sponsorOffer'))
     const { surface, deferred } = partitionInterruptBudget(pending, 5)
@@ -281,26 +331,26 @@ describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors fak
     expect(deferred.map(e => e.id)).toEqual(['d', 'e'])
   })
 
-  it('måste surfar FÖRST och trängs aldrig undan — även när taket redan är fyllt', () => {
+  it('imminent deadline surfar först och skjuter undan flexibel post', () => {
     const pending = [
       ...['a', 'b', 'c', 'd'].map(id => makeTypedEvent(id, 'sponsorOffer')),
-      makeTypedEvent('must', 'contractRequest'),
+      { ...makeTypedEvent('must', 'contractRequest'), deadlineRound: 6 },
     ]
     const { surface, deferred } = partitionInterruptBudget(pending, 5)
     expect(surface[0].id).toBe('must')
-    expect(surface.map(e => e.id)).toEqual(['must', 'a', 'b', 'c'])
-    expect(deferred.map(e => e.id)).toEqual(['d'])
+    expect(surface.map(e => e.id)).toEqual(['must', 'a', 'b'])
+    expect(deferred.map(e => e.id)).toEqual(['c', 'd'])
   })
 
-  it('två samtidiga måsten surfar båda, utöver de tre månadsplatserna', () => {
+  it('två samtidiga imminenta surfar inom samma trebudget', () => {
     const pending = [
-      makeTypedEvent('m1', 'contractRequest'),
-      makeTypedEvent('m2', 'licenseHandlingsplan'),
+      { ...makeTypedEvent('m1', 'contractRequest'), deadlineRound: 6 },
+      { ...makeTypedEvent('m2', 'licenseHandlingsplan'), deadlineRound: 6 },
       ...['a', 'b', 'c'].map(id => makeTypedEvent(id, 'sponsorOffer')),
     ]
     const { surface, deferred } = partitionInterruptBudget(pending, 5)
-    expect(surface).toHaveLength(5)
-    expect(deferred).toHaveLength(0)
+    expect(surface.map(e => e.id)).toEqual(['m1', 'm2', 'a'])
+    expect(deferred.map(e => e.id)).toEqual(['b', 'c'])
   })
 
   it('event utan val passerar oräknade (banden)', () => {
@@ -329,8 +379,8 @@ describe('promoteFromQueue', () => {
     })
     const result = promoteFromQueue(game)
     expect(result.pendingEvents).toContainEqual(deferred1)
-    expect(result.deferredDecisions).toHaveLength(1)
-    expect(result.deferredDecisions[0].id).toBe('deferred2')
+    expect(result.pendingEvents).toContainEqual(deferred2)
+    expect(result.deferredDecisions).toHaveLength(0)
   })
 
   it('bevarar befintliga pendingEvents vid promote', () => {
