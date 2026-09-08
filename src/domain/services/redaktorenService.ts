@@ -95,6 +95,9 @@ const REVIEW_TYPES = new Set<EventLedgerEntry['type']>([
   'transfer_story',
   'nemesis_signed',
   'player_milestone',
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: callback-ytan är review
+  // (selectMissedTargetCallback, reviewCallbackService.ts).
+  'transfer_target_missed',
 ])
 
 function editorialFamily(post: EventLedgerEntry): EditorialFamily {

@@ -9,6 +9,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer, playerAcceptsTransfer } from '../../../domain/services/transferService'
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
+import { snapshotForPlayerSubject } from '../../../domain/services/eventLedgerService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE, FAMILY_REFUSAL_REQUIRES_OLDER_PLAYER } from '../../../domain/data/transferResponseText'
@@ -40,6 +41,8 @@ export interface TransferProcessorResult {
   newBids: TransferBid[]
   allBids: TransferBid[]
   inboxItems: InboxItem[]
+  /** DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08 — bara `transfer_target_missed`-poster. */
+  ledgerEntries: EventLedgerEntry[]
 }
 
 export interface LoanProcessorResult {
@@ -324,7 +327,36 @@ export function processTransferBids(
     }
   }
 
-  return { resolvedBids, newBids, allBids, inboxItems }
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: ett utgående bud som just
+  // (denna omgång) övergick från pending till rejected/expired — spelaren
+  // vi jagade och missade. Egen loop, INTE ihopslagen med inbox-loopen ovan
+  // (som har flera tidiga `continue`) för att inte riskera att tysta en
+  // ledgerpost när en inbox-gren hoppar över. `sellingClubId` = hans klubb
+  // VID BUDTILLFÄLLET (createOutgoingBid sätter den till target.clubId) —
+  // fryst identitet, rör sig aldrig om han byter klubb senare. subject2 är
+  // en klubb, snapshotas aldrig (DOM_SUBJECT2SNAPSHOT: bara spelare lämnar
+  // en array på det sätt som kräver det — game.clubs är en fast tolvklubbs-
+  // roster, alltid slagbar på id).
+  const ledgerEntries: EventLedgerEntry[] = []
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'outgoing') continue
+    if (bid.status !== 'rejected' && bid.status !== 'expired') continue
+    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    ledgerEntries.push({
+      type: 'transfer_target_missed',
+      semanticKey: `transfer_target_missed_${bid.id}`,
+      season: game.currentSeason,
+      matchday: nextMatchday,
+      subject: { kind: 'player', id: bid.playerId },
+      subject2: { kind: 'club', id: bid.sellingClubId },
+      subjectSnapshot: snapshotForPlayerSubject(preEventGame, { kind: 'player', id: bid.playerId }),
+      significance: 30,
+      transferTargetMissed: { bidKr: bid.offerAmount, targetClubId: bid.sellingClubId },
+    })
+  }
+
+  return { resolvedBids, newBids, allBids, inboxItems, ledgerEntries }
 }
 
 /**

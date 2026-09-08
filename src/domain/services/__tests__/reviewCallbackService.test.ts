@@ -104,6 +104,84 @@ describe('Berättaren steg 5 — Granska-callbacks', () => {
     expect(selectReviewCallback({ ...returnGame, fixtures: [earlier, fixture] }, fixture)).toBeNull()
   })
 
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: den jagade-och-missade
+  // spelaren delar ingen mall med transfer_sold/transfer_story — han var
+  // aldrig vår. Egen callback, egen låst text.
+  it('knyter ett missat bud till motståndarens matchens-spelare', () => {
+    const { game, player, opponent, fixture } = setup()
+    const missed: EventLedgerEntry = {
+      type: 'transfer_target_missed',
+      semanticKey: `transfer_target_missed_bid1`,
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: 8,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: opponent.id },
+      significance: 30,
+      transferTargetMissed: { bidKr: 300000, targetClubId: opponent.id },
+    }
+    const callback = selectReviewCallback({ ...game, eventLedger: [missed] }, fixture)
+
+    expect(callback).toEqual({
+      kind: 'missed_target_potm',
+      text: `${player.firstName} ${player.lastName} — den du bjöd på i somras, han som gick till ${opponent.name} — blev matchens spelare mot dig.`,
+      post: missed,
+    })
+  })
+
+  it('missat bud: bara målskytt utan POTM ger ingen callback (ingen låst text för det fallet)', () => {
+    const { game, player, opponent, fixture } = setup()
+    const notPotm = { ...fixture, report: { ...fixture.report!, playerOfTheMatchId: 'someone_else' } }
+    const missed: EventLedgerEntry = {
+      type: 'transfer_target_missed',
+      semanticKey: `transfer_target_missed_bid1`,
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: 8,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: opponent.id },
+      significance: 30,
+      transferTargetMissed: { bidKr: 300000, targetClubId: opponent.id },
+    }
+    expect(selectReviewCallback({ ...game, eventLedger: [missed] }, notPotm)).toBeNull()
+  })
+
+  it('missat bud: för gammalt (mer än en säsong sedan) ger ingen callback', () => {
+    const { game, player, opponent, fixture } = setup()
+    const staleMissed: EventLedgerEntry = {
+      type: 'transfer_target_missed',
+      semanticKey: `transfer_target_missed_bid1`,
+      clubId: game.managedClubId,
+      season: game.currentSeason - 2,
+      matchday: 8,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: opponent.id },
+      significance: 30,
+      transferTargetMissed: { bidKr: 300000, targetClubId: opponent.id },
+    }
+    expect(selectReviewCallback({ ...game, eventLedger: [staleMissed] }, fixture)).toBeNull()
+  })
+
+  it('missat bud: en redan review-told post upprepas inte', () => {
+    const { game, player, opponent, fixture } = setup()
+    const missed: EventLedgerEntry = {
+      type: 'transfer_target_missed',
+      semanticKey: `transfer_target_missed_bid1`,
+      clubId: game.managedClubId,
+      season: game.currentSeason,
+      matchday: 8,
+      subject: { kind: 'player', id: player.id },
+      subject2: { kind: 'club', id: opponent.id },
+      significance: 30,
+      transferTargetMissed: { bidKr: 300000, targetClubId: opponent.id },
+    }
+    const ledgerTold = markLedgerPostTold({}, missed, 'review', {
+      season: game.currentSeason,
+      matchday: fixture.matchday,
+    })
+    expect(selectReviewCallback({ ...game, eventLedger: [missed], ledgerTold }, fixture)).toBeNull()
+  })
+
   it('knyter Årets spelare i en annan klubb till managerns tidigare personliga mål', () => {
     const { game, opponent, player, fixture } = setup()
     const oldClub = game.clubs.find(club => club.id !== game.managedClubId && club.id !== opponent.id)!

@@ -6,10 +6,12 @@ import { currentChronology } from './currentChronology'
 import { agendaForSurface, redaktoren } from './redaktorenService'
 import { toldMarksFor } from './ledgerToldService'
 import { getManagerReturnContext } from './managerReturnService'
+import { resolveSubjectName } from './momentLedgerService'
 
 export type ReviewCallbackKind =
   | 'former_player_goal'
   | 'former_player_potm'
+  | 'missed_target_potm'
   | 'manager_return'
   | 'developed_player_award'
 
@@ -83,6 +85,44 @@ function selectFormerPlayerCallback(game: SaveGame, fixture: Fixture): ReviewCal
   return null
 }
 
+/**
+ * DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: den jagade-och-missade spelaren
+ * delar ingen mall med FORMER_PLAYER_TYPES (han var aldrig vår, lämnade
+ * aldrig) — egen selector, egen låst text. Bara POTM-triggern: domens
+ * enda låsta rad beskriver "blev matchens spelare", ingen separat text
+ * finns för ett rent mål-utan-POTM-fall (Code hittar inte på en).
+ * Säsongsbunden (samma säsong eller föregående) så "i somras" i den låsta
+ * texten inte kan syfta på ett flera år gammalt missat bud.
+ */
+function selectMissedTargetCallback(game: SaveGame, fixture: Fixture): ReviewCallback | null {
+  const opponent = opponentId(game, fixture)
+  if (!opponent) return null
+  const potmId = fixture.report?.playerOfTheMatchId
+  if (!potmId) return null
+  const opponentPlayerIds = new Set(
+    game.players.filter(player => player.clubId === opponent).map(player => player.id),
+  )
+  if (!opponentPlayerIds.has(potmId)) return null
+
+  const agenda = agendaForSurface(redaktoren(game, currentChronology(game)), 'review')
+  for (const item of agenda) {
+    const { post } = item
+    if (post.type !== 'transfer_target_missed') continue
+    if (post.subject?.kind !== 'player' || post.subject.id !== potmId) continue
+    if (fixture.season - post.season > 1) continue
+    if (toldMarksFor(game.ledgerTold, post).some(mark => mark.surface === 'review')) continue
+    const name = resolveSubjectName(game, post.subject, post.subjectSnapshot)
+    const clubName = resolveSubjectName(game, post.subject2, post.subject2Snapshot)
+    if (!name || !clubName) continue
+    return {
+      kind: 'missed_target_potm',
+      text: `${name} — den du bjöd på i somras, han som gick till ${clubName} — blev matchens spelare mot dig.`,
+      post,
+    }
+  }
+  return null
+}
+
 function isPersonalGoalPost(post: EventLedgerEntry, managerId: string): boolean {
   return post.type === 'player_milestone'
     && post.managerId === managerId
@@ -125,6 +165,8 @@ function selectDevelopedPlayerCallback(game: SaveGame): ReviewCallback | null {
 export function selectReviewCallback(game: SaveGame, fixture: Fixture): ReviewCallback | null {
   const formerPlayer = selectFormerPlayerCallback(game, fixture)
   if (formerPlayer) return formerPlayer
+  const missedTarget = selectMissedTargetCallback(game, fixture)
+  if (missedTarget) return missedTarget
   if (getManagerReturnContext(game, fixture)) {
     return {
       kind: 'manager_return',

@@ -664,6 +664,9 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   referee_trust: 'triumph', patron_emerge: 'triumph',
   star_injury: 'scar', rival_sale: 'scar', captain_crisis: 'scar', sponsor_negative: 'scar',
   transfer_story: 'scar', scandal: 'scar', mecenat_withdrawal: 'scar', patron_withdrawal: 'scar',
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: samma sting-klass som
+  // transfer_story/rival_sale — den jagade spelaren gör ont mot dig.
+  transfer_target_missed: 'scar',
   nemesis_signed: 'tension', referee_feud: 'tension',
   mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
   voice_introduced: 'neutral',
@@ -750,6 +753,7 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   voice_introduced: '👤',
   star_injury: '👤', captain_crisis: '👤', national_team_callup: '👤', nemesis_signed: '👤',
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
+  transfer_target_missed: '👤',
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',

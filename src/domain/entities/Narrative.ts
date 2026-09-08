@@ -251,6 +251,13 @@ export type EventLedgerType =
   // den aldrig. subject = managed club (avsändaren är namngiven i
   // subjectSnapshot, inte en spårad entitet med egen kind).
   | 'letter'
+  // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08 (liggare-k12): ett utgående
+  // bud som resolvar rejected/expired — spelaren vi jagade och missade.
+  // EGEN typ, INTE en fjärde TransferRole: TransferRole/transfer_story
+  // betyder "VÅR spelare LÄMNADE", vilket aldrig hände honom (han var
+  // aldrig vår). subject = den jagade spelaren, subject2 = hans klubb vid
+  // budtillfället (bägge snapshotas av logEvent).
+  | 'transfer_target_missed'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut
@@ -516,6 +523,14 @@ export interface EventLedgerEntry {
    * generisk payload-påse för andra typer.
    */
   result?: MatchResultPayload
+  /**
+   * transfer_target_missed (DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08).
+   * `bidKr` = det utgående budets `offerAmount` vid resolutionstillfället
+   * (rejected/expired) — inte marknadsvärdet. `targetClubId` = klubben han
+   * spelade för DÅ (`bid.sellingClubId`), fryst separat från `subject2` så
+   * en senare klubbyte inte förväxlas med budtillfällets identitet.
+   */
+  transferTargetMissed?: { bidKr: number; targetClubId: string }
 }
 
 /**

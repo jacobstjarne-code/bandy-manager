@@ -423,6 +423,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Transfer bids ────────────────────────────────────────────────────────
   const transferResult = processTransferBids(game, availabilityUpdatedPlayers, nextMatchday, newDate, localRand)
   newInboxItems.push(...transferResult.inboxItems)
+  roundLedgerEntries.push(...transferResult.ledgerEntries)
   const { resolvedBids, newBids, allBids } = transferResult
 
   // Partially updated game state for event generation

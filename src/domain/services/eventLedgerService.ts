@@ -23,7 +23,7 @@ import type { EventLedgerEntry } from '../entities/Narrative'
  * ALDRIG i `game.players` till att börja med, så subject.kind==='player'
  * måste slå upp båda källorna, inte bara den ena.
  */
-function snapshotForPlayerSubject(
+export function snapshotForPlayerSubject(
   game: SaveGame,
   subject: EventLedgerEntry['subject'] | EventLedgerEntry['subject2'],
 ): EventLedgerEntry['subjectSnapshot'] | undefined {
