@@ -8,11 +8,11 @@ const POSITIVE_RESPONSE_EVENTS = new Set([
   'notification_clicked', 'notification_opened', 'meaningful_action',
 ])
 
-function hashSecret(value) {
+export function hashSecret(value) {
   return createHash('sha256').update(value).digest()
 }
 
-function secretsMatch(value, expectedHash) {
+export function secretsMatch(value, expectedHash) {
   if (!value || !expectedHash) return false
   const actual = hashSecret(value)
   return actual.length === expectedHash.length && timingSafeEqual(actual, expectedHash)
@@ -27,6 +27,58 @@ export const DEFAULT_PREFERENCES = {
     calendar_anchor: false, season_context: false,
   },
   quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+}
+
+/** Gemensam responsmodell för både referenslagringen och Postgres-adaptern. */
+export function buildResponseProfile(deliveries, events, now = new Date()) {
+  const nowMs = now.getTime()
+  const orderedDeliveries = [...deliveries]
+    .filter(delivery => delivery.deliveredAt)
+    .sort((a, b) => b.deliveredAt.localeCompare(a.deliveredAt))
+  const outcomes = orderedDeliveries.map(delivery => {
+    const deliveredMs = Date.parse(delivery.deliveredAt)
+    const explicitPositive = events.some(event =>
+      event.deliveryId === delivery.id && POSITIVE_RESPONSE_EVENTS.has(event.type)
+    )
+    const implicitPositive = events.some(event => {
+      if (event.installationId !== delivery.installationId || event.type !== 'app_opened') return false
+      const openedMs = Date.parse(event.recordedAt)
+      return openedMs >= deliveredMs && openedMs <= deliveredMs + IMPLICIT_RETURN_WINDOW_MS
+    })
+    const outcome = explicitPositive || implicitPositive
+      ? 'positive'
+      : nowMs - deliveredMs >= DAY_MS
+        ? 'ignored'
+        : 'pending'
+    return { delivery, outcome }
+  })
+
+  let consecutiveIgnored = 0
+  for (const { outcome } of outcomes) {
+    if (outcome === 'pending') continue
+    if (outcome !== 'ignored') break
+    consecutiveIgnored++
+  }
+
+  const categoryAffinity = {}
+  for (const { delivery, outcome } of outcomes) {
+    if (!delivery.category || outcome === 'pending') continue
+    const delta = outcome === 'positive' ? 8 : -12
+    categoryAffinity[delivery.category] = Math.max(
+      -24,
+      Math.min(16, (categoryAffinity[delivery.category] ?? 0) + delta),
+    )
+  }
+  const latestDeliveredMs = orderedDeliveries[0]
+    ? Date.parse(orderedDeliveries[0].deliveredAt)
+    : null
+  return {
+    consecutiveIgnored,
+    categoryAffinity,
+    backoffUntil: consecutiveIgnored >= 2 && latestDeliveredMs !== null
+      ? new Date(latestDeliveredMs + STRONG_BACKOFF_MS).toISOString()
+      : null,
+  }
 }
 
 /**
@@ -224,52 +276,9 @@ export class InMemoryAttentionStore {
   }
 
   responseProfile(installationId, now = new Date()) {
-    const nowMs = now.getTime()
     const deliveries = [...this.#deliveries.values()]
       .filter(delivery => delivery.installationId === installationId && delivery.deliveredAt)
-      .sort((a, b) => b.deliveredAt.localeCompare(a.deliveredAt))
-    const outcomes = deliveries.map(delivery => {
-      const deliveredMs = Date.parse(delivery.deliveredAt)
-      const explicitPositive = this.#events.some(event =>
-        event.deliveryId === delivery.id && POSITIVE_RESPONSE_EVENTS.has(event.type)
-      )
-      const implicitPositive = this.#events.some(event => {
-        if (event.installationId !== installationId || event.type !== 'app_opened') return false
-        const openedMs = Date.parse(event.recordedAt)
-        return openedMs >= deliveredMs && openedMs <= deliveredMs + IMPLICIT_RETURN_WINDOW_MS
-      })
-      const outcome = explicitPositive || implicitPositive
-        ? 'positive'
-        : nowMs - deliveredMs >= DAY_MS
-          ? 'ignored'
-          : 'pending'
-      return { delivery, outcome }
-    })
-
-    let consecutiveIgnored = 0
-    for (const { outcome } of outcomes) {
-      if (outcome === 'pending') continue
-      if (outcome !== 'ignored') break
-      consecutiveIgnored++
-    }
-
-    const categoryAffinity = {}
-    for (const { delivery, outcome } of outcomes) {
-      if (!delivery.category || outcome === 'pending') continue
-      const delta = outcome === 'positive' ? 8 : -12
-      categoryAffinity[delivery.category] = Math.max(
-        -24,
-        Math.min(16, (categoryAffinity[delivery.category] ?? 0) + delta),
-      )
-    }
-    const latestDeliveredMs = deliveries[0] ? Date.parse(deliveries[0].deliveredAt) : null
-    return {
-      consecutiveIgnored,
-      categoryAffinity,
-      backoffUntil: consecutiveIgnored >= 2 && latestDeliveredMs !== null
-        ? new Date(latestDeliveredMs + STRONG_BACKOFF_MS).toISOString()
-        : null,
-    }
+    return buildResponseProfile(deliveries, this.#events, now)
   }
 
   removeExpiredSubscription(installationId) {

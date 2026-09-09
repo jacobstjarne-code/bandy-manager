@@ -71,7 +71,7 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
       let delivered = 0
       let skipped = 0
 
-      for (const { installation, candidate } of store.listDispatchable(currentTime)) {
+      for (const { installation, candidate } of await store.listDispatchable(currentTime)) {
         const timeZone = installation.snapshot.timeZone || installation.metadata.timeZone
         const quietHours = (installation.preferences ?? DEFAULT_PREFERENCES).quietHours
         const sentToday = store.deliveryCountSince(installation, currentTime.getTime() - DAY_MS)
@@ -85,7 +85,7 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
 
         const id = randomUUID()
         const token = deliveryToken()
-        store.registerDelivery({
+        await store.registerDelivery({
           id,
           installationId: installation.id,
           candidateId: candidate.id,
@@ -96,11 +96,11 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
           tokenHash: createHash('sha256').update(token).digest(),
           createdAt: currentTime.toISOString(),
         })
-        store.recordEvent({
+        await store.recordEvent({
           type: 'candidate_selected', installationId: installation.id,
           candidateId: candidate.id, category: candidate.category, deliveryId: id,
         })
-        store.recordEvent({
+        await store.recordEvent({
           type: 'delivery_attempted', installationId: installation.id,
           candidateId: candidate.id, category: candidate.category, deliveryId: id,
         })
@@ -123,8 +123,8 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
             urgency: candidate.importance === 'major' ? 'high' : 'normal',
             topic: createHash('sha256').update(candidate.dedupeKey).digest('base64url').slice(0, 32),
           })
-          store.markDelivered(installation.id, candidate.dedupeKey, currentTime, id)
-          store.recordEvent({
+          await store.markDelivered(installation.id, candidate.dedupeKey, currentTime, id)
+          await store.recordEvent({
             type: 'delivery_succeeded', installationId: installation.id,
             candidateId: candidate.id, category: candidate.category, deliveryId: id,
           })
@@ -132,9 +132,9 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
         } catch (error) {
           const statusCode = error?.statusCode
           if (statusCode === 404 || statusCode === 410) {
-            store.removeExpiredSubscription(installation.id)
+            await store.removeExpiredSubscription(installation.id)
           }
-          store.recordEvent({
+          await store.recordEvent({
             type: 'delivery_failed', installationId: installation.id,
             candidateId: candidate.id, category: candidate.category, deliveryId: id,
             statusCode: statusCode ?? null,

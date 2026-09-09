@@ -28,6 +28,10 @@ function tokenFrom(req) {
     : ''
 }
 
+function asyncRoute(handler) {
+  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
+}
+
 function validCandidate(candidate, stateVersion) {
   return candidate &&
     typeof candidate.id === 'string' && candidate.id.length >= 8 && candidate.id.length <= 512 &&
@@ -97,107 +101,107 @@ export function createAttentionRouter({
     return res.json({ configured: true, publicKey: dispatcher.publicKey })
   })
 
-  router.put('/notifications/installations/:installationId', (req, res) => {
+  router.put('/notifications/installations/:installationId', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId)) return res.status(400).json({ error: 'invalid_installation' })
-    const installation = store.ensureInstallation(installationId, tokenFrom(req), {
+    const installation = await store.ensureInstallation(installationId, tokenFrom(req), {
       timeZone: req.body?.timeZone,
     })
     return installation ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
-  })
+  }))
 
-  router.get('/notifications/installations/:installationId/preferences', (req, res) => {
+  router.get('/notifications/installations/:installationId/preferences', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId)) return res.status(400).json({ error: 'invalid_installation' })
-    if (!store.authenticateInstallation(installationId, tokenFrom(req))) {
+    if (!await store.authenticateInstallation(installationId, tokenFrom(req))) {
       return res.status(403).json({ error: 'forbidden' })
     }
-    return res.json(store.getPreferences(installationId))
-  })
+    return res.json(await store.getPreferences(installationId))
+  }))
 
-  router.put('/notifications/installations/:installationId/preferences', (req, res) => {
+  router.put('/notifications/installations/:installationId/preferences', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId) || !validPreferences(req.body)) {
       return res.status(400).json({ error: 'invalid_preferences' })
     }
-    const saved = store.setPreferences(installationId, tokenFrom(req), req.body)
+    const saved = await store.setPreferences(installationId, tokenFrom(req), req.body)
     return saved ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
-  })
+  }))
 
-  router.put('/notifications/subscriptions/:installationId', (req, res) => {
+  router.put('/notifications/subscriptions/:installationId', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId) || !validSubscription(req.body?.subscription)) {
       return res.status(400).json({ error: 'invalid_subscription' })
     }
-    const saved = store.setSubscription(
+    const saved = await store.setSubscription(
       installationId,
       tokenFrom(req),
       req.body.subscription,
       { timeZone: req.body.timeZone },
     )
     return saved ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
-  })
+  }))
 
-  router.delete('/notifications/subscriptions/:installationId', (req, res) => {
-    const removed = store.removeSubscription(req.params.installationId, tokenFrom(req))
+  router.delete('/notifications/subscriptions/:installationId', asyncRoute(async (req, res) => {
+    const removed = await store.removeSubscription(req.params.installationId, tokenFrom(req))
     return removed ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
-  })
+  }))
 
-  router.put('/attention/snapshots/:installationId', (req, res) => {
+  router.put('/attention/snapshots/:installationId', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId) || !validSnapshot(req.body, installationId)) {
       return res.status(400).json({ error: 'invalid_snapshot' })
     }
-    const saved = store.setSnapshot(installationId, tokenFrom(req), req.body)
+    const saved = await store.setSnapshot(installationId, tokenFrom(req), req.body)
     if (!saved) return res.status(403).json({ error: 'forbidden' })
-    store.recordEvent({
+    await store.recordEvent({
       type: 'snapshot_synced', installationId,
       saveId: req.body.saveId, stateVersion: req.body.stateVersion,
       candidateCount: req.body.candidates.length,
     })
     return res.status(204).end()
-  })
+  }))
 
-  router.get('/attention/delivery-receipts/:installationId', (req, res) => {
+  router.get('/attention/delivery-receipts/:installationId', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     if (!validId(installationId)) return res.status(400).json({ error: 'invalid_installation' })
-    if (!store.authenticateInstallation(installationId, tokenFrom(req))) {
+    if (!await store.authenticateInstallation(installationId, tokenFrom(req))) {
       return res.status(403).json({ error: 'forbidden' })
     }
-    return res.json({ receipts: store.listNarrativeDeliveryReceipts(installationId) })
-  })
+    return res.json({ receipts: await store.listNarrativeDeliveryReceipts(installationId) })
+  }))
 
-  router.post('/attention/delivery-receipts/:installationId/ack', (req, res) => {
+  router.post('/attention/delivery-receipts/:installationId/ack', asyncRoute(async (req, res) => {
     const { installationId } = req.params
     const deliveryIds = req.body?.deliveryIds
     if (!validId(installationId) || !Array.isArray(deliveryIds) || deliveryIds.length > 20 ||
         !deliveryIds.every(validId)) {
       return res.status(400).json({ error: 'invalid_receipts' })
     }
-    if (!store.authenticateInstallation(installationId, tokenFrom(req))) {
+    if (!await store.authenticateInstallation(installationId, tokenFrom(req))) {
       return res.status(403).json({ error: 'forbidden' })
     }
     return res.json({
-      acknowledged: store.acknowledgeNarrativeDeliveryReceipts(installationId, deliveryIds),
+      acknowledged: await store.acknowledgeNarrativeDeliveryReceipts(installationId, deliveryIds),
     })
-  })
+  }))
 
-  router.post('/notification-events', (req, res) => {
+  router.post('/notification-events', asyncRoute(async (req, res) => {
     const { type, installationId, deliveryId, deliveryToken } = req.body ?? {}
     if (!ALLOWED_CLIENT_EVENTS.has(type)) return res.status(400).json({ error: 'invalid_event' })
     if (type === 'meaningful_action' && !ALLOWED_MEANINGFUL_ACTIONS.has(req.body?.action)) {
       return res.status(400).json({ error: 'invalid_meaningful_action' })
     }
     const installationAuthenticated = validId(installationId) &&
-      store.authenticateInstallation(installationId, tokenFrom(req))
+      await store.authenticateInstallation(installationId, tokenFrom(req))
     const deliveryAuthenticated = validId(deliveryId) &&
-      store.authenticateDelivery(deliveryId, deliveryToken)
+      await store.authenticateDelivery(deliveryId, deliveryToken)
     const deliveryOwnedByInstallation = installationAuthenticated && validId(deliveryId) &&
-      store.deliveryBelongsToInstallation(deliveryId, installationId)
+      await store.deliveryBelongsToInstallation(deliveryId, installationId)
     if (!installationAuthenticated && !deliveryAuthenticated) {
       return res.status(403).json({ error: 'forbidden' })
     }
-    store.recordEvent({
+    await store.recordEvent({
       type,
       installationId: installationAuthenticated ? installationId : undefined,
       deliveryId: deliveryAuthenticated || deliveryOwnedByInstallation ? deliveryId : undefined,
@@ -208,15 +212,15 @@ export function createAttentionRouter({
         : undefined,
     })
     return res.status(204).end()
-  })
+  }))
 
-  router.post('/attention/run', async (req, res) => {
+  router.post('/attention/run', asyncRoute(async (req, res) => {
     const expected = env.ATTENTION_CRON_SECRET
     if (!expected || req.headers.authorization !== `Bearer ${expected}`) {
       return res.status(401).json({ error: 'unauthorized' })
     }
     return res.json(await dispatcher.dispatchDue())
-  })
+  }))
 
   return { router, store, dispatcher }
 }
