@@ -136,4 +136,18 @@ Punkt 1 ovan är byggd i `06336d37` (`fix: gör O12 beslutstelemetri instanssann
 
 Detta är en rotfix i skrivkontraktet och analysen, inte en eventtyp-blacklist. Regressionstester täcker både `Noterat`-fallet och transferkedjan med två resolutioner under samma event-id.
 
-Verifiering: fokusurvalet är grönt (14/14 tester), produktionsbygget är grönt och hela sviten är grön (539 testfiler, 4 931 tester). Punkt 2 — uppdelningen mellan kvalitativ förhandsbeskrivning och exakt efterkvitto — återstår. Därför är O12 fortfarande öppen och 80-procentsgrinden får inte bedömas förrän den delningen är byggd och naturliga val från flera spelare finns.
+Verifiering: fokusurvalet är grönt (14/14 tester), produktionsbygget är grönt och hela sviten är grön (539 testfiler, 4 931 tester).
+
+## Mekanisk uppföljning §2 — före/efter-kontraktet
+
+Punkt 2 är byggd i `b5e6dfad` (`feat: dela O12 förhandstext och efterkvitto`) mot den låsta domen `DOM_O12_FORHANDSTEXT_KONTRAKT_2026-09-09.md`:
+
+- `EventChoice.subtitle` är nu en ren förhandskanal. Moral, rykte, ort, stämning och relationer beskrivs med domens kvalitativa vokabulär; exakta pengar är kvar.
+- `resolveEvent` tar ett numeriskt före/efter-foto och sparar bara den faktiskt applicerade skillnaden i ett strukturerat `ResolvedChoice.outcomeDeltas`. Clampning och specialresolvers blir därmed sanna i kvittot; det deklarerade effektbeloppet eller förhandstexten återläses aldrig som facit.
+- Det exakta kvittot visas först på det resolverade beslutskortet i Granska. Äldre saves saknar fältet och visar fortsatt valt svar utan fabricerade tal.
+- De avsiktligt dolda motvikterna `developmentRateDelta` och `disciplineDelta` ingår inte i kvittoresurserna och förblir dolda.
+- En statisk bygggrind inspekterar produktionskodens `EventChoice`-objekt och stoppar nya exakta icke-pengadeltan i `label`/`subtitle`. Det är en källkontroll, inte runtime-regex eller strängsanering.
+
+Verifiering efter §2: produktionsbygget inklusive den nya O12-grinden är grönt. Riktade omprov: 111/111. Hela sviten: 541 testfiler och 4 936 tester, samtliga gröna.
+
+O12:s implementation är därmed byggd. Själva 80-procentsgrinden är fortfarande **inte bedömd**: först krävs deployprov av före/efter-ytan och därefter naturliga val från flera oberoende spelare. Det tidigare medvetet varierade tre-save-provet verifierar rören, inte naturlig valdominans.
