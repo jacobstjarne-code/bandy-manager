@@ -57,17 +57,27 @@ const NON_MONEY_RESOURCE = [
   'kommunrelation', 'domarrelation', 'boardPatience',
 ].join('|')
 
-const EXACT_VALUE = String.raw`(?:[+\-−]\s*)?(?:\d+(?:[.,]\d+)?|\$\{[^}]+\})`
+// ${uttryck} räknas bara som ett läckt värde om uttrycket inte är en
+// .name-property (t.ex. ${mecenat.name}) — annars flaggar vakten all
+// namn-interpolation nära ett resursord (tålamod, moral, ...) som ett
+// läckt tal, trots att den bara sätter in en persons namn i texten.
+const VALUE_LITERAL = String.raw`(?:\d+(?:[.,]\d+)?|\$\{(?![^}]*\.name\s*\})[^}]+\})`
+const EXACT_VALUE = String.raw`(?:[+\-−]\s*)?${VALUE_LITERAL}`
 const MONEY = new RegExp(
   String.raw`${EXACT_VALUE}\s*(?:kr|tkr|k)(?:\s*\/\s*(?:mån|vecka|säsong|match|hemmamatch|omgång))?`,
   'gi',
 )
+// Tecken-klasserna nedan escapar bindestrecket (\-) explicit — [+-−] och
+// [+:-−] tolkades tidigare som INTERVALL (':' t.o.m. '−', U+003A–U+2212)
+// istället för fyra enskilda tecken, vilket både lät ett bokstavligt
+// "-" i "moral -5" undgå matchning och fick nästan vilket tecken som
+// helst före ett tal räknas som "tecken". Escapningen fixar båda.
 const VALUE_THEN_RESOURCE = new RegExp(
-  String.raw`[+-−]\s*(?:\d+(?:[.,]\d+)?|\$\{[^}]+\})[^\n·]{0,18}(?:${NON_MONEY_RESOURCE})`,
+  String.raw`[+\-−]\s*${VALUE_LITERAL}[^\n·]{0,18}(?:${NON_MONEY_RESOURCE})`,
   'i',
 )
 const RESOURCE_THEN_VALUE = new RegExp(
-  String.raw`(?:${NON_MONEY_RESOURCE})[^\n·]{0,18}(?:[+:-−]\s*)(?:\d+(?:[.,]\d+)?|\$\{[^}]+\})`,
+  String.raw`(?:${NON_MONEY_RESOURCE})[^\n·]{0,18}(?:[+:\-−]\s*)${VALUE_LITERAL}`,
   'i',
 )
 const INTERNAL_COUNTER = /\bcooldown\s+\d+/i

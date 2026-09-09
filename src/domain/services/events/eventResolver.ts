@@ -714,6 +714,16 @@ export function resolveEvent(
             ? { ...p, developmentRate: Math.max(0, Math.min(100, p.developmentRate + (effect.amount ?? 0))) }
             : p,
         ),
+        youthTeam: updatedGame.youthTeam
+          ? {
+              ...updatedGame.youthTeam,
+              players: updatedGame.youthTeam.players.map(p =>
+                p.id === pid
+                  ? { ...p, developmentRate: Math.max(0, Math.min(100, p.developmentRate + (effect.amount ?? 0))) }
+                  : p,
+              ),
+            }
+          : updatedGame.youthTeam,
       }
       break
     }
@@ -2277,6 +2287,100 @@ export function resolveEvent(
     }
   }
 
+  // O1 3/4: "Kasta in honom" uses the same promotion constructor and ledger
+  // path as the manual Academy action and the age-out card. The declared
+  // developmentRateDelta above has already hit this exact frozen P19 player.
+  if (eventId.startsWith('event_o1_youth_burn_') && updatedGame.youthTeam && event.relatedPlayerId) {
+    const youthPlayer = updatedGame.youthTeam.players.find(p => p.id === event.relatedPlayerId)
+    if (youthPlayer && choiceId === 'throw_in') {
+      const mentorshipEnd = closeActiveMentorshipForYouth(updatedGame, youthPlayer.id, 'promoted')
+      const gameWithMentorshipEnd = { ...updatedGame, ...mentorshipEnd }
+      const promoted = buildPromotedPlayerFromYouth(
+        youthPlayer,
+        updatedGame.managedClubId,
+        updatedGame.currentSeason,
+        updatedGame.currentMatchday,
+      )
+      updatedGame = {
+        ...updatedGame,
+        mentorships: mentorshipEnd.mentorships,
+        mentorshipHistory: mentorshipEnd.mentorshipHistory,
+        players: [...updatedGame.players, promoted],
+        youthTeam: {
+          ...updatedGame.youthTeam,
+          players: updatedGame.youthTeam.players.filter(p => p.id !== youthPlayer.id),
+        },
+        clubs: updatedGame.clubs.map(club =>
+          club.id === updatedGame.managedClubId
+            ? { ...club, squadPlayerIds: [...club.squadPlayerIds, promoted.id] }
+            : club,
+        ),
+        eventLedger: logEvent(gameWithMentorshipEnd, buildAcademyPromotionLedgerEntry({
+          playerId: promoted.id,
+          clubId: updatedGame.managedClubId,
+          season: updatedGame.currentSeason,
+          matchday: updatedGame.currentMatchday,
+        })),
+      }
+    }
+  }
+
+  // O1 candidates 2–4: the ordinary effect pipeline above owns every numeric
+  // mutation. These branches only perform the youth promotion transition and
+  // publish the locked aftermath text from the specs.
+  if (eventId.startsWith('event_o1_facility_community_') && (choiceId === 'build_out' || choiceId === 'leave_it')) {
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `inbox_o1_facility_${choiceId}_${event.id}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.Community,
+        title: choiceId === 'build_out' ? 'Grävskoporna kommer' : 'Platsen står kvar',
+        body: choiceId === 'build_out'
+          ? 'Grävskoporna kommer. Klubben får sitt, och den gamla grusplanen bakom idrottsplatsen blir en parkeringsyta. Ingen säger så mycket — men de säger det till varandra.'
+          : 'Den gamla grusplanen bakom idrottsplatsen står kvar. Utbyggnaden blir inte av, och orten noterar tyst att du valde dem.',
+        isRead: false,
+      }],
+    }
+  }
+
+  if (eventId.startsWith('event_o1_youth_burn_') && event.relatedPlayerId && (choiceId === 'throw_in' || choiceId === 'let_mature')) {
+    const youthBefore = game.youthTeam?.players.find(p => p.id === event.relatedPlayerId)
+    if (youthBefore) {
+      const youthName = `${youthBefore.firstName} ${youthBefore.lastName}`
+      updatedGame = {
+        ...updatedGame,
+        inbox: [...updatedGame.inbox, {
+          id: `inbox_o1_youth_${choiceId}_${event.id}`,
+          date: updatedGame.currentDate,
+          type: InboxItemType.YouthIntake,
+          title: choiceId === 'throw_in' ? `${youthName} flyttas upp` : `${youthName} får vänta`,
+          body: choiceId === 'throw_in'
+            ? `${youthName} spelar, och han duger. Men något i kurvan planar ut — han fick bära för mycket för tidigt, och det syns om ett par år.`
+            : `${youthName} får vänta. Han gnisslar lite, men akademitränaren nickar. Talangen är kvar, hel.`,
+          isRead: false,
+        }],
+      }
+    }
+  }
+
+  if (eventId.startsWith('event_o1_supporter_letter_') && (choiceId === 'grant_wish' || choiceId === 'hold_line')) {
+    const leader = event.sender?.name ?? updatedGame.supporterGroup?.leader.name ?? 'Klackledaren'
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `inbox_o1_supporter_${choiceId}_${event.id}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.Community,
+        title: choiceId === 'grant_wish' ? 'Klacken blev hörd' : 'Brevet blev liggande',
+        body: choiceId === 'grant_wish'
+          ? `${leader} läser beskedet högt vid nästa match. Läktaren sjunger lite högre den kvällen — du hörde dem, och de vet det.`
+          : 'Brevet får inget svar de ville ha. Klacken säger inget rakt ut, men nästa hemmamatch är sången en aning tunnare.',
+        isRead: false,
+      }],
+    }
+  }
+
   // Special: pressConference — clear pendingPressConference + DEV-013 refusal consequence
   if (event.type === 'pressConference') {
     // Clear pendingPressConference (WEAK-002)
@@ -2826,6 +2930,41 @@ export function resolveEvent(
     updatedGame = {
       ...updatedGame,
       pendingFollowUps: [...(updatedGame.pendingFollowUps ?? []), followUp],
+    }
+  }
+
+  // ── SPEC_O1_MECENATENS_KRAV_2026-09-09: utfallsinbox ────────────────────────
+  // Generiska effekterna (mecenatHappiness/multiEffect ovan) muterar redan
+  // rätt state — den här grenen lägger bara till utfallstexten, samma
+  // mönster som sponsorOffer-konfliktvariantens rivalNoticeLine/inbox (ovan
+  // i denna funktion), fast som ett EFTERHANGT tillägg (som mecenatEvent-
+  // retirement nedan) i stället för ett tidigt-return eftersom de generiska
+  // effekterna redan gör hela mutationsjobbet. targetMecenatId läses ur det
+  // VALDA valets egen effect — ingen sköra id-parsning ur event.id (mecenat-
+  // id:n bär redan egna understreck, t.ex. "mecenat_larserik_2025").
+  if (event.type === 'mecenatEvent' && event.id.startsWith('event_mecenat_krav_') && event.relatedPlayerId) {
+    const chosenChoice = event.choices.find(c => c.id === choiceId)
+    const targetMecenatId = chosenChoice?.effect.type === 'multiEffect'
+      ? (JSON.parse(chosenChoice.effect.subEffects ?? '[]') as Array<{ targetMecenatId?: string }>).find(s => s.targetMecenatId)?.targetMecenatId
+      : chosenChoice?.effect.targetMecenatId
+    const mecenat = targetMecenatId ? (updatedGame.mecenater ?? []).find(m => m.id === targetMecenatId) : undefined
+    const player = updatedGame.players.find(p => p.id === event.relatedPlayerId)
+    if (mecenat && player && (choiceId === 'keep' || choiceId === 'let_go')) {
+      const playerName = `${player.firstName} ${player.lastName}`
+      const body = choiceId === 'keep'
+        ? `${mecenat.name} nickar, nöjd på sitt tysta vis. ${playerName} stannar ett år till, och orten noterar vem som fick bestämma.`
+        : `${mecenat.name} säger inte mycket. Men något svalnar. ${playerName} går vidare, och nästa gång du ser mecenaten är värmen en grad lägre.`
+      updatedGame = {
+        ...updatedGame,
+        inbox: [...updatedGame.inbox, {
+          id: `inbox_mecenat_krav_${choiceId === 'keep' ? 'accept' : 'reject'}_${event.id}`,
+          date: updatedGame.currentDate,
+          type: InboxItemType.Community,
+          title: choiceId === 'keep' ? `${mecenat.name} nöjd` : `${mecenat.name} — kylan märks`,
+          body,
+          isRead: false,
+        }],
+      }
     }
   }
 

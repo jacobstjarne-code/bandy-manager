@@ -1,5 +1,6 @@
 import type { Mecenat, MecenatType, MecenatPersonality, SaveGame, SocialEvent } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { Player } from '../entities/Player'
 import { TacticMentality } from '../enums'
 import { mecenatVoiceId } from './voiceIntroductionService'
 
@@ -623,6 +624,63 @@ export function generateMecenatAllianceEvent(
           subEffects: JSON.stringify([
             { type: 'mecenatHappiness', targetMecenatId: mec1.id, amount: -5 },
             { type: 'mecenatHappiness', targetMecenatId: mec2.id, amount: -5 },
+          ]),
+        },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── SPEC_O1_MECENATENS_KRAV_2026-09-09: mecenatens krav ────────────────────
+/**
+ * O1-kandidat 1/4 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, 5/5-mallen —
+ * sponsorvarianten (O1_SPONSORN_FORST_2026-08-22) stannade på 4/5 eftersom
+ * sponsorer är företag; mecenaten är en namngiven person spelaren redan
+ * mött, och kravet bär in en ANDRA namngiven person). `systemhandelse:true`
+ * satt av anropsstället (postAdvanceEvents.ts), inte här — samma mönster som
+ * `detOmojligaValet`.
+ *
+ * Tröskeln för "hög happiness" (MECENAT_KRAV_HAPPINESS_THRESHOLD) och
+ * balanstalen X/Y är Code-satta (specen ger samma frihet som sponsorns
+ * COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT) — Y > X, en refusering väger
+ * tyngre än en efterlevnad, samma proportion som konflikt-eventets 15/-10.
+ *
+ * TEXT LÅST (Opus, SPEC_O1_MECENATENS_KRAV_2026-09-09), kopierad ordagrant.
+ */
+export const MECENAT_KRAV_HAPPINESS_THRESHOLD = 75
+const MECENAT_KRAV_HAPPINESS_DELTA_KEEP = 12
+const MECENAT_KRAV_HAPPINESS_DELTA_LET_GO = -18
+
+export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, season: number): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  return {
+    id: `event_mecenat_krav_${mecenat.id}_s${season}`,
+    type: 'mecenatEvent',
+    title: `${mecenat.name} har en önskan`,
+    body: `Över kaffet säger ${mecenat.name} det rakt ut, utan att göra en grej av det: han skulle vilja se ${playerName} få ett år till. Han var med när det var tunnare än nu, och mecenaten har ett gott öga till honom. Det är inget krav han uttalar — men du förstår ändå. Hans välvilja har en form, och det här är den.`,
+    proofSource: {
+      form: 'state-predicate',
+      description: `mecenat.happiness ≥ ${MECENAT_KRAV_HAPPINESS_THRESHOLD} och en veteran finns i truppen`,
+      evaluatedTrue: mecenat.happiness >= MECENAT_KRAV_HAPPINESS_THRESHOLD && player.trait === 'veteran',
+    },
+    relatedPlayerId: player.id,
+    choices: [
+      {
+        id: 'keep',
+        label: 'Behåll honom',
+        subtitle: `gläder ${mecenat.name}`,
+        effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: MECENAT_KRAV_HAPPINESS_DELTA_KEEP },
+      },
+      {
+        id: 'let_go',
+        label: 'Låt honom gå',
+        subtitle: `prövar ${mecenat.name}s tålamod`,
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'releasePlayer', targetPlayerId: player.id },
+            { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: MECENAT_KRAV_HAPPINESS_DELTA_LET_GO },
           ]),
         },
       },

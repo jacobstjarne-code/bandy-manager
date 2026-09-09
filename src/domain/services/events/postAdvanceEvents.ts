@@ -24,7 +24,7 @@ import {
 } from './eventFactories'
 import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
+import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent, generateMecenatKravEvent, MECENAT_KRAV_HAPPINESS_THRESHOLD } from '../mecenatService'
 import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
 import { rotateSubject, genericBeatExcludeCount } from '../narrativeCoordinatorService'
 import type { Player } from '../../entities/Player'
@@ -598,6 +598,34 @@ export function generatePostAdvanceEvents(
         const projectNames = ['en ny värmestuga', 'uppgradering av strålkastarna', 'omklädningsrummet']
         const projectName = projectNames[Math.floor(rand() * projectNames.length)]
         events.push(generateMecenatAllianceEvent(m1, m2, projectName))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5k3. Mecenatens krav (O1-kandidat 1/4, SPEC_O1_MECENATENS_KRAV_2026-09-09,
+  // 5/5-mallen) — en aktiv mecenat med hög happiness (mecenat.happiness >=
+  // MECENAT_KRAV_HAPPINESS_THRESHOLD) har ett gott öga till en veteran i
+  // truppen. "Legend" (specens andra villkor) är inte kontrollerbart för en
+  // ANNU AKTIV spelare — legendRole sätts först vid pension (ClubLegend,
+  // retirementCeremony) — så villkoret är player.trait==='veteran' (samma
+  // definition som characterPlayerService.ts/veteran_farewell-arcen redan
+  // använder, age>=30), inte en ny klassificering. Ingen konstlad
+  // sannolikhetsspärr (specens ord: rariteten kommer av villkoret, inte en
+  // gissad rand()-siffra) — en gång per mecenat per säsong räcker
+  // (eventets id bär mecenat.id + currentSeason).
+  if (events.length < 2) {
+    const highHappinessMecenat = (game.mecenater ?? []).find(
+      m => m.isActive && !m.permanentlyWithdrawn && m.happiness >= MECENAT_KRAV_HAPPINESS_THRESHOLD,
+    )
+    const veteran = game.players.find(
+      p => p.clubId === game.managedClubId && p.trait === 'veteran' && !p.isInjured,
+    )
+    if (highHappinessMecenat && veteran) {
+      const kravEvent = generateMecenatKravEvent(highHappinessMecenat, veteran, game.currentSeason)
+      if (!alreadyQueued.has(kravEvent.id)) {
+        events.push({ ...kravEvent, systemhandelse: true })
       }
     }
   }
