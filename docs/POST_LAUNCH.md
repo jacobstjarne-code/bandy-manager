@@ -76,6 +76,9 @@ burnout-djupet prioriteras. Jacob 2026-09-08.
 
 ## Tillväxt / delbarhet
 
+### stickiness-apple-native-epic (Apple-native Fas 2)
+**Vad:** WidgetKit/ActivityKit, Live Activities, Dynamic Island och App Groups ovanpå samma `AttentionItem` som webbpassets notifieringar. **Varför uppskjuten:** native-ytorna är ett eget plattformsspår och får öppnas först när Fas 1 har mätt retention med deterministisk holdout; före det finns varken effektbevis eller skäl för en ny distributionsyta. Ingen separat native-minnesbank får skapas. **Underlag:** stickiness-rapportens §14 Etapp 2 och `IMPLEMENTATION_STICKINESS_NOTIFIERINGAR_2026-09-04.md`. **När:** post-launch efter analyserad holdout.
+
 ### sluttest-o10-bestinclass (best-in-class-ekosystemet, utom seed-i-länk)
 **Vad:** O10:s fulla tillväxtekosystem — bandyarkivet, vägskäl, bruksligor,
 skaparekosystem. **Status nu:** seed-i-länk-skivan (`o10-queryparam-clubselection`,
