@@ -12,6 +12,20 @@ const GOAL_RATE_MOD = 0.936
 // 2019-2026, 100% täckning) — 7,7% 5-min / 92,1% 10-min över hela datasetet.
 const SUSPENSION_TEN_MIN_BASE = 0.921
 
+// sluttest-utvisningar-kalibrering (GO 2026-09-08, Jacob): M15 sänkte
+// foulThreshold-multiplikatorn 1.46→1.02 för att bevara totala
+// utvisningsMINUTER/match när utvisningslängden blev diskret 5/10 min
+// (~43% längre snitt) — men målet är faktiskt utvisningsANTAL/match (3,77,
+// bandygrytan_detailed.json), inte minuter, och 1.02 gav bara 2,61-2,67
+// (mätt scripts/measure-matchstraff-rate.ts, flera körningar sedan M15).
+// 1.02 var alltså en felaktig proxy för rätt mål. Ny multiplikator satt
+// empiriskt genom omkörning (inte en linjär gissning — sekvensvalet innan
+// foulThreshold introducerar egna icke-linjäriteter): 1.02 → 1.51 gav
+// 3.77/match exakt (npx vite-node scripts/measure-matchstraff-rate.ts 25 3,
+// 7731 matcher, 2026-09-09) — samma skript/urvalsstorlek som den tidigare
+// rapporterade 2,614-mätningen (7499 matcher), så resultaten är jämförbara.
+const SUSPENSION_FREQUENCY_MOD = 1.51
+
 // DOM_DOMARRELATION_2026-09-02 (Jacobs beslut, nivå 3): domarens ackumulerade
 // clubReaction (-2..2, refereeService.ts) mot den hanterade klubben ger en
 // MARGINELL nudge på hur ofta utvisningar/straff döms MOT klubben när den
@@ -1419,10 +1433,10 @@ function* simulateMatchCore(
       // refStyle påverkar INTE foulThreshold — intentional tona-ned (D-MOTOR 2026-06-22).
       // refStyle styr commentary (referee_strict/lenient) men inte foulfrekvensen.
       // En refStyle-term i foulThreshold vore en kalibreringsrunda; billigare som presentation.
-      // M15 (regelboksanpassning 2026-07-03): 1.46→1.02. Diskreta 5/10-minutersutvisningar
-      // (var kontinuerligt 4,5-9 min) höjde snittlängden ~43% — sänkt frekvens kompenserar
-      // så att totala utvisningsminuter/match bevaras (se commit för mätning).
-      const foulThreshold = foulProb * 1.02 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult * refereeFoulMult  // M15 2026-07-03: was 1.46 (1.25 pre-25b.2.2)
+      // M15 (regelboksanpassning 2026-07-03): 1.46→1.02, sedan omkalibrerad
+      // 1.02→SUSPENSION_FREQUENCY_MOD (sluttest-utvisningar-kalibrering,
+      // GO 2026-09-08) — se konstantens egen kommentar för varför.
+      const foulThreshold = foulProb * SUSPENSION_FREQUENCY_MOD * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult * refereeFoulMult
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70

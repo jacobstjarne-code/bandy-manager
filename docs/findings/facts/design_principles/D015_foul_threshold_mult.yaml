@@ -1,22 +1,29 @@
 fact_id: D015
 category: design_principles
-claim: "Utvisnings-foulThreshold multiplikator — kalibrerar utvisningsfrekvens mot S011"
-value: 1.46
+claim: "Utvisnings-foulThreshold multiplikator (SUSPENSION_FREQUENCY_MOD) — kalibrerar utvisningsfrekvens mot S011"
+value: 1.51
 unit: multiplier
 source:
   type: design_decision
-  doc: "src/domain/services/matchCore.ts:994 (foulThreshold = foulProb * 1.46 * phaseConst.suspMod * ...)"
-verified_at: 2026-04-26
+  doc: "src/domain/services/matchCore.ts:27 (SUSPENSION_FREQUENCY_MOD), använd matchCore.ts:1439 (foulThreshold = foulProb * SUSPENSION_FREQUENCY_MOD * phaseConst.suspMod * ...)"
+verified_at: 2026-09-09
 verified_by: code
 status: active
 invariants:
   - "value > 0"
 related_facts: [S011]
 notes: |
-  Kommentaren i koden: "Sprint 25b.2.2: was 1.25 (0.55 pre-25b.2)".
-  Ingår i foulThreshold-beräkningen tillsammans med phaseConst.suspMod,
-  SUSP_TIMING_BY_PERIOD[period], derbyFoulMult och activeFoulMult
-  (mode-multiplikator för chasing/controlling m.m.).
-  Kalibrerat mot S011 (3.77 utvisningar/match). Höjdes från 1.25 till 1.46
-  i Sprint 25b.2.2 efter att utvisningsfrekvensen låg för lågt.
+  Historik: Sprint 25b.2.2 höjde 1.25→1.46. M15 (regelboksanpassning
+  2026-07-03) sänkte 1.46→1.02 för att bevara totala utvisningsMINUTER/
+  match när utvisningslängden blev diskret 5/10 min (~43% längre snitt)
+  — men detta D-fact uppdaterades ALDRIG vid det passet, så det stod kvar
+  på 1.46 medan koden faktiskt körde 1.02 i flera månader (drift mellan
+  D-fact och kod, upptäckt vid sluttest-utvisningar-kalibrering).
+  1.02 visade sig vara en felaktig proxy: målet är utvisningsANTAL/match
+  (S011), inte minuter, och 1.02 gav bara 2,61-2,67/match (mätt
+  scripts/measure-matchstraff-rate.ts). Omkalibrerad 2026-09-09 (GO Jacob):
+  1.02→1.51 gav 3.77/match exakt (samma skript, 25 seeds × 3 säsonger =
+  7731 matcher). Extraherad till en namngiven konstant
+  (SUSPENSION_FREQUENCY_MOD) i samma pass, inte längre en inline magisk
+  siffra — nästa omkalibrering behöver bara ändra en rad.
   Öka värdet → fler utvisningar. Minska → färre.
