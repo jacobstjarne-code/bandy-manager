@@ -5,7 +5,7 @@
 **Version vid start:** `64b5e7a6`  
 **Klubb:** Västanfors  
 **Manager:** Grindtest 2  
-**Status:** Pågående — fyra av minst åtta säsonger spelade; säsong 5 är startad. Opus domar grindarna efter färdig leverans.
+**Status:** Pågående — fyra av minst åtta säsonger spelade; säsong 5 är vid halvtid. Opus domar grindarna efter färdig leverans.
 
 ## Avbruten kontrollkörning — Forsbacka
 
@@ -113,6 +113,14 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Landning: tydlig. Årsboken bar dubbeln, andraplatsen, säsongens beslut, akademin, anläggningsmålet och +752 tkr som en egen säsong. Inga tredubbla årsboksminnen syntes.
 - Burnout-pivotalen återkom i omgång 18. Det var minst en sådan visning även denna säsong, trots tidigare irreversibla `Kliv tillbaka`-val.
 - Beslutskön stod på 24 efter grundserien. Säsongsskiftet rensar kön, men samma tillväxtmönster återkommer varje år.
+
+## Huvudkarriär — säsong 5, 2030/31 (halvtidskontroll)
+
+- Cupen slutade i semifinal efter 1–5 borta mot Forsbacka; kvartsfinalen mot Heros vanns med 6–1.
+- Serien efter fem omgångar: segrar mot Slottsbron (7–3), Lesjöfors (11–5), Karlsborg (5–1) och Söderfors (9–6), förlust mot Gagnef (2–5). Västanfors ligger trea inför omgång 6.
+- `Gym` stod färdigt 2029 och var korrekt byggt efter säsongsskiftet. `Belysning träningsplan` startades i omgång 6 med Anna Johansson som medfinansiär: 144 tkr ur klubbkassan, sex omgångars byggtid. Därmed är säsongens personliga anläggningsmål faktiskt aktiverat.
+- Säsongens primära handling är fortfarande tydlig: cupen landade innan serien tog över, och portalens matchväg har varit obruten genom de fem första serieomgångarna.
+- Den gamla sparningen innehöll redan tre kopior av `Anna Johansson hotar`: två samtidigt efter cupsemifinalen och ytterligare en kvar i den uppskjutna kön inför omgång 6. De är restdata från före dedupe-fixen och har nu konsumerats. Kön har samtidigt sjunkit från fyra beslut vid seriestarten till ett inför omgång 6; ingen ny identisk community-eventkopiera har hittills genererats efter den centrala fixen.
 
 ## Fortsättning
 
