@@ -2,6 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { YouthPlayer } from '../../entities/Academy'
 import { klackLeaderVoiceId } from '../voiceIntroductionService'
+import { fixtureSeed, mulberry32 } from '../../utils/random'
 
 // O1 candidates 2–4. The values are deliberately modest: these events are
 // memorable cross-system choices, not a shortcut around the ordinary
@@ -13,6 +14,23 @@ export const O1_YOUTH_DEVELOPMENT_COST = -8
 export const O1_SUPPORTER_LETTER_COST = 25_000
 export const O1_SUPPORTER_MOOD_GAIN = 8
 export const O1_SUPPORTER_MOOD_LOSS = -6
+export const O1_FACILITY_SEASON_CHANCE = 0.25
+export const O1_SUPPORTER_LETTER_SEASON_CHANCE = 0.25
+
+/**
+ * "Fyrar sällan" är en save- och säsongsseedad grind, inte ett nytt kast varje
+ * omgång i triggerfönstret. Samma karriär+säsong ger därför samma besked även
+ * om generatorn anropas flera gånger eller en save laddas om.
+ */
+export function passesO1SeasonalEventRoll(
+  game: Pick<SaveGame, 'id' | 'worldSeed' | 'managedClubId' | 'currentSeason'>,
+  eventKey: 'facility_community' | 'supporter_letter',
+  probability: number,
+): boolean {
+  const saveSeed = game.worldSeed ?? game.id
+  const seed = fixtureSeed(`${saveSeed}:${game.managedClubId}:${game.currentSeason}:${eventKey}:o1`)
+  return mulberry32(seed)() < probability
+}
 
 function isKnown(game: SaveGame, id: string, alreadyQueued: Set<string>): boolean {
   return alreadyQueued.has(id) || (game.resolvedEventIds ?? []).includes(id)
@@ -36,6 +54,7 @@ export function generateFacilityCommunityCostEvent(
     && club.finances >= O1_FACILITY_COST
     && facilityLevel < 80
     && !game.facilityState?.activeProject
+    && passesO1SeasonalEventRoll(game, 'facility_community', O1_FACILITY_SEASON_CHANCE)
     && !isKnown(game, id, alreadyQueued)
   if (!eligible || !politician || !club) return null
 
@@ -147,6 +166,7 @@ export function generateSupporterLetterEvent(
     && group.mood >= 55
     && club !== undefined
     && club.finances >= O1_SUPPORTER_LETTER_COST
+    && passesO1SeasonalEventRoll(game, 'supporter_letter', O1_SUPPORTER_LETTER_SEASON_CHANCE)
     && !isKnown(game, id, alreadyQueued)
   if (!eligible || !group || !club) return null
 

@@ -10,9 +10,12 @@ import {
   O1_FACILITY_BONUS,
   O1_FACILITY_COMMUNITY_COST,
   O1_FACILITY_COST,
+  O1_FACILITY_SEASON_CHANCE,
   O1_SUPPORTER_LETTER_COST,
   O1_SUPPORTER_MOOD_GAIN,
+  O1_SUPPORTER_LETTER_SEASON_CHANCE,
   O1_YOUTH_DEVELOPMENT_COST,
+  passesO1SeasonalEventRoll,
 } from '../o1SystemEvents'
 import { klackLeaderVoiceId } from '../../voiceIntroductionService'
 import { generateEvents } from '../communityEvents'
@@ -28,9 +31,49 @@ function withClub(game: SaveGame, values: { finances?: number; facilities?: numb
   }
 }
 
+function withPassingO1Gates(
+  game: SaveGame,
+  keys: Array<'facility_community' | 'supporter_letter'>,
+): SaveGame {
+  for (let worldSeed = 1; worldSeed <= 10_000; worldSeed++) {
+    const candidate = { ...game, worldSeed }
+    const passes = keys.every(key => passesO1SeasonalEventRoll(
+      candidate,
+      key,
+      key === 'facility_community' ? O1_FACILITY_SEASON_CHANCE : O1_SUPPORTER_LETTER_SEASON_CHANCE,
+    ))
+    if (passes) return candidate
+  }
+  throw new Error(`Ingen testseed passerade O1-grindarna: ${keys.join(', ')}`)
+}
+
+describe('O1 — sällsynthetsgrind', () => {
+  it('kastar exakt en gång per save+säsong, inte på nytt varje omgång', () => {
+    const game = makeGame()
+    const first = passesO1SeasonalEventRoll(game, 'facility_community', O1_FACILITY_SEASON_CHANCE)
+    expect(passesO1SeasonalEventRoll(game, 'facility_community', O1_FACILITY_SEASON_CHANCE)).toBe(first)
+    expect(passesO1SeasonalEventRoll({ ...game, currentMatchday: 18 }, 'facility_community', O1_FACILITY_SEASON_CHANCE)).toBe(first)
+  })
+
+  it('håller de två återkommande O1-korten kring den namngivna 25-procentsnivån', () => {
+    const game = makeGame()
+    for (const [key, chance] of [
+      ['facility_community', O1_FACILITY_SEASON_CHANCE],
+      ['supporter_letter', O1_SUPPORTER_LETTER_SEASON_CHANCE],
+    ] as const) {
+      let hits = 0
+      for (let worldSeed = 1; worldSeed <= 1_000; worldSeed++) {
+        if (passesO1SeasonalEventRoll({ ...game, worldSeed }, key, chance)) hits++
+      }
+      expect(hits).toBeGreaterThanOrEqual(200)
+      expect(hits).toBeLessThanOrEqual(300)
+    }
+  })
+})
+
 describe('O1 2/4 — anläggningen som kostar orten', () => {
   it('kräver kommunrelation, bärkraft och ett ledigt generiskt anläggningsläge', () => {
-    const base = withClub(makeGame(), { finances: O1_FACILITY_COST, facilities: 60 })
+    const base = withClub(withPassingO1Gates(makeGame(), ['facility_community']), { finances: O1_FACILITY_COST, facilities: 60 })
     const game = {
       ...base,
       localPolitician: { ...base.localPolitician!, relationship: 55 },
@@ -47,7 +90,7 @@ describe('O1 2/4 — anläggningen som kostar orten', () => {
   })
 
   it('bygger ut genom de deklarerade ekonomi-, facilitets- och CS-effekterna', () => {
-    const base = withClub(makeGame(), { finances: 400_000, facilities: 60 })
+    const base = withClub(withPassingO1Gates(makeGame(), ['facility_community']), { finances: 400_000, facilities: 60 })
     const game = {
       ...base,
       communityStanding: 50,
@@ -128,7 +171,7 @@ describe('O1 3/4 — ungdomen som kan brännas', () => {
 
 describe('O1 4/4 — supporterbrevet', () => {
   function supporterGame(): SaveGame {
-    const base = withClub(makeGame(), { finances: 200_000 })
+    const base = withClub(withPassingO1Gates(makeGame(), ['supporter_letter']), { finances: 200_000 })
     const group = { ...base.supporterGroup!, mood: 60 }
     const voiceId = klackLeaderVoiceId(base.managedClubId, group.leader.name)
     return {
@@ -167,7 +210,7 @@ describe('O1 4/4 — supporterbrevet', () => {
 
 describe('O1 2–4 — ordinarie eventpipeline', () => {
   it('kopplar in alla tre generatorerna utan en separat processor', () => {
-    const base = withClub(makeGame(), { finances: 400_000, facilities: 60 })
+    const base = withClub(withPassingO1Gates(makeGame(), ['facility_community', 'supporter_letter']), { finances: 400_000, facilities: 60 })
     const youth = { ...base.youthTeam!.players[0], age: 17, currentAbility: 24, potentialAbility: 82 }
     const round = 12
     const own = base.players.filter(player => player.clubId === base.managedClubId).slice(0, 2).map(player => player.id)
