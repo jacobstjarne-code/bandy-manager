@@ -261,7 +261,7 @@ describe('arcService — återfall enligt kanonisk historik', () => {
     expect(veteranPeak.title).toMatch(/vill stanna — igen$/)
     expect(veteranPeak.choices.find(choice => choice.id === 'extend_veteran')).toMatchObject({
       label: 'Förläng ett år',
-      subtitle: 'Kontrakt +1 år · klackens stämning +6',
+      subtitle: 'Kontraktet förlängs · lyfter stämningen på läktaren',
       effect: expect.objectContaining({ subEffects: expect.stringContaining('"contractYears":1') }),
     })
 

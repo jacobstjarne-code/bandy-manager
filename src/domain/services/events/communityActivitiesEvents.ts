@@ -236,7 +236,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'postpone',
             label: 'Skjut upp det',
-            subtitle: '🏗️ -5 faciliteter',
+            subtitle: 'anläggningen försvagas',
             effect: { type: 'tempFacilities', amount: -1 },
           },
         ],
@@ -286,7 +286,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'fika',
             label: 'Klart vi fixar fika',
-            subtitle: '💰 -500 kr · 💛 +8 fanMood',
+            subtitle: 'kostar 500 kr · lyfter stämningen på läktaren',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: -500 },
               { type: 'fanMood', amount: 8 },
@@ -317,7 +317,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'go',
             label: 'Vi kör bilbingo',
-            subtitle: '💰 engångsintäkt · 💛 +5 fanMood',
+            subtitle: 'engångsintäkt · lyfter stämningen på läktaren',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 20000 },
               { type: 'fanMood', amount: 5 },
@@ -355,7 +355,7 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'renovate',
             label: 'Renovera (−25 000 kr)',
-            subtitle: '💰 -25 tkr · 🏗️ +15 faciliteter',
+            subtitle: 'kostar 25 tkr · anläggningen stärks',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: -25000 },
               { type: 'facilitiesUpgrade', amount: 15 },

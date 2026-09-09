@@ -82,7 +82,7 @@ export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame, triggerPro
         // baserad special-casing, effekten deklareras noOp här och
         // appliceras på riktigt vid resolution, samma mönster som
         // mecenatavgångarna).
-        subtitle: '+15 moral (kan slå tillbaka)',
+        subtitle: 'lyfter spelaren (kan slå tillbaka)',
         effect: { type: 'noOp' },
       },
       {
@@ -220,7 +220,7 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string, triggerProo
     {
       id: 'promise',
       label: 'Lova mer speltid',
-      subtitle: '+10 moral',
+      subtitle: 'lyfter spelaren',
       effect: { type: 'boostMorale', targetPlayerId: playerId, value: 10 },
     },
     {
@@ -279,7 +279,7 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number,
       {
         id: 'vila',
         label: 'Ge honom vila',
-        subtitle: '+10 moral',
+        subtitle: 'lyfter spelaren',
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
           { type: 'boostMorale', targetPlayerId: player.id, amount: 10 },
           { type: 'restPlayer', targetPlayerId: player.id, amount: 1 },
@@ -288,13 +288,13 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number,
       {
         id: 'press',
         label: 'Han klarar det',
-        subtitle: '-3 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
       },
       {
         id: 'goPro',
         label: `Erbjud heltidskontrakt (lön ×1.5 → ${formatSalary(player.salary * 1.5)})`,
-        subtitle: `💰 +${Math.round((player.salary * 0.5) / 1000)} tkr/mån · +15 moral · ⭐ bättre träningseffekt`,
+        subtitle: `+${Math.round((player.salary * 0.5) / 1000)} tkr/mån · lyfter spelaren · bättre träningseffekt`,
         effect: {
           type: 'makeFullTimePro',
           targetPlayerId: player.id,
@@ -332,19 +332,19 @@ export function generatePlayerMediaEvent(
       {
         id: 'talk',
         label: 'Prata med spelaren privat',
-        subtitle: '+8 moral',
+        subtitle: 'lyfter spelaren',
         effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
       },
       {
         id: 'confront',
         label: 'Konfrontera honom om att gå till media',
-        subtitle: '-5 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
       },
       {
         id: 'ignore',
         label: 'Ignorera — det blåser över',
-        subtitle: '-2 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
       },
     ],
@@ -375,7 +375,7 @@ export function generatePlayerPraiseEvent(
       {
         id: 'great',
         label: 'Fint att höra!',
-        subtitle: '+3 moral båda',
+        subtitle: 'lyfter båda spelarna',
         // 2.5-svepets fjärde runda (2026-08-23): multiEffect-resolverns
         // boostMorale-gren läser sub.amount, inte sub.value (U3:s
         // standardfält för alla andra subEffect-typer). 'value' här gav
@@ -438,7 +438,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
       {
         id: 'support',
         label: 'Ja — kör på, det behövs',
-        subtitle: `💛 Lagets moral +${isHighForm ? 8 : 5} · styrelsens tålamod −3`,
+        subtitle: 'lyfter humöret i truppen · tär på styrelsens tålamod',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -450,7 +450,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
       {
         id: 'take_charge',
         label: 'Jag sköter det',
-        subtitle: '💛 Kaptenens moral −5',
+        subtitle: 'riskerar missnöje hos kaptenen',
         effect: { type: 'boostMorale', value: -5, targetPlayerId: captain.id },
       },
       {
@@ -503,7 +503,7 @@ export function generateVarselEvent(
         // varslet gäller bara dessa namngivna spelare).
         id: 'support',
         label: 'Ge de berörda spelarna ditt stöd',
-        subtitle: '+5 moral för alla berörda',
+        subtitle: 'lyfter alla berörda spelare',
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
           players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: 5 }))
         ) },
@@ -511,7 +511,7 @@ export function generateVarselEvent(
       {
         id: 'offer_pro',
         label: `Erbjud heltidskontrakt åt alla (lönekostnad ×1.5)`,
-        subtitle: `💰 höjd lönekostnad · +15 moral · ⭐ storyline`,
+        subtitle: 'höjd lönekostnad · lyfter spelaren · öppnar en berättelse',
         // Jacobs dom 2026-08-23 (O2-svepets prioriterade fix, före allt
         // annat i O2): value:0 satte hela truppens lön till 0 kr —
         // sub.value ?? p.salary behandlar inte 0 som saknat. Samma
@@ -530,7 +530,7 @@ export function generateVarselEvent(
         // ny speltext); ny avhoppsmekanik är en separat spec-fråga.
         id: 'nothing',
         label: 'Det är tråkigt, men inte vårt problem',
-        subtitle: '-8 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
           players.map(p => ({ type: 'boostMorale', targetPlayerId: p.id, amount: -8 }))
         ) },
@@ -560,13 +560,13 @@ export function generatePromotionOfferEvent(player: Player, season: number, trig
       {
         id: 'encourage',
         label: 'Uppmuntra honom — jobbet går först',
-        subtitle: '+8 moral',
+        subtitle: 'lyfter spelaren',
         effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
       },
       {
         id: 'discourage',
         label: 'Be honom tacka nej — bandyn behöver honom',
-        subtitle: '-3 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
       },
     ],
@@ -593,13 +593,13 @@ export function generateShiftConflictEvent(player: Player, matchRound: number, t
       {
         id: 'skip_warmup',
         label: 'OK — han ansluter direkt till match',
-        subtitle: '-2 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
       },
       {
         id: 'bench',
         label: 'Sätt honom på bänken istället',
-        subtitle: '-5 moral',
+        subtitle: 'riskerar missnöje hos spelaren',
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
           { type: 'boostMorale', targetPlayerId: player.id, amount: -5 },
           { type: 'restPlayer', targetPlayerId: player.id, amount: 1 },
@@ -638,7 +638,7 @@ export function generateCoworkerBondEvent(
       {
         id: 'great',
         label: 'Fantastiskt — uppmuntra det',
-        subtitle: '+5 moral båda',
+        subtitle: 'lyfter båda spelarna',
         // 2.5-svepets fjärde runda (2026-08-23): samma fältnamnsmiss som
         // playerPraiseEvent (value istf amount) — här utan synligt symptom
         // bara för att 5 råkar sammanfalla med resolverns default (?? 5).
@@ -681,7 +681,7 @@ export function generateJournalistExclusiveEvent(
       {
         id: 'accept',
         label: 'Ja — kör på',
-        subtitle: `+10 moral (${player.firstName}) · 📰 bra press · 🤝 +5 journalistrelation`,
+        subtitle: `lyfter ${player.firstName} · värmer pressen`,
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -694,7 +694,7 @@ export function generateJournalistExclusiveEvent(
       {
         id: 'decline',
         label: 'Nej — vi håller oss i bakgrunden just nu',
-        subtitle: '📰 -5 journalistrelation',
+        subtitle: 'kyler pressen',
         effect: { type: 'journalistRelationship', amount: -5 },
       },
     ],
@@ -728,20 +728,20 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
     choices: [
       {
         id: 'invite_right',
-        label: `Bjud in till ${eventLabel} (+${happinessBonusRight} happiness)`,
-        subtitle: `💰 ${eventCost.toLocaleString('sv')} kr · +${happinessBonusRight} happiness`,
+        label: `Bjud in till ${eventLabel}`,
+        subtitle: `${eventCost.toLocaleString('sv')} kr · gläder mecenaten`,
         effect: { type: 'mecenatHappiness', targetMecenatId: mec.id, amount: happinessBonusRight, value: -eventCost },
       },
       {
         id: 'invite_generic',
-        label: 'Bjud in på match nästa hemmagång (+8 happiness)',
-        subtitle: '🎟️ Gratis · +8 happiness',
+        label: 'Bjud in på match nästa hemmagång',
+        subtitle: 'Gratis · gläder mecenaten',
         effect: { type: 'mecenatHappiness', targetMecenatId: mec.id, amount: happinessBonusWrong, value: 0 },
       },
       {
         id: 'ignore',
         label: 'Avvakta — det löser sig',
-        subtitle: 'Ingen åtgärd · risk att happiness fortsätter falla',
+        subtitle: 'Ingen åtgärd · sätter mecenaten på prov',
         effect: { type: 'noOp', value: 0 },
       },
     ],

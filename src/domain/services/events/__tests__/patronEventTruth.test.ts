@@ -105,13 +105,13 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
     })
   })
 
-  it('krismötet ger de +30 relation som kortet anger och behåller patronen', () => {
+  it('krismötet beskriver relationsriktningen och ger exakt +30 samt behåller patronen', () => {
     const base = withPatron(20)
     const event = generatePatronEvents(base, 8, new Set(), () => 0)
       .find(candidate => candidate.id === 'patron_withdraw_s2026_r8')!
     const result = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'meet', undefined, true)
 
-    expect(event.choices.find(choice => choice.id === 'meet')?.subtitle).toContain('+30 relation')
+    expect(event.choices.find(choice => choice.id === 'meet')?.subtitle).toContain('gläder patronen')
     expect(result.patron?.happiness).toBe(50)
     expect(result.patron?.isActive).toBe(true)
   })

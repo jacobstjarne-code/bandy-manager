@@ -33,9 +33,22 @@ describe('mergeResolvedChoices', () => {
   })
 
   it('inget resolverat alls: tomma resultat', () => {
-    const { resolvedEventIds, chosenLabels } = mergeResolvedChoices([], new Set(), {})
+    const { resolvedEventIds, chosenLabels, chosenOutcomes } = mergeResolvedChoices([], new Set(), {})
     expect(resolvedEventIds.size).toBe(0)
     expect(chosenLabels).toEqual({})
+    expect(chosenOutcomes).toEqual({})
+  })
+
+  it('visar det exakta efterkvittot från persisterade strukturerade deltan', () => {
+    const persisted = [{
+      eventId: 'ev3', choiceId: 'yes', label: 'Gör det',
+      outcomeDeltas: [
+        { resource: 'fanMood' as const, delta: 5 },
+        { resource: 'boardPatience' as const, delta: -3 },
+      ],
+    }]
+    const { chosenOutcomes } = mergeResolvedChoices(persisted, new Set(), {})
+    expect(chosenOutcomes.ev3).toBe('Stämningen på läktaren +5 · Styrelsens tålamod −3')
   })
 })
 

@@ -26,7 +26,7 @@ export function generateSponsorEvents(
             // få en kostnad. Gratis-god förblir gratis-god.
             id: 'send_player',
             label: 'Skicka en spelare till butiken',
-            subtitle: '💰 +5 tkr · ⭐ +2 communityStanding',
+            subtitle: '+5 tkr · orten värmer',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 5000 },
               { type: 'communityStanding', amount: 2 },

@@ -31,6 +31,7 @@ import {
 import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 import { canEventPassVoiceGate, recordVoiceIntroduction } from '../voiceIntroductionService'
+import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -43,23 +44,26 @@ import { canEventPassVoiceGate, recordVoiceIntroduction } from '../voiceIntroduc
  * vägens ANDRA skrivning också — `resolvedEventIds`. Se recordResolvedId nedan.
  */
 function recordResolvedChoice(
-  game: SaveGame,
+  before: SaveGame,
+  after: SaveGame,
   event: Pick<GameEvent, 'id' | 'type' | 'choices'>,
   choiceId: string,
   label: string,
   madeByPlayer: boolean,
 ): SaveGame['resolvedChoices'] {
-  const resolutionOrdinal = (game.resolvedChoices ?? [])
+  const resolutionOrdinal = (after.resolvedChoices ?? [])
     .filter(candidate => candidate.eventId === event.id)
     .length + 1
-  return [...(game.resolvedChoices ?? []), {
+  const outcomeDeltas = captureResolvedChoiceOutcome(before, after)
+  return [...(after.resolvedChoices ?? []), {
     resolutionId: `${event.id}:${resolutionOrdinal}`,
     eventId: event.id,
     eventType: event.type,
     choiceId,
     label,
     madeByPlayer,
-    decisionKind: event.choices.length > 1 ? 'decision' : 'acknowledgement',
+    decisionKind: event.choices.length > 1 ? 'decision' as const : 'acknowledgement' as const,
+    ...(outcomeDeltas.length > 0 ? { outcomeDeltas } : {}),
   }].slice(-200)
 }
 
@@ -338,7 +342,7 @@ export function resolveEvent(
     let resolvedGame: SaveGame = {
       ...afterEffects,
       pendingEvents: (afterEffects.pendingEvents ?? []).filter(e => e.id !== eventId),
-      resolvedChoices: recordResolvedChoice(afterEffects, event, choiceId, choice.label, madeByPlayer),
+      resolvedChoices: recordResolvedChoice(game, afterEffects, event, choiceId, choice.label, madeByPlayer),
       resolvedEventIds: recordResolvedId(afterEffects, eventId),
     }
     resolvedGame = appendSeasonDecisionLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer)
@@ -2470,7 +2474,7 @@ export function resolveEvent(
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
-    resolvedChoices: recordResolvedChoice(updatedGame, event, choiceId, choice.label, madeByPlayer),
+    resolvedChoices: recordResolvedChoice(game, updatedGame, event, choiceId, choice.label, madeByPlayer),
     narrativeBeatLog: logNarrativeBeat(
       updatedGame, event.type, updatedGame.currentSeason, updatedGame.currentMatchday,
       event.systemhandelse,

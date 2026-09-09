@@ -172,7 +172,11 @@ export function GranskaScreen() {
   // resolvedEventIds/chosenLabels ovan är bara en optimistisk overlay,
   // game.resolvedChoices är den nedskrivna sanningen som överlever en
   // remount/omladdning.
-  const { resolvedEventIds: effectiveResolvedEventIds, chosenLabels: effectiveChosenLabels } =
+  const {
+    resolvedEventIds: effectiveResolvedEventIds,
+    chosenLabels: effectiveChosenLabels,
+    chosenOutcomes: effectiveChosenOutcomes,
+  } =
     mergeResolvedChoices(game.resolvedChoices ?? [], resolvedEventIds, chosenLabels)
 
   // M10 (audit 5c9a7a8, 2026-08-24) — rotorsak rapporterad separat
@@ -263,6 +267,7 @@ export function GranskaScreen() {
             pendingEvents={pendingEvents}
             resolvedEventIds={effectiveResolvedEventIds}
             chosenLabels={effectiveChosenLabels}
+            chosenOutcomes={effectiveChosenOutcomes}
             fadeIn={fadeIn}
             onChoice={handleChoice}
             onResolve={handleResolveReactions}
@@ -286,6 +291,7 @@ export function GranskaScreen() {
             pendingEvents={pendingEvents}
             resolvedEventIds={effectiveResolvedEventIds}
             chosenLabels={effectiveChosenLabels}
+            chosenOutcomes={effectiveChosenOutcomes}
             onChoice={handleChoice}
           />
         )}

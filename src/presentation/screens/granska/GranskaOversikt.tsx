@@ -238,6 +238,7 @@ interface GranskaOversiktProps {
   pendingEvents: GameEvent[]
   resolvedEventIds: Set<string>
   chosenLabels: Record<string, string>
+  chosenOutcomes: Record<string, string>
   fadeIn: (i: number) => React.CSSProperties
   onChoice: (eventId: string, choiceId: string, choiceLabel: string) => void
   onResolve: (ids: string[]) => void
@@ -258,7 +259,7 @@ interface GranskaOversiktProps {
 export function GranskaOversikt({
   game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
-  keyMoments, pendingEvents, resolvedEventIds, chosenLabels, fadeIn, onChoice, onResolve,
+  keyMoments, pendingEvents, resolvedEventIds, chosenLabels, chosenOutcomes, fadeIn, onChoice, onResolve,
   rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport, axes,
 }: GranskaOversiktProps) {
   const navigate = useNavigate()
@@ -672,6 +673,7 @@ export function GranskaOversikt({
                   tags={tags}
                   resolved={resolved}
                   chosenLabel={chosenLabels[event.id]}
+                  chosenOutcome={chosenOutcomes[event.id]}
                   choices={event.choices}
                   onChoose={(id, label) => onChoice(event.id, id, label)}
                 />
@@ -710,6 +712,7 @@ export function GranskaOversikt({
             bodyAsQuote
             resolved={resolvedWithAssertedLabel(pc.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[pc.id]}
+            chosenOutcome={chosenOutcomes[pc.id]}
             choices={pc.choices}
             onChoose={(id, label) => onChoice(pc.id, id, label)}
           />
@@ -731,6 +734,7 @@ export function GranskaOversikt({
             bodyAsQuote
             resolved={resolvedWithAssertedLabel(cp.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[cp.id]}
+            chosenOutcome={chosenOutcomes[cp.id]}
             choices={cp.choices}
             onChoose={(id, label) => onChoice(cp.id, id, label)}
           />
@@ -750,6 +754,7 @@ export function GranskaOversikt({
             bodyAsQuote
             resolved={resolvedWithAssertedLabel(rm.id, resolvedEventIds, chosenLabels)}
             chosenLabel={chosenLabels[rm.id]}
+            chosenOutcome={chosenOutcomes[rm.id]}
             choices={rm.choices}
             onChoose={(id, label) => onChoice(rm.id, id, label)}
           />

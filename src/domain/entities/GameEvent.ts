@@ -81,7 +81,10 @@ export type ConsequenceLevel = 'neutral' | 'positive' | 'costly'
 export interface EventChoice {
   id: string
   label: string
-  subtitle?: string    // Consequence preview: "💛 +8 fanMood · ⭐ +3 reputation"
+  /** O12 §2: kvalitativ förhandstext — riktning + berörd person/system.
+   * Exakta tal är förbjudna här utom pengar; de faktiska icke-pengadeltana
+   * skrivs efter resolution till ResolvedChoice.outcomeDeltas. */
+  subtitle?: string
   /** D1 punkt 3. 'neutral'/'positive' visar ALDRIG en markör (facit-förbud,
    *  O12 — att märka ut det goda valet är facit). 'costly' visar costLabel.
    *  ALDRIG --danger eller ⚠ i renderingslagret — hård spärr i domen: rött

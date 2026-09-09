@@ -287,7 +287,7 @@ export function generatePostAdvanceEvents(
             {
               id: 'ok',
               label: 'Bra jobbat!',
-              subtitle: '+5 moral',
+              subtitle: 'lyfter spelaren',
               effect: { type: 'boostMorale', targetPlayerId: picked.pid, value: 5 },
             },
           ],
@@ -728,7 +728,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'accept',
             label: 'Tacka ja — desperatläget kräver det',
-            subtitle: '💰 +150 tkr · ⭐ -5 communityStanding · 👤 ny styrelseledamot',
+            subtitle: '+150 tkr · orten kyler · ny styrelseledamot',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 150000 },
               { type: 'communityStanding', amount: -5 },
@@ -737,7 +737,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'decline',
             label: 'Tacka nej — vi klarar oss på annat sätt',
-            subtitle: '⚠️ -5 styrelsens tålamod',
+            subtitle: 'tär på styrelsens tålamod',
             effect: { type: 'boardPatience', amount: -5 },
           },
         ],
@@ -789,7 +789,7 @@ export function generatePostAdvanceEvents(
             {
               id: 'sell',
               label: `Sälj ${playerName} — stärk kassan med 180 000 kr`,
-              subtitle: '💰 +180 tkr · ⭐ -12 communityStanding · 💛 -15 fanMood · 📰 -10 journalistrelation',
+              subtitle: '+180 tkr · orten kyler · grumlar stämningen · kyler pressen',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'income', amount: 180000 },
                 { type: 'communityStanding', amount: -12 },
@@ -800,7 +800,7 @@ export function generatePostAdvanceEvents(
             {
               id: 'keep',
               label: 'Behåll honom — låt underskottet bestå',
-              subtitle: '💰 kassan oförändrad · ⭐ +5 communityStanding · 💛 +8 fanMood',
+              subtitle: 'kassan oförändrad · orten värmer · lyfter stämningen på läktaren',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'fanMood', amount: 8 },
@@ -977,7 +977,7 @@ export function buildSponsorOfferEvent(
         // EventChoice.subtitle ovan — rivalNoticeLine (Jacob, 2026-08-26,
         // ersätter det tidigare obelagda rivalTenureLine, se #16 ovan).
         subtitle: rivalSponsor
-          ? `${rivalNoticeLine} · ⭐ Anseende ${COMMUNITY_STANDING_DELTA_SPONSOR_CONFLICT} · ${visibilityLine}`
+          ? `${rivalNoticeLine} · orten kyler · ${visibilityLine}`
           : `💰 +${totalFmt} totalt · ${visibilityLine}`,
         effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
       },

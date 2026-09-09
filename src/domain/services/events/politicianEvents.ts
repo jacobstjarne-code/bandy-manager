@@ -49,14 +49,14 @@ export function generatePoliticianEvents(
             {
               id: 'promise',
               label: 'Lyft fram juniorverksamheten',
-              subtitle: '🤝 +10 relation · politikern nöjd',
+              subtitle: 'stärker banden till kommunen · politikern nöjd',
               // M29 (textaudit 2026-07-03): effekten var +15, subtitlen lovade +10 — synkad mot subtitlen.
               effect: { type: 'politicianRelationship', amount: 10 },
             },
             {
               id: 'decline',
               label: 'Vi fokuserar på a-laget',
-              subtitle: '🤝 -5 relation',
+              subtitle: 'sätter kommunen på tvären',
               effect: { type: 'politicianRelationship', amount: -5 },
             },
           ],
@@ -80,7 +80,7 @@ export function generatePoliticianEvents(
             {
               id: 'comply',
               label: 'Presentera budget och sparplan',
-              subtitle: '🤝 +8 relation · 💰 kommunbidrag +5 tkr',
+              subtitle: 'stärker banden till kommunen · kommunbidrag +5 tkr',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'politicianRelationship', amount: 8 },
                 { type: 'kommunBidragChange', amount: 5000 },
@@ -89,7 +89,7 @@ export function generatePoliticianEvents(
             {
               id: 'pushback',
               label: 'Ifrågasätt nedskärningarna',
-              subtitle: '🤝 -5 relation',
+              subtitle: 'sätter kommunen på tvären',
               // M29 (textaudit 2026-07-03): effekten ändrade bara kommunbidraget, subtitlen
               // lovade en relationsförändring som aldrig skedde — synkad mot subtitlen.
               effect: { type: 'politicianRelationship', amount: -5 },
@@ -115,7 +115,7 @@ export function generatePoliticianEvents(
             {
               id: 'welcome',
               label: 'Välkomna kommunens engagemang',
-              subtitle: '🤝 +12 relation · ⭐ +5 reputation',
+              subtitle: 'stärker banden till kommunen · stärker klubbens rykte',
               // M29 (textaudit 2026-07-03): effekten ändrade bara kommunbidraget (nämns inte
               // i subtitlen) och gav varken relation eller reputation — synkad mot subtitlen.
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
@@ -126,7 +126,7 @@ export function generatePoliticianEvents(
             {
               id: 'independent',
               label: 'Behåll föreningens självständighet',
-              subtitle: '🤝 -5 relation',
+              subtitle: 'sätter kommunen på tvären',
               // M29 (textaudit 2026-07-03): effekten var -8, subtitlen lovade -5 — synkad mot subtitlen.
               effect: { type: 'politicianRelationship', amount: -5 },
             },
@@ -153,7 +153,7 @@ export function generatePoliticianEvents(
               // få en kostnad. Gratis-god förblir gratis-god.
               id: 'start_program',
               label: 'Starta programmet',
-              subtitle: '💛 +5 fanMood · ⭐ +3 communityStanding · 💰 +6 000 kr/sä kommunbidrag',
+              subtitle: 'lyfter stämningen på läktaren · orten värmer · +6 000 kr/säsong i kommunbidrag',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'kommunBidragChange', amount: 6000 },
                 { type: 'fanMood', amount: 5 },
@@ -164,13 +164,13 @@ export function generatePoliticianEvents(
             {
               id: 'counter',
               label: 'Föreslå ungdomsgrupp istället — kommunen driver',
-              subtitle: '⭐ +1 communityStanding · ingen kostnad',
+              subtitle: 'orten värmer · ingen kostnad',
               effect: { type: 'communityStanding', amount: 1 },
             },
             {
               id: 'already_open',
               label: 'Tacka nej — vi har inte kapacitet',
-              subtitle: `🤝 -5 relation med ${politician.name}`,
+              subtitle: `sätter kommunen på tvären · ${politician.name} berörs`,
               effect: { type: 'politicianRelationship', amount: -5 },
             },
           ],
@@ -204,7 +204,7 @@ export function generatePoliticianEvents(
             {
               id: 'invite',
               label: 'Bjud in politikern till en match',
-              subtitle: '🤝 +5-10 relation',
+              subtitle: 'stärker banden till kommunen',
               // M29 (textaudit 2026-07-03): effekten var +20, dubbelt så mycket som subtitlens
               // övre gräns lovade — satt till intervallets topp (10).
               effect: { type: 'politicianRelationship', amount: 10 },
@@ -212,13 +212,13 @@ export function generatePoliticianEvents(
             {
               id: 'open_letter',
               label: 'Skriv ett öppet brev i tidningen',
-              subtitle: '⭐ +3 communityStanding',
+              subtitle: 'orten värmer',
               effect: { type: 'communityStanding', amount: 3 },
             },
             {
               id: 'board_contact',
               label: 'Be styrelsen ta kontakt',
-              subtitle: '📋 +2 styrelsens tålamod · 🤝 -3 relation',
+              subtitle: 'lugnar styrelsen · sätter kommunen på tvären',
               consequenceLevel: 'costly',
               costLabel: `Kostar relationen till ${politician.name}`,
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
@@ -255,33 +255,33 @@ export function generatePoliticianEvents(
       if (agenda === 'savings') {
         demandBody = `${politician2.name} ringer och vill diskutera kommunens bidrag. ${pro2.subj} oroar sig för föreningens ekonomi.`
         choices = [
-          { id: 'confirm', label: 'Lägg fram vår nuvarande lönebudget', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
-          { id: 'pushback', label: 'Försvara investeringstakten', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'confirm', label: 'Lägg fram vår nuvarande lönebudget', subtitle: 'stärker banden till kommunen', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'pushback', label: 'Försvara investeringstakten', subtitle: 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'youth') {
         const hasSchool = game.communityActivities?.bandySchool
         demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? `${pro2.subj} ser positivt på bandyskolan.` : `${pro2.subj} vill se en bandyskola.`}`
         choices = [
-          { id: 'confirm', label: hasSchool ? 'Visa upp bandyskolan' : 'Bandyskola ryms inte i årets budget', subtitle: hasSchool ? '🤝 +15 relation' : '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
-          { id: 'focus', label: 'A-laget är vår prioritet', subtitle: '🤝 -8 relation', effect: { type: 'politicianRelationship', amount: -8 } },
+          { id: 'confirm', label: hasSchool ? 'Visa upp bandyskolan' : 'Bandyskola ryms inte i årets budget', subtitle: hasSchool ? 'stärker banden till kommunen' : 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
+          { id: 'focus', label: 'A-laget är vår prioritet', subtitle: 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: -8 } },
         ]
       } else if (agenda === 'prestige') {
         demandBody = `${politician2.name} vill att kommunen syns med laget. ${pro2.subj} ser er som ett varumärke för regionen.`
         choices = [
-          { id: 'welcome', label: 'Tacka ja till kommunens samarbete', subtitle: '🤝 +12 relation', effect: { type: 'politicianRelationship', amount: 12 } },
-          { id: 'independent', label: 'Föreningen är fristående', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'welcome', label: 'Tacka ja till kommunens samarbete', subtitle: 'stärker banden till kommunen', effect: { type: 'politicianRelationship', amount: 12 } },
+          { id: 'independent', label: 'Föreningen är fristående', subtitle: 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'inclusion') {
         demandBody = `${politician2.name} vill att föreningen öppnar upp för fler grupper i samhället.`
         choices = [
-          { id: 'program', label: 'Lyft föreningens öppna verksamhet tillsammans', subtitle: '⭐ +5 communityStanding', effect: { type: 'communityStanding', amount: 5 } },
-          { id: 'already', label: 'Avvisa behovet av en särskild satsning', subtitle: '🤝 -3 relation', effect: { type: 'politicianRelationship', amount: -3 } },
+          { id: 'program', label: 'Lyft föreningens öppna verksamhet tillsammans', subtitle: 'orten värmer', effect: { type: 'communityStanding', amount: 5 } },
+          { id: 'already', label: 'Avvisa behovet av en särskild satsning', subtitle: 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: -3 } },
         ]
       } else if (agenda === 'infrastructure') {
         demandBody = `${politician2.name} vill säkerställa att era anläggningar håller hög standard.`
         choices = [
-          { id: 'confirm', label: 'Instäm: anläggningarna måste prioriteras', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
-          { id: 'later', label: 'Säg att frågan inte är akut', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'confirm', label: 'Instäm: anläggningarna måste prioriteras', subtitle: 'stärker banden till kommunen', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'later', label: 'Säg att frågan inte är akut', subtitle: 'sätter kommunen på tvären', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       }
 
@@ -320,19 +320,19 @@ export function generatePoliticianEvents(
           {
             id: 'yes',
             label: 'Skicka kontaktvägen till öppna provträningar',
-            subtitle: '🤝 +20 relation',
+            subtitle: 'stärker banden till kommunen',
             effect: { type: 'politicianRelationship', amount: 20 },
           },
           {
             id: 'community',
             label: 'Hänvisa till ungdomsverksamheten',
-            subtitle: '🤝 +5 relation',
+            subtitle: 'stärker banden till kommunen',
             effect: { type: 'politicianRelationship', amount: 5 },
           },
           {
             id: 'no',
             label: 'Vi lämnar inga personliga rekommendationer',
-            subtitle: '🤝 -10 relation · ⭐ +3 styrelsens tålamod',
+            subtitle: 'sätter kommunen på tvären · lugnar styrelsen',
             consequenceLevel: 'costly',
             costLabel: `Kostar relationen till ${pol3.name}`,
             effect: { type: 'multiEffect', subEffects: JSON.stringify([

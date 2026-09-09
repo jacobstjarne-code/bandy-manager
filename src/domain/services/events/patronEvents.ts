@@ -54,13 +54,13 @@ export function generatePatronEvents(
             {
               id: 'welcome',
               label: 'Välkomna samarbetet',
-              subtitle: '🤝 +20 relation · 💰 årligt bidrag fortsätter',
+              subtitle: 'gläder patronen · årligt bidrag fortsätter',
               effect: { type: 'patronHappiness', amount: 20 },
             },
             {
               id: 'cautious',
               label: 'Tack, men vi tar det lugnt',
-              subtitle: '🤝 +5 relation · 💰 årligt bidrag fortsätter',
+              subtitle: 'gläder patronen · årligt bidrag fortsätter',
               effect: { type: 'patronHappiness', amount: 5 },
             },
           ],
@@ -92,13 +92,13 @@ export function generatePatronEvents(
             {
               id: 'promise',
               label: 'Visa förståelse',
-              subtitle: '🤝 +15 relation',
+              subtitle: 'gläder patronen',
               effect: { type: 'patronHappiness', amount: 15 },
             },
             {
               id: 'refuse',
               label: 'Jag tar egna beslut',
-              subtitle: '🤝 -10 relation',
+              subtitle: 'prövar patronens tålamod',
               effect: { type: 'patronHappiness', amount: -10 },
             },
           ],
@@ -126,7 +126,7 @@ export function generatePatronEvents(
             {
               id: 'meet',
               label: 'Boka ett möte',
-              subtitle: '🤝 +30 relation · bidraget behålls',
+              subtitle: 'gläder patronen · bidraget behålls',
               effect: { type: 'patronHappiness', amount: 30 },
             },
             {
@@ -176,19 +176,19 @@ export function generatePatronEvents(
                 : patron.wantsStyle === 'technical' ? 'tekniskt'
                 : patron.wantsStyle
               }`,
-              subtitle: '🤝 +12 relation',
+              subtitle: 'gläder patronen',
               effect: { type: 'patronHappiness', amount: 12 },
             },
             {
               id: 'diplomatic',
               label: 'Förklara taktiska skälen',
-              subtitle: '🤝 +5 relation',
+              subtitle: 'gläder patronen',
               effect: { type: 'patronHappiness', amount: 5 },
             },
             {
               id: 'refuse',
               label: 'Taktiken är min sak',
-              subtitle: '🤝 -15 relation',
+              subtitle: 'prövar patronens tålamod',
               effect: { type: 'patronHappiness', amount: -15 },
             },
           ],
@@ -218,7 +218,7 @@ export function generatePatronEvents(
             {
               id: 'thank',
               label: 'Tacka varmt',
-              subtitle: '🤝 +10 relation · 💰 bidrag mottaget',
+              subtitle: 'gläder patronen · bidrag mottaget',
               effect: {
                 type: 'multiEffect',
                 subEffects: JSON.stringify([
@@ -259,7 +259,7 @@ export function generatePatronEvents(
             {
               id: 'listen',
               label: 'Bjud in till styrelsemöte',
-              subtitle: '🤝 +20 relation · ⚠️ +10 inflytande',
+              subtitle: 'gläder patronen · patronens inflytande växer',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'patronHappiness', amount: 20 },
                 { type: 'patronInfluence', amount: 10 },
@@ -268,7 +268,7 @@ export function generatePatronEvents(
             {
               id: 'decline',
               label: 'Tacka men håll gränsen',
-              subtitle: '🤝 -5 relation',
+              subtitle: 'prövar patronens tålamod',
               effect: { type: 'patronHappiness', amount: -5 },
             },
           ],
@@ -296,13 +296,13 @@ export function generatePatronEvents(
             {
               id: 'apologize',
               label: 'Be om ursäkt och bjud på lunch',
-              subtitle: '🕰️ +20 tålamod',
+              subtitle: 'gläder patronen',
               effect: { type: 'patronInfluence', amount: 0, value: 20 },
             },
             {
               id: 'ignore',
               label: 'Det är min klubb, inte hans',
-              subtitle: '🤝 -50 relation · ⚠️ patronen kan lämna',
+              subtitle: 'prövar patronens tålamod rejält · patronen kan lämna',
               effect: { type: 'patronHappiness', amount: -50 },
             },
           ],

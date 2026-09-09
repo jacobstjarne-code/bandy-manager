@@ -96,12 +96,12 @@ describe('generateSocialEvent — säsongsminnet', () => {
   })
 })
 
-describe('mecenatlöften motsvarar deklarerad state-effekt', () => {
-  it('socialeventet lovar bara den relationseffekt som faktiskt appliceras', () => {
+describe('mecenatlöften motsvarar O12:s kvalitativa förhandstext och deklarerad state-effekt', () => {
+  it('socialeventet beskriver bara den relationseffekt som faktiskt appliceras', () => {
     const event = generateSocialEvent(makeMecenat(), 3, 10, zeroRand)
     const accept = event?.choices.find(choice => choice.id === 'accept')
 
-    expect(accept?.subtitle).toBe('🤝 +15 relation')
+    expect(accept?.subtitle).toBe('gläder mecenaten')
     expect(accept?.subtitle).not.toContain('träningsdag')
     expect(accept?.effect).toEqual({ type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 15 })
   })
@@ -111,7 +111,7 @@ describe('mecenatlöften motsvarar deklarerad state-effekt', () => {
     const accept = event?.choices.find(choice => choice.id === 'accept')
 
     expect(event?.body).not.toContain('halva kostnaden')
-    expect(accept?.subtitle).toBe('🤝 +10 relation')
+    expect(accept?.subtitle).toBe('gläder mecenaten')
     expect(accept?.effect).toEqual({ type: 'mecenatHappiness', targetMecenatId: 'mec1', amount: 10 })
   })
 
@@ -124,7 +124,7 @@ describe('mecenatlöften motsvarar deklarerad state-effekt', () => {
     const accept = event.choices.find(choice => choice.id === 'accept')
 
     expect(event.body).not.toMatch(/finansiera|kostnaden/)
-    expect(accept?.subtitle).toBe('🤝 +10 båda')
+    expect(accept?.subtitle).toBe('gläder båda mecenaterna')
     expect(accept?.effect.type).toBe('multiEffect')
   })
 })

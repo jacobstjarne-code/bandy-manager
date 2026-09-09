@@ -85,7 +85,7 @@ describe('varsel — de berörda spelarnas moral (var boostMorale utan targetPla
     const { event, affectedIds } = makeVarselEvent(game)
     expect(event.choices.find(choice => choice.id === 'support')).toMatchObject({
       label: 'Ge de berörda spelarna ditt stöd',
-      subtitle: '+5 moral för alla berörda',
+      subtitle: 'lyfter alla berörda spelare',
     })
     game = { ...game, pendingEvents: [event] }
     game = resolveEvent(game, event.id, 'support', undefined, true)

@@ -75,6 +75,8 @@ interface DecisionCardProps {
 
   resolved: boolean
   chosenLabel?: string
+  /** O12 §2: exakt kvitto, beräknat först efter applicerad state-diff. */
+  chosenOutcome?: string
   choices: EventChoice[]
   onChoose: (choiceId: string, choiceLabel: string) => void
   choicesLayout?: 'stack' | 'inline'
@@ -125,7 +127,7 @@ function modeWrapperStyle(mode: DecisionMode, isRound: boolean): CSSProperties {
 
 function DecisionCardContent({
   size = 'sm', theme = 'light', mode = 'dilemma', label, title, subtitle, body, bodyAsQuote, tags, whyNowLine,
-  resolved, chosenLabel, choices, onChoose, choicesLayout = 'stack', primaryChoiceId,
+  resolved, chosenLabel, chosenOutcome, choices, onChoose, choicesLayout = 'stack', primaryChoiceId,
 }: Omit<DecisionCardProps, 'shape' | 'accent' | 'entityId' | 'entitySource' | 'style'>) {
   const isNotis = mode === 'notis'
   const bodyColor = theme === 'dark' ? 'var(--text-light)' : 'var(--text-primary)'
@@ -138,9 +140,14 @@ function DecisionCardContent({
     <>
       <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{label}</SectionLabel>
       {resolved ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
           <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+          <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+            {chosenOutcome && (
+              <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontStyle: 'normal' }}>{chosenOutcome}</span>
+            )}
+          </span>
         </div>
       ) : (
         <>

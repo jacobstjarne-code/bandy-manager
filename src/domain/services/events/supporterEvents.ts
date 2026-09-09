@@ -34,7 +34,7 @@ export function generateSupporterEvents(
           {
             id: 'yes',
             label: 'Klart, låna lokalen',
-            subtitle: '💛 +5 klackens stämning · ⭐ +2 communityStanding',
+            subtitle: 'lyfter stämningen på läktaren · orten värmer',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 5 },
               { type: 'communityStanding', amount: 2 },
@@ -43,13 +43,13 @@ export function generateSupporterEvents(
           {
             id: 'maybe',
             label: 'Ja men håll det enkelt',
-            subtitle: '💛 +2 klackens stämning',
+            subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'supporterMood', amount: 2 },
           },
           {
             id: 'no',
             label: 'Vi har inte kapacitet just nu',
-            subtitle: '💛 -3 klackens stämning',
+            subtitle: 'grumlar stämningen',
             effect: { type: 'supporterMood', amount: -3 },
           },
         ],
@@ -71,7 +71,7 @@ export function generateSupporterEvents(
           {
             id: 'both',
             label: 'Bjud in båda på ett möte med truppen',
-            subtitle: '💛 +5 klackens stämning · 🙂 +3 publikstämning',
+            subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 5 },
               { type: 'fanMood', amount: 3 },
@@ -80,13 +80,13 @@ export function generateSupporterEvents(
           {
             id: 'sture',
             label: `Ge ${sture} rätt — traditionen är viktig`,
-            subtitle: '💛 −2 klackens stämning',
+            subtitle: 'grumlar stämningen',
             effect: { type: 'supporterMood', amount: -2 },
           },
           {
             id: 'elin',
             label: `Ge ${elin} rätt — klacken utvecklas`,
-            subtitle: '💛 +3 klackens stämning · +1 communityStanding',
+            subtitle: 'lyfter stämningen på läktaren · orten värmer',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 3 },
               { type: 'communityStanding', amount: 1 },
@@ -114,7 +114,7 @@ export function generateSupporterEvents(
           {
             id: 'respond_publicly',
             label: 'Svara offentligt — tacka för engagemanget',
-            subtitle: '💛 +8 klackens stämning · ⭐ +2 communityStanding',
+            subtitle: 'lyfter stämningen på läktaren · orten värmer',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 8 },
               { type: 'communityStanding', amount: 2 },
@@ -123,13 +123,13 @@ export function generateSupporterEvents(
           {
             id: 'meet_privately',
             label: `Bjud in ${tommy} på ett möte`,
-            subtitle: '💛 +5 klackens stämning',
+            subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'supporterMood', amount: 5 },
           },
           {
             id: 'ignore',
             label: 'Låt det passera',
-            subtitle: '💛 -2 klackens stämning',
+            subtitle: 'grumlar stämningen',
             effect: { type: 'supporterMood', amount: -2 },
           },
         ],
@@ -163,7 +163,7 @@ export function generateSupporterEvents(
           {
             id: 'subsidize',
             label: 'Subventionera bussen (5 000 kr)',
-            subtitle: '💰 −5 000 kr · 💛 +8 stämning · 🏠 +3 orten',
+            subtitle: 'kostar 5 000 kr · lyfter stämningen på läktaren · orten värmer',
             effect: {
               type: 'multiEffect',
               subEffects: JSON.stringify([
@@ -176,13 +176,13 @@ export function generateSupporterEvents(
           {
             id: 'encourage',
             label: 'Peppa dem — det är kul!',
-            subtitle: '💛 +5 klackens stämning',
+            subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'supporterMood', amount: 5 },
           },
           {
             id: 'acknowledge',
             label: 'Kul — lycka till!',
-            subtitle: '💛 +2 klackens stämning',
+            subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'supporterMood', amount: 2 },
           },
         ],

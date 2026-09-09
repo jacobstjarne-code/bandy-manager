@@ -38,9 +38,9 @@ describe('playerArc — produktionsvalens text motsvarar state', () => {
     const progress = progressArcs(game, 6)
     const event = progress.newEvents.find(candidate => candidate.id === `contract_peak_event_${arc.id}`)!
     expect(event.choices).toMatchObject([
-      { id: 'extend_now', subtitle: 'Kontrakt +1 år · moral +10', effect: { type: 'extendContract', contractYears: 1 } },
-      { id: 'wait_drama', subtitle: 'Kontraktet oförändrat · moral −5' },
-      { id: 'let_go', subtitle: 'Spelaren lämnar · moral −25' },
+      { id: 'extend_now', subtitle: 'Kontraktet förlängs · lyfter spelaren', effect: { type: 'extendContract', contractYears: 1 } },
+      { id: 'wait_drama', subtitle: 'Kontraktet oförändrat · riskerar missnöje hos spelaren' },
+      { id: 'let_go', subtitle: 'Spelaren lämnar · riskerar missnöje hos spelaren' },
     ])
 
     const pending = { ...game, activeArcs: progress.updatedArcs, pendingEvents: [event] }
@@ -127,9 +127,9 @@ describe('playerArc — produktionsvalens text motsvarar state', () => {
     const progress = progressArcs(game, 6)
     const event = progress.newEvents.find(candidate => candidate.id === `joker_peak_event_${arc.id}`)!
     expect(event.choices.find(choice => choice.id === 'back_joker')?.subtitle)
-      .toBe('💛 Moral +8 · disciplin −4')
+      .toBe('lyfter spelaren')
     expect(event.choices.find(choice => choice.id === 'bench_joker')?.subtitle)
-      .toBe('Vilar nästa match · moral −10')
+      .toBe('Vilar nästa match · riskerar missnöje hos spelaren')
 
     const result = resolveEvent({ ...game, activeArcs: progress.updatedArcs, pendingEvents: [event] }, event.id, 'bench_joker', undefined, true)
     expect(result.players.find(candidate => candidate.id === player.id)).toMatchObject({
@@ -178,19 +178,19 @@ describe('playerArc — produktionsvalens text motsvarar state', () => {
     }).some(candidate => candidate.type === 'joker_redemption')).toBe(false)
   })
 
-  it('hungrig- och veteranvalen visar samtliga faktiska deltan', () => {
+  it('hungrig- och veteranvalen beskriver riktningen utan att läcka exakta eller dolda deltan', () => {
     const hungry = makePeak('hungrig_breakthrough')
     const hungryResult = progressArcs({ ...hungry.base, activeArcs: [hungry.arc] }, 6)
     expect(hungryResult.newEvents[0].choices.find(choice => choice.id === 'back_him')?.subtitle)
-      .toBe('💛 Moral +5 · utvecklingstakt −4')
+      .toBe('lyfter spelaren')
 
     const veteran = makePeak('veteran_farewell')
     const veteranResult = progressArcs({ ...veteran.base, activeArcs: [veteran.arc] }, 6)
     const veteranEvent = veteranResult.newEvents[0]
     expect(veteranEvent.choices.find(choice => choice.id === 'extend_veteran')?.subtitle)
-      .toBe('Kontrakt +2 år · klackens stämning +6')
+      .toBe('Kontraktet förlängs · lyfter stämningen på läktaren')
     expect(veteranEvent.choices.find(choice => choice.id === 'farewell_veteran')?.subtitle)
-      .toBe('Spelaren lämnar · moral −20 · klackens stämning −14')
+      .toBe('Spelaren lämnar · grumlar stämningen')
   })
 
   it('hungrig-resolutionen fryser exakt målskytt, klubb och bara den bevisade islossningen', () => {

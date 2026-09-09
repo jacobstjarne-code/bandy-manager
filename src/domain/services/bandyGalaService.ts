@@ -140,7 +140,7 @@ export function generateGalaEvent(
       {
         id: 'attend',
         label: 'Gå på galan — visa upp klubben',
-        subtitle: hasWinner ? '⭐ +3 reputation · 💛 +5 fanMood' : '⭐ +1 reputation',
+        subtitle: hasWinner ? 'stärker klubbens rykte · lyfter stämningen på läktaren' : 'stärker klubbens rykte',
         effect: hasWinner
           ? { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'reputation', amount: 3 },

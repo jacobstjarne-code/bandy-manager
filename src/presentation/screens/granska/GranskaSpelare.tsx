@@ -19,10 +19,11 @@ interface GranskaSpelareProps {
   pendingEvents: GameEvent[]
   resolvedEventIds: Set<string>
   chosenLabels: Record<string, string>
+  chosenOutcomes: Record<string, string>
   onChoice: (eventId: string, choiceId: string, choiceLabel: string) => void
 }
 
-export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, resolvedEventIds, chosenLabels, onChoice }: GranskaSpelareProps) {
+export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, resolvedEventIds, chosenLabels, chosenOutcomes, onChoice }: GranskaSpelareProps) {
   if (!fixture || !fixture.report) return (
     <div className="card-sharp" style={{ margin: '0 0 6px', padding: '20px 14px', textAlign: 'center' }}>
       <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Spelarbetyg saknas</p>
@@ -65,6 +66,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   tags={relatedPlayer ? [{ label: `${relatedPlayer.firstName} ${relatedPlayer.lastName}`, tone: 'accent' }] : undefined}
                   resolved={resolvedEventIds.has(event.id)}
                   chosenLabel={chosenLabels[event.id]}
+                  chosenOutcome={chosenOutcomes[event.id]}
                   choices={event.choices ?? []}
                   onChoose={(id, label) => onChoice(event.id, id, label)}
                 />

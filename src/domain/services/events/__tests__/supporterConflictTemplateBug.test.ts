@@ -40,6 +40,6 @@ describe("supporter_conflict_ — 'sture'-valets subtitle är state-sann", () =>
 
     expect(stureChoice.subtitle).not.toContain('${elin}')
     expect(stureChoice.subtitle).not.toContain('Elin')
-    expect(stureChoice.subtitle).toBe('💛 −2 klackens stämning')
+    expect(stureChoice.subtitle).toBe('grumlar stämningen')
   })
 })

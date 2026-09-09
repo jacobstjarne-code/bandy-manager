@@ -1234,9 +1234,11 @@ export function generatePressConference(
   const choices = responses.map(r => ({
     id: r.id,
     label: r.label,
-    subtitle: r.moraleEffect !== 0
-      ? `${r.moraleEffect > 0 ? '+' : ''}${r.moraleEffect} moral`
-      : undefined,
+    subtitle: r.moraleEffect > 0
+      ? 'lyfter humöret i truppen'
+      : r.moraleEffect < 0
+        ? 'riskerar missnöje i truppen'
+        : undefined,
     effect: {
       type: 'pressResponse' as const,
       value: r.moraleEffect,
@@ -1248,7 +1250,7 @@ export function generatePressConference(
   choices.push({
     id: 'refuse_press',
     label: 'Vägra presskonferens',
-    subtitle: '-3 moral · journalisten irriterad',
+    subtitle: 'riskerar missnöje i truppen · kyler pressen',
     effect: {
       type: 'pressResponse' as const,
       value: -3,

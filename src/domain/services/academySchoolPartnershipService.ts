@@ -47,7 +47,7 @@ export function generateAcademySchoolPartnershipEvent(
       {
         id: 'take_all',
         label: 'Ta in alla tre',
-        subtitle: '+3 spelare till P19 · −8 tkr den här säsongen',
+        subtitle: 'fyller på P19',
         consequenceLevel: 'costly',
         costLabel: 'Kostar 8 tkr den här säsongen',
         effect: { type: 'income', amount: -8_000 },
@@ -55,7 +55,7 @@ export function generateAcademySchoolPartnershipEvent(
       {
         id: 'take_best',
         label: 'Ta in de två bästa',
-        subtitle: '+2 spelare till P19 · −5 tkr den här säsongen',
+        subtitle: 'fyller på P19 försiktigt',
         consequenceLevel: 'costly',
         costLabel: 'Kostar 5 tkr den här säsongen',
         effect: { type: 'income', amount: -5_000 },
@@ -63,7 +63,7 @@ export function generateAcademySchoolPartnershipEvent(
       {
         id: 'send_neighbor',
         label: 'Skicka dem till grannklubben',
-        subtitle: '+8 tkr engångsersättning · −5 orten',
+        subtitle: '+8 tkr engångsersättning · orten kyler',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([

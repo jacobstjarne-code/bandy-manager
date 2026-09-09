@@ -23,7 +23,7 @@ function baseGame(): SaveGame {
 }
 
 describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +5', () => {
-  it('subtitlen lovar +3 moral båda — resolvern ska leverera exakt det', () => {
+  it('subtitlen beskriver riktningen för båda — resolvern ska leverera exakt +3', () => {
     let game = baseGame()
     const [praiser, praised] = game.players.filter(p => p.clubId === game.managedClubId)
     game = {
@@ -33,7 +33,7 @@ describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +
       ),
     }
     const event = generatePlayerPraiseEvent(praiser, praised)
-    expect(event.choices[0].subtitle).toBe('+3 moral båda')
+    expect(event.choices[0].subtitle).toBe('lyfter båda spelarna')
     game = { ...game, pendingEvents: [event] }
 
     game = resolveEvent(game, event.id, 'great', undefined, true)
@@ -46,7 +46,7 @@ describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +
 })
 
 describe('generateCoworkerBondEvent — "great"-valet ger exakt +5 moral (redan rätt magnitud, fältet rättat ändå)', () => {
-  it('subtitlen lovar +5 moral båda — resolvern ska leverera exakt det', () => {
+  it('subtitlen beskriver riktningen för båda — resolvern ska leverera exakt +5', () => {
     let game = baseGame()
     const [player1, player2] = game.players.filter(p => p.clubId === game.managedClubId)
     const employer = findEmployerForJob(game.managedClubId, 'Lärare')!
@@ -63,7 +63,7 @@ describe('generateCoworkerBondEvent — "great"-valet ger exakt +5 moral (redan 
     const anchoredPlayer1 = game.players.find(p => p.id === player1.id)!
     const anchoredPlayer2 = game.players.find(p => p.id === player2.id)!
     const event = generateCoworkerBondEvent(anchoredPlayer1, anchoredPlayer2, employer.name)
-    expect(event.choices[0].subtitle).toBe('+5 moral båda')
+    expect(event.choices[0].subtitle).toBe('lyfter båda spelarna')
     expect(event.selectedPlayerIds).toEqual([player1.id, player2.id])
     expect(event.relatedClubId).toBe(game.managedClubId)
     game = { ...game, pendingEvents: [event] }

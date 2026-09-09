@@ -55,12 +55,12 @@ describe('captainSpeech — trigger, text och state', () => {
     })
   })
 
-  it('support deklarerar och levererar +8 lagmoral samt −3 boardPatience', () => {
+  it('support beskriver riktning före valet och levererar +8 lagmoral samt −3 boardPatience', () => {
     const { game, captainId } = makeLossStreakGame(80)
     const captain = game.players.find(player => player.id === captainId)!
     const event = generateCaptainSpeechEvent(captain, game.managedClubId, game.currentSeason)
     expect(event.choices.find(choice => choice.id === 'support')?.subtitle)
-      .toBe('💛 Lagets moral +8 · styrelsens tålamod −3')
+      .toBe('lyfter humöret i truppen · tär på styrelsens tålamod')
 
     const before = {
       ...game,

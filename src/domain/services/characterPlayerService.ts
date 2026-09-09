@@ -113,7 +113,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'ceremony',
               label: 'Ordna en ceremoni inför hemmamatchen',
-              subtitle: '⭐ +5 samhällsstöd · 💰 -3 tkr',
+              subtitle: 'orten värmer · kostar 3 tkr',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'income', amount: -3000 },
@@ -122,7 +122,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'quiet',
               label: 'Uppmärksamma det internt — han förtjänar det stilla',
-              subtitle: '⭐ +2 samhällsstöd',
+              subtitle: 'orten värmer',
               effect: { type: 'communityStanding', amount: 2 },
             },
           ],
@@ -145,7 +145,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'yes',
               label: `Utse ${player.firstName} till kapten`,
-              subtitle: '⭐ +2 samhällsstöd',
+              subtitle: 'orten värmer',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'setCaptain', targetPlayerId: player.id },
                 { type: 'communityStanding', amount: 2 },
@@ -182,13 +182,13 @@ export function generateCharacterPlayerEvents(
             {
               id: 'support',
               label: 'Stötta hans ambitioner — öppen dörr om rätt erbjudande kommer',
-              subtitle: '🤝 +2 journalistrelation',
+              subtitle: 'värmer pressen',
               effect: { type: 'journalistRelationship', amount: 2 },
             },
             {
               id: 'keep',
               label: 'Be honom stanna ytterligare en säsong',
-              subtitle: '⭐ +1 samhällsstöd',
+              subtitle: 'orten värmer',
               effect: { type: 'communityStanding', amount: 1 },
             },
           ],

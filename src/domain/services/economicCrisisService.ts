@@ -172,7 +172,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
     if (richestMecenat) {
       choices.push({
         id: 'ask_mecenat',
-        label: 'Be mecenaten (+200 000 kr, lojalitet −30)',
+        label: 'Be mecenaten (+200 000 kr, sätter mecenaten på prov)',
         // targetMecenatId + mecenatHappinessDelta läses av
         // resolveEconomicCrisis-hanteraren själv (eventResolver.ts) —
         // INTE multiEffect/subEffects. resolveEconomicCrisis saknar en

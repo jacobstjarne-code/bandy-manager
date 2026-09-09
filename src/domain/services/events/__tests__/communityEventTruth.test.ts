@@ -32,7 +32,7 @@ describe('communityEvent — text och deklarerad state-effekt håller ihop', () 
     expect(result.communityStanding).toBe(Math.min(100, beforeStanding + 2))
   })
 
-  it('fikakvällen kostar 500 kr och ger exakt +8 fanMood som kortet säger', () => {
+  it('fikakvällen visar exakt pris och kvalitativ stämningsriktning, sedan appliceras +8 fanMood', () => {
     const base = { ...makeGame(), fanMood: 50 }
     const event = generateCommunityActivitiesEvents(base, 9, new Set(), () => 0)
       .find(candidate => candidate.id === 'community_fikakväll')!
@@ -40,7 +40,7 @@ describe('communityEvent — text och deklarerad state-effekt håller ihop', () 
 
     const result = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'fika', undefined, true)
 
-    expect(event.choices[0].subtitle).toBe('💰 -500 kr · 💛 +8 fanMood')
+    expect(event.choices[0].subtitle).toBe('kostar 500 kr · lyfter stämningen på läktaren')
     expect(result.clubs.find(club => club.id === base.managedClubId)?.finances).toBe(before - 500)
     expect(result.fanMood).toBe(58)
   })

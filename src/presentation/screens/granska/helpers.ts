@@ -2,6 +2,7 @@ import { MatchEventType, FixtureStatus, PlayoffStatus } from '../../../domain/en
 import type { Fixture, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { formatResolvedChoiceOutcome } from '../../../domain/services/eventChoiceReceiptService'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
@@ -317,13 +318,19 @@ export function mergeResolvedChoices(
   persisted: NonNullable<SaveGame['resolvedChoices']>,
   optimisticIds: Set<string>,
   optimisticLabels: Record<string, string>,
-): { resolvedEventIds: Set<string>; chosenLabels: Record<string, string> } {
+): { resolvedEventIds: Set<string>; chosenLabels: Record<string, string>; chosenOutcomes: Record<string, string> } {
   return {
     resolvedEventIds: new Set([...persisted.map(c => c.eventId), ...optimisticIds]),
     chosenLabels: {
       ...Object.fromEntries(persisted.map(c => [c.eventId, c.label])),
       ...optimisticLabels,
     },
+    chosenOutcomes: Object.fromEntries(
+      persisted.flatMap(choice => {
+        const text = formatResolvedChoiceOutcome(choice.outcomeDeltas)
+        return text ? [[choice.eventId, text]] : []
+      }),
+    ),
   }
 }
 

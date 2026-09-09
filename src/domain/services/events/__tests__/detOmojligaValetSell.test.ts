@@ -114,7 +114,7 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
     expect(event!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
     expect(event!.body).toContain('stärker du kassan')
     expect(event!.body).not.toContain('räddar du klubben')
-    expect(event!.choices.find(choice => choice.id === 'sell')?.subtitle).toContain('journalistrelation')
+    expect(event!.choices.find(choice => choice.id === 'sell')?.subtitle).toContain('kyler pressen')
     expect(event!.choices.find(choice => choice.id === 'keep')).toMatchObject({
       label: 'Behåll honom — låt underskottet bestå',
       subtitle: expect.stringContaining('kassan oförändrad'),

@@ -236,7 +236,7 @@ describe('dayJobConflict — deklarerad text har verklig state-effekt', () => {
     expect(updated.restGamesRemaining).toBe(1)
   })
 
-  it('press-valets negativa moral klampas vid noll och lovar ingen okodad skaderisk', () => {
+  it('press-valet beskriver moralrisken kvalitativt, klampas vid noll och lovar ingen okodad skaderisk', () => {
     const player = makePlayer({ morale: 1, dayJob, isFullTimePro: false })
     const event = generateDayJobConflictEvent(player, 6)
     const choice = event.choices.find(c => c.id === 'press')!
@@ -244,7 +244,7 @@ describe('dayJobConflict — deklarerad text har verklig state-effekt', () => {
 
     const result = resolveEvent(game, event.id, choice.id, undefined, true)
 
-    expect(choice.subtitle).toBe('-3 moral')
+    expect(choice.subtitle).toBe('riskerar missnöje hos spelaren')
     expect(result.players[0].morale).toBe(0)
     expect(result.players[0].isInjured).toBe(false)
   })

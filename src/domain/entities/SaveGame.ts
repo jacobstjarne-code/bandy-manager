@@ -87,6 +87,36 @@ export interface ResolvedChoice {
    * alternativ. Optional för äldre saves; O12-analysen gissar aldrig värdet.
    */
   decisionKind?: 'decision' | 'acknowledgement'
+  /**
+   * O12 §2: exakt EFTER-kvitto från den faktiskt applicerade före/efter-
+   * differensen. Förhandstexten i EventChoice.subtitle får bara bära riktning;
+   * tal hör hemma här. Strukturerat för att texten inte ska bli ett andra
+   * domänminne. Optional för äldre saves.
+   */
+  outcomeDeltas?: ResolvedChoiceOutcomeDelta[]
+}
+
+export type ResolvedChoiceOutcomeResource =
+  | 'fanMood'
+  | 'supporterMood'
+  | 'reputation'
+  | 'communityStanding'
+  | 'morale'
+  | 'journalistRelationship'
+  | 'patronHappiness'
+  | 'patronInfluence'
+  | 'mecenatHappiness'
+  | 'boardPatience'
+  | 'politicianRelationship'
+  | 'refereeRelationship'
+  | 'finances'
+
+export interface ResolvedChoiceOutcomeDelta {
+  resource: ResolvedChoiceOutcomeResource
+  delta: number
+  /** Namnet fryses vid resolutionen så ett senare spelar-/relationsavhopp
+   * inte gör det exakta kvittot anonymt. Utelämnas för klubbvida resurser. */
+  subjectName?: string
 }
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──

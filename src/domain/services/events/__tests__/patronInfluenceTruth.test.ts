@@ -43,13 +43,13 @@ function makeGame(overrides: { influence?: number; goodwill?: number; happiness?
 }
 
 describe('patronInfluence — text, state och variantprioritet håller ihop', () => {
-  it('styrelseinbjudan ger exakt utlovad relation och inflytande', () => {
+  it('styrelseinbjudan beskriver båda riktningarna och applicerar exakta relationstal', () => {
     const game = makeGame()
     const event = generatePatronEvents(game, 6, new Set(), () => 0)
       .find(candidate => candidate.id === 'patron_influence_60_2026')!
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'listen', undefined, true)
 
-    expect(event.choices[0].subtitle).toBe('🤝 +20 relation · ⚠️ +10 inflytande')
+    expect(event.choices[0].subtitle).toBe('gläder patronen · patronens inflytande växer')
     expect(result.patron?.happiness).toBe(70)
     expect(result.patron?.influence).toBe(75)
     expect(result.patron?.goodwill).toBe(50)
@@ -63,19 +63,19 @@ describe('patronInfluence — text, state och variantprioritet håller ihop', ()
       .toEqual(['patron_ignored_2026'])
     const event = events.find(candidate => candidate.id === 'patron_ignored_2026')!
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'apologize', undefined, true)
-    expect(event.choices[0].subtitle).toBe('🕰️ +20 tålamod')
+    expect(event.choices[0].subtitle).toBe('gläder patronen')
     expect(result.patron?.goodwill).toBe(30)
     expect(result.patron?.happiness).toBe(50)
     expect(result.patron?.influence).toBe(65)
   })
 
-  it('ignorera visar −50 och använder den gemensamma avhoppskedjan när relationen når noll', () => {
+  it('ignorera beskriver den rejäla risken och använder den gemensamma avhoppskedjan när relationen når noll', () => {
     const game = makeGame({ goodwill: 10, happiness: 40 })
     const event = generatePatronEvents(game, 6, new Set(), () => 0)
       .find(candidate => candidate.id === 'patron_ignored_2026')!
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'ignore', undefined, true)
 
-    expect(event.choices[1].subtitle).toBe('🤝 -50 relation · ⚠️ patronen kan lämna')
+    expect(event.choices[1].subtitle).toBe('prövar patronens tålamod rejält · patronen kan lämna')
     expect(result.patron?.happiness).toBe(0)
     expect(result.patron?.isActive).toBe(false)
     expect(result.patronWithdrawnSeason).toBe(2026)

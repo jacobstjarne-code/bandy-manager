@@ -299,13 +299,13 @@ export function generateMecenatIntroEvent(mecenat: Mecenat, clubId?: string): Ga
       {
         id: 'welcome',
         label: 'Välkomna samarbetet',
-        subtitle: `🤝 Mecenat-relation startar · 💰 ${Math.round(mecenat.contribution / 1000)} tkr/säsong`,
+        subtitle: `gläder mecenaten · ${Math.round(mecenat.contribution / 1000)} tkr/säsong`,
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 20 },
       },
       {
         id: 'cautious',
         label: 'Tack, men vi tar det lugnt',
-        subtitle: '🤝 Relation startar försiktigt',
+        subtitle: 'gläder mecenaten försiktigt',
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 5 },
       },
       {
@@ -387,19 +387,19 @@ export function generateSocialEvent(
       {
         id: 'accept',
         label: 'Tacka ja',
-        subtitle: '🤝 +15 relation',
+        subtitle: 'gläder mecenaten',
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 15 },
       },
       {
         id: 'polite_decline',
         label: 'Tacka nej artigt',
-        subtitle: '🤝 -5 relation · "Nästa gång kanske."',
+        subtitle: 'sätter mecenaten på prov · "Nästa gång kanske."',
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: -5 },
       },
       {
         id: 'blunt_decline',
         label: 'Tacka nej rakt',
-        subtitle: '🤝 -15 relation · "Jaha. Då vet jag."',
+        subtitle: 'sätter mecenaten på prov · "Jaha. Då vet jag."',
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: -15 },
       },
     ],
@@ -455,13 +455,13 @@ export function generateSilentShoutEvent(
         {
           id: 'accept',
           label: 'Intressant — berätta mer',
-          subtitle: '🤝 +10 relation',
+          subtitle: 'gläder mecenaten',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 10 },
         },
         {
           id: 'decline',
           label: 'Jag sköter värvningarna',
-          subtitle: '🤝 -10 relation · oberoende',
+          subtitle: 'sätter mecenaten på prov · oberoende',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: -10 },
         },
       ],
@@ -483,13 +483,13 @@ export function generateSilentShoutEvent(
         {
           id: 'agree',
           label: 'Du har en poäng — vi ändrar',
-          subtitle: '🤝 +15 relation · taktikpress',
+          subtitle: 'gläder mecenaten · taktikpress',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 15 },
         },
         {
           id: 'refuse',
           label: 'Taktiken bestämmer jag',
-          subtitle: '🤝 -15 relation · "Jaha. Vi får se."',
+          subtitle: 'sätter mecenaten på prov · "Jaha. Vi får se."',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: -15 },
         },
       ],
@@ -519,13 +519,13 @@ export function generateSilentShoutEvent(
         {
           id: 'submit',
           label: 'Vi lyssnar — vad vill du?',
-          subtitle: '🤝 +20 relation · silentShout ökar · kontrollfreak vinner',
+          subtitle: 'gläder mecenaten · silentShout ökar · kontrollfreak vinner',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 20 },
         },
         {
           id: 'stand_firm',
           label: 'Klubben styrs av styrelsen, inte av dig',
-          subtitle: '🤝 -30 relation · risk att mecenaten lämnar · men oberoende',
+          subtitle: 'sätter mecenaten på prov · risk att mecenaten lämnar · men oberoende',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: -30 },
         },
       ],
@@ -551,7 +551,7 @@ export function generateMecenatConflictEvent(
       {
         id: 'side_mec1',
         label: `Stöd ${mec1.name}`,
-        subtitle: `🤝 ${mec1.name} +15 · ${mec2.name} -10`,
+        subtitle: `gläder ${mec1.name} · sätter ${mec2.name} på prov`,
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -563,7 +563,7 @@ export function generateMecenatConflictEvent(
       {
         id: 'side_mec2',
         label: `Stöd ${mec2.name}`,
-        subtitle: `🤝 ${mec2.name} +15 · ${mec1.name} -10`,
+        subtitle: `gläder ${mec2.name} · sätter ${mec1.name} på prov`,
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -575,7 +575,7 @@ export function generateMecenatConflictEvent(
       {
         id: 'neutral',
         label: 'Medla — hitta en kompromiss',
-        subtitle: '🤝 Båda +3 · ingen blir riktigt nöjd',
+        subtitle: 'gläder båda försiktigt · ingen blir riktigt nöjd',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -605,7 +605,7 @@ export function generateMecenatAllianceEvent(
       {
         id: 'accept',
         label: 'Fantastiskt — tack!',
-        subtitle: '🤝 +10 båda',
+        subtitle: 'gläder båda mecenaterna',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -617,7 +617,7 @@ export function generateMecenatAllianceEvent(
       {
         id: 'decline',
         label: 'Vi klarar oss själva',
-        subtitle: '🤝 -5 båda',
+        subtitle: 'sätter båda mecenaterna på prov',
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
@@ -690,13 +690,13 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
       {
         id: 'plan_succession',
         label: 'Föreslå succession',
-        subtitle: '+2 orten',
+        subtitle: 'orten värmer',
         effect: { type: 'noOp' },
       },
       {
         id: 'offer_tribute',
         label: 'Erbjud jubileumsmatch (25k)',
-        subtitle: '+5 relation · +3 orten',
+        subtitle: 'gläder mecenaten · orten värmer',
         // Se 'listen'-kommentaren ovan — samma redundanta effekt, samma fix.
         effect: { type: 'noOp' },
       },

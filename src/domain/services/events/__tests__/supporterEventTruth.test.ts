@@ -46,13 +46,13 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     expect(`${display.title} ${display.body} ${display.note}`).not.toMatch(/derby|\+12/iu)
   })
 
-  it('konfliktens båda-val visar och levererar supporterMood +5/fanMood +3 utan falsk fortsatt spricka', () => {
+  it('konfliktens båda-val visar riktningen och levererar supporterMood +5/fanMood +3 utan falsk fortsatt spricka', () => {
     const game = { ...makeGame(supporterGroup({ tifoDone: true })), currentMatchday: 9, lastProcessedMatchday: 99, fanMood: 50 }
     const event = generateSupporterEvents(game, 9, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_conflict_'))!
     expect(event.voiceId).toBe(klackLeaderVoiceId(game.managedClubId, 'Sture'))
     expect(event.choices.find(choice => choice.id === 'both')?.subtitle)
-      .toBe('💛 +5 klackens stämning · 🙂 +3 publikstämning')
+      .toBe('lyfter stämningen på läktaren')
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'both', undefined, true)
     expect(result.supporterGroup).toMatchObject({ mood: 65, conflictSeason: game.currentSeason, conflictMatchday: 9 })
     expect(result.fanMood).toBe(53)

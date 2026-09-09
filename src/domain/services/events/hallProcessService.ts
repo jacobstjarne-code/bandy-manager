@@ -147,7 +147,7 @@ function avbrytaChoice(season: number): EventChoice {
   return {
     id: 'avbryta',
     label: 'Lägg ner frågan',
-    subtitle: 'Klacken noterar det. Cooldown 1 säsong.',
+    subtitle: 'Klacken noterar det. Frågan vilar till en senare säsong.',
     effect: {
       type: 'hallProcess',
       hallProcessData: JSON.stringify({ stage: 'nedlagd', cooldownUntilSeason: season + 1, selfNedlagd: true }),
@@ -552,7 +552,7 @@ function buildStartEvent(
       {
         id: 'inled',
         label: 'Inled förankringen',
-        subtitle: `Startvärde stöd: ${initSupport}`,
+        subtitle: 'förankringen börjar med stöd i orten',
         effect: { type: 'hallProcess', hallProcessData: JSON.stringify({ init }) },
       },
       {
