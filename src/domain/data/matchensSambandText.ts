@@ -88,3 +88,11 @@ export function sambandTextJ(n: number, x: number, y: number): string {
 export function sambandTextKWithPotm(potmName: string): string {
   return `Taktiken stack inte ut åt något håll. Det här avgjordes på individer och tur — ${potmName} var skillnaden.`
 }
+
+/**
+ * B7 "liberon som syndabock" — TEXT LÅST 2026-09-09 (Jacob: orten-narrativ,
+ * MASTER_OPPET.md). Ordagrant kopierad, ingen omskrivning.
+ */
+export function sambandTextL(liberoName: string): string {
+  return `Läktaren har hittat sin syndabock. Fyra bakom ${liberoName}, och det är hans namn som muttras på stan nu — rättvist eller inte.`
+}

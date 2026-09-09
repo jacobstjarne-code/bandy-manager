@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { simulateMatch } from '../matchEngine'
-import { selectMatchensSamband } from '../matchensSambandService'
+import { selectMatchensSamband, evaluateLiberoSyndabockCandidate } from '../matchensSambandService'
 import type { Player } from '../../entities/Player'
 import type { Fixture, TeamSelection, MatchEvent } from '../../entities/Fixture'
 import {
@@ -314,5 +314,106 @@ describe('selectMatchensSamband — dubbelräkning (§5.3) och gränsfall', () =
     }
     // Ovanlig kombination (kräver bägge villkoren SAMTIDIGT) — inte ett hårt
     // krav att den inträffar inom sökrymden, men om den gör det ska regeln hålla.
+  })
+})
+
+/**
+ * B7 "liberon som syndabock" — evaluateLiberoSyndabockCandidate, testad
+ * fristående här. Samma lineupSlots-konstruktionsväg som katalograd J:s
+ * tester (§ "lineupSlots är UI-/auto-assign-författad data... direkt
+ * konstruktion är samma normala väg produktionen själv skriver den på").
+ * Se den separata describe-blocket nedan för end-to-end-testet genom
+ * selectMatchensSamband (katalograd L, TEXT LÅST 2026-09-09).
+ */
+describe('evaluateLiberoSyndabockCandidate — B7-detektorn', () => {
+  function fixtureWithConceded(seed: number, concededCount: number, liberoId: string | null) {
+    const { fixture, homePlayers } = runMatch(seed, NEUTRAL_TACTIC)
+    // Strip klubb2:s egna (riktigt simulerade) mål först — kontrollerad räkning,
+    // inte påklistrad ovanpå ett okänt antal riktiga mål.
+    const eventsWithoutTheirGoals = fixture.events.filter(e => !(e.clubId === 'club2' && e.type === ('goal' as MatchEvent['type'])))
+    const theirGoalTemplate: MatchEvent = {
+      minute: 10, type: 'goal' as MatchEvent['type'], clubId: 'club2',
+      description: 'Mål', origin: 'OPEN_PLAY',
+    }
+    const concededEvents = Array.from({ length: concededCount }, (_, i) => ({ ...theirGoalTemplate, minute: 10 + i }))
+    const withConceded: Fixture = {
+      ...fixture,
+      events: [...eventsWithoutTheirGoals, ...concededEvents],
+      homeLineup: liberoId === null
+        ? { ...fixture.homeLineup!, tactic: { ...fixture.homeLineup!.tactic, lineupSlots: undefined } }
+        : { ...fixture.homeLineup!, tactic: { ...fixture.homeLineup!.tactic, lineupSlots: { 'def-c': liberoId } } },
+    }
+    return { fixture: withConceded, homePlayers }
+  }
+
+  it('returnerar bevis (liberoPlayerId + räkning) vid ≥4 insläppta i öppet spel med känd libero-slot', () => {
+    const { fixture } = fixtureWithConceded(1, 4, 'h_d1')
+    const evidence = evaluateLiberoSyndabockCandidate({ fixture, managedClubId: MANAGED, players: [] })
+    expect(evidence).toEqual({ liberoPlayerId: 'h_d1', concededOpenPlay: 4 })
+  })
+
+  it('returnerar null vid färre än 4 insläppta i öppet spel', () => {
+    const { fixture } = fixtureWithConceded(2, 3, 'h_d1')
+    expect(evaluateLiberoSyndabockCandidate({ fixture, managedClubId: MANAGED, players: [] })).toBeNull()
+  })
+
+  it('returnerar null om lineupSlots saknas (äldre/ofullständig data) — även med ≥4 insläppta', () => {
+    const { fixture } = fixtureWithConceded(3, 5, null)
+    expect(evaluateLiberoSyndabockCandidate({ fixture, managedClubId: MANAGED, players: [] })).toBeNull()
+  })
+
+  it('läser awayLineup när den hanterade klubben spelar borta', () => {
+    // club2 hanteras (bortalaget), club1 (hemma) gör de insläppta målen.
+    const { fixture: baseFixture } = runMatch(5, NEUTRAL_TACTIC)
+    const eventsWithoutTheirGoals = baseFixture.events.filter(e => !(e.clubId === 'club1' && e.type === ('goal' as MatchEvent['type'])))
+    const theirGoalTemplate: MatchEvent = {
+      minute: 10, type: 'goal' as MatchEvent['type'], clubId: 'club1',
+      description: 'Mål', origin: 'OPEN_PLAY',
+    }
+    const concededEvents = Array.from({ length: 4 }, (_, i) => ({ ...theirGoalTemplate, minute: 10 + i }))
+    const fixture: Fixture = {
+      ...baseFixture,
+      events: [...eventsWithoutTheirGoals, ...concededEvents],
+      awayLineup: { ...baseFixture.awayLineup!, tactic: { ...baseFixture.awayLineup!.tactic, lineupSlots: { 'def-c': 'a_d1' } } },
+    }
+    const evidence = evaluateLiberoSyndabockCandidate({ fixture, managedClubId: 'club2', players: [] })
+    expect(evidence).toEqual({ liberoPlayerId: 'a_d1', concededOpenPlay: 4 })
+  })
+})
+
+describe('selectMatchensSamband — katalograd L (liberon som syndabock, TEXT LÅST 2026-09-09)', () => {
+  it('≥4 insläppta i öppet spel med känd libero-slot ger den låsta orten-narrativ-raden med liberons namn', () => {
+    const { fixture: baseFixture, homePlayers } = runMatch(7, NEUTRAL_TACTIC)
+    const libero = homePlayers.find(p => p.position === PlayerPosition.Defender)!
+    const eventsWithoutTheirGoals = baseFixture.events.filter(e => !(e.clubId === 'club2' && e.type === ('goal' as MatchEvent['type'])))
+    const theirGoalTemplate: MatchEvent = {
+      minute: 10, type: 'goal' as MatchEvent['type'], clubId: 'club2',
+      description: 'Mål', origin: 'OPEN_PLAY',
+    }
+    const concededEvents = Array.from({ length: 4 }, (_, i) => ({ ...theirGoalTemplate, minute: 10 + i, tacticalFactors: [], contributingFactors: [] }))
+    const fixture: Fixture = {
+      ...baseFixture,
+      events: [...eventsWithoutTheirGoals.map(e => ({ ...e, tacticalFactors: [], contributingFactors: [], manpowerState: undefined })), ...concededEvents],
+      homeLineup: { ...baseFixture.homeLineup!, tactic: { ...baseFixture.homeLineup!.tactic, lineupSlots: { 'def-c': libero.id } } },
+      report: baseFixture.report ? { ...baseFixture.report, managerChoiceLog: [] } : baseFixture.report,
+    }
+    const lines = selectMatchensSamband({ fixture, managedClubId: MANAGED, players: homePlayers })
+    expect(lines).toContain(
+      `Läktaren har hittat sin syndabock. Fyra bakom ${libero.firstName} ${libero.lastName}, och det är hans namn som muttras på stan nu — rättvist eller inte.`
+    )
+  })
+
+  it('färre än 4 insläppta ger ingen L-rad', () => {
+    const { fixture: baseFixture, homePlayers } = runMatch(8, NEUTRAL_TACTIC)
+    const libero = homePlayers.find(p => p.position === PlayerPosition.Defender)!
+    const eventsWithoutTheirGoals = baseFixture.events.filter(e => !(e.clubId === 'club2' && e.type === ('goal' as MatchEvent['type'])))
+    const fixture: Fixture = {
+      ...baseFixture,
+      events: eventsWithoutTheirGoals.map(e => ({ ...e, tacticalFactors: [], contributingFactors: [], manpowerState: undefined })),
+      homeLineup: { ...baseFixture.homeLineup!, tactic: { ...baseFixture.homeLineup!.tactic, lineupSlots: { 'def-c': libero.id } } },
+      report: baseFixture.report ? { ...baseFixture.report, managerChoiceLog: [] } : baseFixture.report,
+    }
+    const lines = selectMatchensSamband({ fixture, managedClubId: MANAGED, players: homePlayers })
+    expect(lines?.some(l => l.includes('syndabock'))).not.toBe(true)
   })
 })

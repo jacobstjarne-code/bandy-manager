@@ -18,9 +18,10 @@ import {
   sambandTextA, sambandTextB, sambandTextC, sambandTextD, sambandTextE, sambandTextF,
   sambandTextG, sambandTextH, sambandTextISecondHalfChase, SAMBAND_TEXT_I_DERBY,
   sambandTextIHotHand, sambandTextIEqualizerMomentum, sambandTextJ, sambandTextKWithPotm,
+  sambandTextL,
 } from '../data/matchensSambandText'
 
-export type SambandRowKey = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K'
+export type SambandRowKey = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L'
 
 interface SambandCandidate {
   key: SambandRowKey
@@ -299,6 +300,27 @@ export function selectMatchensSamband(input: MatchensSambandInput): string[] | n
     }
   }
 
+  // ── L. Liberon som syndabock (B7, SLUTTEST_KO.md, SAMMANSLAGEN MED B12
+  //     2026-08-19) — se evaluateLiberoSyndabockCandidate nedan för varför
+  //     detta nu är byggbart (DOM_FORMATIONER_V2). Oberoende av taktikval
+  //     (som G) — libero är obligatorisk i alla sex formationer, ingen
+  //     hasFactor-gate. TEXT LÅST 2026-09-09 (Jacob: orten-narrativ). ──
+  {
+    const liberoEvidence = evaluateLiberoSyndabockCandidate(input)
+    if (liberoEvidence) {
+      const liberoPlayer = players.find(p => p.id === liberoEvidence.liberoPlayerId)
+      if (liberoPlayer) {
+        candidates.push({
+          key: 'L',
+          text: sambandTextL(`${liberoPlayer.firstName} ${liberoPlayer.lastName}`),
+          hasCost: true,
+          claimsSuspensions: false,
+          score: liberoEvidence.concededOpenPlay * 2,
+        })
+      }
+    }
+  }
+
   // §5.3 — dubbelräkning: A tar utvisningarna före C (katalogordning).
   const aClaimedSuspensions = candidates.some(c => c.key === 'A' && c.claimsSuspensions)
   const resolvedCandidates = candidates
@@ -339,4 +361,45 @@ export function selectMatchensSamband(input: MatchensSambandInput): string[] | n
   const potmPlayer = report.playerOfTheMatchId ? players.find(p => p.id === report.playerOfTheMatchId) : undefined
   if (potmPlayer) return [sambandTextKWithPotm(`${potmPlayer.firstName} ${potmPlayer.lastName}`)]
   return null
+}
+
+/**
+ * B7 "liberon som syndabock" (SLUTTEST_KO.md, SAMMANSLAGEN MED B12
+ * 2026-08-19) — ursprungligen blockerad på två hål: (1) libero fanns bara
+ * som slot i EN formation (5-3-2), (2) slot-tilldelningen sparades aldrig
+ * per match. DOM_FORMATIONER_V2 (18ff34e3) löste båda: alla sex
+ * formationer har nu en namngiven `'def-c'`-slot (label `'LIB'`,
+ * Formation.ts), och `lineupSlots` sparas på den frusna
+ * `homeLineup`/`awayLineup.tactic` för varje avslutad match (samma fält
+ * katalograd J redan läser för positionspassning).
+ *
+ * Kopplad in som katalograd L nedan (§ "L. Liberon som syndabock"). TEXT
+ * LÅST 2026-09-09 (Jacob: orten-narrativ) — `sambandTextL` i
+ * matchensSambandText.ts, kopierad ordagrant.
+ *
+ * Bevis: precis den tröskel Opus text-noten anger, "insläppta ≥ 4 i öppet
+ * spel" — en räkning, ingen gissad orsak (ingen mål-för-mål-attribution av
+ * "raka djupledsbollar" mot "frilägen från kanten" finns i motorn, B12 steg
+ * 1:s egen klassificering av `responsiblePlayerId`/`primaryCause` som
+ * klass C bekräftar det). Liberons identitet krävs ändå — texten namnger
+ * spelaren.
+ */
+export interface LiberoSyndabockEvidence {
+  liberoPlayerId: string
+  concededOpenPlay: number
+}
+
+export function evaluateLiberoSyndabockCandidate(input: MatchensSambandInput): LiberoSyndabockEvidence | null {
+  const { fixture, managedClubId } = input
+  const isHome = fixture.homeClubId === managedClubId
+  const lineup = isHome ? fixture.homeLineup : fixture.awayLineup
+  const liberoPlayerId = lineup?.tactic.lineupSlots?.['def-c']
+  if (!liberoPlayerId) return null
+
+  const theirClubId = isHome ? fixture.awayClubId : fixture.homeClubId
+  const theirGoals = fixture.events.filter(e => e.clubId === theirClubId && e.type === ('goal' as MatchEvent['type']))
+  const concededOpenPlay = theirGoals.filter(e => e.origin === 'OPEN_PLAY').length
+  if (concededOpenPlay < 4) return null
+
+  return { liberoPlayerId, concededOpenPlay }
 }
