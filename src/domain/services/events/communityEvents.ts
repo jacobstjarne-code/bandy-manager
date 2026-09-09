@@ -7,6 +7,7 @@ import { generatePoliticianEvents } from './politicianEvents'
 import { generateSponsorEvents } from './sponsorEvents'
 import { generateSupporterEvents } from './supporterEvents'
 import { generateHallProcessEvent } from './hallProcessService'
+import { generateO1SystemEvents } from './o1SystemEvents'
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
@@ -30,6 +31,7 @@ export function generateEvents(
     ...generateSponsorEvents(game, currentRound, alreadyQueued, rand),
     ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand, game.captainPlayerId),
     ...generateSupporterEvents(game, currentRound, alreadyQueued, rand),
+    ...generateO1SystemEvents(game, currentRound, alreadyQueued),
     ...(hallEvent ? [hallEvent] : []),
   ]
 }
