@@ -10,6 +10,11 @@ Regeln: en rad här har vad / varför-uppskjuten / underlag. Inget "senare utan 
 
 ---
 
+## Transfers
+
+### scout-shortlist-transferfonster
+**Vad:** när transferfönstret stänger kan en shortlist-markerad spelare som fortfarande är tillgänglig ge en kort, världssann notis. **Varför uppskjuten:** shortlisten är medvetet tyst i nuvarande produkt, och källraden säger uttryckligen att notisen ska byggas först när transferytorna ändå rörs — ingen sådan ytrörelse pågår i releasearbetet. **Underlag:** `BACKLOG.md` L3/`scout-shortlist-transferfonster`. **När:** i nästa samlade transfer-ytepass; använd den befintliga shortlistmarkeringen, inte ett parallellt bevakningssystem.
+
 ## Världens liv (AI-klubbarna över tid)
 
 ### varldsbilds-sektion (världsbildsfasen, pausad)
