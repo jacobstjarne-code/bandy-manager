@@ -5,7 +5,7 @@
 **Version vid start:** `64b5e7a6`  
 **Klubb:** Västanfors  
 **Manager:** Grindtest 2  
-**Status:** Pågående — tre hela säsonger och halva säsong 4 av minst åtta spelade. Opus domar grindarna efter färdig leverans.
+**Status:** Pågående — fyra av minst åtta säsonger spelade; säsong 5 är startad. Opus domar grindarna efter färdig leverans.
 
 ## Avbruten kontrollkörning — Forsbacka
 
@@ -93,25 +93,30 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Burnout-pivotalen återkom ännu en gång efter semifinal 3 samma säsong.
 - Fynden stärker kodhypotesen att `deferredDecisions` saknas i genereringens dedupe-underlag. Det är en separat funktionell regression, inte bara Grind 2:s kvalitativa underkännande.
 
-## Huvudkarriär — säsong 4, 2029/30 (halvtid)
+## Huvudkarriär — säsong 4, 2029/30
 
-### Läget efter omgång 12
+### Utfall
 
-- Svenska cupen vanns efter 6–1 mot Lesjöfors; Karlsborg slogs ut 5–4 i kvartsfinalen och Forsbacka 6–4 i semifinalen.
-- Serien: 4:a efter omgång 12. Säsongens personliga mål är att färdigställa `Läktare — östra`.
+- Grundserie: 2:a, 32 poäng, 16–0–6. Säsongens personliga mål var att färdigställa `Läktare — östra`.
+- Svenska mästare efter 3–3 och 5–4 på straffar mot Forsbacka på Studenternas. Kvartsfinalen mot Hälleforsnäs och semifinalen mot Målilla vanns båda med 3–0 i matcher.
+- Svenska cupen vanns efter 6–1 mot Lesjöfors; Karlsborg slogs ut 5–4 i kvartsfinalen och Forsbacka 6–4 i semifinalen. Därmed vann Västanfors dubbeln.
+- Ekonomi: cirka 1,1 mkr vid start, 1,8 mkr vid slut, +752 tkr.
 - `Värmestuga` var färdig vid säsongsstart. `Läktare — östra` byggdes därefter på 12 omgångar med Anna Johansson som medfinansiär och stod färdig 2029 vid halvtid.
-- `Strålkastare` startades vid halvtid med Anna Johansson som medfinansiär: 48 tkr ur klubbkassan, fem omgångars byggtid.
+- `Strålkastare` startades vid halvtid med Anna Johansson som medfinansiär: 48 tkr ur klubbkassan, fem omgångars byggtid, och stod färdig 2029.
+- `Gym` startades därefter med Anna Johansson som medfinansiär: 90 tkr ur klubbkassan, åtta omgångars byggtid. Det ska följas över nästa säsongsskifte om det inte hinner bli klart i slutspelet.
 - De 44 uppskjutna besluten från säsong 3 nollställdes till tre vid säsongsskiftet. Vid omgång 13 hade kön redan vuxit till 18 igen. Cursor-resetten fungerar alltså, men dubblettproduktionen fyller på kön på nytt.
 
 ### Grind 3-observation
 
-- Primär handling: cupbågen gav en tydlig sekvens kvartsfinal–semifinal–final, följd av serien.
-- Nästa olösta fråga: om laget ska återhämta sig från sjätteplatsen runt omgång 9 och om strålkastarna blir klara.
-- Landning: ännu ej bedömd; säsongen pågår.
+- Primär handling: cupbågen gav en tydlig sekvens kvartsfinal–semifinal–final, följd av serien; slutspelet hade samma tydliga trappa till SM-finalen.
+- Nästa olösta fråga: laget återhämtade sig från sjätteplatsen runt omgång 9 och slutade tvåa. Efter dubbeln är nästa fråga om laget kan etablera dominansen och slutföra hela anläggningsträdet.
+- Landning: tydlig. Årsboken bar dubbeln, andraplatsen, säsongens beslut, akademin, anläggningsmålet och +752 tkr som en egen säsong. Inga tredubbla årsboksminnen syntes.
+- Burnout-pivotalen återkom i omgång 18. Det var minst en sådan visning även denna säsong, trots tidigare irreversibla `Kliv tillbaka`-val.
+- Beslutskön stod på 24 efter grundserien. Säsongsskiftet rensar kön, men samma tillväxtmönster återkommer varje år.
 
 ## Fortsättning
 
-- Spela klart säsong 4 och därefter säsong 5–8 i samma save.
+- Spela säsong 5–8 i samma save.
 - Rollover för `Träningshall (ungdom)` är verifierad; fortsätt bygga resten av anläggningsträdet.
 - `Akademinivå 3` är färdig; fortsätt med övriga möjliga noder.
 - Dokumentera ett faktiskt ekonomiskt avvägningsval runt säsong 8.
