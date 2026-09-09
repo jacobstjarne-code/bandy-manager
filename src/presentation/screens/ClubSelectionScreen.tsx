@@ -29,8 +29,11 @@ export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSele
   // ?seed=<tal> i stället för Jacobs egen slump. Samma seed ger samma tre
   // klubberbjudanden (selectThreeOffers nedan) OCH — vidarebefordrat till
   // newGame() i handleSelect — samma värld när mottagaren väljer en klubb.
-  // Resten av O10-slingan (delningskortets text, landningsfrågan, den mjuka
-  // ruleVersion-notisen) är medvetet parkerad post-launch, se POST_LAUNCH.md.
+  // Resten av O10-slingan (delningskortets text, landningsfrågan) är
+  // medvetet parkerad post-launch, se POST_LAUNCH.md. Den mjuka ruleVersion-
+  // missmatch-notisen är INTE parkerad — RuleVersionNotice.tsx (57210410,
+  // 2026-09-02) täcker redan samma signal (game.ruleVersion vs
+  // CURRENT_RULE_VERSION) generellt för alla saves, inte bara länkstartade.
   const linkSeed = useMemo(() => {
     const raw = searchParams.get('seed')
     if (raw === null) return undefined
