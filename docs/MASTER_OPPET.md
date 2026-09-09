@@ -53,7 +53,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| ci-visual-baselines-illustrationer-o12 | Main är röd i visuell CI efter avsiktliga illustrationer, turneringsläge, Bury Fen-footer och O12-veckobesluts-layout; tio snapshots avviker medan övriga 121 passerar | rapporterad | Codex | GitHub Actions 34412890799 | Verifiera varje diff mot källcommit och aktuell 390 px-rendering; uppdatera enbart Linux-baselines via `visual-baselines.yml` om samtliga avvikelser är avsiktliga, kör därefter om hela CI innan arkivering. |
+| ci-visual-baselines-illustrationer-o12 | Main är röd i visuell CI efter avsiktliga illustrationer, turneringsläge, Bury Fen-footer och O12-veckobesluts-layout; tio snapshots avviker medan övriga 121 passerar | verifierad | Codex | GitHub Actions 34412890799 | Verifierat 2026-09-10 mot Linux-artefakt och källcommits: `f183ba8a` för sex illustrationsvyer, `baad4aa7` för turneringsläget, `a1556993` för Bury Fen-footern och `5692246d` för O12-layouten. `portal-grind` behåller Christina Johanssons mecenatkort i både scen- och 390-baseline-actual; O12:s högre preview/kvitto flyttar bara efterföljande innehåll. Uppdatera enbart Linux-baselines via `visual-baselines.yml`, kör därefter om hela CI innan arkivering. |
 
 ---
 
