@@ -355,14 +355,14 @@
 .mecenat-title {
   font-size: 18px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--text-light);
   margin-bottom: 10px;
   line-height: 1.3;
 }
 
 .mecenat-body {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-light-secondary);
   line-height: 1.6;
   margin-bottom: 20px;
   white-space: pre-line;

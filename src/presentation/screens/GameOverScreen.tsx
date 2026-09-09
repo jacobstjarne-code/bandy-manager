@@ -39,9 +39,9 @@ export function GameOverScreen() {
     ? game.seasonSummaries.reduce((sum, s) => sum + s.wins, 0)
     : 0
   const firedReason = game.firedReason ?? lastSummary?.boardTruth?.relationship.firedReason
-  // Konkurs och licensnekad har ett eget katalogiserat motiv (`game_over`)
-  // som ännu inte är levererat. Avskedsbilden hör bara till den sportsliga
-  // vägen och får inte göra de administrativa sluten till samma händelse.
+  // Konkurs och licensnekad har ett eget motiv. Avskedsbilden hör bara till
+  // den sportsliga vägen och får inte göra de administrativa sluten till
+  // samma händelse.
   const showAvskedIllustration = firedReason !== 'bankruptcy' && firedReason !== 'licenseDenied'
 
   // A-H4 (TRIAGE_AUDIT_2026-08-29.md, HIGH 4): läser numera
@@ -172,20 +172,14 @@ export function GameOverScreen() {
             style={{ height: 160, margin: '-32px -24px 24px' }}
           />
         ) : (
-          <div style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'color-mix(in srgb, var(--danger) 15%, transparent)',
-            border: '2px solid color-mix(in srgb, var(--danger) 40%, transparent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            fontSize: 28,
-          }}>
-            ❌
-          </div>
+          <IllustrationScene
+            mode="header"
+            name="game-over"
+            alt="En övergiven bandyplan efter klubbens administrativa sammanbrott"
+            fadeTo="var(--bg)"
+            objectPosition="center 58%"
+            style={{ height: 160, margin: '-32px -24px 24px' }}
+          />
         )}
 
         <p style={{

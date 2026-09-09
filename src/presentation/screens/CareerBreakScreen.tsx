@@ -17,6 +17,7 @@ import { useGameStore } from '../store/gameStore'
 import { ordinal } from '../utils/formatters'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 import type { CareerOffer } from '../../domain/services/careerBreakService'
+import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import {
   CAREER_BREAK_SEASON_EYEBROW,
   CAREER_BREAK_SEASON_TITLE,
@@ -115,6 +116,14 @@ export function CareerBreakScreen() {
   if (stage === 'season') {
     return (
       <Shell>
+        <IllustrationScene
+          mode="header"
+          name="career-break"
+          alt="En ensam åskådare följer bandyn under året utan klubb"
+          fadeTo="var(--bg)"
+          objectPosition="center 90%"
+          style={{ height: 220, margin: '-32px -20px 24px' }}
+        />
         <p style={{
           fontSize: 11, fontWeight: 700, letterSpacing: '3px',
           textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12,

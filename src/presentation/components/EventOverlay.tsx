@@ -10,6 +10,8 @@ import { getEffectiveWhyNowLine } from '../../domain/data/contentContract'
 import { getEffectiveDecisionMode } from '../../domain/services/decisionTierService'
 import { DecisionCard } from './DecisionCard'
 import { getVoiceEligibleEvents } from '../../domain/services/voiceIntroductionService'
+import { IllustrationScene } from './illustration/IllustrationScene'
+import { getEventIllustrationName } from './eventIllustration'
 
 interface EventOverlayProps {
   // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
@@ -56,6 +58,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
   }
 
   const total = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(e => !e.resolved).length || 1
+  const illustrationName = getEventIllustrationName(event)
 
   // Presskonferens: dedikerad visuell scen istf generisk overlay
   if (event.type === 'pressConference') {
@@ -99,6 +102,15 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
       }}
     >
+      {illustrationName && (
+        <IllustrationScene
+          mode="fullbleed"
+          name={illustrationName}
+          alt="Föreningens medlemmar samlas för att avgöra hallfrågan"
+          objectPosition="center 45%"
+          style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', aspectRatio: 'auto' }}
+        />
+      )}
       <DecisionCard
         shape="round"
         size="lg"
@@ -113,11 +125,12 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         resolved={false}
         choices={event.choices}
         onChoose={(id) => handleChoice(id)}
+        style={{ position: 'relative', zIndex: 1 }}
       />
 
       {/* Progress */}
       {total > 1 && (
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 8 }}>
+        <p style={{ position: 'relative', zIndex: 1, fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 8 }}>
           {total} händelse{total > 1 ? 'r' : ''} kvar
         </p>
       )}

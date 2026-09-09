@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { getDinnerResolution } from '../../../domain/services/mecenatDinnerService'
 import type { DinnerScene, DinnerOption } from '../../../domain/services/mecenatDinnerService'
+import { IllustrationScene } from '../illustration/IllustrationScene'
 
 interface Props {
   event: GameEvent
@@ -13,6 +14,23 @@ type Step =
   | { kind: 'question'; qIndex: number }
   | { kind: 'reaction'; qIndex: number; option: DinnerOption }
   | { kind: 'outro'; totalHappiness: number; totalCS: number }
+
+function DinnerFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mecenat-overlay">
+      <IllustrationScene
+        mode="fullbleed"
+        name="mecenat-dinner"
+        alt="Det dukade bordet inför mecenatens middag"
+        objectPosition="center 48%"
+        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', aspectRatio: 'auto' }}
+      />
+      <div className="mecenat-card" style={{ position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
 export function MecenatDinnerEvent({ event, onFinish }: Props) {
   const scene: DinnerScene = JSON.parse(event.sponsorData ?? '{}')
@@ -51,16 +69,14 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
 
   if (step.kind === 'intro') {
     return (
-      <div className="mecenat-overlay">
-        <div className="mecenat-card">
+      <DinnerFrame>
           <p className="mecenat-label">{settingEmoji} Mecenaten</p>
           <h2 className="mecenat-title">{event.title}</h2>
           <p className="mecenat-body">{scene.settingDescription}</p>
           <button className="btn btn-primary mecenat-primary-btn" onClick={() => setStep({ kind: 'question', qIndex: 0 })}>
-            Sätt dig ner
+            Slå dig ner
           </button>
-        </div>
-      </div>
+      </DinnerFrame>
     )
   }
 
@@ -68,8 +84,7 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
     const q = scene.questions[step.qIndex]
     const progress = `${step.qIndex + 1} / ${scene.questions.length}`
     return (
-      <div className="mecenat-overlay">
-        <div className="mecenat-card">
+      <DinnerFrame>
           <p className="mecenat-label">{settingEmoji} Fråga {progress}</p>
           <h2 className="mecenat-title">{event.title}</h2>
           <p className="mecenat-body">{q.text}</p>
@@ -82,23 +97,20 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
               {opt.label}
             </button>
           ))}
-        </div>
-      </div>
+      </DinnerFrame>
     )
   }
 
   if (step.kind === 'reaction') {
     return (
-      <div className="mecenat-overlay">
-        <div className="mecenat-card">
+      <DinnerFrame>
           <p className="mecenat-label">{settingEmoji} Mecenatens svar</p>
           <h2 className="mecenat-title">{event.title}</h2>
           <p className="mecenat-body">{step.option.followUp}</p>
           <button className="btn btn-primary mecenat-primary-btn" onClick={() => handleReactionContinue(step.qIndex)}>
             Fortsätt
           </button>
-        </div>
-      </div>
+      </DinnerFrame>
     )
   }
 
@@ -112,8 +124,7 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
       : ''
 
   return (
-    <div className="mecenat-overlay">
-      <div className="mecenat-card">
+    <DinnerFrame>
         <p className="mecenat-label">{settingEmoji} Middagen är slut</p>
         <h2 className="mecenat-title">{event.title}</h2>
         <p className="mecenat-body">
@@ -122,7 +133,6 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
         <button className="btn btn-primary mecenat-primary-btn" onClick={handleOutroFinish}>
           Avsluta kvällen
         </button>
-      </div>
-    </div>
+    </DinnerFrame>
   )
 }

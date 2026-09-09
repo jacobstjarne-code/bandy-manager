@@ -79,6 +79,12 @@ export function isRelegationZoneFinish(finalPosition: number, totalTeams: number
   return totalTeams > 0 && finalPosition >= totalTeams - RELEGATION_ZONE_SIZE + 1
 }
 
+/** Årsbokens hero är alltid ett verkligt säsongsutfall; nedflyttningsmotivet
+ * vinner bara i den faktiska nedflyttningszonen. */
+export function getSeasonSummaryIllustrationName(finalPosition: number, totalTeams: number): 'nedflyttning' | 'season-end' {
+  return isRelegationZoneFinish(finalPosition, totalTeams) ? 'nedflyttning' : 'season-end'
+}
+
 function ChapterDivider({ label }: { label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '22px 0 14px' }}>
@@ -151,6 +157,7 @@ export function SeasonSummaryScreen() {
     || game.standings?.length
     || game.clubs.length
   const showRelegationIllustration = isRelegationZoneFinish(summary.finalPosition, totalTeams)
+  const seasonIllustrationName = getSeasonSummaryIllustrationName(summary.finalPosition, totalTeams)
 
   // AUDIT DEL 2 A3, uppföljning (2026-08-09): reversibel dedup mellan DIN
   // SÄSONG och DINA VAL läser samma liggarstyrda resolution-projektion.
@@ -312,14 +319,15 @@ export function SeasonSummaryScreen() {
     }}>
       <div style={{ padding: '0 16px 180px' }}>
 
-        {showRelegationIllustration && (
-          <IllustrationScene
-            mode="header"
-            name="nedflyttning"
-            alt="Tom bandyplan efter en säsong i nedflyttningszonen"
-            style={{ margin: '0 -16px 16px' }}
-          />
-        )}
+        <IllustrationScene
+          mode="header"
+          name={seasonIllustrationName}
+          alt={showRelegationIllustration
+            ? 'Tom bandyplan efter en säsong i nedflyttningszonen'
+            : 'Isen tinar efter den avslutade bandysäsongen'}
+          objectPosition={showRelegationIllustration ? 'center 40%' : 'center 84%'}
+          style={{ margin: '0 -16px 16px' }}
+        />
 
         {/* HEADER */}
         <div style={{
@@ -832,7 +840,17 @@ export function SeasonSummaryScreen() {
 
         {/* DOM_AKADEMI_LIGGARE §3/§6: en gemensam akademidel ur kanon. */}
         {(summary.youthIntakeCount > 0 || (summary.academyHighlights?.length ?? 0) > 0 || summary.academyEconomyLine) && (
-          <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
+          <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8, overflow: 'hidden' }}>
+            {(summary.academyHighlights?.length ?? 0) > 0 && (
+              <IllustrationScene
+                mode="header"
+                name="academy-breakthrough"
+                alt="En ung bandyspelare tar steget ut på seniorisen"
+                fadeTo="var(--bg-surface)"
+                objectPosition="center 63%"
+                style={{ height: 145, margin: '-10px -14px 10px' }}
+              />
+            )}
             <SectionLabel>AKADEMIN</SectionLabel>
             {(summary.academyHighlights?.length ?? 0) > 0 ? summary.academyHighlights!.map((line, index) => (
               <p key={`${index}-${line}`} style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>

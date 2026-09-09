@@ -14,6 +14,7 @@
 import { useState } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getValetScene } from '../../../domain/data/scenes/valetScene'
+import { IllustrationScene } from '../../components/illustration/IllustrationScene'
 import { SceneCTA } from './shared/SceneCTA'
 
 interface Props {
@@ -36,11 +37,26 @@ export function ValetScene({ game, onComplete }: Props) {
     <div style={{
       background: 'var(--bg-portal)',
       minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '30px 22px 28px',
+      position: 'relative',
+      overflow: 'hidden',
       animation: 'fadeIn 300ms ease both',
     }}>
+      <IllustrationScene
+        mode="fullbleed"
+        name="valet"
+        alt="En ensam ledare står vid bandyplanen inför säsongens vägval"
+        objectPosition="center 58%"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', aspectRatio: 'auto' }}
+      />
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '30px 22px 28px',
+        background: 'color-mix(in srgb, var(--bg-portal) 84%, transparent)',
+      }}>
       {/* Genre */}
       <div className="h-scene-genre" style={{ marginBottom: 14 }}>
         {scene.genre}
@@ -205,6 +221,7 @@ export function ValetScene({ game, onComplete }: Props) {
           <SceneCTA label={confirmCta} onClick={() => onComplete(selectedId)} />
         </div>
       )}
+      </div>
     </div>
   )
 }

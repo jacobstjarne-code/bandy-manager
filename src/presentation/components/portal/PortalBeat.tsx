@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getActiveBeat, getBeatKey } from '../../../domain/services/portalBeatService'
 import { useGameStore } from '../../store/gameStore'
+import { IllustrationScene } from '../illustration/IllustrationScene'
 
 interface Props {
   game: SaveGame
@@ -59,6 +60,9 @@ export function PortalBeat({ game }: Props) {
     ? beat.severity(game)
     : kickerText ? 1 : 0
   const styles = getSeverityStyles(sev)
+  const illustration = typeof beat.illustration === 'function'
+    ? beat.illustration(game)
+    : beat.illustration
 
   // Entitets-dedup-grinden (Överlämning 2 steg 0, 2026-08-22): beatKey är
   // redan den kanoniska per-instans-identiteten (keyFn för t.ex. ripple_
@@ -98,6 +102,16 @@ export function PortalBeat({ game }: Props) {
     >
       {styles.topStripe && (
         <div style={{ height: 3, background: styles.topStripe }} />
+      )}
+      {illustration && (
+        <IllustrationScene
+          mode="header"
+          name={illustration.name}
+          alt={illustration.alt}
+          objectPosition={illustration.objectPosition}
+          fadeTo={styles.background}
+          style={{ height: 118 }}
+        />
       )}
       <div style={{
         padding: showKicker ? '7px 12px 9px' : '8px 12px',

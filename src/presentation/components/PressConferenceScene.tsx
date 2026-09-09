@@ -1,6 +1,7 @@
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import type { Journalist } from '../../domain/entities/SaveGame'
 import { DecisionChoices } from './DecisionChoices'
+import { IllustrationScene } from './illustration/IllustrationScene'
 
 /**
  * GEMENSAM BESLUTSMODELL (2026-08-12): INTE migrerad till DecisionCard.
@@ -43,6 +44,13 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
       alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '48px', zIndex: 300, overflowY: 'auto',
     }}>
+      <IllustrationScene
+        mode="fullbleed"
+        name="press"
+        alt="Pressrum med mikrofoner och väntande journalister"
+        objectPosition="center 46%"
+        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', aspectRatio: 'auto' }}
+      />
       <div className="card-sharp" style={{
         minWidth: 280, maxWidth: 360, width: '90%',
         marginBottom: 20,
@@ -50,6 +58,8 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
         boxShadow: 'var(--shadow-modal)',
         padding: 0,
         overflow: 'hidden',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* Header */}
         <div style={{

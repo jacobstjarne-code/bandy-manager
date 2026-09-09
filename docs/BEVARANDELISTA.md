@@ -18,7 +18,6 @@ för varje namn — noll förekomster = bygget failar (bevarad text raderad, som
 en yta. Bara textpooler — typ-only-exporterna längst ner hör inte hit.
 
 ```bevarandelista
-LOBBY_PRESS
 diaryLine
 HALL_NEWS_POSITIVE
 HALL_NEWS_NEGATIVE
@@ -41,13 +40,6 @@ MUSTWIN_CRIT_TAGS
 ---
 
 ## VÄNTAR PÅ MEKANIK (blockerad av mer än en yta)
-
-**`LOBBY_PRESS`** — `landslagText.ts`
-Veckans lobbybeslut inför landslagsuttagning (prompt, accepterat, avböjt).
-Parkerad i release-svepet: kräver persistent state + påverkan på uttagnings-
-oddsen, alltså ny mekanik, inte wiring. De tre syskonpoolerna i samma fil
-(notis, frånvaro, snub) är wirade och lever.
-Väntar på: veckobeslutets andra form, eller en egen lobbymekanik.
 
 **`diaryLine`** — kafferumsgrenen
 Klassad i städsvepet som text-utan-yta; dess tänkta konsument var själv död kod.

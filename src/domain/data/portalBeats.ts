@@ -41,6 +41,15 @@ export interface PortalBeat {
    *  renderas precis som förut, bara `text`. Texten i varje steg är oförändrad — samma
    *  STEP_VERBS-fraser som redan användes i den hopplattade meningen, ingen ny copy. */
   steps?: (game: SaveGame) => { text: string; dir: 'up' | 'down' }[]
+  /** Valfri momentbild på det befintliga beatet. Funktion när bilden bara hör
+   *  till ett verkligt utfall (t.ex. styrelsens skarpaste ultimatum). */
+  illustration?: PortalBeatIllustration | ((game: SaveGame) => PortalBeatIllustration | undefined)
+}
+
+export interface PortalBeatIllustration {
+  name: string
+  alt: string
+  objectPosition?: string
 }
 
 /**
@@ -217,6 +226,13 @@ export const PORTAL_BEATS: PortalBeat[] = [
       return `board_fail_sev${sev}_s${g.currentSeason}`
     },
     oncePerSeason: false,
+    illustration: (g) => (g.boardPatience ?? 70) < 30
+      ? {
+          name: 'board-ultimatum',
+          alt: 'Det tomma styrelserummet inför klubbens sista ultimatum',
+          objectPosition: 'center 60%',
+        }
+      : undefined,
   },
 
   // ── Legibel konsekvens: dominokedjan i ögonblicket ───────────────────────
@@ -635,5 +651,10 @@ export const PORTAL_BEATS: PortalBeat[] = [
         : 'facility_completed_unknown'
     },
     oncePerSeason: false,
+    illustration: {
+      name: 'facility-completed',
+      alt: 'Det nya klubbbygget står färdigt intill bandyplanen',
+      objectPosition: 'center 58%',
+    },
   },
 ]
