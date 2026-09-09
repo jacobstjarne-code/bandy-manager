@@ -2,7 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
 import { storylineResolutionSignificance } from './storylineLedgerService'
 import type { ClubLegend, StorylineEntry, EventLedgerEntry } from '../entities/Narrative'
-import { FixtureStatus } from '../enums'
+import { FixtureStatus, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { getRoundLabel } from '../roundLabel'
 import type { MemoryEvent, MemoryEventType } from './clubMemoryService'
@@ -192,6 +192,57 @@ export function buildMatchResultLedgerEntry(
       goalsFor: myScore, goalsAgainst: theirScore, opponentClubId: opponentId,
       home: isHome, competition, stage: getRoundLabel(fixture).long,
     },
+  }
+}
+
+/**
+ * stickiness-copy-roster B12-mönstret (TEXTLEVERANS_OPUS_2026-09-08, SMAL
+ * scope-dom): samma bevis matchensSambandService.ts:s rad A använder för en
+ * enskild match (`hasFactor(ourEvents, 'formation_523')` + minst en
+ * Suspension-händelse), men över ett tre-ligaomgångars fönster. Ligamatcher
+ * enbart (samma `!isCup && !isKnockout`-filter som formUtils.ts's
+ * getFormResults) — cupens/slutspelets enstaka knockout-möten hör inte till
+ * samma rond-för-rond-rytm mönstret syftar på.
+ */
+function matchesTacticalPatternSuspension523(fixture: Fixture, managedClubId: string): boolean {
+  const ourEvents = fixture.events.filter(e => e.clubId === managedClubId)
+  return ourEvents.some(e => e.tacticalFactors?.includes('formation_523'))
+    && ourEvents.some(e => e.type === MatchEventType.Suspension)
+}
+
+/**
+ * Fyrar bara vid ÖVERGÅNGEN in i mönstret (fjärde matchen bakåt, om den
+ * finns, får INTE redan matcha) — annars skulle en längre svit skriva en ny
+ * post varje efterföljande match i stället för en gång vid det tredje.
+ */
+export function buildTacticalPatternSuspension523LedgerEntry(
+  fixtures: Fixture[],
+  managedClubId: string,
+  season: number,
+): EventLedgerEntry | null {
+  const played = fixtures
+    .filter(f =>
+      f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout &&
+      (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+    )
+    .sort((a, b) => a.matchday - b.matchday)
+
+  if (played.length < 3) return null
+  const lastThree = played.slice(-3)
+  if (!lastThree.every(f => matchesTacticalPatternSuspension523(f, managedClubId))) return null
+
+  const fourthBack = played.length >= 4 ? played[played.length - 4] : undefined
+  if (fourthBack && matchesTacticalPatternSuspension523(fourthBack, managedClubId)) return null
+
+  const lastFixture = lastThree[lastThree.length - 1]
+  return {
+    type: 'tactical_pattern_suspension',
+    semanticKey: `tactical_pattern_suspension_${managedClubId}_s${season}_m${lastFixture.matchday}`,
+    clubId: managedClubId,
+    season,
+    matchday: lastFixture.matchday,
+    subject: { kind: 'club', id: managedClubId },
+    significance: 45,
   }
 }
 

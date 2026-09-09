@@ -266,6 +266,16 @@ export type EventLedgerType =
   // läser direkt (skulle kringgå redaktören/dirigenten). subject = klubben
   // som tas över. Skrivs av switchManagedClub.ts.
   | 'manager_return'
+  // TEXTLEVERANS_OPUS_2026-09-08 (stickiness-copy-roster B12-mönstret, SMAL
+  // scope-dom): tre raka ligaomgångar med minst en utvisning under
+  // formation_523 — mönstret HÄNDER (blir sant) exakt vid tredje matchen,
+  // hör därför i liggaren precis som manager_return, inte som ett live
+  // state-undantag pushadaptern räknar fram själv. subject = managed club
+  // (mönstret är managerns eget taktikval, ingen motpart). Skrivs av
+  // clubMemoryEventBuilders.ts's buildTacticalPatternSuspension523LedgerEntry,
+  // anropad från matchOutcomeProcessor.ts. Den generella 13-faktorsversionen
+  // (valfri kostnadsfaktor, inte bara formation_523) är POST_LAUNCH.
+  | 'tactical_pattern_suspension'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut

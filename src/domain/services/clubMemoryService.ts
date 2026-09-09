@@ -727,6 +727,11 @@ const STATIC_MOMENT_KIND: Partial<Record<EventLedgerType, ActiveMemoryKind>> = {
   // hållen") — varken ren triumf eller rent sår, samma laddade klass som
   // nemesis/referee_feud.
   manager_return: 'tension',
+  // TEXTLEVERANS_OPUS_2026-09-08 (B12-mönstret): registrets egen text ("Jag
+  // säger inget mer. Jo, en sak: byt") är en otvetydig kritik, inte laddad
+  // ambivalens som manager_return/nemesis — samma sting-klass som
+  // star_injury/captain_crisis.
+  tactical_pattern_suspension: 'scar',
   mecenat_costshare: 'neutral', player_milestone: 'neutral', retirement: 'neutral',
   voice_introduced: 'neutral',
   // DOM_AKADEMI_LIGGARE_2026-09-04 §4: "det är livet, inte ett sår."
@@ -820,6 +825,9 @@ const MOMENT_FAMILY: Partial<Record<EventLedgerType, MemoryFamily>> = {
   rival_sale: '👤', transfer_signed: '👤', transfer_sold: '👤', youth_aged_out: '👤',
   transfer_target_missed: '👤',
   manager_return: '👤',
+  // TEXTLEVERANS_OPUS_2026-09-08 (B12-mönstret): matchtaktik, samma familj
+  // som derby_result/big_loss — inte 👤 (ingen namngiven motpart).
+  tactical_pattern_suspension: '⚔️',
   patron_emerge: '🤝', patron_withdrawal: '🤝', mecenat_withdrawal: '🤝', mecenat_costshare: '🤝',
   sponsor_positive: '🤝', sponsor_negative: '🤝', referee_feud: '🤝', referee_trust: '🤝',
   decision: '📋', storyline_resolution: '📋', scandal: '📋', manager_burnout: '📋', era_shift: '📋',

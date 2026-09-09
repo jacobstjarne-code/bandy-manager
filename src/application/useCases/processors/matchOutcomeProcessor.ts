@@ -3,7 +3,7 @@ import type { Moment } from '../../../domain/entities/Moment'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { RippleChain, SaveGame } from '../../../domain/entities/SaveGame'
 import { getRivalry } from '../../../domain/data/rivalries'
-import { buildMatchResultLedgerEntry } from '../../../domain/services/clubMemoryEventBuilders'
+import { buildMatchResultLedgerEntry, buildTacticalPatternSuspension523LedgerEntry } from '../../../domain/services/clubMemoryEventBuilders'
 import { decayKlackEcho, detectNotableResult } from '../../../domain/services/klackEchoService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { buildSystemRippleLedgerEntry } from '../../../domain/services/orsakVerkanService'
@@ -24,6 +24,7 @@ export function processManagedMatchOutcome(
   simulatedFixtures: Fixture[],
   initialGameAfterRipples: SaveGame,
   nextMatchday: number,
+  allFixtures: Fixture[],
 ): MatchOutcomeResult {
   let gameAfterRipples = initialGameAfterRipples
   const rippleChains: RippleChain[] = []
@@ -57,6 +58,9 @@ export function processManagedMatchOutcome(
   if (fixture) {
     const resultEntry = buildMatchResultLedgerEntry(fixture, game.managedClubId)
     if (resultEntry) ledgerEntries.push(resultEntry)
+
+    const tacticalPatternEntry = buildTacticalPatternSuspension523LedgerEntry(allFixtures, game.managedClubId, game.currentSeason)
+    if (tacticalPatternEntry) ledgerEntries.push(tacticalPatternEntry)
   }
 
   let klackEcho = game.klackEcho ? decayKlackEcho(game.klackEcho) : undefined

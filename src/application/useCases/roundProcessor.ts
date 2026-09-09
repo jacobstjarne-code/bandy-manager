@@ -294,6 +294,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     simulatedFixtures,
     gameAfterRipples,
     nextMatchday,
+    allFixtures,
   )
   gameAfterRipples = matchOutcomeResult.gameAfterRipples
   roundRippleChains.push(...matchOutcomeResult.rippleChains)

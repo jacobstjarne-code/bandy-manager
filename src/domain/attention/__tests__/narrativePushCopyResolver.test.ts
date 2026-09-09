@@ -367,6 +367,23 @@ describe('createNarrativePushCopyResolver', () => {
     expect(resolver({ category: 'narrative_return', item: item })).toBeNull()
   })
 
+  // stickiness-copy-roster B12-mönstret (TEXTLEVERANS_OPUS_2026-09-08, SMAL
+  // scope-dom): ingen opponentId-koppling — mönstret handlar om managerns
+  // eget taktikval, en röst (assistant), ingen rotation.
+  it('återkommande taktiskt misslyckande: tactical_pattern_suspension ger den låsta assistant-raden', () => {
+    const resolver = createNarrativePushCopyResolver(gameFixture(), memoryRotation())
+    const item = agendaItem({
+      type: 'tactical_pattern_suspension', season: 3, matchday: 3,
+      subject: { kind: 'club', id: 'club_soderfors' },
+    })
+    const copy = resolver({ category: 'narrative_return', item: item })
+    expect(copy).toEqual({
+      voice: 'assistant',
+      title: 'Samma sak tredje gången.',
+      body: 'Tre matcher i rad med utvisningar under 5-2-3. Mönstret är ditt, inte otur.',
+    })
+  })
+
   // DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08: registrets §7 "nemesis"-rad
   // ("Han valde {Motståndare}") beskriver spelaren VI bjöd på och missade,
   // vars klubb vid budtillfället nu är nästa motstånd — transfer_target_missed,

@@ -1,7 +1,12 @@
-import { buildEventFromFixture, buildEventFromRetirement, buildEventFromStoryline } from '../domain/services/clubMemoryEventBuilders'
-import type { Fixture } from '../domain/entities/Fixture'
+import {
+  buildEventFromFixture,
+  buildEventFromRetirement,
+  buildEventFromStoryline,
+  buildTacticalPatternSuspension523LedgerEntry,
+} from '../domain/services/clubMemoryEventBuilders'
+import type { Fixture, MatchEvent } from '../domain/entities/Fixture'
 import type { ClubLegend, StorylineEntry } from '../domain/entities/Narrative'
-import { FixtureStatus } from '../domain/enums'
+import { FixtureStatus, MatchEventType } from '../domain/enums'
 
 const MANAGED_CLUB_ID = 'club_a'
 const OPPONENT_CLUB_ID = 'club_b'
@@ -146,5 +151,63 @@ describe('buildEventFromStoryline', () => {
     expect(event!.type).toBe('storyline_resolution')
     expect(event!.significance).toBe(65)
     expect(event!.text).toBe('Mot alla odds tog laget säsongen hem.')
+  })
+})
+
+/**
+ * stickiness-copy-roster B12-mönstret (TEXTLEVERANS_OPUS_2026-09-08, SMAL
+ * scope-dom): tre raka ligaomgångar med utvisning under formation_523.
+ */
+describe('buildTacticalPatternSuspension523LedgerEntry', () => {
+  function suspensionUnder523Event(): MatchEvent {
+    return {
+      minute: 30, type: MatchEventType.Suspension, clubId: MANAGED_CLUB_ID,
+      description: 'Utvisning', tacticalFactors: ['formation_523'],
+    }
+  }
+
+  function patternFixture(matchday: number): Fixture {
+    return makeFixture({ matchday, events: [suspensionUnder523Event()] })
+  }
+
+  it('returnerar null vid färre än tre ligamatcher', () => {
+    const fixtures = [patternFixture(1), patternFixture(2)]
+    expect(buildTacticalPatternSuspension523LedgerEntry(fixtures, MANAGED_CLUB_ID, 5)).toBeNull()
+  })
+
+  it('returnerar null om inte alla tre senaste matcherna matchar mönstret', () => {
+    const fixtures = [
+      patternFixture(1),
+      makeFixture({ matchday: 2, events: [] }),
+      patternFixture(3),
+    ]
+    expect(buildTacticalPatternSuspension523LedgerEntry(fixtures, MANAGED_CLUB_ID, 5)).toBeNull()
+  })
+
+  it('bygger en post vid exakt tredje raka matchen med utvisning under 5-2-3', () => {
+    const fixtures = [patternFixture(1), patternFixture(2), patternFixture(3)]
+    const entry = buildTacticalPatternSuspension523LedgerEntry(fixtures, MANAGED_CLUB_ID, 5)
+    expect(entry).not.toBeNull()
+    expect(entry!.type).toBe('tactical_pattern_suspension')
+    expect(entry!.subject).toEqual({ kind: 'club', id: MANAGED_CLUB_ID })
+    expect(entry!.matchday).toBe(3)
+    expect(entry!.season).toBe(5)
+  })
+
+  it('fyrar INTE igen om mönstret redan gällde vid fjärde matchen tillbaka (fortsatt svit)', () => {
+    const fixtures = [patternFixture(1), patternFixture(2), patternFixture(3), patternFixture(4)]
+    expect(buildTacticalPatternSuspension523LedgerEntry(fixtures, MANAGED_CLUB_ID, 5)).toBeNull()
+  })
+
+  it('ignorerar cup-/slutspelsmatcher — bara liga räknas i sviten', () => {
+    const fixtures = [
+      patternFixture(1),
+      patternFixture(2),
+      makeFixture({ matchday: 3, isCup: true, isKnockout: true, events: [suspensionUnder523Event()] }),
+      patternFixture(4),
+    ]
+    const entry = buildTacticalPatternSuspension523LedgerEntry(fixtures, MANAGED_CLUB_ID, 5)
+    expect(entry).not.toBeNull()
+    expect(entry!.matchday).toBe(4)
   })
 })

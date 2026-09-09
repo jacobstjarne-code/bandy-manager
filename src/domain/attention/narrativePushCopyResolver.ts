@@ -49,12 +49,11 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  * motståndarlaget (`transferProcessor.ts:521`) och manager-återkomst
  * (`switchManagedClub.ts`, se nedan).
  *
- * ETT av registrets fem `memory.*`-scenarier är MEDVETET INTE wired här —
- * ingen producent finns att läsa från, en gissad payload-form hade varit
- * påhittad data:
- *  - "återkommande taktiskt misslyckande" (B12-mönster) — kräver en ny
- *    treomgångars-detektor mot MatchEvent.contributingFactors; ingen
- *    liggarpost existerar för detta ännu.
+ * "Återkommande taktiskt misslyckande" (B12-mönster) — WIRAD 2026-09-08
+ * (Code), SMAL scope-dom (TEXTLEVERANS_OPUS_2026-09-08): den generella
+ * 13-faktorsversionen (valfri kostnadsfaktor) är POST_LAUNCH, bara den
+ * verifierade formation_523+Suspension-kombinationen är byggd (se
+ * `clubMemoryEventBuilders.ts`s `buildTacticalPatternSuspension523LedgerEntry`).
  *
  * "Återkomst till gamla klubben" — WIRAD 2026-09-08 (Code),
  * DOM_MANAGER_ATERKOMST_2026-09-08.md. Byggdes FÖRST som ett state-undantag
@@ -349,6 +348,21 @@ export function createNarrativePushCopyResolver(
             title: `Tillbaka till ${opponentName}.`,
             body: 'Första matchen mot dem sedan du gick. Åt båda hållen.',
           }
+    }
+
+    // Återkommande taktiskt misslyckande (register §4, "Samma sak tredje
+    // gången") — stickiness-copy-roster B12-mönstret, SMAL scope-dom
+    // (TEXTLEVERANS_OPUS_2026-09-08): tre raka ligaomgångar med utvisning
+    // under formation_523 (clubMemoryEventBuilders.ts's
+    // buildTacticalPatternSuspension523LedgerEntry). Ingen opponentId-koppling
+    // — mönstret handlar om managerns eget taktikval, inte nästa motstånd.
+    // Registret ger en röst (assistant), ingen rotation.
+    if (item.post.type === 'tactical_pattern_suspension') {
+      return {
+        voice: 'assistant',
+        title: 'Samma sak tredje gången.',
+        body: 'Tre matcher i rad med utvisningar under 5-2-3. Mönstret är ditt, inte otur.',
+      }
     }
 
     return null
