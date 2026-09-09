@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { TacticMentality } from '../../enums'
-import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES, PATRON_EMERGE_CS } from '../../data/patronData'
+import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS, PATRON_PROFILES } from '../../data/patronData'
 import { isVoiceIntroduced, patronVoiceId } from '../voiceIntroductionService'
 import { calculateClubEra } from '../clubEraService'
 
@@ -358,7 +358,7 @@ export function generatePatronEmergenceEvent(
   const voiceId = patronVoiceId(game.managedClubId, patronId)
 
   // DOM_PASTAENDE_GENERERINGSKONTRAKT_2026-09-08: den faktiska "varför nu"-
-  // grinden (era + communityStanding-tröskel) ägs av eventProcessor.ts, den
+  // grinden (era + godkänd säsongsrullning) ägs av eventProcessor.ts, den
   // enda anroparen i produktionsflödet — den avgör NÄR den här funktionen
   // ens kallas (cooldown + ingen redan-aktiv-patron ligger också där, ren
   // dedup, inte en sanningsclaim). patronEventTruth.test.ts kallar funktionen
@@ -368,7 +368,6 @@ export function generatePatronEmergenceEvent(
   // Offertbeloppet ({tkr}) är alltid grundat i faktisk reputation; "varför
   // nu"-predikatet redovisas ärligt, gejtar inte pushen här.
   const patronEmergeWhyNow = calculateClubEra(game) !== 'survival'
-    && (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
 
   return {
     id: emergeId,
@@ -380,7 +379,7 @@ export function generatePatronEmergenceEvent(
     body: `${patronData.backstory ?? 'En stillsam figur i bygden har följt klubbens resa.'}\n\n"Jag har sett vad ni byggt. Jag vill stötta er vidare — ${tkr} tkr/säsong."`,
     proofSource: {
       form: 'state-predicate',
-      description: 'klubbens era har lämnat survival och communityStanding når patronens tröskel (PATRON_EMERGE_CS) — gejtas av eventProcessor.ts, den enda produktionsanroparen',
+      description: 'klubbens era har lämnat survival; eventProcessor.ts gejtar dessutom på den enda seedade CS-rullningen för säsongen',
       evaluatedTrue: patronEmergeWhyNow,
     },
     choices: [

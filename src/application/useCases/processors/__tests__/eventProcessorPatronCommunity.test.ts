@@ -4,25 +4,31 @@ import type { Patron } from '../../../../domain/entities/Community'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { createNewGame } from '../../createNewGame'
 import { processPatronCommunityEvents } from '../eventProcessor'
+import { passesSeasonalEmergenceRoll, seasonalEmergenceProbability } from '../../../../domain/services/mecenatPatronEmergenceService'
 
 function establishedGame(): SaveGame {
-  const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2026, seed: 17 })
-  return {
-    ...game,
-    communityStanding: 70,
-    patron: undefined,
-    patronWithdrawnSeason: undefined,
-    trainerArc: {
-      current: 'grind',
-      history: [],
-      seasonCount: 1,
-      bestFinish: 4,
-      titlesWon: 0,
-      consecutiveWins: 0,
-      consecutiveLosses: 0,
-      boardWarningGiven: false,
-    },
+  for (let worldSeed = 0; worldSeed < 10_000; worldSeed++) {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2026, seed: worldSeed })
+    const candidate: SaveGame = {
+      ...game,
+      worldSeed,
+      communityStanding: 40,
+      patron: undefined,
+      patronWithdrawnSeason: undefined,
+      trainerArc: {
+        current: 'grind',
+        history: [],
+        seasonCount: 1,
+        bestFinish: 4,
+        titlesWon: 0,
+        consecutiveWins: 0,
+        consecutiveLosses: 0,
+        boardWarningGiven: false,
+      },
+    }
+    if (passesSeasonalEmergenceRoll(candidate, 'patron', 40)) return candidate
   }
+  throw new Error('kunde inte hitta seed med godkänd patronrullning')
 }
 
 function activePatron(): Patron {
@@ -42,10 +48,16 @@ function activePatron(): Patron {
   }
 }
 
-describe('eventProcessor — patron community threshold', () => {
-  it('queues one emergence event for an established club above the threshold', () => {
+describe('eventProcessor — patronens CS-skalerade säsongsrullning', () => {
+  it('rampen är kontinuerlig och har chans även under den gamla 60-väggen', () => {
+    expect(seasonalEmergenceProbability('patron', 0)).toBeCloseTo(0.01)
+    expect(seasonalEmergenceProbability('patron', 40)).toBeCloseTo(0.094)
+    expect(seasonalEmergenceProbability('patron', 100)).toBeCloseTo(0.22)
+  })
+
+  it('queues one emergence event for an established club under den gamla tröskeln när säsongsrullningen lyckas', () => {
     const game = establishedGame()
-    const result = processPatronCommunityEvents(game, undefined, undefined, 8, () => 0, [])
+    const result = processPatronCommunityEvents(game, undefined, undefined, 8, 1, () => 0, [])
 
     expect(result.gameEvents).toHaveLength(1)
     expect(result.gameEvents[0]).toMatchObject({
@@ -67,7 +79,7 @@ describe('eventProcessor — patron community threshold', () => {
       resolved: false,
     }] as GameEvent[]
 
-    const result = processPatronCommunityEvents(game, undefined, undefined, 8, () => 0, queued)
+    const result = processPatronCommunityEvents(game, undefined, undefined, 8, 1, () => 0, queued)
 
     expect(result.gameEvents).toEqual([])
   })
@@ -76,7 +88,7 @@ describe('eventProcessor — patron community threshold', () => {
     const base = establishedGame()
     const patron = activePatron()
     const game = { ...base, communityStanding: 40, patron }
-    const result = processPatronCommunityEvents(game, patron, undefined, 8, () => 0, [])
+    const result = processPatronCommunityEvents(game, patron, undefined, 8, 8, () => 0, [])
 
     expect(result.updatedPatron).toEqual({ ...patron, isActive: false })
     expect(result.patronWithdrawnSeason).toBe(game.currentSeason)
@@ -90,5 +102,11 @@ describe('eventProcessor — patron community threshold', () => {
       subject: { kind: 'patron', id: patron.id },
       significance: 95,
     })])
+  })
+
+  it('prövar inte samma godkända roll igen efter första serieomgången', () => {
+    const game = establishedGame()
+    const result = processPatronCommunityEvents(game, undefined, undefined, 8, 2, () => 0, [])
+    expect(result.gameEvents).toEqual([])
   })
 })

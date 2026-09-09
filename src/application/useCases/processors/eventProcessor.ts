@@ -43,7 +43,10 @@ import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventSer
 import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
 import { calculateClubEra } from '../../../domain/services/clubEraService'
 import { generatePatronEmergenceEvent } from '../../../domain/services/events/patronEvents'
-import { PATRON_EMERGE_CS } from '../../../domain/data/patronData'
+import { PATRON_CS_EVICTION_THRESHOLD } from '../../../domain/data/patronData'
+import {
+  passesSeasonalEmergenceRoll,
+} from '../../../domain/services/mecenatPatronEmergenceService'
 
 const BOARD_MILESTONES = [7, 14, 22]
 
@@ -158,6 +161,7 @@ export function processPatronCommunityEvents(
   patron: Patron | undefined,
   patronWithdrawnSeason: number | undefined,
   nextMatchday: number,
+  currentLeagueRound: number | null,
   localRand: () => number,
   queuedThisRound: readonly GameEvent[],
 ): PatronCommunityEventResult {
@@ -166,12 +170,15 @@ export function processPatronCommunityEvents(
   let updatedPatron = patron
   let updatedWithdrawnSeason = patronWithdrawnSeason
 
-  // Patron emergence: era ≥ fotfäste, CS threshold met, no active patron,
-  // and the explicit two-season withdrawal cooldown has elapsed.
+  // Patron emergence: one deterministic roll at the first league round of
+  // each season. CS changes the chance continuously; the existing era and
+  // two-season withdrawal cooldown remain eligibility gates.
+  const communityStanding = game.communityStanding ?? 50
   if (
+    currentLeagueRound === 1 &&
     calculateClubEra(game) !== 'survival' &&
     !game.patron?.isActive &&
-    (game.communityStanding ?? 50) >= PATRON_EMERGE_CS
+    passesSeasonalEmergenceRoll(game, 'patron', communityStanding)
   ) {
     const patronCooldownOk = !game.patronWithdrawnSeason ||
       game.currentSeason > game.patronWithdrawnSeason + 2
@@ -193,7 +200,7 @@ export function processPatronCommunityEvents(
   if (
     updatedPatron?.isActive &&
     updatedPatron.introducedSeason !== undefined &&
-    (game.communityStanding ?? 50) < PATRON_EMERGE_CS
+    communityStanding < PATRON_CS_EVICTION_THRESHOLD
   ) {
     const evictionId = `patron_cs_eviction_${game.currentSeason}`
     const alreadyQueued = (game.pendingEvents ?? []).some(event => event.id === evictionId) ||
@@ -808,7 +815,6 @@ export function mecenatCapForCs(cs: number): number {
 
 export function applyMecenatSpawn(
   game: SaveGame,
-  postTransferClubs: Club[],
   isSecondPass: boolean,
   currentLeagueRound: number | null,
   updatedMecenater: NonNullable<SaveGame['mecenater']>,
@@ -816,9 +822,7 @@ export function applyMecenatSpawn(
 ): { updatedMecenater: NonNullable<SaveGame['mecenater']>; newEvents: GameEvent[] } {
   if (
     isSecondPass ||
-    currentLeagueRound === null ||
-    currentLeagueRound < 6 ||
-    currentLeagueRound > 18
+    currentLeagueRound !== 1
   ) {
     return { updatedMecenater, newEvents: [] }
   }
@@ -828,25 +832,18 @@ export function applyMecenatSpawn(
     return { updatedMecenater, newEvents: [] }
   }
   const cs = game.communityStanding ?? 50
-  const rep = postTransferClubs.find(c => c.id === game.managedClubId)?.reputation ?? 50
   const activeMecenater = updatedMecenater.filter(m => m.isActive)
   const maxMecenater = mecenatCapForCs(cs)
   const alreadySpawnedThisSeason = updatedMecenater.some(m => m.arrivedSeason === game.currentSeason)
 
-  // "Takmodellen" (Jacobs dom 2026-08-26, ARBETSKARTAN fråga 3 —
-  // sannolikhetsrampen mättes och kastades: 1-15%/omgång upprepad 130-220
-  // gånger över en karriär konvergerar mot säkerhet oavsett cs, se
-  // RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md). Ortstödet ska avgöra HUR
-  // MÅNGA (taket ovan, redan diskret), inte HUR OFTA — därför borttaget:
-  // det tidigare `cs >= 65`-försöksgrindet. Golvet på taket är 1 (aldrig
-  // 0) — en klubb kan ALLTID ha en mecenat, oavsett hur lågt ortstödet är,
-  // bara långsammare (samma 15%-chans, oförändrad) och begränsat till en
-  // åt gången tills taket stiger.
+  // DOM_MECENAT_PATRON_MODELLFORM_2026-09-08: exakt en seedad prövning vid
+  // säsongens första serieomgång. Reputation-väggen tas bort; CS-rampen är
+  // den uttalade spaken och har ett litet men verkligt golv även för Heros.
+  // Taket ovan avgör fortfarande HUR MÅNGA samtidiga mecenater som ryms.
   if (
-    rep >= 55 &&
     activeMecenater.length < maxMecenater &&
     !alreadySpawnedThisSeason &&
-    localRand() < 0.15
+    passesSeasonalEmergenceRoll(game, 'mecenat', cs)
   ) {
     const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
     const introEvent = generateMecenatIntroEvent(newMecenat, game.managedClubId)

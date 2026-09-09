@@ -1,4 +1,6 @@
-export const PATRON_EMERGE_CS = 60
+/** Den gamla emergence-väggen är borttagen. 60 lever bara kvar som den
+ * skyddade CS-gränsen för en redan aktiv patrons ortsdrivna avhopp. */
+export const PATRON_CS_EVICTION_THRESHOLD = 60
 
 export const PATRON_PROFILES = [
   { first: 'Göran', last: 'Hedlund', biz: 'Hedlunds Skog & Timber AB', backstory: 'Hedlunds Skog & Timber äger 1 200 hektar i tre kommuner. Göran tog över efter fadern 1998 och har fördubblat volymen sedan dess. Exporterar till sju länder, men åker fortfarande hem till orten varje helg.' },

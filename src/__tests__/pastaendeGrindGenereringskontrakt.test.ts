@@ -259,7 +259,7 @@ describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
       assertAllStatePredicatesTrue(generatePatronEvents(game, 5, new Set(), () => 0))
     })
 
-    it('patron_emerge — evaluatedTrue sant när eventProcessor.ts:s gate faktiskt håller (fotfäste-era, CS över tröskeln)', () => {
+    it('patron_emerge — evaluatedTrue sant när den påstådda era-grinden håller', () => {
       const base = makeGame()
       const game: SaveGame = {
         ...base,
@@ -282,7 +282,7 @@ describe('PÅSTÅENDEGRINDEN — genererings-tids-kontraktet', () => {
       const event = generatePatronEmergenceEvent(game, () => 0)!
       expect(event.proofSource?.form).toBe('state-predicate')
       if (event.proofSource?.form === 'state-predicate') {
-        // Fresh game: communityStanding under tröskeln — ingen kastning (se
+        // Fresh game: eran är fortfarande survival — ingen kastning (se
         // patronEvents.ts:s kommentar om varför), bara en ärlig false. Detta
         // ÄR kontraktets poäng: en integrationskonsument kan filtrera på
         // evaluatedTrue, en isolerad enhetstest (som denna och den befintliga

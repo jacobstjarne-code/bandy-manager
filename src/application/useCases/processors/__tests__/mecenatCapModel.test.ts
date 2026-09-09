@@ -1,17 +1,17 @@
 /**
- * "Takmodellen" (Jacobs dom 2026-08-26, RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md
- * punkt 3-4): sannolikhetsrampen mättes och kastades (konvergerar mot
- * säkerhet över en karriär, communityStanding blev irrelevant). Ersatt:
- * ortstödet avgör HUR MÅNGA (det redan diskreta taket), inte HUR OFTA
- * (sannolikheten oförändrad, 15%, `cs>=65`-försöksgrindet borttaget — en
- * klubb kan alltid ha minst 1 mecenat, bara långsammare). Relationen är nu
- * dubbelriktad: om taket sjunker under antalet aktiva, tvingas ett avhopp.
+ * DOM_MECENAT_PATRON_MODELLFORM_2026-09-08: en enda seedad rullning vid
+ * säsongens första serieomgång. CS lutar sannolikheten; det diskreta taket
+ * och den befintliga avhoppslogiken är oförändrade.
  */
 import { describe, it, expect } from 'vitest'
 import { applyMecenatSpawn, applyMecenatCapEviction, mecenatCapForCs } from '../eventProcessor'
 import { createNewGame } from '../../createNewGame'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import type { Mecenat } from '../../../../domain/entities/Mecenat'
+import {
+  passesSeasonalEmergenceRoll,
+  seasonalEmergenceProbability,
+} from '../../../../domain/services/mecenatPatronEmergenceService'
 
 function makeMecenat(overrides: Partial<Mecenat>): Mecenat {
   return {
@@ -29,6 +29,14 @@ function makeGame(overrides: Partial<SaveGame>): SaveGame {
   return { ...game, ...overrides }
 }
 
+function gameWithPassingMecenatRoll(communityStanding: number): SaveGame {
+  for (let worldSeed = 0; worldSeed < 10_000; worldSeed++) {
+    const game = makeGame({ communityStanding, worldSeed })
+    if (passesSeasonalEmergenceRoll(game, 'mecenat', communityStanding)) return game
+  }
+  throw new Error('kunde inte hitta seed med godkänd mecenatrullning')
+}
+
 describe('mecenatCapForCs — diskret, oförändrat golv på 1 (aldrig 0)', () => {
   it('golvet är 1, inte 0, även vid mycket lågt cs', () => {
     expect(mecenatCapForCs(0)).toBe(1)
@@ -40,29 +48,29 @@ describe('mecenatCapForCs — diskret, oförändrat golv på 1 (aldrig 0)', () =
   })
 })
 
-describe('applyMecenatSpawn — cs>=65-försöksgrindet borttaget', () => {
-  it('en klubb med lågt cs (40) kan fortfarande spawna (given en lyckad slump) — inte längre en vägg', () => {
-    const game = makeGame({ communityStanding: 40 })
-    const club = { ...game.clubs.find(c => c.id === game.managedClubId)!, reputation: 60 }
-    const clubs = game.clubs.map(c => c.id === club.id ? club : c)
-    const result = applyMecenatSpawn(game, clubs, false, 10, [], () => 0.01) // rand=0.01 < 0.15 → lyckad
+describe('applyMecenatSpawn — en CS-skalerad säsongsrullning', () => {
+  it('rampen är kontinuerlig, lutar och har ett verkligt golv', () => {
+    expect(seasonalEmergenceProbability('mecenat', 0)).toBeCloseTo(0.02)
+    expect(seasonalEmergenceProbability('mecenat', 40)).toBeCloseTo(0.14)
+    expect(seasonalEmergenceProbability('mecenat', 100)).toBeCloseTo(0.32)
+  })
+
+  it('en klubb med lågt cs och lågt rykte kan fortfarande få en mecenat när säsongsrullningen lyckas', () => {
+    const game = gameWithPassingMecenatRoll(40)
+    const result = applyMecenatSpawn(game, false, 1, [], () => 0.01)
     expect(result.updatedMecenater.length).toBe(1)
   })
 
-  it('rep<55 blockerar fortfarande, oavsett cs', () => {
-    const game = makeGame({ communityStanding: 100 })
-    const club = { ...game.clubs.find(c => c.id === game.managedClubId)!, reputation: 40 }
-    const clubs = game.clubs.map(c => c.id === club.id ? club : c)
-    const result = applyMecenatSpawn(game, clubs, false, 10, [], () => 0.01)
+  it('samma godkända roll prövas inte igen efter första serieomgången', () => {
+    const game = gameWithPassingMecenatRoll(100)
+    const result = applyMecenatSpawn(game, false, 2, [], () => 0.01)
     expect(result.updatedMecenater.length).toBe(0)
   })
 
   it('taket respekteras — cs=40 (tak 1) med redan 1 aktiv spawnar inte en till', () => {
     const game = makeGame({ communityStanding: 40 })
-    const club = { ...game.clubs.find(c => c.id === game.managedClubId)!, reputation: 60 }
-    const clubs = game.clubs.map(c => c.id === club.id ? club : c)
     const existing = [makeMecenat({ id: 'mec_existing', isActive: true, arrivedSeason: 2024 })]
-    const result = applyMecenatSpawn(game, clubs, false, 10, existing, () => 0.01)
+    const result = applyMecenatSpawn(game, false, 1, existing, () => 0.01)
     expect(result.updatedMecenater.length).toBe(1) // oförändrat — taket redan fullt
   })
 })

@@ -2,7 +2,7 @@
  * "Takmodellen", patronens del (Jacobs dom 2026-08-26, RAPPORT_FYRA_
  * UTREDNINGAR_2026-08-26.md punkt 4): relationen var enkelriktad —
  * communityStanding avgjorde bara ANKOMST, aldrig AVHOPP. Om ortstödet
- * faller under PATRON_EMERGE_CS medan en patron är aktiv ska den lämna.
+ * faller under PATRON_CS_EVICTION_THRESHOLD medan en patron är aktiv ska den lämna.
  */
 import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
@@ -43,7 +43,7 @@ function makePatron(overrides: Partial<Patron>): Patron {
 }
 
 describe('patron cs-driven avhopp — roundProcessor', () => {
-  it('communityStanding under PATRON_EMERGE_CS med aktiv patron: patronen lämnar, patronWithdrawnSeason sätts', () => {
+  it('communityStanding under PATRON_CS_EVICTION_THRESHOLD med aktiv patron: patronen lämnar, patronWithdrawnSeason sätts', () => {
     let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
     game = withAutoLineup(game)
     game = {

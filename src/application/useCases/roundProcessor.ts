@@ -779,7 +779,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   {
     const mecenatResult = applyMecenatSpawn(
       game,
-      postTransferClubs,
       isSecondPassForManagedMatch,
       currentLeagueRound,
       updatedMecenater,
@@ -841,6 +840,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedPatron,
     eventResult.patronWithdrawnSeason,
     nextMatchday,
+    currentLeagueRound,
     localRand,
     allNewEvents,
   )
