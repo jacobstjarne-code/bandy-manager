@@ -97,7 +97,7 @@ export function createAttentionRouter({
   const router = Router()
 
   router.get('/notifications/vapid-public-key', (_req, res) => {
-    if (!dispatcher.configured) return res.status(503).json({ configured: false })
+    if (!dispatcher.enabled) return res.status(503).json({ configured: false })
     return res.json({ configured: true, publicKey: dispatcher.publicKey })
   })
 

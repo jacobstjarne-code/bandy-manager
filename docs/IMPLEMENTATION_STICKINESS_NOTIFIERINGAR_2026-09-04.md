@@ -120,6 +120,10 @@
 - Efter två raka ignorerade leveranser gäller tre dygns kraftig backoff. En kandidat markerad `major` får bryta denna vanliga cooldown och dygnstaket, men aldrig quiet hours eller det hårda veckotaket.
 - Installationstoken verifieras med konstant-tidsjämförelse. Cron-endpointen kräver `ATTENTION_CRON_SECRET`.
 - Utgångna push-subscriptions (404/410) kopplas bort.
+- En Postgres-adapter implementerar samma store-kontrakt och skapar sitt schema idempotent vid serverstart. I produktion är `DATABASE_URL` obligatorisk; servern får inte tyst falla tillbaka till processminne.
+- Klienten använder `VITE_ATTENTION_API_BASE` när API:t körs separat och behåller `/api` på samma origin lokalt.
+- `render.yaml` beskriver nu den befintliga statiska appen, en separat Node-webbtjänst, Render Postgres och ett autentiserat timjobb. Databasadressen och det delade cron-secretet kopplas inom Render; VAPID-hemligheter och tillåtna origins lämnas uttryckligen till driftmiljön.
+- `ATTENTION_PUSH_ENABLED` är opt-in och står på `false` i Blueprinten. Ett färdigt backendrör eller giltiga VAPID-nycklar kan därför inte ensamt tända spelarytan eller leverera push.
 
 ### Instrumentering
 
@@ -147,24 +151,25 @@ VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
 ATTENTION_CRON_SECRET=...
 ALLOWED_ORIGINS=https://bandy-manager.example
+DATABASE_URL=postgresql://...
+ATTENTION_PUSH_ENABLED=false
+VITE_ATTENTION_API_BASE=https://attention-api.example
 ```
 
 VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets. Privatnyckeln får aldrig exponeras som `VITE_*` eller checkas in.
 
 ## Återstår innan skarp push
 
-1. Välj driftarkitektur för API:t. Nuvarande Render-konfiguration och `vercel.json` publicerar en statisk app, medan de nya API-rutterna lever i `server.js`.
-2. Ersätt `InMemoryAttentionStore` med hållbar lagring. Vercel/Render-instansminne får inte behandlas som databas.
-3. Koppla en extern scheduler/cron till `POST /api/attention/run`.
-4. Koppla det nu låsta `STICKINESS_COPY_REGISTER_2026-09-04.md` till produktionssnapshotten och kör textgrinden. Adaptern och det leveransbekräftade `surface: push`-kvittot finns; narrativ aktivering är avsiktligt av tills resolvern är inkopplad. Berättarens steg 1–9 är klara.
-5. Bygg kategori-/quiet-hour-inställningar efter Designs mock. Den kontextuella pre-prompten och iOS-installationshjälpen finns nu, men förblir avsiktligt osynliga tills backend rapporterar giltig VAPID-konfiguration.
-6. Lägg till integrationsprov mot en riktig push-provider i en stagingmiljö med HTTPS och verklig service worker.
-7. Lås dataskyddstext och gallring innan lagringen görs beständig. Raderingskontraktet finns nu, men policy och spelartext väntar på Jacob/Opus.
+1. Synka Blueprinten i Render och fyll `VAPID_*` samt `ALLOWED_ORIGINS` i Render-miljön. Om Vercel fortsatt är frontendvärd sätts samma API-adress som `VITE_ATTENTION_API_BASE` där; inget secret får heta `VITE_*`.
+2. Koppla det låsta `STICKINESS_COPY_REGISTER_2026-09-04.md` till produktionssnapshotten och kör textgrinden. Adaptern och det leveransbekräftade `surface: push`-kvittot finns; narrativ aktivering är avsiktligt av tills resolvern är inkopplad. Berättarens steg 1–9 är klara.
+3. Bygg kategori-/quiet-hour-inställningar efter Designs mock. Den kontextuella pre-prompten och iOS-installationshjälpen finns nu, men förblir avsiktligt osynliga så länge `ATTENTION_PUSH_ENABLED=false`.
+4. Lägg till integrationsprov mot en riktig push-provider i HTTPS-miljön med verklig service worker och riktig enhet.
+5. Lås dataskyddstext och 90-dygnsgallring före produktaktivering. Raderingskontraktet finns, men policy och spelartext väntar på Jacob/Opus.
 
 ## Blockerare och avgränsningar
 
-- **Produktionshosting:** appen deployas statiskt i de versionsstyrda hostingfilerna. Backendkoden kan köras lokalt via `server.js`, men är inte skarpt driftsatt av den nuvarande konfigurationen.
-- **Hållbar serverstate:** repot har ingen befintlig produktionsdatabas eller användaridentitet. In-memory-adaptern är endast en körbar kontraktsreferens och tappar data vid omstart.
+- **Produktionshosting:** den versionsstyrda Render-konfigurationen är nu komplett för statisk frontend + Node-API + Postgres + timjobb, men faktisk Blueprint-synk och driftstatus måste verifieras i Render innan punkten kan stängas.
+- **Hållbar serverstate:** Postgres-adaptern är kopplad som obligatorisk produktionslagring. In-memory-adaptern finns endast kvar för lokal utveckling och test.
 - **Revalideringens auktoritet:** spelets save är local-first. Servern kan endast revalidera mot senaste minimerade snapshot som klienten hunnit skicka, inte läsa spelarens IndexedDB direkt.
 - **Berättarkonsumenter:** Portal, Efterklang, årsbok, Granska, press, kafferum och pushens leveranskvittoväg delar nu agenda/told-registret enligt respektive ytas gräns. Endast den rena matchförberedelse-loopen kan fortfarande bli push; narrativ pushaktivering är spärrad tills `stickiness-copy-roster` finns och kopplats in.
 - **Managerperspektivet:** klubbperspektivet är strikt `clubId`-avgränsat och callbacks har nu den separata `managerId`-stämpeln för beslut, burnout och personliga mål över klubbgränser. HistoryScreens fulla manager-vy är fortsatt en egen OPPET-rad, inte en callback-blockerare.
@@ -178,6 +183,9 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 - Fokuserade Portal-/memory_card-/store-tester — 49 av 49 godkända.
 - Fokuserade Attention Engine/store-tester — 15 av 15 godkända.
 - Agenda→push/leveranskvitto/responsmodell tillsammans med Berättaren/Portal — 27 av 27 godkända i senaste passet.
+- V1-driftpass 2026-09-10: `npm run build` godkänd; full Vitest-svit 549/549 filer och 4 983/4 983 tester godkända.
+- Lokal processkontroll: `/api/health` 200, avstängd publik pushkonfiguration 503 och oautentiserad cron 401; SIGINT stängde processen och store-livscykeln rent.
+- `render.yaml` parsad som giltig YAML. Full Blueprint-validering och synk återstår i Render.
 - `npm run build` inklusive design-, content- och facility-grindar — godkänd.
 - Full `npm test` efter det avslutande respons-/backoff-passet — 456 testfiler och 4 372 tester godkända. Den tidigare samtidiga illustrationskonflikten är därmed borta.
 - Full `npm test` efter Berättarens efterföljande årsbokssteg — 456 testfiler och 4 382 tester godkända.

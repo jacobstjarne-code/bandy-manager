@@ -9,6 +9,7 @@ import type {
   NotificationTelemetryEvent,
 } from '../../domain/attention/types'
 import { DEFAULT_NOTIFICATION_PREFERENCES } from '../../domain/attention/types'
+import { attentionApiUrl } from './attentionApiBase'
 
 const IDENTITY_KEY = 'bandy-attention-installation-v1'
 const ENABLED_KEY = 'bandy-attention-enabled-v1'
@@ -121,7 +122,7 @@ function applicationServerKey(value: string): Uint8Array<ArrayBuffer> {
 }
 
 async function api(path: string, init: RequestInit): Promise<Response> {
-  const response = await fetch(path, init)
+  const response = await fetch(attentionApiUrl(path), init)
   if (!response.ok) throw new Error(`Attention API ${response.status}`)
   return response
 }

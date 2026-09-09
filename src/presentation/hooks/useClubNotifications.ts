@@ -5,6 +5,7 @@ import {
   unsubscribeFromClubNotifications,
   type WebPushCapability,
 } from '../../infrastructure/attention/attentionClient'
+import { attentionApiUrl } from '../../infrastructure/attention/attentionApiBase'
 
 export function useClubNotifications() {
   const [capability, setCapability] = useState<WebPushCapability>(getWebPushCapability)
@@ -22,7 +23,7 @@ export function useClubNotifications() {
       return
     }
     try {
-      const backendResponse = await fetch('/api/notifications/vapid-public-key', {
+      const backendResponse = await fetch(attentionApiUrl('/api/notifications/vapid-public-key'), {
         headers: { accept: 'application/json' },
       })
       const contentType = backendResponse.headers.get('content-type') ?? ''

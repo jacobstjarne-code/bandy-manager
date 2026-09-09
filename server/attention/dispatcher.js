@@ -56,14 +56,18 @@ function configureWebPush(env) {
 
 export function createAttentionDispatcher({ store, env = process.env, now = () => new Date() }) {
   const configured = configureWebPush(env)
+  // Driftroret far vara uppe fore produkten ar aktiverad. Flaggan ar
+  // uttryckligen opt-in sa giltiga VAPID-nycklar inte tander UI/leverans av misstag.
+  const enabled = configured && env.ATTENTION_PUSH_ENABLED === 'true'
 
   return {
     configured,
-    publicKey: configured ? env.VAPID_PUBLIC_KEY : null,
+    enabled,
+    publicKey: enabled ? env.VAPID_PUBLIC_KEY : null,
 
     async dispatchDue() {
-      if (!configured) {
-        return { configured: false, attempted: 0, delivered: 0, skipped: 0 }
+      if (!enabled) {
+        return { configured, enabled: false, attempted: 0, delivered: 0, skipped: 0 }
       }
 
       const currentTime = now()
@@ -142,7 +146,7 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
         }
       }
 
-      return { configured: true, attempted, delivered, skipped }
+      return { configured: true, enabled: true, attempted, delivered, skipped }
     },
   }
 }
