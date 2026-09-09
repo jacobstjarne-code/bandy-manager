@@ -59,6 +59,8 @@ Idag: `.filter(p => p.age < 20)` och tystnad. GPT: "Gabriel Bengtsson, 19 år, t
 
 Jacobs kall: tröskeln (3 stjärnor) och om kortet ska finnas alls. Opus rek: ja, för det är den enda punkt där akademins värde blir ett *val* och inte en siffra.
 
+**→ JACOBS KALL 2026-09-08: JA.** Kortet finns, tröskel 3 stjärnor, ≥3 får kort / <3 bara inboxrad — precis som Opus rek. §7 steg 6 avgejtad.
+
 ## 5. Ekonomin — kalibrering, inte dom
 
 GPT: 340→60→−258 tkr med Satsning (5 tkr/omg) + sponsorer + mecenat, och årsboken visade bara totalen. Två saker:

@@ -183,10 +183,10 @@ Gemensamma för alla tolv klubbar: **inga ortdetaljer** (inget bruk, ingen sjö,
 | premiär | `premiar.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Premiärmatchen |
 | derby | `derby.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Derbyt, förmatch |
 | cup | `cup.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Cupmatch + cupintro |
-| nyår | `nyar.jpg` | prompt | Nyårsövergången |
+| nyår | `nyar.jpg` | ✅ (låst 2026-09-07) | Nyårsövergången |
 | **cupguld** | `cupguld.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Cupfinal vunnen |
-| **sommaren** | `sommaren.jpg` | prompt | Sommarvyn / "Medan ni var borta" |
-| **bygget klart** | `bygget_klart.jpg` | prompt | Anläggning färdig |
+| **sommaren** | `sommaren.jpg` | ✅ (låst 2026-09-07) | Sommarvyn / "Medan ni var borta" |
+| **bygget klart** | `bygget_klart.jpg` | ✅ (låst 2026-09-07) | Anläggning färdig |
 | **avskedet** | `avsked.jpg` | ✅ (låst 2026-09-06, inkopplad 2026-09-07) | Sparkad |
 | **året utan klubb** | `aret_utan_klubb.jpg` | prompt | "Se hur det går utan dig" |
 | **game over** | `game_over.jpg` | prompt | Konkurs / licensnekad |
@@ -243,25 +243,25 @@ Negativa: no people, no large trophy, no confetti, no modern interior, no readab
 
 *Känslan:* de har gått hem. Bägaren står kvar mellan kaffekopparna. Cupguld är stort för en bruksort och litet för alla andra — bilden ska veta det. LÅST 2026-09-06: fönstret fick idrottsplatsen (strålkastare + snötäckt plan i mörkret) — varmt tomt rum, kall plan, bägaren emellan; festen över, isen väntar på nästa match. Skalan rätt (bägaren coffee-pot-stor, ingen pokal).
 
-### Sommaren — mellan säsongerna · `sommaren.jpg` (enda icke-vintern)
+### Sommaren — mellan säsongerna · `sommaren.jpg` (enda icke-vintern) ✅ (låst 2026-09-07)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black shadows, cold pale blue sky, warm copper light — here the palette opens to soft summer green and pale straw yellow, still muted, still grainy. Visible grain, soft edges. Nordic midsummer evening, long light, sun low.
+Flat screen-printed poster illustration, flat blocks of colour, crisp hard edges, visible paper grain, matte — NOT watercolour, NOT soft cartoon, no digital noise, no gradients. Muted palette: navy-black shadows, pale blue sky, warm copper, opening to muted summer green and straw yellow. Nordic midsummer evening, low sun out of frame. Portrait 9:16. An outdoor bandy ground in July, seen from a rise a good distance back so the whole field reads as a sports pitch. The pitch is an ordinary grass field kept the way a village football pitch is kept in summer — mown and used, green and even, a little worn, NOT a golf lawn and NOT a wild meadow. Tall grass and wildflowers only in a narrow strip along the bottom edge. At the near end, a wide low bandy goal (3.5m wide, 2m high, wider than tall, shallow sloping net). Far back beyond the pitch, a long low red clubhouse with one lit lamp and open windows, two bicycles against it. A small wooden grandstand set side-on along the long edge of the pitch. Dark idle floodlight poles. A couple of swallows. Nobody visible.
 
-A wide view of the outdoor sports ground in July, seen from slightly below so the horizon sits in the upper third. Where the ice was, a vast flat meadow of long uncut grass and wildflowers, the shape of the field still faintly visible as a lighter rectangle. Tall floodlight poles standing over grass, dark and idle. The long low red wooden clubhouse with its windows open, one warm lamp above the door lit against the pale evening. Two bicycles leaning against the wall. On the small grandstand, a ladder and a tin of paint — someone is repainting the benches, but has gone for the day. Swallows in the sky. A low wide goal frame lying on its side in the grass. Nobody visible. The clubhouse and poles occupy the upper-middle of the image. The lower third is long grass in shadow, empty. No text, no logos, no faces.
+Negativa: no golf green, no striped lawn, no wild overgrown meadow, no tall grass filling the field, no watercolour, no cartoon, no digital noise, no winter, no snow, no decay, no football goal, no small goal, no people, no line markings, no text, no photorealism.
 
-Negativa: no snow, no ice, no people, no cars, no field markings, no hockey rink, no photographic realism.
+*Känslan:* det som inte händer. Bandyn är en vintersport, sommaren är väntan — en skött plan som bara inte spelas på. Enda bilden utanför vintern, medvetet. Är också game-overs LJUSA spegel: samma grönska, men här är allt vårdat och någon kommer tillbaka. LÅST 2026-09-07 efter många varv — den bråkigaste momentbilden, av ett verkligt skäl: den ska bära "levande vila", millimeter från både äng (game over) och golfbana (steril). **Greppen som löste den:** (1) gräset som "a village football pitch kept in summer" — en KONKRET referens modellen kan, inte abstraktionen "maintained lawn" (som landade golfbana eller äng varje gång); (2) kameran långt bak + högt så planen fyller mitten och läser som idrottsplats; (3) huset satt långt bak med planen framför, läktaren side-on längs LÅNGsidan; (4) vildblommor bara i förgrundsremsan, målet på KORT gräs (inte halvt uppslukat). *Not:* en aning extra korn från editerna, oförargligt på gräs/kvällsljus (till skillnad från en ren yta som avskedets dörr).
 
-*Känslan:* det som inte händer. Bandyn är en vintersport och sommaren är väntan — gräset där isen låg, målburen på sidan, färgburken någon ställde ner. Enda bilden utanför vintern, medvetet.
+**⚠ BANDYMÅL — SERIEVAKTPOST (lärt på riktigt 2026-09-07, web-verifierat):** ett riktigt bandymål är **3,5 m brett × 2,1 m högt** (reglementsenligt, FIB) med en GRUND, snedställd nätkasse (djup ~950 mm nedtill). Alltså BREDARE än högt, men INTE lågt — 2,1 m är fotbollsmålshöjd. Opus beskrev tidigare upprepat målet som "lågt, platt, knappt djupare än en dörr" — det är INNEBANDYMÅLET (160×115 cm, litet, lågt, djup låda). Rätt bandymål i alla framtida prompter: brett (3,5 m), högt (2,1 m), två stolpar + ribba, grund snedställd kasse bakåt — aldrig en djup fyrkantig bur, aldrig ett litet lågt mål.
 
-### Bygget klart — anläggningen står · `bygget_klart.jpg`
+### Bygget klart — anläggningen står · `bygget_klart.jpg` ✅ (låst 2026-09-07)
 
-Muted painterly illustration, flat graphic shapes, simplified forms, editorial poster feel — NOT photorealistic, no photographic detail. Limited palette: deep navy-black, cold pale ice blue, warm copper light sources — under the first pink-grey light of a winter dawn. Visible grain, soft edges. Cold Nordic winter dawn.
+Flat screen-printed poster illustration, flat blocks of colour, crisp hard edges, visible fine paper grain, matte — NOT watercolour, NOT soft cartoon, no digital noise, no gradients. Limited palette: deep navy-black, cold pale ice blue, warm copper light, under the first pink-grey light of a winter dawn. Portrait 9:16. A close view of a small newly finished wooden building at an outdoor bandy ground at dawn — a warming hut or small stand in fresh pale unpainted timber, clearly built this week, standing light against the snow, snow on its new roof, two windows warmly lit. Close in the foreground around it: a stacked pallet of timber, a coil of cable, a wheelbarrow tipped up, fresh footprints in the snow. The new building fills the middle and lower half of the frame, close and detailed. Behind it and smaller, the long low red wooden clubhouse with its lamp lit, and beyond that the pale snow-covered pitch with dark floodlight poles and a small distant bandy goal, low and wide. A pink-grey dawn sky above. Nobody visible.
 
-A wide view of the outdoor sports ground at dawn, seen from slightly below so the horizon sits in the upper third. Beside the long low red clubhouse, something new: a small wooden building or stand in fresh unpainted timber, pale yellow against the red, not yet weathered, snow on its roof — clearly finished this week. A few construction leftovers in the snow: a pallet, a coil of cable, a wheelbarrow tipped up. The huge flat field under untouched snow beyond, no markings, continuing out of frame. Floodlight poles dark. One warm lamp above the clubhouse door, another new lamp on the new building, both lit. Footprints in the snow between the two doors. Nobody visible. The new building and the clubhouse occupy the upper-middle of the image. The lower third is snow in blue shadow, empty. No text, no logos, no faces.
+Negativa: no large goal in the foreground, no tall deep goal, no football goal, no cranes, no workers, no scaffolding, no digital noise, no watercolour, no soft cartoon, no people, no readable text, no line markings, no photorealism.
 
-Negativa: no cranes, no workers, no scaffolding, no text, no field markings, no hockey rink, no photographic realism.
+*Känslan:* det nya bredvid det gamla, färskt ljust virke mot faluröd. De två tända lamporna, fotspåren mellan gammalt och nytt — någon gick från det gamla till det nya. Generisk nog för alla noder (värmestuga, läktare, kiosk; hall för stor — ingen bild i v1). LÅST 2026-09-07 efter en omkomposition: den vida vyn (bygget som liten detalj i en planbild) gjorde målet i förgrunden för stort/fel (djup fotbollskasse) och lät planen konkurrera med bygget. **Greppet:** NÄRBILD på bygget — boden nära och stor i förgrunden, planen och målet små och avlägsna i bakgrunden. Då är det NYA motivet, och målet är för litet för att kunna se fel ut.
 
-*Känslan:* det nya bredvid det gamla, färskt virke mot faluröd. Generisk nog för alla noder (värmestuga, läktare, kiosk, hall är för stor — hallen får ingen bild i v1).
+**⚠ UTSNITTS-DRIFT — SERIELÄRDOM (Jacob 2026-09-07):** nästan varje momentbild blev samma vy — en plan på avstånd, klubbhus, strålkastarstolpar, snö. Konstanterna som håller serien ihop blev monotoni när de upprepades för hårt: sexton bilder av samma idrottsplats i olika ljus börjar likna varandra även när var och en är rätt. **De sex återstående interiörerna (§3) är motmedlet** — rum och stämning, möbler som berättar, inga planvyer/strålkastarstolpar. Framtida nya bilder: variera utsnittet medvetet (närbild, interiör, föremål) — inte ännu en avståndsvy över en plan.
 
 ### Avskedet — sparkad · `avsked.jpg` ✅ (låst 2026-09-06)
 
@@ -380,6 +380,6 @@ Negativa: no faces, no field markings, no hockey rink, no boards, no adults play
 
 ## 5. Räkning
 
-Tolv orter (nio körda, tre kvar). Tio moment (sex körda, fyra Eriks/Geminis) + sex nya moment (derby + premiär + cup + avsked + cupguld låsta 2026-09-06, en med prompt kvar: nyår). Sju tysta ytor (en körd, sex med prompter). **Totalt 35 bilder i katalogen, 21 körda, 14 med prompter klara att köra.**
+Tolv orter (nio körda, tre kvar: Forsbacka bekräftas). SEXTON moment ALLA LÅSTA 2026-09-07 (intro, annandagen, final, kafferum, nedflyttning, säsongsslut, premiär, derby, cup, nyår, cupguld, sommaren, bygget klart, avsked, året utan klubb, game over). Sju tysta ytor (en körd: kafferum; sex med prompter kvar: hallprövning, ultimatum, mecenatmiddag, presskonferens, valet, akademin). **Momenten är KLARA. Kvar att köra: de sex interiörerna (§3) + porträtt-passet (SVG-aliens → Gemini, se MASTER `inv-5-fas5-portrattgenerator`).**
 
-Ordning om du kör dem i följd: orterna klart först (Västanfors, Lesjöfors, Heros), sedan de fyra momenten som avgör om Erik ritar, sedan avskedet och året utan klubb (de bär karriärens vändpunkter), sedan interiörerna.
+Interiörerna är seriens variation mot utsnitts-driften (se bygget-klart-noten) — annat språk, annat utsnitt, samma hand. Går snabbare än momenten: inga folkbild-fällor, rummet före/efter människorna, möblerna berättar.
