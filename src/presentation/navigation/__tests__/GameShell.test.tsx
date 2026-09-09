@@ -16,7 +16,7 @@ vi.mock('../../components/EventOverlay', () => ({ EventOverlay: () => null }))
 // IndexedDB-vägen (den har sin egen täckning i saveGameStorage-testerna).
 vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }))
 
-const { GameShell, routeOwnsLedgerChrome, shouldHideBottomNavigation } = await import('../GameShell')
+const { GameShell, routeOwnsLedgerChrome, shouldHideBottomNavigation, shouldShowFeedbackDock } = await import('../GameShell')
 
 /**
  * Skutskär-auditens test 20 (52009671, 2026-08-20): "Deep-link rehydration:
@@ -170,5 +170,25 @@ describe('GameShell — ceremonier kan inte överlappas av BottomNav', () => {
   it('döljer navet för cupfinalsegern men inte för kafferumsmodalen', () => {
     expect(shouldHideBottomNavigation('scene', 'cup_final_victory', '/game/dashboard')).toBe(true)
     expect(shouldHideBottomNavigation('scene', 'coffee_room', '/game/dashboard')).toBe(false)
+  })
+})
+
+/**
+ * DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: feedbackraden dockar OVANPÅ
+ * bottennavigationen — kan bara ta plats där navet självt tar plats.
+ */
+describe('GameShell — shouldShowFeedbackDock', () => {
+  it('visas på en vanlig spelskärm med nav synligt', () => {
+    expect(shouldShowFeedbackDock(false, '/game/dashboard')).toBe(true)
+  })
+
+  it('döljs när BottomNav döljs (ceremoni), oavsett route', () => {
+    expect(shouldShowFeedbackDock(true, '/game/dashboard')).toBe(false)
+  })
+
+  it('döljs på match/review — samma scope som tidigare, egen tätt uträknad chrome', () => {
+    expect(shouldShowFeedbackDock(false, '/game/match')).toBe(false)
+    expect(shouldShowFeedbackDock(false, '/game/match/live')).toBe(false)
+    expect(shouldShowFeedbackDock(false, '/game/review')).toBe(false)
   })
 })

@@ -5,6 +5,7 @@ import { RouteBoundary } from '../components/RouteBoundary'
 import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
+import { FeedbackButton, isFeedbackHiddenOnRoute } from '../components/FeedbackButton'
 import { useGameStore, useHasHydrated } from '../store/gameStore'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { getEventRenderTarget } from '../../domain/services/eventQueueService'
@@ -70,6 +71,17 @@ export function shouldHideBottomNavigation(
 ): boolean {
   const sceneActive = attentionKind === 'scene' && sceneId !== 'coffee_room'
   return sceneActive || CEREMONY_PATHS.has(pathname) || pathname.startsWith('/game/season-summary/')
+}
+
+/**
+ * DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: feedbackraden dockar OVANPÅ
+ * bottennavigationen — den kan bara ta plats där navet självt tar plats.
+ * Genuint filmiska helskärms-ceremonier (hideBottomNav) är chrome-fria av
+ * samma skäl navet döljs där; match/review har egen, tätt uträknad chrome
+ * (isLedgerOwnedChrome) och lämnas oförändrat dolda (isFeedbackHiddenOnRoute).
+ */
+export function shouldShowFeedbackDock(hideBottomNav: boolean, pathname: string): boolean {
+  return !hideBottomNav && !isFeedbackHiddenOnRoute(pathname)
 }
 
 export function GameShell() {
@@ -138,11 +150,18 @@ export function GameShell() {
     !isReviewRoute &&
     !isPressConferenceRoute
 
+  const showFeedbackDock = shouldShowFeedbackDock(hideBottomNav, location.pathname)
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {!isLedgerOwnedChrome && <GameHeader />}
       {!isLedgerOwnedChrome && <PhaseIndicatorAuto />}
-      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: hideBottomNav ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
+      <div ref={scrollRef} style={{
+        flex: 1, minHeight: 0, overflowY: 'auto',
+        paddingBottom: hideBottomNav
+          ? 0
+          : `calc(var(--bottom-nav-height) + var(--safe-bottom)${showFeedbackDock ? ' + var(--feedback-row-height)' : ''})`,
+      }}>
         {/* B1/B2-fix (dockaudit p1, källgrundad diagnos 2026-07-02): height (inte
             min-height) — en golv-höjd tillåter obegränsad tillväxt uppåt, vilket
             gjorde att .mf-root (match/live, height:100% + overflow:hidden) aldrig
@@ -159,6 +178,7 @@ export function GameShell() {
         </div>
       </div>
       {!hideBottomNav && <BottomNav />}
+      {showFeedbackDock && <FeedbackButton />}
       <DoctorFAB />
       {shouldShowEventOverlay && <EventOverlay event={attention.event} />}
     </div>

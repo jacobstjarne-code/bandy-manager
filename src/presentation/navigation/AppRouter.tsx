@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { FeedbackButton } from '../components/FeedbackButton'
 import { PwaUpdateBanner } from '../components/PwaUpdateBanner'
 import { SaveConflictModal } from '../components/SaveConflictModal'
 import { SaveRecoveryBanner } from '../components/SaveRecoveryBanner'
@@ -195,10 +194,10 @@ export function AppRouter() {
         )}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {/* GAP-2: build-hash-overlayn är nu tappbar → testar-feedback.
-          K-1: inne i Router-trädet så komponenten kan route-medvetet dölja
-          sig själv (MatchLive är en fokus-yta, se FeedbackButton.tsx). */}
-      <FeedbackButton />
+      {/* DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: FeedbackButton monteras inte
+          längre globalt här — den är nu en dockad sidfotsrad, och behöver
+          GameShell.tsx:s hideBottomNav/pathname-kontext för att reservera
+          riktig layoutplats åt sig själv (se GameShell.tsx). */}
       <PwaUpdateBanner />
       <RuleVersionNotice />
       {/* U7: global eftersom persist-hydreringen kan fallera före en route

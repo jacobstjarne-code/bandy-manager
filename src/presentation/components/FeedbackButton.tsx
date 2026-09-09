@@ -9,10 +9,15 @@ import { useGameStore } from '../store/gameStore'
  * (testaren klistrar/skickar). Gör speltestdatan precis i stället för "det kändes
  * konstigt nån gång". RC-testchrome, ej spelyta.
  *
- * K-1 (dock-audit 2026-07-02, mobil omverifierad 2026-09-03): dold genom
- * HELA matchflödet. Den fixerade raden landade inte bara ovanpå live-docken
- * utan också mitt över SPELA MATCHEN och Granskas slut-CTA på 390 px bredd.
- * Rapportering finns kvar på övriga skärmar.
+ * DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: flyttad från en svävande
+ * `position:fixed`-rad (som överlappade CTA:er/innehåll på flera skärmar,
+ * K-1 dock-audit 2026-07-02) till en dockad sidfotsrad — GameShell.tsx
+ * monterar denna komponent BARA när den ska synas (`isFeedbackHiddenOnRoute`
+ * nedan + `hideBottomNav`) och reserverar riktig layoutplats åt den i sin
+ * `paddingBottom`-beräkning, så den kan aldrig ligga ovanpå innehåll.
+ * Komponenten själv vet därför inte längre om routen — den littar sig bara
+ * ovanpå bottennavigationen (`--bottom-nav-height`) med sin egen höjd
+ * (`--feedback-row-height`).
  */
 
 declare const __GIT_HASH__: string
@@ -44,7 +49,6 @@ export function FeedbackButton() {
   const [copied, setCopied] = useState(false)
   const game = useGameStore(s => s.game)
   const location = useLocation()
-  const hiddenOnMatchFlow = isFeedbackHiddenOnRoute(location.pathname)
 
   function buildReport(): string {
     const route = location.pathname
@@ -72,19 +76,28 @@ export function FeedbackButton() {
     window.location.href = `mailto:${REPORT_EMAIL}?subject=${subject}&body=${body}`
   }
 
-  if (hiddenOnMatchFlow) return null
-
   return (
     <>
-      {/* Tappbar hash-rad (ersätter den statiska overlayn) */}
+      {/* Dockad sidfotsrad — stackad ovanpå bottennavigationen, tar riktig
+          layoutplats (reserverad av GameShell.tsx:s paddingBottom), aldrig
+          ovanpå innehåll. */}
       <button
         data-feedback-button
         onClick={() => setOpen(true)}
         style={{
-          position: 'fixed', bottom: 64, left: 0, right: 0, zIndex: 9999,
-          margin: '0 auto', display: 'block', width: 'fit-content',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          fontSize: 11, color: 'rgba(255,255,255,0.55)',
+          position: 'fixed',
+          bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom))',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: '430px',
+          height: 'var(--feedback-row-height)',
+          zIndex: 'var(--z-sticky)',
+          background: 'var(--bg-surface)',
+          borderTop: '1px solid var(--border)',
+          borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
+          cursor: 'pointer',
+          fontSize: 11, color: 'var(--text-muted)',
           fontFamily: 'monospace', letterSpacing: '1px',
         }}
       >

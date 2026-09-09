@@ -179,6 +179,12 @@
      Använd DENNA token, inte en hårdkodad +Npx, varhelst en sticky CTA sitter
      ovanför bottennavigationen. */
   --cta-nav-clearance: 48px;
+  /* DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: feedbackknappens dockade sidfotsrad,
+     stackad ovanpå bottennavigationen (bottom-nav-height). Egen variabel, inte
+     en påbyggnad av bottom-nav-height självt — den delas av flera oberoende
+     höjdberäkningar (stalvallen-match.css, MatchLaddningScene m.fl.) som INTE
+     ska påverkas av feedbackraden. */
+  --feedback-row-height: 26px;
 
   /* Portal seasonal tone — dark defaults, overridden by getSeasonalTone() */
   --bg-portal:          #1a1612;
