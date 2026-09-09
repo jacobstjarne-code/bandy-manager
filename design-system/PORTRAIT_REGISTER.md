@@ -1,6 +1,6 @@
 # PORTRAIT_REGISTER — spelarporträtt, kurerat register
 
-**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix + separationsregel, 2026-09-09). Veteranfacket genererat 1, 2, 4–10 (3 överhoppad), granskat och godkänt. Ung/mid/erfaren skrivs härnäst.
+**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix skärpt + separationsregel, 2026-09-09). Veteranfacket genererat 1, 2, 4–16 (3 överhoppad), granskat och godkänt (16 st). Ung-facket skrivet 2026-09-09, generering ej påbörjad. Mid/erfaren skrivs härnäst.
 
 Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen bär registret — vem varje av de ~120 porträtten är, så inga två i en trupp blir för lika och luckorna fylls medvetet. Registret är den levande källan för den aktuella basprompten (PORTRAIT_STYLE:s arbetsprompt är den tidigare, nu förfinad nedan).
 
@@ -24,7 +24,7 @@ Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen 
 
 ## Aktuell basprompt (låst — variera bara person + vinkel)
 
-> Flat graphic stylized portrait of a Swedish bandy player, [PERSON + ANGLE], head and shoulders, centered, calm neutral expression, with generous margin above the hair and below the chin so a circular crop won't clip the head. Plain crew-neck top in flat neutral grey — ABSOLUTELY no crest, logo, collar, anchor or emblem, completely plain chest, shown as ordinary straight shoulders that run flat to both edges of the frame, NOT a rounded bib, yoke, scoop or circular collar shape. Mid-century screenprint / retro sports-program style: a FEW flat colour planes per surface (one base skin tone, one shadow tone, at most one mid-tone) with hard clean edges between them, no blended or airbrushed modelling; features read from the shape of the flat shadow shapes. Subtle even paper-grain over everything. Cold slate-grey background filling the frame. Natural skin tone as the only warmth. Weathered, understated, working-class athlete — not glamorous. Square 1:1.
+> Flat graphic stylized portrait of a Swedish bandy player, [PERSON + ANGLE], head and shoulders with plain flat straight shoulders running to both edges of the frame (never a rounded yoke, bib, scoop or circular collar), centered, calm neutral expression, with generous margin above the hair and below the chin so a circular crop won't clip the head. Plain crew-neck top in flat neutral grey — ABSOLUTELY no crest, logo, collar, anchor or emblem, completely plain chest, shown as ordinary straight shoulders that run flat to both edges of the frame, NOT a rounded bib, yoke, scoop or circular collar shape. Mid-century screenprint / retro sports-program style: a FEW flat colour planes per surface (one base skin tone, one shadow tone, at most one mid-tone) with hard clean edges between them, no blended or airbrushed modelling; features read from the shape of the flat shadow shapes. Subtle even paper-grain over everything. Cold slate-grey background filling the frame. Natural skin tone as the only warmth. Weathered, understated, working-class athlete — not glamorous. Square 1:1.
 > NEGATIVE: warm or parchment background, smooth 3D rendering, glossy highlights, airbrush gradient, photorealism, frame, border, text, colour bars, spritesheet, multiple people, scenery, dramatic lighting, smiling, profile view, head off-centre, coloured or logo jersey, rounded bib, yoke, scoop neckline, circular shoulder shape, cape.
 
 ## Fack: VETERAN (32+, tyngdpunkt 32–35, svans 38–40; tomt vid start, åldras in)
@@ -62,10 +62,43 @@ Godkänt 2026-09-08. ~4 representation (8, 11, 17, 23 ≈ 13%), 15/26 ryskt/fins
 29. EXTREM (ärrad): 36, mycket kort brunt, kort skägg, gammalt ärr på kindben, djupt vindpiskad rödlätt, grövre
 30. EXTREM (elder räv, poolens grå-outlier): 39, kort grått tunnande hår, kort grått skägg, djupt fårat lugnt ansikte, kompakt — gamle målvaktstypen, enda tydligt grå i facket
 
-## Fack: UNG (≤21, ner till ~16 för akademi-uppflyttningar) — SKRIVS HÄRNÄST
+## Fack: UNG (≤21, ner till ~16 för akademi-uppflyttningar) — skrivet 2026-09-09
+
+Skrivet mot skärpt krage-rad + separationsregel. Karaktär: släta ansikten, ingen väderbitenhet än, tunnare byggnader, enstaka lindrig akne eller valpighet, mjukare drag; blont vanligare än i äldre fack, enstaka längre/fallande hår (ungt). ~4 representation (8, 15, 21, 27 ≈ 13%). Extremer hit: 2 rödhåriga (5, 16), den gänglige långe (10). Akademi-uppflyttningar (16 år) i 9, 20, 30 — minst, yngst, ska läsa tydligt UNGA.
+
+1. 19, blont lugg som faller, slätt smalt ansikte, slank — lätt vänstervridning
+2. 18, kort brunt snagg, slätt runt pojkaktigt, slank-medel — frontal lätt lutning
+3. 20, kort mörkblont, första svaga stubben, magert kantigt — trekvart höger
+4. 17, längre ljusbrunt bakom öronen, mycket slätt, tunt — blick vid sidan
+5. 19, kort rött hår, blek fräknig hy, pojkaktig, medel — frontal [EXTREM rödhårig 1]
+6. 21, kort brunt sidbena, svag mustaschskugga, medel — trekvart vänster
+7. 18, buzz ljusbrunt, slätt lite fyrkantigt ungt, medel — blick mot kameran
+8. 20, kort mörkt lockigt, oliv (andra gen mellanöstern), slätt, slank — trekvart höger
+9. 16, mjukt runt mycket ungt, kort brunt, valpigt, liten slank (akademi-uppflyttning) — frontal
+10. 19, mörkbrunt fallande hår, slätt blek, lång gänglig (EXTREM gänglig lång) — lätt lutning
+11. 20, kort blont, slätt ljus, lätt akne på kinderna, slank-medel — trekvart vänster
+12. 18, kort brunt, slätt ovalt, bruna ögon, medel — blick vid sidan
+13. 21, kort mörkblont, lätt stubb, breda ryska kindben, medel — trekvart höger
+14. 17, längre musbruna vågor, slätt tunt — frontal lätt lutning
+15. 19, kort svart hår, slätt ljus-oliv (andra gen balkan), magert — blick mot kameran
+16. 20, kort rött hår, fräknar över näsan, blek, magert-lång, längre ansikte (EXTREM rödhårig 2 — skild från 5: längre/magrare, annan vinkel) — trekvart vänster
+17. 18, kort brunt snagg, slätt pojkaktigt, mjuka drag, slank — lätt vänstervridning
+18. 21, kort brunt sidbena, svag stubb, käke som börjar bli kantig, medel — trekvart höger
+19. 19, kort blont, slätt ljus, lugn, medel — blick vid sidan
+20. 16, mycket ungt mjukt, kort mörkt, liten slank (akademi) — lätt lutning
+21. 20, kort brunt, slätt, brun hy (andra gen afrikansk), lugn, medel — trekvart vänster
+22. 18, ljusbrun lugg, slätt blek, tunt, rundare ansikte — frontal
+23. 19, kort mörkbrunt, svag stubb, ovalt, slank-medel — blick mot kameran
+24. 21, kort blont snagg, slätt fyrkantigt ungt, medel-satt — trekvart höger
+25. 17, längre brunt, mycket slätt, pojkaktigt, tunt — lätt vänstervridning
+26. 20, kort mellanbrunt, slätt fräknig-ljus, medel — blick vid sidan
+27. 18, kort mörkt, slätt oliv (andra gen medelhav), magert — trekvart höger
+28. 19, kort brunt sidbena, slätt, lugnt neutralt, medel — frontal lätt lutning
+29. 21, kort mörkblont, stubb på gång, bredare tidig-bulk byggnad (ung back) — trekvart vänster
+30. 16, mjukt mycket ungt, ljust fallande hår, liten slank (akademi, yngst) — blick vid sidan
 ## Fack: MID (22–26) — ej skrivet
 ## Fack: ERFAREN (27–31) — ej skrivet
 
 ## Extrem-budget (hela poolen, 8–12)
 
-Använda i veteran: Krig-typ (28), ärrad (29), grå elder (30). Kvar att placera: 2 rödhåriga med fräknar (hör i ung/mid), den gänglige långe (ung), den ende kraftige (mid/erfaren), ev. en andra grå elder.
+Använda i veteran: Krig-typ (28), ärrad (29), grå elder (30). Använda i ung: 2 rödhåriga med fräknar (5, 16), den gänglige långe (10). Kvar att placera: den ende kraftige (mid/erfaren), ev. en andra grå elder (erfaren).
