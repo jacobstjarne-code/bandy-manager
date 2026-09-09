@@ -5,7 +5,7 @@
 **Version vid start:** `64b5e7a6`  
 **Klubb:** Västanfors  
 **Manager:** Grindtest 2  
-**Status:** Pågående — tre av minst åtta säsonger spelade. Opus domar grindarna efter färdig leverans.
+**Status:** Pågående — tre hela säsonger och halva säsong 4 av minst åtta spelade. Opus domar grindarna efter färdig leverans.
 
 ## Avbruten kontrollkörning — Forsbacka
 
@@ -93,9 +93,25 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Burnout-pivotalen återkom ännu en gång efter semifinal 3 samma säsong.
 - Fynden stärker kodhypotesen att `deferredDecisions` saknas i genereringens dedupe-underlag. Det är en separat funktionell regression, inte bara Grind 2:s kvalitativa underkännande.
 
+## Huvudkarriär — säsong 4, 2029/30 (halvtid)
+
+### Läget efter omgång 12
+
+- Svenska cupen vanns efter 6–1 mot Lesjöfors; Karlsborg slogs ut 5–4 i kvartsfinalen och Forsbacka 6–4 i semifinalen.
+- Serien: 4:a efter omgång 12. Säsongens personliga mål är att färdigställa `Läktare — östra`.
+- `Värmestuga` var färdig vid säsongsstart. `Läktare — östra` byggdes därefter på 12 omgångar med Anna Johansson som medfinansiär och stod färdig 2029 vid halvtid.
+- `Strålkastare` startades vid halvtid med Anna Johansson som medfinansiär: 48 tkr ur klubbkassan, fem omgångars byggtid.
+- De 44 uppskjutna besluten från säsong 3 nollställdes till tre vid säsongsskiftet. Vid omgång 13 hade kön redan vuxit till 18 igen. Cursor-resetten fungerar alltså, men dubblettproduktionen fyller på kön på nytt.
+
+### Grind 3-observation
+
+- Primär handling: cupbågen gav en tydlig sekvens kvartsfinal–semifinal–final, följd av serien.
+- Nästa olösta fråga: om laget ska återhämta sig från sjätteplatsen runt omgång 9 och om strålkastarna blir klara.
+- Landning: ännu ej bedömd; säsongen pågår.
+
 ## Fortsättning
 
-- Spela säsong 4–8 i samma save.
+- Spela klart säsong 4 och därefter säsong 5–8 i samma save.
 - Rollover för `Träningshall (ungdom)` är verifierad; fortsätt bygga resten av anläggningsträdet.
 - `Akademinivå 3` är färdig; fortsätt med övriga möjliga noder.
 - Dokumentera ett faktiskt ekonomiskt avvägningsval runt säsong 8.
