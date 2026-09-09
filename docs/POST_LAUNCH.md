@@ -87,9 +87,12 @@ burnout-djupet prioriteras. Jacob 2026-09-08.
 ### sluttest-o10-bestinclass (best-in-class-ekosystemet, utom seed-i-länk)
 **Vad:** O10:s fulla tillväxtekosystem — bandyarkivet, vägskäl, bruksligor,
 skaparekosystem. **Status nu:** seed-i-länk-skivan (`o10-queryparam-clubselection`,
-useSearchParams på ClubSelectionScreen) byggs FÖRE release, för den låser upp grind 4
-+ delbarheten och texten är redan låst (`o10-delningskort-text`). Resten av ekosystemet
-är post-launch. **Varför uppskjuten:** ett helt tillväxtspår, inte en gap-täckare;
+useSearchParams på ClubSelectionScreen) är byggd före release. Den verkliga
+länkskaparen/delningskortet är däremot parkerad med resten av ekosystemet; därför
+följer även `sluttest-grind4` med hit och körs först från en verkligt producerad
+spelarlänk. Ingen handkonstruerad testväg får ersätta den. Texten är redan låst
+(`o10-delningskort-text`). Resten av ekosystemet är post-launch.
+**Varför uppskjuten:** ett helt tillväxtspår, inte en gap-täckare;
 §10-linjen. **När:** post-launch, som eget ekosystem-pass. Jacob 2026-09-08.
 
 ## Anläggning / UI
