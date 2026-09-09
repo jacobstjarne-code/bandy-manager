@@ -60,7 +60,7 @@ import { MatchFlowFrame } from '../../components/match-flow/MatchFlowFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
-import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getLiveMatchResumePoint, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 import { getCharacterName } from '../../../domain/services/supporterService'
 
@@ -128,7 +128,7 @@ function interactionSeed(fixtureId: string, step: number, kind: InteractionRandK
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
+  const { game, saveLiveMatchResult, saveLiveMatchProgress, advance, markMatchStarted } = useGameStore()
   const dismissHint = useGameStore(s => s.dismissHint)
   const recordFinalIntroShown = useGameStore(s => s.recordFinalIntroShown)
   const managedClub = useManagedClub()
@@ -260,9 +260,8 @@ export function MatchLiveScreen() {
       return
     }
     // En startad men ofullbordad match återställs från fixturens durabla
-    // laguppställningar. Den startar pausad och simuleras aldrig bort bara för
-    // att en flik stängts eller laddats om. Matchförloppet startas om från
-    // avslag; exakt live-minut är ännu inte en del av saven.
+    // laguppställningar och liveMatchProgress. Den startar pausad och
+    // simuleras aldrig bort bara för att en flik stängts eller laddats om.
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -276,6 +275,37 @@ export function MatchLiveScreen() {
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
     markMatchStarted(fixture.id, homeLineup, awayLineup)
+
+    // atermatch-sparar-inte-minut: använd den sparade stegserien, inte en ny
+    // simulering från avslag. Det bevarar både exakt visningsminut och redan
+    // avgjorda interaktioner/andrahalvans val. Den kompakta resume-hjälparen
+    // klampar korrupta äldre värden innan de når arrayindex eller resultattavla.
+    const resume = isRecoveredMatch ? getLiveMatchResumePoint(fixture.liveMatchProgress) : null
+    if (resume) {
+      const resumedStep = resume.steps[resume.currentStep]
+      setSteps(resume.steps)
+      prevHomeScore.current = resumedStep.homeScore
+      prevAwayScore.current = resumedStep.awayScore
+      prevPhase.current = resumedStep.phase
+      dispatch({
+        type: 'STEP_DELTA',
+        delta: {
+          homeScore: resumedStep.homeScore,
+          awayScore: resumedStep.awayScore,
+          shotsHome: resumedStep.shotsHome,
+          shotsAway: resumedStep.shotsAway,
+          onTargetHome: resumedStep.onTargetHome,
+          onTargetAway: resumedStep.onTargetAway,
+          cornersHome: resumedStep.cornersHome,
+          cornersAway: resumedStep.cornersAway,
+          homeActiveSuspensions: resumedStep.activeSuspensions.homeCount,
+          awayActiveSuspensions: resumedStep.activeSuspensions.awayCount,
+        },
+      })
+      setDisplayedMinute(resume.displayedMinute)
+      setCurrentStep(resume.currentStep)
+      return
+    }
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -349,6 +379,20 @@ export function MatchLiveScreen() {
     }, 1000)
     return () => clearInterval(interval)
   }, [currentStep, steps, isPaused, isFastForward, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay])
+
+  // Spara samma stegserie som spelaren faktiskt ser. En ren seed-omkörning
+  // räcker inte efter paus-/taktik-/interaktionsval, eftersom de kan ha
+  // skrivit om resten av matchen. Markören uppdateras när steg, minut eller
+  // serien ändras och rensas centralt av completeManagedFixture.
+  useEffect(() => {
+    if (!fixture || isCeremonyOnly || matchDone || currentStep < 0 || steps.length === 0) return
+    const stepMinute = steps[currentStep]?.minute ?? 0
+    saveLiveMatchProgress(fixture.id, {
+      currentStep,
+      displayedMinute: Math.max(displayedMinute, stepMinute),
+      steps,
+    })
+  }, [currentStep, displayedMinute, fixture?.id, isCeremonyOnly, matchDone, saveLiveMatchProgress, steps])
 
   useEffect(() => {
     if (ceremonySlide !== 1) return

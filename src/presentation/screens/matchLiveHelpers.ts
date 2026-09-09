@@ -1,4 +1,4 @@
-import type { Fixture } from '../../domain/entities/Fixture'
+import type { Fixture, LiveMatchProgress } from '../../domain/entities/Fixture'
 import type { MatchStep } from '../../domain/services/matchSimulator'
 import { FixtureStatus, MatchEventType } from '../../domain/enums'
 import type { FeedRow } from '../components/match/commentary/CommentaryFeedStalvallen'
@@ -26,6 +26,32 @@ export function findRecoverableLiveFixture(fixtures: readonly Fixture[]): Fixtur
       a.matchday - b.matchday ||
       a.id.localeCompare(b.id)
     )[0]
+}
+
+export interface LiveMatchResumePoint {
+  currentStep: number
+  displayedMinute: number
+  steps: LiveMatchProgress['steps']
+}
+
+/**
+ * Validerar en sparad live-position defensivt. Gamla eller handredigerade
+ * saves får aldrig sätta ett arrayindex utanför den sparade stegserien, och
+ * visningsminuten får bara ligga mellan aktuellt och nästa steg.
+ */
+export function getLiveMatchResumePoint(progress: LiveMatchProgress | undefined): LiveMatchResumePoint | null {
+  if (!progress || !Array.isArray(progress.steps) || progress.steps.length === 0) return null
+
+  const rawStep = Number.isFinite(progress.currentStep) ? Math.trunc(progress.currentStep) : 0
+  const currentStep = Math.max(0, Math.min(rawStep, progress.steps.length - 1))
+  const stepMinute = progress.steps[currentStep]?.minute ?? 0
+  const nextMinute = progress.steps[currentStep + 1]?.minute ?? stepMinute
+  const rawMinute = Number.isFinite(progress.displayedMinute)
+    ? Math.trunc(progress.displayedMinute)
+    : stepMinute
+  const displayedMinute = Math.max(stepMinute, Math.min(rawMinute, Math.max(stepMinute, nextMinute)))
+
+  return { currentStep, displayedMinute, steps: progress.steps }
 }
 
 /**

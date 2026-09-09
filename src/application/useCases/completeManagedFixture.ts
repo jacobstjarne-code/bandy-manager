@@ -34,6 +34,7 @@ export function completeManagedFixture(game: SaveGame, completedInput: Fixture):
     ...completedInput,
     status: FixtureStatus.Completed,
     matchStartedAt: undefined,
+    liveMatchProgress: undefined,
   }
   const fixtures = game.fixtures.map(fixture => fixture.id === completed.id ? completed : fixture)
   const completedLeague = fixtures.filter(fixture =>

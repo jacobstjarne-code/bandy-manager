@@ -161,6 +161,7 @@ interface GameState {
   commitSponsorCounter: (eventId: string, requestedWeeklyIncome: number, outcome: import('../../domain/services/sponsorCounterService').SponsorCounterOutcome) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: import('../components/match/HalftimeModal').PauseLean) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
+  saveLiveMatchProgress: (fixtureId: string, progress: import('../../domain/entities/Fixture').LiveMatchProgress) => void
   simulateAbandonedMatch: (fixtureId: string) => void
   concedeWalkover: (fixtureId: string) => void
   clearSeasonSummary: () => void

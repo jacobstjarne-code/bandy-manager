@@ -1,5 +1,5 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
-import type { MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
+import type { LiveMatchProgress, MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { PauseLean } from '../../components/match/HalftimeModal'
 import { FixtureStatus, InboxItemType } from '../../../domain/enums'
 import { simulateMatch } from '../../../domain/services/matchEngine'
@@ -221,7 +221,8 @@ export function matchActions(get: Get, set: Set) {
         f.id === fixtureId
           ? {
               ...f,
-              matchStartedAt: Date.now(),
+              // En återöppning är samma startade match, inte en ny starttid.
+              matchStartedAt: f.matchStartedAt ?? Date.now(),
               // Persist lineups so we can auto-simulate if user abandons mid-match
               ...(homeLineup ? { homeLineup } : {}),
               ...(awayLineup ? { awayLineup } : {}),
@@ -229,6 +230,29 @@ export function matchActions(get: Get, set: Set) {
           : f
       )
       set({ game: { ...game, fixtures: updatedFixtures } })
+    },
+
+    saveLiveMatchProgress: (fixtureId: string, progress: LiveMatchProgress) => {
+      const { game } = get()
+      if (!game) return
+      const fixture = game.fixtures.find(candidate => candidate.id === fixtureId)
+      if (!fixture || fixture.status === FixtureStatus.Completed || fixture.matchStartedAt === undefined) return
+
+      const current = fixture.liveMatchProgress
+      if (
+        current?.currentStep === progress.currentStep &&
+        current.displayedMinute === progress.displayedMinute &&
+        current.steps === progress.steps
+      ) return
+
+      set({
+        game: {
+          ...game,
+          fixtures: game.fixtures.map(candidate =>
+            candidate.id === fixtureId ? { ...candidate, liveMatchProgress: progress } : candidate
+          ),
+        },
+      })
     },
   }
 }

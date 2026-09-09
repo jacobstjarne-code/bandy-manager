@@ -17,6 +17,11 @@ function playoffGame(): { game: SaveGame; fixture: Fixture; series: PlayoffSerie
     isKnockout: true,
     isCup: false,
     matchStartedAt: 123,
+    liveMatchProgress: {
+      currentStep: 0,
+      displayedMinute: 0,
+      steps: [],
+    },
   }
   const series: PlayoffSeries = {
     id: 'test_qf',
@@ -117,7 +122,7 @@ describe('completeManagedFixture — en kanonisk och idempotent sluttransaktion'
     }
   })
 
-  it('räknar ett slutspelsresultat exakt en gång och rensar matchStartedAt', () => {
+  it('räknar ett slutspelsresultat exakt en gång och rensar hela live-markören', () => {
     const { game, fixture, series } = playoffGame()
     const completed: Fixture = {
       ...fixture,
@@ -135,6 +140,7 @@ describe('completeManagedFixture — en kanonisk och idempotent sluttransaktion'
     expect(twiceSeries.homeWins).toBe(3)
     expect(twice).toBe(once)
     expect(once.fixtures.find(candidate => candidate.id === fixture.id)?.matchStartedAt).toBeUndefined()
+    expect(once.fixtures.find(candidate => candidate.id === fixture.id)?.liveMatchProgress).toBeUndefined()
   })
 
   it('walkover-vägen använder samma transaktion och uppdaterar serien', () => {

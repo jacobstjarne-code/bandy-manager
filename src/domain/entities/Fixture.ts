@@ -87,6 +87,20 @@ export interface ManagerChoiceEntry {
   autoSelected?: boolean
 }
 
+/**
+ * Durabel återupptagningspunkt för en pågående live-match.
+ *
+ * `steps` är den redan framräknade, seedade matchresan. Den måste följa med
+ * markören: efter halvtid och interaktiva val är en ny simulering från avslag
+ * inte längre samma historia, även om grundseeden är densamma. Inline-importen
+ * är type-only och skapar därför inget runtime-beroende tillbaka till tjänsten.
+ */
+export interface LiveMatchProgress {
+  currentStep: number
+  displayedMinute: number
+  steps: import('../services/matchSimulator').MatchStep[]
+}
+
 export interface MatchReport {
   playerRatings: Record<string, number>
   shotsHome: number
@@ -152,6 +166,7 @@ export interface Fixture {
   report?: MatchReport
   attendance?: number
   matchStartedAt?: number  // timestamp set when live simulation begins, cleared on completion
+  liveMatchProgress?: LiveMatchProgress // cleared together with matchStartedAt on completion
   refereeId?: string
   farewellMatchForPlayerId?: string  // C-B3: set for farewell matches
 }
