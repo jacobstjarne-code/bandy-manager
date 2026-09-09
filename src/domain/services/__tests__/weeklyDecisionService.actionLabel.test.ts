@@ -14,8 +14,8 @@ const decision: WeeklyDecision = {
   id: 'test_decision',
   category: 'community',
   question: 'test',
-  optionA: { label: 'Satsa på ismaskinen', effect: '-10 tkr', effectColor: 'danger' },
-  optionB: { label: 'Vänta', effect: 'ingenting', effectColor: 'muted' },
+  optionA: { label: 'Satsa på ismaskinen', preview: '-10 tkr', effectColor: 'danger' },
+  optionB: { label: 'Vänta', preview: 'ingenting', effectColor: 'muted' },
 }
 
 function makeGame(finances: number): SaveGame {

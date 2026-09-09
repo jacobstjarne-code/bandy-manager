@@ -12,8 +12,8 @@ const decision: WeeklyDecision = {
   id: 'survival_emergency_lotto',
   category: 'community',
   question: 'test',
-  optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning (chansning)', effectColor: 'success' },
-  optionB: { label: 'Inte nu', effect: 'besviken', effectColor: 'muted' },
+  optionA: { label: 'Kör igång', preview: 'en chansning — kan slå åt bägge håll', effectColor: 'success' },
+  optionB: { label: 'Inte nu', preview: 'besviken', effectColor: 'muted' },
 }
 
 function makeGame(currentMatchday: number): SaveGame {

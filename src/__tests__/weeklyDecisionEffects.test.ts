@@ -17,7 +17,7 @@ import type { WeeklyDecision, WeeklyDecisionId } from '../domain/services/weekly
 
 const game = createNewGame({ managerName: 'T', clubId: 'club_forsbacka', season: 2025, seed: 5 })
 const decision = (id: WeeklyDecisionId): WeeklyDecision =>
-  ({ id, question: '', category: 'training', optionA: { label: '', effect: '' }, optionB: { label: '', effect: '' } })
+  ({ id, question: '', category: 'training', optionA: { label: '', preview: '' }, optionB: { label: '', preview: '' } })
 
 describe('Fynd 11 — veckans beslut-effekter', () => {
   it('har en sluten katalog med alla fjorton resolver-id:n', () => {

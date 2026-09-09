@@ -1,4 +1,4 @@
-import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import type { SaveGame, RoundSummaryData, ResolvedChoiceOutcomeDelta } from '../../../domain/entities/SaveGame'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SeasonGoalType } from '../../../domain/entities/SeasonSummary'
@@ -8,7 +8,8 @@ import { PendingScreen } from '../../../domain/enums'
 import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff, type PortalPhase } from '../../../domain/data/seasonPhases'
 import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
-import { buildWeeklyDecisionLedgerEntry, resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { buildWeeklyDecisionLedgerEntry, resolveWeeklyDecision as resolveWeeklyDecisionFn, formatWeeklyDecisionOutcome } from '../../../domain/services/weeklyDecisionService'
+import { captureResolvedChoiceOutcome } from '../../../domain/services/eventChoiceReceiptService'
 import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
@@ -39,7 +40,7 @@ interface GetState {
   resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
-  resolveWeeklyDecision: (choice: 'A' | 'B') => void
+  resolveWeeklyDecision: (choice: 'A' | 'B') => { text: string; deltas: ResolvedChoiceOutcomeDelta[] } | undefined
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
   recordFinalIntroShown: (fixture: Fixture, tier: FinalTier) => void
   triggerCoffeeRoomScene: () => void
@@ -627,6 +628,11 @@ export function gameFlowActions(get: Get, set: Set) {
         }
       }
 
+      // O12 (DOM_O12_VECKOBESLUT_2026-09-09): kvittot fångas mot samma
+      // clampade före/efter-diff som O12 §2 använder för EventChoice — inte
+      // decision.optionA/B.preview, som bara får bära riktning.
+      const outcomeDeltas = captureResolvedChoiceOutcome(game, updatedGame)
+
       // Ledgern bär vad som faktiskt hände. Bygg posten EFTER effekterna så
       // klampade värden/no-op inte kan beskrivas som verkliga konsekvenser.
       updatedGame = {
@@ -646,6 +652,7 @@ export function gameFlowActions(get: Get, set: Set) {
         : updatedGame
       set({ game: afterPromote })
       void persistAutosave(afterPromote, 'resolveWeeklyDecision', set)
+      return { text: formatWeeklyDecisionOutcome(effects, outcomeDeltas), deltas: outcomeDeltas }
     },
 
     markScreenVisited: (screen: string) => {

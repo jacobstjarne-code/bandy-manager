@@ -1,12 +1,15 @@
 /**
- * O12 §2 — statisk grind för EventChoice-förhandsytan.
+ * O12 §2 + DOM_O12_VECKOBESLUT_2026-09-09 — statisk grind för EventChoice-
+ * och WeeklyDecisionOption-förhandsytan.
  *
  * DOM_O12_FORHANDSTEXT_KONTRAKT_2026-09-09 låser kontraktet till exakt
- * pengar men kvalitativ riktning för alla andra resurser. Det här är ingen
- * runtime-sanering: bygggrinden läser TypeScript-syntaxen och stoppar en ny
- * label/subtitle som kodar exempelvis "+5 moral" eller "relation −30".
- * Speltexten når därför aldrig produktion i trasigt skick och pengar kan
- * fortsätta vara exakta.
+ * pengar men kvalitativ riktning för alla andra resurser. Domen utvidgades
+ * 2026-09-09 till WeeklyDecision (`weeklyDecisionService.ts`), en separat
+ * katalogform (label + preview) som EventChoice-grenen inte fångar. Det här
+ * är ingen runtime-sanering: bygggrinden läser TypeScript-syntaxen och
+ * stoppar en ny label/subtitle/preview som kodar exempelvis "+5 moral"
+ * eller "relation −30". Speltexten når därför aldrig produktion i trasigt
+ * skick och pengar kan fortsätta vara exakta.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -18,7 +21,7 @@ const DOMAIN_ROOT = resolve(ROOT, 'src', 'domain')
 interface Violation {
   file: string
   line: number
-  property: 'label' | 'subtitle'
+  property: 'label' | 'subtitle' | 'preview'
   preview: string
 }
 
@@ -54,7 +57,10 @@ const NON_MONEY_RESOURCE = [
   'moral', 'rykte', 'anseende', 'reputation', 'communityStanding',
   'stämning', 'fanMood', 'supporterMood', 'happiness', 'lojalitet',
   'tålamod', 'inflytande', 'pressrelation', 'journalistrelation',
-  'kommunrelation', 'domarrelation', 'boardPatience',
+  'kommunrelation', 'kommunstatus', 'domarrelation', 'boardPatience',
+  // DOM_O12_VECKOBESLUT_2026-09-09 — WeeklyDecision-katalogens resurser,
+  // som EventChoice-domen inte namngav.
+  'kondition', 'hörnskicklighet', 'hörnförsvar',
 ].join('|')
 
 // ${uttryck} räknas bara som ett läckt värde om uttrycket inte är en
@@ -119,6 +125,23 @@ for (const absoluteFile of sourceFiles(DOMAIN_ROOT)) {
           })
         }
       }
+
+      // Ett WeeklyDecisionOption i produktion (DOM_O12_VECKOBESLUT_2026-09-09):
+      // label + preview, samma kontrakt som EventChoice men annan formträff
+      // (ingen id/effect på det här objektet — de sitter på det yttre
+      // WeeklyDecision-objektet).
+      if (properties.has('label') && properties.has('preview')) {
+        const assignment = properties.get('preview')!
+        const preview = previewText(assignment.initializer, source)
+        if (preview && hasExactNonMoneyValue(preview)) {
+          violations.push({
+            file: absoluteFile.slice(ROOT.length + 1),
+            line: source.getLineAndCharacterOfPosition(assignment.getStart(source)).line + 1,
+            property: 'preview',
+            preview,
+          })
+        }
+      }
     }
     ts.forEachChild(node, visit)
   }
@@ -135,4 +158,4 @@ if (violations.length > 0) {
   process.exit(1)
 }
 
-console.log('o12-choice-preview-guard: inga exakta icke-pengatal i EventChoice label/subtitle ✓')
+console.log('o12-choice-preview-guard: inga exakta icke-pengatal i EventChoice label/subtitle eller WeeklyDecisionOption preview ✓')

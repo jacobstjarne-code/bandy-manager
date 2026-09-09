@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import { CURRENT_SAVE_VERSION, type SaveGame, type RoundSummaryData, type Sponsor } from '../../domain/entities/SaveGame'
+import { CURRENT_SAVE_VERSION, type SaveGame, type RoundSummaryData, type Sponsor, type ResolvedChoiceOutcomeDelta } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
@@ -210,7 +210,7 @@ interface GameState {
   markScreenVisited: (screen: string) => void
   dismissBeat: (beatKey: string, beatId?: string) => void
   markAnslagSeen: (key: import('../../domain/services/anslagService').AnslagKey) => void
-  resolveWeeklyDecision: (choice: 'A' | 'B') => void
+  resolveWeeklyDecision: (choice: 'A' | 'B') => { text: string; deltas: ResolvedChoiceOutcomeDelta[] } | undefined
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void
   recordFinalIntroShown: (fixture: import('../../domain/entities/Fixture').Fixture, tier: import('../../domain/data/scenes/finalIntroScene').FinalTier) => void
   triggerCoffeeRoomScene: () => void

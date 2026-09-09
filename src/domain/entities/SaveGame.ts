@@ -110,6 +110,9 @@ export type ResolvedChoiceOutcomeResource =
   | 'politicianRelationship'
   | 'refereeRelationship'
   | 'finances'
+  | 'fitness'
+  | 'cornerSkill'
+  | 'cornerRecovery'
 
 export interface ResolvedChoiceOutcomeDelta {
   resource: ResolvedChoiceOutcomeResource

@@ -67,20 +67,51 @@ export function captureResolvedChoiceOutcome(
 
   const beforePlayers = new Map(before.players.map(player => [player.id, player]))
   const moraleGroups = new Map<number, string[]>()
+  const fitnessGroups = new Map<number, string[]>()
+  const cornerSkillGroups = new Map<number, string[]>()
+  const cornerRecoveryGroups = new Map<number, string[]>()
   for (const player of after.players) {
     const old = beforePlayers.get(player.id)
-    if (!old || old.morale === player.morale) continue
-    const delta = player.morale - old.morale
-    const names = moraleGroups.get(delta) ?? []
-    names.push(`${player.firstName} ${player.lastName}`)
-    moraleGroups.set(delta, names)
+    if (!old) continue
+    const name = `${player.firstName} ${player.lastName}`
+    if (old.morale !== player.morale) {
+      const delta = player.morale - old.morale
+      moraleGroups.set(delta, [...(moraleGroups.get(delta) ?? []), name])
+    }
+    if (old.fitness !== player.fitness) {
+      const delta = player.fitness - old.fitness
+      fitnessGroups.set(delta, [...(fitnessGroups.get(delta) ?? []), name])
+    }
+    // Optional chaining: en del testfixturer castar minimala Player-objekt
+    // utan `attributes` (t.ex. `{ id, firstName, lastName } as Player`) —
+    // riktiga spelare har alltid attributes, men diffen får inte krascha på
+    // dem som saknar det.
+    if (old.attributes?.cornerSkill !== player.attributes?.cornerSkill) {
+      const oldValue = old.attributes?.cornerSkill
+      const newValue = player.attributes?.cornerSkill
+      if (oldValue !== undefined && newValue !== undefined) {
+        const delta = newValue - oldValue
+        cornerSkillGroups.set(delta, [...(cornerSkillGroups.get(delta) ?? []), name])
+      }
+    }
+    if ((old.attributes?.cornerRecovery ?? 50) !== (player.attributes?.cornerRecovery ?? 50)) {
+      const delta = (player.attributes?.cornerRecovery ?? 50) - (old.attributes?.cornerRecovery ?? 50)
+      cornerRecoveryGroups.set(delta, [...(cornerRecoveryGroups.get(delta) ?? []), name])
+    }
   }
-  for (const [delta, names] of moraleGroups) {
-    rows.push({
-      resource: 'morale',
-      delta,
-      subjectName: names.length === 1 ? names[0] : `Truppen (${names.length} spelare)`,
-    })
+  for (const [resource, groups] of [
+    ['morale', moraleGroups],
+    ['fitness', fitnessGroups],
+    ['cornerSkill', cornerSkillGroups],
+    ['cornerRecovery', cornerRecoveryGroups],
+  ] as const) {
+    for (const [delta, names] of groups) {
+      rows.push({
+        resource,
+        delta,
+        subjectName: names.length === 1 ? names[0] : `Truppen (${names.length} spelare)`,
+      })
+    }
   }
 
   const beforeMecenater = new Map((before.mecenater ?? []).map(mecenat => [mecenat.id, mecenat]))
@@ -115,6 +146,9 @@ const LABEL: Record<ResolvedChoiceOutcomeDelta['resource'], string> = {
   politicianRelationship: 'Kommunrelation',
   refereeRelationship: 'Domarrelation',
   finances: 'Kassan',
+  fitness: 'Kondition',
+  cornerSkill: 'Hörnskicklighet',
+  cornerRecovery: 'Hörnförsvar',
 }
 
 function signed(value: number): string {

@@ -35,8 +35,11 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   function handleChoice(choice: 'A' | 'B') {
     if (resolvedInfo) return
     const option = choice === 'A' ? decision!.optionA : decision!.optionB
-    setResolvedInfo({ label: option.label, effect: option.effect })
-    resolveWeeklyDecision(choice)
+    // O12 (DOM_O12_VECKOBESLUT_2026-09-09): kvittot kommer ur den faktiska
+    // clampade diffen (store-actionens returvärde), inte option.preview —
+    // den bär bara riktning, aldrig det exakta utfallet.
+    const outcome = resolveWeeklyDecision(choice)
+    setResolvedInfo({ label: option.label, effect: outcome?.text ?? option.preview })
     if (resolvedTimeoutRef.current) clearTimeout(resolvedTimeoutRef.current)
     resolvedTimeoutRef.current = setTimeout(() => setResolvedInfo(null), 2600)
   }
@@ -86,7 +89,7 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
                 className={`weekly-decision-option-btn ${isHovered ? 'weekly-decision-option-btn-hover' : 'weekly-decision-option-btn-idle'}`}
               >
                 <span className="weekly-decision-option-label">{opt.label}</span>
-                <span className="weekly-decision-option-effect">{opt.effect}</span>
+                <span className="weekly-decision-option-effect">{opt.preview}</span>
               </button>
             )
           })}

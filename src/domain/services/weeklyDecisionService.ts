@@ -1,8 +1,9 @@
-import type { SaveGame, ClubEra } from '../entities/SaveGame'
+import type { SaveGame, ClubEra, ResolvedChoiceOutcomeDelta } from '../entities/SaveGame'
 import { PlayerPosition } from '../enums'
 import { getCharacterName } from './supporterService'
 import { calculateClubEra } from './clubEraService'
 import { mulberry32 } from '../utils/random'
+import { formatResolvedChoiceOutcome } from './eventChoiceReceiptService'
 import type { EventLedgerEntry, LedgerConsequence } from '../entities/Narrative'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
@@ -28,7 +29,13 @@ export type WeeklyDecisionId = typeof WEEKLY_DECISION_IDS[number]
 
 export interface WeeklyDecisionOption {
   label: string
-  effect: string
+  /**
+   * O12 (DOM_O12_VECKOBESLUT_2026-09-09): kvalitativ riktning FÖRE valet,
+   * aldrig ett exakt icke-pengatal — samma kontrakt som EventChoice.subtitle.
+   * Pengar är undantaget och får vara exakta (kr/tkr). Det faktiska, clampade
+   * utfallet visas EFTER valet, ur `captureResolvedChoiceOutcome`.
+   */
+  preview: string
   effectColor?: 'success' | 'danger' | 'muted'
 }
 
@@ -111,61 +118,61 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'corner_extra_training',
       category: 'player',
       question: `${candidateName} vill öva hörnskott efter träningen. Extra pass?`,
-      optionA: { label: 'Tillåt', effect: '+3 hörnskicklighet', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: 'Ingen effekt', effectColor: 'muted' },
+      optionA: { label: 'Tillåt', preview: 'vassare i hörnorna', effectColor: 'success' },
+      optionB: { label: 'Neka', preview: 'Ingen effekt', effectColor: 'muted' },
     },
     {
       id: 'player_weekend_off',
       category: 'player',
       question: `${wearyName} vill åka hem till familjen över helgen.`,
-      optionA: { label: 'Ja, åk', effect: '−1 kondition · +5 moral', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: '−3 moral', effectColor: 'danger' },
+      optionA: { label: 'Ja, åk', preview: 'tröttare · lyfter humöret', effectColor: 'success' },
+      optionB: { label: 'Neka', preview: 'grumlar humöret', effectColor: 'danger' },
     },
     // — Supporter decisions —
     {
       id: 'away_trip_bus',
       category: 'supporter',
       question: `${leader} har hyrt en buss till ${awayOpponent}. ${veteran} har redan bokat sin plats. Bidra med 3 000 kr?`,
-      optionA: { label: 'Bidra', effect: '−3 tkr · +bortasupport', effectColor: 'success' },
-      optionB: { label: 'Låt dem ordna', effect: `−5 ${groupName}-stämning`, effectColor: 'danger' },
+      optionA: { label: 'Bidra', preview: '−3 tkr · lyfter stämningen på läktaren', effectColor: 'success' },
+      optionB: { label: 'Låt dem ordna', preview: `grumlar ${groupName}s stämning`, effectColor: 'danger' },
       systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'tifo_contribution',
       category: 'supporter',
       question: `${youth} vill arrangera tifo till nästa hemmamatch. Bidra med 2 000 kr?`,
-      optionA: { label: 'Bidra', effect: '−2 tkr · +supporterstämning', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: '−5 supporterstämning', effectColor: 'danger' },
+      optionA: { label: 'Bidra', preview: '−2 tkr · lyfter stämningen på läktaren', effectColor: 'success' },
+      optionB: { label: 'Neka', preview: 'grumlar stämningen', effectColor: 'danger' },
       systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'supporter_conflict_mediate',
       category: 'supporter',
       question: `${leader}: "${veteran} och ${youth} bråkar om musiken igen. Kan du säga något?"`,
-      optionA: { label: 'Medla', effect: '+stämning · alla nöjda', effectColor: 'success' },
-      optionB: { label: 'Låt dem lösa det', effect: '50/50 chans', effectColor: 'muted' },
+      optionA: { label: 'Medla', preview: '+stämning · alla nöjda', effectColor: 'success' },
+      optionB: { label: 'Låt dem lösa det', preview: '50/50 chans', effectColor: 'muted' },
     },
     {
       id: 'reporter_klacken',
       category: 'supporter',
       question: `Tidningen vill göra ett reportage om ${groupName}. ${leader} säger ja — men frågar om du godkänner.`,
-      optionA: { label: 'Tillåt', effect: '+3 kommunstatus', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: '−3 kommunstatus', effectColor: 'danger' },
+      optionA: { label: 'Tillåt', preview: 'orten värmer', effectColor: 'success' },
+      optionB: { label: 'Neka', preview: 'orten kyler', effectColor: 'danger' },
     },
     // — Training decisions —
     {
       id: 'training_corners_vs_matchprep',
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
-      optionA: { label: 'Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
-      optionB: { label: '📋 Matchprep', effect: '+hörnförsvar (sårbar back)', effectColor: 'success' },
+      optionA: { label: 'Hörnor', preview: 'vassare i hörnorna', effectColor: 'success' },
+      optionB: { label: '📋 Matchprep', preview: 'stabilare i hörnförsvaret (sårbar back)', effectColor: 'success' },
     },
     {
       id: 'scout_opponent_corners',
       category: 'training',
       question: 'Scouten vill studera motståndarens hörnförsvar inför helgen.',
-      optionA: { label: 'Ja', effect: '−1 scout · analys av nästa motståndare', effectColor: 'success' },
-      optionB: { label: 'Spara scouten', effect: 'Ingen effekt', effectColor: 'muted' },
+      optionA: { label: 'Ja', preview: 'du får läsa nästa motståndare', effectColor: 'success' },
+      optionB: { label: 'Spara scouten', preview: 'Ingen effekt', effectColor: 'muted' },
     },
     // — Community decisions —
     {
@@ -182,16 +189,16 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       // utan att påstå ett tal ingen data backar. Se BACKLOG.md för den
       // saknade tjänstetidsräknaren (samma lucka som "år i klubben"/O18 fält 3).
       question: `Kommunen erbjuder en begagnad ismaskin för 15 000 kr. ${veteran} har spolat isen för hand i många vintrar och frågar varje vecka när maskinen kommer.`,
-      optionA: { label: 'Köp den', effect: '−15 tkr · +kommunstatus', effectColor: 'success' },
-      optionB: { label: 'Tacka nej', effect: 'Ingen effekt', effectColor: 'muted' },
+      optionA: { label: 'Köp den', preview: '−15 tkr · orten värmer', effectColor: 'success' },
+      optionB: { label: 'Tacka nej', preview: 'Ingen effekt', effectColor: 'muted' },
     },
     {
       id: 'family_section_request',
       category: 'community',
       repeatPolicy: 'untilAccepted',
       question: `${family}: "Kan vi få en tydligare familjeplats på läktaren? Barnen behöver en lugn sida."`,
-      optionA: { label: 'Ordna det', effect: '+kommunstatus · +stämning', effectColor: 'success' },
-      optionB: { label: 'Inte nu', effect: `${family} besviken`, effectColor: 'danger' },
+      optionA: { label: 'Ordna det', preview: 'orten värmer · lyfter stämningen på läktaren', effectColor: 'success' },
+      optionB: { label: 'Inte nu', preview: `${family} besviken`, effectColor: 'danger' },
     },
 
     // ── Era-gated: legacy only ───────────────────────────────────────────────
@@ -201,8 +208,8 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       requiredEra: ['legacy'],
       repeatPolicy: 'untilAccepted',
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
-      optionA: { label: 'Acceptera', effect: '+20 tkr engång · −stolthet', effectColor: 'success' },
-      optionB: { label: 'Behåll namnet', effect: `+${groupName}-stämning · −boardpatience`, effectColor: 'muted' },
+      optionA: { label: 'Acceptera', preview: '+20 tkr engång · −stolthet', effectColor: 'success' },
+      optionB: { label: 'Behåll namnet', preview: `lyfter ${groupName}s stämning · tär på styrelsens tålamod`, effectColor: 'muted' },
       systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
@@ -210,8 +217,8 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'player',
       requiredEra: ['legacy'],
       question: `En regional TV-kanal vill sända er akademimatchen. ${leader} vill att ni ställer upp.`,
-      optionA: { label: 'Ställ upp', effect: '+kommunstatus', effectColor: 'success' },
-      optionB: { label: 'Inte nu', effect: 'Ingen effekt', effectColor: 'muted' },
+      optionA: { label: 'Ställ upp', preview: 'orten värmer', effectColor: 'success' },
+      optionB: { label: 'Inte nu', preview: 'Ingen effekt', effectColor: 'muted' },
     },
 
     // ── Era-gated: survival only ─────────────────────────────────────────────
@@ -220,16 +227,19 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'player',
       requiredEra: ['survival'],
       question: 'Kassören föreslår lönestopp — inga nya kontrakt under månaden för att täcka underskott.',
-      optionA: { label: 'Godkänn', effect: '+styrelsens tålamod · −supporterstämning', effectColor: 'danger' },
-      optionB: { label: 'Neka', effect: '−boardpatience · spelarna trygga', effectColor: 'muted' },
+      // TODO(Opus): DOM_O12_VECKOBESLUT_2026-09-09 låser bara den NEGATIVA
+      // styrelsetålamod-frasen ("tär på styrelsens tålamod"). Ingen positiv
+      // fras finns ännu — bar "+styrelsens tålamod"-notation tills en ges.
+      optionA: { label: 'Godkänn', preview: '+styrelsens tålamod · grumlar stämningen', effectColor: 'danger' },
+      optionB: { label: 'Neka', preview: 'tär på styrelsens tålamod · spelarna trygga', effectColor: 'muted' },
     },
     {
       id: 'survival_emergency_lotto',
       category: 'community',
       requiredEra: ['survival'],
       question: `${leader} vill starta ett 50-50-lotteri vid hemmamatcherna. Halva potten till vinnaren, resten till att starta en ungdomsklack.`,
-      optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning (chansning)', effectColor: 'success' },
-      optionB: { label: 'Inte nu', effect: `${leader} besviken`, effectColor: 'muted' },
+      optionA: { label: 'Kör igång', preview: 'en chansning — kan slå åt bägge håll', effectColor: 'success' },
+      optionB: { label: 'Inte nu', preview: `${leader} besviken`, effectColor: 'muted' },
     },
   ]
 
@@ -536,4 +546,20 @@ export function resolveWeeklyDecision(
       throw new Error(`Okänt weeklyDecision-id: ${String(unhandledDecisionId)}`)
     }
   }
+}
+
+/**
+ * O12 (DOM_O12_VECKOBESLUT_2026-09-09): efterkvittot spelaren ser, byggt ur
+ * den faktiska clampade före/efter-diffen (`deltas`) — aldrig ur `preview`.
+ * `scoutNextOpponent`/`noop` saknar en numerisk resurs i diffen, så de faller
+ * tillbaka på samma låsta kvalitativa fraser som förhandsytan redan visar.
+ */
+export function formatWeeklyDecisionOutcome(
+  effects: readonly WeeklyDecisionEffect[],
+  deltas: readonly ResolvedChoiceOutcomeDelta[],
+): string {
+  const formatted = formatResolvedChoiceOutcome(deltas as ResolvedChoiceOutcomeDelta[])
+  if (formatted) return formatted
+  if (effects.some(effect => effect.type === 'scoutNextOpponent')) return 'du får läsa nästa motståndare'
+  return 'Ingen effekt'
 }
