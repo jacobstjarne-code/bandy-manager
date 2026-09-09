@@ -124,3 +124,16 @@ Pengar ska fortsätta vara exakta. Övriga resurser ska uttryckas kvalitativt f�
 3. Kör om samma tre-save-prov på en deploy som innehåller ändringen och bekräfta att `Noterat` inte längre blir dominansrad och att både transfermotbud och slutligt svar räknas.
 4. Mät först därefter 80-procentsgrinden på naturliga val från flera oberoende spelare. Ett medvetet varierat testkonto kan verifiera rören, aldrig spelarnas preferens.
 
+## Mekanisk uppföljning 2026-09-09
+
+Punkt 1 ovan är byggd i `06336d37` (`fix: gör O12 beslutstelemetri instanssann`). Varje nytt `ResolvedChoice` får nu ett stabilt `resolutionId` och ett instanssant `decisionKind`. Entropianalysen:
+
+- räknar bara verkliga flervalsbeslut;
+- särredovisar enknappskvittenser;
+- bevarar flera beslut i samma eventkedja;
+- deduplicerar överlappande exporter på resolutionens identitet;
+- behandlar gamla poster utan de nya fälten som okänd legacydata, inte som bevisade spelarval.
+
+Detta är en rotfix i skrivkontraktet och analysen, inte en eventtyp-blacklist. Regressionstester täcker både `Noterat`-fallet och transferkedjan med två resolutioner under samma event-id.
+
+Verifiering: fokusurvalet är grönt (14/14 tester), produktionsbygget är grönt och hela sviten är grön (539 testfiler, 4 931 tester). Punkt 2 — uppdelningen mellan kvalitativ förhandsbeskrivning och exakt efterkvitto — återstår. Därför är O12 fortfarande öppen och 80-procentsgrinden får inte bedömas förrän den delningen är byggd och naturliga val från flera spelare finns.
