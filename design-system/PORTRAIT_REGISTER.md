@@ -1,6 +1,6 @@
 # PORTRAIT_REGISTER — spelarporträtt, kurerat register
 
-**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst, veteranfacket skrivet och godkänt. Ung/mid/erfaren skrivs härnäst. Produktion (generering) ej påbörjad.
+**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix + separationsregel, 2026-09-09). Veteranfacket genererat 1, 2, 4–10 (3 överhoppad), granskat och godkänt. Ung/mid/erfaren skrivs härnäst.
 
 Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen bär registret — vem varje av de ~120 porträtten är, så inga två i en trupp blir för lika och luckorna fylls medvetet. Registret är den levande källan för den aktuella basprompten (PORTRAIT_STYLE:s arbetsprompt är den tidigare, nu förfinad nedan).
 
@@ -18,12 +18,14 @@ Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen 
 
 **Produktion:** ETT porträtt per generering, ALDRIG rutnät/ark (små ansikten + osnitt­bart). Gemini Nano Banana 2 i Thinking/Pro-läge (instruktionsföljning; Fast driver iväg över 120). Lås basprompten ord för ord, variera bara person + vinkel, eget frö per bild. Granska varje fack som GRUPP mot ankaret, regenerera avvikare i yta/palett/beskärning. Filnamn `portrait_{tier}_{n}.png`.
 
+**Separationsregel (låst 2026-09-09, bevisad i veteranfacket):** när två poster ligger nära i ålder OCH färg måste minst TVÅ av axlarna hårväxt / ansiktsform / byggnad skilja dem — annars konvergerar Gemini till kloner (klungan 1/7/9 bevisade det). En axel räcker inte: 16 renrakad mot 7 stubbad var för nära tills även käken och byggnaden knöffades isär.
+
 **Kurerade extremer (8–12 i HELA poolen, glest):** Krig-typen (rakad skalle + fullt rödbrunt gråstänkt skägg), 2 rödhåriga med fräknar, den ärrade/väderbitne, 1–2 tydligt grånade elder-veteraner (37+), den ende tydligt kraftige, en riktigt gänglig lång. Grått och rött hör ENBART hit — aldrig i ryggraden.
 
 ## Aktuell basprompt (låst — variera bara person + vinkel)
 
-> Flat graphic stylized portrait of a Swedish bandy player, [PERSON + ANGLE], head and shoulders, centered, calm neutral expression, with generous margin above the hair and below the chin so a circular crop won't clip the head. Plain crew-neck top in flat neutral grey — ABSOLUTELY no crest, logo, collar, anchor or emblem, completely plain chest. Mid-century screenprint / retro sports-program style: a FEW flat colour planes per surface (one base skin tone, one shadow tone, at most one mid-tone) with hard clean edges between them, no blended or airbrushed modelling; features read from the shape of the flat shadow shapes. Subtle even paper-grain over everything. Cold slate-grey background filling the frame. Natural skin tone as the only warmth. Weathered, understated, working-class athlete — not glamorous. Square 1:1.
-> NEGATIVE: warm or parchment background, smooth 3D rendering, glossy highlights, airbrush gradient, photorealism, frame, border, text, colour bars, spritesheet, multiple people, scenery, dramatic lighting, smiling, profile view, head off-centre, coloured or logo jersey.
+> Flat graphic stylized portrait of a Swedish bandy player, [PERSON + ANGLE], head and shoulders, centered, calm neutral expression, with generous margin above the hair and below the chin so a circular crop won't clip the head. Plain crew-neck top in flat neutral grey — ABSOLUTELY no crest, logo, collar, anchor or emblem, completely plain chest, shown as ordinary straight shoulders that run flat to both edges of the frame, NOT a rounded bib, yoke, scoop or circular collar shape. Mid-century screenprint / retro sports-program style: a FEW flat colour planes per surface (one base skin tone, one shadow tone, at most one mid-tone) with hard clean edges between them, no blended or airbrushed modelling; features read from the shape of the flat shadow shapes. Subtle even paper-grain over everything. Cold slate-grey background filling the frame. Natural skin tone as the only warmth. Weathered, understated, working-class athlete — not glamorous. Square 1:1.
+> NEGATIVE: warm or parchment background, smooth 3D rendering, glossy highlights, airbrush gradient, photorealism, frame, border, text, colour bars, spritesheet, multiple people, scenery, dramatic lighting, smiling, profile view, head off-centre, coloured or logo jersey, rounded bib, yoke, scoop neckline, circular shoulder shape, cape.
 
 ## Fack: VETERAN (32+, tyngdpunkt 32–35, svans 38–40; tomt vid start, åldras in)
 

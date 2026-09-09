@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+    .cell { padding: 9px 13px; }
+    code { font-family:var(--font-display); font-size:11px; color:var(--accent-dark); }
+  </style>
+</helmet>
+<div style="min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:26px 18px 72px;">
+  <div style="max-width:880px; margin:0 auto; display:flex; flex-direction:column; gap:16px;">
+
+    <div style="background:var(--bg-leather); border-bottom:2px solid var(--accent); border-radius:var(--radius-md); padding:16px 18px;">
+      <div class="h-label" style="color:var(--accent); margin-bottom:6px;">DESIGN-BRIEF · BESLUTSKORTEN · 2026-09-09</div>
+      <div style="font-family:var(--font-display); font-size:23px; font-weight:800; color:var(--text-light); line-height:1.15;">När bär ett beslutskort kopparvikt — och hur många gånger per yta?</div>
+      <div class="h-body-sm" style="color:var(--text-light-secondary); margin-top:7px; max-width:640px;">Konsoliderar tre rader som ser separata ut men är samma fråga. Briefen pekar raderna mot sina källor och ramar frågan. Domen är Jacobs — den står inte här.</div>
+    </div>
+
+    <div style="background:var(--bg-surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:var(--radius-md); padding:13px 15px;">
+      <div class="h-label" style="color:var(--accent-dark);">GENOMGÅENDE TRÅD</div>
+      <div class="h-body" style="margin-top:5px;">Beslutssystemet är redan <em>likriktat i struktur</em>: en delad <code>DecisionCard</code> + <code>DecisionChoices</code> (2026-08-12) bär "situation → val → resolve" för alla sju tidigare handrullade ställningar, med tre viktlägen (<code>notis · dilemma · brytpunkt</code>). Men <strong>primär-signalen — den kopparfyllda knappen — styrs av tre olika regler som aldrig satts mot varandra.</strong> Det är det som gör att Taktik visar två primärer, symmetriska set visar noll, och brytpunktsscenerna talar ett eget knappspråk. Tre rader, en obesvarad regel.</div>
+    </div>
+
+    <!-- ROW 1 -->
+    <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+      <div class="cell" style="background:var(--bg-leather); display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <span class="h-card-sm" style="color:var(--text-light); font-family:var(--font-display); font-size:14px;">Rad 1 · decisioncards-likriktning</span>
+        <code style="color:var(--accent);">CODE_DECISION_CARD_KONSOLIDERING_2026-06-20 · DecisionCard.tsx</code>
+      </div>
+      <div class="cell" style="background:var(--bg-surface);">
+        <div class="h-body"><strong>Vad:</strong> den flata <code>choiceStyle</code> dog; alla beslutsknappar talar <code>.btn-primary</code> fylld + <code>.btn-outline</code>, i både Portal och Granska. Layout är en prop (<code>inline</code> vs <code>stack</code>), hierarkin är gemensam.</div>
+        <div class="h-body" style="margin-top:6px;"><strong>Låst redan:</strong> "symmetriska val ljuger inte" — <code>primaryChoiceId</code> osatt ⇒ ALLA outline (presskonferens/domarmöte/CS-press är likvärdiga svar, ingen falsk koppar-rekommendation).</div>
+        <div class="h-body-sm" style="margin-top:6px; color:var(--text-secondary);"><strong>Öppet:</strong> regeln säger <em>när koppar INTE ska synas</em> (symmetri). Den säger inte när den <em>ska</em>, eller vad som händer när två ytor båda hävdar en primär. Det är rad 2 och 3.</div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+      <div class="cell" style="background:var(--bg-leather); display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <span class="h-card-sm" style="color:var(--text-light); font-family:var(--font-display); font-size:14px;">Rad 2 · design-p4-brytpunkt-knappar</span>
+        <code style="color:var(--accent);">DecisionCard mode="brytpunkt" · SceneChoiceButton.tsx</code>
+      </div>
+      <div class="cell" style="background:var(--bg-surface);">
+        <div class="h-body"><strong>Vad:</strong> <code>brytpunkt</code> är systemets högsta viktläge (accentkant + upplyft skugga) — men de dramatiska val-scenerna renderar INTE via <code>DecisionChoices</code>. <code>SceneChoiceButton</code> är en egen knapp: Georgia, mörk läderyta, koppar-pil <code>→</code>, egen hover.</div>
+        <div class="h-body" style="margin-top:6px;"><strong>Spänningen:</strong> två knappspråk för beslut som båda kallas "brytpunkt" — <code>.btn</code>-vokabulären (rad 1) och scenens Georgia-pilknapp. Diff-scenen <code>072-event-overlay-breakpoint</code> är där de möts.</div>
+        <div class="h-body-sm" style="margin-top:6px; color:var(--text-secondary);"><strong>Frågan:</strong> ska brytpunktsknappar likriktas till <code>.btn</code>-vokabulären, eller är scenens pilknapp ett medvetet undantag (ceremoni-register, som PressConferenceScene/CeremonyRetirement redan är)? Om undantag — skriv upp det, annars driver det tyst.</div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+      <div class="cell" style="background:var(--bg-leather); display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <span class="h-card-sm" style="color:var(--text-light); font-family:var(--font-display); font-size:14px;">Rad 3 · design-d4-primary-utspädd</span>
+        <code style="color:var(--accent);">DESIGN-BRIEF-TAKTIKTAVLA-VIKTNING-2026-09-08 · primary-event-vs-farewell (R2)</code>
+      </div>
+      <div class="cell" style="background:var(--bg-surface);">
+        <div class="h-body"><strong>Vad:</strong> primär-signalen späds ut på två håll. (a) <strong>Taktik</strong> visar två primärer samtidigt — "Följ rådet" (<code>TacticBoardCard</code>) + "Bäst för dagens match" (<code>FormationView</code>). (b) <strong>Portal-primärslotten</strong> byter vinnare mellan konkurrerande kort (<code>initCardBag</code>) — R2-diffarna <code>primary-event-vs-farewell</code> och <code>primary-smfinal-vs-deadline</code> visar exakt det.</div>
+        <div class="h-body" style="margin-top:6px;"><strong>Regeln som finns:</strong> DS §5 — "en primär per skärm". Taktik bryter den synligt; Portal-slotten bryter den <em>över tid</em> (rätt kort ska vinna, men rangordningen är inte dömd).</div>
+        <div class="h-body-sm" style="margin-top:6px; color:var(--text-secondary);"><strong>Frågan:</strong> vilken kontroll bär huvudtrycket på Taktik (den andra tonas ner, inte bort), och vilken rangordning gäller när flera kort slåss om Portals primärslot? Taktik-domen är redan efterfrågad i taktik-briefen; här hör den ihop med Portal-slotten som <em>samma</em> primär-regel.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;">
+      <div class="h-label" style="color:var(--text-secondary);">DÄRFÖR ÄR DET EN BRIEF, INTE TRE</div>
+      <div class="h-body" style="margin-top:5px;">Rad 1 gav skalet och regeln för <em>frånvaro</em> av primär. Rad 2 och 3 är båda frågor om primärens <em>närvaro</em> — ett annat knappspråk som gör en tredje primärstil (rad 2), och två ytor som var för sig hävdar en primär för mycket (rad 3). Döms de var för sig får systemet tre lokala svar som kan säga emot varann. Döms de ihop blir det <strong>en enda primär-regel för beslutskort</strong>: när koppar syns, hur många gånger, och i vilket knappspråk.</div>
+    </div>
+
+    <div style="background:var(--bg-surface); border:1px dashed var(--border-dark); border-radius:var(--radius-md); padding:12px 15px;">
+      <div class="h-label" style="color:var(--text-secondary);">EJ I DENNA BRIEF</div>
+      <div class="h-body" style="margin-top:5px;">Själva domarna — vilken Taktik-knapp som vinner, om brytpunktsscenerna likriktas, hur Portal-slotten rangordnas. Briefen pekar och ramar; besluten är Jacobs. När de faller wirar Code, och ingen visuell baseline rörs innan dess (samma ordning som taktik-briefen).</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
