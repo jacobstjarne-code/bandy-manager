@@ -3,6 +3,7 @@ import { getBoardPatienceZone } from '../boardPatienceZone'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { BoardObjective } from '../../../entities/Community'
+import type { SaveGame } from '../../../entities/SaveGame'
 
 /**
  * 3.2 (SLUTTEST_KO.md, 2026-08-17) — kvalitativa zoner för boardPatience.
@@ -111,5 +112,38 @@ describe('getBoardPatienceZone', () => {
     const game = { ...makeGame(40), boardObjectives: [] }
     const info = getBoardPatienceZone(game)
     expect(info.causeLine).toBeUndefined()
+  })
+
+  /**
+   * DOM_ORSAK_VERKAN_SYSTEMTILLSTAND_2026-09-08 (SMAL fork): boardObjectives
+   * check:as bara vid omgång 7/14/22, medan boardPatience rör sig varje
+   * omgång — en aktiv förlustsvit ska synas som orsak även mellan check-ins.
+   */
+  it('aktiv förlustsvit (≥3 raka) ger standings-orsaksraden trots att inget objektiv ännu flaggat', () => {
+    const game = {
+      ...makeGame(40),
+      boardObjectives: [],
+      trainerArc: { consecutiveLosses: 3 } as SaveGame['trainerArc'],
+    }
+    const info = getBoardPatienceZone(game)
+    expect(info.causeLine).toBe('Ni ligger under det de begärde.')
+  })
+
+  it('två raka förluster räcker inte — samma tröskel som losingStreakSurcharge (≥3)', () => {
+    const game = {
+      ...makeGame(40),
+      boardObjectives: [],
+      trainerArc: { consecutiveLosses: 2 } as SaveGame['trainerArc'],
+    }
+    expect(getBoardPatienceZone(game).causeLine).toBeUndefined()
+  })
+
+  it('prioritetsordningen är oförändrad: en aktiv förlustsvit (sporting-kategorin) vinner fortfarande före ett flaggat economic-objektiv', () => {
+    const game = {
+      ...makeGame(20),
+      boardObjectives: [makeObjective({ type: 'economic', status: 'failed', label: 'Positivt resultat' })],
+      trainerArc: { consecutiveLosses: 4 } as SaveGame['trainerArc'],
+    }
+    expect(getBoardPatienceZone(game).causeLine).toBe('Ni ligger under det de begärde.')
   })
 })

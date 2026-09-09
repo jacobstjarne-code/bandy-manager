@@ -56,6 +56,17 @@ const CAUSE_LINES: Record<ConcernCause, string> = {
  * rad), 4. klack/publik. Läser boardObjectives (redan byggd källa — samma
  * struktur som board_failure-beaten i portalBeats.ts använder), inte en ny
  * härledning.
+ *
+ * DOM_ORSAK_VERKAN_SYSTEMTILLSTAND_2026-09-08 (SMAL fork): `boardObjectives`
+ * check:as bara vid omgång 7/14/22 (`boardObjectiveService.ts`), medan
+ * `boardPatience` rör sig varje omgång (`updateRunningBoardPatience`,
+ * boardService.ts). En förlustsvit kan alltså tära tålamodet till under_press/
+ * ultimatum FLERA omgångar innan nästa check-in flaggar objektivet — precis
+ * den "utan begriplig förklaring"-luckan `minne-avsked-motsager-historik`
+ * pekade på. Fixen återanvänder EXAKT samma tröskel som den mekaniska
+ * `losingStreakSurcharge` redan straffar (≥3 raka förluster, boardService.ts)
+ * och samma redan låsta `standings`-rad — ingen ny svensk text, ingen ny
+ * mekanik, bara en tidigare-synlig orsak inom en redan byggd kategori.
  */
 function pickConcernCause(game: SaveGame): { cause: ConcernCause; objective?: BoardObjective } | null {
   const objectives = game.boardObjectives ?? []
@@ -63,7 +74,8 @@ function pickConcernCause(game: SaveGame): { cause: ConcernCause; objective?: Bo
     objectives.find(o => o.type === t && (o.status === 'failed' || o.status === 'at_risk'))
 
   const sporting = concerning('sporting')
-  if (sporting) return { cause: 'standings', objective: sporting }
+  const activeLosingStreak = (game.trainerArc?.consecutiveLosses ?? 0) >= 3
+  if (sporting || activeLosingStreak) return { cause: 'standings', objective: sporting }
 
   const economic = concerning('economic')
   if (economic) return { cause: 'economy', objective: economic }
