@@ -59,4 +59,33 @@ describe('gameStore.newGame — riktigt slumpat worldSeed, inte alltid 42', () =
     expect(seedB).not.toBe(42)
     expect(seedA).not.toBe(seedB)
   })
+
+  /**
+   * O10 seed-i-länk (GO 2026-09-08): newGame():s nya valfria tredje argument
+   * vinner över slumpen — samma seed ska ge samma värld, oavsett klubb.
+   */
+  it('ett explicit seed (från en delad länk) ger EXAKT det seedet som worldSeed, inte ett slumpat', async () => {
+    const { useGameStore } = await import('../gameStore')
+    const { CLUB_TEMPLATES } = await import('../../../domain/services/worldGenerator')
+
+    useGameStore.getState().newGame('Manager C', CLUB_TEMPLATES[0].id, 123456)
+    await flush()
+    expect(useGameStore.getState().game!.worldSeed).toBe(123456)
+  })
+
+  it('samma explicit seed ger samma worldSeed för två oberoende careers (avsändare/mottagare)', async () => {
+    const { useGameStore } = await import('../gameStore')
+    const { CLUB_TEMPLATES } = await import('../../../domain/services/worldGenerator')
+
+    useGameStore.getState().newGame('Avsändare', CLUB_TEMPLATES[0].id, 777)
+    await flush()
+    const senderSeed = useGameStore.getState().game!.worldSeed
+
+    useGameStore.getState().newGame('Mottagare', CLUB_TEMPLATES[1].id, 777)
+    await flush()
+    const receiverSeed = useGameStore.getState().game!.worldSeed
+
+    expect(receiverSeed).toBe(senderSeed)
+    expect(receiverSeed).toBe(777)
+  })
 })

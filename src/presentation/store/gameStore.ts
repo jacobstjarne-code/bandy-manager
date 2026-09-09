@@ -102,7 +102,11 @@ interface GameState {
   saveConflict: boolean
 
   // Actions
-  newGame: (managerName: string, clubId: string) => void
+  // O10 seed-i-länk (GO 2026-09-08): valfritt tredje argument — en delad
+  // länks seed, vidarebefordrad av ClubSelectionScreen så att VÄRLDEN (inte
+  // bara vilka tre klubberbjudanden som visades) blir samma som avsändarens.
+  // Utelämnat: samma Math.random()-slump som förut, oförändrat normalt spel.
+  newGame: (managerName: string, clubId: string, seed?: number) => void
   // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
   // röra IndexedDB-posten. Gör att huvudmenyns hasSave blir korrekt false.
   // "SE KARRIÄREN" anropar INTE denna action: den sparkade saven ligger kvar
@@ -315,7 +319,7 @@ export const useGameStore = create<GameState>()(
       lastSaveError: null,
       saveConflict: false,
 
-      newGame: (managerName, clubId) => {
+      newGame: (managerName, clubId, seed) => {
         // U7 (SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
         // FÖRE bytet — samma skyddsnät som loadSaveGame:s pre_migration-
         // snapshot. Fire-and-forget (newGame är synkron); ett misslyckat
@@ -353,7 +357,9 @@ export const useGameStore = create<GameState>()(
         // med egna varierande seeds, aldrig via gameStore) — se
         // RAPPORT_SEED_BAKATVERIFIERING_2026-08-26.md. Fix: ett riktigt
         // slumpat seed per ny, fristående karriär.
-        const randomSeed = Math.floor(Math.random() * 2 ** 31)
+        // O10 seed-i-länk: ett explicit seed (från en delad länk) vinner över
+        // slumpen — samma seed här ger samma värld som avsändarens karriär.
+        const randomSeed = seed ?? Math.floor(Math.random() * 2 ** 31)
         let game = createNewGame({ managerName, clubId, seed: randomSeed })
         // Trigga inledande scen (board_meeting) vid säsong 1 / matchday 0.
         // advanceToNextEvent kör samma logik vid varje runda men vid newGame

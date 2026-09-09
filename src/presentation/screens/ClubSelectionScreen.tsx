@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useNavigate, useLocation, Navigate } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams, Navigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { selectThreeOffers } from '../../domain/services/offerSelectionService'
 import { OffersView } from '../components/clubselection/OffersView'
@@ -15,6 +15,7 @@ interface ClubSelectionScreenProps {
 export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSelectionScreenProps = {}) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { newGame } = useGameStore()
 
   const managerName = managerNameOverride
@@ -24,8 +25,21 @@ export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSele
   const [view, setView] = useState<'offers' | 'all'>('offers')
   const [isStarting, setIsStarting] = useState(false)
 
+  // O10 seed-i-länk (GO 2026-09-08, BACKLOG.md:55): en delad länk bär
+  // ?seed=<tal> i stället för Jacobs egen slump. Samma seed ger samma tre
+  // klubberbjudanden (selectThreeOffers nedan) OCH — vidarebefordrat till
+  // newGame() i handleSelect — samma värld när mottagaren väljer en klubb.
+  // Resten av O10-slingan (delningskortets text, landningsfrågan, den mjuka
+  // ruleVersion-notisen) är medvetet parkerad post-launch, se POST_LAUNCH.md.
+  const linkSeed = useMemo(() => {
+    const raw = searchParams.get('seed')
+    if (raw === null) return undefined
+    const parsed = Number(raw)
+    return Number.isFinite(parsed) ? parsed : undefined
+  }, [searchParams])
+
   // Seed sätts en gång vid mount och ändras inte — samma seed = samma tre klubbar
-  const seed = useMemo(() => offerSeed ?? Date.now(), [offerSeed])
+  const seed = useMemo(() => offerSeed ?? linkSeed ?? Date.now(), [offerSeed, linkSeed])
   const offers = useMemo(() => selectThreeOffers(seed), [seed])
 
   // Om managerName saknas — tillbaka till namnformulär
@@ -38,7 +52,7 @@ export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSele
     setIsStarting(true)
     setTimeout(() => {
       try {
-        newGame(managerName, clubId)
+        newGame(managerName, clubId, linkSeed)
         navigate('/intro')
       } catch (e) {
         console.error('ClubSelectionScreen: newGame misslyckades', e)
