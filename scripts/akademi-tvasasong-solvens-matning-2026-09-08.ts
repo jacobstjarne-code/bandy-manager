@@ -43,7 +43,7 @@ function hasCriticalPath(game: SaveGame): boolean {
 }
 
 function beginInvestment(game: SaveGame): SaveGame {
-  let invested = {
+  let invested: SaveGame = {
     ...game,
     pendingScreen: null,
     academyLevel: 'developing' as const,

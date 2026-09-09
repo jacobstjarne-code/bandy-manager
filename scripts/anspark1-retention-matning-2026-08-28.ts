@@ -122,7 +122,7 @@ function resolveIncomingBids(game: SaveGame, rand: () => number): { game: SaveGa
     const marketVal = player.marketValue ?? 50000
     const accept = bid.offerAmount >= marketVal * ACCEPT_ALWAYS_MULTIPLIER
       || (bid.offerAmount >= marketVal * ACCEPT_UNHAPPY_MULTIPLIER && player.morale < UNHAPPY_MORALE_THRESHOLD)
-    const event = bidReceivedEvent(bid as TransferBid, g)
+    const event = bidReceivedEvent(bid as TransferBid, g, true)
     const withEvent: SaveGame = { ...g, pendingEvents: [...(g.pendingEvents ?? []), event] }
     g = resolveEvent(withEvent, event.id, accept ? 'accept' : 'reject', rand, false)
     // Städa bort eventet ur pendingEvents igen — det här scriptet bryr sig

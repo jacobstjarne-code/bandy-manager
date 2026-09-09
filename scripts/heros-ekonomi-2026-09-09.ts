@@ -18,7 +18,6 @@
 import { createNewGame } from '../src/application/useCases/createNewGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
-import { FixtureStatus } from '../src/domain/enums'
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 
 const SEEDS = Number(process.argv[2] ?? 10)
