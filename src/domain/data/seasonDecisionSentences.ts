@@ -16,19 +16,18 @@
  *
  * ⚠️ TEXTEN ÄR OPUS. Code skriver aldrig svensk speltext (CLAUDE.md, hård
  * regel). Datainhämtningen, verifieringen mot speltillståndet och
- * interpolationen nedan är färdigwirade — men MALLARNA ÄR TOMMA. Med tom mall
- * returnerar getters nedan `null`, och byggaren i
- * seasonDecisionCaptureService.ts returnerar då `null` istället för en kandidat
- * med tom mening. Det är den bärande invarianten: en tom mening får ALDRIG
- * skrivas till händelseliggaren, för då kan pickSeasonDecisionFromLedger välja
- * den och årsboken renderar en blank rad — sämre än att falla tillbaka på
+ * interpolationen nedan är färdigwirade. Mallarna (Opus text, levererad)
+ * fylls med `fill()` nedan, som returnerar `null` för en TOM mall — det är
+ * signalen byggaren i seasonDecisionCaptureService.ts läser för att helt låta
+ * bli att skapa en kandidat. Det är den bärande invarianten: en tom mening får
+ * ALDRIG skrivas till händelseliggaren, för då kan pickSeasonDecisionFromLedger
+ * välja den och årsboken renderar en blank rad — sämre än att falla tillbaka på
  * SEASON_DECISION_NONE_TEXT. Testet
  * `seasonDecisionCaptureService.test.ts` → "tom mall ⇒ ingen kandidat" bevakar
  * det, och `sentenceFor*`-funktionerna nedan är exporterade separat så att
  * meningsbygget kan testas mot en injicerad mall utan att mallen fylls här.
  *
- * Opus fyller de fyra konstanterna nedan. Tokens som redan är wirade och
- * garanterat ifyllda vid anropet:
+ * Tokens som redan är wirade och garanterat ifyllda vid anropet:
  *
  *   MECENAT_CONFLICT_SIDE  {backed}   mecenaten du ställde dig bakom (+15)
  *                          {other}    mecenaten som fick stå tillbaka (−10)
@@ -218,7 +217,7 @@ function fill(template: string, tokens: Record<string, string>): string | null {
   return out
 }
 
-// ── Mallar — Opus levererar. ALDRIG en placeholder-mening. ─────────────────
+// ── Mallar — Opus text, levererad. ALDRIG en placeholder-mening. ───────────
 
 const MECENAT_CONFLICT_SIDE = 'Du valde {backed}s sida när mecenaterna drabbade samman. {other} glömmer inte vem du släppte.'
 const CAPTAIN_TAKE_CHARGE = '{captain} bad om att få ta kommandot i krisen. Du tog det själv, och {last} kände av det.'
