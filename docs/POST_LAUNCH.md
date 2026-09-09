@@ -62,3 +62,39 @@ lösningen korsar sponsor-, rival- och liggarsubjektens namnrymder och har bred 
 radius; O1 behöver inte refaktorn före release. En eventuell framtida O1-genväg får
 bara vara en riktad läsning av sponsorns befintliga stabila id, inte en ny
 specialmodell. **När:** post-launch, som ett eget identitetsrefaktor-pass.
+
+## Spelupplevelse / burnout
+
+### sluttest-o4-fordrojda-betyg (fördröjda spelarbetyg vid burnout)
+**Vad:** en utbränd spelares matchbetyg hålls tillbaka/fördröjs en tid — spelaren
+ser inte direkt hur han presterade, en dimma som speglar att en utbränd spelares
+form är opålitlig. **Varför uppskjuten:** nytt system som kräver ny mekanik +
+designbeslut (hur länge fördröjt, vad som visas under tiden). Burnout-bågen fungerar
+utan det; §10-linjen (inga fler system före release). **Underlag:**
+`burnoutReliefService.ts:47-50` ("Byggs inte i detta pass"). **När:** post-launch om
+burnout-djupet prioriteras. Jacob 2026-09-08.
+
+## Tillväxt / delbarhet
+
+### sluttest-o10-bestinclass (best-in-class-ekosystemet, utom seed-i-länk)
+**Vad:** O10:s fulla tillväxtekosystem — bandyarkivet, vägskäl, bruksligor,
+skaparekosystem. **Status nu:** seed-i-länk-skivan (`o10-queryparam-clubselection`,
+useSearchParams på ClubSelectionScreen) byggs FÖRE release, för den låser upp grind 4
++ delbarheten och texten är redan låst (`o10-delningskort-text`). Resten av ekosystemet
+är post-launch. **Varför uppskjuten:** ett helt tillväxtspår, inte en gap-täckare;
+§10-linjen. **När:** post-launch, som eget ekosystem-pass. Jacob 2026-09-08.
+
+## Anläggning / UI
+
+### d-o5-avveckla-nod (avveckla en byggd anläggningsnod)
+**Vad:** låta spelaren riva/avveckla en redan byggd anläggningsnod. Domänlogiken är trivial. **Varför uppskjuten:** det är en NY interaktiv yta (ett rivnings-flöde) som kräver en egen Design-mock (Princip 4: ingen ny interaktiv yta utan mock), och prioriteten är låg — Jacob: "känns som säsong 10". **När:** post-launch. Bygg inte riv-UI före release. Jacob 2026-09-09.
+
+## Match-interaktioner (berikning)
+
+### inv-3-sprints17-21-four-skipped (fyra skippade interaktions-berikningar)
+**Vad:** historisk kontext (H), rika timer-varianter (A), supporter-känsla (B) och beslutskedja (F) i matchinteraktionerna (hörna/straff/kontring/frispark/slutspurt). **Varför uppskjuten:** uttryckligen skippade i april 2026 till "senare sprint" — berikningar av redan fungerande interaktioner, inga gap-täckare. §10. **När:** post-launch. Jacob 2026-09-09.
+
+## Vilande textrester (väntar sina funktioner)
+
+### m14-publikhistorik-token + m50-clubofferquotes
+**Vad:** två färdigskrivna textrester som väntar på funktioner som inte finns — publikhistorik-token (M14) och en trofé-/meritskärm (M50, `clubOfferQuotes`). **Varför uppskjuten:** texten kan inte kopplas in före sin funktion, och båda funktionerna är själva post-launch. **När:** post-launch, tillsammans med sina funktioner. Jacob 2026-09-09.
