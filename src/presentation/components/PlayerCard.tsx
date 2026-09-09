@@ -6,7 +6,7 @@ import { PlayerArchetype } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
-import { getPortraitImagePath } from '../../domain/services/portraitService'
+import { PlayerPortrait } from './PlayerPortrait'
 import { getPlayerVoice, getPlayerMoodLine, getSeasonArc } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
@@ -272,9 +272,6 @@ export function PlayerCard({
     : scoutReport ? 'fresh' : null
   const isStale = reportAge === 'stale'
   const effectiveReport = isStale ? undefined : scoutReport
-  // Genomgång II A: illustrerat hjälteporträtt (PNG-arketyp), ålder → tier → seedat val.
-  const portraitImg = getPortraitImagePath(player.id, player.age)
-
   // Genomgång II A: tre etiketterade lägen — inget gömt, allt ett klick bort.
   const [mode, setMode] = useState<'oversikt' | 'attribut' | 'karriar'>('oversikt')
   // Översikt: Prata/Ledarskap är knappar som öppnar sin panel (mock genomgång II).
@@ -374,7 +371,7 @@ export function PlayerCard({
       }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
           <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)', flexShrink: 0 }}>
-            <img src={portraitImg} alt="" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <PlayerPortrait playerId={player.id} age={player.age} position={player.position} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* ds-exempt: hero player name — 16px 900, negative tracking, uppercase hero treatment, distinct from h-name(15px 700) */}

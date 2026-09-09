@@ -2,7 +2,7 @@
  * Genomgång II A — illustrerat hjälteporträtt: ålder → tier → seedat val, deterministiskt.
  */
 import { describe, it, expect } from 'vitest'
-import { ageToPortraitTier, getPortraitImagePath } from '../domain/services/portraitService'
+import { CURATED_PORTRAIT_INDICES, ageToPortraitTier, getPortraitImagePath } from '../domain/services/portraitService'
 
 describe('portrait arketyp-wiring', () => {
   it('ålder mappar till rätt tier', () => {
@@ -16,15 +16,18 @@ describe('portrait arketyp-wiring', () => {
     expect(ageToPortraitTier(38)).toBe('vet')
   })
 
-  it('är deterministiskt per spelare och pekar på en giltig asset (1..8)', () => {
-    const a = getPortraitImagePath('player_42', 25)
-    const b = getPortraitImagePath('player_42', 25)
+  it('är deterministiskt per veteran och väljer bara ur den faktiska filuppsättningen', () => {
+    const a = getPortraitImagePath('player_42', 35)
+    const b = getPortraitImagePath('player_42', 35)
     expect(a).toBe(b)
-    expect(a).toMatch(/^\/assets\/portraits\/portrait_mid_[1-8]\.png$/)
+    expect(a).toMatch(/^\/assets\/portraits\/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png$/)
+    expect(CURATED_PORTRAIT_INDICES.vet).not.toContain(3)
   })
 
-  it('tier följer åldern även för samma id', () => {
-    expect(getPortraitImagePath('player_7', 19)).toMatch(/portrait_young_[1-8]\.png$/)
-    expect(getPortraitImagePath('player_7', 35)).toMatch(/portrait_vet_[1-8]\.png$/)
+  it('tomma tierer ger SVG-fallback i UI i stället för en bruten bildlänk', () => {
+    expect(getPortraitImagePath('player_7', 19)).toBeNull()
+    expect(getPortraitImagePath('player_7', 25)).toBeNull()
+    expect(getPortraitImagePath('player_7', 29)).toBeNull()
+    expect(getPortraitImagePath('player_7', 35)).toMatch(/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png$/)
   })
 })

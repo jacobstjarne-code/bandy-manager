@@ -7,6 +7,18 @@ export function getPortraitSvg(playerId: string, age: number, position: string):
 
 export type PortraitTier = 'young' | 'mid' | 'exp' | 'vet'
 
+/**
+ * Curated portrait assets that are actually approved and present in the product.
+ * Keep gaps explicit: veteran #3 was rejected and must never be selected merely
+ * because its old placeholder file still exists on disk.
+ */
+export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly number[]>> = {
+  young: [],
+  mid: [],
+  exp: [],
+  vet: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+}
+
 /** Ålder → karriär-tier i illustrationsstilen. Gränser speglar bandy-karriärbågen. */
 export function ageToPortraitTier(age: number): PortraitTier {
   if (age <= 21) return 'young'
@@ -16,12 +28,15 @@ export function ageToPortraitTier(age: number): PortraitTier {
 }
 
 /**
- * Illustrerat hjälteporträtt (genomgång II A): spelarens ålder → tier → seedat val (1..8)
- * inom tiern. 32 assets i public/assets/portraits/portrait_{tier}_{1..8}.png.
- * Deterministiskt per spelare — samma spelare ger alltid samma porträtt.
+ * Illustrerat hjälteporträtt: spelarens ålder → tier → seedat val ur den
+ * faktiska, godkända filuppsättningen. Tomma tierer returnerar null så UI:t kan
+ * falla tillbaka till det deterministiska SVG-porträttet utan en trasig länk.
  */
-export function getPortraitImagePath(playerId: string, age: number): string {
+export function getPortraitImagePath(playerId: string, age: number): string | null {
   const tier = ageToPortraitTier(age)
-  const idx = (Math.abs(stringHash(playerId)) % 8) + 1
+  const indices = CURATED_PORTRAIT_INDICES[tier]
+  if (indices.length === 0) return null
+
+  const idx = indices[Math.abs(stringHash(playerId)) % indices.length]
   return `/assets/portraits/portrait_${tier}_${idx}.png`
 }

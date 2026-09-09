@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
-import { getPortraitSvg } from '../../../domain/services/portraitService'
+import { PlayerPortrait } from '../PlayerPortrait'
 import { positionShort } from '../../utils/formatters'
 
 interface Props {
@@ -52,9 +52,9 @@ function PlayerRow({ player, isCaptain, section, onClick }: {
           background: 'var(--bg-surface)',
           border: isCaptain ? '1.5px solid var(--accent)' : '1px solid var(--border)',
         }}
-        // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
-        dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
-      />
+      >
+        <PlayerPortrait playerId={player.id} age={player.age} position={player.position} />
+      </div>
 
       {/* Name + meta */}
       <div style={{ flex: 1, minWidth: 0 }}>

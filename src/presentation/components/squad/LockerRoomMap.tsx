@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { getPortraitSvg } from '../../../domain/services/portraitService'
+import { PlayerPortrait } from '../PlayerPortrait'
 
 interface Props {
   players: Player[]
@@ -218,8 +218,8 @@ function PlayerDot({ player, x, y, dotSize, isCaptain, isInner, opacity = 1, onH
         transition: 'transform 0.1s',
       }}
       title={`${player.firstName} ${player.lastName}`}
-      // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
-      dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
-    />
+    >
+      <PlayerPortrait playerId={player.id} age={player.age} position={player.position} />
+    </div>
   )
 }

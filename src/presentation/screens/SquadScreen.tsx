@@ -13,7 +13,7 @@ import { getRecentMatchRatings } from '../components/playerCardUtils'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
-import { getPortraitSvg } from '../../domain/services/portraitService'
+import { PlayerPortrait } from '../components/PlayerPortrait'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
 import { AkademiTab } from '../components/club/AkademiTab'
@@ -255,15 +255,13 @@ export function PlayerRow({ player, onClick, currentSeason, captainPlayerId, ann
       {/* Top row: badge + name + CA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {/* Player portrait with captain band / veteran band / legend ring */}
-        {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
         <div style={{ position: 'relative', flexShrink: 0, width: 40, height: 40 }}>
           {player.isClubLegend && (
             <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: '2px solid var(--gold)', zIndex: 1 }} />
           )}
-          <div
-            style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
-            dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
-          />
+          <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}>
+            <PlayerPortrait playerId={player.id} age={player.age} position={player.position} />
+          </div>
           {isCaptain && (
             <div style={{
               position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
@@ -629,10 +627,9 @@ export function SquadScreen() {
             onClick={() => setSelectedPlayerId(p.id)}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
           >
-            <div
-              style={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
-              dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }}
-            />
+            <div style={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}>
+              <PlayerPortrait playerId={p.id} age={p.age} position={p.position} />
+            </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
               <div style={{ fontSize: 11, color: statusColor }}>{statusText}</div>

@@ -4,7 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
-import { getPortraitSvg } from '../../../domain/services/portraitService'
+import { PlayerPortrait } from '../../components/PlayerPortrait'
 import { positionShort } from '../../../domain/format'
 import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
@@ -99,9 +99,9 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               borderBottom: i < starters.length - 1 ? '1px solid var(--border)' : 'none',
               background: isPOTM ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
             }}>
-              {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
-              <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}
-                dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+              <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}>
+                <PlayerPortrait playerId={p.id} age={p.age} position={p.position} />
+              </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="h-name" style={{ fontSize: 12, color: 'var(--text-primary)' }}>
                   {isCap && <span style={{ marginRight: 2 }}>⭐</span>}
@@ -129,9 +129,9 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
             const r = ratings[p.id] ?? 0
             return (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderBottom: i < bench.length - 1 ? '1px solid var(--border)' : 'none', opacity: 0.7 }}>
-                {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
-                <div style={{ width: 18, height: 18, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-                  dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                <div style={{ width: 18, height: 18, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                  <PlayerPortrait playerId={p.id} age={p.age} position={p.position} />
+                </div>
                 <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
                 <span className="h-num-sm" style={{ color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
               </div>
