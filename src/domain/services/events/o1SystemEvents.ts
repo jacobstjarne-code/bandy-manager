@@ -2,7 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { YouthPlayer } from '../../entities/Academy'
 import { klackLeaderVoiceId } from '../voiceIntroductionService'
-import { fixtureSeed, mulberry32 } from '../../utils/random'
+import { seasonalUnitRoll } from '../seasonalRollService'
 
 // O1 candidates 2–4. The values are deliberately modest: these events are
 // memorable cross-system choices, not a shortcut around the ordinary
@@ -27,9 +27,7 @@ export function passesO1SeasonalEventRoll(
   eventKey: 'facility_community' | 'supporter_letter',
   probability: number,
 ): boolean {
-  const saveSeed = game.worldSeed ?? game.id
-  const seed = fixtureSeed(`${saveSeed}:${game.managedClubId}:${game.currentSeason}:${eventKey}:o1`)
-  return mulberry32(seed)() < probability
+  return seasonalUnitRoll(game, eventKey, 'o1') < probability
 }
 
 function isKnown(game: SaveGame, id: string, alreadyQueued: Set<string>): boolean {

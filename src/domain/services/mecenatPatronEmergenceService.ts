@@ -1,5 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
-import { fixtureSeed, mulberry32 } from '../utils/random'
+import { seasonalUnitRoll } from './seasonalRollService'
 
 export type EmergenceKind = 'mecenat' | 'patron'
 
@@ -27,9 +27,7 @@ export function seasonalEmergenceProbability(kind: EmergenceKind, communityStand
 
 /** Samma save+säsong+stödsort ger alltid samma utfall, oavsett antal anrop. */
 export function seasonalEmergenceRoll(game: Pick<SaveGame, 'id' | 'worldSeed' | 'managedClubId' | 'currentSeason'>, kind: EmergenceKind): number {
-  const saveSeed = game.worldSeed ?? game.id
-  const seed = fixtureSeed(`${saveSeed}:${game.managedClubId}:${game.currentSeason}:${kind}:emergence`)
-  return mulberry32(seed)()
+  return seasonalUnitRoll(game, kind, 'emergence')
 }
 
 export function passesSeasonalEmergenceRoll(
