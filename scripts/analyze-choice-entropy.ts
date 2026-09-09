@@ -38,7 +38,7 @@ if (paths.length === 0) {
     console.log(JSON.stringify(report, null, 2))
   } else {
     console.log(`Val-entropi: ${report.analyzedPlayerChoices} spelarval från ${paths.length} fil(er)`)
-    console.log(`Uteslutna: ${report.excludedAutoChoices} auto, ${report.excludedLegacyOrUnknownChoices} äldre/okända, ${report.excludedDuplicateRecords} dubbletter`)
+    console.log(`Uteslutna: ${report.excludedAutoChoices} auto, ${report.excludedAcknowledgements} kvittenser, ${report.excludedLegacyOrUnknownChoices} äldre/okända, ${report.excludedDuplicateRecords} dubbletter`)
     if (report.possiblyTruncatedSaves > 0) {
       console.log(`Begränsning: ${report.possiblyTruncatedSaves} save(s) ligger på 200-posterscapen; äldre val kan ha fallit bort.`)
     }

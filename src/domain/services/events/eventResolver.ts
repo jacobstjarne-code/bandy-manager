@@ -44,17 +44,22 @@ import { canEventPassVoiceGate, recordVoiceIntroduction } from '../voiceIntroduc
  */
 function recordResolvedChoice(
   game: SaveGame,
-  event: Pick<GameEvent, 'id' | 'type'>,
+  event: Pick<GameEvent, 'id' | 'type' | 'choices'>,
   choiceId: string,
   label: string,
   madeByPlayer: boolean,
 ): SaveGame['resolvedChoices'] {
+  const resolutionOrdinal = (game.resolvedChoices ?? [])
+    .filter(candidate => candidate.eventId === event.id)
+    .length + 1
   return [...(game.resolvedChoices ?? []), {
+    resolutionId: `${event.id}:${resolutionOrdinal}`,
     eventId: event.id,
     eventType: event.type,
     choiceId,
     label,
     madeByPlayer,
+    decisionKind: event.choices.length > 1 ? 'decision' : 'acknowledgement',
   }].slice(-200)
 }
 

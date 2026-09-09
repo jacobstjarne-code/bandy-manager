@@ -62,17 +62,31 @@ export interface RippleChain {
 }
 
 /**
- * Lokalt kvitto på ett löst val. `eventType` och `madeByPlayer` lades till
- * för U9:s val-entropi; de är optional för att äldre exporterade saves ska
- * fortsätta kunna laddas. Analysen räknar aldrig poster där attributionen
- * saknas, eftersom auto-resolverade val annars skulle se ut som spelarval.
+ * Lokalt kvitto på ett löst val. U9-fälten är optional för att äldre
+ * exporterade saves ska fortsätta kunna laddas. Analysen räknar aldrig
+ * poster där attribution, beslutsform eller resolutionsidentitet saknar
+ * säker semantik; auto-resolutioner och manuella kvittenser får inte se ut
+ * som spelarens val.
  */
 export interface ResolvedChoice {
+  /**
+   * Stabil identitet för just den här resolutionen. Ett GameEvent kan bära
+   * flera mänskliga steg (t.ex. motbud följt av ja/nej), så eventId är inte
+   * tillräckligt som postnyckel. Optional för äldre saves.
+   */
+  resolutionId?: string
   eventId: string
   eventType?: GameEventType
   choiceId: string
   label: string
   madeByPlayer?: boolean
+  /**
+   * Instansens faktiska beslutsform när klicket gjordes. Eventtypen kan inte
+   * avgöra detta: voice-intros återanvänder journalistExclusive/supporterEvent
+   * men har bara en kvittensknapp, medan senare event av samma typ har riktiga
+   * alternativ. Optional för äldre saves; O12-analysen gissar aldrig värdet.
+   */
+  decisionKind?: 'decision' | 'acknowledgement'
 }
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──

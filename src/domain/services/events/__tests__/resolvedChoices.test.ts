@@ -38,7 +38,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_canonical', 'ack', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_canonical')
-    expect(entry).toEqual({ eventId: 'event_canonical', eventType: 'communityEvent', choiceId: 'ack', label: 'Notera det', madeByPlayer: true })
+    expect(entry).toEqual({ resolutionId: 'event_canonical:1', eventId: 'event_canonical', eventType: 'communityEvent', choiceId: 'ack', label: 'Notera det', madeByPlayer: true, decisionKind: 'acknowledgement' })
   })
 
   it('sponsorOffer — accept-grenen (specialfall 1/4): skrivs innan den egna early-returnen', () => {
@@ -59,7 +59,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_accept', 'accept', () => 0.5, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_accept')
-    expect(entry).toEqual({ eventId: 'event_sponsor_accept', eventType: 'sponsorOffer', choiceId: 'accept', label: 'Acceptera sponsorn', madeByPlayer: true })
+    expect(entry).toEqual({ resolutionId: 'event_sponsor_accept:1', eventId: 'event_sponsor_accept', eventType: 'sponsorOffer', choiceId: 'accept', label: 'Acceptera sponsorn', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('sponsorOffer — reject-grenen (specialfall 2/4)', () => {
@@ -80,7 +80,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_reject')
-    expect(entry).toEqual({ eventId: 'event_sponsor_reject', eventType: 'sponsorOffer', choiceId: 'reject', label: 'Tacka nej', madeByPlayer: true })
+    expect(entry).toEqual({ resolutionId: 'event_sponsor_reject:1', eventId: 'event_sponsor_reject', eventType: 'sponsorOffer', choiceId: 'reject', label: 'Tacka nej', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('riskySponsorOffer — accept-grenen, lyckad JSON-parse (specialfall 3/4)', () => {
@@ -101,7 +101,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_accept', 'accept', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_accept')
-    expect(entry).toEqual({ eventId: 'event_risky_accept', eventType: 'riskySponsorOffer', choiceId: 'accept', label: 'Ta risken', madeByPlayer: true })
+    expect(entry).toEqual({ resolutionId: 'event_risky_accept:1', eventId: 'event_risky_accept', eventType: 'riskySponsorOffer', choiceId: 'accept', label: 'Ta risken', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('riskySponsorOffer — reject-grenen, faller till den avslutande early-returnen (specialfall 4/4)', () => {
@@ -122,7 +122,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_reject')
-    expect(entry).toEqual({ eventId: 'event_risky_reject', eventType: 'riskySponsorOffer', choiceId: 'reject', label: 'Nej tack', madeByPlayer: true })
+    expect(entry).toEqual({ resolutionId: 'event_risky_reject:1', eventId: 'event_risky_reject', eventType: 'riskySponsorOffer', choiceId: 'reject', label: 'Nej tack', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('capas till senaste 200, precis som resolvedEventIds', () => {
@@ -141,6 +141,37 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     expect(game.resolvedChoices).toHaveLength(200)
     expect(game.resolvedChoices!.some(c => c.eventId === 'old_0')).toBe(false)
     expect(game.resolvedChoices!.some(c => c.eventId === 'event_overflow')).toBe(true)
+  })
+
+  it('ger nästa mänskliga steg i samma event en egen stabil resolutionsidentitet', () => {
+    let game = baseGame()
+    const event: GameEvent = {
+      id: 'event_negotiation', type: 'transferBidReceived', title: 't', body: 'b',
+      choices: [
+        { id: 'accept', label: 'Acceptera', effect: { type: 'noOp' } },
+        { id: 'reject', label: 'Avslå', effect: { type: 'noOp' } },
+      ],
+      resolved: false,
+    }
+    game = {
+      ...game,
+      resolvedChoices: [{
+        resolutionId: 'event_negotiation:1',
+        eventId: 'event_negotiation', eventType: 'transferBidReceived',
+        choiceId: 'counter', label: 'Kräv mer', madeByPlayer: true,
+        decisionKind: 'decision',
+      }],
+      pendingEvents: [event],
+    }
+
+    game = resolveEvent(game, event.id, 'accept', undefined, true)
+
+    expect(game.resolvedChoices?.at(-1)).toMatchObject({
+      resolutionId: 'event_negotiation:2',
+      eventId: 'event_negotiation',
+      choiceId: 'accept',
+      decisionKind: 'decision',
+    })
   })
 
   it('sparar auto-resolution explicit så U9 inte räknar den som ett spelarval', () => {

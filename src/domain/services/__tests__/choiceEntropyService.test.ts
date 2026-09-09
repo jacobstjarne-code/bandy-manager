@@ -8,8 +8,9 @@ function choice(
   eventType: GameEventType,
   choiceId: string,
   madeByPlayer = true,
+  resolutionId = `${eventId}:1`,
 ): ResolvedChoice {
-  return { eventId, eventType, choiceId, label: choiceId, madeByPlayer }
+  return { resolutionId, eventId, eventType, choiceId, label: choiceId, madeByPlayer, decisionKind: 'decision' }
 }
 
 describe('analyzeChoiceEntropy', () => {
@@ -59,11 +60,29 @@ describe('analyzeChoiceEntropy', () => {
     expect(report.rows[0].choices.map(item => item.choiceId)).toEqual(['join'])
   })
 
-  it('deduplicerar överlappande exporter av samma save via eventId', () => {
+  it('utesluter enknappskvittenser även när spelaren klickade själv', () => {
+    const acknowledgement: ResolvedChoice = {
+      resolutionId: 'voice-intro:1',
+      eventId: 'voice-intro',
+      eventType: 'journalistExclusive',
+      choiceId: 'acknowledge',
+      label: 'Noterat',
+      madeByPlayer: true,
+      decisionKind: 'acknowledgement',
+    }
+    const report = analyzeChoiceEntropy([{ id: 'save-1', resolvedChoices: [acknowledgement] }])
+
+    expect(report.rows).toEqual([])
+    expect(report.analyzedPlayerChoices).toBe(0)
+    expect(report.excludedAcknowledgements).toBe(1)
+  })
+
+  it('deduplicerar samma resolutionspost mellan exporter men behåller flera steg i samma event', () => {
     const first = choice('same-event', 'sponsorOffer', 'accept')
+    const secondStep = choice('same-event', 'sponsorOffer', 'reject', true, 'same-event:2')
     const report = analyzeChoiceEntropy([
       { id: 'same-save', resolvedChoices: [first] },
-      { id: 'same-save', resolvedChoices: [first, choice('new-event', 'sponsorOffer', 'reject')] },
+      { id: 'same-save', resolvedChoices: [first, secondStep] },
     ])
 
     expect(report.totalRecords).toBe(3)

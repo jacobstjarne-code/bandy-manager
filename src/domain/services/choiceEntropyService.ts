@@ -25,6 +25,7 @@ export interface ChoiceEntropyReport {
   totalRecords: number
   analyzedPlayerChoices: number
   excludedAutoChoices: number
+  excludedAcknowledgements: number
   excludedLegacyOrUnknownChoices: number
   excludedDuplicateRecords: number
   possiblyTruncatedSaves: number
@@ -47,10 +48,12 @@ function normalizedEntropy(counts: readonly number[]): number {
 /**
  * U9 — lokal val-entropi från exporterade saves.
  *
- * Samma save kan exporteras flera gånger; `(save.id, eventId)` dedupliceras
- * därför innan fördelningen räknas. Bara explicit spelarattribuerade poster
- * med lagrad eventType ingår. Äldre poster och auto-resolutioner rapporteras
- * separat och får aldrig smyga in i spelarens valfördelning.
+ * Samma save kan exporteras flera gånger; `(save.id, resolutionId)`
+ * dedupliceras därför innan fördelningen räknas. Event-id räcker inte:
+ * samma förhandling kan bära motbud och slutsvar som två mänskliga steg.
+ * Bara explicit spelarattribuerade flervalsbeslut med lagrad eventType ingår.
+ * Äldre poster, kvittenser och auto-resolutioner rapporteras separat och får
+ * aldrig smyga in i spelarens valfördelning.
  */
 export function analyzeChoiceEntropy(
   saves: readonly ChoiceEntropySave[],
@@ -61,6 +64,7 @@ export function analyzeChoiceEntropy(
   let totalRecords = 0
   let analyzedPlayerChoices = 0
   let excludedAutoChoices = 0
+  let excludedAcknowledgements = 0
   let excludedLegacyOrUnknownChoices = 0
   let excludedDuplicateRecords = 0
   let possiblyTruncatedSaves = 0
@@ -69,7 +73,13 @@ export function analyzeChoiceEntropy(
     if ((save.resolvedChoices?.length ?? 0) >= 200) possiblyTruncatedSaves++
     for (const choice of save.resolvedChoices ?? []) {
       totalRecords++
-      const dedupeKey = `${save.id}\u0000${choice.eventId}`
+      // Nya poster har en egen resolutionsidentitet. Legacy-fallbacken bär
+      // hela det observerade steget: ett transfermotbud och dess senare
+      // slutsvar delar eventId men är två verkliga handlingar. Samma post i
+      // två exporter av samma save har däremot samma choiceId + label.
+      const recordIdentity = choice.resolutionId
+        ?? `${choice.eventId}\u0000${choice.choiceId}\u0000${choice.label}`
+      const dedupeKey = `${save.id}\u0000${recordIdentity}`
       if (seen.has(dedupeKey)) {
         excludedDuplicateRecords++
         continue
@@ -80,8 +90,12 @@ export function analyzeChoiceEntropy(
         excludedAutoChoices++
         continue
       }
-      if (choice.madeByPlayer !== true || choice.eventType === undefined) {
+      if (choice.madeByPlayer !== true || choice.eventType === undefined || choice.decisionKind === undefined) {
         excludedLegacyOrUnknownChoices++
+        continue
+      }
+      if (choice.decisionKind === 'acknowledgement') {
+        excludedAcknowledgements++
         continue
       }
 
@@ -116,6 +130,7 @@ export function analyzeChoiceEntropy(
     totalRecords,
     analyzedPlayerChoices,
     excludedAutoChoices,
+    excludedAcknowledgements,
     excludedLegacyOrUnknownChoices,
     excludedDuplicateRecords,
     possiblyTruncatedSaves,
@@ -126,9 +141,13 @@ export function isResolvedChoice(value: unknown): value is ResolvedChoice {
   if (typeof value !== 'object' || value === null) return false
   const choice = value as Record<string, unknown>
   return typeof choice.eventId === 'string'
+    && (choice.resolutionId === undefined || typeof choice.resolutionId === 'string')
     && typeof choice.choiceId === 'string'
     && typeof choice.label === 'string'
     && (choice.eventType === undefined
       || (typeof choice.eventType === 'string' && Object.hasOwn(EVENT_TYPE_LABELS, choice.eventType)))
     && (choice.madeByPlayer === undefined || typeof choice.madeByPlayer === 'boolean')
+    && (choice.decisionKind === undefined
+      || choice.decisionKind === 'decision'
+      || choice.decisionKind === 'acknowledgement')
 }
