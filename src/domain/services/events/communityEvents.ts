@@ -15,6 +15,7 @@ export function generateEvents(
 ): GameEvent[] {
   const alreadyQueued = new Set([
     ...(game.pendingEvents ?? []).map(e => e.id),
+    ...(game.deferredDecisions ?? []).map(e => e.id),
     ...(game.resolvedEventIds ?? []),
   ])
 
