@@ -136,7 +136,7 @@ export const STOD_LABELS = {
 }
 
 export const HALLNODE_SUBS: Record<HallTrialStage, string> = {
-  vilande: 'Öppnar prövningen — förankring krävs ›',
+  vilande: 'Öppnar prövningen — förankring krävs',
   forankring: 'Förankring pågår · stöd {n}',
   krav: 'Krav {x}/3 uppfyllda',
   forhandling: 'Förhandling med kommunen pågår',

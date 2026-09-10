@@ -17,7 +17,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { SeasonGoalRecord, SeasonGoalType, SeasonGoalOutcome } from '../entities/SeasonSummary'
 import { FixtureStatus } from '../enums'
 import { getRivalClubId } from '../data/rivalries'
-import { FACILITY_NODE_DEFS, getFacilityNodeViews } from './facilityService'
+import { FACILITY_NODE_DEFS, getPreSeasonChoices } from './facilityService'
 import { eraLabel } from './clubEraService'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 import { getSeasonEndPhase } from '../data/seasonEndPhase'
@@ -96,9 +96,12 @@ function getFacilityGoalOffer(game: SaveGame): SeasonGoalOffer | null {
     if (!def) return null
     return { type: 'facility', referenceId: def.id, choiceText: `Få ${def.label} färdig.` }
   }
-  const available = getFacilityNodeViews(state, game.currentMatchday).find(v => v.status === 'available')
+  // A hall's structural prerequisites only unlock a trial, not construction.
+  // Use the same startable ordinary projects as Valet; an actual hall build
+  // is already handled by activeProject above.
+  const available = getPreSeasonChoices(state)[0]
   if (!available) return null
-  return { type: 'facility', referenceId: available.def.id, choiceText: `Få ${available.def.label} färdig.` }
+  return { type: 'facility', referenceId: available.id, choiceText: `Få ${available.label} färdig.` }
 }
 
 /**

@@ -3,6 +3,7 @@ import { createNewGame } from '../../../application/useCases/createNewGame'
 import { FixtureStatus } from '../../enums'
 import type { SeasonSummary } from '../../entities/SeasonSummary'
 import { resolveEvent } from '../events/eventResolver'
+import { getOrdinaryFacilityNodeDefs } from '../facilityService'
 import {
   getSeasonGoalOffers,
   evaluateSeasonGoal,
@@ -43,6 +44,24 @@ function fakeSummary(overrides: Partial<SeasonSummary>): SeasonSummary {
 }
 
 describe('getSeasonGoalOffers', () => {
+  it('offers an ordinary project, not an unstarted hall trial', () => {
+    const game = { ...baseGame(), facilityState: { builtNodeIds: ['varmestuga', 'laktare_ostra', 'belysning'] } }
+    expect(getSeasonGoalOffers(game).find(o => o.type === 'facility')?.referenceId).toBe('kiosk')
+  })
+
+  it('does not promise hall completion just because the ordinary tree is full', () => {
+    const game = { ...baseGame(), facilityState: { builtNodeIds: getOrdinaryFacilityNodeDefs().map(def => def.id) } }
+    expect(getSeasonGoalOffers(game).some(o => o.type === 'facility')).toBe(false)
+  })
+
+  it.each(['matchhall', 'belysning'])('preserves an actual active %s construction goal', nodeId => {
+    const game = { ...baseGame(), facilityState: {
+      builtNodeIds: ['varmestuga', 'laktare_ostra'],
+      activeProject: { nodeId, startedMatchday: 0, etaMatchday: 6 },
+    } }
+    expect(getSeasonGoalOffers(game).find(o => o.type === 'facility')?.referenceId).toBe(nodeId)
+  })
+
   it('säsong 1 (ingen historik) — erbjuder aldrig slutspel/etablera', () => {
     const game = baseGame()
     const offers = getSeasonGoalOffers(game)

@@ -16,7 +16,7 @@ function withTrial(trial?: HallTrial): SaveGame {
 
 describe('formatHallNodeSub', () => {
   it('vilande: ingen platshållare att fylla, texten går rakt igenom', () => {
-    expect(formatHallNodeSub(withTrial(undefined))).toBe('Öppnar prövningen — förankring krävs ›')
+    expect(formatHallNodeSub(withTrial(undefined))).toBe('Öppnar prövningen — förankring krävs')
   })
 
   it('forankring: {n} ersätts med trial.support', () => {
