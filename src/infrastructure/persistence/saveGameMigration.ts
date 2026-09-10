@@ -658,13 +658,25 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       if (!calendarCache.has(season)) calendarCache.set(season, buildSeasonCalendar(season))
       const cal = calendarCache.get(season)!
       const matchday = typeof f.matchday === 'number' ? f.matchday : -1
+      const roundNumber = typeof f.roundNumber === 'number' ? f.roundNumber : -1
 
       if (!f.isCup) {
-        const slot = cal.find(s => s.matchday === matchday && s.type === 'league')
+        // Serieomgången är fixturens stabila kalenderidentitet. Äldre saves
+        // kan bära en global matchday från en kalender innan försäsongscupen
+        // flyttade ligans nollpunkt; att matcha den mot dagens globala axel
+        // kunde därför göra t.ex. omgång 8 den 17 oktober till Annandagen.
+        const slot = cal.find(s => s.type === 'league' && s.leagueRound === roundNumber)
+          ?? cal.find(s => s.matchday === matchday && s.type === 'league')
         if (slot) {
-          if (f.isAnnandagen === undefined && slot.isAnnandagen) f.isAnnandagen = true
-          if (f.isNyarsbandy === undefined && slot.isNyarsbandy) f.isNyarsbandy = true
-          if (f.isWindowDeadlineDay === undefined && slot.isWindowDeadlineDay) f.isWindowDeadlineDay = true
+          const fixtureDate = typeof f.date === 'string' ? f.date : slot.date
+          // Datumet är sanningen när det finns; slotten är fallback för saves
+          // som ännu saknar datum. Rensa även redan felskrivna legacyflaggor.
+          if (fixtureDate?.slice(5) === '12-26') f.isAnnandagen = true
+          else delete f.isAnnandagen
+          if (fixtureDate?.slice(5) === '12-31') f.isNyarsbandy = true
+          else delete f.isNyarsbandy
+          if (fixtureDate?.slice(5) === '01-31') f.isWindowDeadlineDay = true
+          else delete f.isWindowDeadlineDay
           // Stamp date + tipoffHour if missing (only on Scheduled fixtures, preserve Completed)
           if (f.date === undefined && slot.date) f.date = slot.date
           if (f.tipoffHour === undefined && slot.tipoffHour !== undefined) f.tipoffHour = slot.tipoffHour
