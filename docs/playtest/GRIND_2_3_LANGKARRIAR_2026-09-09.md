@@ -206,3 +206,20 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Omgång 10, annandagsmatch borta mot serieledande Forsbacka, förlorades 2–5. Den särskilda annandagsentrén visades på rätt kalenderpunkt. Två standardhörnor gav båda Västanfors mål. Konflikten i klacken hanterades genom att bjuda in båda parter till ett möte med truppen.
 - Omgång 11 vanns 5–2 hemma mot Heros via spelläget `Snabb`. Pekka Westberg och Olof Gran skickades till P19-samlingen och blev otillgängliga i två omgångar. Detta är ett avsiktligt simulerat resultat, inte en manuell kontroll av matchflödet.
 - Karriären står nu inför omgång 12 borta mot Slottsbron. Beslutskön har vuxit till tio och belastningen är åter hög. Halvvägs-scenen visades och stängdes korrekt; tre spelare är skadade och två juniorer är på landslagssamling.
+
+### Säsong 2030/31 — avslut och SM-guld, fortsatt prov 2026-09-10
+
+- Grundserien snabbspolades efter omgång 13 med spelets ordinarie `Simulera resterande säsong`: Västanfors slutade etta på 35 poäng, 17–1–4 och +54. De överhoppade omgångarna räknas inte som manuell kontroll av pivotal repetition.
+- Slutspelet spelades manuellt i snabbläge. Karlsborg besegrades med 3–0 i kvartsfinalserien. Semifinalen mot Gagnef vändes från 0–2 till 3–2, med straffseger i den avgörande matchen. SM-finalen mot Forsbacka vanns och Västanfors blev svenska mästare.
+- Årsboken visade förstaplats, SM-guld, +291 tkr och att assistenten tog pressen tre gånger. Beslutet att sälja Bo Grahn för 110 tkr bars också in i säsongsminnet.
+- Burnout-relief återkom under semifinalserien; assistenten fick åter ta pressen. Den ordagranna kafferumsrepliken om tre gamla medlemmar som ringt utan att vilja något visades både före semifinal 1 och semifinal 4. Detta ska kodverifieras som cooldown-/urvalsproblem innan en MASTER-rad skapas.
+- SM-finalens laddningssekvens upplevdes två gånger i samma flöde: först matchens `MatchLaddningScene`, därefter livevyns separata finalintro. Finalen gick att slutföra, men dubbleringen ska verifieras mot de två inkopplingspunkterna.
+
+### Säsong 2031/32 — start och omgång 1–2
+
+- Personligt mål: `Håll ihop truppen. Ingen ska behöva gå.` På lönekravsskärmen valdes `Möt alla`; övergångsbud på egna spelare har därefter avslagits i linje med målet.
+- Cupkvartsfinalen hemma mot Lesjöfors förlorades 3–4. Efter cuputtåget visades övergångstexten `Cupen är spelad. Pokalen står på en byrå någonstans.` Formuleringen kan läsas som ett eget pokalinnehav trots förlusten och ska kodverifieras innan MASTER-post.
+- Inför seriepremiären förnyades Bandyskola för barn för 40 tkr, ett sponsoravtal på 1,5 tkr/vecka accepterades och ett bud på Timo Nordström avslogs. Premiären mot Slottsbron vanns 7–1.
+- Omgång 2 mot Lesjöfors förlorades 3–4 efter omfattande trupprotation. Bandygalan besöktes och mecenaten Anna Johansson fick förslag om succession. Föreningslotteriet förnyades inte.
+- Beslutskön låg kvar runt 9–10 trots att tre beslut hanterades per portalvecka. Det är fortsatt hög redaktionell belastning, men ingen ny separat MASTER-rad skapas utan kodverifiering.
+- Karriären står inför omgång 3 hemma mot Gagnef. Anläggningsträdet och det faktiska år-8-valet återstår.
