@@ -132,7 +132,7 @@ export function InteractionShell({
   foldHintLabel, foldHintPrompt,
 }: Props) {
   // Resolve timer config — timer prop takes precedence over legacy timerSeconds
-  const totalSeconds = timer?.seconds ?? timerSeconds ?? 5
+  const totalSeconds = timer?.seconds ?? timerSeconds ?? 8
 
   const [timeLeft, setTimeLeft] = useState(totalSeconds)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)

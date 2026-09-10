@@ -182,7 +182,7 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
       // T5c/UT-2: fold-hint-uppmaning, textdömd av Fable 2026-07-16
       foldHintPrompt="VÄLJ AVSLUT"
       minute={data.minute ?? 0}
-      timer={{ seconds: 6 }}
+      timer={{ seconds: 8 }}
       pitch={
         <FreeKickPitchSVG
           data={data}

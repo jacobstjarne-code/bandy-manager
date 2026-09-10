@@ -56,7 +56,7 @@ export default defineConfig({
       },
       workbox: {
         importScripts: ['notification-sw.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,webp,svg,woff2}'],
         // 2026-07-21: huvudbunten passerade workbox default (2 MiB) — spelets
         // textmängd (domain/data) växer med varje sprint, bundeln med den.
         // 3 MiB ger headroom utan att dölja en verklig storleksregression;

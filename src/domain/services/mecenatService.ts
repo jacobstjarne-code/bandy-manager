@@ -18,12 +18,20 @@ export const MECENAT_SOCIAL_MAX_PER_SEASON = 2
  * matchar storylinePressKey-mönstret.
  */
 export function getMecenatSocialUsedTypes(
-  game: Pick<SaveGame, 'narrativeBeatLog' | 'currentSeason'>,
+  game: Pick<SaveGame, 'narrativeBeatLog' | 'currentSeason'> &
+    Partial<Pick<SaveGame, 'pendingEvents' | 'deferredDecisions' | 'resolvedEventIds'>>,
 ): Set<SocialEvent['type']> {
-  const types = (game.narrativeBeatLog ?? [])
+  const loggedTypes = (game.narrativeBeatLog ?? [])
     .filter(e => e.semanticKey.startsWith(MECENAT_SOCIAL_KEY_PREFIX) && e.season === game.currentSeason)
     .map(e => e.semanticKey.slice(MECENAT_SOCIAL_KEY_PREFIX.length) as SocialEvent['type'])
-  return new Set(types)
+  const queuedTypes = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+    .flatMap(event => event.mecenatSocialKey ? [getMecenatSocialType(event.mecenatSocialKey)] : [])
+    .filter((type): type is SocialEvent['type'] => !!type)
+  const knownTypes = Array.from(new Set(Object.values(SOCIAL_TYPES).flat()))
+  const resolvedTypes = (game.resolvedEventIds ?? []).flatMap(id =>
+    knownTypes.filter(type => id.includes(`_${game.currentSeason}_${type}_`)),
+  )
+  return new Set([...loggedTypes, ...queuedTypes, ...resolvedTypes])
 }
 
 /** Läser typen tillbaka ur ett `mecenatSocialKey` (t.ex. `mecenat_social_middag` → `middag`). */
@@ -378,7 +386,7 @@ export function generateSocialEvent(
   const body = SOCIAL_BODIES[type](mecenat.name)
 
   return {
-    id: `event_social_${mecenat.id}_${season}_${matchday}`,
+    id: `event_social_${mecenat.id}_${season}_${type}_${matchday}`,
     mecenatSocialKey: `${MECENAT_SOCIAL_KEY_PREFIX}${type}`,
     type: 'mecenatEvent',
     title: `🤝 ${mecenat.name}: ${label}`,

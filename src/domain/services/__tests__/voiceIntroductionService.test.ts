@@ -134,10 +134,12 @@ describe('voice introduction gate', () => {
     expect(queued.pendingEvents?.[0]).toMatchObject({
       title: 'Karin Bergström, Målilla Nytt.',
       body: 'Bevakar Målilla Bandy — matcher, beslut, det som sägs i kön på Konsum. Var på plats före dig, och blir kvar efter.',
+      choices: [],
     })
     expect(queued.pendingEvents?.[1]?.body).toBe(
       'Håller ihop Målilla Bandys klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.',
     )
+    expect(queued.pendingEvents?.[1]?.choices).toEqual([])
     expect(getVoiceEligibleEvents(queued, queued.pendingEvents ?? []).map(item => item.id))
       .toEqual([queued.pendingEvents?.[0]?.id])
     expect(generateRosterVoiceIntroductions(queued)).toEqual([])

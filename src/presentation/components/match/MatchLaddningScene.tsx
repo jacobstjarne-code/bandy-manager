@@ -26,6 +26,34 @@ export const MATCH_LADDNING_OCCASION_ASSET: Partial<Record<LaddningOccasion, str
   nyar: 'nyar',
 }
 
+// De här tillfällena är egna, igenkännbara säsongsögonblick. Premiär, cup och
+// derby ska däremot bära motståndarens ort/klubb när den bilden finns — annars
+// upplevs de tolv inkopplade klubbintrobilderna som om de aldrig används.
+const MOMENT_FIRST_OCCASIONS = new Set<LaddningOccasion>(['annandagen', 'final', 'nyar'])
+
+export function getMatchLaddningIllustration(
+  occasion: LaddningOccasion,
+  opponentId?: string,
+): { assetName?: string; assetSrc?: string } {
+  const occasionAsset = MATCH_LADDNING_OCCASION_ASSET[occasion]
+  const clubAsset = opponentId ? getClubIntroIllustrationAssetName(opponentId) : undefined
+  const useOccasionAsset = !!occasionAsset && (MOMENT_FIRST_OCCASIONS.has(occasion) || !clubAsset)
+
+  if (useOccasionAsset) {
+    return {
+      assetName: occasionAsset,
+      assetSrc: `/assets/illustrations/${occasionAsset}.jpg`,
+    }
+  }
+  if (opponentId && clubAsset) {
+    return {
+      assetName: clubAsset,
+      assetSrc: getClubIntroIllustrationSrc(opponentId),
+    }
+  }
+  return {}
+}
+
 interface Props {
   occasion: LaddningOccasion
   isFinal: boolean
@@ -106,16 +134,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
     ? seededPick(STAKE_TEXT[seasonCtx], seed + 13)
     : null
 
-  // Levererade tillfällesbilder går före motståndarens ortbild. Saknas en
-  // framtida tillfällesbild får den faktiska motståndarklubben bära scenen;
-  // saknas även den ligger den medvetna typografiska fonden kvar.
-  const assetName = MATCH_LADDNING_OCCASION_ASSET[occasion]
-    ?? (opponent ? getClubIntroIllustrationAssetName(opponent.id) : undefined)
-  const assetSrc = MATCH_LADDNING_OCCASION_ASSET[occasion]
-    ? `/assets/illustrations/${MATCH_LADDNING_OCCASION_ASSET[occasion]}.jpg`
-    : opponent && getClubIntroIllustrationAssetName(opponent.id)
-      ? getClubIntroIllustrationSrc(opponent.id)
-      : undefined
+  const { assetName, assetSrc } = getMatchLaddningIllustration(occasion, opponent?.id)
   const isHome = nextFixture.homeClubId === game.managedClubId
   const plats = isHome ? 'Hemma' : 'Borta'
 
@@ -150,7 +169,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
         <div style={{ position: 'relative', height: 290, flexShrink: 0 }}>
           {assetName ? (
             <img
-              src={`/assets/illustrations/${assetName}.jpg`}
+              src={assetSrc}
               alt={texts.eyebrow}
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 38%', display: 'block' }}
             />

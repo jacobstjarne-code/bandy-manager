@@ -153,7 +153,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
       // T5c/UT-2: fold-hint-uppmaning, textdömd av Fable 2026-07-16
       foldHintPrompt="LÄS SPELET"
       minute={data.minute}
-      timer={{ seconds: 5 }}
+      timer={{ seconds: 8 }}
       pitch={
         <CounterPitchSVG
           data={data}

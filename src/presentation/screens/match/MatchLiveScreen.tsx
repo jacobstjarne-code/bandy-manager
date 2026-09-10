@@ -63,6 +63,7 @@ import { InteraktionsDock } from '../../components/match/InteraktionsDock'
 import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getLiveMatchResumePoint, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 import { getCharacterName } from '../../../domain/services/supporterService'
+import { shouldPauseAtHalftime } from '../../utils/matchFlowMode'
 
 interface LocationState {
   fixture: Fixture
@@ -490,10 +491,14 @@ export function MatchLiveScreen() {
   useEffect(() => {
     if (currentStep >= 30 && !inSecondHalf && !halftimeModalShown) {
       setHalftimeModalShown(true)
-      setShowHalftime(true)
-      setIsPaused(true)
+      if (shouldPauseAtHalftime(matchMode)) {
+        setShowHalftime(true)
+        setIsPaused(true)
+      } else {
+        handleApplyTactic(false)
+      }
     }
-  }, [currentStep, inSecondHalf, halftimeModalShown]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentStep, inSecondHalf, halftimeModalShown, matchMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
@@ -549,7 +554,7 @@ export function MatchLiveScreen() {
       const hasSecondHalf = steps.length > 31
       if (!hasSecondHalf) {
         setIsFastForward(false)
-        setShowHalftime(true)
+        if (shouldPauseAtHalftime(matchMode)) setShowHalftime(true)
         return
       }
       if (isFastForward) {
@@ -1108,7 +1113,7 @@ export function MatchLiveScreen() {
     }, isFastForward ? 0 : 2500)
   }
 
-  function handleApplyTactic() {
+  function handleApplyTactic(recordPlayerDecision = true) {
     if (!fixture || !homeLineup || !awayLineup || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
@@ -1156,7 +1161,7 @@ export function MatchLiveScreen() {
     // spelarens faktiska paussnack (effectiveLean, satt av PAUSSNACK-valet
     // ovan). Loggar nu effectiveLean rakt av — primärt beslut-ID, se
     // Fixture.ts:s ManagerChoiceEntry-kommentar.
-    setHalftimeDecisionForLog(effectiveLean)
+    if (recordPlayerDecision) setHalftimeDecisionForLog(effectiveLean)
 
     // Morale/sharpness — den osynliga delen (behålls additivt, SPEC A1). Den synliga
     // delen (postBreakUrgency-luten) ligger i pauseLean nedan.

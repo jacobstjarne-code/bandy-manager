@@ -817,7 +817,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     allNewEvents.length = 0
     allNewEvents.push(...otherNew, ...keptAtmospheric)
 
-    // Dropped events go to inbox as notiser so they're not lost
+    // Överskjutande lågprioriterade miljöhändelser bevaras som arkiv i inboxen,
+    // men är redan lästa: en takmekanism ska inte skapa en ny notisstorm.
     if (droppedAtmospheric.length > 0) {
       const droppedInboxItems: InboxItem[] = droppedAtmospheric.map(e => ({
         id: `inbox_evt_${e.id}`,
@@ -825,7 +826,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         type: InboxItemType.Community,
         title: e.title,
         body: e.body,
-        isRead: false,
+        isRead: true,
       }))
       trimmedInbox = [...trimmedInbox, ...droppedInboxItems]
         .sort((a, b) => b.date.localeCompare(a.date))

@@ -17,8 +17,8 @@ function decision(id: string): GameEvent {
   }
 }
 
-describe('PortalInboxCounter — KF3 väntanderad', () => {
-  it('visar det kanoniska köantalet som "X beslut väntar"', () => {
+describe('PortalInboxCounter — lugn sammanfattningsrad', () => {
+  it('dubbelvisar inte den separata beslutskön och kallar inboxposter olästa', () => {
     const base = createNewGame({
       managerName: 'Test',
       clubId: 'club_forsbacka',
@@ -28,6 +28,10 @@ describe('PortalInboxCounter — KF3 väntanderad', () => {
     const game = {
       ...base,
       deferredDecisions: [decision('d1'), decision('d2')],
+      inbox: [{
+        id: 'i1', date: '2026-10-01', type: 'community',
+        title: 'Från orten', body: 'En kort notis.', isRead: false,
+      }],
     }
 
     const html = renderToStaticMarkup(
@@ -36,7 +40,7 @@ describe('PortalInboxCounter — KF3 väntanderad', () => {
       </MemoryRouter>,
     )
 
-    expect(html).toContain('<strong>2</strong> beslut väntar')
-    expect(html).not.toContain(' i kö')
+    expect(html).not.toContain('beslut väntar')
+    expect(html).toContain('<strong>1</strong> oläst i inboxen')
   })
 })

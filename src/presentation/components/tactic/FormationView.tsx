@@ -383,7 +383,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
           <span className="h-label" style={{ fontSize: 12 }}>Lagstyrka</span>
           <span style={{ fontSize: 12 }}>
             <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
-            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>
+            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} med utvilad trupp</span>
           </span>
         </div>
       )}

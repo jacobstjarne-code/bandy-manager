@@ -185,7 +185,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
       // hörnslag (samma flöde, båda vanliga händelser i en match).
       foldHintPrompt="VÄLJ PLACERING"
       minute={data.minute}
-      timer={{ seconds: 4 }}
+      timer={{ seconds: 8 }}
       pitch={
         <PenaltyPitchSVG
           dir={dir}

@@ -110,7 +110,7 @@ export const commentary = {
     "MÅÅÅL! {player} sätter dit ett lugnande mål! {score}!",
     "{player} ger {team} marginal! {score}!",
     "Andrum! {player} sätter dit ett betydelsefullt mål! {score}!",
-    "Marginalen växer! {player} tar avstånd! {score}!",
+    "{player} ökar marginalen för {team}! {score}!",
   ],
 
   cornerGoal: [
@@ -857,7 +857,7 @@ export const commentary = {
   ],
 
   legend_gk_save: [
-    '{lastName} står där. {seasons} säsonger på samma plats. Han vet vart bollen ska.',
+    '{lastName} står där igen. Han vet vart bollen ska.',
     'Räddning av {lastName}. Klacken har sett tusen sådana. De jublar ändå.',
     'En sån räddning kommer med åren. {lastName} läser spelet.',
   ],

@@ -120,13 +120,13 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
             <Icon icon={AlertTriangle} size={11} style={{ flexShrink: 0 }} />
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: rubriken för den tvingade
                 fyllningen (elvan går inte ihop över konditionsgolvet). */}
-            ELVAN GÅR INTE IHOP
+            FÖR FÅ UTVILADE SPELARE
           </div>
           {/* Rent numerisk sats — ingen Code-skriven svenska. Talen bär läget
               (så många av elva är över golvet, så många saknas); '[Opus]'
               nedan bär meningen. */}
           <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
-            {availableAboveFloor} / 11 · ≥ {FATIGUE_AVAILABILITY_FLOOR} %
+            {availableAboveFloor} av 11 har minst {FATIGUE_AVAILABILITY_FLOOR} % kondition
             <span style={{ color: 'var(--danger-text)', marginLeft: 8 }}>−{shortfall}</span>
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -134,7 +134,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
                 kostnaden — vad det innebär att gå in {shortfall} spelare kort
                 över golvet (höjd skaderisk + risk att förlora dem till nästa
                 match, A-H3:s två ben). */}
-            Du får inte ihop en elva över golvet. Startar du dem ändå stiger skaderisken, och några kan tvingas stå över nästa match.
+            Du har inte elva spelare med tillräcklig kondition. Startar du de tröttaste ändå stiger skaderisken, och några kan tvingas stå över nästa match.
           </p>
         </div>
 
@@ -143,7 +143,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
           <div className="h-label" style={{ marginBottom: 8 }}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: sektionslabel för listan
                 över de spelare som står under golvet. */}
-            UNDER GOLVET
+            LÅG KONDITION
           </div>
           {belowFloorStarters.map(p => {
             const proj = getFitnessProjection(p)

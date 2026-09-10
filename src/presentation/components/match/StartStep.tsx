@@ -11,6 +11,7 @@ import { Icon } from '../primitives/Icon'
 import { tacticRows } from '../../utils/tacticData'
 import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 import { seededPick } from '../../../domain/utils/random'
+import type { MatchFlowMode } from '../../utils/matchFlowMode'
 
 function tacticLabel(key: keyof Tactic, value: string): string {
   const row = tacticRows.find(r => r.key === key)
@@ -64,7 +65,7 @@ function getPreMatchPepTalk(
   return 'Omklädningsrummet är tyst. Ni vet vad ni har att göra.'
 }
 
-type MatchMode = 'full' | 'commentary' | 'quicksim' | 'silent'
+type MatchMode = MatchFlowMode
 
 interface StartStepProps {
   startingIds: string[]
@@ -149,7 +150,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
             <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka idag</span>
             <span style={{ fontSize: 13 }}>
               <span style={{ fontWeight: 800, color: styrkaGap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrkaIdag}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}> / {styrkaUtvilat} utvilat</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}> / {styrkaUtvilat} med utvilad trupp</span>
             </span>
           </div>
         </div>
@@ -165,7 +166,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>⚠ TRÖTT TRUPP</p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-            Laget ligger {styrkaGap} styrkepoäng under utvilat. Det märks på isen — vill du rotera är det nu.
+            Laget är {styrkaGap} styrkepoäng svagare än med utvilad trupp. Det märks på isen — vill du rotera är det nu.
           </p>
         </div>
       )}

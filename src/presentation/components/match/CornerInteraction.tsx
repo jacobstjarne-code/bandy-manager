@@ -214,7 +214,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
       // T5c/UT-2: fold-hint-uppmaning, textdömd av Fable 2026-07-16
       foldHintPrompt="VÄLJ LÄGE"
       minute={data.minute}
-      timer={{ seconds: 5 }}
+      timer={{ seconds: 8 }}
       untimed={practice}
       pitch={
         <CornerPitchSVG

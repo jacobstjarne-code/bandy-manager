@@ -56,6 +56,23 @@ describe('getMecenatSocialUsedTypes', () => {
   it('tom logg → tom mängd', () => {
     expect(getMecenatSocialUsedTypes({ narrativeBeatLog: undefined, currentSeason: 1 }).size).toBe(0)
   })
+
+  it('räknar även typen medan kortet väntar och efter att dess nya stabila id har lösts', () => {
+    const queued = generateSocialEvent(makeMecenat(), 3, 7, zeroRand)
+    const fromQueue = getMecenatSocialUsedTypes({
+      narrativeBeatLog: undefined,
+      currentSeason: 3,
+      pendingEvents: queued ? [queued] : [],
+    })
+    expect(fromQueue).toContain('middag')
+
+    const fromResolvedId = getMecenatSocialUsedTypes({
+      narrativeBeatLog: undefined,
+      currentSeason: 3,
+      resolvedEventIds: [queued!.id],
+    })
+    expect(fromResolvedId).toContain('middag')
+  })
 })
 
 describe('getMecenatSocialType', () => {

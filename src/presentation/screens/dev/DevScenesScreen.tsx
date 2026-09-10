@@ -1900,6 +1900,12 @@ export function DevScenesScreen() {
   ].includes(requestedArrivalClubId)
     ? requestedArrivalClubId
     : (initialScene === 'opponent-intro' ? 'club_heros' : factoryMidSeasonGame.managedClubId)
+  // Matchladdningsgalleriet behöver ett annat hemmalag än den klubb vi visar.
+  // Skutskär är normalt den fasta testmanagerns klubb, så just Skutskär som
+  // motståndare gav tidigare en tom scen trots att bilden var korrekt wirad.
+  const matchLaddningManagedClubId = arrivalClubId === 'club_skutskar'
+    ? 'club_forsbacka'
+    : 'club_skutskar'
   const [seededScene, setSeededScene] = useState<SceneId | null>(null)
   // VISUELL_AUDIT punkt 1 (2026-08-09): data-scene-content var hårdkodad till
   // 375px oavsett Playwright-viewport — en "390px"-baseline hade i praktiken
@@ -1971,7 +1977,7 @@ export function DevScenesScreen() {
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' ? makeBaseGame({ seed: 31, clubId: arrivalClubId })
       : scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar'
-        ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
+        ? makeBaseGame({ seed: 31, clubId: matchLaddningManagedClubId })
       : scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
       : scene === 'trupp-kris' ? truppKrisGame
@@ -2042,7 +2048,7 @@ export function DevScenesScreen() {
       : null
     useGameStore.setState({ game: g, roundSummary: roundSummaryForScene } as never)
     setSeededScene(scene)
-  }, [scene, arrivalClubId])
+  }, [scene, arrivalClubId, matchLaddningManagedClubId])
 
   // Vid första mount och scenbyte: låt layout-effekten installera rätt store-
   // fixture innan någon produktskärm monteras. Effekten kör före paint, så

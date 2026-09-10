@@ -254,7 +254,7 @@ export function SlotLineupView({
           <span className="h-label">Lagstyrka</span>
           <span style={{ fontSize: 12 }}>
             <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
-            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>
+            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} med utvilad trupp</span>
           </span>
         </div>
       )}
