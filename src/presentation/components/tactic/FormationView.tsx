@@ -255,10 +255,10 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
             key={mode}
             onClick={() => handleAutoFill(mode)}
             style={{
-              flex: 1, minHeight: 35, borderRadius: 8,
+              flex: 1, minHeight: 44, borderRadius: 8,
               fontSize: 12, fontWeight: 600, lineHeight: 1.15,
               padding: '5px 3px', textAlign: 'center', cursor: 'pointer',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              whiteSpace: 'normal', overflow: 'hidden',
               background: 'var(--bg-surface)', border: '1.5px solid var(--border-dark)', color: 'var(--accent-dark)',
             }}
           >

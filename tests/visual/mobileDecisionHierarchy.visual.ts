@@ -133,6 +133,22 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
   test('taktiktavlans elva spelarval har tumträffyta och går att välja', async ({ page }) => {
     await openMobileScene(page, 'taktik')
 
+    const autoFillButtons = [
+      page.getByRole('button', { name: 'Starkast', exact: true }),
+      page.getByRole('button', { name: 'Mest utvilad', exact: true }),
+      page.getByRole('button', { name: 'Bäst för dagens match', exact: true }),
+    ]
+    const autoFillBoxes = []
+    for (const button of autoFillButtons) {
+      await expect(button).toBeVisible()
+      const box = await button.boundingBox()
+      if (!box) throw new Error('Autofyll-knapp saknar bounding box')
+      autoFillBoxes.push(box)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+      await expect(button).toHaveJSProperty('scrollWidth', await button.evaluate(element => element.clientWidth))
+    }
+    expect(autoFillBoxes[2].x + autoFillBoxes[2].width).toBeLessThanOrEqual(390)
+
     const playerDots = page.locator('svg g[role="button"][aria-label]')
     await expect(playerDots).toHaveCount(11)
 
