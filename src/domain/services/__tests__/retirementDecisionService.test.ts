@@ -257,6 +257,28 @@ describe('getRetirementCandidate — åldersgolvet (auditens critical #2)', () =
     expect(getRetirementCandidate(game)?.id).toBe('p_vet')
   })
 
+  it('29-årig forward blir INTE kandidat av låg fitness ensam', () => {
+    const tired = makePlayer({
+      id: 'p_tired', age: 29, position: PlayerPosition.Forward, fitness: 0,
+    })
+    expect(getCandidateScore(tired)).toBe(4)
+    const game = makeGame({ players: [tired] })
+    expect(getRetirementCandidate(game)).toBeNull()
+  })
+
+  it('29-årig forward kan bli kandidat när skadehistorik förankrar den tidiga vägen', () => {
+    const injured = makePlayer({
+      id: 'p_injured_floor', age: 29, position: PlayerPosition.Forward, fitness: 35,
+      diary: [
+        { season: 2025, matchday: 3, text: '', type: 'injury' },
+      ],
+    })
+    // 0,5 från kondition + 0,5 från den verkliga skadan når tröskeln.
+    expect(getCandidateScore(injured)).toBe(1)
+    const game = makeGame({ players: [injured] })
+    expect(getRetirementCandidate(game)?.id).toBe('p_injured_floor')
+  })
+
   it('30-åring med tung skadehistorik ÄR kandidat (över golvet, skadorna bär poängen)', () => {
     // Forward-golv 29 — 30 är över. Fitness normal, ageScore(30, tröskel 33) = 0,
     // men fyra skadeposter (2.0) räcker gott över score-tröskeln 1.

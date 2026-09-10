@@ -27,8 +27,11 @@ export function getPositionThreshold(position: string): number {
  * skadehistorik kunde bli pensionskandidat trots att ageScore(24) = 0. Fitness/
  * skador ska kunna ACCELERERA en spelare som redan är i pensionsåldern, aldrig
  * TRIGGA en ung. Marginalen är en känslofråga (Jacobs, inte Codes) — 4 år
- * default ger forward/halv valbara från ~29, målvakt från ~32. Justera
- * konstanten, inte golv-logiken, om känslan är fel i spel.
+ * default ger forward/halv valbara från ~29, målvakt från ~32. Jacob
+ * preciserade 2026-09-10 att marginalåren är en skadeväg: före den ordinarie
+ * positionsåldern krävs verklig skadehistorik. Låg kondition får förstärka
+ * den vägen men får aldrig ensam trigga en tidig pension. Vid och efter den
+ * ordinarie åldern gäller den samlade poängen som tidigare.
  */
 export const RETIREMENT_AGE_MARGIN = 4
 
@@ -71,8 +74,17 @@ export function getRetirementCandidate(game: SaveGame): Player | null {
     // exkluderar en spelare helt oavsett fitness/skadehistorik om de inte
     // ens är i närheten av pensionsåldern för sin position.
     .filter(p => p.age >= getPositionThreshold(p.position) - RETIREMENT_AGE_MARGIN)
-    .map(p => ({ player: p, score: getCandidateScore(p) }))
-    .filter(({ score }) => score >= 1)
+    .map(p => ({
+      player: p,
+      score: getCandidateScore(p),
+      isAtRetirementAge: p.age >= getPositionThreshold(p.position),
+      hasInjuryHistory: injuryScore(p) > 0,
+    }))
+    // Marginalåren är till för skadeburen förtidspension, inte för att en
+    // tillfälligt trött 29-åring ska lägga av. Kondition får bidra till
+    // poängen först när en faktisk skadepost förankrar den tidiga vägen.
+    .filter(({ score, isAtRetirementAge, hasInjuryHistory }) =>
+      score >= 1 && (isAtRetirementAge || hasInjuryHistory))
     .sort((a, b) => b.score - a.score)
 
   return candidates[0]?.player ?? null
