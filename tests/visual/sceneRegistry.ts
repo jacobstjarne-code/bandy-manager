@@ -108,7 +108,10 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['bygget'],
   // Jacobs order (2026-08-24): avskedsvägen lyft ur ratchet-skulden. Ingen
   // BottomNav-produktionsrutt (GameGuard-blocket) — allmän svep räcker.
-  ['game-over'], ['game-over-historik'],
+  // GameOverScreen är position:fixed och har en egen overflow-scroller.
+  // Element-stitching av dev-wrappern fotograferar därför ett godtyckligt
+  // scrollsegment av overlayn; använd samma helsideväg som övriga fixed overlays.
+  ['game-over', undefined, undefined, true, 844], ['game-over-historik'],
   // Dev-scen-integritet 2026-09-01: byggda ytor som tidigare saknade varje
   // permanent svep. CallupModal är position:fixed och kräver sid-screenshot.
   ['club-selection'], ['season-share'], ['callup-modal', undefined, undefined, true],
