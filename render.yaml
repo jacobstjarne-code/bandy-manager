@@ -2,7 +2,7 @@ services:
   - type: web
     name: bandy-manager
     runtime: static
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: dist
     pullRequestPreviewsEnabled: true
     envVars:
@@ -23,7 +23,10 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm install && npm run build
+    # NODE_ENV=production applies during Render builds. Explicitly install the
+    # lockfile-pinned build toolchain instead of falling through to Render's
+    # global TypeScript binary when devDependencies are omitted.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
