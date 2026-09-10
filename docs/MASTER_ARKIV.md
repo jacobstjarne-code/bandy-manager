@@ -12,6 +12,8 @@ Sorterad i samma ordning posterna låg i MASTER_OPPET.md vid arkiveringstillfäl
 
 | id | status | commit | källpekare |
 |---|---|---|---|
+| supporter-konflikt-resolved-dedup | klar | `1d0bd36b` | 2026-09-10: applyDecisionBudget filtrerar resolvedEventIds och dubblett-id:n över båda köerna, med FIFO och olika id:n bevarade. Röd/grön regression samt riktig supporter-resolution → promotion bevisar engångseffekt. 27 budget- och 5 supporter-tester; fullsvit 552 filer/5 002 tester grön. Browser: kö 2→1→0, olika sponsor-id:n kvar. Ursprungliga browserkopians hela proveniens ej bevisad. Journal: docs/playtest/GRIND_2_3_LANGKARRIAR_2026-09-09.md. |
+| analytics-dev-scen-sasongshistorik | klar | `1d0bd36b` | 2026-09-10: AnalyticsBridge och analyticsLifecycle tolererar saknad seasonSummaries utan save-mutation. Röd/grön regression, 4 lifecycle-tester, fullsvit 552 filer/5 002 tester grön. Granska åter renderad i browsern. Isolerat bygge inklusive tsc/fem grindar grönt; gemensamt bygge stoppades av parallella M5-designträffar, inga baselines ändrade. Samma speltestjournal bär verifieringen. |
 | high6-attributionshal-madebyplayer | klar | — | Jacobs egen kodläsning + körorder 2026-08-31 (auditens critical #1) |
 | high6-retirement-agefloor-24aring | klar | — | Jacobs egen kodläsning + körorder 2026-08-31 (auditens critical #2) |
 | matchday-rollover-axis-sweep | klar | — | Jacobs/Claudes skala-order 2026-09-02 + Codex kodsvep |

@@ -146,3 +146,12 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - `Akademinivå 3` är färdig; fortsätt med övriga möjliga noder.
 - Dokumentera ett faktiskt ekonomiskt avvägningsval runt säsong 8.
 - Efter full körning lämnas Grind 2/3 till Opus för dom; de arkiveras inte av testaren.
+
+### Rapportåtgärder 2026-09-10 — köreparation och dev-scen
+
+- `supporter-konflikt-resolved-dedup`: den centrala budgetpartitioneringen filtrerar nu redan lösta id:n och behåller en kopia per id över båda köerna. FIFO och olika event-id:n bevaras. Ingen ny minnesbank eller ändrad spelartext. Två regressionstester var röda före fixen; 27 budgettester är gröna efteråt. Ett integrationstest med riktig klackkonflikt, resolution och köpromotion verifierar att humör/klackeffekt ges en gång och den gamla kökopian försvinner (5 supporter-tester gröna). Det bevisar köfelet, inte den ursprungliga browserinstansens fullständiga köhistorik.
+- `analytics-dev-scen-sasongshistorik`: saknad seasonSummaries kraschade både AnalyticsBridge och analyticsLifecycle. Konsumenterna tolererar nu saknad historik utan att ändra sparningen. Regressionstestet var rött före fix, samtliga 4 lifecycle-tester är gröna efteråt.
+- Browser: aktuell huvudarbetskopia på port 5176, `granska-slutspel`, 390 px. Före korrigeringen: error boundary med läsning av undefined.length. Efter reload: resultatvyn öppnar och visar seriens korrekta 1–0-rad samt nästa-knappen. Detta är ett dev-scenprov, inte ytterligare spelade karriärsäsonger.
+- Fullsvit avslutad GRÖNT: 552/552 filer, 5 002/5 002 tester, exit 0 (26 minuter, två workers). Kodcommit `1d0bd36b`. De två åtgärdsraderna arkiveras; aktuell räknare 34→32 inklusive parallella agenters förändringar. Grind 2/3 står fortsatt vid säsong 5:s semifinal; återstående långkarriärkrav är oförändrade.
+- Ytterligare browserprov: `portal-interruption-budget`, 390 px. Två separata sponsorbeslut avböjdes via ordinarie knappar; uppskjuten kö gick 2 → 1 → 0 och kommunbeslutet blev synligt. Fixturen har uttryckligen olika id:n för de två sponsorbesluten; fixen behåller dem trots samma text.
+- Slutbygget i gemensamma trädet stoppade på fyra `rule13_semantic_color`-träffar i parallellt ändrade FormationView/TacticBoardCard/GameOverScreen. Dessa filer lämnades orörda. Isolerat `c7b4b12e` plus enbart de sex ändrade kod-/testfilerna byggde GRÖNT inklusive TypeScript och alla fem grindar. Ingen baseline ändrad; byggfoten i arkivkopian är avsiktligt `unknown` eftersom kopian saknar .git.

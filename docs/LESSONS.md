@@ -1193,6 +1193,10 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Historik (2026-09-06):** design-d1-granska-heroscore (a3044daf) och design-d7-bottennav-sju (35b942ca) landade båda med en nåbar `[Opus]`-platshållare; upptäckt och fixat samma dag när sluttest-be-blind-clubmemory-raden triggade en full `npx vitest run` av andra skäl. Fixat genom att byta till `TabIntro.tsx`s etablerade `'// OPUS_COPY'`-sentinel (döljer raden) respektive att utelämna den hårdkodade `<p>`-raden helt.
 
+## 60. Genereringsskydd reparerar inte gamla kökopior
+
+**Komplettering 2026-09-10 — köidentitet:** skydd mot nygenererade dubbletter reparerar inte redan sparade kökopior. Vid sammanfogning av pendingEvents/deferredDecisions ska befintliga resolvedEventIds filtreras och ett id bara förekomma en gång. Behåll olika id:n och FIFO; inför inte en separat minnesbank. Testa hela vägen riktig event-resolution → köpromotion → försök till andra resolutionen, inklusive att state-effekten bara ges en gång.
+
 ## 59. Granska måste bindas till den granskade matchen, inte nästa aktiva serie
 
 **Historik 2026-09-10:** efter en avgjord kvartsfinal visade Granska semifinalens 0–0. `getPlayoffSeriesContext` väljer avsiktligt en oavgjord serie för portalen; samma anrop utan fixture-id var därför fel på en retrospektiv yta. Bind Granskas anrop till fixture-id i befintlig selector och testa en avgjord serie samtidigt som nästa redan finns. En isolerad avgjord serie utan nästa runda fångade inte regressionen.
