@@ -68,6 +68,14 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
     expect(events.some(event => event.id === 'patron_intro_2026')).toBe(false)
   })
 
+  it('skapar inte en patron med samma identitet som en redan köad mecenat', () => {
+    const base = { ...makeGame(), currentSeason: 2026, patron: undefined }
+    const first = generatePatronEmergenceEvent(base, () => 0)!
+    const blockedName = first.sender!.name
+    const replacement = generatePatronEmergenceEvent(base, () => 0, [blockedName])!
+    expect(replacement.sender?.name).not.toBe(blockedName)
+  })
+
   it('stämplar relationen som introducerad först när introkortet har avgjorts', () => {
     const fresh = makeGame()
     const base = {

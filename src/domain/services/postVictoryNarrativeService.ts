@@ -2,6 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from '../data/rivalries'
 import { deriveUtfall } from './matchTypeAxes'
+import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
 
 export type VictoryType = 'playoff_derby_win' | 'playoff_win' | 'big_derby_win' | 'derby_win' | 'blowout'
 
@@ -20,8 +21,12 @@ export interface VictoryEcho {
   diaryLine: string
   // Kafferummets röst — LEVANDE sedan D4-regressionsfixen (coffeeRoomService.ts).
   coffeeLine: string
+  /** Cooldown key written only when the coffee-room echo is actually shown. */
+  coffeeSemanticKey?: string
   boardMessage?: string
 }
+
+export const VICTORY_ECHO_BLOWOUT_PREFIX = 'victory_echo_blowout_'
 
 export function classifyVictory(fixture: Fixture, managedClubId: string): VictoryType | null {
   const isHome = fixture.homeClubId === managedClubId
@@ -50,6 +55,7 @@ export function generateVictoryEcho(
   fixture: Fixture,
   opponentName: string,
   managedClubId: string,
+  game?: SaveGame,
 ): VictoryEcho {
   // M32 (textaudit 2026-07-03): var alltid hemma-borta oavsett perspektiv —
   // en 2–5-bortaseger blev "2-5 mot {opponent}", läst som en förlust.
@@ -81,9 +87,28 @@ export function generateVictoryEcho(
         coffeeLine: `Någon skrev "${opponentName.toUpperCase()} ÅKTE HEM" på tavlan i omklädningsrummet. Ingen har tagit bort det.`,
       }
     case 'blowout':
+      {
+        const pool = [
+          `Ingen sa mycket efter match. Det var inte tystnaden efter förlust. Det var tystnaden efter en stor middag.`,
+          `Resultattavlan släcktes sent. Någon hade redan hunnit skriva ${score} på whiteboarden i korridoren.`,
+          `Materialaren räknade klubborna två gånger. ”Efter en sån där match vill man bara att allt ska ligga kvar precis som det låg.”`,
+          `Det kom folk förbi klubbhuset utan ärende. De ville mest säga siffrorna högt en gång till: ${score}.`,
+        ]
+        const index = game
+          ? pickPoolIndexAvoidingCooldown(
+              game,
+              game.currentSeason,
+              pool.length,
+              VICTORY_ECHO_BLOWOUT_PREFIX,
+              game.currentMatchday * 31 + fixture.id.length,
+              1,
+            )
+          : 0
       return {
         diaryLine: `${score} är en hård siffra. Det vet vi. Men det var en säsong vi behövde den.`,
-        coffeeLine: `Ingen sa mycket efter match. Det var inte tystnaden efter förlust. Det var tystnaden efter en stor middag.`,
+        coffeeLine: pool[index],
+        coffeeSemanticKey: `${VICTORY_ECHO_BLOWOUT_PREFIX}${index}`,
+      }
       }
   }
 }

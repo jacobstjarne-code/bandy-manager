@@ -135,6 +135,10 @@ describe('seasonEndProcessor — license_denied-effekter ägs av System B', () =
     const result = handleSeasonEnd(game, 1)
     expect(managedClub.finances).toBeGreaterThan(-50_000)
     expect(result.game.licenseStatus).toBe('first_warning')
-    expect(result.game.inbox.some(item => item.id === `inbox_gravande_${game.currentSeason}`)).toBe(true)
+    // Journalisten är ännu inte introducerad i denna helt nya testsave. Artikeln
+    // ska därför skapas, men vänta utanför den synliga inkorgen tills spelaren
+    // har fått möta avsändaren.
+    expect(result.game.inbox.some(item => item.id === `inbox_gravande_${game.currentSeason}`)).toBe(false)
+    expect(result.game.deferredInbox?.some(item => item.id === `inbox_gravande_${game.currentSeason}`)).toBe(true)
   })
 })

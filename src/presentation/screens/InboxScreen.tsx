@@ -29,7 +29,6 @@ function inboxActionRoute(type: InboxItemType): string | undefined {
     case InboxItemType.Injury:
     case InboxItemType.Suspension:
       return '/game/squad'
-    case InboxItemType.BoardFeedback:
     case InboxItemType.LicenseReview:
     case InboxItemType.EconomicCrisis:
       return '/game/club'
@@ -103,6 +102,7 @@ function getGroup(item: InboxItem, game: SaveGame): InboxGroup {
       return hasOpenBid ? 'kräver-svar' : 'nyheter'
     }
     case InboxItemType.Media:
+    case InboxItemType.BoardFeedback:
     case InboxItemType.MediaEvent:
     case InboxItemType.Transfer:
     case InboxItemType.TransferRumor:

@@ -253,8 +253,11 @@ export function SlotLineupView({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
           <span className="h-label">Lagstyrka</span>
           <span style={{ fontSize: 12 }}>
-            <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
-            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} med utvilad trupp</span>
+            {/* adherence-semantic-key: varm färg betyder att den valda startelvan tappar minst fem styrkepoäng av trötthet. */}
+            <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag} idag</span>
+            <span style={{ color: 'var(--text-muted)' }}>
+              {styrka.gap > 0 ? ` · ${styrka.utvilat} om startelvan vore helt utvilad` : ' · startelvan är helt utvilad'}
+            </span>
           </span>
         </div>
       )}

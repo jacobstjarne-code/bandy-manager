@@ -79,9 +79,12 @@ export interface WeeklyDecisionResolution {
 
 function makeDecisions(game: SaveGame): WeeklyDecision[] {
   const leader  = getCharacterName(game, 'leader')
-  const veteran = getCharacterName(game, 'veteran')
-  const youth   = getCharacterName(game, 'youth')
-  const family  = getCharacterName(game, 'family')
+  // These supporting characters do not yet have their own introduction
+  // records. Keep them as roles here; named voices must first be introduced
+  // through the canonical voice/event flow.
+  const veteran = 'En veteran i klacken'
+  const youth   = 'En yngre supporter'
+  const family  = 'En familjesupporter'
   const sg      = game.supporterGroup
   const groupName = sg?.name ?? 'Klacken'
 

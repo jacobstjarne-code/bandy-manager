@@ -21,7 +21,11 @@ describe('handleSeasonEnd — youth_aged_out "utan kort"-fallback (DOM_AKADEMI_L
 
     expect(result.youthTeam?.players.some(p => p.id === target.id)).toBe(false)
 
-    const inboxItem = result.inbox.find(i => i.id === `inbox_youth_aged_out_${target.id}_${game.currentSeason + 1}`)
+    // En artificiell save som går direkt från nystart till säsongsslut har
+    // ännu inte introducerat akademiytan. Beskedet ska ändå finnas kvar och
+    // levereras efter introduktionen, inte tappas.
+    const inboxItem = [...result.inbox, ...(result.deferredInbox ?? [])]
+      .find(i => i.id === `inbox_youth_aged_out_${target.id}_${game.currentSeason + 1}`)
     expect(inboxItem?.body).toBe(
       `${target.firstName} ${target.lastName} fyllde tjugo. Ingen plats i A-laget, inget kontrakt. Han tackade för 4 år och gick.`
     )
@@ -38,7 +42,8 @@ describe('handleSeasonEnd — youth_aged_out "utan kort"-fallback (DOM_AKADEMI_L
       youthTeam: { ...game.youthTeam!, players: [target, ...game.youthTeam!.players.slice(1)] },
     }, 1).game
 
-    const inboxItem = result.inbox.find(i => i.id === `inbox_youth_aged_out_${target.id}_${game.currentSeason + 1}`)
+    const inboxItem = [...result.inbox, ...(result.deferredInbox ?? [])]
+      .find(i => i.id === `inbox_youth_aged_out_${target.id}_${game.currentSeason + 1}`)
     expect(inboxItem?.body).toContain('Han tackade för 5 år och gick.')
   })
 

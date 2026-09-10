@@ -54,6 +54,7 @@ import {
 } from '../../domain/services/ledgerToldService'
 import type { NarrativePostReference } from '../../domain/attention/types'
 import { queueRosterVoiceIntroductions, seedTilltradeVoices } from '../../domain/services/voiceIntroductionService'
+import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
 
 export type SaveActionResult = { success: boolean; error?: string }
 
@@ -76,6 +77,28 @@ function clearPendingFlows(game: SaveGame): SaveGame {
     pendingRefereeMeeting: undefined,
     pendingRetirementDecision: undefined,
   }
+}
+
+/** Route inbox rows created by between-round UI actions through the same
+ * editor as roundProcessor. This keeps sponsor/press/player receipts from
+ * bypassing the unread budget and gives them canonical chronology metadata. */
+function finalizeDirectInboxMutation(before: SaveGame, after: SaveGame): SaveGame {
+  const priorIds = new Set(before.inbox.map(item => item.id))
+  const newItems = after.inbox.filter(item => !priorIds.has(item.id))
+  if (newItems.length === 0) return after
+
+  const chronology = currentChronology(after)
+  const delivery = finalizeInboxDelivery(
+    { ...after, inbox: after.inbox.filter(item => priorIds.has(item.id)) },
+    newItems,
+    {
+      season: chronology.season,
+      matchday: chronology.matchday,
+      leagueRound: chronology.leagueRound || null,
+      date: after.currentDate,
+    },
+  )
+  return { ...after, inbox: delivery.inbox, deferredInbox: delivery.deferredInbox }
 }
 
 interface GameState {
@@ -653,7 +676,7 @@ export const useGameStore = create<GameState>()(
         const afterPromote = (afterResolve.deferredDecisions ?? []).length > 0
           ? promoteFromQueue(afterResolve)
           : afterResolve
-        set({ game: afterPromote })
+        set({ game: finalizeDirectInboxMutation(game, afterPromote) })
       },
 
       // Delad i preview (rullar tärningen, RÖR INTE state) + commit (applicerar
@@ -701,8 +724,7 @@ export const useGameStore = create<GameState>()(
         }
 
         if (outcome === 'walked_away') {
-          set({
-            game: {
+          const afterWalkaway: SaveGame = {
               ...game,
               pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
               resolvedEventIds: [...(game.resolvedEventIds ?? []), eventId].slice(-200),
@@ -714,8 +736,8 @@ export const useGameStore = create<GameState>()(
                 body: `Ni krävde mer än de var beredda att ge. ${original.name} drog tillbaka erbjudandet — det finns inget kvar att ta.`,
                 isRead: false,
               }],
-            },
-          })
+            }
+          set({ game: finalizeDirectInboxMutation(game, afterWalkaway) })
           return
         }
 
@@ -736,7 +758,7 @@ export const useGameStore = create<GameState>()(
           pendingEvents: (game.pendingEvents ?? []).map(e => e.id === eventId ? patchedEvent : e),
         }
         const afterResolve = resolveEventFn(patchedGame, eventId, 'accept', undefined, true)
-        set({ game: afterResolve })
+        set({ game: finalizeDirectInboxMutation(game, afterResolve) })
       },
 
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {

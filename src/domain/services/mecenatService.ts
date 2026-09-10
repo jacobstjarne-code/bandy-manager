@@ -220,6 +220,7 @@ export function generateMecenat(
   clubId: string,
   season: number,
   rand: () => number,
+  forbiddenNames: readonly string[] = [],
 ): Mecenat {
   const region = clubId.replace('club_', '')
   const templates = REGION_BUSINESSES[region] ?? REGION_BUSINESSES.default
@@ -232,7 +233,14 @@ export function generateMecenat(
   const firstName = isYoung
     ? (isFemale ? YOUNG_FEMALE : YOUNG_MALE)[Math.floor(rand() * 5)]
     : (isFemale ? FEMALE_NAMES : MALE_NAMES)[Math.floor(rand() * 10)]
-  const lastName = LAST_NAMES[Math.floor(rand() * LAST_NAMES.length)]
+  const lastNameIndex = Math.floor(rand() * LAST_NAMES.length)
+  let lastName = LAST_NAMES[lastNameIndex]
+  const blocked = new Set(forbiddenNames.map(name => name.trim().toLocaleLowerCase('sv-SE')))
+  if (blocked.has(`${firstName} ${lastName}`.toLocaleLowerCase('sv-SE'))) {
+    lastName = Array.from({ length: LAST_NAMES.length }, (_, offset) =>
+      LAST_NAMES[(lastNameIndex + offset + 1) % LAST_NAMES.length]
+    ).find(candidate => !blocked.has(`${firstName} ${candidate}`.toLocaleLowerCase('sv-SE'))) ?? lastName
+  }
 
   const wealth = template.type === 'it_miljonär' ? 4 + Math.floor(rand() * 2)
     : template.type === 'brukspatron' ? 3 + Math.floor(rand() * 2)

@@ -60,6 +60,16 @@ function isRoutineArchiveItem(item: InboxItem): boolean {
     || (item.type === InboxItemType.Training && (item.injuredPlayerCount ?? 0) === 0)
 }
 
+function deliveryPriority(item: InboxItem): number {
+  if (ACTIONABLE_TYPES.has(item.type)) return 30
+  // These are season-defining news, not decisions, but must reach the player
+  // before routine summaries consume the four-row informational budget.
+  if (item.id.startsWith('inbox_board_verdict_')) return 20
+  if (item.type === InboxItemType.MediaEvent) return 20
+  if (item.type === InboxItemType.AcademyAgedOut) return 20
+  return 10
+}
+
 function topicIsReady(game: SaveGame, item: InboxItem): boolean {
   const topic = TOPIC_BY_TYPE[item.type]
   if (!topic || ACTIONABLE_TYPES.has(item.type)) return true
@@ -86,7 +96,30 @@ export function finalizeInboxDelivery(
   newItems: readonly InboxItem[],
   chronology: { season: number; matchday: number; leagueRound: number | null; date: string },
 ): InboxDeliveryResult {
-  const existing = game.inbox.map(item => isRoutineArchiveItem(item) ? { ...item, isRead: true } : item)
+  // Event resolutions can add inbox rows between round ticks. Stamp legacy/
+  // direct rows the next time they pass the editor so they can age out instead
+  // of remaining unread forever.
+  let existing = game.inbox.map(item => ({
+    ...item,
+    createdSeason: item.createdSeason ?? chronology.season,
+    createdMatchday: item.createdMatchday ?? chronology.matchday,
+    createdRound: item.createdRound === undefined ? chronology.leagueRound : item.createdRound,
+    isRead: isRoutineArchiveItem(item) ? true : item.isRead,
+  }))
+
+  // The cap is a player-facing unread budget, not merely a producer budget.
+  // If a direct writer or an old save already exceeded it, keep the newest
+  // informational rows unread and quietly archive the remainder. Actionable
+  // deadlines are never touched here.
+  const unreadInformational = existing
+    .filter(item => !item.isRead && !ACTIONABLE_TYPES.has(item.type))
+    .sort((a, b) => b.date.localeCompare(a.date))
+  const archiveIds = new Set(
+    unreadInformational.slice(MAX_UNREAD_INFORMATIONAL_INBOX).map(item => item.id),
+  )
+  if (archiveIds.size > 0) {
+    existing = existing.map(item => archiveIds.has(item.id) ? { ...item, isRead: true } : item)
+  }
   const existingIds = new Set(existing.map(item => item.id))
   const recentFingerprints = new Set(existing
     .filter(item => {
@@ -120,7 +153,7 @@ export function finalizeInboxDelivery(
   let informationalUnread = existing.filter(item => !item.isRead && !ACTIONABLE_TYPES.has(item.type)).length
   const delivered: InboxItem[] = []
   const deferred: InboxItem[] = []
-  const ordered = [...unique.values()].sort((a, b) => Number(ACTIONABLE_TYPES.has(b.type)) - Number(ACTIONABLE_TYPES.has(a.type)))
+  const ordered = [...unique.values()].sort((a, b) => deliveryPriority(b) - deliveryPriority(a))
 
   for (const item of ordered) {
     if (!topicIsReady(game, item) || !voiceIsReady(game, item, chronology.matchday)) {
@@ -129,8 +162,22 @@ export function finalizeInboxDelivery(
     }
     const informationalUnreadItem = !item.isRead && !ACTIONABLE_TYPES.has(item.type)
     if (informationalUnreadItem && informationalUnread >= MAX_UNREAD_INFORMATIONAL_INBOX) {
-      deferred.push(item)
-      continue
+      // Fresh information should not disappear behind four older rows. Retire
+      // the oldest existing informational unread row and let the new one take
+      // its place. Once this pass has filled the budget with new rows, defer
+      // the rest instead of cycling messages produced at the same moment.
+      const replaceable = existing
+        .filter(candidate => !candidate.isRead && !ACTIONABLE_TYPES.has(candidate.type))
+        .sort((a, b) => {
+          const matchdayDelta = (a.createdMatchday ?? chronology.matchday) - (b.createdMatchday ?? chronology.matchday)
+          return matchdayDelta || a.date.localeCompare(b.date)
+        })[0]
+      if (!replaceable) {
+        deferred.push(item)
+        continue
+      }
+      existing = existing.map(candidate => candidate.id === replaceable.id ? { ...candidate, isRead: true } : candidate)
+      informationalUnread -= 1
     }
     delivered.push(item)
     recentFingerprints.add(occurrenceKey(item))

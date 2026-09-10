@@ -71,6 +71,10 @@ export function MatchScreen() {
     return beat.tier !== 'none' ? 'laddning' : 'lineup'
   })
   const [confirmingMatchStart, setConfirmingMatchStart] = useState(false)
+  // Freeze the occasion beat when the opponent vignette hands over. Without
+  // this latch a store rerender during the handoff could recompute the step
+  // as ordinary lineup and skip Annandagen's dedicated image scene.
+  const [queuedLaddningBeat, setQueuedLaddningBeat] = useState<LaddningBeat | null>(null)
   const matchMode = game?.preferredMatchMode ?? 'full'
 
   useEffect(() => {
@@ -113,7 +117,8 @@ export function MatchScreen() {
     .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
 
   // A3 — Compute beat once; will be consumed by early return below.
-  const beat: LaddningBeat = nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' }
+  const beat: LaddningBeat = queuedLaddningBeat
+    ?? (nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' })
   const effectiveStep =
     matchStep === 'vignette' && !nextFixture ? 'lineup'
       : matchStep === 'laddning' && beat.tier === 'none' ? 'lineup'
@@ -390,7 +395,11 @@ export function MatchScreen() {
           opponent={opponent}
           fixture={nextFixture}
           isHome={isHome}
-          onContinue={() => setMatchStep(beat.tier !== 'none' ? 'laddning' : 'lineup')}
+          onContinue={() => {
+            const handoffBeat = computeLaddningBeat(game, nextFixture)
+            setQueuedLaddningBeat(handoffBeat)
+            setMatchStep(handoffBeat.tier !== 'none' ? 'laddning' : 'lineup')
+          }}
         />
       </MatchFlowFrame>
     )

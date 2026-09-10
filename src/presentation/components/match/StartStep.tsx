@@ -150,7 +150,9 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
             <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka idag</span>
             <span style={{ fontSize: 13 }}>
               <span style={{ fontWeight: 800, color: styrkaGap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrkaIdag}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}> / {styrkaUtvilat} med utvilad trupp</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                {styrkaGap > 0 ? ` · ${styrkaUtvilat} om startelvan vore helt utvilad` : ' · startelvan är helt utvilad'}
+              </span>
             </span>
           </div>
         </div>

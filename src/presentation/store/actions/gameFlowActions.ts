@@ -156,7 +156,9 @@ export function gameFlowActions(get: Get, set: Set) {
       const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
       const financesBefore = managedClubBefore?.finances ?? 0
       const communityStandingBefore = game.communityStanding ?? 50
-      const inboxCountBefore = game.inbox.length
+      const unreadInboxIdsBefore = new Set(game.inbox
+        .filter(item => !item.isRead && item.type !== 'matchResult')
+        .map(item => item.id))
 
       let result = advanceToNextEvent(game)
       const firstRoundPlayed = result.roundPlayed
@@ -215,7 +217,9 @@ export function gameFlowActions(get: Get, set: Set) {
       const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
       const financesAfter = managedClubAfter?.finances ?? 0
       const communityStandingAfter = resultGame.communityStanding ?? 50
-      const newInboxCount = Math.max(0, resultGame.inbox.length - inboxCountBefore)
+      const newInboxCount = resultGame.inbox.filter(item =>
+        !item.isRead && item.type !== 'matchResult' && !unreadInboxIdsBefore.has(item.id)
+      ).length
 
       const managedFixture = result.roundPlayed !== null
         ? resultGame.fixtures.find(f =>
@@ -776,6 +780,19 @@ export function gameFlowActions(get: Get, set: Set) {
               .filter(p => p.questionId !== coffeeScene.consumedReturnQuestionId)
           }
           updatedGame = recordCoffeeRoomLedgerEchoShown(updatedGame, coffeeScene.ledgerEcho?.postKey)
+          if (updatedGame.pendingVictoryEcho) {
+            const echoKey = updatedGame.pendingVictoryEcho.coffeeSemanticKey
+            if (echoKey) {
+              updatedGame.narrativeBeatLog = logNarrativeBeat(
+                updatedGame,
+                echoKey,
+                updatedGame.currentSeason,
+                updatedGame.currentMatchday,
+              )
+            }
+            updatedGame.pendingVictoryEcho = undefined
+            updatedGame.victoryEchoExpires = undefined
+          }
         }
         // A2/D1-D3 — choiceId format "{questionId}:{answerId}" när spelaren svarat.
         // Svaret pensioneras (ställs aldrig igen) och en återkomst schemaläggs.

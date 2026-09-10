@@ -324,6 +324,7 @@ export function generatePatronEvents(
 export function generatePatronEmergenceEvent(
   game: SaveGame,
   rand: () => number,
+  forbiddenNames: readonly string[] = [],
 ): GameEvent | null {
   // Only one emergence per season
   const emergeId = `patron_emerge_${game.currentSeason}`
@@ -333,7 +334,14 @@ export function generatePatronEmergenceEvent(
     game.inbox.some(item => item.id === emergeId)
   ) return null
 
-  const profile = PATRON_PROFILES[Math.floor(rand() * PATRON_PROFILES.length)]
+  const blockedNames = new Set([
+    ...(game.mecenater ?? []).map(mecenat => mecenat.name),
+    ...forbiddenNames,
+  ].map(name => name.trim().toLocaleLowerCase('sv-SE')))
+  const availableProfiles = PATRON_PROFILES.filter(profile =>
+    !blockedNames.has(`${profile.first} ${profile.last}`.toLocaleLowerCase('sv-SE')))
+  const profilePool = availableProfiles.length > 0 ? availableProfiles : PATRON_PROFILES
+  const profile = profilePool[Math.floor(rand() * profilePool.length)]
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const reputation = managedClub?.reputation ?? 50
   const influence = 40 + Math.floor(rand() * 50)

@@ -69,7 +69,7 @@ describe('OpponentAnalysisCard — spela/åka-raden', () => {
     ))
 
     expect(container.textContent).toContain(
-      `${opponent.name} åker — de tar bollen framåt med benen. Håll zonen tät och låt dem åka in i den.`,
+      `${opponent.name} åker mycket skridskor — de tar bollen framåt med benen. Håll zonen tät och låt dem åka in i den.`,
     )
     expect(container.textContent).toContain(CLUB_EXTENDED_INFO['club_forsbacka'].arenaNote)
   })

@@ -41,6 +41,37 @@ describe('finalizeInboxDelivery', () => {
     expect(result.inbox).toHaveLength(1)
   })
 
+  it('återför en redan överfull direktinkorg till samma oläst-budget', () => {
+    const existing = Array.from({ length: 9 }, (_, index) => item(`existing-${index}`))
+    const result = finalizeInboxDelivery(game({ inbox: existing }), [], chronology)
+    expect(result.inbox.filter(candidate => !candidate.isRead)).toHaveLength(MAX_UNREAD_INFORMATIONAL_INBOX)
+    expect(result.inbox.every(candidate => candidate.createdMatchday === chronology.matchday)).toBe(true)
+    expect(result.inbox.every(candidate => candidate.createdSeason === chronology.season)).toBe(true)
+  })
+
+  it('arkiverar aldrig ett riktigt svarsärende när informationsbudgeten är full', () => {
+    const existing = [
+      ...Array.from({ length: 8 }, (_, index) => item(`existing-${index}`)),
+      item('deadline', InboxItemType.TransferOffer),
+    ]
+    const result = finalizeInboxDelivery(game({ inbox: existing }), [], chronology)
+    expect(result.inbox.find(candidate => candidate.id === 'deadline')?.isRead).toBe(false)
+  })
+
+  it('låter en ny viktig informationsnotis ersätta den äldsta olästa raden', () => {
+    const existing = Array.from({ length: MAX_UNREAD_INFORMATIONAL_INBOX }, (_, index) => ({
+      ...item(`existing-${index}`),
+      date: `2026-09-${String(index + 1).padStart(2, '0')}`,
+      createdMatchday: index,
+    }))
+    const verdict = { ...item('inbox_board_verdict_2026', InboxItemType.BoardFeedback), title: 'Styrelsens besked' }
+    const result = finalizeInboxDelivery(game({ inbox: existing }), [verdict], chronology)
+
+    expect(result.inbox.find(candidate => candidate.id === verdict.id)?.isRead).toBe(false)
+    expect(result.inbox.some(candidate => candidate.id === 'existing-0' && !candidate.isRead)).toBe(false)
+    expect(result.inbox.filter(candidate => !candidate.isRead && candidate.type !== InboxItemType.TransferOffer)).toHaveLength(MAX_UNREAD_INFORMATIONAL_INBOX)
+  })
+
   it('väntar med en ämnesnotis tills spelaren har introducerats till ytan', () => {
     const result = finalizeInboxDelivery(game({ introducedInboxTopics: ['squad'] }), [item('training', InboxItemType.Training)], chronology)
     expect(result.inbox).toHaveLength(0)

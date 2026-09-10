@@ -79,7 +79,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
         const opponentIsHome = fixture.homeClubId === opponent.id
         const playStyleLine = extendedInfo.playStyleTradition === 'spelande'
           ? `${opponent.name} spelar — passningarna kommer först, åkningen sen. Låt dem inte hitta rytmen.`
-          : `${opponent.name} åker — de tar bollen framåt med benen. Håll zonen tät och låt dem åka in i den.`
+          : `${opponent.name} åker mycket skridskor — de tar bollen framåt med benen. Håll zonen tät och låt dem åka in i den.`
         return (
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6, lineHeight: 1.4 }}>
             {playStyleLine}{opponentIsHome && ` ${extendedInfo.arenaNote}`}

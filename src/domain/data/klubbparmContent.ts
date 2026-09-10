@@ -34,7 +34,7 @@ const HORNOR: KlubbparmChapterContent = {
   paragraphs: [
     'När laget får hörna stannar matchen och frågan blir din. Du väljer var bollen ska läggas — nära, mitt eller bortre — och hur den slås: hård, låg eller kort.',
     'Zonerna är inte lika. Vilken som lönar sig växlar med vilka du har på isen och vad motståndaren ställt på straffområdet — siffran vid varje zon säger oddset just då.',
-    'Under match har du fem sekunder på dig. Hinner du inte bestämma slår laget som det alltid gjort. Assisterande tränaren säger oftast sitt innan dess — han har sett motståndaren värma upp.',
+    'Under match har du åtta sekunder på dig. Hinner du inte bestämma slår laget som det alltid gjort. Assisterande tränaren säger oftast sitt innan dess — han har sett motståndaren värma upp.',
   ],
   tumregel: 'Ett halvbra val slaget i tid är bättre än det perfekta som aldrig kom iväg.',
 }

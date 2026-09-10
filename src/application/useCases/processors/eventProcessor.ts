@@ -189,7 +189,11 @@ export function processPatronCommunityEvents(
         game.inbox.some(item => item.id === emergeId) ||
         queuedThisRound.some(event => event.id === emergeId)
       if (!alreadyQueued) {
-        const emergeEvent = generatePatronEmergenceEvent(game, localRand)
+        const emergeEvent = generatePatronEmergenceEvent(
+          game,
+          localRand,
+          queuedThisRound.flatMap(event => event.sender?.name ? [event.sender.name] : []),
+        )
         if (emergeEvent) gameEvents.push(emergeEvent)
       }
     }
@@ -862,7 +866,12 @@ export function applyMecenatSpawn(
     !alreadySpawnedThisSeason &&
     passesSeasonalEmergenceRoll(game, 'mecenat', cs)
   ) {
-    const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
+    const newMecenat = generateMecenat(
+      game.managedClubId,
+      game.currentSeason,
+      localRand,
+      game.patron?.name ? [game.patron.name] : [],
+    )
     const introEvent = generateMecenatIntroEvent(newMecenat, game.managedClubId)
     return {
       updatedMecenater: [...updatedMecenater, { ...newMecenat, isActive: false }],

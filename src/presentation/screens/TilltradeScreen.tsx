@@ -363,7 +363,7 @@ export function TilltradeScreen() {
                   fontFamily: 'Georgia, serif', fontStyle: 'italic',
                   fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
                 }}>
-                  “Så funkar det. Under match får du fem sekunder. Nu fick du så lång tid du ville.”
+                  “Så funkar det. Under match får du åtta sekunder. Nu fick du så lång tid du ville.”
                 </span>
               </div>
             )}

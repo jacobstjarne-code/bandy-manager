@@ -75,7 +75,7 @@ export function processNarrative(
         : justCompletedManagedFixture.homeClubId
       const opponentClub = game.clubs.find(c => c.id === opponentId)
       const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndaren'
-      const echo = generateVictoryEcho(victoryType, justCompletedManagedFixture, opponentName, game.managedClubId)
+      const echo = generateVictoryEcho(victoryType, justCompletedManagedFixture, opponentName, game.managedClubId, game)
       pendingVictoryEcho = echo
       victoryEchoExpires = nextMatchday + 1
       if (echo.boardMessage) {
