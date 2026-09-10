@@ -14,6 +14,13 @@ export const MAX_DECISIONS_PER_ROUND = 3
 /** Kept as an API alias for older callers. */
 export const MAX_ACTIVE_DECISIONS = MAX_DECISIONS_PER_ROUND
 
+/**
+ * SPEC_DECISIONBUDGET_ALDERSVIKTNING_2026-09-10 §1: rundor ett deadline-löst
+ * event får vänta i flexible-kön innan det eskalerar till fronten. Under
+ * detta är det bara deadline som styr ordningen (befintligt beteende).
+ */
+const STARVATION_ROUNDS = 3
+
 function isActionableEvent(event: GameEvent): boolean {
   return !event.resolved && classifyInterrupt({
     category: 'event',
@@ -126,9 +133,22 @@ export function partitionInterruptBudget(
       .map(e => e.id)
   )
   const imminent = actionable.filter(e => imminentSet.has(e.id))
+  // SPEC_DECISIONBUDGET_ALDERSVIKTNING_2026-09-10 §1 — rotorsak: sorteringen
+  // läste bara deadline, aldrig deferredAt. Ett deadline-löst event fick
+  // Infinity och hamnade permanent sist — kunde svälta i botten av kön (grind:
+  // 44) medan deadline-bärande event surfade om och om. deferredAt sattes
+  // redan (applyDecisionBudget), bara aldrig lästes i prioriteringen. Ett nytt
+  // pendingEvent saknar deferredAt → ålder 0 (rättvist, "just nu" räknas inte
+  // som svält). Imminent-skyddet ovan är orört och körs alltid före.
+  const age = (e: GameEvent) => currentMatchday - (e.deferredAt ?? currentMatchday)
   const flexible = actionable
     .filter(e => !imminentSet.has(e.id))
-    .sort((a, b) => (getDeadlineRound(a) ?? Infinity) - (getDeadlineRound(b) ?? Infinity))
+    .sort((a, b) => {
+      const aStarved = age(a) >= STARVATION_ROUNDS
+      const bStarved = age(b) >= STARVATION_ROUNDS
+      if (aStarved !== bStarved) return aStarved ? -1 : 1
+      return (getDeadlineRound(a) ?? Infinity) - (getDeadlineRound(b) ?? Infinity)
+    })
 
   const budget = Math.max(0, MAX_DECISIONS_PER_ROUND - reservedSlots - imminent.length)
   return {

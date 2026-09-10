@@ -383,6 +383,49 @@ describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors fak
   })
 })
 
+// SPEC_DECISIONBUDGET_ALDERSVIKTNING_2026-09-10 §1 — svält-eskalering.
+describe('partitionInterruptBudget — åldersviktning (anti-svält)', () => {
+  it('deadline-löst event uppskjutet ≥3 omgångar surfar före ett färskare deadline-löst event', () => {
+    // currentMatchday 5: 'fresh' väntat 1 omgång (ej svälten), 'old' väntat 3
+    // (svälten). 'fresh' står FÖRE 'old' i input — utan åldersviktning hade
+    // stabil sortering (ingen deadline på någondera → tie) behållit den
+    // ordningen. Svält-eskaleringen ska vända den.
+    const pending = [
+      { ...makeTypedEvent('fresh', 'sponsorOffer'), deferredAt: 4 },
+      { ...makeTypedEvent('old', 'sponsorOffer'), deferredAt: 2 },
+    ]
+    const { surface } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(e => e.id)).toEqual(['old', 'fresh'])
+  })
+
+  it('imminent deadline surfar fortfarande före ett svältande event (deadline-skyddet körs före)', () => {
+    const pending = [
+      { ...makeTypedEvent('starved', 'sponsorOffer'), deferredAt: 1 }, // ålder 4, svälten
+      { ...makeTypedEvent('imminent', 'contractRequest'), deadlineRound: 6 },
+    ]
+    const { surface } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(e => e.id)).toEqual(['imminent', 'starved'])
+  })
+
+  it('FIFO-stabilitet bevarad när två svältande event har samma nyckel', () => {
+    const pending = [
+      { ...makeTypedEvent('a', 'sponsorOffer'), deferredAt: 1 },
+      { ...makeTypedEvent('b', 'sponsorOffer'), deferredAt: 1 },
+    ]
+    const { surface } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(e => e.id)).toEqual(['a', 'b'])
+  })
+
+  it('ett nytt event utan deferredAt får ålder 0 — svälter inte förrän det faktiskt väntat', () => {
+    const pending = [
+      { ...makeTypedEvent('brand_new', 'sponsorOffer') }, // ingen deferredAt
+      { ...makeTypedEvent('waited_long', 'sponsorOffer'), deferredAt: 2 }, // ålder 3, svälten
+    ]
+    const { surface } = partitionInterruptBudget(pending, 5)
+    expect(surface.map(e => e.id)).toEqual(['waited_long', 'brand_new'])
+  })
+})
+
 describe('promoteFromQueue', () => {
   it('returnerar game oförändrat om deferredDecisions är tom', () => {
     const game = makeGame({ deferredDecisions: [] })
