@@ -117,3 +117,8 @@ delningsbilden, eller tidigare endast om Jacob uttryckligen beställer Code-prov
 
 ### m14-publikhistorik-token + m50-clubofferquotes
 **Vad:** två färdigskrivna textrester som väntar på funktioner som inte finns — publikhistorik-token (M14) och en trofé-/meritskärm (M50, `clubOfferQuotes`). **Varför uppskjuten:** texten kan inte kopplas in före sin funktion, och båda funktionerna är själva post-launch. **När:** post-launch, tillsammans med sina funktioner. Jacob 2026-09-09.
+
+## Kvalitativ spelaruppföljning
+
+### sluttest-kvalitativ-uppfoljning
+**Vad:** sex till åtta riktiga spelare pausas efter omgång 3, 11 och 22 och får fem frågor om vem de bryr sig om, vad de försöker uppnå, vad de riskerar, vilket beslut som ändrade något och vad de vill se nästa säsong. Minst två spelar samma svåra klubb med olika filosofi och markerar när rollspel övergår i mekaniskt val. **Varför uppskjuten:** `SPELTESTKALENDER_2026-09-10.md` skiljer Jacobs enda pre-release-nyspelarkörning från den fulla 6–8-spelarrundan och klassar den senare som post-launch. Den kräver rekryterade externa spelare, inte mer produktkod. **När:** efter mjuk release; bevara svaren per kontrollpunkt och jämför om de blir mer specifika över tid.
