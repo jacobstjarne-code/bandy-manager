@@ -552,3 +552,15 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Alternativ övervägt:** Ny keying-modell för den fasta nyckeln (t.ex. `bandy-active-save-id` + separat läsning av `bandy_save_<id>` vid boot). Avvisat — hade dubblerat läsvägen för "FORTSÄTT" (idag: en enda synkron rehydrering från EN nyckel) utan att lösa något som steg 1+2 inte redan löser.
 
 **Konsekvens:** En färskt skapad karriär (innan tillträde-onboarding slutförs) syns INTE i `listSaveGames()`/väljaren förrän `markOnboardingComplete()` (eller ett annat explicit save-anrop) kört — konsekvent med befintligt beteende, inte en ny lucka. Browser-verifierat end-to-end (två karriärer skapade, båda listade, byte fungerar, korrekt klubb/spelare renderas efter byte, noll konsolfel).
+
+---
+
+## 2026-09-10 — Notifieringsbackend på Render Free för mjukreleasen; timcron via GitHub Actions
+
+**Problem:** Attention-backenden behövde hållbar drift (Postgres, scheduler, secrets) inför mjukreleasen med Jacob + Erik, utan att dra kostnad eller konto-registrering i detta läge.
+
+**Beslut:** Render Free — Node-API + Postgres 18 (frankfurt). Byggkontraktet lästes till `npm ci --include=dev` (`ab667ccd`); annars föll `NODE_ENV=production` igenom till en inkompatibel global tsc och bygget dog. Timschemat körs via GitHub Actions (`cron "17 * * * *"`, gejtad på `ATTENTION_SCHEDULER_ENABLED`), inte Render Cron. Push släckt (`ATTENTION_PUSH_ENABLED=false`) tills Etapp 1B ger sanna kandidater. Verifierat i `RAPPORT_RENDER_BLUEPRINT_DRIFTPROV_2026-09-10.md`.
+
+**Alternativ övervägt:** Render Cron — avvisat, saknar gratisplan (stoppades av "Payment Information Required"). Betald nivå — inte motiverat för två testare.
+
+**Konsekvens:** Räcker för mjukreleasen, men bär tre gratisbegränsningar: kallstart 50–60 s efter 15 min vila, ej realtidsexakt timschema, och en gratis-Postgres som upphör 2026-10-10 UTAN backup — migrering/uppgradering måste planeras före dess (spårad på `stickiness-drift-backend`). Publikt repo stänger dessutom GH-workflowen efter 60 dagars inaktivitet.

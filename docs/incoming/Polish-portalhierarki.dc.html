@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color:var(--accent); text-decoration:none; } a:hover { color:var(--accent-dark); }
+    .stage { min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:30px 24px 90px; }
+    .intro { max-width:840px; margin:0 0 26px; }
+    .badge { display:inline-block; font-family:var(--font-body); font-size:11px; font-weight:700; letter-spacing:1px; color:var(--bg-surface); background:var(--accent); border-radius:5px; padding:3px 8px; }
+    .row { display:flex; flex-wrap:wrap; gap:30px; align-items:flex-start; }
+    .capt { font-family:var(--font-display); font-size:15px; font-weight:700; margin:0 0 2px; }
+    .capt-sub { font-size:12px; color:var(--text-secondary); line-height:1.45; margin:0; }
+
+    /* portal (mörk) */
+    .portal { width:360px; background:var(--bg-portal); border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.4); padding:14px 12px 16px; }
+
+    /* T0 · PortalBeat — tystast (ambient) */
+    .beat { display:flex; align-items:center; gap:9px; padding:9px 11px; margin-bottom:10px; background:var(--bg-portal-surface); border-radius:8px; }
+    .beat-wx { font-size:14px; opacity:0.85; }
+    .beat-t { font-family:var(--font-display); font-style:italic; font-size:11.5px; color:var(--text-light-secondary); line-height:1.4; }
+
+    /* T0 · Situation */
+    .sit { padding:2px 12px 11px; font-family:var(--font-display); font-style:italic; font-size:12px; color:var(--text-light-secondary); line-height:1.45; border-left:1px dashed rgba(196,122,58,0.3); margin:0 2px 12px; opacity:0.9; }
+    .sit b { display:block; font-style:normal; font-family:var(--font-body); font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+
+    /* T1 · PRIMARY — högst röst */
+    .primary { padding:16px 15px 14px; margin-bottom:12px; background:linear-gradient(160deg,var(--bg-portal-elevated),var(--bg-portal-surface)); border:1px solid rgba(196,122,58,0.3); border-radius:10px; box-shadow:0 3px 14px rgba(0,0,0,0.28); }
+    .primary-eb { display:flex; align-items:center; gap:6px; font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+    .primary-eb .meta { margin-left:auto; font-family:ui-monospace,monospace; font-size:9px; color:var(--text-light-secondary); opacity:0.8; }
+    .primary-title { font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--text-light); line-height:1.12; letter-spacing:-0.3px; margin-bottom:6px; }
+    .primary-body { font-family:var(--font-body); font-size:11.5px; color:var(--text-light-secondary); line-height:1.45; margin-bottom:12px; }
+    .primary-cta { width:100%; padding:11px; border:none; border-radius:8px; background:linear-gradient(180deg,#DD9555,#8B4820); color:#F5F1EB; font-family:var(--font-body); font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+
+    /* T2 · STORY-SLOT — andra rösten (gold) */
+    .story { padding:12px 14px; margin-bottom:12px; background:linear-gradient(180deg,rgba(140,110,58,0.14),var(--bg-portal-surface) 82%); border-left:3px solid var(--warm); border-radius:0 8px 8px 0; }
+    .story-l { display:flex; align-items:center; gap:6px; font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:color-mix(in srgb,var(--warm) 52%,var(--text-light)); margin-bottom:6px; }
+    .story-l .rec { margin-left:auto; font-family:ui-monospace,monospace; font-size:8.5px; opacity:0.7; }
+    .story-title { font-family:var(--font-display); font-size:14.5px; font-weight:700; color:var(--text-light); line-height:1.3; margin-bottom:4px; }
+    .story-body { font-family:var(--font-display); font-style:italic; font-size:11.5px; color:var(--text-light); line-height:1.5; opacity:0.92; }
+
+    /* T3 · SECONDARIES — recederar, uniforma */
+    .sec { padding:11px 13px; margin-bottom:8px; background:var(--bg-portal-surface); border-left:2px solid var(--accent); border-radius:0 8px 8px 0; }
+    .sec.warm { border-left-color:var(--warm); } .sec.cold { border-left-color:var(--cold); }
+    .sec-l { display:flex; align-items:center; gap:6px; font-family:var(--font-body); font-size:8px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-light-secondary); margin-bottom:6px; }
+    .sec.warm .sec-l { color:color-mix(in srgb,var(--warm) 52%,var(--text-light)); } .sec.cold .sec-l { color:var(--ice); }
+    .sec-body { font-family:var(--font-display); font-style:italic; font-size:12px; color:var(--text-light); line-height:1.5; opacity:0.9; }
+
+    /* T4 · INBOX — tystast, dimmad footer */
+    .inbox { margin:12px 4px 0; padding:9px 12px; border-top:1px dashed rgba(196,122,58,0.2); text-align:center; font-family:var(--font-body); font-size:11px; color:var(--text-light-secondary); letter-spacing:0.3px; }
+    .inbox b { color:var(--accent); }
+
+    /* viktstege */
+    .ladder { width:260px; background:var(--bg-surface); border:1px solid var(--border); border-radius:10px; padding:14px; }
+    .ladder-l { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--accent-dark); margin-bottom:12px; }
+    .tier { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start; padding:9px 0; border-bottom:1px solid var(--border); }
+    .tier:last-child { border-bottom:none; }
+    .tier-bar { height:100%; min-height:22px; border-radius:3px; }
+    .tier-name { font-family:var(--font-body); font-size:11px; font-weight:700; color:var(--text-primary); }
+    .tier-name span { font-family:ui-monospace,monospace; font-size:8.5px; font-weight:400; color:var(--text-muted); margin-left:5px; letter-spacing:0.5px; }
+    .tier-desc { font-family:var(--font-display); font-size:10.5px; color:var(--text-secondary); line-height:1.4; margin-top:2px; }
+    .note { max-width:360px; margin:12px 0 0; }
+  </style>
+</helmet>
+<div class="stage">
+
+  <div class="intro">
+    <div class="h-label" style="color:var(--accent-dark);">DESIGN · POLISH 2/5 — PORTALHIERARKI</div>
+    <h1 style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:6px 0 8px; line-height:1.16;">Fem röster, en viktstege</h1>
+    <p class="h-body" style="margin:0 0 8px; max-width:730px;">Grind-fyndet: Portalen översköljs — allt talar samtidigt och stacken läses som en vägg. Polishen ändrar ingen komponent, bara <strong>vikten mellan dem</strong>: en tydlig stege från högst till tystast, så ögat landar på primärkortet först och resten recederar i ordning. Ingen ny mekanik, ingen ny kort­typ — bara storlek, kontrast och rytm som skapar nivåer.</p>
+    <p class="h-body-sm" style="margin:0; max-width:730px;">Samma byggblock som Portal-kureringen, nu med explicit hierarki. <a href="#1a">1a</a> visar stacken; stegen bredvid namnger varje nivås röststyrka. Regeln kopplar till primär-domen (Taktik/beslutskort): <strong>exakt en T1-primär</strong>, story-slot är T2 (andra rösten), sekundärer är uniforma T3 — de tävlar inte om primärplatsen. — <em>Fruset: november · routine primary · milstolpe i story-slot · journalist-relation neutral. Byt primary → derby/deadline/smfinal skiftar T1-accenten, inte hierarkin.</em></p>
+  </div>
+
+  <div class="row">
+    <div id="1a" style="width:360px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1a</span>
+        <div><div class="capt">Portal · hierarkiserad stack</div><div class="capt-sub">Top-down läsning: puls → hero → berättelse → status → arkiv.</div></div>
+      </div>
+
+      <div class="portal">
+        <div class="beat"><span class="beat-wx">🌨️</span><span class="beat-t">Kall morgon. Bryggeriet öppnade som vanligt.</span></div>
+        <div class="sit"><b>Tisdag · omg 4</b>En förlust bakom oss. Men något hände i lördags.</div>
+
+        <div class="primary">
+          <div class="primary-eb"><span>🏒 Nästa match</span><span class="meta">LÖ 14:00 · BORTA</span></div>
+          <div class="primary-title">Heros — Forsbacka</div>
+          <div class="primary-body">Söndagsvinden hörs redan. Två poäng skulle tysta styrelsen.</div>
+          <button class="primary-cta">Förbered omgång 4 →</button>
+        </div>
+
+        <div class="story">
+          <div class="story-l"><span>⭐ Milstolpe</span><span class="rec">förra omg</span></div>
+          <div class="story-title">Lindqvists 100:e mål</div>
+          <div class="story-body">Han satte den från distans i lördags. Inget firande — han gick tillbaka till sin position. Klacken sjöng redan.</div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-l"><span>📋 Styrelsens krav</span></div>
+          <div class="sec-body">Slutspelskval — 0/8 poäng. Egenfostrade 1/3.</div>
+        </div>
+        <div class="sec">
+          <div class="sec-l"><span>📊 Tabell</span></div>
+          <div class="sec-body">8:a · 3 poäng efter 4.</div>
+        </div>
+        <div class="sec cold">
+          <div class="sec-l"><span>💰 Ekonomi</span></div>
+          <div class="sec-body">142 tkr. Stadigt.</div>
+        </div>
+
+        <div class="inbox">Inkorgen: <b>4</b> notiser · 1 lyft till berättelse</div>
+      </div>
+
+      <p class="h-body-sm note"><strong>Regeln:</strong> primärkortet är enda ytan med gradient-fyllning + kopparbård + CTA. Story-slot får färgstripe men ingen CTA (andra rösten, inte andra knappen). Sekundärer delar exakt en form — de recederar som grupp. Inkorgsraden är dimmad footer. En primär per skärm hålls: T1 är ensam.</p>
+    </div>
+
+    <div class="ladder">
+      <div class="ladder-l">Viktstege · röststyrka</div>
+      <div class="tier"><div class="tier-bar" style="background:var(--text-muted); opacity:0.5;"></div><div><div class="tier-name">T0 · Puls<span>beat + situation</span></div><div class="tier-desc">Ambient. Kursiv, ingen ram. Sätter dagen, kräver inget.</div></div></div>
+      <div class="tier"><div class="tier-bar" style="background:linear-gradient(180deg,#DD9555,#8B4820);"></div><div><div class="tier-name">T1 · Hero<span>primary</span></div><div class="tier-desc">Högst röst. Gradient, kopparbård, 22px Georgia, enda CTA. Exakt en.</div></div></div>
+      <div class="tier"><div class="tier-bar" style="background:var(--warm);"></div><div><div class="tier-name">T2 · Berättelse<span>story-slot</span></div><div class="tier-desc">Andra rösten. Gold/warm/cold-stripe, ingen CTA. Max en.</div></div></div>
+      <div class="tier"><div class="tier-bar" style="background:var(--accent);"></div><div><div class="tier-name">T3 · Status<span>secondaries</span></div><div class="tier-desc">Uniforma. 2px stripe, samma form. Recederar som grupp.</div></div></div>
+      <div class="tier"><div class="tier-bar" style="background:var(--text-muted); opacity:0.35;"></div><div><div class="tier-name">T4 · Arkiv<span>inbox-rad</span></div><div class="tier-desc">Tystast. Dimmad footer, streckad topp. Vägen vidare, inte innehåll.</div></div></div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

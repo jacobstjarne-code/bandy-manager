@@ -114,9 +114,9 @@ State-fält: `{resultat}`, `{Motståndare}`, `{Namn}`, milstolpe. Deep link: Gra
 ## 7. Permission-flödet (låst)
 
 **Pre-prompt** (visas efter första lästa Granska när nästa match har obekräftat lag — `stickiness-permission-ogonblick`):
-titel: *Vill du att klubben hör av sig när något faktiskt är värt att veta?*
-body: *Matcher, beslut och klubbhändelser. Inga dagliga påminnelser, ingen bonus.*
-knappar: *Ja, hör av er* / *Inte nu*
+titel: *Nästa match väntar på ditt lag, och du är inte klar än.*
+body: *Vill du att vi säger till när något behöver dig — laget, ett bud, en deadline? Du väljer vad, och kan tysta det när du vill.*
+knappar: *Ja, säg till* / *Inte nu*
 
 **iOS-hemskärm** (visas före pre-prompt på Safari utan installation):
 titel: *Lägg Bandy Manager på hemskärmen först.*

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+
+    .stage { min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:30px 24px 90px; }
+    .intro { max-width:820px; margin:0 0 26px; }
+    .badge { display:inline-block; font-family:var(--font-body); font-size:11px; font-weight:700; letter-spacing:1px; color:var(--bg-surface); background:var(--accent); border-radius:5px; padding:3px 8px; }
+    .row { display:flex; flex-wrap:wrap; gap:44px; align-items:flex-start; }
+    .capt { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--text-primary); margin:0 0 2px; }
+    .capt-sub { font-size:12px; color:var(--text-secondary); line-height:1.45; margin:0; }
+
+    /* backdrop (modaler centrerade, rgba 0.6, ingen blur — DS §8) */
+    .backdrop { width:392px; padding:26px 18px; background:rgba(14,13,11,0.6); border-radius:16px; display:flex; justify-content:center; }
+    .modal { width:340px; background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,0.4); }
+
+    .m-head { padding:14px 15px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:11px; }
+    .m-port { width:46px; height:46px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; background:radial-gradient(circle at 50% 32%, var(--pc,var(--accent)) 0%, var(--bg-leather) 120%); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:16px; color:#fff; }
+    .m-name { font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--text-primary); line-height:1.2; }
+    .m-meta { font-family:ui-monospace,monospace; font-size:10px; letter-spacing:0.3px; color:var(--text-muted); margin-top:3px; }
+    .m-eyebrow { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-dark); }
+
+    .m-body { padding:13px 15px 15px; }
+
+    /* ── SPELARENS LIGGARE — minnet ytat (liggarvokabulär) ── */
+    .liggare { position:relative; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 11px 9px 30px; margin-bottom:13px; }
+    .liggare .perf { position:absolute; left:0; top:0; bottom:0; width:24px; border-right:1px dashed var(--border-dark);
+      background-image:radial-gradient(circle at 12px 11px, var(--bg-surface) 2.4px, rgba(0,0,0,0.07) 2.6px, transparent 3.4px);
+      background-size:24px 20px; background-repeat:repeat-y; }
+    .lig-cap { font-family:var(--font-body); font-size:7.5px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+    .lig-row { display:grid; grid-template-columns:14px 1fr; gap:8px; align-items:start; padding:5px 0; border-bottom:1px solid var(--border); }
+    .lig-row:last-child { border-bottom:none; padding-bottom:1px; }
+    .lig-fam { font-size:11px; line-height:1.2; }
+    .lig-txt { font-family:var(--font-display); font-size:11.5px; color:var(--text-primary); line-height:1.4; }
+    .lig-txt em { font-style:italic; color:var(--text-muted); font-size:10px; }
+    .lig-prick { position:absolute; left:8.5px; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 2.5px var(--bg); margin-top:2px; }
+
+    .verdict { font-family:var(--font-display); font-style:italic; font-size:12px; line-height:1.45; color:var(--text-secondary); padding:9px 11px; background:color-mix(in srgb,var(--warm) 8%,var(--bg-surface)); border-left:2px solid var(--warm); border-radius:0 6px 6px 0; margin-bottom:13px; }
+    .verdict.good { background:color-mix(in srgb,var(--success) 9%,var(--bg-surface)); border-left-color:var(--success); }
+    .verdict b { font-style:normal; font-family:var(--font-body); font-weight:600; color:var(--text-primary); }
+
+    /* form fields */
+    .fields { display:flex; flex-direction:column; gap:9px; margin-bottom:13px; }
+    .field { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .field-lbl { font-family:var(--font-body); font-size:11px; color:var(--text-secondary); font-weight:600; }
+    .field-ctrl { display:flex; align-items:center; gap:6px; }
+    .stepper { display:flex; align-items:center; gap:2px; }
+    .step-btn { width:24px; height:24px; border:1px solid var(--border-dark); border-radius:5px; background:var(--bg-surface); color:var(--text-secondary); font-family:var(--font-body); font-size:14px; line-height:1; display:flex; align-items:center; justify-content:center; }
+    .step-val { min-width:64px; text-align:center; font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--text-primary); }
+    .step-val small { font-family:var(--font-body); font-size:9px; font-weight:400; color:var(--text-muted); display:block; letter-spacing:0.3px; }
+    .seg { display:flex; gap:3px; }
+    .seg-opt { padding:5px 9px; font-family:var(--font-body); font-size:11px; font-weight:700; border:1px solid var(--border); border-radius:5px; background:var(--bg-surface); color:var(--text-muted); }
+    .seg-opt.on { background:color-mix(in srgb,var(--accent) 12%,var(--bg-surface)); border-color:var(--accent); color:var(--accent-dark); }
+
+    .budgetline { display:flex; align-items:center; justify-content:space-between; font-family:var(--font-body); font-size:10.5px; color:var(--text-muted); padding:8px 2px 12px; border-top:1px dashed var(--border); }
+    .budgetline b { font-family:var(--font-display); font-size:12px; color:var(--text-primary); }
+
+    /* rivalry warning strip — diegetisk ⚠️, tonad (SPEC §5c) */
+    .rival { display:flex; gap:8px; align-items:flex-start; padding:9px 11px; background:color-mix(in srgb,var(--danger) 8%,var(--bg-surface)); border:1px solid color-mix(in srgb,var(--danger) 30%,var(--border)); border-radius:7px; margin-bottom:12px; }
+    .rival .ic { font-size:13px; flex-shrink:0; line-height:1.2; }
+    .rival p { margin:0; font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-secondary); line-height:1.45; }
+    .rival p b { font-style:normal; font-family:var(--font-body); font-weight:700; color:var(--danger); }
+
+    /* footer — en primär (DS §5) */
+    .m-foot { display:flex; gap:8px; }
+    .btn-prim { flex:1; padding:12px; border:none; border-radius:8px; font-family:var(--font-body); font-size:12.5px; font-weight:700; letter-spacing:0.3px; color:#fff; background:var(--accent-dark); box-shadow:var(--shadow-primary); cursor:pointer; }
+    .btn-out { flex:0 0 auto; padding:12px 15px; border:1.5px solid var(--border-dark); border-radius:8px; font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--text-secondary); background:none; cursor:pointer; }
+
+    .note { max-width:392px; margin:12px 0 0; }
+    .pc-lqv { --pc:#6E7FA8; } .pc-hlm { --pc:#3D6E4A; }
+  </style>
+</helmet>
+<div class="stage">
+
+  <div class="intro">
+    <div class="h-label" style="color:var(--accent-dark);">DESIGN · TRANSFERS — LIGGARVOKABULÄR I BESLUTSÖGONBLICKET</div>
+    <h1 style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:6px 0 8px; line-height:1.16;">Minnet ytat där budet läggs</h1>
+    <p class="h-body" style="margin:0 0 8px; max-width:720px;">Ingen ny mekanik — proxierna finns redan (<code style="font-family:var(--font-display);color:var(--accent-dark)">seasonsAtClub</code>, <code style="font-family:var(--font-display);color:var(--accent-dark)">birthRegion</code>, <code style="font-family:var(--font-display);color:var(--accent-dark)">dayJobIsLocal</code>, <code style="font-family:var(--font-display);color:var(--accent-dark)">rivalry.intensity</code>, <code style="font-family:var(--font-display);color:var(--accent-dark)">transferPersonality</code>). Det som är nytt är <strong>formen</strong>: Klubbminnets liggarvokabulär — perforeringsräls, Georgia, daterade attribuerade rader — flyttar in i modalen som en <em>spelarens liggare</em>. När du lägger ett bud eller förlänger ett kontrakt ser du <strong>människan i liggaren</strong>, inte bara siffrorna, och du förstår svaret <em>innan</em> du förbinder dig.</p>
+    <p class="h-body-sm" style="margin:0; max-width:720px;">Två modaler, samma vokabulär: <a href="#1a">1a</a> Lägg bud (köp — motståndarens spelare, rivalvarning i beslutsögonblicket) · <a href="#1b">1b</a> Förläng kontrakt (egen spelare — lojaliteten synlig innan lönebudet). En primär per modal. Rivalvarningen sitter <strong>ovanför</strong> CTA:n, inte i Portal efteråt (SPEC §5c). Kedjan: Design formen → Opus skriver strängpoolerna (§6) → Code wirar mot befintliga proxies. — <em>Frusна värden: köp = S. Lindqvist / Slottsbron, rival "Slaget om Värmland" · förläng = P. Holmberg, egen lagkapten. Byt spelare → liggarraderna byter vilka proxies som träffar.</em></p>
+  </div>
+
+  <div class="row">
+
+    <!-- ══════════ 1a · Lägg bud (köp) ══════════ -->
+    <div id="1a" style="width:392px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1a</span>
+        <div><div class="capt">Lägg bud · motståndarens spelare</div><div class="capt-sub">Liggaren förklarar varför han troligen tackar nej — <em>innan</em> du binder budget.</div></div>
+      </div>
+
+      <div class="backdrop">
+        <div class="modal">
+          <div class="m-head">
+            <div class="m-port pc-lqv">SL</div>
+            <div>
+              <div class="m-eyebrow">💼 Lägg bud</div>
+              <div class="m-name">Stefan Lindqvist</div>
+              <div class="m-meta">A · 29 år · Slottsbron · Värde 65 tkr</div>
+            </div>
+          </div>
+          <div class="m-body">
+
+            <div class="liggare">
+              <div class="perf"></div>
+              <div class="lig-cap">Spelarens liggare · Slottsbron</div>
+              <div class="lig-row"><span class="lig-fam">🏟️</span><span class="lig-txt">Sju säsonger i klubben. Har ratat två bud förr. <em>seasonsAtClub 7</em></span></div>
+              <div class="lig-row"><span class="lig-fam">👤</span><span class="lig-txt">Uppvuxen i Värmland — samma bygd som klubben. <em>birthRegion = region</em></span></div>
+              <div class="lig-row"><span class="lig-fam">🤝</span><span class="lig-txt">Kör grävmaskin åt kommunen på vardagarna. <em>dayJobIsLocal</em></span></div>
+            </div>
+
+            <div class="verdict"><b>Hemmakär.</b> Tre skäl att stanna, noll att flytta. Ett bud kan gå igenom klubben men falla på honom — förbättra eller vänta.</div>
+
+            <div class="fields">
+              <div class="field"><span class="field-lbl">Budsumma</span><div class="field-ctrl"><div class="stepper"><button class="step-btn">–</button><span class="step-val">70 <small>tkr</small></span><button class="step-btn">+</button></div></div></div>
+              <div class="field"><span class="field-lbl">Lön</span><div class="field-ctrl"><div class="stepper"><button class="step-btn">–</button><span class="step-val">24 <small>tkr/mån</small></span><button class="step-btn">+</button></div></div></div>
+              <div class="field"><span class="field-lbl">Kontraktslängd</span><div class="seg"><button class="seg-opt">1 år</button><button class="seg-opt on">2 år</button><button class="seg-opt">3 år</button></div></div>
+            </div>
+            <div class="budgetline"><span>Transferbudget kvar</span><b>90 tkr</b></div>
+
+            <div class="rival">
+              <span class="ic">⚠️</span>
+              <p><b>Slottsbron är vår rival.</b> "Slaget om Värmland." Klacken kommer inte att gilla det här.</p>
+            </div>
+
+            <div class="m-foot">
+              <button class="btn-out">Avbryt</button>
+              <button class="btn-prim">Lägg bud — 70 tkr</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="h-body-sm note"><strong>Liggaren = tre proxy-rader.</strong> Varje rad har en familjestämpel (samma fem som Klubbminnet) och en kursiv källa i mono — så det är läsbart <em>varför</em> spelet vet det. Domslutet ("Hemmakär") är Opus copy ur vägran-poolen. Rivalvarningen är diegetisk ⚠️ (officiell rivalry-flagga), tonad strip — inte röd banner.</p>
+    </div>
+
+    <!-- ══════════ 1b · Förläng kontrakt (egen) ══════════ -->
+    <div id="1b" style="width:392px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1b</span>
+        <div><div class="capt">Förläng kontrakt · egen spelare</div><div class="capt-sub">Lojaliteten synlig — samma vokabulär, men minnet talar <em>för</em> affären.</div></div>
+      </div>
+
+      <div class="backdrop">
+        <div class="modal">
+          <div class="m-head">
+            <div class="m-port pc-hlm">PH</div>
+            <div>
+              <div class="m-eyebrow">📋 Förläng kontrakt</div>
+              <div class="m-name">Petter Holmberg</div>
+              <div class="m-meta">MV · 31 år · Lagkapten · utgår omg 22</div>
+            </div>
+          </div>
+          <div class="m-body">
+
+            <div class="liggare">
+              <div class="perf"></div>
+              <div class="lig-prick" style="top:34px;"></div>
+              <div class="lig-cap">Spelarens liggare · Forsbacka BK</div>
+              <div class="lig-row"><span class="lig-fam">👤</span><span class="lig-txt">214 matcher för klubben. Fostrad av Ekström, fostrar nu Sjödin. <em>blodslinjen</em></span></div>
+              <div class="lig-row"><span class="lig-fam">⚔️</span><span class="lig-txt">Nollade Skutskär i SM-finalen. Klackens favorit. <em>significance-topp</em></span></div>
+              <div class="lig-row"><span class="lig-fam">🤝</span><span class="lig-txt">Aldrig krävt mer än laget tålde. <em>homebound</em></span></div>
+            </div>
+
+            <div class="verdict good"><b>Vill stanna.</b> Elva år i tröjan. Han skriver på för en rimlig lön — men klacken minns om du snålar med kaptenen.</div>
+
+            <div class="fields">
+              <div class="field"><span class="field-lbl">Ny lön</span><div class="field-ctrl"><div class="stepper"><button class="step-btn">–</button><span class="step-val">28 <small>tkr/mån</small></span><button class="step-btn">+</button></div></div></div>
+              <div class="field"><span class="field-lbl">Längd</span><div class="seg"><button class="seg-opt">1 år</button><button class="seg-opt on">2 år</button><button class="seg-opt">3 år</button></div></div>
+              <div class="field"><span class="field-lbl">Roll</span><div class="seg"><button class="seg-opt on">Lagkapten</button><button class="seg-opt">Spelare</button></div></div>
+            </div>
+            <div class="budgetline"><span>Lönebudget kvar</span><b>112 tkr/mån</b></div>
+
+            <div class="m-foot">
+              <button class="btn-out">Avbryt</button>
+              <button class="btn-prim">Erbjud förlängning</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="h-body-sm note"><strong>Samma skal, motsatt lutning.</strong> Ingen rivalvarning (egen spelare), grön verdict-ton, och en kopparprick på liggaren där en Triumf (SM-finalen) noterats — precis som i Klubbminnet. Petter Holmberg är samma målvakt som blodslinjen i minne-fliken: liggaren är <em>en</em> sanning, ytad på två ställen. Ingen ny data — bara aggregerad ur befintlig <code style="font-family:var(--font-display)">getClubMemory()</code> + proxies.</p>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

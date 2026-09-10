@@ -41,13 +41,10 @@ export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
     >
       <p className="h-label" style={{ color: 'var(--accent-dark)', marginBottom: 5 }}>KLUBBEN UTANFÖR SPELET</p>
       <h3 id="club-notification-title" className="h-card" style={{ color: 'var(--text-primary)', marginBottom: 4 }}>
-        Vill du att klubben hör av sig när något faktiskt är värt att veta?
+        Nästa match väntar på ditt lag, och du är inte klar än.
       </h3>
-      {/* stickiness-copy-roster (2026-09-06): rättad till registrets §7-ordalydelse
-          verbatim — texten hade drivit ("bonuspåminnelser" ihopslaget) från den
-          låsta "Inga dagliga påminnelser, ingen bonus." */}
       <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-        Matcher, beslut och klubbhändelser. Inga dagliga påminnelser, ingen bonus.
+        Vill du att vi säger till när något behöver dig — laget, ett bud, en deadline? Du väljer vad, och kan tysta det när du vill.
       </p>
 
       {capability.requiresHomeScreenInstall ? (
@@ -67,7 +64,7 @@ export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
       ) : (
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           <button className="btn btn-primary" onClick={() => void enable()} disabled={isChanging} style={{ flex: 1, fontSize: 11 }}>
-            {isChanging ? 'Kopplar in…' : 'Ja, hör av er'}
+            {isChanging ? 'Kopplar in…' : 'Ja, säg till'}
           </button>
           <button className="btn btn-ghost" onClick={dismiss} disabled={isChanging} style={{ fontSize: 11 }}>Inte nu</button>
         </div>

@@ -276,6 +276,31 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
             />
           </div>
 
+          <div style={{
+            fontFamily: 'var(--font-body)', fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+            textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px',
+          }}>Notiser och serverdata</div>
+          <div className="card-sharp" style={{
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)', padding: '13px 14px',
+          }}>
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 9px' }}>
+              Spelet sparas på din enhet. Vi har inget konto och vet inte vem du är.
+            </p>
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 9px' }}>
+              Slår du på notiser sparar vi det som krävs för att skicka dem: en slumpad kod för den här installationen, din webbläsares adress för push, och en liten bild av var du står i spelet — nästa match, öppna beslut — så notisen kan säga något sant. Inte hela sparfilen. Inget namn, ingen e-post.
+            </p>
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 9px' }}>
+              Vi skickar högst en om dagen, högst tre i veckan, aldrig mellan halv tio på kvällen och åtta på morgonen.
+            </p>
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 9px' }}>
+              Stänger du av raderas allt vi sparat om installationen. Har vi inte hört från din enhet på tre månader raderas det ändå.
+            </p>
+            <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: 0 }}>
+              Vi säljer inget och delar inget.
+            </p>
+          </div>
+
           <div style={{ borderTop: '1px solid var(--border)', margin: '18px 0 14px' }} />
 
           {!confirmingMute ? (

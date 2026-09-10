@@ -38,5 +38,5 @@ export function getPortraitImagePath(playerId: string, age: number): string | nu
   if (indices.length === 0) return null
 
   const idx = indices[Math.abs(stringHash(playerId)) % indices.length]
-  return `/assets/portraits/portrait_${tier}_${idx}.png`
+  return `/assets/portraits/portrait_${tier}_${idx}.png?v=7`
 }

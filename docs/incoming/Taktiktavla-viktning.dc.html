@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dark); }
+
+    .stage { min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:30px 24px 90px; }
+    .intro { max-width:780px; margin:0 0 24px; }
+    .badge { display:inline-block; font-family:var(--font-body); font-size:11px; font-weight:700; letter-spacing:1px; color:var(--bg-surface); background:var(--accent); border-radius:5px; padding:3px 8px; }
+    .row { display:flex; flex-wrap:wrap; gap:40px; align-items:flex-start; }
+
+    .capt { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--text-primary); margin:0 0 2px; }
+    .capt-sub { font-size:12px; color:var(--text-secondary); line-height:1.45; margin:0; }
+
+    /* phone */
+    .art { width:392px; border-radius:24px; overflow:hidden; border:1px solid var(--border-dark); background:var(--bg); box-shadow:0 12px 32px rgba(0,0,0,0.2); }
+    .hdr { height:44px; background:var(--bg-leather); border-bottom:2px solid var(--accent); display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+    .hdr-club { font-family:var(--font-display); font-weight:800; font-size:14px; color:var(--text-light); }
+    .hdr-season { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:1px; color:var(--text-light-secondary); }
+
+    /* PhaseIndicator */
+    .phase { display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 0; background:var(--bg-surface); border-bottom:1px solid var(--border); }
+    .ph { display:flex; align-items:center; gap:5px; font-family:var(--font-body); font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); }
+    .ph .dot { width:7px; height:7px; border-radius:50%; background:var(--border-dark); }
+    .ph.on { color:var(--accent-dark); }
+    .ph.on .dot { background:var(--accent); }
+    .ph .sep { width:16px; height:1px; background:var(--border-dark); }
+
+    .body { padding:12px; }
+
+    .card { background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .ttl { padding:11px 12px 0; font-family:var(--font-body); font-size:8px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:5px; }
+    .tabs { display:flex; gap:4px; padding:8px 12px 0; }
+    .tab { flex:1; padding:8px 4px; font-family:var(--font-body); font-size:10px; font-weight:700; letter-spacing:0.5px; border:none; border-bottom:2px solid transparent; background:none; color:var(--text-muted); }
+    .tab.on { color:var(--accent-dark); border-bottom-color:var(--accent); }
+    .tdesc { padding:6px 12px; border-bottom:0.5px solid var(--border); font-family:var(--font-display); font-style:italic; font-size:10px; color:var(--text-muted); }
+    .content { padding:12px; }
+
+    .fsel { display:flex; gap:5px; overflow-x:auto; margin-bottom:10px; padding-bottom:2px; }
+    .fopt { flex:0 0 auto; padding:5px 10px; font-family:ui-monospace,monospace; font-size:11px; font-weight:700; border-radius:5px; border:1px solid var(--border); background:none; color:var(--text-secondary); }
+    .fopt.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .fopt.rec { border-color:var(--success); color:var(--success); position:relative; }
+    .fopt.rec::after { content:'★'; position:absolute; top:-5px; right:-2px; font-size:8px; color:var(--success); }
+
+    .pitch-wrap { background:color-mix(in srgb,var(--accent) 4%,var(--bg-surface)); border:1px solid var(--border); border-radius:8px; padding:6px; margin-bottom:10px; }
+    .pitch { width:100%; display:block; }
+
+    .styrka { display:flex; justify-content:space-between; align-items:baseline; padding:8px 11px; background:color-mix(in srgb,var(--accent) 5%,var(--bg-surface)); border-radius:6px; margin-bottom:12px; }
+    .styrka .lbl { font-family:var(--font-body); font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+    .styrka b { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--text-primary); margin-left:6px; }
+    .styrka .warn { font-family:var(--font-body); font-size:11px; color:var(--warm); }
+
+    /* viktning — spakar */
+    .viktlabel { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin:2px 0 9px; }
+    .mrow { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+    .mlbl { font-family:var(--font-body); font-size:10px; color:var(--text-secondary); width:62px; flex-shrink:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+    .mopts { display:flex; gap:4px; flex:1; }
+    .mopt { flex:1; padding:6px 4px; font-family:var(--font-body); font-size:9px; font-weight:700; text-align:center; border-radius:4px; border:1px solid var(--border); background:none; color:var(--text-muted); }
+    .mopt.on { background:color-mix(in srgb,var(--accent) 12%,var(--bg-surface)); border-color:var(--accent); color:var(--accent-dark); }
+    .conseq { font-family:var(--font-display); font-style:italic; font-size:10px; color:var(--text-secondary); margin:0 0 11px; line-height:1.4; }
+    .conseq b { color:var(--accent-dark); font-style:normal; font-family:var(--font-body); font-weight:600; }
+    .assist { padding:9px 11px; background:color-mix(in srgb,var(--accent) 5%,var(--bg-surface)); border-left:2px solid var(--accent); border-radius:0 6px 6px 0; margin-bottom:14px; }
+    .assist p { font-family:var(--font-display); font-style:italic; font-size:11.5px; color:var(--text-secondary); line-height:1.45; margin:0; }
+
+    /* primär-hierarki footer */
+    .actions { display:flex; flex-direction:column; gap:8px; }
+    .btn-prim { width:100%; padding:12px; border:none; border-radius:8px; font-family:var(--font-body); font-size:12.5px; font-weight:700; letter-spacing:0.3px; color:#fff; background:var(--accent-dark); box-shadow:var(--shadow-primary); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
+    .btn-out { width:100%; padding:11px; border:1.5px solid var(--border-dark); border-radius:8px; font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--text-secondary); background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
+    .btn-link { text-align:center; font-family:var(--font-body); font-size:11px; color:var(--accent-dark); padding:3px; }
+
+    .divider { display:flex; align-items:center; gap:9px; margin:14px 0 12px; }
+    .divider .ln { flex:1; height:1px; background:var(--border); }
+    .divider .dia { width:6px; height:6px; background:var(--accent); transform:rotate(45deg); }
+
+    .cta { width:100%; padding:14px; border:none; border-radius:12px; font-family:var(--font-body); font-size:14px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#fff; background:linear-gradient(180deg,#DD9555,#8B4820); box-shadow:var(--shadow-primary); cursor:pointer; }
+    .cta-note { font-family:var(--font-body); font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); text-align:center; margin-top:7px; }
+
+    .note { max-width:392px; margin:12px 0 0; }
+  </style>
+</helmet>
+<div class="stage">
+
+  <div class="intro">
+    <div class="h-label" style="color:var(--accent-dark);">DESIGN · TAKTIKTAVLAN — VIKTNING + PRIMÄR-HIERARKI + UPPSTÄLLNING</div>
+    <h1 style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:6px 0 8px; line-height:1.16;">Taktiktavlan — en primär, inte två</h1>
+    <p class="h-body" style="margin:0 0 8px; max-width:680px;">Samma tavla som redan finns: <strong>uppställning</strong> (SVG-planen, arketypprickar, kaptensring, ★rekommenderad formation) och <strong>viktning</strong> (mentalitet · tempo · press som beskrivna rytm-konsekvenser, inte namnlösa reglage). Det som inte är löst är <strong>primär-hierarkin</strong>: idag bär tavlan <em>två</em> kopparfyllda knappar samtidigt — assistentens "Följ rådet" och FormationView:s "Bäst för dagens match". DS §5 säger en primär per skärm.</p>
+    <p class="h-body-sm" style="margin:0; max-width:680px;">Båda nedan har identisk tavla; skillnaden är <strong>vilken kontroll som bär kopparn</strong> (den andra tonas ner, inte bort). Den ceremoniella skärmstängaren <em>SPELA OMGÅNG →</em> lever i eget register (btn-cta) och räknas inte som in-content-primär. Referera med id: <a href="#1a">1a</a> assistenten bär primären · <a href="#1b">1b</a> uppställningen bär primären. — <em>Domen är Jacobs, och den hänger ihop med Portal-slottens rangordning som samma primär-regel (beslutskort-briefen). Ingen baseline rörs innan dess.</em></p>
+  </div>
+
+  <div class="row">
+
+    <!-- ══════════ 1a ══════════ -->
+    <div id="1a" style="width:392px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1a</span>
+        <div><div class="capt">Assistenten bär primären</div><div class="capt-sub">Ett tryck accepterar rekommenderad XI + spakar. Manuell optimering blir en tystare genväg.</div></div>
+      </div>
+      <div class="art">
+        <div class="hdr"><span class="hdr-club">Forsbacka BK</span><span class="hdr-season">2026/27</span></div>
+        <div class="phase">
+          <span class="ph on"><span class="dot"></span>Förbered</span><span class="sep"></span>
+          <span class="ph"><span class="dot"></span>Spela</span><span class="sep"></span>
+          <span class="ph"><span class="dot"></span>Granska</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <div class="ttl">📋 Taktiktavlan</div>
+            <div class="tabs"><button class="tab on">Formation</button><button class="tab">Kemi</button><button class="tab">Anteckningar</button></div>
+            <div class="tdesc">Välj formation och flytta spelare.</div>
+            <div class="content">
+              <div class="fsel"><button class="fopt on">3-3-4</button><button class="fopt rec">3-4-3</button><button class="fopt">5-3-2</button><button class="fopt">4-3-3</button><button class="fopt">4-2-4</button></div>
+              <div class="pitch-wrap">
+                <svg class="pitch" viewBox="0 0 280 400" style="height:212px">
+                  <rect width="280" height="400" fill="color-mix(in srgb,var(--accent) 4%,transparent)"/>
+                  <line x1="0" y1="200" x2="280" y2="200" stroke="var(--border)" stroke-width="0.6" stroke-dasharray="3,3"/>
+                  <circle cx="140" cy="200" r="35" fill="none" stroke="var(--border)" stroke-width="0.6" stroke-dasharray="3,3"/>
+                  <rect x="90" y="0" width="100" height="28" fill="none" stroke="var(--border)" stroke-width="0.6"/>
+                  <rect x="90" y="372" width="100" height="28" fill="none" stroke="var(--border)" stroke-width="0.6"/>
+                  <g><circle cx="140" cy="40" r="15" fill="var(--arch-reflexgk)" stroke="#fff" stroke-width="1.5"/><text x="140" y="44" text-anchor="middle" font-size="9" fill="#fff" font-family="Georgia" font-weight="700">MV</text></g>
+                  <g><circle cx="70" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="70" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Jhn</text></g>
+                  <g><circle cx="140" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="140" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Eng</text></g>
+                  <g><circle cx="210" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="210" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Berg</text></g>
+                  <g><circle cx="70" cy="210" r="15" fill="var(--arch-twoway)" stroke="#fff" stroke-width="1.5"/><text x="70" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Erk</text></g>
+                  <g><circle cx="140" cy="210" r="16" fill="var(--arch-twoway)" stroke="#E8B95C" stroke-width="2.5"/><text x="140" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Lqv</text><text x="140" y="234" text-anchor="middle" font-size="7" fill="#E8B95C" font-family="monospace">©</text></g>
+                  <g><circle cx="210" cy="210" r="15" fill="var(--arch-twoway)" stroke="#fff" stroke-width="1.5"/><text x="210" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Hnr</text></g>
+                  <g><circle cx="50" cy="320" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="50" y="324" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Sun</text></g>
+                  <g><circle cx="110" cy="330" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="110" y="334" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Pål</text></g>
+                  <g><circle cx="170" cy="330" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="170" y="334" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Lin</text></g>
+                  <g><circle cx="230" cy="320" r="15" fill="none" stroke="#C49A3A" stroke-width="2" stroke-dasharray="4,3"/><text x="230" y="324" text-anchor="middle" font-size="7" fill="#C49A3A" font-family="monospace">tom</text></g>
+                </svg>
+              </div>
+              <div class="styrka"><span><span class="lbl">Lagstyrka idag</span><b>72</b></span><span class="warn">−4 trötthet · 1 plats tom</span></div>
+
+              <div class="viktlabel">Viktning · rytm</div>
+              <div class="mrow"><span class="mlbl">Mentalitet</span><div class="mopts"><button class="mopt">Def</button><button class="mopt">Bal</button><button class="mopt on">Off</button></div></div>
+              <div class="conseq"><b>Offensiv</b> → fler lägen, öppnare bakåt</div>
+              <div class="mrow"><span class="mlbl">Tempo</span><div class="mopts"><button class="mopt">Lågt</button><button class="mopt">Normal</button><button class="mopt on">Högt</button></div></div>
+              <div class="conseq"><b>Högt</b> → målskurar, högre varians, snabbare trötthet</div>
+              <div class="mrow"><span class="mlbl">Press</span><div class="mopts"><button class="mopt">Lågt</button><button class="mopt on">Medel</button><button class="mopt">Högt</button></div></div>
+              <div class="conseq"><b>Medel</b> → balanserad bollvinst utan att tömma kondition</div>
+
+              <div class="assist"><p>Assistenten: "Offensiv + högt tempo ger oss lägen — men vi tröttnar mot slutet. Räkna med en nervös sista kvart."</p></div>
+
+              <div class="actions">
+                <button class="btn-prim">✓ Följ assistentens råd</button>
+                <button class="btn-out">Ställ upp bäst för dagens match</button>
+              </div>
+
+              <div class="divider"><span class="ln"></span><span class="dia"></span><span class="ln"></span></div>
+              <button class="cta">Spela omgång 8 →</button>
+              <div class="cta-note">Söderfors · hemma</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="h-body-sm note"><strong>Primär = "Följ rådet".</strong> Tavlan har en åsikt: kopparn ligger på det snabba, kuraterade valet. "Bäst för dagens match" finns kvar som outline-genväg (aldrig bort). Passar en tränarröst som redan präglar Portal och kafferum. Risk: en van spelare som alltid optimerar manuellt kan tycka rekommendationen tar plats.</p>
+    </div>
+
+    <!-- ══════════ 1b ══════════ -->
+    <div id="1b" style="width:392px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1b</span>
+        <div><div class="capt">Uppställningen bär primären</div><div class="capt-sub">Kopparn ligger på "Bäst för dagens match". Rådet blir en rad i assistent-citatet.</div></div>
+      </div>
+      <div class="art">
+        <div class="hdr"><span class="hdr-club">Forsbacka BK</span><span class="hdr-season">2026/27</span></div>
+        <div class="phase">
+          <span class="ph on"><span class="dot"></span>Förbered</span><span class="sep"></span>
+          <span class="ph"><span class="dot"></span>Spela</span><span class="sep"></span>
+          <span class="ph"><span class="dot"></span>Granska</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <div class="ttl">📋 Taktiktavlan</div>
+            <div class="tabs"><button class="tab on">Formation</button><button class="tab">Kemi</button><button class="tab">Anteckningar</button></div>
+            <div class="tdesc">Välj formation och flytta spelare.</div>
+            <div class="content">
+              <div class="fsel"><button class="fopt on">3-3-4</button><button class="fopt rec">3-4-3</button><button class="fopt">5-3-2</button><button class="fopt">4-3-3</button><button class="fopt">4-2-4</button></div>
+              <div class="pitch-wrap">
+                <svg class="pitch" viewBox="0 0 280 400" style="height:212px">
+                  <rect width="280" height="400" fill="color-mix(in srgb,var(--accent) 4%,transparent)"/>
+                  <line x1="0" y1="200" x2="280" y2="200" stroke="var(--border)" stroke-width="0.6" stroke-dasharray="3,3"/>
+                  <circle cx="140" cy="200" r="35" fill="none" stroke="var(--border)" stroke-width="0.6" stroke-dasharray="3,3"/>
+                  <rect x="90" y="0" width="100" height="28" fill="none" stroke="var(--border)" stroke-width="0.6"/>
+                  <rect x="90" y="372" width="100" height="28" fill="none" stroke="var(--border)" stroke-width="0.6"/>
+                  <g><circle cx="140" cy="40" r="15" fill="var(--arch-reflexgk)" stroke="#fff" stroke-width="1.5"/><text x="140" y="44" text-anchor="middle" font-size="9" fill="#fff" font-family="Georgia" font-weight="700">MV</text></g>
+                  <g><circle cx="70" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="70" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Jhn</text></g>
+                  <g><circle cx="140" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="140" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Eng</text></g>
+                  <g><circle cx="210" cy="110" r="15" fill="var(--arch-defensive)" stroke="#fff" stroke-width="1.5"/><text x="210" y="114" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Berg</text></g>
+                  <g><circle cx="70" cy="210" r="15" fill="var(--arch-twoway)" stroke="#fff" stroke-width="1.5"/><text x="70" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Erk</text></g>
+                  <g><circle cx="140" cy="210" r="16" fill="var(--arch-twoway)" stroke="#E8B95C" stroke-width="2.5"/><text x="140" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Lqv</text><text x="140" y="234" text-anchor="middle" font-size="7" fill="#E8B95C" font-family="monospace">©</text></g>
+                  <g><circle cx="210" cy="210" r="15" fill="var(--arch-twoway)" stroke="#fff" stroke-width="1.5"/><text x="210" y="214" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Hnr</text></g>
+                  <g><circle cx="50" cy="320" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="50" y="324" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Sun</text></g>
+                  <g><circle cx="110" cy="330" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="110" y="334" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Pål</text></g>
+                  <g><circle cx="170" cy="330" r="15" fill="var(--arch-finisher)" stroke="#fff" stroke-width="1.5"/><text x="170" y="334" text-anchor="middle" font-size="8" fill="#fff" font-family="Georgia" font-weight="700">Lin</text></g>
+                  <g><circle cx="230" cy="320" r="15" fill="none" stroke="#C49A3A" stroke-width="2" stroke-dasharray="4,3"/><text x="230" y="324" text-anchor="middle" font-size="7" fill="#C49A3A" font-family="monospace">tom</text></g>
+                </svg>
+              </div>
+              <div class="styrka"><span><span class="lbl">Lagstyrka idag</span><b>72</b></span><span class="warn">−4 trötthet · 1 plats tom</span></div>
+
+              <div class="viktlabel">Viktning · rytm</div>
+              <div class="mrow"><span class="mlbl">Mentalitet</span><div class="mopts"><button class="mopt">Def</button><button class="mopt">Bal</button><button class="mopt on">Off</button></div></div>
+              <div class="conseq"><b>Offensiv</b> → fler lägen, öppnare bakåt</div>
+              <div class="mrow"><span class="mlbl">Tempo</span><div class="mopts"><button class="mopt">Lågt</button><button class="mopt">Normal</button><button class="mopt on">Högt</button></div></div>
+              <div class="conseq"><b>Högt</b> → målskurar, högre varians, snabbare trötthet</div>
+              <div class="mrow"><span class="mlbl">Press</span><div class="mopts"><button class="mopt">Lågt</button><button class="mopt on">Medel</button><button class="mopt">Högt</button></div></div>
+              <div class="conseq"><b>Medel</b> → balanserad bollvinst utan att tömma kondition</div>
+
+              <div class="assist"><p>Assistenten: "Offensiv + högt tempo ger oss lägen. <a href="#1b">Vill du att jag ställer upp mitt råd?</a>"</p></div>
+
+              <div class="actions">
+                <button class="btn-prim">⚡ Ställ upp bäst för dagens match</button>
+                <div class="btn-link">Följ assistentens råd i stället</div>
+              </div>
+
+              <div class="divider"><span class="ln"></span><span class="dia"></span><span class="ln"></span></div>
+              <button class="cta">Spela omgång 8 →</button>
+              <div class="cta-note">Söderfors · hemma</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="h-body-sm note"><strong>Primär = "Bäst för dagens match".</strong> Kopparn ligger på den mätbara auto-optimeringen (lagstyrka/trötthet/kemi vägs); rådet degraderas till en textlänk i assistent-citatet. Passar en spelare som vill ha kontroll och en snabb "gör det bäst"-knapp. Risk: tränarrösten tystnar lite — assistenten blir verktyg, inte röst.</p>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

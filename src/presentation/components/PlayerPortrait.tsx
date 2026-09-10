@@ -23,7 +23,16 @@ export function PlayerPortrait({ playerId, age, position, alt = '' }: PlayerPort
         alt={alt}
         width={64}
         height={64}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+          // De frilagda porträtten ska kunna återanvändas på mörka ytor utan
+          // att mörkt hår försvinner. Medaljongens papper ägs därför av den
+          // gemensamma renderingsgränsen, inte av den enskilda bildfilen.
+          background: 'var(--bg-surface)',
+        }}
       />
     )
   }
