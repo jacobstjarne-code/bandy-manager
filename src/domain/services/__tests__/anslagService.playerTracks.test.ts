@@ -4,6 +4,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { CupBracket, CupMatch } from '../../entities/Cup'
 import type { Fixture } from '../../entities/Fixture'
 import { FixtureStatus, PlayoffStatus } from '../../enums'
+import { CUP_ANSLAG } from '../../data/anslag/cupAnslag'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -99,6 +100,20 @@ describe('Cup-vinnare vs förlorare', () => {
       },
     })
     expect(computeNextAnslag(game)).toBe('cup_done')
+  })
+
+  it('förlorarens anslag tillskriver aldrig den egna klubben pokalen', () => {
+    const bodies = CUP_ANSLAG.cup_done.variants.map(variant => variant.body)
+
+    expect(bodies).toContainEqual(expect.stringContaining('Pokalen står på någon annans byrå.'))
+    expect(bodies).not.toContainEqual(expect.stringContaining('Pokalen står på en byrå någonstans.'))
+    expect(bodies.every(body => !body.includes('Pokalen är vår'))).toBe(true)
+  })
+
+  it('vinnarens anslag behåller det uttryckliga pokalinnehavet', () => {
+    const bodies = CUP_ANSLAG.cup_done_winner.variants.map(variant => variant.body)
+
+    expect(bodies.some(body => body.includes('Pokalen är vår'))).toBe(true)
   })
 })
 

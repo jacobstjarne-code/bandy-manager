@@ -218,7 +218,7 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 ### Säsong 2031/32 — start och omgång 1–2
 
 - Personligt mål: `Håll ihop truppen. Ingen ska behöva gå.` På lönekravsskärmen valdes `Möt alla`; övergångsbud på egna spelare har därefter avslagits i linje med målet.
-- Cupkvartsfinalen hemma mot Lesjöfors förlorades 3–4. Efter cuputtåget visades övergångstexten `Cupen är spelad. Pokalen står på en byrå någonstans.` Formuleringen kan läsas som ett eget pokalinnehav trots förlusten och ska kodverifieras innan MASTER-post.
+- Cupkvartsfinalen hemma mot Lesjöfors förlorades 3–4. Efter cuputtåget visades övergångstexten `Cupen är spelad. Pokalen står på en byrå någonstans.` Kodspårningen bekräftade att den var en likaviktad `cup_done`-variant efter förlust. Den säger nu entydigt `Pokalen står på någon annans byrå`; vinnarspårets egna pokaltext är oförändrad och båda vägarna regressionstestas.
 - Inför seriepremiären förnyades Bandyskola för barn för 40 tkr, ett sponsoravtal på 1,5 tkr/vecka accepterades och ett bud på Timo Nordström avslogs. Premiären mot Slottsbron vanns 7–1.
 - Omgång 2 mot Lesjöfors förlorades 3–4 efter omfattande trupprotation. Bandygalan besöktes och mecenaten Anna Johansson fick förslag om succession. Föreningslotteriet förnyades inte.
 - Beslutskön låg kvar runt 9–10 trots att tre beslut hanterades per portalvecka. Det är fortsatt hög redaktionell belastning, men ingen ny separat MASTER-rad skapas utan kodverifiering.

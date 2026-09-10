@@ -73,7 +73,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Pokalen ⬩',
     variants: [
       {
-        body: `Cupen är spelad. Pokalen står på en byrå någonstans.<br><br>Nu vidtar det som är längre, jämnare, och i längden viktigare. Serien börjar nästa helg.<br><br>Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.`,
+        body: `Cupen är spelad. Pokalen står på någon annans byrå.<br><br>Nu vidtar det som är längre, jämnare, och i längden viktigare. Serien börjar nästa helg.<br><br>Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.`,
       },
       {
         body: `Vår cup är slut. Några matcher blev det, fler blev det inte.<br><br>Det är så cupen är. Den prövar lag innan serien tar vid. Vad lärde vi oss? Mer än vi tror, mindre än vi ville.<br><br>Serien väntar. Det är där det avgörs.`,
