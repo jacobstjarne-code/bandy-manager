@@ -101,7 +101,7 @@ import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
   // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: tre riktiga SeasonSummaryScreen-
   // utfall (mästare byggs redan av 'season-header') — bevisar kapitelindelningen
@@ -222,6 +222,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'board-a',      label: 'BoardMeeting A (första)' },
   { id: 'board-b',      label: 'BoardMeeting B (bra)' },
   { id: 'board-c',      label: 'BoardMeeting C (dålig)' },
+  { id: 'board-n',      label: 'BoardMeeting N (ny klubb)' },
   { id: 'stillness',    label: 'NU-stiltje (lugn vecka)' },
   { id: 'granska',      label: 'Granska (IA: 3 grupper) — liga' },
   { id: 'granska-cup',       label: 'Granska — cup, vanlig runda' },
@@ -1840,6 +1841,27 @@ const boardSeasonSummaries = [
 ]
 const boardGameB = makeGame(makeLeagueFixtures(), { currentSeason: devSeason(3), board, boardObjectives: stretchGoalsSet, boardObjectiveHistory: histB, seasonStartFinances: 40000, seasonSummaries: boardSeasonSummaries, boardPatience: 70 })
 const boardGameC = makeGame(makeLeagueFixtures(), { currentSeason: devSeason(3), board, boardObjectives: newGoalsSet, boardObjectiveHistory: histC, seasonStartFinances: 120000, seasonSummaries: boardSeasonSummaries, boardPatience: 25 })
+const boardNSeason = devSeason(6)
+const boardGameNBase = makeGame(makeLeagueFixtures(), { currentSeason: boardNSeason, board, boardObjectives: newGoalsSet, boardObjectiveHistory: [], seasonStartFinances: 62000, seasonSummaries: boardSeasonSummaries })
+const boardGameN = {
+  ...boardGameNBase,
+  managerProfile: {
+    ...boardGameNBase.managerProfile!,
+    seasonsAtClub: 1,
+    clubSpells: [
+      { clubId: devClubs[1].id, clubName: devClubs[1].name, fromSeason: devSeason(1), toSeason: devSeason(5), endedBy: 'fired' as const },
+      { clubId: HOME_ID, clubName: devClubs[0].name, fromSeason: boardNSeason },
+    ],
+  },
+  eventLedger: [{
+    type: 'manager_appointed' as const,
+    semanticKey: `manager_appointed_${HOME_ID}_s${boardNSeason}`,
+    clubId: HOME_ID,
+    season: boardNSeason,
+    matchday: 0,
+    significance: 65,
+  }],
+}
 
 export function DevScenesScreen() {
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
@@ -1900,6 +1922,7 @@ export function DevScenesScreen() {
       : scene === 'board-a' ? boardGameA
       : scene === 'board-b' ? boardGameB
       : scene === 'board-c' ? boardGameC
+      : scene === 'board-n' ? boardGameN
       : scene === 'stillness' ? stillnessGame
       : scene === 'granska' ? granskaGame
       : scene === 'granska-level3' ? granskaLevel3Game
@@ -2476,6 +2499,7 @@ export function DevScenesScreen() {
         {scene === 'board-a' && <BoardMeetingScene game={boardGameA} onComplete={() => {}} />}
         {scene === 'board-b' && <BoardMeetingScene game={boardGameB} onComplete={() => {}} />}
         {scene === 'board-c' && <BoardMeetingScene game={boardGameC} onComplete={() => {}} />}
+        {scene === 'board-n' && <BoardMeetingScene game={boardGameN} onComplete={() => {}} />}
 
         {scene === 'stillness' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>

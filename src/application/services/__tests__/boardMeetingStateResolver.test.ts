@@ -125,4 +125,51 @@ describe('resolveBoardMeetingState — tillstånd N (DOM_STYRELSEMOTE_NY_KLUBB_2
     })
     expect(resolveBoardMeetingState(game).state).not.toBe('N')
   })
+
+  it('bygger övertaganderaden ur manager_appointed + föregående klubbperiod', () => {
+    const game = makeGame({
+      currentSeason: 6,
+      managerProfile: {
+        firstName: 'Test', lastName: 'Manager', age: 40, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 10, careerDraws: 2, careerLosses: 5,
+        seasonsAtClub: 1, contractUntilSeason: 8, monthlySalary: 30, coachRivalries: [],
+        clubSpells: [
+          { clubId: 'club_gamla', clubName: 'Gamla BK', fromSeason: 1, toSeason: 5, endedBy: 'fired' },
+          { clubId: CLUB_TEMPLATES[0].id, clubName: CLUB_TEMPLATES[0].name, fromSeason: 6 },
+        ],
+      },
+      eventLedger: [{
+        type: 'manager_appointed', semanticKey: 'manager_appointed_test',
+        clubId: CLUB_TEMPLATES[0].id, season: 6, matchday: 0, significance: 65,
+      }],
+    })
+
+    expect(resolveBoardMeetingState(game).takeoverLine)
+      .toBe('Du kom hit efter att Gamla BK tackat för sig.')
+  })
+
+  it('visar återkomstklausulen, men fabricerar ingen rad utan liggarbelägg', () => {
+    const profile = {
+      firstName: 'Test', lastName: 'Manager', age: 40, hometown: 'Ort',
+      burnoutScore: 0, burnoutHistory: [], careerWins: 10, careerDraws: 2, careerLosses: 5,
+      seasonsAtClub: 1, contractUntilSeason: 8, monthlySalary: 30, coachRivalries: [],
+      clubSpells: [
+        { clubId: CLUB_TEMPLATES[0].id, clubName: CLUB_TEMPLATES[0].name, fromSeason: 1, toSeason: 2, endedBy: 'voluntary' as const },
+        { clubId: 'club_gamla', clubName: 'Gamla BK', fromSeason: 3, toSeason: 5, endedBy: 'voluntary' as const },
+        { clubId: CLUB_TEMPLATES[0].id, clubName: CLUB_TEMPLATES[0].name, fromSeason: 6 },
+      ],
+    }
+    const withoutEvidence = makeGame({ currentSeason: 6, managerProfile: profile, eventLedger: [] })
+    expect(resolveBoardMeetingState(withoutEvidence).takeoverLine).toBeUndefined()
+
+    const withEvidence = {
+      ...withoutEvidence,
+      eventLedger: [{
+        type: 'manager_appointed' as const, semanticKey: 'manager_appointed_return',
+        clubId: CLUB_TEMPLATES[0].id, season: 6, matchday: 0, significance: 65,
+      }],
+    }
+    expect(resolveBoardMeetingState(withEvidence).takeoverLine)
+      .toBe('Du lämnade Gamla BK för det här. · Du har suttit i det här båset förr. De minns vem du är.')
+  })
 })

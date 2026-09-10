@@ -37,6 +37,8 @@ export interface BoardMeetingData {
   newGoals: BoardObjective[]
   chairmanName: string
   chairmanRole: string
+  /** Låst, sanningsförankrad ankomstkontext för tillstånd N. */
+  takeoverLine?: string
 }
 
 type HistoryEntry = {
@@ -135,6 +137,29 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   const chairmanName = chair ? `${chair.firstName} ${chair.lastName}` : 'Ordföranden'
   const chairmanRole = chair?.role ?? 'ordförande'
 
+  // DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10: dynamiska fakta hör inte i den
+  // statiska talpoolen. Visa dem bara när signeringen finns i liggaren och
+  // clubSpells bär den aktuella kontexten. Saknad data ger ingen hittepårad.
+  const spells = game.managerProfile?.clubSpells ?? []
+  const priorSpells = spells.filter(spell => spell.toSeason !== undefined)
+  const previousSpell = priorSpells.at(-1)
+  const hasAppointmentEvidence = (game.eventLedger ?? []).some(entry =>
+    entry.type === 'manager_appointed'
+      && entry.clubId === game.managedClubId
+      && entry.season === game.currentSeason,
+  )
+  const isReturning = priorSpells.some(spell => spell.clubId === game.managedClubId)
+  const takeoverClauses: string[] = []
+  if (state === 'N' && hasAppointmentEvidence && previousSpell?.endedBy === 'fired') {
+    takeoverClauses.push(`Du kom hit efter att ${previousSpell.clubName} tackat för sig.`)
+  } else if (state === 'N' && hasAppointmentEvidence && previousSpell?.endedBy === 'voluntary') {
+    takeoverClauses.push(`Du lämnade ${previousSpell.clubName} för det här.`)
+  }
+  if (state === 'N' && hasAppointmentEvidence && isReturning) {
+    takeoverClauses.push('Du har suttit i det här båset förr. De minns vem du är.')
+  }
+  const takeoverLine = takeoverClauses.length > 0 ? takeoverClauses.join(' · ') : undefined
+
   return {
     state,
     fulfillmentPct,
@@ -144,5 +169,6 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
     newGoals,
     chairmanName,
     chairmanRole,
+    takeoverLine,
   }
 }

@@ -102,6 +102,15 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
             {BOARD_EXPECTATION_CEREMONIAL[club.boardExpectation]}
           </div>
         )}
+        {data.takeoverLine && (
+          <div data-testid="board-takeover-line" style={{
+            fontFamily: 'Georgia, serif', fontSize: 12.5,
+            color: 'var(--text-muted)', lineHeight: 1.5,
+            marginTop: 10, fontStyle: 'italic',
+          }}>
+            {data.takeoverLine}
+          </div>
+        )}
       </div>
 
       {/* Eval — måluppfyllelse förra säsongen */}
@@ -176,7 +185,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
       {/* CTA — DB-2: aldrig guld här (B-läge = aspiration → accent/default) */}
       <div style={{ marginTop: 16 }}>
         <SceneCTA
-          label={`Till säsong ${seasonSpanLabel(game.currentSeason)} →`}
+          label={`Till säsong ${seasonSpanLabel(game.currentSeason)}`}
           onClick={onComplete}
           variant="default"
         />

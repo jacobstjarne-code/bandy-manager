@@ -34,7 +34,7 @@ export interface ManagerClubSpell {
   fromSeason: number
   /** Säsongen perioden tog slut. Utelämnad = perioden pågår. */
   toSeason?: number
-  endedBy?: 'fired'
+  endedBy?: 'fired' | 'voluntary'
 }
 
 export interface ManagerProfile {
