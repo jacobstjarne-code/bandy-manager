@@ -121,7 +121,7 @@ export const BOARD_MEETING_COPY: Record<BoardMeetingState, StatePool> = {
   },
   N: {
     settings: [
-      'Möteslokal du inte varit i förr. Någon visar var du ska sitta. Kaffet är redan upphällt.',
+      'En ny möteslokal. Någon visar var du ska sitta. Kaffet är redan upphällt.',
       'Klubbstugan i din nya klubb. Väggarna hänger fulla av lag du inte var med i. Ordföranden räcker fram handen.',
       'Kommunalhuset i en ny bygd. En pärm med klubbens namn ligger framme. Din stol står redan utdragen.',
       'Ett bord du aldrig suttit vid. De känner varandra, inte dig. Ännu.',
@@ -216,4 +216,3 @@ export const GOAL_MOTIVATIONS: Record<string, string[]> = {
   'N:community': ['Bli en av oss i bygden. Det tar tid, börja nu.'],
   'N:identity': ['Vi vill se din spelidé, men ta den i din takt.'],
 }
-
