@@ -3,7 +3,7 @@
 // streak ≥3 → band; broken streak → broken band; eyebrow gold only on final.
 
 import { describe, it, expect } from 'vitest'
-import { computeLaddningBeat } from '../domain/data/matchLaddningGrind'
+import { computeLaddningBeat, shouldShowPreparationLaddningBeat } from '../domain/data/matchLaddningGrind'
 import type { SaveGame } from '../domain/entities/SaveGame'
 import type { Fixture } from '../domain/entities/Fixture'
 
@@ -267,6 +267,25 @@ describe('computeLaddningBeat — tier scene', () => {
     if (beat.tier === 'scene') expect(beat.occasion).toBe('derby')
   })
 
+})
+
+describe('SM-finalens enda uppspel per matchläge', () => {
+  const finalBeat = { tier: 'scene', occasion: 'final', isFinal: true } as const
+  const derbyBeat = { tier: 'scene', occasion: 'derby', isFinal: false } as const
+
+  it('full- och referatmatch lämnar finaluppspelet till livevyn före avslag', () => {
+    expect(shouldShowPreparationLaddningBeat(finalBeat, 'full')).toBe(false)
+    expect(shouldShowPreparationLaddningBeat(finalBeat, 'commentary')).toBe(false)
+  })
+
+  it('snabb- och tystsim behåller Förbered-versionen eftersom de saknar liveintro', () => {
+    expect(shouldShowPreparationLaddningBeat(finalBeat, 'quicksim')).toBe(true)
+    expect(shouldShowPreparationLaddningBeat(finalBeat, 'silent')).toBe(true)
+  })
+
+  it('andra laddningsscener påverkas inte', () => {
+    expect(shouldShowPreparationLaddningBeat(derbyBeat, 'full')).toBe(true)
+  })
 })
 
 // ── grind tier: band (active streak) ─────────────────────────────────────────

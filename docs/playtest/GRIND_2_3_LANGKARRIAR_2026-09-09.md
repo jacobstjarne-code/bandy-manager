@@ -213,7 +213,7 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Slutspelet spelades manuellt i snabbläge. Karlsborg besegrades med 3–0 i kvartsfinalserien. Semifinalen mot Gagnef vändes från 0–2 till 3–2, med straffseger i den avgörande matchen. SM-finalen mot Forsbacka vanns och Västanfors blev svenska mästare.
 - Årsboken visade förstaplats, SM-guld, +291 tkr och att assistenten tog pressen tre gånger. Beslutet att sälja Bo Grahn för 110 tkr bars också in i säsongsminnet.
 - Burnout-relief återkom under semifinalserien; assistenten fick åter ta pressen. Den ordagranna kafferumsrepliken om tre gamla medlemmar som ringt utan att vilja något visades både före semifinal 1 och semifinal 4. Detta ska kodverifieras som cooldown-/urvalsproblem innan en MASTER-rad skapas.
-- SM-finalens laddningssekvens upplevdes två gånger i samma flöde: först matchens `MatchLaddningScene`, därefter livevyns separata finalintro. Finalen gick att slutföra, men dubbleringen ska verifieras mot de två inkopplingspunkterna.
+- SM-finalens laddningssekvens upplevdes två gånger i samma flöde: först matchens `MatchLaddningScene`, därefter livevyns separata finalintro. Kodspårningen bekräftade att båda använde samma tvåstegsuppspel. Ansvaret är nu delat per matchväg: full/referat visar bara liveintrot före avslag, snabb/tyst visar bara Förbered-introt före den direkt simulerade matchen.
 
 ### Säsong 2031/32 — start och omgång 1–2
 

@@ -16,6 +16,21 @@ export type LaddningBeat =
   | { tier: 'band'; state: LaddningState; streakLength: number; isBroken: boolean }
   | { tier: 'none' }
 
+type MatchMode = NonNullable<SaveGame['preferredMatchMode']>
+
+/**
+ * Full-/referatmatchen äger sitt finaluppspel precis före avslag i
+ * FinalIntroScreen. Snabb- och tystsim går aldrig genom den grinden och
+ * behåller därför MatchLaddningScene som sin enda finalintro.
+ */
+export function shouldShowPreparationLaddningBeat(beat: LaddningBeat, matchMode: MatchMode): boolean {
+  if (beat.tier === 'none') return false
+  if (beat.tier === 'scene' && beat.isFinal) {
+    return matchMode === 'quicksim' || matchMode === 'silent'
+  }
+  return true
+}
+
 export function computeLaddningBeat(game: SaveGame, nextFixture: Fixture): LaddningBeat {
   // Final wins all — use bracket-backed check, not just isFinaldag flag.
   // A final that is also a derby must not fall through to pre_derby.

@@ -25,7 +25,7 @@ import { calcAttendance, buildAttendanceParams } from '../../domain/services/eco
 import { getMatchMood } from '../../domain/services/matchMoodService'
 import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getRitualText } from '../../domain/services/supporterRituals'
-import { computeLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
+import { computeLaddningBeat, shouldShowPreparationLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
 import { MatchLaddningScene } from '../components/match/MatchLaddningScene'
 import { MatchLaddningBand } from '../components/match/MatchLaddningBand'
 import { FatigueFloorConfirm } from '../components/match/FatigueFloorConfirm'
@@ -121,7 +121,7 @@ export function MatchScreen() {
     ?? (nextFixture ? computeLaddningBeat(game, nextFixture) : { tier: 'none' })
   const effectiveStep =
     matchStep === 'vignette' && !nextFixture ? 'lineup'
-      : matchStep === 'laddning' && beat.tier === 'none' ? 'lineup'
+      : matchStep === 'laddning' && !shouldShowPreparationLaddningBeat(beat, matchMode) ? 'lineup'
       : matchStep
 
   // Persist band tracking on first render of laddning step (active streak only — broken clears on dismiss)
