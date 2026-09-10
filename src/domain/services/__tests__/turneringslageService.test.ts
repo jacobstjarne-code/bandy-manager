@@ -275,4 +275,24 @@ describe('getMidSeriesTurneringslageText', () => {
     const game = makeGame({ playoffBracket: playoffBracketWith({ semiFinals: [s] }) })
     expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBeNull()
   })
+
+  it('avgjord kvart med ny semifinal — Granska får inte nästa series 0–0', () => {
+    const game = makeGame({
+      playoffBracket: playoffBracketWith({
+        quarterFinals: [series(PlayoffRound.QuarterFinal, {
+          fixtures: ['qf3'], winnerId: MANAGED, loserId: OPP, homeWins: 3,
+        })],
+        semiFinals: [series(PlayoffRound.SemiFinal, { fixtures: ['sf1'] })],
+      }),
+    })
+    expect(getMidSeriesTurneringslageText(game, 'slutspel', 'qf3')).toBeNull()
+    expect(getMidSeriesTurneringslageText(game, 'slutspel', 'unknown')).toBeNull()
+  })
+
+  it('granskad match i pågående serie — behåller den låsta texten', () => {
+    const game = gameWithSeries([{ id: 'sf1', managedWon: true }])
+    expect(getMidSeriesTurneringslageText(game, 'slutspel', 'sf1')).toBe(
+      'Serien står 1–0. Det avgörs inte ikväll, men det väger.',
+    )
+  })
 })

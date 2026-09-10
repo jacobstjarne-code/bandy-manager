@@ -591,7 +591,7 @@ export function GranskaOversikt({
         // pågående bäst-av-fem-slutspelsserie (de sex terminala lägena
         // täcker bara vunnet/förlorat/final) — samma TURNERINGSLÄGE-kort,
         // egen textkälla (getMidSeriesTurneringslageText).
-        const midSeriesText = !mode ? getMidSeriesTurneringslageText(game, axes.tavlingstyp) : null
+        const midSeriesText = !mode && fixture ? getMidSeriesTurneringslageText(game, axes.tavlingstyp, fixture.id) : null
         if (mode || midSeriesText) {
           return (
             <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px' }}>

@@ -124,6 +124,23 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 
 ## Fortsättning
 
+### Checkpoint 2026-09-10 — säsong 5 fram till semifinal
+
+- Huvudkarriären i browsern nådde semifinal mot Skutskär efter kvartsfinalsegrar mot Karlsborg: 8–3, 7–5 och 7–2 (3–0 i matcher). Grundserien slutade med förstaplats, 35 poäng, 17–1–4 och +64.
+- Omgång 13–22 kördes med spelets ordinarie **Simulera resterande säsong**. Detta är inte en manuell kontroll av varje val: inga slutsatser om frånvaro av pivotal repetition dras för de överhoppade omgångarna.
+- Ekonomiska val före snabbspolningen: Bertil Holmgren förlängdes ett år med oförändrad lön 19 tkr/månad i stället för tre år med 23 tkr/månad; två community-förnyelser à 34 tkr avböjdes. Detta är år 5, inte grindens efterfrågade år-8-val.
+- Två fynd registrerade i MASTER: klackkonflikten återkom i omgång 10 efter resolution i omgång 8; Granska visade nästa series 0–0 efter avgjord kvartsfinal. Den första observationen bevisar ännu inte nygenerering — befintlig uppskjuten kö måste skiljas från nya event.
+- Spelklientens byggfot visade `5f4dada3` medan lokala filer uppdaterades med HMR. Git-HEAD `145a9274` är därför inte ett säkert versionsbevis för hela spelpasset.
+- En separat diagnostisk browserprofil användes också. Dess burnout-ceiling-val räknas **inte** in i huvudkarriärens journal. Huvudkarriären visade burnout-relief i omgång 10, med valet att låta assistenten ta pressen.
+- Säsong 5 är inte avslutad. Åtta säsonger, fullständigt anläggningsträd och år-8-val återstår. Ingen av Grind 2/3 är godkänd här.
+
+### Fixkontroll 2026-09-10 — avgjord serie
+
+- Rot: Granskas mitt-i-serien-text läste nästa aktiva serie utan den granskade matchens id. Fixture-bindning införs i befintlig selector; ingen ny svensk text eller parallell state.
+- Regressionstestet reproducerade exakt felaktig 0–0-text före fix. Efter fix: avgjord kvart med ny semifinal → ingen mitt-i-serien-text; pågående serie → befintlig 1–0-text. 56 riktade tester gröna, `npm run build` grönt inklusive dess grindar.
+- Full `npm test`: 550/550 filer, 4 989/4 989 tester gröna. Karriärminnestestet med 20 säsonger stod för den sista långkörningen; processen avslutades med kod 0.
+- Browserkontrollen i det delade trädet blockerades av parallellt pågående `AnalyticsBridge`/`analyticsLifecycle`, som läste dev-savens saknade `seasonSummaries`. Telemetriägarens filer lämnades orörda. I stället verifierades en isolerad kopia av `8a348696` med endast seriesfixen på port 5175: `granska-slutspel` (390 px) visade ordagrant den befintliga 1–0-texten; därefter ändrades enbart kopians fixture till avgjord kvart med ny semifinal. Resultatvyn renderades och ingen falsk 0–0-rad fanns. Ingen testfixture ändrades i huvudrepot eller i den riktiga karriärsparningen.
+
 - Spela säsong 5–8 i samma save.
 - Rollover för `Träningshall (ungdom)` är verifierad; fortsätt bygga resten av anläggningsträdet.
 - `Akademinivå 3` är färdig; fortsätt med övriga möjliga noder.

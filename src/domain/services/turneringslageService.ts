@@ -92,9 +92,9 @@ export function getTurneringslageText(mode: TurneringslageMode, tavlingstyp: Tav
  * Tre låsta grenar; vid 2–2 (avgörande sista match, båda villkoren sanna)
  * vinner "matchboll"-grenen — samma ordning Opus listade dem i.
  */
-export function getMidSeriesTurneringslageText(game: SaveGame, tavlingstyp: Tavlingstyp): string | null {
+export function getMidSeriesTurneringslageText(game: SaveGame, tavlingstyp: Tavlingstyp, fixtureId?: string): string | null {
   if (tavlingstyp !== 'slutspel') return null
-  const series = getPlayoffSeriesContext(game)
+  const series = getPlayoffSeriesContext(game, fixtureId)
   if (!series) return null
   const { wins, losses } = series
   if (wins === 2) return `Serien står ${wins}–${losses}. En vinst till, sedan är ni vidare.`

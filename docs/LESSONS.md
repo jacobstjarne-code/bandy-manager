@@ -1193,6 +1193,10 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Historik (2026-09-06):** design-d1-granska-heroscore (a3044daf) och design-d7-bottennav-sju (35b942ca) landade båda med en nåbar `[Opus]`-platshållare; upptäckt och fixat samma dag när sluttest-be-blind-clubmemory-raden triggade en full `npx vitest run` av andra skäl. Fixat genom att byta till `TabIntro.tsx`s etablerade `'// OPUS_COPY'`-sentinel (döljer raden) respektive att utelämna den hårdkodade `<p>`-raden helt.
 
+## 59. Granska måste bindas till den granskade matchen, inte nästa aktiva serie
+
+**Historik 2026-09-10:** efter en avgjord kvartsfinal visade Granska semifinalens 0–0. `getPlayoffSeriesContext` väljer avsiktligt en oavgjord serie för portalen; samma anrop utan fixture-id var därför fel på en retrospektiv yta. Bind Granskas anrop till fixture-id i befintlig selector och testa en avgjord serie samtidigt som nästa redan finns. En isolerad avgjord serie utan nästa runda fångade inte regressionen.
+
 ## 58. En ny `EventLedgerType` är inte klar med producent + konsument — den måste in i redaktörens register också
 
 **Mönster:** k12 (`transfer_target_missed`) byggdes med producent (`processTransferBids`) och konsument (`selectMissedTargetCallback`) klara, testade var för sig — men det första integrationstestet failade tyst med `null` i stället för callbacken. Orsaken: `redaktoren()`/`agendaForSurface('review')` filtrerar varje post genom `fitsSurfaces(post)`, som slår upp typen i en hårdkodad `REVIEW_TYPES`-lista (`redaktorenService.ts`) — en typ som inte står där finns aldrig i review-agendan, oavsett hur korrekt producent och konsument är. Samma mönster för `PRESS_TYPES`, och för `momentKind`/`momentFamily` (`clubMemoryService.ts`) som styr Krönikans kind/emoji.

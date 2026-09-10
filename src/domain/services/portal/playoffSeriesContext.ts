@@ -43,7 +43,7 @@ const ROUND_BASE_WEIGHT: Record<PlayoffRound, number> = {
   [PlayoffRound.Final]: 3,
 }
 
-export function getPlayoffSeriesContext(game: SaveGame): PlayoffSeriesContext | null {
+export function getPlayoffSeriesContext(game: SaveGame, fixtureId?: string): PlayoffSeriesContext | null {
   const bracket = game.playoffBracket
   if (!bracket) return null
 
@@ -52,10 +52,12 @@ export function getPlayoffSeriesContext(game: SaveGame): PlayoffSeriesContext | 
     ...bracket.semiFinals,
     ...(bracket.final ? [bracket.final] : []),
   ]
-  // Find active series managed club is playing in (winnerId === null)
+  // Retrospective callers must stay in the reviewed fixture's series.
+  // An already decided series must not fall through to the next round.
   const series = allSeries.find(
     s => (s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
          && s.winnerId === null
+         && (fixtureId === undefined || s.fixtures.includes(fixtureId))
   )
   if (!series) return null
 
