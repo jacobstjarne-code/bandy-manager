@@ -37,7 +37,7 @@ describe('mapRecommendationToMentality', () => {
 describe('getSuggestionWhyLine', () => {
   it('interpolerar assistentens namn i "Pressa högt"-varianten', () => {
     expect(getSuggestionWhyLine('Pressa högt och dominera mitten.', 'Sixten'))
-      .toBe('Sixten såg det: deras halvlinje är tunn. Pressa högt, ta mitten.')
+      .toBe('Sixten såg det: deras mittfält är tunt. Pressa högt, ta mitten.')
   })
 
   it('interpolerar assistentens namn i "Spela offensivt"-varianten', () => {

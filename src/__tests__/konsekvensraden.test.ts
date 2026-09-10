@@ -57,11 +57,18 @@ describe('getTacticConsequence — Surface A', () => {
     expect(result).toBe('De läcker bakåt. Spelar ni framåt kan det lossna tidigt.')
   })
 
-  it('hög press + Svag halvlinje → pressrad', () => {
+  it('hög press + Svagt mittfält → pressrad', () => {
     const t = makeTactic(TacticMentality.Balanced, '523_hog')
-    const opp = makeOpponent(['Svag halvlinje'])
+    const opp = makeOpponent(['Svagt mittfält'])
     const result = getTacticConsequence(t, [], {}, opp, 0)
     expect(result).toBe('Hög press mot deras svaga mittfält — där vinns matchen om någonstans.')
+  })
+
+  it('tolkar äldre sparningars "Svag halvlinje" som samma mittfältsbrist', () => {
+    const t = makeTactic(TacticMentality.Balanced, '523_hog')
+    const opp = makeOpponent(['Svag halvlinje'])
+    expect(getTacticConsequence(t, [], {}, opp, 0))
+      .toBe('Hög press mot deras svaga mittfält — där vinns matchen om någonstans.')
   })
 
   it('defensiv + Stark anfallslinje → försiktighetsrad', () => {

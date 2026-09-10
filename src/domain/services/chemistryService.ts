@@ -191,7 +191,10 @@ export function getTacticConsequence(
     const isDefensive = tactic.mentality === TacticMentality.Defensive
     const isHighPress = getHeightMode(tactic.formation) === 'high'
     const hasWeakDefense = opponent.weaknesses.includes('Sårbart försvar')
-    const hasWeakMidfield = opponent.weaknesses.includes('Svag halvlinje')
+    // Den äldre texten kan ligga kvar i sparade analyser. Båda betyder samma
+    // mittfältsmätning; "halvlinje" var en felaktig etikett på midAvg.
+    const hasWeakMidfield = opponent.weaknesses.includes('Svagt mittfält')
+      || opponent.weaknesses.includes('Svag halvlinje')
     const hasStrongAttack = opponent.strengths.includes('Stark anfallslinje')
 
     if ((isOffensive || isHighPress) && hasWeakDefense) {

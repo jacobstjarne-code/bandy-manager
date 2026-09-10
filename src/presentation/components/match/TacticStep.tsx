@@ -20,6 +20,30 @@ interface TacticStepProps {
   showFooter?: boolean
 }
 
+export function compactStrengthLabel(value: string): string {
+  const labels: Record<string, string> = {
+    'Stark anfallslinje': 'anfallslinjen',
+    'Stabilt försvar': 'försvaret',
+    'Bra målvakt': 'målvakten',
+    'Starkt mittfält': 'mittfältet',
+    // Bakåtkompatibilitet för analyser som redan sparats i en karriär.
+    'Stark halvlinje': 'mittfältet',
+  }
+  return labels[value] ?? value.toLowerCase()
+}
+
+export function compactWeaknessLabel(value: string): string {
+  const labels: Record<string, string> = {
+    'Svag attack': 'anfallsspelet',
+    'Sårbart försvar': 'försvaret',
+    'Svagt mittfält': 'mittfältet',
+    // Bakåtkompatibilitet för analyser som redan sparats i en karriär.
+    'Svag halvlinje': 'mittfältet',
+  }
+  if (value.startsWith('Skadeproblem')) return value.replace('Skadeproblem', 'skadeläget')
+  return labels[value] ?? value.toLowerCase()
+}
+
 // Maps tactic value index (0=conservative, ..., last=aggressive) to intensity class.
 // total-aware (B2, SLUTTEST_KO.md 2026-08-19): press slog ihop low/medium till EN
 // knapp (tacticData.ts) — en rad kan nu ha 2 alternativ, inte alltid 3. Med bara
@@ -78,8 +102,8 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
   // Opp-insight line
   const insightParts: string[] = []
   if (analysis?.formation) insightParts.push(FORMATIONS[analysis.formation as FormationType]?.label ?? analysis.formation)
-  if (analysis?.strengths.length) insightParts.push(`stark: ${analysis.strengths[0].toLowerCase()}`)
-  if (analysis?.weaknesses.length) insightParts.push(`svag: ${analysis.weaknesses[0].toLowerCase()}`)
+  if (analysis?.strengths.length) insightParts.push(`styrka: ${compactStrengthLabel(analysis.strengths[0])}`)
+  if (analysis?.weaknesses.length) insightParts.push(`svaghet: ${compactWeaknessLabel(analysis.weaknesses[0])}`)
   const insightText = insightParts.join(' · ') || (analysis?.recentForm ?? '—')
 
   const groups = [

@@ -155,7 +155,7 @@ export function mapRecommendationToMentality(recommendation: string | undefined)
  */
 const RECOMMENDATION_WHY_LINE: Record<string, (coachName: string) => string> = {
   'Pressa högt och dominera mitten.': (coach) =>
-    `${coach} såg det: deras halvlinje är tunn. Pressa högt, ta mitten.`,
+    `${coach} såg det: deras mittfält är tunt. Pressa högt, ta mitten.`,
   'Spela offensivt — deras försvar är sårbart.': (coach) =>
     `${coach} såg en spricka i deras försvar. Våga framåt.`,
   'Prioritera defensiven — de har farliga forwards.': (coach) =>
@@ -249,17 +249,17 @@ export function generateDetailedAnalysis(
   if (fwdAvg > avgCA + 5) strengths.push('Stark anfallslinje')
   if (defAvg > avgCA + 5) strengths.push('Stabilt försvar')
   if (gkAvg > avgCA + 8) strengths.push('Bra målvakt')
-  if (midAvg > avgCA + 5) strengths.push('Stark halvlinje')
+  if (midAvg > avgCA + 5) strengths.push('Starkt mittfält')
 
   if (fwdAvg > 0 && fwdAvg < avgCA - 5) weaknesses.push('Svag attack')
   if (defAvg > 0 && defAvg < avgCA - 5) weaknesses.push('Sårbart försvar')
-  if (midAvg > 0 && midAvg < avgCA - 5) weaknesses.push('Svag halvlinje')
+  if (midAvg > 0 && midAvg < avgCA - 5) weaknesses.push('Svagt mittfält')
 
   const injured = opponentPlayers.filter(p => p.isInjured)
   if (injured.length >= 3) weaknesses.push(`Skadeproblem (${injured.length} skadade)`)
 
   let recommendation = 'Jämn motståndare. Spelplanen avgör.'
-  if (weaknesses.some(w => w.includes('Svag halvlinje'))) {
+  if (weaknesses.some(w => w.includes('Svagt mittfält'))) {
     recommendation = 'Pressa högt och dominera mitten.'
   } else if (weaknesses.some(w => w.includes('Sårbart försvar'))) {
     recommendation = 'Spela offensivt — deras försvar är sårbart.'
