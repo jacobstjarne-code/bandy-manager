@@ -182,3 +182,12 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Kontraktsval: fem nyckelspelare fick sina lönekrav mötta — Tobias Hård, Bertil Holmgren, Jonas Dahl, Arne Granqvist och Oliver Norberg. Övriga sju behöll nuvarande lön. Det var ett avvägt ekonomiskt beslut för att undvika hela truppens stora löneökning; år-8-valet återstår fortfarande.
 - Cupkvartsfinalen mot Lesjöfors vanns 5–4 efter förlängning. Ett bud på reservmålvakten Timo Nordström möttes med motkravet 60 tkr i stället för direkt accept på 45 tkr.
 - Säsong 6 står nu inför cupsemifinal mot Forsbacka. Beslutskön låg på fem efter kvartsfinalen; inget nytt Anna-hot har producerats efter att legacy-kortet löstes.
+
+### Säsong 6 — ligastart, fortsatt manuellt prov 2026-09-10
+
+- Samma `Grindtest 2`-save återöppnades utan konflikt. Den stod då i ligans omgång 2; cupfasens mellanliggande utfall är inte återläst här och tillskrivs därför inte provet.
+- Omgång 2: Västanfors–Lesjöfors 4–2. Portalens primära väg till matchen var tydlig. Granska gav tabellplats 3, nästa Gagnef hemma och ett konkret kvitto på offensiv hörnstrategi; tre nya skador landade samtidigt inför nästa vecka.
+- Omgång 3: Västanfors–Gagnef 5–3 efter att `Bäst för dagens match` fyllde de två tomma platser som skadorna lämnat. Granska gav tabellplats 2, nästa Karlsborg hemma och ett positivt kvitto på den utvilade målvakten.
+- Grind 3-fynd: båda veckorna hade en tydlig match-CTA, men den konkurrerade med **10 beslut i kö**, patronkrav, mecenatpåminnelse, burnout-återfall och två Efterklang-trådar. Det är inte flera primära CTA:er, men den redaktionella belastningen är fortsatt hög.
+- Mecenatpåminnelsen räknade upp sex olösta önskemål. Två par uttryckte samma underliggande krav (bygg något respektive använd egna unga) med olika ord. Detta är observerad berättelserepetition; ingen ny buggpost skapas innan kö-/state-identiteterna kan jämföras mot koden.
+- Browserkontrollen stoppades därefter av att den lokala browserns säkerhetsverifiering tillfälligt inte kunde genomföras. Sparningen hade redan avancerat rent till omgång 4; ingen alternativ eller kringgående browserväg användes.
