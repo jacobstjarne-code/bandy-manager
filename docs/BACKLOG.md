@@ -356,7 +356,7 @@ committade. Enda VILANDE resterna (M14 publikhistorik-token, M50
 clubOfferQuotes) väntar på funktioner som inte finns än, inte på arbete.
 Se protokollet direkt för detaljer — inget att göra här.
 
-### FÖRSONINGSSPRINTEN — AKTIV (Design-rundan landade 2026-06-11)
+### FÖRSONINGSSPRINTEN — STÄNGD 2026-09-10 (Design-rundan landade 2026-06-11)
 
 Arbetsorder: `docs/RELA-FORSONINGSSPRINT-2026-06-11.md` (Fable). Domen (`docs/DESIGNSLUTSATSER-STEG3-2026-06-11.md`): designen är *bevisat rätt* — städsprint, inte omdesign. Konsoliderad audit: `docs/DESIGNOMGANGEN-KOMPLETT-2026-06-11.md` (16 kap). Systempatch ratificerad av Jacob 2026-06-11.
 
@@ -364,7 +364,7 @@ Arbetsorder: `docs/RELA-FORSONINGSSPRINT-2026-06-11.md` (Fable). Domen (`docs/DE
 - **§2 A1 wiring-redovisning — STÄNGD (Code 2026-06-12).** Ingen commit påstod sig wira Förbered: `4c2cf10` definierade faserna, `1b1577e` wirade ENDAST spela (MatchLive), `dc64486` hade LedgerFrame i TITELN men noll LedgerFrame-filer i diffen (etikettmiss). Auditen `316658a` var korrekt: Förbered/Granska medvetet parkerade. **Lärdom → LESSONS:** felmoden är felrubricerade commits, inte falska klar-rapporter — commit-titel ska matcha diff, annars uppstår falska minnen åt båda håll. Nuläge: `phase="forbered"` definierad men orenderd; Förbered-wiring sker mot mocken (`design_forbered_trupp_slots.html`) i Opus-i-Code-passet.
 - **§3 fix-ordning** 🟥→🟧→🟨 — **= D3 inline-stratum-migreringen** (pill-CTA→.btn-cta, positionLabel, emoji-svep, tomma kort, delade primitiver, LED vi/dom) med ratificerade regler. Mest standard-Code.
 - **§4 Opus-lott — KLAR 2026-06-11:** notisdiet + `expiresRound` + kondition-0 → `CODE_UPPDRAG_NOTISDIET_EXPIRES_2026-06-11.md` · story-slot-rotation verifierad (FELATTRIBUTION: rotationen aktiv; repetitionen var coffee_room_card-secondaryts konstanta preview + scene-autotrigg, den senare fixad `97fa59d`; fix-relä för preview + stale-guard skickat) · copy-pooler ('trött' ×5 personligheter, årsbokens 7 moment-typer, notisdiet-konsekvenser) + frivillig-moral BESLUT B (moral följer puls, ingen knapp) → `CODE_UPPDRAG_FORSONING_OPUS_TEXT_2026-06-11.md`.
-- **§5 verifiering** — Jacob fotar om, Design re-auditar (grön/kvarstår), 5 nya hårda regler in i `_adherence`-lint.
+- **§5 verifiering — STÄNGD genom senare, supersederande kontroll.** Något separat kvitto på den ordagranna juni-proceduren återfanns inte. Fresh-eyes-granskningen 2026-09-03 fotograferade och dömde i stället samtliga 111 deklarerade states mot designsystemet; alla dess 19 spårade `design-*`-utfall är terminala i `MASTER_ARKIV.md`. Se `FORSONINGSSPRINT_REAUDIT_RECONCILE_2026-09-10.md`.
 
 **Modellallokering (Fable, bekräftad):** standard-Code ~70% (svepen är entydiga efter systempatchen), Opus 3 punkter (A1/dubbelkrom-arkeologi · LedgerFrame-children-wiring · decision-card-konsolidering), INTE Fable-i-Code (designomdömet är redan utövat). Riktiga spaken: commit-hash + skärmdump per fix — felmoden var processdisciplin (A1), inte modellstyrka.
 
