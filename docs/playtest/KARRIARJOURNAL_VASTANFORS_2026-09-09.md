@@ -1,9 +1,9 @@
 # Karriärjournal — Västanfors, Grindtest 2
 
 **Start:** 2026-09-09  
-**Spelad karriär:** 2026/27–2034/35  
-**Utfall:** Spelet avslutade karriären efter nio säsonger. Managern fick sparken inför 2035/36.  
-**Underlag:** Samma riktiga browsersave genom hela huvudkörningen. Säsong 1–8 är rekonstruerade ur den löpande speljournalen och Karriärhistorik; säsong 9 skrevs under spel.
+**Spelad managerkarriär:** 2026/27–2034/35 samt 2036/37
+**Utfall:** Managern fick sparken efter nio säsonger, satt hemma 2035/36, tog därefter över Skutskär och fullföljde sin tionde managersäsong 2036/37.
+**Underlag:** Samma riktiga browsersave genom hela huvudkörningen. Säsong 1–8 är rekonstruerade ur den löpande speljournalen och Karriärhistorik; säsong 9–10 skrevs under spel.
 
 Den detaljerade QA-kronologin, inklusive omgångar och kodverifierade sidofynd, finns i `GRIND_2_3_LANGKARRIAR_2026-09-09.md`. Den här filen är den efterfrågade managerjournalen.
 
@@ -117,11 +117,27 @@ Den detaljerade QA-kronologin, inklusive omgångar och kodverifierade sidofynd, 
 
 **Marginalen.** Ett fortfarande synligt galakort flyttades till uppskjuten kö när ett tidigare kort löstes; klicket blev då en tyst no-op. Resolvern korrigerades och samma save verifierade kvittot. Game Over saknar den vanliga exportmenyn, så slut-saven kunde inte exporteras via spelets UI efter avskedet.
 
+### Mellanår — 2035/36
+
+Efter avskedet tog Gunnar Lindqvist över Västanfors. Jag satt hemma medan klubben slutade fyra, två placeringar bättre än min sista sjätteplats. Texten `Klubben gick vidare, som klubbar gör` gjorde uppehållet till en del av karriären i stället för en meny mellan två saves. Tränarmarknaden erbjöd Skutskär, Karlsborg och Heros; jag tog niondeplacerade Skutskär.
+
+### Säsong 10 — 2036/37 (spelad live)
+
+**Vad hände.** Jag tog över Skutskär med −427 tkr, noll transferbudget och kravet att hålla laget ovanför strecket. Cupen slutade i kvartsfinal. Serien slutade med tiondeplats, 15 poäng och 6–3–13; laget släppte in 105 mål men undvek nedflyttning. Ekonomin slutade på −655 tkr, 228 tkr sämre än vid övertagandet.
+
+**Vad jag valde och varför.** Jag avstod alla byggen för att skydda den redan negativa kassan, sålde Adam Dahlberg för 40 tkr och Ville Wikman för 60 tkr, behöll huvudsponsorn genom en ekonomisk plan och tog två mindre sponsoravtal. Bandyskolan fick vänta eftersom den faktiskt inte rymdes i budgeten. Det var en annan sorts säsong än guldåren: varje beslut handlade om att klubben skulle finnas kvar.
+
+**Minns spelet?** Ja. Första återkomsten till Västanfors gav raden `Första gången tillbaka. Läktaren minns, åt båda hållen.` Övertagandemötet sade uttryckligen `Du kom hit efter att Västanfors tackat för sig.` Årsboken mindes försäljningen av Ville Wikman, Bo Wikströms avsked och att jag klev tillbaka när belastningen blev för hög.
+
+**Ögonblicket.** 7–1 i derbyt mot Söderfors landade som säsongens match och gav den nya klubben en egen topp. Första segern, 8–3 mot Heros efter fem raka förluster, kändes som att laget gick att nå. Platt: medieraden `Klacken sjunger inte längre undefineds namn. Torbjørn Sten har tagit över kören.` bröt illusionen direkt efter klubbbytet.
+
+**Marginalen.** Nödtruppsflödet möttes på riktigt: med nio valbara spelare kallades två juniorer upp, elvan gick att fylla och matchen spelades. Årsboken skrev samtidigt samma derbyförlust mot Söderfors tre gånger, två O3-ankrade och en oankrad. Detaljerad kodverifiering av dessa två text/minnesfynd återstår utanför journalen.
+
 ## Del 2 — fem stående frågor
 
-### 1. Var de nio spelade säsongerna olika?
+### 1. Var de tio managersäsongerna olika?
 
-Ja, tillräckligt för att karriären ska ha en form. År 1–2 var omedelbar sportslig framgång utan slutspelsdominans. År 3–5 var storhetsperioden med tre SM-guld, dubbeln och ett färdigväxande klubbbygge. År 6–7 var dyr stagnation. År 8 blev ett ekonomiskt räddningsår med licenshot och cupguld. År 9 var sönderfallet: försäljning för likviditet, negativ kassa, kvartsfinaluttåg och avsked.
+Ja, tillräckligt för att karriären ska ha en form. År 1–2 var omedelbar sportslig framgång utan slutspelsdominans. År 3–5 var storhetsperioden med tre SM-guld, dubbeln och ett färdigväxande klubbbygge. År 6–7 var dyr stagnation. År 8 blev ett ekonomiskt räddningsår med licenshot och cupguld. År 9 var sönderfallet: försäljning för likviditet, negativ kassa, kvartsfinaluttåg och avsked. År 10 började efter ett verkligt mellanår, i en ny klubb med nedflyttningsstrid och konkurslik ekonomi.
 
 Skillnaden kom främst från tabell/slutspel, ekonomi, anläggningsträd och truppbeslut. Veckorytmen och flera återkommande event var betydligt mer lika än säsongernas stora bågar.
 
@@ -145,22 +161,22 @@ CS-argumentet bar alltså när klubben hade marginal och en växande framtidsbil
 
 ### 5. Skulle jag spela säsong 11?
 
-Jag fick inte ens spela säsong 10. Spelet avslutade karriären efter nio år, trots att den nionde säsongen enligt dess egen historiesammanfattning var solid och uppfyllde kravet på att utmana toppen. Det är ett starkt och begripligt karriärslut om den samlade styrelsehistoriken verkligen bar beslutet — men för just den här valideringen är svaret nej: spelet höll mig inte kvar i tio säsonger.
+Ja. Avskedet efter år 9 såg först ut som ett definitivt stopp, men uppehållsåret och tränarmarknaden gjorde det i stället till karriärens tydligaste nya akt. Jag skulle vilja spela säsong 11 för att se om Skutskärs ekonomi går att vända och om derbysegern kan bli något mer än ett ensamt minne.
 
-Jag hade velat spela vidare för att se om ekonomin, den åldrande truppen och det färdiga klubbbygget kunde få en ny riktning. Det som drog var den långa kontinuiteten: sålda spelare som återkom, byggnader som överlevde säsongsskiften, licensen och karriärhistoriken. Det som stötte bort var mängden återkommande veckokort, upprepade slutgiltiga burnout-val och att avskedet gjorde den planerade tioårsfrågan omöjlig att besvara genom spel.
+Det som drar är den långa kontinuiteten: sålda spelare som återkommer, byggnader som överlever säsongsskiften, Västanforsläktaren som minns mig och en ny klubb som ärver sin egen skuld, trupp och ort. Det som stöter bort är mängden återkommande veckokort, upprepade burnoutmotiv och synliga minnesfel som `undefineds namn` och den tredubbla derbyförlusten.
 
 ## Del 3 — kvitton
 
 - **KF3 beslutsbudget:** sett. Vid fyra eller fler beslut visades tre, kön syntes och dränerades över följande omgångar. Källproduktionen kunde samtidigt fylla kön snabbare än den tömdes; flera separata dedupefel hittades och verifierades.
 - **KF4 styrelse:** sett. Marianne Selins namn och pronomen var konsekventa i de styrelsescener som möttes.
-- **Nödtrupp:** ej säkert mött som uttryckligt nödtruppkort. `Bäst för dagens match` fyllde däremot två tomma platser efter skador och laget gick att spela.
+- **Nödtrupp:** sett i säsong 10. Bara nio spelare kunde placeras; två juniorer kallades upp, den exakta elvan fylldes och matchen kunde spelas utan walkover.
 - **Orten-pilar och aktiv status:** sett och användbart i den fulla byggkedjan.
 - **Bygget-fliken som destination:** sett. Det gick att återvända utan att fastna.
 - **Valet-UI:** sett. Byggalternativen och avstå-vägen gick att förstå utan extern förklaring.
 - **Peptalk i förberedelsefasen:** ej tillräckligt observerat för en frekvensdom.
 - **Bandyplay och Bandyskola:** sedda som skilda system/rader; Bandyskolan förnyades i karriären.
-- **Save-export:** inte levererad. Efter det naturliga avskedet redirectar alla spelvägar till Game Over, vars header saknar `Exportera säkerhetskopia`. Sparningen finns kvar i `Mina karriärer` som `Grindtest 2`, 2035/36, men kan inte exporteras med det föreskrivna UI-flödet i detta terminala läge.
+- **Save-export:** `Exportera säkerhetskopia` kördes från den ordinarie inställningsmenyn efter årsboken för säsong 10. In-app-browsern bekräftade exporten men exponerade inte den hämtade filen till repots filsystem; JSON-underlaget är därför ännu inte incheckat under `docs/playtest/`.
 
 ## Slutdom från spelaren
 
-Valideringens kärnfråga besvaras negativt men tydligt: **spelet höll ihop en meningsfull nioårig karriär, men höll inte kvar spelaren i tio säsonger.** Det berodde till sist på ett avsiktligt styrelseutfall, inte en krasch eller förstörd save. Därmed är säsong 10 inte saknad testdisciplin utan karriärens faktiska slut.
+Valideringens kärnfråga besvaras positivt, med en viktig krok: **spelet höll ihop tio managersäsonger och gjorde ett avsked efter år 9 till början på en tredje akt.** Det var uppehållsåret, den verkliga tränarmarknaden, övertagandet av Skutskär och återkomsten till Västanfors som gjorde år 10 mer än samma säsong en gång till.
