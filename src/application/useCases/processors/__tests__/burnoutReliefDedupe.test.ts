@@ -76,4 +76,30 @@ describe('burnoutRelief — kölivscykel', () => {
     expect(ceiling?.title).toBe('Du är vid samma gräns igen')
     expect(ceiling?.body).toContain('Du klev tillbaka förra gången')
   })
+
+  it('skapar inget nytt takbeslut när ett slutgiltigt val redan gjorts samma säsong', () => {
+    const game = makeGame()
+    const result = processGameEvents({
+      ...game,
+      eventLedger: [{
+        type: 'decision',
+        clubId: game.managedClubId,
+        managerId: game.id,
+        semanticKey: 'burnoutCeiling:step_back',
+        season: game.currentSeason,
+        matchday: 8,
+        significance: 100,
+        irreversible: true,
+        madeByPlayer: true,
+      }],
+      managerProfile: {
+        ...game.managerProfile!,
+        burnoutScore: 100,
+        roundsAtBurnoutCeiling: 4,
+        burnoutCeilingChoiceOffered: false,
+      },
+    }, [], undefined, 20, () => 0.99)
+
+    expect(result.gameEvents.filter(event => event.type === 'burnoutCeiling')).toEqual([])
+  })
 })

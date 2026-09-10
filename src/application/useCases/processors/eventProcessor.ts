@@ -445,8 +445,19 @@ export function processGameEvents(
     .some(event => event.type === 'burnoutRelief' && !event.resolved)
   const burnoutCeilingQueued = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
     .some(event => event.type === 'burnoutCeiling' && !event.resolved)
+  // Takvalet är ett permanent säsongsbeslut, inte en återkommande lättnadsbeat.
+  // Episodstämpeln kan nollställas när score lämnar 100, men ett redan gjort
+  // val samma säsong får inte erbjudas igen. Liggaren är kanon; diary-fallbacken
+  // bär äldre saves från tiden före dual-write-kontraktet.
+  const burnoutCeilingResolvedThisSeason = (game.eventLedger ?? []).some(entry =>
+    entry.type === 'decision'
+    && entry.season === game.currentSeason
+    && entry.semanticKey.startsWith('burnoutCeiling:'))
+    || (managerProfile?.diary ?? []).some(entry =>
+      entry.type === 'burnout_scar' && entry.season === game.currentSeason)
   const burnoutCeilingShouldQueue = !!managerProfile &&
     !burnoutCeilingQueued &&
+    !burnoutCeilingResolvedThisSeason &&
     shouldTriggerBurnoutCeilingChoice(managerProfile)
   if (
     (burnoutZone === 'markbar' || burnoutZone === 'hog') &&

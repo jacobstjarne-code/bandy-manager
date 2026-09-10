@@ -328,6 +328,27 @@ export function resolveEvent(
   const choice = event.choices.find(c => c.id === choiceId)
   if (!choice) return game
 
+  // Ett burnout-tak är ett slutgiltigt säsongsval. Äldre saves kan redan bära
+  // en andra, köad kopia från en senare burnout-episod samma säsong. Konsumera
+  // den kopian utan att applicera dess effekter eller skriva ett andra ärr.
+  // Liggaren är kanon; diary-fallbacken täcker pre-ledger-saves.
+  if (madeByPlayer && event.type === 'burnoutCeiling') {
+    const alreadyResolvedThisSeason = (game.eventLedger ?? []).some(entry =>
+      entry.type === 'decision'
+      && entry.season === game.currentSeason
+      && entry.semanticKey.startsWith('burnoutCeiling:'))
+      || (game.managerProfile?.diary ?? []).some(entry =>
+        entry.type === 'burnout_scar' && entry.season === game.currentSeason)
+    if (alreadyResolvedThisSeason) {
+      return {
+        ...game,
+        pendingEvents: (game.pendingEvents ?? []).filter(candidate => candidate.id !== eventId),
+        deferredDecisions: (game.deferredDecisions ?? []).filter(candidate => candidate.id !== eventId),
+        resolvedEventIds: recordResolvedId(game, eventId),
+      }
+    }
+  }
+
   // Alla ekonomiska eventeffekter går genom många olika effect-typer
   // (income, finance, setCommunity, multiEffect, krisutfall osv). Fånga den
   // faktiska nettoskillnaden en gång här så spelarens transaktionshistorik
@@ -2872,7 +2893,7 @@ export function resolveEvent(
 
     const scar: 'hardened' | 'stepped_back' = choiceId === 'step_back' ? 'stepped_back' : 'hardened'
     const alreadyScarred = (updatedGame.managerProfile?.diary ?? []).some(
-      e => e.type === 'burnout_scar' && e.season === updatedGame.currentSeason && e.matchday === updatedGame.currentMatchday)
+      e => e.type === 'burnout_scar' && e.season === updatedGame.currentSeason)
     if (updatedGame.managerProfile && !alreadyScarred) {
       updatedGame = {
         ...updatedGame,
@@ -2896,8 +2917,7 @@ export function resolveEvent(
     const alreadyLogged = (updatedGame.eventLedger ?? []).some(entry =>
       entry.type === 'decision'
       && entry.semanticKey === semanticKey
-      && entry.season === updatedGame.currentSeason
-      && entry.matchday === updatedGame.currentMatchday)
+      && entry.season === updatedGame.currentSeason)
     if (!alreadyLogged) {
       updatedGame = {
         ...updatedGame,

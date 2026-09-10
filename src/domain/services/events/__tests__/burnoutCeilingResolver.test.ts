@@ -148,24 +148,22 @@ describe('eventResolver — burnoutCeiling ärr-skrivning (D)', () => {
     expect(game.eventLedger).toContainEqual(expect.objectContaining({ semanticKey: 'burnoutCeiling:step_back' }))
   })
 
-  it('dubbel-resolution-skydd: en redan skriven ärr-post för samma säsong+omgång skrivs inte igen', () => {
-    let game = baseGame({ currentMatchday: 20, currentSeason: 3 })
-    game = {
-      ...game,
-      managerProfile: {
-        ...game.managerProfile!,
-        burnoutScore: 100,
-        burnoutScar: 'hardened',
-        diary: [{ season: 3, matchday: 20, type: 'burnout_scar', text: '[Opus]' }],
-      },
-    }
-    const event = ceilingEvent('test_ceiling_5')
-    game = { ...game, pendingEvents: [event] }
+  it('dubbel-resolution-skydd: en senare kökopia samma säsong konsumeras utan effekter', () => {
+    let game = baseGame({ currentMatchday: 20, currentSeason: 3, boardPatience: 70 })
+    const first = ceilingEvent('test_ceiling_5a')
+    game = { ...game, pendingEvents: [first] }
+    game = resolveEvent(game, first.id, 'push_through', undefined, true)
 
-    game = resolveEvent(game, 'test_ceiling_5', 'step_back', undefined, true)
+    const second = ceilingEvent('test_ceiling_5b')
+    game = { ...game, currentMatchday: 30, pendingEvents: [second], deferredDecisions: [second] }
+    game = resolveEvent(game, second.id, 'step_back', undefined, true)
 
-    // Skulle branchen köras igen hade scar bytts till 'stepped_back' och en andra diary-post lagts till.
     expect(game.managerProfile!.burnoutScar).toBe('hardened')
     expect(game.managerProfile!.diary!.filter(e => e.type === 'burnout_scar')).toHaveLength(1)
+    expect(game.eventLedger!.filter(e => e.semanticKey.startsWith('burnoutCeiling:'))).toHaveLength(1)
+    expect(game.boardPatience).toBe(70)
+    expect(game.burnoutCeilingRecoveryUntilRound).toBeUndefined()
+    expect(game.pendingEvents).toEqual([])
+    expect(game.deferredDecisions).toEqual([])
   })
 })
