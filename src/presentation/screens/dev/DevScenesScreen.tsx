@@ -124,7 +124,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // fixture mot motståndaren) — ingen befintlig scen var det.
   | 'forbered-vignette'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
-  | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed'
+  | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed' | 'opponent-form'
   // design-b4-simulera-bar-fotkrock (2026-09-04): canSimulateRemaining kräver
   // playedLeagueRounds>=12 + en schemalagd (ej cup) kommande match — ingen
   // befintlig portal-scen hade den kombinationen (portalGame har bara
@@ -269,6 +269,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
   { id: 'portal-grind',  label: 'Portal — grind-läge (veckobeslut olöst)' },
   { id: 'portal-facility-completed', label: 'Portal — Bygget klart (navigerbart beat)' },
+  { id: 'opponent-form', label: 'Portal — motståndarform inför derby' },
   { id: 'portal-midseason', label: 'Portal — mitt i säsongen (Simulera-baren synlig)' },
   { id: 'portal-bid-single', label: 'Portal — 1 bud, det är det aktiva HÄNDELSE-kortet' },
   { id: 'portal-bid-multi',  label: 'Portal — 3 bud, ett är det aktiva HÄNDELSE-kortet' },
@@ -1123,6 +1124,23 @@ const portalFacilityCompletedGame = {
   },
 }
 
+const opponentFormNextFixture = factoryMidSeasonGame.fixtures
+  .filter(f => f.status === 'scheduled'
+    && (f.homeClubId === factoryMidSeasonGame.managedClubId || f.awayClubId === factoryMidSeasonGame.managedClubId))
+  .sort((a, b) => a.matchday - b.matchday)[0]
+
+const opponentFormGame = opponentFormNextFixture
+  ? {
+      ...factoryMidSeasonGame,
+      fixtures: factoryMidSeasonGame.fixtures.map(f => {
+        if (f.id !== opponentFormNextFixture.id) return f
+        return f.homeClubId === factoryMidSeasonGame.managedClubId
+          ? { ...f, awayClubId: 'club_soderfors' }
+          : { ...f, homeClubId: 'club_soderfors' }
+      }),
+    }
+  : factoryMidSeasonGame
+
 const mobileDecisionEvents = [
   {
     id: 'dev-month-sponsor', type: 'sponsorOffer' as const, resolved: false,
@@ -1967,6 +1985,7 @@ export function DevScenesScreen() {
       : scene === 'portal-full' ? portalFullGame
       : scene === 'portal-grind' ? portalGrindGame
       : scene === 'portal-facility-completed' ? portalFacilityCompletedGame
+      : scene === 'opponent-form' ? opponentFormGame
       : scene === 'portal-midseason' ? factoryMidSeasonGame
       : scene === 'portal-bid-single' ? portalBidSingleGame
       : scene === 'portal-bid-multi' ? portalBidMultiGame
@@ -2172,7 +2191,7 @@ export function DevScenesScreen() {
           </div>
         )}
         {(scene === 'portal-tom' || scene === 'portal-normal' || scene === 'portal-full' || scene === 'portal-grind'
-          || scene === 'portal-facility-completed' || scene === 'portal-midseason'
+          || scene === 'portal-facility-completed' || scene === 'opponent-form' || scene === 'portal-midseason'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
           || scene === 'portal-month-decisions' || scene === 'portal-interruption-budget' || scene === 'sponsor-motbud'
           || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (

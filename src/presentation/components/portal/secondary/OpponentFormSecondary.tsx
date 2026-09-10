@@ -12,6 +12,13 @@ function resultToVariant(result: 'V' | 'O' | 'F', opponentId: string, managedId:
   return 'draw'
 }
 
+function positionLabel(position: number): string {
+  if (position === 1) return '1:a'
+  if (position === 2) return '2:a'
+  if (position === 3) return '3:e'
+  return `${position}:e`
+}
+
 /** Secondary-kort: motståndarens senaste 5 matcher. */
 export function OpponentFormSecondary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
@@ -31,40 +38,36 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
   if (recentForm.length === 0) return null
 
   const last5 = recentForm.slice(0, 5)
+  const opponentPoints = game.standings.find(s => s.clubId === opponentId)?.points ?? 0
 
   return (
-    <div style={{
-      background: 'var(--bg-portal-surface)',
-      border: '1px solid var(--bg-leather)',
-      borderRadius: 'var(--radius-md)',
-      padding: '8px 10px',
-    }}>
-      <div style={{
-        fontSize: 8,
-        letterSpacing: '1.5px',
-        textTransform: 'uppercase',
-        color: 'var(--text-muted)',
-        fontWeight: 600,
-        marginBottom: 6,
-      }}>
-        🆚 {opponent.name.split(' ')[0].toUpperCase()} FORM
+    <div className="portal-secondary-card opponent-form-card">
+      <span className="portal-card-stripe portal-card-stripe-copper-dim" />
+      <div className="opponent-form-heading">
+        <div>
+          <div className="portal-card-eyebrow">Motståndaren</div>
+          <div className="opponent-form-title">{opponent.name}</div>
+        </div>
+        {opponentLeaguePosition !== null && (
+          <div className="opponent-form-standing" aria-label={`${positionLabel(opponentLeaguePosition)}, ${opponentPoints} poäng`}>
+            <strong>{positionLabel(opponentLeaguePosition)}</strong>
+            <span>{opponentPoints} p</span>
+          </div>
+        )}
       </div>
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      <div className="opponent-form-results" aria-label="Motståndarens fem senaste matcher, senaste först">
         {last5.map((r, i) => (
-          <ScoreBlock
-            key={i}
-            score={r.score}
-            label={r.opponent}
-            variant={resultToVariant(r.result, r.opponentId ?? '', managedId)}
-            compact
-          />
+          <div className="opponent-form-result" key={`${r.opponentId ?? r.opponent}-${i}`}>
+            <ScoreBlock
+              score={r.score}
+              label={r.opponent}
+              variant={resultToVariant(r.result, r.opponentId ?? '', managedId)}
+              compact
+            />
+          </div>
         ))}
       </div>
-      {opponentLeaguePosition !== null && (
-        <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 6 }}>
-          {opponentLeaguePosition}:a · {game.standings.find(s => s.clubId === opponentId)?.points ?? 0}p
-        </div>
-      )}
+      <div className="h-micro opponent-form-order">Senaste matchen först</div>
     </div>
   )
 }
