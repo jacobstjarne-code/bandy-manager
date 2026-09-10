@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/preview/_base.css">
+  <link rel="stylesheet" href="_ds/bandy-manager-design-system-f80de9bb-5282-41e4-a5d4-22145f547f82/styles.css">
+  <style>
+    a { color:var(--accent); text-decoration:none; } a:hover { color:var(--accent-dark); }
+    .stage { min-height:100%; background:var(--bg); font-family:var(--font-body); color:var(--text-primary); padding:30px 24px 90px; }
+    .intro { max-width:820px; margin:0 0 26px; }
+    .badge { display:inline-block; font-family:var(--font-body); font-size:11px; font-weight:700; letter-spacing:1px; color:var(--bg-surface); background:var(--accent); border-radius:5px; padding:3px 8px; }
+    .row { display:flex; flex-wrap:wrap; gap:36px; align-items:flex-start; }
+    .capt { font-family:var(--font-display); font-size:15px; font-weight:700; margin:0 0 2px; }
+    .capt-sub { font-size:12px; color:var(--text-secondary); line-height:1.45; margin:0; }
+
+    /* match phone (Stålvallen mörkt) */
+    .phone { position:relative; width:340px; height:600px; background:var(--bg-dark); border-radius:22px; overflow:hidden; border:5px solid #0d0c0a; box-shadow:0 14px 36px rgba(0,0,0,0.4); }
+
+    /* LED scoreboard — ankaret */
+    .board { position:relative; z-index:5; display:flex; align-items:center; gap:0; padding:12px 13px; background:linear-gradient(180deg,#17140f,#0e0d0b); border-bottom:1px solid rgba(196,122,58,0.4); }
+    .board-side { flex:1; display:flex; align-items:center; gap:7px; }
+    .board-side.away { justify-content:flex-end; }
+    .board-club { font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--text-light); }
+    .led { font-family:ui-monospace,monospace; font-weight:700; letter-spacing:2px; }
+    .led-score { font-size:26px; color:var(--led-us); text-shadow:0 0 9px rgba(232,169,76,0.5); }
+    .led-score .them { color:var(--led-them); text-shadow:0 0 9px rgba(126,179,212,0.45); }
+    .board-sep { width:1px; align-self:stretch; background:rgba(196,122,58,0.4); margin:0 11px; }
+    .board-time { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .board-time .t { font-family:ui-monospace,monospace; font-size:15px; font-weight:700; color:var(--led-score); text-shadow:0 0 7px rgba(255,42,24,0.45); }
+    .board-time .p { font-family:ui-monospace,monospace; font-size:7px; letter-spacing:1.5px; color:var(--led-warn); }
+
+    /* match-underlaget (dimmas) */
+    .under { position:absolute; left:0; right:0; top:54px; bottom:0; padding:12px 13px; transition:filter 260ms ease, opacity 260ms ease; }
+    .under.dim { filter:brightness(0.34) saturate(0.7); }
+    .feed-l { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-light-secondary); opacity:0.7; margin-bottom:9px; }
+    .fe { display:flex; gap:9px; padding:8px 0; border-bottom:1px solid rgba(245,241,235,0.08); }
+    .fe-t { font-family:ui-monospace,monospace; font-size:10px; color:var(--led-warn); flex:0 0 34px; }
+    .fe-x { font-family:var(--font-display); font-size:11.5px; color:var(--text-light-secondary); line-height:1.4; }
+    .bar { height:8px; border-radius:4px; background:rgba(107,127,142,0.4); position:relative; overflow:hidden; margin:12px 0 4px; }
+    .bar-fill { position:absolute; left:0; top:0; bottom:0; width:58%; background:var(--accent); }
+    .bar-lab { display:flex; justify-content:space-between; font-family:ui-monospace,monospace; font-size:8px; color:var(--text-muted); }
+    .ctrls { display:flex; gap:6px; margin-top:14px; }
+    .ctrl { flex:1; padding:9px; text-align:center; font-family:ui-monospace,monospace; font-size:10px; font-weight:700; letter-spacing:0.5px; border-radius:5px; background:rgba(0,0,0,0.3); border:1px solid rgba(196,122,58,0.25); color:rgba(245,241,235,0.6); }
+
+    /* scrim + scen */
+    .scrim { position:absolute; inset:0; top:54px; background:rgba(0,0,0,0.6); z-index:6; opacity:0; transition:opacity 260ms ease; }
+    .scrim.on { opacity:1; }
+    .scene { position:absolute; left:16px; right:16px; top:50%; transform:translateY(-46%) scale(0.98); z-index:7; opacity:0; transition:opacity 220ms ease 80ms, transform 220ms cubic-bezier(0.25,0.46,0.45,0.94) 80ms;
+      background:linear-gradient(165deg,var(--bg-leather),var(--bg-dark)); border:1px solid rgba(196,122,58,0.4); border-radius:12px; padding:20px 18px; box-shadow:0 18px 44px rgba(0,0,0,0.55); }
+    .scene.on { opacity:1; transform:translateY(-50%) scale(1); }
+    .scene-g { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--accent); text-align:center; margin-bottom:12px; }
+    .scene-x { font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--text-light); line-height:1.36; text-align:center; margin-bottom:16px; }
+    .scene-btns { display:flex; flex-direction:column; gap:8px; }
+    .scene-b { padding:12px 14px; font-family:var(--font-display); font-size:13px; color:var(--text-light); background:rgba(245,241,235,0.035); border:1px solid rgba(196,122,58,0.4); border-radius:9px; display:flex; justify-content:space-between; align-items:center; }
+    .scene-b .arr { color:var(--accent); }
+
+    /* timing-remsa */
+    .timing { width:340px; margin-top:14px; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; padding:11px 13px; }
+    .timing-l { font-family:var(--font-body); font-size:8px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--accent-dark); margin-bottom:9px; }
+    .track { position:relative; height:26px; background:var(--bg); border-radius:5px; border:1px solid var(--border); overflow:hidden; }
+    .seg-a { position:absolute; left:0; top:0; bottom:0; width:44%; background:color-mix(in srgb,var(--accent) 16%,transparent); border-right:1px dashed var(--border-dark); }
+    .seg-b { position:absolute; left:44%; top:0; bottom:0; right:0; background:color-mix(in srgb,var(--success) 12%,transparent); }
+    .seg-txt { position:absolute; top:50%; transform:translateY(-50%); font-family:ui-monospace,monospace; font-size:8px; color:var(--text-secondary); }
+    .timing-note { font-family:var(--font-display); font-style:italic; font-size:11px; color:var(--text-secondary); line-height:1.45; margin-top:8px; }
+    .note { max-width:340px; margin:12px 0 0; }
+  </style>
+</helmet>
+<div class="stage">
+
+  <div class="intro">
+    <div class="h-label" style="color:var(--accent-dark);">DESIGN · POLISH 1/5 — NEDSLÄCKNING (IN-MATCH SCEN-ÖVERTAGANDE)</div>
+    <h1 style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:6px 0 8px; line-height:1.16;">Tavlan slocknar aldrig</h1>
+    <p class="h-body" style="margin:0 0 8px; max-width:720px;">När ett matchevent tar över dimmas allt <strong>utom resultattavlan</strong>. Tavlan är ankaret — du släpper aldrig matchen ur sikte medan du väljer. Underlaget (feed, momentumbar, kontroller) faller till ~34% ljus under en scrim; scenen stiger. Grundfyndet <code style="font-family:var(--font-display);color:var(--accent-dark)">pt6-nedslackning-timing</code> var att faden var för seg — den nya kurvan är snärtig (260ms dim), scenen kommer strax efter (220ms), inte utdraget.</p>
+    <p class="h-body-sm" style="margin:0; max-width:720px;">Detta är en <strong>designintention</strong>, inte något koden bär idag — jag äger svaret. <a href="#1a">1a</a> visar släckt läge (scenen råder, tavlan lyser). Klicka i mocken för att växla släckt/tänt och känna timingen. — <em>Fruset: 2H 74:22, Forsbacka 3–2 Västanfors, event = utvisning. Byt event → scen-copy byter; tavlan och nedsläckningsregeln är konstanta.</em></p>
+  </div>
+
+  <div class="row">
+    <div id="1a" style="width:340px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span class="badge">1a</span>
+        <div><div class="capt">Släckt läge · scenen råder</div><div class="capt-sub">Tavlan tänd, underlaget dimmat, scenen stiger. Klicka för att växla.</div></div>
+      </div>
+
+      <div class="phone" onclick="{{ toggle }}">
+        <div class="board">
+          <div class="board-side"><span class="board-club">Forsbacka</span></div>
+          <div class="led led-score">3<span style="color:var(--text-muted)">–</span><span class="them">2</span></div>
+          <div class="board-side away"><span class="board-club">Västanfors</span></div>
+          <div class="board-sep"></div>
+          <div class="board-time"><span class="t">74:22</span><span class="p">HL 2</span></div>
+        </div>
+
+        <div class="under {{ underClass }}">
+          <div class="feed-l">🏒 Matchen · Stålvallen</div>
+          <div class="fe"><span class="fe-t">72'</span><span class="fe-x">Lindqvist tvingar fram en hörna. Klacken reser sig.</span></div>
+          <div class="fe"><span class="fe-t">69'</span><span class="fe-x">Byte: Ahl in för Johansson, tunga ben.</span></div>
+          <div class="fe"><span class="fe-t">66'</span><span class="fe-x">3–2! Pålsson i krysset från distans.</span></div>
+          <div class="bar"><div class="bar-fill"></div></div>
+          <div class="bar-lab"><span>FOR 58%</span><span>momentum</span><span>42% VÄS</span></div>
+          <div class="ctrls"><span class="ctrl">SNABBÄNDRING</span><span class="ctrl">BYTE · 2 KVAR</span></div>
+        </div>
+
+        <div class="scrim {{ scrimClass }}"></div>
+        <div class="scene {{ sceneClass }}">
+          <div class="scene-g">⬩ 75:04 · Utvisning ⬩</div>
+          <div class="scene-x">Berg fäller mannen i friläge. Domaren pekar mot båset — tio minuter. Vad ropar du från sargen?</div>
+          <div class="scene-btns">
+            <div class="scene-b"><span>"Håll ihop. Fyra man, samma hjärta."</span><span class="arr">→</span></div>
+            <div class="scene-b"><span>"Parkera bussen tills han är tillbaka."</span><span class="arr">→</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timing">
+        <div class="timing-l">Timing · scen-övertagande</div>
+        <div class="track">
+          <div class="seg-a"></div><div class="seg-b"></div>
+          <span class="seg-txt" style="left:10px;">dim 260ms</span>
+          <span class="seg-txt" style="left:48%;">scen 220ms ↗</span>
+        </div>
+        <div class="timing-note">Överlappande, inte sekventiellt: scenen börjar stiga vid 80ms medan dimningen fortfarande löper. Total upplevd övergång ~380ms — snärtigt. Utgång: scen ut 180ms, underlaget tänds tillbaka 220ms.</div>
+      </div>
+
+      <p class="h-body-sm note"><strong>Regeln:</strong> z-index tavlan > scrim > underlag; scrim <code style="font-family:var(--font-display)">top:54px</code> så den aldrig når tavlan. Dim = <code style="font-family:var(--font-display)">filter:brightness(0.34)</code> på underlaget + rgba(0,0,0,0.6)-scrim (samma som match-modalerna). Inga andra ytor tänds/släcks — bara detta scen-övertagande.</p>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { dark: true };
+  renderVals() {
+    const d = this.state.dark;
+    return {
+      toggle: () => this.setState(s => ({ dark: !s.dark })),
+      underClass: d ? 'dim' : '',
+      scrimClass: d ? 'on' : '',
+      sceneClass: d ? 'on' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

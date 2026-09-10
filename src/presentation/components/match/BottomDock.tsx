@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Overlay } from '../primitives/Overlay'
 
@@ -26,12 +27,34 @@ interface BottomDockProps {
 }
 
 export function BottomDock({ open, variant, onClose, height, children }: BottomDockProps) {
+  const [rendered, setRendered] = useState(open)
+  const [entered, setEntered] = useState(false)
+  const lastChildren = useRef(children)
   const resolvedHeight = height ?? (variant === 'peek' ? 280 : undefined)
-  if (!open) return null
+
+  useEffect(() => {
+    if (open) lastChildren.current = children
+  }, [children, open])
+
+  useEffect(() => {
+    if (open) {
+      setRendered(true)
+      const frame = window.requestAnimationFrame(() => setEntered(true))
+      return () => window.cancelAnimationFrame(frame)
+    }
+
+    setEntered(false)
+    const timeout = window.setTimeout(() => setRendered(false), 220)
+    return () => window.clearTimeout(timeout)
+  }, [open])
+
+  if (!rendered) return null
+
+  const openClass = entered ? ' open' : ''
 
   return (
     <>
-      {variant === 'block' && <div className="mf-dock-scrim open" aria-hidden="true" />}
+      {variant === 'block' && <div className={`mf-dock-scrim${openClass}`} aria-hidden="true" />}
       <Overlay
         onClose={onClose ?? NOOP}
         variant="sheet"
@@ -41,14 +64,14 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
         closeOnEscape={variant === 'peek' && !!onClose}
         closeOnBackdrop={variant === 'peek' && !!onClose}
         inertBackground={false}
-        trapFocus={variant === 'block'}
-        autoFocus={variant === 'block'}
+        trapFocus={variant === 'block' && open}
+        autoFocus={variant === 'block' && open}
         portal={false}
         backdropStyle={{ position: 'absolute', background: 'transparent' }}
         contentStyle={{ background: 'transparent', border: 'none' }}
       >
         <div
-          className={`mf-dock mf-dock--${variant} open`}
+          className={`mf-dock mf-dock--${variant}${openClass}`}
           style={{
             ...(resolvedHeight !== undefined ? { height: resolvedHeight } : {}),
             position: 'relative',
@@ -62,7 +85,7 @@ export function BottomDock({ open, variant, onClose, height, children }: BottomD
             />
           )}
           <div className="mf-dock-content">
-            {children}
+            {open ? children : lastChildren.current}
           </div>
         </div>
       </Overlay>

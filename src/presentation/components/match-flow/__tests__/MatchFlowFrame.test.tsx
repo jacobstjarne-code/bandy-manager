@@ -1,6 +1,6 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MatchFlowFrame } from '../MatchFlowFrame'
 
 beforeAll(() => {
@@ -87,5 +87,36 @@ describe('MatchFlowFrame — Förbered', () => {
     const stamp = container!.querySelector('.mf-stamp') as HTMLButtonElement
     expect(stamp.disabled).toBe(true)
     expect(stamp.textContent).toBe('FYLL ELVAN FÖRST')
+  })
+
+  it('mäter tavlans verkliga underkant när matchen släcks ned', () => {
+    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      const top = this.classList.contains('mf-root') ? 20 : 0
+      const bottom = this.classList.contains('scoreboard-root') ? 148 : top
+      return { top, bottom, left: 0, right: 0, width: 0, height: bottom - top, x: 0, y: top, toJSON: () => ({}) }
+    })
+
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+    act(() => {
+      root!.render(
+        <MatchFlowFrame
+          clubId="club_forsbacka" clubName="Forsbacka IK" managerName="Test"
+          season="2026/27" roundLabel="OMGÅNG 1" phase="spela"
+          liveScore={{ homeName: 'Forsbacka', awayName: 'Skutskär', homeScore: 1, awayScore: 0 }}
+          stamp={null}
+          dimmed
+        >
+          <div className="scoreboard-root">Tavla</div>
+          <div>Matchunderlag</div>
+        </MatchFlowFrame>,
+      )
+    })
+
+    const frame = container.querySelector<HTMLElement>('.mf-root')!
+    expect(frame.classList.contains('match-dimmed')).toBe(true)
+    expect(frame.style.getPropertyValue('--match-scoreboard-bottom')).toBe('128px')
+    rectSpy.mockRestore()
   })
 })

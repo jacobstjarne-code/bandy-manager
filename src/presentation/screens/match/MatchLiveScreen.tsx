@@ -1633,6 +1633,10 @@ export function MatchLiveScreen() {
     return null
   })()
 
+  const matchDimmed = !!(
+    activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress
+  )
+
   return (
     <MatchFlowFrame
       clubId={managedClub?.id ?? ''}
@@ -1645,6 +1649,7 @@ export function MatchLiveScreen() {
       // sortering och kronologi — men inte som rond-IDENTITET.
       roundLabel={getRoundLabel(fixture, game?.playoffBracket).short.toUpperCase()}
       phase="spela"
+      dimmed={matchDimmed}
       stamp={spelStamp}
       liveScore={{
         homeName: homeClub?.name ?? homeClubName,

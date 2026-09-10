@@ -454,8 +454,11 @@
    asymmetriska klass-växlingsknep som .mf-dock--block ovan). */
 .mf-dock-scrim {
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  top: var(--match-scoreboard-bottom, 0px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
   z-index: calc(var(--z-interaction) - 1);
   opacity: 0;
   pointer-events: none;
@@ -466,18 +469,6 @@
   opacity: 1;
   pointer-events: auto;
   transition: opacity 260ms ease;
-}
-
-/* B-1 (ratificerat 2026-06-11) — scoreboardet lyser kvar under block-interaktion.
-   Tavlan (.scoreboard-root: sticky, egen stacking-context) lyfts över scrimmen
-   (--z-interaction - 1) i den delade contexten. :has() scopar det till öppen
-   block-scrim, så modaler (z-modal 300) fortsatt täcker tavlan. Ingen hårdkodad
-   topp-pixel → robust när tavlan växer (utvisningsraden). DOM_POLISH_NEDSLACKNING
-   2026-09-10 bekräftade denna lösning som svaret på handoffens "top:54px"-krav
-   (§4: scrim-topp = scoreboard-höjd) — z-index-lyftet slår en hårdkodad
-   pixel-höjd rakt av, ingen mätning behövs alls. */
-.mf-root:has(.mf-dock-scrim.open) .scoreboard-root {
-  z-index: var(--z-interaction); /* > scrim (z-interaction - 1); block-docken (z-interaction) kvar överst via DOM-ordning */
 }
 
 /* DOM_POLISH_NEDSLACKNING_2026-09-10 §1+§2 — "underlaget" (allt i .mf-content
@@ -492,7 +483,7 @@
   transition: filter 220ms ease;
 }
 
-.mf-root:has(.mf-dock-scrim.open) .mf-content > *:not(.scoreboard-root) {
+.mf-root.match-dimmed .mf-content > *:not(.scoreboard-root) {
   filter: brightness(0.34) saturate(0.7);
   transition: filter 260ms ease;
 }

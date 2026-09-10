@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 import { ClubBadge } from '../ClubBadge'
 import '../../styles/match-flow.css'
@@ -52,6 +53,8 @@ interface MatchFlowFrameProps {
    *  .mf-content { overflow: hidden } — så en absolut-positionerad dock aldrig klipps.
    *  BottomDock(ar) skickas hit, inte som children. */
   dock?: ReactNode
+  /** Sant medan en blockerande matchinteraktion äger fokus. */
+  dimmed?: boolean
   children: ReactNode
   style?: CSSProperties
 }
@@ -77,15 +80,45 @@ export function MatchFlowFrame({
   tabs,
   liveScore,
   dock,
+  dimmed = false,
   children,
   style,
 }: MatchFlowFrameProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [scoreboardBottom, setScoreboardBottom] = useState(0)
   const phaseIdx = PHASE_INDEX[phase]
   // Grepp 4: under spel viker masthead + RPS ihop till en tunn orienteringsrad.
   const slim = phase === 'spela' && liveScore != null
 
+  useLayoutEffect(() => {
+    if (!dimmed) return
+
+    const root = rootRef.current
+    const scoreboard = root?.querySelector<HTMLElement>('.scoreboard-root')
+    if (!root || !scoreboard) return
+
+    const measure = () => {
+      const rootRect = root.getBoundingClientRect()
+      const scoreboardRect = scoreboard.getBoundingClientRect()
+      setScoreboardBottom(Math.max(0, scoreboardRect.bottom - rootRect.top))
+    }
+
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(root)
+    observer.observe(scoreboard)
+    return () => observer.disconnect()
+  }, [dimmed])
+
+  const frameStyle = {
+    ...style,
+    '--match-scoreboard-bottom': `${scoreboardBottom}px`,
+  } as CSSProperties
+
   return (
-    <div className="mf-root" style={style}>
+    <div ref={rootRef} className={`mf-root${dimmed ? ' match-dimmed' : ''}`} style={frameStyle}>
       {slim ? (
         /* ── Slim live-rad (grepp 4) ── */
         <div className="mf-masthead-slim">
