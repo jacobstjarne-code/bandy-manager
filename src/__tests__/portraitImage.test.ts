@@ -16,17 +16,19 @@ describe('portrait arketyp-wiring', () => {
     expect(ageToPortraitTier(38)).toBe('vet')
   })
 
-  it('är deterministiskt per veteran och väljer bara ur den faktiska filuppsättningen', () => {
+  it('är deterministiskt per spelare och väljer bara ur respektive kuraterad filuppsättning', () => {
     const a = getPortraitImagePath('player_42', 35)
     const b = getPortraitImagePath('player_42', 35)
     expect(a).toBe(b)
     expect(a).toMatch(/^\/assets\/portraits\/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png$/)
+    expect(getPortraitImagePath('player_42', 19)).toMatch(/^\/assets\/portraits\/portrait_young_[1-6]\.png$/)
+    expect(getPortraitImagePath('player_42', 25)).toMatch(/^\/assets\/portraits\/portrait_mid_(?:[1-9]|10)\.png$/)
     expect(CURATED_PORTRAIT_INDICES.vet).not.toContain(3)
   })
 
-  it('tomma tierer ger SVG-fallback i UI i stället för en bruten bildlänk', () => {
-    expect(getPortraitImagePath('player_7', 19)).toBeNull()
-    expect(getPortraitImagePath('player_7', 25)).toBeNull()
+  it('bara det fortfarande tomma erfaren-facket ger SVG-fallback', () => {
+    expect(getPortraitImagePath('player_7', 19)).toMatch(/portrait_young_[1-6]\.png$/)
+    expect(getPortraitImagePath('player_7', 25)).toMatch(/portrait_mid_(?:[1-9]|10)\.png$/)
     expect(getPortraitImagePath('player_7', 29)).toBeNull()
     expect(getPortraitImagePath('player_7', 35)).toMatch(/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png$/)
   })

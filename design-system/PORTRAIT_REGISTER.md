@@ -1,6 +1,6 @@
 # PORTRAIT_REGISTER — spelarporträtt, kurerat register
 
-**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix skärpt + separationsregel, 2026-09-09). Veteranfacket genererat 1, 2, 4–16 (3 överhoppad), granskat och godkänt (16 st). Ung-facket skrivet 2026-09-09, generering ej påbörjad. Mid/erfaren skrivs härnäst.
+**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix skärpt + separationsregel, 2026-09-09). Veteranfacket är infört sedan tidigare. Ung 1–6 och mid 1–10 är granskade, produktbehandlade och införda 2026-09-10. Erfaren är fortfarande tomt.
 
 Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen bär registret — vem varje av de ~120 porträtten är, så inga två i en trupp blir för lika och luckorna fylls medvetet. Registret är den levande källan för den aktuella basprompten (PORTRAIT_STYLE:s arbetsprompt är den tidigare, nu förfinad nedan).
 
@@ -17,6 +17,18 @@ Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen 
 **Komposition:** huvud + axlar, centrerat med marginal (UI:t hårdklipper till cirkel — profil/decentrerat kapas). Lugnt neutralt uttryck ALLTID (aldrig leende/dramatiskt — ses hundratals gånger i listor). Huvudvinkel varierad i smalt band: lätt trekvartsvridning, blick mot eller strax vid sidan av kameran, aldrig alla dödsraka (bryter mugshot).
 
 **Produktion:** ETT porträtt per generering, ALDRIG rutnät/ark (små ansikten + osnitt­bart). Gemini Nano Banana 2 i Thinking/Pro-läge (instruktionsföljning; Fast driver iväg över 120). Lås basprompten ord för ord, variera bara person + vinkel, eget frö per bild. Granska varje fack som GRUPP mot ankaret, regenerera avvikare i yta/palett/beskärning. Filnamn `portrait_{tier}_{n}.png`.
+
+## Filöversättning och produktformat (2026-09-10)
+
+Löpnumret är identiteten i registret och får inte räknas om mellan original, produktfil och kod. Inkommande kortnamn översätts så här:
+
+| Inkommande original | Registerpost | Produktfil |
+|---|---|---|
+| `1.jpeg`–`16.jpeg` | veteran 1–16 | redan införda `portrait_vet_{n}.png`; #3 är fortsatt utesluten ur det kuraterade urvalet |
+| `m1.jpeg`–`m10.jpeg` | mid 1–10 | `portrait_mid_{n}.png` |
+| `y1.jpeg`–`y6.jpeg` | ung 1–6 | `portrait_young_{n}.png` |
+
+Produktmastrarna är kvadratiska 400×400 PNG. De nya originalen var redan centrerade med säker cirkelmarginal och behövde därför skalas, inte beskäras. Samtliga 32 högupplösta JPEG-original ligger bevarade med kanoniska namn i `docs/incoming/_arkiv-2026-09/portratt-original/`.
 
 **Separationsregel (låst 2026-09-09, bevisad i veteranfacket):** när två poster ligger nära i ålder OCH färg måste minst TVÅ av axlarna hårväxt / ansiktsform / byggnad skilja dem — annars konvergerar Gemini till kloner (klungan 1/7/9 bevisade det). En axel räcker inte: 16 renrakad mot 7 stubbad var för nära tills även käken och byggnaden knöffades isär.
 
@@ -96,7 +108,20 @@ Skrivet mot skärpt krage-rad + separationsregel. Karaktär: släta ansikten, in
 28. 19, kort brunt sidbena, slätt, lugnt neutralt, medel — frontal lätt lutning
 29. 21, kort mörkblont, stubb på gång, bredare tidig-bulk byggnad (ung back) — trekvart vänster
 30. 16, mjukt mycket ungt, ljust fallande hår, liten slank (akademi, yngst) — blick vid sidan
-## Fack: MID (22–26) — ej skrivet
+## Fack: MID (22–26) — skrivet 2026-09-10 (första tio)
+
+Karaktär: prime, satta vuxna drag — ingen ung valpighet, ingen veteran-väderbitenhet eller fåror än. Byggnader fylligare och mer satta än ung, skägg-kapabelt (stubb/kort skägg vanligt), två tredjedelar ordinära. Inget grått eller rött hår (hör veteran/ung till). Extrem placerad: den ende tydligt kraftige (8). Representation ~1 i första tio (4, balkan); ~3 till över resterande 20 för ~13%.
+
+1. 24, kort brunt sidbena, lätt stubb, ovalt, medel — trekvart höger
+2. 26, kort mörkblont, renrakat, fyrkantig käke, satt-kompakt — blick vid sidan
+3. 23, kort brunt snagg, kort välansat skägg, rakare ansikte, slank — frontal lätt lutning
+4. 25, kort svart hår, kort mörkt skägg, ljus-oliv (andra gen balkan), medel — trekvart vänster
+5. 22, kort ljusbrunt, lätt stubb, runt-ovalt, slank-medel — blick mot kameran
+6. 26, kort brunt, renrakat, bredare ryska kindben, kompakt back — trekvart höger
+7. 24, kort mörkbrunt sidbena, kort skägg, ovalt, medel — blick vid sidan
+8. 25, mycket kort buzz, renrakat, tung bred käke, tjock nacke, tydligt kraftig (EXTREM: den ende kraftige) — rak stadig blick
+9. 23, kort mellanblont, lätt stubb, magert kantigt, slank-lång — trekvart vänster
+10. 26, kort brunt rufsigt, kort fullt skägg, fyrkantig, medel-satt — frontal lätt lutning
 ## Fack: ERFAREN (27–31) — ej skrivet
 
 ## Extrem-budget (hela poolen, 8–12)

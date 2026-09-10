@@ -30,4 +30,6 @@ Synkfilerna (`github-synk-*.md`) arkiveras direkt när deras leverans är behand
 
 **Arkiverat 2026-09-06:** originalbilderna för Heros, Hälleforsnäs, Lesjöfors, Skutskär och Västanfors flyttades till `_arkiv-2026-09/ortsbilder-original/` efter att de komprimerade produktversionerna skapats i `public/assets/illustrations/`.
 
+**Arkiverat 2026-09-10:** 32 spelarporträtt-original flyttades till `_arkiv-2026-09/portratt-original/` med kanoniska tiernamn. Veteran 1–16 är den äldre poolen; nya mid 1–10 och ung 1–6 har skalats till 400×400 PNG i `public/assets/portraits/` och wirats via `portraitService.ts`. Exakt filöversättning finns i `design-system/PORTRAIT_REGISTER.md`.
+
 **Arkiverat 2026-09-07** (MASTER_OPPET.md `stickiness-settings-kategorier`, KLAR): `Notisinstallningar.dc.html` + `github_notisinställningar.md` → `_arkiv-2026-09/`. Mocken dömd och byggd i samma svep — Notiser-inställningsyta (kategori-toggles, tysta timmar) wirad end-to-end mot `server/attention/`, browserverifierad. Två av mockens etiketter/introraden rättades mot registrets faktiska LÅSTA text innan bygget (Design skrev interna namn — se MASTER-raden för detaljer). `Klubbparm-forstagangsprompt.dc.html` (samma leverans, annan feature) rörd inte — väntar fortfarande på Jacobs val mellan de tre formerna.

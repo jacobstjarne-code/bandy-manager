@@ -13,8 +13,8 @@ export type PortraitTier = 'young' | 'mid' | 'exp' | 'vet'
  * because its old placeholder file still exists on disk.
  */
 export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly number[]>> = {
-  young: [],
-  mid: [],
+  young: [1, 2, 3, 4, 5, 6],
+  mid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   exp: [],
   vet: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
 }
