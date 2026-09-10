@@ -310,7 +310,14 @@ export function resolveEvent(
   rand: () => number = Math.random,
   madeByPlayer: boolean,
 ): SaveGame {
+  // Granska fryser de synliga korten vid mount så spelarens valmarkering
+  // hinner visas. När ett tidigare kort löses kan köpromotionen samtidigt
+  // flytta ett av de andra frusna korten från pending till deferred. Kortet
+  // är fortfarande ett giltigt, synligt beslut och måste därför kunna lösas
+  // ur båda kanoniska beslutsköerna; resolutionen pensionerar redan id:t ur
+  // båda via retireResolvedEvent längre ned.
   const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
+    ?? (game.deferredDecisions ?? []).find(e => e.id === eventId)
     ?? (game.pendingPressConference?.id === eventId ? game.pendingPressConference : undefined)
     ?? (game.pendingRefereeMeeting?.id === eventId ? game.pendingRefereeMeeting : undefined)
     ?? (game.pendingCSPress?.id === eventId ? game.pendingCSPress : undefined)

@@ -113,6 +113,32 @@ describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)
     expect(resolveEvent(resolved, gala.id, 'attend', () => 0.5, true)).toBe(resolved)
   })
 
+  it('löser ett fruset Granska-kort även när ett tidigare val har flyttat det till deferred-kön', () => {
+    const game = baseGame()
+    const player = game.players.find(candidate => candidate.clubId === game.managedClubId)!
+    const gala = generateGalaEvent(game, [{
+      award: 'arets_spelare',
+      playerId: player.id,
+      playerName: `${player.firstName} ${player.lastName}`,
+      clubName: game.clubs.find(club => club.id === player.clubId)?.shortName ?? '?',
+      stat: 'Styrka 70',
+    }])
+
+    const resolved = resolveEvent({
+      ...game,
+      pendingEvents: [captainEvent()],
+      deferredDecisions: [gala],
+    }, gala.id, 'attend', () => 0.5, true)
+
+    expect(resolved.deferredDecisions).toEqual([])
+    expect(resolved.resolvedEventIds).toContain(gala.id)
+    expect(resolved.resolvedChoices).toContainEqual(expect.objectContaining({
+      eventId: gala.id,
+      choiceId: 'attend',
+      madeByPlayer: true,
+    }))
+  })
+
   it('resolving sponsorOffer bland tre siblings tar bort exakt ETT event-ID', () => {
     const game = baseGame()
     const playerId = game.clubs[0].squadPlayerIds[0]
