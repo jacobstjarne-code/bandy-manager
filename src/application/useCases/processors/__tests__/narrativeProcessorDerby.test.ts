@@ -5,6 +5,22 @@ import { createNewGame } from '../../createNewGame'
 import { processNarrative, processUpcomingDerbyNotification } from '../narrativeProcessor'
 
 describe('narrativeProcessor — derbyförhandsnotis', () => {
+  it('nämner inte en undefined gammal klackfavorit efter klubbbyte', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_skutskar', season: 2036, seed: 42 })
+    const result = processNarrative({
+      ...game,
+      supporterGroup: {
+        ...game.supporterGroup!,
+        favoritePlayerId: 'player_from_former_club',
+      },
+    }, null, 5, game.currentDate, () => 0.5)
+
+    const shift = result.inboxItems.find(item => item.title === 'Klacken har en ny favorit')
+    expect(shift).toBeDefined()
+    expect(shift?.body).not.toContain('undefined')
+    expect(shift?.body).toMatch(/har tagit över kören\.$/)
+  })
+
   it('köar inte samma fasta kafferumsrad efter ännu en slutspelsseger på cooldown', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_halleforsnas', season: 2025, seed: 42 })
     const opponent = game.clubs.find(club => club.id !== game.managedClubId)!

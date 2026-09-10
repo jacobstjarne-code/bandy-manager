@@ -131,7 +131,7 @@ Efter avskedet tog Gunnar Lindqvist över Västanfors. Jag satt hemma medan klub
 
 **Ögonblicket.** 7–1 i derbyt mot Söderfors landade som säsongens match och gav den nya klubben en egen topp. Första segern, 8–3 mot Heros efter fem raka förluster, kändes som att laget gick att nå. Platt: medieraden `Klacken sjunger inte längre undefineds namn. Torbjørn Sten har tagit över kören.` bröt illusionen direkt efter klubbbytet.
 
-**Marginalen.** Nödtruppsflödet möttes på riktigt: med nio valbara spelare kallades två juniorer upp, elvan gick att fylla och matchen spelades. Årsboken skrev samtidigt samma derbyförlust mot Söderfors tre gånger, två O3-ankrade och en oankrad. Detaljerad kodverifiering av dessa två text/minnesfynd återstår utanför journalen.
+**Marginalen.** Nödtruppsflödet möttes på riktigt: med nio valbara spelare kallades två juniorer upp, elvan gick att fylla och matchen spelades. `undefineds namn` kodverifierades: Skutskär ärvde Västanfors favorit-id, men den gamla spelaren fanns inte i den nya truppen; copygrenen kräver nu ett verkligt gammalt namn och faller annars till den sanna raden om den nya favoriten. Årsboken skrev samtidigt samma derbyförlust mot Söderfors tre gånger, två O3-ankrade och en oankrad; det minnesfyndet återstår att spåra separat.
 
 ## Del 2 — fem stående frågor
 

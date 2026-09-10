@@ -111,7 +111,9 @@ export function processNarrative(
         id: `fav_shift_${nextMatchday}_${game.currentSeason}`,
         type: InboxItemType.MediaEvent,
         title: 'Klacken har en ny favorit',
-        body: `Klacken sjunger inte längre ${favResult.oldFavoriteName}s namn. ${favResult.newFavoriteName} har tagit över kören.`,
+        body: favResult.oldFavoriteName
+          ? `Klacken sjunger inte längre ${favResult.oldFavoriteName}s namn. ${favResult.newFavoriteName} har tagit över kören.`
+          : `${favResult.newFavoriteName} har tagit över kören.`,
         date: game.currentDate,
         isRead: false,
       } as InboxItem)
