@@ -13,11 +13,18 @@ import {
  * gjorde `.slice(-5)` på seasonSummaries — efter tio säsonger var år 1-5
  * borta, fem SM-guld stod kvar som räknare men åren de vanns fanns inte.
  *
- * Testet driver EN seed genom 20 fulla säsonger (samma advanceToNextEvent +
+ * Testet driver EN seed genom fulla säsonger (samma advanceToNextEvent +
  * autoSelectLineup + autoResolvePendingScreen-mönster som headless-
- * stresstestet) och kontrollerar seasonSummaries.length vid exakt de
- * kontrollpunkter ordern angav: 1, 5, 6, 10, 20. Kravet: antalet
- * sammanfattningar ska vara lika med antalet spelade säsonger — aldrig kapat.
+ * stresstestet) och kontrollerar seasonSummaries.length vid kontrollpunkter
+ * 1, 5, 6, 7. Kravet: antalet sammanfattningar ska vara lika med antalet
+ * spelade säsonger — aldrig kapat.
+ *
+ * Toppcheckpointen sänkt 20→7 (2026-09-10, körorder): femspärren satt vid
+ * säsong 5→6-övergången (den gamla .slice(-5)-buggen kapade år 1 först vid
+ * den sjätte säsongen) — säsong 7 håller täckningen förbi den med en
+ * säsongs marginal utan att driva ett helt 20-säsongskarriär-varv i varje
+ * testkörning. Långa flersäsongskörningar (10/20+) hör hemma i stress-
+ * tiern (`npm run stress`), inte i den här enhetstestsviten.
  */
 function driveSeasons(seed: number, targetSeasons: number[]): Map<number, number> {
   const clubTemplate = CLUB_TEMPLATES[seed % CLUB_TEMPLATES.length]
@@ -49,8 +56,8 @@ function driveSeasons(seed: number, targetSeasons: number[]): Map<number, number
 }
 
 describe('A1 — karriärminnet kapas inte längre vid fem säsonger', () => {
-  it('seasonSummaries.length matchar antalet spelade säsonger vid 1, 5, 6, 10 och 20', () => {
-    const checkpoints = [1, 5, 6, 10, 20]
+  it('seasonSummaries.length matchar antalet spelade säsonger vid 1, 5, 6 och 7', () => {
+    const checkpoints = [1, 5, 6, 7]
     const seen = driveSeasons(0, checkpoints)
     for (const n of checkpoints) {
       expect(seen.get(n), `seasonSummaries hade aldrig längd ${n} — checkpoints som faktiskt sågs: ${JSON.stringify([...seen.keys()])}`).toBe(n)
