@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| cupforlust-pokalen-pa-byran | Efter cupförlust kan övergångsanslaget säga `Pokalen står på en byrå någonstans`, vilket långspelet läste som möjligt eget pokalinnehav trots att en annan klubb vann. | rapporterad | Code | GRIND_2_3_LANGKARRIAR_2026-09-09.md:221 | Kod- och historikverifiera att raden tillhör `cup_done` och kan väljas efter faktiskt uttåg; om så, gör förlustägaren entydig utan att ändra vinnarspåret. |
+| cupforlust-pokalen-pa-byran | Efter cupförlust kan övergångsanslaget säga `Pokalen står på en byrå någonstans`, vilket långspelet läste som möjligt eget pokalinnehav trots att en annan klubb vann. | in_progress | Code | GRIND_2_3_LANGKARRIAR_2026-09-09.md:221 | CLAIM 2026-09-10T23:44:47Z — Code. Verifierad mot kod och historik: raden introducerades i `5921d955` och ligger som en likaviktad variant i `cup_done`; `computeNextAnslag` returnerar just `cup_done` efter förlust i varje cuprunda medan endast bracketvinnaren får `cup_done_winner`. Gör förlustägaren entydig utan att ändra vinnarspåret och regressionstesta både variantpool och routing. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
