@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| arsbok-storyline-dubbleras | Årsbokens "Din säsong" visade samma derbyförlust tre gånger efter Skutskärsäsongen 2036/37 | rapporterad | Code | Grind 2/3 långkarriär, `KARRIARJOURNAL_VASTANFORS_2026-09-09.md` säsong 10 | Verifiera hela sammanslagningen mellan `summary.keyMoments` och liggarstyrda storyline-projektioner; reproduktionsutfallet var två O3-rader plus en rad utan korrekt omgångsankare. |
+| arsbok-storyline-dubbleras | Årsbokens "Din säsong" visade samma derbyförlust tre gånger efter Skutskärsäsongen 2036/37 | in_progress | Codex | Grind 2/3 långkarriär, `KARRIARJOURNAL_VASTANFORS_2026-09-09.md` säsong 10 | CLAIM 2026-09-11T01:30:23+02:00 — Codex. Kod- och historikverifierad: `generateSeasonSummary` placerar lösta arc-storylines i `summary.keyMoments`, medan `SeasonSummaryScreen` därefter lägger samma liggarstyrda storyline-projektioner i tidslinjen en gång till. Befintlig dedup täcker bara respektive ficka, inte korsningen. Bygg en identitetsburen sammanslagning och regressionstest för hela årsbokstidslinjen; bevara olika verkliga händelser även om de delar typ. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
