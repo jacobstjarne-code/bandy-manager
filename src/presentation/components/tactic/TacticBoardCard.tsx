@@ -96,7 +96,7 @@ export function TacticBoardCard({
     return (
       <div key={key} style={{ marginBottom: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
           <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
             {options.map((opt, i) => {
               // B2 (SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
@@ -116,7 +116,7 @@ export function TacticBoardCard({
                   style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     minHeight: 44, textAlign: 'center', padding: '0 3px',
-                    fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                    fontSize: 12, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
                     cursor: 'pointer', fontFamily: 'var(--font-body)',
                     border: 'none', borderRight: i === options.length - 1 ? 'none' : '1px solid var(--border)',
                     background: isSelected ? 'var(--accent)' : 'transparent',
@@ -147,7 +147,7 @@ export function TacticBoardCard({
               key={mode}
               onClick={() => onToggleAdvancedMode(mode === 'advanced')}
               className={`btn${(mode === 'advanced') === advancedMode ? ' active' : ''}`}
-              style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 600, letterSpacing: '0.5px' }}
+              style={{ flex: 1, padding: '8px 4px', fontSize: 12, fontWeight: 600, letterSpacing: '0.5px' }}
             >
               {mode === 'standard' ? 'Standard' : 'Avancerat'}
             </button>
@@ -160,7 +160,7 @@ export function TacticBoardCard({
             {deltaLine && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '1px 2px', marginBottom: 10 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cold)', flexShrink: 0, marginTop: 4 }} />
-                <span style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.4 }}>{deltaLine}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.4 }}>{deltaLine}</span>
               </div>
             )}
 
@@ -179,7 +179,7 @@ export function TacticBoardCard({
                   <span className="h-display-sm" style={{ color: 'var(--warm)' }}>
                     {activeSuggestions.length}
                   </span>
-                  <span className="h-label" style={{ color: 'var(--warm)' }}>
+                  <span className="h-label" style={{ color: 'var(--warm)', fontSize: 12 }}>
                     {activeSuggestions.length === 1 ? 'ändring föreslås' : 'ändringar föreslås'}
                   </span>
                 </div>
@@ -191,8 +191,8 @@ export function TacticBoardCard({
                     const newLabel = findLabel(value) ?? value
                     return (
                       <div key={key as string} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 64 }}>{row.label}</span>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'line-through' }}>{currentLabel}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 64 }}>{row.label}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', textDecoration: 'line-through' }}>{currentLabel}</span>
                         <span style={{ color: 'var(--warm)', fontWeight: 700 }}>→</span>
                         {/* ds-guard: .h-num-sm (font-display via klass, inte inline) istf egen
                             inline-reimplementering av typrollen — samma serif-siffer-vikt som
@@ -203,7 +203,7 @@ export function TacticBoardCard({
                   })}
                 </div>
                 {suggestionWhyLine && (
-                  <p className="h-quote-sm" style={{ marginTop: 9, color: 'var(--text-secondary)' }}>
+                  <p className="h-quote-sm" style={{ marginTop: 9, color: 'var(--text-secondary)', fontSize: 12 }}>
                     {suggestionWhyLine}
                   </p>
                 )}
@@ -214,7 +214,7 @@ export function TacticBoardCard({
             )}
 
             {/* Spelplan — den öppna gruppen i standardläget (bär förslagen) */}
-            <p className="h-label" style={{ marginBottom: 5 }}>{previewGroup.label}</p>
+            <p className="h-label" style={{ marginBottom: 5, fontSize: 12 }}>{previewGroup.label}</p>
             {tacticRows.filter(r => (previewGroup.keys as readonly string[]).includes(r.key)).map(renderRow)}
 
             {/* Väg in till avancerat — de två dolda grupperna namngivna, inte gömda tyst */}
@@ -230,7 +230,7 @@ export function TacticBoardCard({
                 <SlidersHorizontal size={13} aria-hidden="true" style={{ verticalAlign: 'text-bottom', marginRight: 4 }} />
                 {hiddenGroups.map(g => g.label).join(' · ')}
               </span>
-              <span style={{ fontSize: 10, color: 'var(--accent-deep)', fontWeight: 700, letterSpacing: '0.5px' }}>
+              <span style={{ fontSize: 12, color: 'var(--accent-deep)', fontWeight: 700, letterSpacing: '0.5px' }}>
                 VISA ALLA ÅTTA ›
               </span>
             </button>
@@ -241,10 +241,10 @@ export function TacticBoardCard({
           <>
             {/* Ändringshistorik — "Vad du ändrat i år" (LÅST format, Design) */}
             <div style={{ padding: '9px 11px', background: 'var(--bg-leather)', borderRadius: 8, marginBottom: 10 }}>
-              <p className="h-label" style={{ color: 'var(--warm-light)', marginBottom: 5 }}>Vad du ändrat i år</p>
+              <p className="h-label" style={{ color: 'var(--warm-light)', marginBottom: 5, fontSize: 12 }}>Vad du ändrat i år</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {historyLines.map((line, i) => (
-                  <div key={i} style={{ fontSize: 10.5, color: 'var(--text-light-secondary)' }}>{line}</div>
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>{line}</div>
                 ))}
               </div>
             </div>
@@ -254,7 +254,7 @@ export function TacticBoardCard({
               if (!rows.length) return null
               return (
                 <div key={group.label} style={{ marginBottom: gi < TACTIC_GROUPS.length - 1 ? 10 : 0 }}>
-                  <p className="h-label" style={{ marginBottom: 5 }}>{group.label}</p>
+                  <p className="h-label" style={{ marginBottom: 5, fontSize: 12 }}>{group.label}</p>
                   {rows.map(renderRow)}
                 </div>
               )
@@ -263,7 +263,7 @@ export function TacticBoardCard({
             {/* Yta 3: varför-raden, kvar i avancerat (i standardläget lever den nu inuti
                 förslagskortet ovan i stället, se hasAnySuggestion-blocket). */}
             {hasAnySuggestion && suggestionWhyLine && (
-              <p className="h-quote-sm" style={{ marginTop: 6, color: 'var(--text-muted)' }}>
+              <p className="h-quote-sm" style={{ marginTop: 6, color: 'var(--text-muted)', fontSize: 12 }}>
                 {suggestionWhyLine}
               </p>
             )}
@@ -273,7 +273,7 @@ export function TacticBoardCard({
 
       {/* Planen + kemi-lager (alltid synligt) */}
       <div style={{ padding: '4px 12px 0' }}>
-        <p className="h-label" style={{ marginBottom: 6 }}>
+        <p className="h-label" style={{ marginBottom: 6, fontSize: 12 }}>
           📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
         </p>
       </div>
@@ -287,14 +287,14 @@ export function TacticBoardCard({
           lineupConfirmedThisRound={lineupConfirmedThisRound}
         />
         {/* Så spelar det — härlett ur spelstil + faktisk kemi */}
-        <p className="h-quote-sm" style={{ textAlign: 'center', lineHeight: 1.45, marginTop: 8 }}>
+        <p className="h-quote-sm" style={{ textAlign: 'center', lineHeight: 1.45, marginTop: 8, fontSize: 12 }}>
           {feel}
         </p>
       </div>
 
       {/* Anteckningar — som kort under, inte en egen flik */}
       <div style={{ margin: '8px 12px 0', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 11px' }}>
-        <p className="h-label" style={{ marginBottom: 4 }}>
+        <p className="h-label" style={{ marginBottom: 4, fontSize: 12 }}>
           🗒 Assistentens anteckningar
         </p>
         <NotesView

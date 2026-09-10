@@ -41,7 +41,7 @@ function NoteTagBadge({ tag }: { tag: NoteTag }) {
   return (
     <span className="h-micro" style={{
       padding: '2px 7px', borderRadius: 3,
-      background: s.bg, color: s.color, letterSpacing: '1px', marginLeft: 'auto', flexShrink: 0,
+      background: s.bg, color: s.color, letterSpacing: '1px', marginLeft: 'auto', flexShrink: 0, fontSize: 12,
     }}>
       {s.label}
     </span>
@@ -86,7 +86,7 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
           </span>
         </div>
         <div>
-          <p className="h-label" style={{ marginBottom: 2 }}>
+          <p className="h-label" style={{ marginBottom: 2, fontSize: 12 }}>
             {coach.name.toUpperCase()} · ASSISTENT
           </p>
           <p className="h-quote" style={{ color: 'var(--text-primary)' }}>
@@ -115,7 +115,7 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
                 background: posColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, opacity: 0.85,
               }}>
-                <span className="h-micro" style={{ color: 'var(--text-light)', fontWeight: 700 }}>
+                <span className="h-micro" style={{ color: 'var(--text-light)', fontWeight: 700, fontSize: 12 }}>
                   {positionShort(p.position)}
                 </span>
               </div>
@@ -124,10 +124,10 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
               </span>
               <NoteTagBadge tag={note.tag} />
             </div>
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 36, marginTop: 3 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 36, marginTop: 3 }}>
               {note.metadata}
             </p>
-            <p className="h-quote-sm" style={{ marginLeft: 36, marginTop: 6, lineHeight: 1.5 }}>
+            <p className="h-quote-sm" style={{ marginLeft: 36, marginTop: 6, lineHeight: 1.5, fontSize: 12 }}>
               "{note.quote}"
             </p>
           </div>
@@ -151,7 +151,7 @@ export function NotesView({ coach, players, captainPlayerId, matchday, nextOppon
               {coach.initials}
             </span>
           </div>
-          <p className="h-quote-sm" style={{ margin: 0, lineHeight: 1.5 }}>
+          <p className="h-quote-sm" style={{ margin: 0, lineHeight: 1.5, fontSize: 12 }}>
             "{aggregationText}"
           </p>
         </div>

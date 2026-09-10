@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { findControlSizeViolations } from './minControlSizeGate'
+import { findTextSizeViolations } from './minTextSizeGate'
 
 async function openMobileScene(page: Page, scene: string) {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -56,6 +57,8 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
 
     const sizeCheck = await findControlSizeViolations(page, '[data-scene-content]')
     expect(sizeCheck.violations.map(v => v.message)).toEqual([])
+    const textSizeCheck = await findTextSizeViolations(page, '[data-scene-content]')
+    expect(textSizeCheck.violations.map(v => v.message)).toEqual([])
   })
 
   test('månadsbeslut batchas till ett läsbart sekundärkort med rätt räknare', async ({ page }) => {
@@ -149,6 +152,8 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
     await page.mouse.click(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height / 2)
     await expect(page.getByText('VÄLJ FRÅN BÄNKEN ELLER EN ANNAN POSITION')).toBeVisible()
 
+    const textSizeCheck = await findTextSizeViolations(page, '[data-scene-content]')
+    expect(textSizeCheck.violations.map(v => v.message)).toEqual([])
     const sizeCheck = await findControlSizeViolations(page, '[data-scene-content]')
     expect(sizeCheck.violations.map(v => v.message)).toEqual([])
   })

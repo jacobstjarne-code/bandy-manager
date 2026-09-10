@@ -183,7 +183,7 @@ export function GameOverScreen() {
         )}
 
         <p style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 700,
           letterSpacing: '3px',
           textTransform: 'uppercase',
@@ -214,7 +214,7 @@ export function GameOverScreen() {
           marginBottom: 24,
           textAlign: 'left',
         }}>
-          <p className="h-label" style={{ color: 'var(--danger)', marginBottom: 8 }}>
+          <p className="h-label" style={{ color: 'var(--danger)', marginBottom: 8, fontSize: 12 }}>
             Styrelsens uttalande
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -227,21 +227,21 @@ export function GameOverScreen() {
           padding: '10px 14px',
           marginBottom: 24,
         }}>
-          <p className="h-label" style={{ marginBottom: 12 }}>
+          <p className="h-label" style={{ marginBottom: 12, fontSize: 12 }}>
             Din karriär
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             <div>
               <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--text-primary)' }}>{totalSeasons}</p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Säsonger</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Säsonger</p>
             </div>
             <div>
               <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)' }}>{bestPosition}.</p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Bästa plats</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Bästa plats</p>
             </div>
             <div>
               <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--success)' }}>{totalWins}</p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Totala vinster</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Totala vinster</p>
             </div>
           </div>
         </div>
