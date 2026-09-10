@@ -83,8 +83,22 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   // getBoardPatienceZone rakt av — samma 50-tröskel som redan är kalibrerad
   // och synlig på andra ställen (portalBeats.ts:s board_failure), inte en ny
   // siffra uppfunnen här.
+  // DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10 (tillstånd N): ett klubbyte mitt i
+  // karriären nollställer boardObjectiveHistory (switchManagedClub.ts) →
+  // fulfillmentPct blir -1 → utan denna gren hade A-grenen nedan trivialt
+  // matchat och gett andraårs-copy till en manager som just klev in. N
+  // prövas FÖRE A/B/C. seasonsAtClub===1 ensamt räcker inte — det gäller
+  // även karriärens allra första klubb (där A är rätt); en STÄNGD tidigare
+  // clubSpell (toSeason satt) är det som skiljer ett byte från karriärstarten
+  // — advanceProfileToNewClub stänger exakt en spell per byte, aldrig den
+  // aktiva.
+  const hasEndedPriorSpell = (game.managerProfile?.clubSpells ?? []).some(spell => spell.toSeason !== undefined)
+  const isNewClubMidCareer = game.managerProfile?.seasonsAtClub === 1 && hasEndedPriorSpell
+
   let state: BoardMeetingState
-  if ((game.seasonSummaries?.length ?? 0) <= 1 || fulfillmentPct < 0) {
+  if (isNewClubMidCareer) {
+    state = 'N'
+  } else if ((game.seasonSummaries?.length ?? 0) <= 1 || fulfillmentPct < 0) {
     state = 'A'
   } else {
     state = getBoardPatienceZone(game).zone === 'stabilt' ? 'B' : 'C'

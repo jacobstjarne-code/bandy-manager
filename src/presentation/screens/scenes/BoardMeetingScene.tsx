@@ -22,7 +22,9 @@ interface Props {
 }
 
 // DB-2: B-läge är aspiration, inte fullbordad seger → accent, inte guld
-const GENRE_COLOR = { A: 'var(--accent)', B: 'var(--accent)', C: 'var(--cold-light)' } as const
+// N (DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10): samma neutrala ton som A —
+// ett första möte, ingen dom över något som redan hänt i den här klubben.
+const GENRE_COLOR = { A: 'var(--accent)', B: 'var(--accent)', C: 'var(--cold-light)', N: 'var(--accent)' } as const
 
 const TYPE_ICON: Record<string, string> = {
   sporting: '📊', academy: '🎓', economic: '💰', community: '🏠', identity: '🏒',

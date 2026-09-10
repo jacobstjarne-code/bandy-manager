@@ -126,6 +126,30 @@ function buildManagerReturnLedgerEntry(
 }
 
 /**
+ * DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10 (tillstånd N): durabelt belägg för
+ * övertagandet, oavsett om det är managerns första gång hos klubben eller
+ * en återkomst (manager_return täcker bara det senare, skrivs SEPARAT ovan
+ * när det gäller). Ledgern är belägg — det aktiva tillståndet N ägs av
+ * managerProfile.seasonsAtClub + clubSpells (se boardMeetingStateResolver.ts).
+ */
+function buildManagerAppointedLedgerEntry(
+  newClubId: string,
+  season: number,
+  managerId: string,
+): EventLedgerEntry {
+  return {
+    type: 'manager_appointed',
+    semanticKey: `manager_appointed_${newClubId}_s${season}`,
+    clubId: newClubId,
+    managerId,
+    season,
+    matchday: 0,
+    subject: { kind: 'club', id: newClubId },
+    significance: 65,
+  }
+}
+
+/**
  * Byter managed klubb i en BEFINTLIG värld. Anropas när spelaren tackat ja
  * till ett erbjudande på tränarmarknaden.
  */
@@ -171,6 +195,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
   )
 
   const managerReturnEntry = buildManagerReturnLedgerEntry(game.managerProfile, newClubId, season, game.id)
+  const managerAppointedEntry = buildManagerAppointedLedgerEntry(newClubId, season, game.id)
 
   const managerProfile = game.managerProfile
     ? advanceProfileToNewClub(
@@ -201,6 +226,7 @@ export function switchManagedClub(game: SaveGame, newClubId: string): SaveGame {
     // säkert att samtliga sådana poster tillhör klubben vi just lämnar.
     eventLedger: [
       ...(game.eventLedger ?? []).map(entry => entry.clubId ? entry : { ...entry, clubId: oldClubId }),
+      managerAppointedEntry,
       ...(managerReturnEntry ? [managerReturnEntry] : []),
     ],
 

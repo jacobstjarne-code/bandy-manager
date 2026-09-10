@@ -76,3 +76,53 @@ describe('resolveBoardMeetingState — kopplad till boardPatience (PÅSTÅENDEKA
     expect(data.state).toBe('A')
   })
 })
+
+describe('resolveBoardMeetingState — tillstånd N (DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10)', () => {
+  it('klubbyte mitt i en lång karriär (seasonsAtClub===1, en stängd tidigare spell): N, aldrig A', () => {
+    const game = makeGame({
+      currentSeason: 6,
+      seasonSummaries: [
+        { season: 3 } as never, { season: 4 } as never, { season: 5 } as never,
+      ],
+      boardObjectiveHistory: [], // nollställd av switchManagedClub vid bytet
+      managerProfile: {
+        firstName: 'Test', lastName: 'Manager', age: 40, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 10, careerDraws: 2, careerLosses: 5,
+        seasonsAtClub: 1,
+        contractUntilSeason: 8,
+        monthlySalary: 30,
+        coachRivalries: [],
+        clubSpells: [
+          { clubId: 'club_gamla', clubName: 'Gamla BK', fromSeason: 1, toSeason: 5, endedBy: 'fired' },
+          { clubId: 'club_forsbacka', clubName: 'Forsbacka BK', fromSeason: 6 },
+        ],
+      },
+    })
+    expect(resolveBoardMeetingState(game).state).toBe('N')
+  })
+
+  it('karriärens allra första klubb, säsong 2 (seasonsAtClub===1, ingen stängd spell): fortsatt A', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      seasonSummaries: [{ season: 1 } as never],
+      managerProfile: {
+        firstName: 'Test', lastName: 'Manager', age: 30, hometown: 'Ort',
+        burnoutScore: 0, burnoutHistory: [], careerWins: 5, careerDraws: 1, careerLosses: 3,
+        seasonsAtClub: 1,
+        contractUntilSeason: 4,
+        monthlySalary: 20,
+        coachRivalries: [],
+        clubSpells: [{ clubId: 'club_forsbacka', clubName: 'Forsbacka BK', fromSeason: 1 }],
+      },
+    })
+    expect(resolveBoardMeetingState(game).state).toBe('A')
+  })
+
+  it('inget managerProfile (äldre save): faller inte tillbaka på N', () => {
+    const game = makeGame({
+      seasonSummaries: [{ season: 1 } as never],
+      managerProfile: undefined,
+    })
+    expect(resolveBoardMeetingState(game).state).not.toBe('N')
+  })
+})

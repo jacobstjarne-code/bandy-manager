@@ -276,6 +276,13 @@ export type EventLedgerType =
   // anropad från matchOutcomeProcessor.ts. Den generella 13-faktorsversionen
   // (valfri kostnadsfaktor, inte bara formation_523) är POST_LAUNCH.
   | 'tactical_pattern_suspension'
+  // DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10 (tillstånd N): övertagandet är ett
+  // durabelt karriärfaktum, oavsett om det är managerns första gång hos
+  // klubben eller en återkomst (manager_return täcker bara det senare).
+  // subject = klubben som tas över. Belägg för tillstånd N; det aktiva
+  // tillståndet ägs av managerProfile.seasonsAtClub + clubSpells, inte
+  // denna post ensam. Skrivs av switchManagedClub.ts.
+  | 'manager_appointed'
 
 /**
  * `RippleChainStep` (SaveGame.ts) utan `label`/`scope` — de är vy-beslut

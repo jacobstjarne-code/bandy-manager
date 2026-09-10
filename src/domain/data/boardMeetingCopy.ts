@@ -6,12 +6,15 @@
  *  A · Första gången   — säsong 2 (oavsett utfall)
  *  B · Efter bra säsong — säsong 3+, måluppfyllelse ≥ 80%
  *  C · Efter dålig säsong — säsong 3+, måluppfyllelse < 50%
+ *  N · Ny klubb mitt i karriären — seasonsAtClub===1 efter ett klubbyte
+ *      (skiljs från A: A är karriärens allra första klubb, N är ett byte
+ *      mitt i en pågående karriär). DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10.
  *  Mellansäsonger (50–80%) → B eller C baserat på närmast utfall
  *
  * Code slumpar utan upprepning per pool (no-repeat-tracker per spelinstans).
  */
 
-export type BoardMeetingState = 'A' | 'B' | 'C'
+export type BoardMeetingState = 'A' | 'B' | 'C' | 'N'
 
 interface StatePool {
   settings: string[]      // rumsprolog (Georgia italic)
@@ -116,6 +119,38 @@ export const BOARD_MEETING_COPY: Record<BoardMeetingState, StatePool> = {
       'Ett sånt här år är inte slutet. Men det är inte heller riktningen vi vill ha.',
     ],
   },
+  N: {
+    settings: [
+      'Möteslokal du inte varit i förr. Någon visar var du ska sitta. Kaffet är redan upphällt.',
+      'Klubbstugan i din nya klubb. Väggarna hänger fulla av lag du inte var med i. Ordföranden räcker fram handen.',
+      'Kommunalhuset i en ny bygd. En pärm med klubbens namn ligger framme. Din stol står redan utdragen.',
+      'Ett bord du aldrig suttit vid. De känner varandra, inte dig. Ännu.',
+      'Hembygdsgården, en ort du precis kommit till. Ordföranden presenterar de andra runt bordet, ett namn i taget.',
+      'Klubbhusets kontor. Förra tränarens lagfoto sitter kvar på väggen. Ingen har hunnit ta ner det.',
+      'Sammanträdesrummet. De reser sig när du kommer in. Det är inte varje dag de får en ny vid rodret.',
+      'Föreningslokalen. Det luktar kaffe och nystädat. De har gjort i ordning för din skull.',
+    ],
+    titles: [
+      'Första dagen.',
+      'Vi valde dig.',
+      'Ny vid rodret.',
+      'Övertagandet.',
+      'Ett nytt bord.',
+      'Så här ligger det till.',
+      'Välkommen hit.',
+      'Första mötet — här.',
+    ],
+    speakerLines: [
+      'Du känner inte oss och vi känner inte dig. Men vi vet vad du gjort, och därför sitter du här. Nu berättar vi var klubben står.',
+      'Vi letade efter någon som kunde lyfta det här. Det blev du. Det du ärver är inte perfekt, men det är ärligt.',
+      'Förra tränaren räckte inte till, och det är därför du är ny. Vi hoppas du gör det bättre.',
+      'Klubben har en historia du inte var med i. Från och med idag spelar den mindre roll än vad vi bygger tillsammans.',
+      'Vi tar det lugnt första året. Du ska lära känna truppen, bygden, oss. Sen pratar vi om vart vi ska.',
+      'Det finns folk här som väntat länge på någon som du. Gör dem inte besvikna för snabbt.',
+      'Vi säger som det är: kassan och tabellen är vad de är. Du fick inte den lättaste starten. Men du fick den.',
+      'Vi har ingen storslagen plan att lägga fram. Vi vill se vad du gör med det du får.',
+    ],
+  },
 }
 
 /** Goal-motiveringar per objektiv-typ och state — italic-sub under goal-card. */
@@ -167,5 +202,18 @@ export const GOAL_MOTIVATIONS: Record<string, string[]> = {
   'C:academy': ['Akademin får stå tillbaka. Förstärkningar utifrån behövs först.'],
   'C:community': ['Håll kontakten med bygden även när det är tungt.'],
   'C:identity': ['Tillbaka till grunderna. En enkel spelidé som håller.'],
+  // N · etablera, känna sig fram (DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10)
+  'N:sporting': [
+    'Inget flyg. Etablera dig, håll oss stabila.',
+    'Lär känna truppen först. Resultaten kommer sen.',
+    'Trygg mitten i år. Vi bygger från det.',
+  ],
+  'N:economic': [
+    'Håll kassan i fred medan du lär känna klubben.',
+    'Inga stora grepp första året. Lär dig var pengarna finns.',
+  ],
+  'N:academy': ['Se vad akademin har innan du dömer den.'],
+  'N:community': ['Bli en av oss i bygden. Det tar tid, börja nu.'],
+  'N:identity': ['Vi vill se din spelidé, men ta den i din takt.'],
 }
 

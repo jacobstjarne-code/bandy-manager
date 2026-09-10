@@ -65,3 +65,35 @@ describe('switchManagedClub — manager_return-liggarpost', () => {
     expect(switched.eventLedger?.some(e => e.type === 'manager_return')).toBe(false)
   })
 })
+
+describe('switchManagedClub — manager_appointed-liggarpost (DOM_STYRELSEMOTE_NY_KLUBB_2026-09-10, tillstånd N)', () => {
+  it('varje klubbyte skriver en manager_appointed-post, oavsett om klubben tränats förr', () => {
+    const game = makeGame()
+    const second = CLUB_TEMPLATES[1]
+    const switched = switchManagedClub(game, second.id)
+
+    const entry = switched.eventLedger?.find(e => e.type === 'manager_appointed')
+    expect(entry).toMatchObject({
+      type: 'manager_appointed',
+      clubId: second.id,
+      managerId: game.id,
+      season: switched.currentSeason,
+      matchday: 0,
+      subject: { kind: 'club', id: second.id },
+    })
+    expect(entry?.semanticKey).toBe(`manager_appointed_${second.id}_s${switched.currentSeason}`)
+  })
+
+  it('en återkomst skriver BÅDA posterna — manager_appointed OCH manager_return', () => {
+    const game = makeGame()
+    const first = CLUB_TEMPLATES[0]
+    const second = CLUB_TEMPLATES[1]
+    const away = switchManagedClub(game, second.id)
+    const back = switchManagedClub(away, first.id)
+
+    const appointed = back.eventLedger?.filter(e => e.type === 'manager_appointed' && e.clubId === first.id)
+    const returned = back.eventLedger?.filter(e => e.type === 'manager_return' && e.clubId === first.id)
+    expect(appointed).toHaveLength(1)
+    expect(returned).toHaveLength(1)
+  })
+})
