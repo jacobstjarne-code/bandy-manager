@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { PortalPhaseMark } from '../presentation/components/portal/PortalPhaseMark'
-import { getFunctionaryPhase, getCurrentLeagueRound } from '../domain/data/seasonPhases'
+import { getFunctionaryPhase, getCurrentLeagueRound, isAnnandagenPhaseMarkDue } from '../domain/data/seasonPhases'
 import { pickPhaseMarkCopy } from '../domain/data/phaseMarkText'
 import { FixtureStatus, PlayoffStatus } from '../domain/enums'
 import type { SaveGame } from '../domain/entities/SaveGame'
@@ -87,12 +87,15 @@ describe('PortalPhaseMark — 2026-07-19 migrering till sjufasmodellen', () => {
     expect(pickPhaseMarkCopy(getFunctionaryPhase(14, 6, 12), game)).toBeNull() // vinter (mittenplacering)
   })
 
-  it('annandagen (omg 7-11) ger copy med rätt helper', () => {
+  it('annandags-copy finns men markören väntar på den faktiska annandagsfixturen', () => {
     const completed = Array.from({ length: 8 }, (_, i) => makeLeagueFixture(i + 1, FixtureStatus.Completed))
-    const game = makeGame({ fixtures: completed, phaseMarksSeen: [] })
+    const upcoming = { ...makeLeagueFixture(10, FixtureStatus.Scheduled), id: 'annandagen', matchday: 14, isAnnandagen: true }
+    const game = makeGame({ fixtures: [...completed, upcoming], phaseMarksSeen: [] })
     const round = getCurrentLeagueRound(game)
     const phase = getFunctionaryPhase(round, 6, 12)
     expect(phase).toBe('annandagen')
+    expect(isAnnandagenPhaseMarkDue(game)).toBe(true)
+    expect(isAnnandagenPhaseMarkDue({ ...game, fixtures: completed })).toBe(false)
     const copy = pickPhaseMarkCopy(phase, game)
     expect(copy).not.toBeNull()
     expect(copy!.helper).toBe('Årets största bandydag')

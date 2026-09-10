@@ -551,7 +551,11 @@ export const useGameStore = create<GameState>()(
         // Ankomsten + Tillträdet have already shown the board and assistant
         // coach. Open their permanent voice gates at the same atomic save.
         const updated = queueRosterVoiceIntroductions(
-          seedTilltradeVoices({ ...game, onboardingComplete: true }),
+          seedTilltradeVoices({
+            ...game,
+            onboardingComplete: true,
+            introducedInboxTopics: [...new Set([...(game.introducedInboxTopics ?? []), 'squad'])],
+          }),
         )
         set({ game: updated })
         return persistGameSnapshot(updated, set)
@@ -1544,7 +1548,7 @@ export const useCanAdvance = () => {
 export const useUnreadInboxCount = () => {
   const game = useGameStore(s => s.game)
   if (!game) return 0
-  return game.inbox.filter(i => !i.isRead).length
+  return game.inbox.filter(i => !i.isRead && i.type !== InboxItemType.MatchResult).length
 }
 
 // Returns the current playoff bracket or null

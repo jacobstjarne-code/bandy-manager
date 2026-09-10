@@ -55,7 +55,6 @@ import { appendNewlyResolvedStorylines } from '../../domain/services/storylineLe
 import { recordPressLedgerQuestionShown } from '../../domain/services/pressConferenceService'
 import {
   ensureManagerChoiceLog,
-  INBOX_PROTECTED_TYPES,
   processUpcomingFixtureInbox,
   stripCompletedFixture,
 } from './processors/fixtureProcessor'
@@ -66,6 +65,7 @@ import { processManagedMatchOutcome } from './processors/matchOutcomeProcessor'
 import { processMarketValues } from './processors/marketValueProcessor'
 import { processTrainerState } from './processors/trainerProcessor'
 import { processManagerRoundState } from './processors/managerRoundProcessor'
+import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
 
 export type { AdvanceResult }
 
@@ -543,32 +543,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Stamp new inbox items with creation matchday for cleanup
-  // A4 — Notisdiet: dedup on id — same (kind+subject+round) must not create two items
-  const existingIds = new Set(game.inbox.map(i => i.id))
-  const dedupedNewItems = newInboxItems.filter(i => !existingIds.has(i.id))
-  const stampedNewInboxItems = dedupedNewItems.map(i =>
-    i.createdMatchday === undefined
-      ? { ...i, createdMatchday: nextMatchday, createdRound: currentLeagueRound ?? null }
-      : i
-  )
-
-  const INBOX_GALLRING_ROUNDS = 2
-  const INBOX_UNREAD_EXPIRY_ROUNDS = 4
-  const gallredOldInbox = game.inbox.filter(i => {
-    if (i.createdMatchday === undefined) return true
-    const age = nextMatchday - i.createdMatchday
-    if (i.isRead) return age < INBOX_GALLRING_ROUNDS
-    if (INBOX_PROTECTED_TYPES.has(i.type)) return true
-    return age < INBOX_UNREAD_EXPIRY_ROUNDS
-  })
-
-  // Trim accumulated data to prevent localStorage bloat
-  const MAX_INBOX = 50
-  let trimmedInbox = [...gallredOldInbox, ...stampedNewInboxItems]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, MAX_INBOX)
-
   const MAX_TRAINING_HISTORY = 22
   const trimmedTrainingHistory = updatedTrainingHistory.slice(-MAX_TRAINING_HISTORY)
 
@@ -828,9 +802,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         body: e.body,
         isRead: true,
       }))
-      trimmedInbox = [...trimmedInbox, ...droppedInboxItems]
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .slice(0, MAX_INBOX)
+      newInboxItems.push(...droppedInboxItems)
     }
   }
 
@@ -849,6 +821,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const patronWithdrawnSeasonAfterCsEviction = patronCommunityResult.patronWithdrawnSeason
   allNewEvents.push(...patronCommunityResult.gameEvents)
   roundLedgerEntries.push(...patronCommunityResult.ledgerEntries)
+
+  // Alla producenter måste passera samma leveransgrind. Tidigare byggdes
+  // trimmedInbox redan efter media-steget, så sponsor/community/skandal
+  // skrevs efter ögonblicksbilden och försvann eller gick runt dedupen.
+  newInboxItems.push(...marketValueInbox)
+  const inboxDelivery = finalizeInboxDelivery(game, newInboxItems, {
+    season: game.currentSeason,
+    matchday: nextMatchday,
+    leagueRound: currentLeagueRound ?? null,
+    date: newDate,
+  })
 
   // ÖVERLÄMNING 2 (2026-08-17, Jacobs korrigering): ingen kedja kastas
   // längre — alla sparas rangordnade. Rangordningen (rippleChainSignificance,
@@ -915,7 +898,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     fixtures: strippedFixtures,
     players: postTransferPlayers,
     standings,
-    inbox: trimmedInbox,
+    inbox: inboxDelivery.inbox,
+    deferredInbox: inboxDelivery.deferredInbox,
     currentDate: newDate,
     currentMatchday: nextMatchday,
     lastStorySlotType: game.currentStorySlotType ?? game.lastStorySlotType,
@@ -1107,11 +1091,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     pendingCallupModal: nationalTeamCallupModal,
     pendingHallEcho: hallEchoLine,
     hallEchoExpires: hallEchoExpiresState,
-  }
-
-  // Append market value change notifications to inbox
-  if (marketValueInbox.length > 0) {
-    updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
   }
 
   // O1-uppföljning (2026-08-22): riskySponsorOffers maturation-konsekvens —

@@ -56,6 +56,7 @@ import { getCoffeeRoomReturnDueMatchday } from '../../domain/services/coffeeRoom
 import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
 import { appendNewlyResolvedStorylines, getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 import { closeActiveMentorshipForYouth } from '../../domain/services/academyMentorshipService'
+import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -2113,6 +2114,29 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     matchCategory: matchHighlight.category,
   }] : []
 
+  const seasonInboxCandidates = [
+    ...newInboxItems,
+    ...retirementMessages,
+    ...contractExpiryInbox,
+    ...(contractInboxItem ? [contractInboxItem] : []),
+    ...youthAgedOutInbox,
+  ]
+  const archivedInbox = archiveCompletedSeasonInbox(game.inbox).map(item => ({
+    ...item,
+    createdSeason: item.createdSeason ?? game.currentSeason,
+  }))
+  const seasonInboxDelivery = finalizeInboxDelivery(
+    {
+      ...game,
+      currentSeason: nextSeason,
+      currentMatchday: 0,
+      inbox: archivedInbox,
+      deferredInbox: [],
+    },
+    seasonInboxCandidates,
+    { season: nextSeason, matchday: 0, leagueRound: null, date: `${nextSeason}-10-01` },
+  )
+
   const updatedGame: SaveGame = {
     ...game,
     captainPlayerId: nextCaptainPlayerId,
@@ -2165,14 +2189,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // A5 — Notisdiet: arkivera olästa från föregående säsong (markera som lästa).
     // Transferbudens deadlines arkiveras också: själva buden nollställs nedan,
     // så en levande expiresRound här hade blivit en föräldralös nästa-säsongspost.
-    inbox: [
-      ...archiveCompletedSeasonInbox(game.inbox),
-      ...newInboxItems,
-      ...retirementMessages,
-      ...contractExpiryInbox,
-      ...(contractInboxItem ? [contractInboxItem] : []),
-      ...youthAgedOutInbox,
-    ].slice(-75),
+    inbox: seasonInboxDelivery.inbox,
+    deferredInbox: seasonInboxDelivery.deferredInbox,
     managerProfile: updatedManagerProfile,
     transferState: {
       ...game.transferState,

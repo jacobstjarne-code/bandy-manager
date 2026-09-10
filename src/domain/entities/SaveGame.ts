@@ -296,6 +296,8 @@ export interface SaveGame {
   fixtures: Fixture[]
   standings: StandingRow[]
   inbox: InboxItem[]
+  /** Notiser som är sanna men ännu inte får tala eller ryms i notisdieten. */
+  deferredInbox?: InboxItem[]
 
   transferState: TransferState
   youthIntakeHistory: YouthIntakeRecord[]
@@ -693,6 +695,8 @@ export interface SaveGame {
 
   // V1.2 — Screen visit tracking (for nudge progress in dashboard agenda)
   visitedScreensThisRound?: string[]  // e.g. ['squad', 'transfers', 'club']
+  /** Beständig introduktionsordning för inkorgens handlingsytor. */
+  introducedInboxTopics?: string[]
 
   // Sprint 2 — Supporter group (klack)
   supporterGroup?: SupporterGroup

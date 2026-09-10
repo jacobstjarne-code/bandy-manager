@@ -1,4 +1,4 @@
-import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff } from '../../../domain/data/seasonPhases'
+import { getCurrentLeagueRound, getFunctionaryPhase, isAnnandagenPhaseMarkDue, isManagedClubInPlayoff } from '../../../domain/data/seasonPhases'
 import { pickPhaseMarkCopy } from '../../../domain/data/phaseMarkText'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
@@ -17,6 +17,7 @@ export function PortalPhaseMark({ game }: Props) {
   const tablePosition = game.standings.find(s => s.clubId === game.managedClubId)?.position
     ?? Math.ceil(game.clubs.length / 2)
   const phase = isPlayoff ? 'playoff' : getFunctionaryPhase(currentLigaRound, tablePosition, game.clubs.length)
+  if (phase === 'annandagen' && !isAnnandagenPhaseMarkDue(game)) return null
 
   const seen = game.phaseMarksSeen ?? []
   if (seen.includes(phase)) return null

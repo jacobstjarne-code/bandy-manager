@@ -53,6 +53,22 @@ export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveG
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 }
 
+/** Annandagsmarkören hör till den riktiga fixturen, aldrig till ett rondintervall. */
+export function isAnnandagenPhaseMarkDue(game: import('../entities/SaveGame').SaveGame): boolean {
+  const managed = game.managedClubId
+  const next = game.fixtures
+    .filter(fixture => fixture.season === game.currentSeason
+      && (fixture.homeClubId === managed || fixture.awayClubId === managed)
+      && fixture.status === FixtureStatus.Scheduled)
+    .sort((a, b) => a.matchday - b.matchday)[0]
+  if (next) return next.isAnnandagen === true
+  return game.fixtures.some(fixture => fixture.season === game.currentSeason
+    && fixture.matchday === game.currentMatchday
+    && fixture.status === FixtureStatus.Completed
+    && (fixture.homeClubId === managed || fixture.awayClubId === managed)
+    && fixture.isAnnandagen === true)
+}
+
 /**
  * Returnerar true om managed club fortfarande är aktiv i slutspelet
  * (inte eliminerad och har kvarvarande scheduled fixtures i sin serie).

@@ -545,12 +545,17 @@ export const PORTAL_BEATS: PortalBeat[] = [
     id: 'first_win',
     emoji: '✓',
     text: 'Första segern. Omklädningsrummet lät inte likadant efteråt.',
-    trigger: (g) => g.fixtures.filter(fixture =>
-      fixture.season === g.currentSeason &&
-      fixture.status === 'completed' &&
-      (fixture.homeClubId === g.managedClubId || fixture.awayClubId === g.managedClubId) &&
-      deriveUtfall(fixture, g.managedClubId) === 'vunnet'
-    ).length === 1,
+    trigger: (g) => {
+      const completed = g.fixtures
+        .filter(fixture => fixture.season === g.currentSeason
+          && fixture.status === 'completed'
+          && (fixture.homeClubId === g.managedClubId || fixture.awayClubId === g.managedClubId))
+        .sort((a, b) => b.matchday - a.matchday || b.id.localeCompare(a.id))
+      const wins = completed.filter(fixture => deriveUtfall(fixture, g.managedClubId) === 'vunnet')
+      return wins.length === 1
+        && completed[0]?.id === wins[0].id
+        && completed[0].matchday === g.currentMatchday
+    },
     oncePerSeason: true,
   },
 

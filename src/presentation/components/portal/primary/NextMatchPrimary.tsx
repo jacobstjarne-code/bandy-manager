@@ -42,7 +42,7 @@ export function NextMatchPrimary({ game, playoffCtx: playoffCtxFromParent, escal
 
   const specialDateLabel = nextFixture.isFinaldag ? 'SM-FINALEN'
     : nextFixture.isCupFinalhelgen ? 'CUPFINALHELGEN'
-    : nextFixture.matchday === 12 ? 'ANNANDAGEN'
+    : nextFixture.isAnnandagen ? 'ANNANDAGEN'
     : null
 
   const isPlayoffFixture = !!(nextFixture.roundNumber > 22)

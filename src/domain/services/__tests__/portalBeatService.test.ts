@@ -629,6 +629,7 @@ describe('first_win — första segern i någon tävling', () => {
     }
     const game = {
       ...base,
+      currentMatchday: 2,
       fixtures: [cupWin],
       standings: base.standings.map(row => row.clubId === base.managedClubId
         ? { ...row, wins: 0 }
@@ -650,6 +651,7 @@ describe('first_win — första segern i någon tävling', () => {
     })
     const game = {
       ...base,
+      currentMatchday: 5,
       fixtures: [fixture('cup_win', 2, true), fixture('league_win', 5, false)],
       standings: base.standings.map(row => row.clubId === base.managedClubId
         ? { ...row, wins: 1 }
@@ -664,6 +666,23 @@ describe('first_win — första segern i någon tävling', () => {
         fixture('current_win', 5, false),
       ],
     })).toBe(true)
+  })
+
+  it('surfar inte en gammal första seger efter att nästa match blev en förlust', () => {
+    const base = makeGame({ currentSeason: 5, currentMatchday: 3 })
+    const opponent = base.clubs.find(club => club.id !== base.managedClubId)!
+    const common = {
+      ...base.fixtures[0], season: 5, status: 'completed' as const,
+      homeClubId: base.managedClubId, awayClubId: opponent.id,
+    }
+    const game = {
+      ...base,
+      fixtures: [
+        { ...common, id: 'cup_win', matchday: 2, isCup: true, homeScore: 3, awayScore: 1 },
+        { ...common, id: 'league_loss', matchday: 3, isCup: false, homeScore: 0, awayScore: 2 },
+      ],
+    }
+    expect(beat.trigger(game)).toBe(false)
   })
 })
 

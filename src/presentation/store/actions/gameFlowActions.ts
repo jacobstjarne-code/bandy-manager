@@ -5,7 +5,7 @@ import type { SeasonGoalType } from '../../../domain/entities/SeasonSummary'
 import type { AnslagKey } from '../../../domain/services/anslagService'
 import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { PendingScreen } from '../../../domain/enums'
-import { getCurrentLeagueRound, getFunctionaryPhase, isManagedClubInPlayoff, type PortalPhase } from '../../../domain/data/seasonPhases'
+import { getCurrentLeagueRound, getFunctionaryPhase, isAnnandagenPhaseMarkDue, isManagedClubInPlayoff, type PortalPhase } from '../../../domain/data/seasonPhases'
 import { shouldShowUpptakt } from '../../../application/services/portalEscalationResolver'
 import { clamp } from '../../../domain/utils/clamp'
 import { buildWeeklyDecisionLedgerEntry, resolveWeeklyDecision as resolveWeeklyDecisionFn, formatWeeklyDecisionOutcome } from '../../../domain/services/weeklyDecisionService'
@@ -339,7 +339,8 @@ export function gameFlowActions(get: Get, set: Set) {
         ? 'playoff'
         : getFunctionaryPhase(advLigaRound, advTablePosition, gameToSave.clubs.length)
       const advSeen = gameToSave.phaseMarksSeen ?? []
-      if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
+      const advPhaseIsDue = advPhase !== 'annandagen' || isAnnandagenPhaseMarkDue(gameToSave)
+      if (PHASEMARK_PHASES.has(advPhase) && advPhaseIsDue && !advSeen.includes(advPhase)) {
         const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }
         set({ game: markedGame })
         void persistAutosave(markedGame, 'advance', set)
@@ -659,8 +660,14 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return
       const visited = game.visitedScreensThisRound ?? []
-      if (!visited.includes(screen)) {
-        set({ game: { ...game, visitedScreensThisRound: [...visited, screen] } })
+      const introduced = game.introducedInboxTopics ?? []
+      const introducesTopic = screen === 'squad' || screen === 'transfers' || screen === 'club'
+      const nextVisited = visited.includes(screen) ? visited : [...visited, screen]
+      const nextIntroduced = introducesTopic && !introduced.includes(screen)
+        ? [...introduced, screen]
+        : introduced
+      if (nextVisited !== visited || nextIntroduced !== introduced) {
+        set({ game: { ...game, visitedScreensThisRound: nextVisited, introducedInboxTopics: nextIntroduced } })
       }
     },
 
