@@ -118,7 +118,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
 | c-sy1-pilot1-playtest | C-SY1 Pilot 1 väntar playtest före skalning till fler pools | verifierad | Jacob | BACKLOG.md:625 | Jacob playtestar [Verifierat 2026-09-01 (Code): BACKLOG.md:625 upprepar "Pilot 1 väntar playtest före skalning till fler pools" utan någon efterföljande playtest-bekräftelse i BACKLOG/HANDOVER-filerna.] |
-| c-t11-nudges-pa-portalen | Transfer-nudges bor i transfers-fliken, inte på portalen där spelaren lever | verifierad | Design | BACKLOG.md:639 | verifiera mot kod [Verifierat 2026-09-01 (Code): ingen "TransferNudge"/nudge-komponent hittad i src/presentation/components/portal — nudges finns bara implicit i TransfersScreen.tsx, ej flyttade till portalen, BACKLOG.md:639 oförändrad.] |
+| c-t11-nudges-pa-portalen | Transfer-nudges bor i transfers-fliken, inte på portalen där spelaren lever | in_progress | Codex | BACKLOG.md:639 | CLAIM 2026-09-10T13:36:00+02:00 — Codex. Reconcila hela C-T11:s tre faktiska krav mot dagens gemensamma system: nollbud-CTA:n, Portalens kanoniska vinterfönsterbeat och marknadsliv via omgångsvis availability + bud/rykten. Kör befintliga kontraktstester; arkivera bara om alla tre håller utan en ny specialmekanik. [Verifierat 2026-09-01 (Code): ingen "TransferNudge"/nudge-komponent hittad i src/presentation/components/portal — nudges finns bara implicit i TransfersScreen.tsx, ej flyttade till portalen, BACKLOG.md:639 oförändrad.] |
 
 ## KF. SYSTEMKARTANS FYND
 
