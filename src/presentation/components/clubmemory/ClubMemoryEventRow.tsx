@@ -1,75 +1,71 @@
 import type { MemoryEvent } from '../../../domain/services/clubMemoryService'
 import type { ActiveAnniversary } from '../../../domain/services/clubMemoryService'
+import { momentFamily } from '../../../domain/services/clubMemoryService'
 import { pickAnniversaryMemoryRowLabel } from '../../../domain/data/anniversaryMemoryRowText'
 
-interface Props {
-  event: MemoryEvent
-  activeAnniversaries?: ActiveAnniversary[]
-}
-
-function getSeverityClass(event: MemoryEvent): string {
+/**
+ * redesign-klubbminnet-omdesign (HANDOFF_CODE_KLUBBMINNET_2026-09-10.md):
+ * severity→kind-mappningen Design pekar på återanvänds direkt här, oförändrad
+ * — bara översatt till mockens k-*-klassnamn.
+ */
+export function getSeverityClass(event: MemoryEvent): string {
   const { type, outcome } = event
 
-  // Cup/SM-final
   if (type === 'cup_final' || type === 'sm_final') {
     if (outcome === 'won') return 'legendary'
     if (outcome === 'lost') return 'scar'
   }
-
-  // Derby
   if (type === 'derby_result') return 'derby'
-
-  // Retirement is always legendary
   if (type === 'retirement') return 'legendary'
-
-  // Scandal is always scar
   if (type === 'scandal') return 'scar'
-
-  // Big loss treated as scar
   if (type === 'big_loss') return 'scar'
 
   return ''
+}
+
+const KIND_CLASS: Record<string, string> = {
+  legendary: 'k-triumf',
+  scar: 'k-arr',
+  derby: 'k-laddat',
+  '': 'k-noterat',
+}
+
+export function kindClassFor(event: MemoryEvent): string {
+  return KIND_CLASS[getSeverityClass(event)] ?? 'k-noterat'
 }
 
 function buildEventId(event: MemoryEvent): string {
   return `${event.season}-${event.matchday}-${event.type}-${event.subjectPlayerId ?? event.subjectClubId ?? 'x'}`
 }
 
-export function ClubMemoryEventRow({ event, activeAnniversaries = [] }: Props) {
-  const severityClass = getSeverityClass(event)
-  const isFeatured = event.significance >= 90
+interface Props {
+  event: MemoryEvent
+  dateLabel: { day: string; mon: string } | null
+  activeAnniversaries?: ActiveAnniversary[]
+}
+
+export function ClubMemoryEventRow({ event, dateLabel, activeAnniversaries = [] }: Props) {
+  const kindClass = kindClassFor(event)
+  const family = momentFamily(event.type)
 
   const eventId = buildEventId(event)
   const matchingEcho = activeAnniversaries.find(a => a.eventId === eventId)
-  const isEchoing = !!matchingEcho
-
-  const rowClasses = [
-    'memory-row',
-    severityClass,
-    isFeatured ? 'memory-row-featured' : '',
-    isEchoing ? 'memory-row-echoing' : '',
-  ].filter(Boolean).join(' ')
-
-  const echoLabel = isEchoing
-    ? pickAnniversaryMemoryRowLabel(matchingEcho)
-    : null
+  const echoLabel = matchingEcho ? pickAnniversaryMemoryRowLabel(matchingEcho) : null
 
   return (
-    <div className={rowClasses}>
-      <span className="memory-row-emoji">
-        {event.emoji}
-      </span>
-      <span className="memory-row-matchday">
-        {/* HIGH 5: matchday är kronologi. Rond-identiteten stämplas i
-            clubMemoryEventBuilders.ts; fallbacken gäller icke-fixture-rader. */}
-        {event.roundLabel ?? `Omg ${event.matchday}`}
-      </span>
-      <div className="memory-row-body">
-        <span className="memory-row-text">
+    <div className={`km-entry ${kindClass}`}>
+      {kindClass === 'k-triumf' && <span className="km-entry-prick" />}
+      <div className="km-entry-date">
+        {dateLabel?.day && <div className="km-entry-day">{dateLabel.day}</div>}
+        <div className="km-entry-mon">{dateLabel?.mon ?? ''}</div>
+      </div>
+      <div className="km-entry-body">
+        <div className="km-entry-text">
+          <span className="km-entry-fam">{family}</span>
           {event.text}
-        </span>
+        </div>
         {echoLabel && (
-          <div className="memory-row-echo-label">{echoLabel}</div>
+          <div className="km-entry-echo-label">{echoLabel}</div>
         )}
       </div>
     </div>

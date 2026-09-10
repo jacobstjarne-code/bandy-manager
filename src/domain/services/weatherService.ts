@@ -5,7 +5,7 @@ import { WeatherCondition, IceQuality } from '../enums'
 import { getClimateForRegionAndMonth } from '../data/regionalClimate'
 import { mulberry32 } from '../utils/random'
 
-function roundToMonth(roundNumber: number): number {
+export function roundToMonth(roundNumber: number): number {
   if (roundNumber <= 4)  return 10  // okt: r1-4
   if (roundNumber <= 7)  return 11  // nov: r5-7
   if (roundNumber <= 11) return 12  // dec: r8-11 (Dec 3, Dec 19, Annandagen, Dec 30)

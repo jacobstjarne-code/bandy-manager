@@ -9,6 +9,7 @@ interface RecordCard {
   label: string
   value: string
   sub?: string
+  gold?: boolean
 }
 
 function buildCards(records: AllTimeRecords): RecordCard[] {
@@ -21,6 +22,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
       label: 'Bästa placering',
       value: posLabel,
       sub: `Säsong ${seasonSpanLabel(records.bestFinish.season)}`,
+      gold: true,
     })
   }
 
@@ -87,7 +89,7 @@ export function ClubMemoryRecordsBlock({ records }: Props) {
 
       <div className="club-memory-records-grid">
         {cards.map((card, i) => (
-          <div key={i} className="club-memory-record-card">
+          <div key={i} className={`club-memory-record-card${card.gold ? ' gold' : ''}`}>
             <div className="club-memory-record-label">
               {card.label}
             </div>

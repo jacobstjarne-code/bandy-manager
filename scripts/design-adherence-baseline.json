@@ -346,9 +346,9 @@
     "src/presentation/screens/SeasonSummaryScreen.tsx|opacity: sharing ? 0.5 : 1,"
   ],
   "rule16_duplicate_class": [
-    "src/presentation/styles/club-memory.css|.club-memory-record-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; } — byte-identisk med .club-memory-legend-meta (rad 227)",
+    "src/presentation/styles/club-memory.css|.club-memory-record-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; } — byte-identisk med .club-memory-legend-meta (rad 368)",
     "src/presentation/styles/club-memory.css|.club-memory-records { margin-top: 28px; padding-top: 16px; border-top: 2px solid var(--border-dark); } — byte-identisk med .club-memory-legends (rad 197)",
-    "src/presentation/styles/club-memory.css|.club-memory-records-header { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px; } — byte-identisk med .club-memory-legends-header (rad 203)",
+    "src/presentation/styles/club-memory.css|.club-memory-records-header { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px; } — byte-identisk med .club-memory-legends-header (rad 343)",
     "src/presentation/styles/economy.css|.eco-community-inner { display: flex; justify-content: space-between; align-items: center; } — byte-identisk med .eco-row (rad 4)",
     "src/presentation/styles/stalvallen-match.css|.commentary-row-event { display: flex; align-items: flex-start; gap: 10px; padding: 10px 18px; border-bottom: 1px solid rgba(196, 122, 58, 0.08); animation: fadeInUp 250ms ease-out both; } — byte-identisk med .commentary-row-atmosphere (rad 458)",
     "src/presentation/styles/stalvallen-portal.css|.portal-anniversarymark-helper { font-family: var(--font-body); font-size: 10.5px; color: var(--text-light-secondary); text-align: center; opacity: 0.75; line-height: 1.4; } — byte-identisk med .portal-phasemark-helper (rad 415)",

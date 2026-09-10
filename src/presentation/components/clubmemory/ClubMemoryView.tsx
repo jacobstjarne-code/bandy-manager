@@ -166,9 +166,30 @@ export function ClubMemoryView({ game }: Props) {
         recentMoments.length === 0 && <ClubMemoryEmpty />
       ) : (
         <>
+          <div className="km-nyckel">
+            <div className="km-nyckel-row">
+              <span className="km-nyckel-cap">Kind — färgaxel</span>
+              <span className="km-kchip"><span className="km-kdot" style={{ background: 'var(--accent)' }} />Triumf</span>
+              {/* adherence-semantic-key: detta ÄR nyckeln — chippen namnger vad --danger betyder. */}
+              <span className="km-kchip"><span className="km-kdot" style={{ background: 'var(--danger)' }} />Ärr</span>
+              {/* adherence-semantic-key: detta ÄR nyckeln — chippen namnger vad --warm betyder. */}
+              <span className="km-kchip"><span className="km-kdot" style={{ background: 'var(--warm)' }} />Laddat</span>
+              <span className="km-kchip"><span className="km-kdot" style={{ background: 'var(--text-muted)' }} />Noterat</span>
+            </div>
+            <div className="km-nyckel-row">
+              <span className="km-nyckel-cap">Familj — kategoristämpel</span>
+              <span className="km-fchip"><span className="km-em">⚔️</span>Match</span>
+              <span className="km-fchip"><span className="km-em">🏟️</span>Anläggning</span>
+              <span className="km-fchip"><span className="km-em">👤</span>Personer</span>
+              <span className="km-fchip"><span className="km-em">🤝</span>Relationer &amp; pengar</span>
+              <span className="km-fchip"><span className="km-em">📋</span>Beslut &amp; epok</span>
+            </div>
+          </div>
+
           {clubMemory.seasons.map(seasonMemory => (
             <ClubMemorySeasonSection
               key={seasonMemory.season}
+              game={game}
               seasonMemory={seasonMemory}
               activeAnniversaries={game.activeAnniversaries ?? []}
             />
