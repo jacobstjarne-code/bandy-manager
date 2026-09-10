@@ -3,6 +3,14 @@ import { assertNoDuplicateEntityIds } from './entityDedup'
 import { assertNoUnexpectedOverlay } from './occlusionGate'
 import { SCENES } from './sceneRegistry'
 
+async function waitForSceneImages(page: import('@playwright/test').Page) {
+  await page.waitForFunction(
+    () => Array.from(document.images).every(image => image.complete && image.naturalWidth > 0),
+    undefined,
+    { timeout: 15_000 },
+  )
+}
+
 /**
  * Visuell regression för /dev/scenes. En baseline per yta (Linux-seedad).
  * Håll SCENES (sceneRegistry.ts) i synk med scripts/capture-scenes.mjs +
@@ -35,6 +43,11 @@ for (const [id, clickText, snapshotNameOverride, fixedOverlay, extraHeight] of S
       await page.locator(clickText).first().click()
       await page.waitForTimeout(300)
     }
+    // En bild kan vara synlig i DOM men fortfarande sakna intrinsic-mått.
+    // Då tas elementbilden innan headerillustrationen har gett layout och
+    // baselinen låser in en falsk, uppscrollad vy. Vänta på bildens faktiska
+    // pixlar, inte bara nätverkets idle-signal.
+    await waitForSceneImages(page)
     // Fonter + fade/animation-settle (matchar capture-scenes 700ms).
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(700)
