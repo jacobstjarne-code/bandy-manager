@@ -407,7 +407,13 @@ export function PortalScreen() {
             faktiskt varnar (styrelsen på väg att fälla dig) — det är inte
             stämning, det är ett hot mot din anställning. */}
         {objectiveAlertWarning && <PortalObjectiveAlert game={game} />}
-        <div data-coach-id="klacken-card">
+        {/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §1/§5: T1, enda röst med den
+            vikten. buildPortal garanterar redan exakt ett primary-kort
+            (PortalLayout.primary: DashboardCard, aldrig 0/flera) — klassen
+            är enforcement-markören handoffen efterfrågar, inte en ny
+            visuell behandling (varje variant bär redan sin egen gradient/
+            kopparbård-anatomi). */}
+        <div className="portal-primary" data-coach-id="klacken-card">
           <Primary game={game} playoffCtx={playoffCtx} escalationSubState={escalationSubState} />
         </div>
         {/* Handlingar (spelaren ska GÖRA något) — efter Primary, inte före.
@@ -433,7 +439,15 @@ export function PortalScreen() {
           <CallupModal game={game} />
         )}
         <PortalEventSlot game={game} />
-        {StorySlotComponent && <StorySlotComponent game={game} />}
+        {/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §1/§5: T2, andra rösten —
+            aldrig CTA. storySlot är redan singular (PortalLayout.storySlot:
+            DashboardCard | null), så "högst en" är strukturellt garanterad;
+            klassen namnger tieret. */}
+        {StorySlotComponent && (
+          <div className="portal-story">
+            <StorySlotComponent game={game} />
+          </div>
+        )}
         <PortalQueueRail game={game} demotedMarks={demotedAtmosphereChips} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />

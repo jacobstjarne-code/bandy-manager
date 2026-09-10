@@ -35,25 +35,15 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
 
   return (
     <div
-      style={{
-        background: 'var(--bg-portal-surface)',
-        border: '1px solid var(--bg-leather)',
-        borderRadius: 'var(--radius-md)',
-        padding: '8px 10px',
-        cursor: 'pointer',
-      }}
+      className="portal-secondary-card"
       onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
     >
-      <div style={{
-        fontSize: 8,
-        letterSpacing: '1.5px',
-        textTransform: 'uppercase',
-        color: 'var(--text-muted)',
-        fontWeight: 600,
-        marginBottom: 4,
-      }}>
-        💰 KASSA
-      </div>
+      {/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §1/§3: T3 delar exakt en form —
+          detta kortet hade en egen bespoke border/radie/padding, avvikande
+          från de nio andra .portal-secondary-card-korten. Kall stripe
+          (--cold) matchar mockens 💰 Ekonomi-exempel rakt av. */}
+      <span className="portal-card-stripe portal-card-stripe-cold" />
+      <div className="portal-card-eyebrow">💰 Kassa</div>
       <div
         className="h-display-sm"
         style={{

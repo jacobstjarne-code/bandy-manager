@@ -50,6 +50,23 @@
   background: var(--warm);
 }
 
+/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §3: kall T3-variant saknades — bara
+   copper/warm fanns. Verklig token (--cold), ingen påhittad -light. */
+.portal-card-stripe-cold {
+  width: 2px;
+  background: var(--cold);
+}
+
+/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §1/§5: T1/T2 enforcement-markörer.
+   buildPortal garanterar redan exakt en primary + högst en storySlot
+   (PortalLayout-typen) — klasserna namnger tieret, de omstylear inte
+   innehållet (varje primary-variant och story-slot-typ bär redan sin egen
+   T1/T2-vikt via gradient/stripe). */
+.portal-primary,
+.portal-story {
+  position: relative;
+}
+
 .portal-card-chevron {
   position: absolute;
   right: 14px;

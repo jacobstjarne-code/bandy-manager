@@ -19,6 +19,29 @@ function positionLabel(position: number): string {
   return `${position}:e`
 }
 
+// 2 poäng för vinst, 1 för oavgjort (bandyns poängsystem, inte fotbollens 3).
+function resultPoints(result: 'V' | 'O' | 'F'): number {
+  return result === 'V' ? 2 : result === 'O' ? 1 : 0
+}
+
+/**
+ * Trendläsning ur de fem senaste (recent-först): jämför snittpoängen i de
+ * två senaste matcherna mot de två äldsta i fönstret — mittenmatchen (index 2
+ * vid full längd) utelämnas medvetet för att undvika att en enda match
+ * avgör riktningen. Kräver minst 4 matcher, annars ingen läsning (portal-
+ * hierarki-domen: recederande sekundär, ingen fabricerad signal på tunt underlag).
+ */
+function formTrend(results: { result: 'V' | 'O' | 'F' }[]): { arrow: string; label: string } | null {
+  if (results.length < 4) return null
+  const avg = (window: { result: 'V' | 'O' | 'F' }[]) =>
+    window.reduce((sum, r) => sum + resultPoints(r.result), 0) / window.length
+  const recent = avg(results.slice(0, 2))
+  const older = avg(results.slice(-2))
+  if (recent > older) return { arrow: '↗', label: 'Stigande' }
+  if (recent < older) return { arrow: '↘', label: 'Fallande' }
+  return { arrow: '→', label: 'Stabil' }
+}
+
 /** Secondary-kort: motståndarens senaste 5 matcher. */
 export function OpponentFormSecondary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
@@ -39,6 +62,7 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
 
   const last5 = recentForm.slice(0, 5)
   const opponentPoints = game.standings.find(s => s.clubId === opponentId)?.points ?? 0
+  const trend = formTrend(last5)
 
   return (
     <div className="portal-secondary-card opponent-form-card">
@@ -67,7 +91,10 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
           </div>
         ))}
       </div>
-      <div className="h-micro opponent-form-order">Senaste matchen först</div>
+      <div className="h-micro opponent-form-order">
+        {trend && <span className="opponent-form-trend">{trend.arrow} {trend.label} · </span>}
+        Senaste matchen först
+      </div>
     </div>
   )
 }
