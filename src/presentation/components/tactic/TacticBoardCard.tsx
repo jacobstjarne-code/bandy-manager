@@ -207,8 +207,12 @@ export function TacticBoardCard({
                     {suggestionWhyLine}
                   </p>
                 )}
-                <button onClick={applyRecommendations} className="btn btn-cta btn-primary" style={{ width: '100%', marginTop: 11 }}>
-                  Följ rådet
+                {/* DOM_TAKTIKTAVLA_PRIMARHIERARKI_2026-09-10 (1a): assistenten bär
+                    primären. .btn-cta är skärmstängarens ceremoniella register
+                    (SPELA OMGÅNG →) — inte den här, annars är det två register på
+                    en knapp. */}
+                <button onClick={applyRecommendations} className="btn btn-primary" style={{ width: '100%', marginTop: 11 }}>
+                  ✓ Följ assistentens råd
                 </button>
               </div>
             )}

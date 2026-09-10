@@ -244,32 +244,27 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ett tryck fyller — inget läge att välja</span>
       </div>
       <div style={{ display: 'flex', gap: 7, marginBottom: autoFillMsg ? 4 : 8 }}>
-        {(['strongest', 'rested', 'matchfit'] as const).map(mode => {
-          const isRecommended = mode === 'matchfit'
-          return (
-            <button
-              key={mode}
-              onClick={() => handleAutoFill(mode)}
-              style={{
-                flex: 1, minHeight: 35, borderRadius: 8,
-                fontSize: 12, fontWeight: 600, lineHeight: 1.15,
-                padding: '5px 3px', textAlign: 'center', cursor: 'pointer',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                // isRecommended: EJ .btn-primary-klassen här — TacticBoardCard.tsx
-                // har redan en egen .btn-primary ("Följ rådet", villkorad) som kan
-                // visas samtidigt; "en .btn-primary per skärm" (design-system) hade
-                // brutits. Samma gradient som klassen målar, via en delad token
-                // (--gradient-copper-cta, global.css) i stället för en fjärde
-                // hårdkodad hex-kopia.
-                ...(isRecommended
-                  ? { background: 'var(--gradient-copper-cta)', color: 'var(--text-on-copper-cta)', border: 'none', boxShadow: 'var(--shadow-primary)' }
-                  : { background: 'var(--bg-surface)', border: '1.5px solid var(--border-dark)', color: 'var(--accent-dark)' }),
-              }}
-            >
-              {AUTOFILL_MODE_LABELS[mode]}
-            </button>
-          )
-        })}
+        {/* DOM_TAKTIKTAVLA_PRIMARHIERARKI_2026-09-10 (1a): assistenten i
+            TacticBoardCard bär primären, inte den här raden — alla tre
+            fyll-lägena (inkl. tidigare "matchfit"-specialbehandlingen, som
+            medvetet undvek .btn-primary-klassen men målade samma koppar-
+            gradient för att antyda "detta är förvalet") är nu jämlika, tysta
+            genvägar. */}
+        {(['strongest', 'rested', 'matchfit'] as const).map(mode => (
+          <button
+            key={mode}
+            onClick={() => handleAutoFill(mode)}
+            style={{
+              flex: 1, minHeight: 35, borderRadius: 8,
+              fontSize: 12, fontWeight: 600, lineHeight: 1.15,
+              padding: '5px 3px', textAlign: 'center', cursor: 'pointer',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              background: 'var(--bg-surface)', border: '1.5px solid var(--border-dark)', color: 'var(--accent-dark)',
+            }}
+          >
+            {AUTOFILL_MODE_LABELS[mode]}
+          </button>
+        ))}
       </div>
       {autoFillMsg && (
         <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'right', marginBottom: 8, fontStyle: 'italic' }}>
