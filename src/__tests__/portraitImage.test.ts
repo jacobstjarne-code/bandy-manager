@@ -22,13 +22,14 @@ describe('portrait arketyp-wiring', () => {
     expect(a).toBe(b)
     expect(a).toMatch(/^\/assets\/portraits\/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png\?v=7$/)
     expect(getPortraitImagePath('player_42', 19)).toMatch(/^\/assets\/portraits\/portrait_young_[1-6]\.png\?v=7$/)
-    expect(getPortraitImagePath('player_42', 25)).toMatch(/^\/assets\/portraits\/portrait_mid_(?:[1-9]|10)\.png\?v=7$/)
+    expect(getPortraitImagePath('player_42', 25)).toMatch(/^\/assets\/portraits\/portrait_mid_(?:[1-9]|[12]\d|30)\.png\?v=7$/)
+    expect(CURATED_PORTRAIT_INDICES.mid).toHaveLength(30)
     expect(CURATED_PORTRAIT_INDICES.vet).not.toContain(3)
   })
 
   it('bara det fortfarande tomma erfaren-facket ger SVG-fallback', () => {
     expect(getPortraitImagePath('player_7', 19)).toMatch(/portrait_young_[1-6]\.png\?v=7$/)
-    expect(getPortraitImagePath('player_7', 25)).toMatch(/portrait_mid_(?:[1-9]|10)\.png\?v=7$/)
+    expect(getPortraitImagePath('player_7', 25)).toMatch(/portrait_mid_(?:[1-9]|[12]\d|30)\.png\?v=7$/)
     expect(getPortraitImagePath('player_7', 29)).toBeNull()
     expect(getPortraitImagePath('player_7', 35)).toMatch(/portrait_vet_(?:1|2|[4-9]|1[0-6])\.png\?v=7$/)
   })

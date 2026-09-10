@@ -32,4 +32,6 @@ Synkfilerna (`github-synk-*.md`) arkiveras direkt när deras leverans är behand
 
 **Arkiverat 2026-09-10:** 32 spelarporträtt-original flyttades till `_arkiv-2026-09/portratt-original/` med kanoniska tiernamn. Veteran 1–16 är den äldre poolen; nya mid 1–10 och ung 1–6 har skalats till 400×400 PNG i `public/assets/portraits/` och wirats via `portraitService.ts`. Exakt filöversättning finns i `design-system/PORTRAIT_REGISTER.md`.
 
+**Arkiverat 2026-09-10, andra midpasset:** `mid11.jpeg`–`mid30.jpeg` har bevarats som `portrait_mid_11.jpeg`–`portrait_mid_30.jpeg` i samma originalarkiv. Produktversionerna är frilagda och komprimerade 400×400 PNG-filer i `public/assets/portraits/`, och midpoolen väljer nu deterministiskt ur samtliga 30 godkända porträtt.
+
 **Arkiverat 2026-09-07** (MASTER_OPPET.md `stickiness-settings-kategorier`, KLAR): `Notisinstallningar.dc.html` + `github_notisinställningar.md` → `_arkiv-2026-09/`. Mocken dömd och byggd i samma svep — Notiser-inställningsyta (kategori-toggles, tysta timmar) wirad end-to-end mot `server/attention/`, browserverifierad. Två av mockens etiketter/introraden rättades mot registrets faktiska LÅSTA text innan bygget (Design skrev interna namn — se MASTER-raden för detaljer). `Klubbparm-forstagangsprompt.dc.html` (samma leverans, annan feature) rörd inte — väntar fortfarande på Jacobs val mellan de tre formerna.

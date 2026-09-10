@@ -14,7 +14,11 @@ export type PortraitTier = 'young' | 'mid' | 'exp' | 'vet'
  */
 export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly number[]>> = {
   young: [1, 2, 3, 4, 5, 6],
-  mid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  mid: [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+  ],
   exp: [],
   vet: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
 }
