@@ -39,6 +39,7 @@ import { playoffRoundName } from '../../domain/roundLabel'
 import { ClubNotificationPrompt } from '../components/ClubNotificationPrompt'
 import { selectPortalMemory } from '../../domain/services/portal/portalMemoryService'
 import { pickEfterklang } from '../../domain/services/portal/pickEfterklang'
+import { SceneSeam } from '../components/SceneSeam'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -49,6 +50,11 @@ export function PortalScreen() {
   const navigate = useNavigate()
   const gameScrollRef = useGameScrollContainer()
   const [isAdvancing, setIsAdvancing] = useState(false)
+  // DOM_POLISH_SMFINAL_SKARV_2026-09-10: SM-finalens gold-CTA navigerar inte
+  // direkt — SceneSeam sveper CTA:ns fyllning till scenens accent först
+  // (~260ms), sen navigerar onComplete. Wira bara smfinal nu (hållpunkten);
+  // andra CTA:er kör handleAdvance rakt av som förut.
+  const [seamActive, setSeamActive] = useState(false)
 
   // Auto-skip rounds where managed team has no fixture (e.g. cup R1 for bye-teams,
   // or cup rounds after elimination). The advance() auto-loop handles chaining,
@@ -142,6 +148,7 @@ export function PortalScreen() {
 
   const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
+  const primaryIsSmFinal = layout.primary.id === 'next_match_smfinal'
 
   const isSpectator = isManagedClubSpectator(game)
 
@@ -177,6 +184,7 @@ export function PortalScreen() {
       return true
     }).sort((a, b) => a.matchday - b.matchday)[0]
     if (nextManaged) {
+      if (primaryIsSmFinal) return 'Redo — spela SM-final →'
       if (nextManaged.isCup) {
         const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
         const cupRound = cupMatch?.round ?? 1
@@ -271,11 +279,31 @@ export function PortalScreen() {
 
   const isSeason1Round1 = (game.seasonSummaries?.length ?? 0) === 0 && game.currentMatchday === 1
   const playoffCtx = getPlayoffSeriesContext(game)
-  const isSmFinal = playoffCtx?.round === PlayoffRound.Final
+  // Primary-valet är portalens kanoniska svar på vad veckan ÄR. Den frysta
+  // finalfixturen kan sakna komplett playoff-context men ändå korrekt välja
+  // next_match_smfinal; CTA-färg och seam måste då följa samma sanning som
+  // kortet, inte en snävare sekundär härledning.
+  const isSmFinal = primaryIsSmFinal || playoffCtx?.round === PlayoffRound.Final
   const escalationSubState = getEscalationSubState(game)
   // C-SD2: warm CTA på kvart/semi + upptakt-fönstret (ej final → gold)
   // !isSmFinal garanterar redan att en ev. playoffCtx inte är final
   const isCtaWarm = !isSmFinal && (playoffCtx != null || (escalationSubState !== null && escalationSubState !== 'mittfalt'))
+
+  // DOM_POLISH_SMFINAL_SKARV_2026-09-10 §5: vid SM-final är destinationen
+  // alltid /game/match (nästa schemalagda match är finalen) — samma
+  // slutsats handleAdvance själv landar i via managedMatchInNextRound, men
+  // seamen behöver navigeringen isolerad från handleAdvance-anropet så
+  // klicket inte navigerar förrän svepet är klart.
+  const handleCtaClick = useCallback(() => {
+    if (isAdvancing || seamActive) return
+    if (isSmFinal) {
+      playSound('click')
+      setSeamActive(true)
+      return
+    }
+    handleAdvance()
+  }, [isAdvancing, seamActive, isSmFinal, handleAdvance])
+
   const activeCount = getActiveDecisionCount(game)
   // Slinga 1: grinda avancera-CTA:n tills veckans beslut hanterats (anti-autopilot).
   // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
@@ -432,7 +460,7 @@ export function PortalScreen() {
           ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
           --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
           redan etablerade för exakt den här bugklassen. */}
-      {!weeklyDecisionPending && <div ref={ctaRef} data-fixed-bottom-bar style={{
+      {!weeklyDecisionPending && !seamActive && <div ref={ctaRef} data-fixed-bottom-bar style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: 14,
@@ -475,13 +503,21 @@ export function PortalScreen() {
         })()}
         <button
           data-coach-id="cta-button"
-          onClick={handleAdvance}
-          disabled={!canClickAdvance || isAdvancing}
+          onClick={handleCtaClick}
+          disabled={!canClickAdvance || isAdvancing || seamActive}
           className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
           {isAdvancing ? '···' : advanceButtonText}
         </button>
       </div>}
+
+      {seamActive && (
+        <SceneSeam
+          tier="final"
+          ctaLabel={advanceButtonText}
+          onComplete={() => navigate('/game/match')}
+        />
+      )}
     </>
   )
 }
