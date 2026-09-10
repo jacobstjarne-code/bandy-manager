@@ -95,6 +95,14 @@ spelarlänk. Ingen handkonstruerad testväg får ersätta den. Texten är redan 
 **Varför uppskjuten:** ett helt tillväxtspår, inte en gap-täckare;
 §10-linjen. **När:** post-launch, som eget ekosystem-pass. Jacob 2026-09-08.
 
+### sluttest-412-bildsnapshot (visuell QA för delningsbild)
+**Vad:** skapa och visuellt verifiera snapshots för den riktiga delningsbilden när
+den finns. **Varför uppskjuten:** delningskortets producent och ekosystem är redan
+parkerade här; en snapshot av en ännu opublicerad yta kan varken bevisa produktens
+utseende eller blockera release. `SPELTESTKALENDER_2026-09-10.md` klassar uttryckligen
+uppgiften som rent visuell QA med låg prioritet. **När:** tillsammans med den verkliga
+delningsbilden, eller tidigare endast om Jacob uttryckligen beställer Code-provet.
+
 ## Anläggning / UI
 
 ### d-o5-avveckla-nod (avveckla en byggd anläggningsnod)
