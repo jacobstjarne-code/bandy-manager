@@ -89,6 +89,20 @@ function recordResolvedId(game: SaveGame, eventId: string): string[] {
 }
 
 /**
+ * Resolution owns the event identity across both decision queues. Keeping the
+ * deferred copy until a presentation-store caller happens to promote the queue
+ * makes a domain invariant depend on an optional follow-up step. A stable id
+ * that has been handled must be retired atomically everywhere it can live.
+ */
+function retireResolvedEvent(game: SaveGame, eventId: string): SaveGame {
+  return {
+    ...game,
+    pendingEvents: (game.pendingEvents ?? []).filter(event => event.id !== eventId),
+    deferredDecisions: (game.deferredDecisions ?? []).filter(event => event.id !== eventId),
+  }
+}
+
+/**
  * Gemensam liggarväg för beslut som matchar en uttryckligen deklarerad
  * säsongsbeslutsbyggare. Hjälparen används både av den kanoniska svansen och
  * av sponsorernas tidiga returer, så specialfallen inte kan glida förbi
@@ -319,8 +333,7 @@ export function resolveEvent(
   // resolvedChoices entry or a player-attributed narrative beat.
   if (event.choices.length === 0 || isPassiveVoiceIntroduction(event)) {
     return recordIntroducedVoice({
-      ...game,
-      pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
+      ...retireResolvedEvent(game, eventId),
       resolvedEventIds: recordResolvedId(game, eventId),
     })
   }
@@ -341,9 +354,7 @@ export function resolveEvent(
         entry.type === 'burnout_scar' && entry.season === game.currentSeason)
     if (alreadyResolvedThisSeason) {
       return {
-        ...game,
-        pendingEvents: (game.pendingEvents ?? []).filter(candidate => candidate.id !== eventId),
-        deferredDecisions: (game.deferredDecisions ?? []).filter(candidate => candidate.id !== eventId),
+        ...retireResolvedEvent(game, eventId),
         resolvedEventIds: recordResolvedId(game, eventId),
       }
     }
@@ -361,8 +372,7 @@ export function resolveEvent(
   // beslut: resolve-spår + deklarerat säsongsbeslut + faktisk orsak/verkan.
   const finalizeSponsorResolution = (afterEffects: SaveGame): SaveGame => {
     let resolvedGame: SaveGame = {
-      ...afterEffects,
-      pendingEvents: (afterEffects.pendingEvents ?? []).filter(e => e.id !== eventId),
+      ...retireResolvedEvent(afterEffects, eventId),
       resolvedChoices: recordResolvedChoice(game, afterEffects, event, choiceId, choice.label, madeByPlayer),
       resolvedEventIds: recordResolvedId(afterEffects, eventId),
     }
@@ -2596,8 +2606,7 @@ export function resolveEvent(
   }
 
   updatedGame = {
-    ...updatedGame,
-    pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
+    ...retireResolvedEvent(updatedGame, eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
     resolvedChoices: recordResolvedChoice(game, updatedGame, event, choiceId, choice.label, madeByPlayer),
     narrativeBeatLog: logNarrativeBeat(

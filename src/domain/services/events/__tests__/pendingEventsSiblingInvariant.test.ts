@@ -35,6 +35,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { resolveEvent } from '../eventResolver'
+import { generateGalaEvent } from '../../bandyGalaService'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
@@ -88,6 +89,30 @@ function multiEffectEvent(playerId: string): GameEvent {
 }
 
 describe('pendingEvents-invarianten — beforeIds − resolvedId = afterIds (H3)', () => {
+  it('pensionerar Bandygalans stabila id atomärt ur både synlig och uppskjuten kö', () => {
+    const game = baseGame()
+    const player = game.players.find(candidate => candidate.clubId === game.managedClubId)!
+    const gala = generateGalaEvent(game, [{
+      award: 'arets_spelare',
+      playerId: player.id,
+      playerName: `${player.firstName} ${player.lastName}`,
+      clubName: game.clubs.find(club => club.id === player.clubId)?.shortName ?? '?',
+      stat: 'Styrka 70',
+    }])
+    const sibling = captainEvent()
+
+    const resolved = resolveEvent({
+      ...game,
+      pendingEvents: [gala, sibling],
+      deferredDecisions: [{ ...gala }],
+    }, gala.id, 'attend', () => 0.5, true)
+
+    expect(resolved.pendingEvents.map(event => event.id)).toEqual([sibling.id])
+    expect(resolved.deferredDecisions?.some(event => event.id === gala.id)).toBe(false)
+    expect(resolved.resolvedEventIds).toContain(gala.id)
+    expect(resolveEvent(resolved, gala.id, 'attend', () => 0.5, true)).toBe(resolved)
+  })
+
   it('resolving sponsorOffer bland tre siblings tar bort exakt ETT event-ID', () => {
     const game = baseGame()
     const playerId = game.clubs[0].squadPlayerIds[0]
