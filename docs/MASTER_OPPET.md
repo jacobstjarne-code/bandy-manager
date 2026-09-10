@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| smfinal-dubbelt-uppspel | En fullspelad SM-final visar samma tvåstegsuppspel både i Förbered och igen i livevyn före avslag | rapporterad | Code | Grind 2/3 långkarriär + `DESIGNOMGANGEN-KOMPLETT-2026-06-11.md` C4 | Verifiera inkopplingspunkterna och bevara exakt en finalintro per matchläge; snabbsim går direkt från Förbered till färdig ceremoni medan fullmatch har en separat introgrind före avslag. |
+| smfinal-dubbelt-uppspel | En fullspelad SM-final visar samma tvåstegsuppspel både i Förbered och igen i livevyn före avslag | in_progress | Codex | Grind 2/3 långkarriär + `DESIGNOMGANGEN-KOMPLETT-2026-06-11.md` C4 | CLAIM 2026-09-11T01:39:35+02:00 — Codex. Kod- och historikverifierad: `computeLaddningBeat` skickar alla SM-finaler genom `MatchLaddningScene` två steg; fullmatchen initierar därefter `FinalIntroScreen` med samma `getFinalIntroScene` före avslag. Snabbsim går däremot direkt från Förbered till färdig ceremoni och behöver sin enda intro där. Gata bort Förbered-dubbletten endast för live-lägen; bevara exakt en intro per väg och regressionstesta båda. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
