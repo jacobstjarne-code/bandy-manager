@@ -976,6 +976,7 @@ export function generateSeasonSummary(
     headline: arc.displayText,
     body: arc.description,
     relatedPlayerId: arc.playerId,
+    storylineId: arc.id,
   }))
   // liggare-k6-arsbok-liggarposter (2026-09-03, konsumentkartan §9 #6, Opus
   // dom): "säsongens tyngsta systemhändelser... når inte årsboken. Den vet

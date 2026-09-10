@@ -26,6 +26,62 @@ import { ledgerPostKey } from '../../domain/services/ledgerToldService'
 import { storedRoundLabel } from '../../domain/roundLabel'
 import { ScrollMoreCue } from '../components/ScrollMoreCue'
 
+export interface YearbookTimelineItem {
+  round: number
+  roundLabel?: string
+  icon: string
+  headline: string
+  body: string
+  relatedPlayerName?: string
+  storylineId?: string
+  /** Legacy-årsböcker saknar storylineId; bara rader som faktiskt skapades
+   * som storyline får då använda den smala text+omgång-fallbacken. */
+  storylineCandidate?: boolean
+}
+
+function legacyStorylineSignature(item: YearbookTimelineItem): string {
+  return `${item.round}:${item.headline.trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv-SE')}`
+}
+
+/**
+ * En storyline är kanoniskt en entitet även när den når årsboken både via
+ * den frysta sammanfattningen och den levande liggarprojektionen. Projektionen
+ * får förtur eftersom storylines ska garanteras plats; keyMoment-payloadens
+ * rikare body/omgångsetikett förs över innan dubbletten tas bort.
+ */
+export function mergeYearbookTimelineItems(
+  keyMomentItems: YearbookTimelineItem[],
+  storylineItems: YearbookTimelineItem[],
+  cap = 7,
+): YearbookTimelineItem[] {
+  const keyMomentByStorylineId = new Map(
+    keyMomentItems.flatMap(item => item.storylineId ? [[item.storylineId, item] as const] : []),
+  )
+  const legacyKeyMomentBySignature = new Map(
+    keyMomentItems.flatMap(item => item.storylineCandidate && !item.storylineId
+      ? [[legacyStorylineSignature(item), item] as const]
+      : []),
+  )
+  const hydratedStorylines = storylineItems.map(item => {
+    const frozen = (item.storylineId ? keyMomentByStorylineId.get(item.storylineId) : undefined)
+      ?? legacyKeyMomentBySignature.get(legacyStorylineSignature(item))
+    return frozen ? { ...item, roundLabel: frozen.roundLabel, body: frozen.body } : item
+  })
+  const representedStorylineIds = new Set(
+    hydratedStorylines.flatMap(item => item.storylineId ? [item.storylineId] : []),
+  )
+  const uniqueKeyMoments = keyMomentItems.filter(item =>
+    item.storylineId
+      ? !representedStorylineIds.has(item.storylineId)
+      : !item.storylineCandidate
+        || !hydratedStorylines.some(storyline => legacyStorylineSignature(storyline) === legacyStorylineSignature(item)),
+  )
+  const guaranteedStorylines = hydratedStorylines.slice(0, cap)
+  const remainingBudget = Math.max(0, cap - guaranteedStorylines.length)
+  return [...guaranteedStorylines, ...uniqueKeyMoments.slice(0, remainingBudget)]
+    .sort((a, b) => a.round - b.round)
+}
+
 function YearbookPersonCard({ summary }: { summary: SeasonSummary }) {
   const { game, markLedgerPostTold } = useGameStore()
   const post = game?.eventLedger?.find(entry => ledgerPostKey(entry) === summary.seasonPerson?.ledgerPostKey)
@@ -552,17 +608,7 @@ export function SeasonSummaryScreen() {
 
         {/* DIN SÄSONG — merged timeline */}
         {(() => {
-          type TimelineItem = {
-            round: number
-            roundLabel?: string
-            icon: string
-            headline: string
-            body: string
-            relatedPlayerName?: string
-            /** Satt bara för storyline-härledda rader — entity-dedup-grinden (2026-08-12). */
-            storylineId?: string
-          }
-          const keyMomentItems: TimelineItem[] = []
+          const keyMomentItems: YearbookTimelineItem[] = []
 
           // keyMoments
           for (const m of summary.keyMoments ?? []) {
@@ -583,20 +629,23 @@ export function SeasonSummaryScreen() {
               headline: m.headline,
               body: m.body,
               relatedPlayerName: relatedPlayer ? `${relatedPlayer.firstName} ${relatedPlayer.lastName}` : undefined,
+              storylineId: m.storylineId,
+              storylineCandidate: m.type === 'storyline',
             })
           }
 
-          // AUDIT DEL 2 A3 (2026-08-09): arc storylines — deduplicerade per typ.
+          // AUDIT DEL 2 A3 (2026-08-09): arc storylines — deduplicerade per identitet.
           // (SÄSONGENS BERÄTTELSER, som körde samma filter mot samma
           // game.storylines med ett eget, odelat Set, är borttagen — de två
           // sektionerna dubblerade i praktiken varje säsong med ≥1 storyline.)
-          // seenSlTypes speglas in i claimedStorylineTypes (komponent-scope)
-          // så DINA VAL längre ned kan hoppa över typer som redan visats här.
+          // De identiska entiteter som också finns i summary.keyMoments slås
+          // ihop nedan. claimedStorylineTypes används fortsatt mellan DIN
+          // SÄSONG och DINA VAL, så en visad storyline inte dubbleras där.
           const allSeasonStorylines = getResolvedStorylineProjections(game, summary.season)
-          const seenSlTypes = new Set<string>()
+          const seenStorylineIds = new Set<string>()
           const seasonStorylines = allSeasonStorylines.filter(s => {
-            if (seenSlTypes.has(s.type)) return false
-            seenSlTypes.add(s.type)
+            if (seenStorylineIds.has(s.id)) return false
+            seenStorylineIds.add(s.id)
             return true
           })
           const storylineEmoji = (type: string): string => {
@@ -613,7 +662,7 @@ export function SeasonSummaryScreen() {
               default: return '📖'
             }
           }
-          const storylineItems: TimelineItem[] = seasonStorylines.map(sl => {
+          const storylineItems: YearbookTimelineItem[] = seasonStorylines.map(sl => {
             const p = sl.playerId ? game.players.find(pl => pl.id === sl.playerId) : null
             return {
               round: sl.matchday ?? 99,
@@ -631,15 +680,12 @@ export function SeasonSummaryScreen() {
           // många keyMoments (summary.keyMoments är redan självt kappat till 7
           // i seasonSummaryService.ts, så plats saknades annars helt).
           const CAP = 7
-          const guaranteedStorylines = storylineItems.slice(0, CAP)
-          const remainingBudget = Math.max(0, CAP - guaranteedStorylines.length)
-          const selectedKeyMoments = keyMomentItems.slice(0, remainingBudget)
-          const topItems = [...guaranteedStorylines, ...selectedKeyMoments].sort((a, b) => a.round - b.round)
+          const topItems = mergeYearbookTimelineItems(keyMomentItems, storylineItems, CAP)
 
           // Bara typer som FAKTISKT fick plats (samma index-ordning som storylineItems)
           // räknas som claimed — annars skulle en typ som knuffades ut av CAP ändå
           // spärra DINA VAL från att visa den, och storylinen skulle inte synas alls.
-          for (const sl of seasonStorylines.slice(0, guaranteedStorylines.length)) {
+          for (const sl of seasonStorylines.slice(0, Math.min(CAP, storylineItems.length))) {
             claimedStorylineTypes.add(sl.type)
           }
 

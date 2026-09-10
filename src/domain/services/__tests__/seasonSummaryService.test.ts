@@ -351,6 +351,7 @@ describe('generateSeasonSummary — resolvade arc-berättelser får INTE type:bi
     expect(arcMoment, JSON.stringify(summary.keyMoments)).toBeDefined()
     expect(arcMoment!.type).toBe('storyline')
     expect(arcMoment!.type).not.toBe('bigWin')
+    expect(arcMoment!.storylineId).toBe(storyline.id)
   })
 })
 

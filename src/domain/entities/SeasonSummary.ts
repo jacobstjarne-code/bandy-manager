@@ -201,6 +201,9 @@ export interface SeasonSummary {
     body: string
     fixtureId?: string
     relatedPlayerId?: string
+    /** Kanonisk identitet för en storyline-rad. Årsboksvyn använder den för
+     * att inte rendera samma resolution igen från sin storyline-projektion. */
+    storylineId?: string
   }>
 
   matchOfTheSeason?: MatchHighlight
