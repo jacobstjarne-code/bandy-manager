@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Target, Users, LineChart, GraduationCap, ChevronDown, type LucideIcon } from 'lucide-react'
+import { Target, Users, LineChart, GraduationCap, type LucideIcon } from 'lucide-react'
 import { Icon } from '../../components/primitives/Icon'
 import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
@@ -12,6 +12,7 @@ import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
 import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
 import { canEventPassVoiceGate, getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
+import { ScrollMoreCue } from '../../components/ScrollMoreCue'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'analys'
 
@@ -35,7 +36,6 @@ export function GranskaScreen() {
   const [soundsPlayed, setSoundsPlayed] = useState(false)
   const [step, setStep] = useState<GranskaStep>('oversikt')
   const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
-  const [hasMoreContent, setHasMoreContent] = useState(false)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const didRedirect = useRef(false)
   // M10 (audit 5c9a7a8, 2026-08-24): FRUSEN vid mount, inte game.pendingEvents
@@ -63,26 +63,6 @@ export function GranskaScreen() {
     const t = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(t)
   }, [])
-
-  const updateScrollCue = () => {
-    const el = contentRef.current
-    if (!el) return
-    setHasMoreContent(el.scrollTop + el.clientHeight < el.scrollHeight - 8)
-  }
-
-  const scrollToMoreContent = () => {
-    const el = contentRef.current
-    if (!el) return
-    el.scrollBy({
-      top: Math.max(180, el.clientHeight * 0.65),
-      behavior: 'smooth',
-    })
-  }
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(updateScrollCue)
-    return () => cancelAnimationFrame(frame)
-  }, [step, visible, roundSummary, resolvedEventIds])
 
   // Notifieringsdomen 2026-09-04: permission-frågan får tidigast visas
   // efter en faktiskt läst första Granska och när nästa lag ännu är öppet.
@@ -254,7 +234,6 @@ export function GranskaScreen() {
       {/* Content */}
       <div
         ref={contentRef}
-        onScroll={updateScrollCue}
         className="texture-wood card-stack"
         style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}
       >
@@ -335,38 +314,10 @@ export function GranskaScreen() {
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.3s ease 0.3s',
       }}>
-        {hasMoreContent && (
-          <div
-            style={{
-              position: 'absolute', left: 0, right: 0, top: -56, height: 56,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(to bottom, transparent, var(--bg))',
-              pointerEvents: 'none',
-            }}
-          >
-            <button
-              type="button"
-              aria-label="Visa mer av matchrapporten"
-              onClick={scrollToMoreContent}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: '50%',
-                border: '2px solid var(--bg)',
-                background: 'var(--accent)',
-                color: 'var(--text-light)',
-                boxShadow: '0 3px 12px rgba(0,0,0,0.28)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                pointerEvents: 'auto',
-              }}
-            >
-              <Icon icon={ChevronDown} size={24} color="currentColor" />
-            </button>
-          </div>
-        )}
+        <ScrollMoreCue
+          scrollRef={contentRef}
+          style={{ position: 'absolute', top: -56, bottom: 'auto' }}
+        />
         {/* Step label */}
         <p className="h-label" style={{ textAlign: 'center', paddingTop: 8, marginBottom: 2 }}>
           FÖRDJUPA

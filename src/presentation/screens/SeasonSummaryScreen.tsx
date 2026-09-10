@@ -24,6 +24,7 @@ import { getResolvedStorylineProjections } from '../../domain/services/storyline
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import { ledgerPostKey } from '../../domain/services/ledgerToldService'
 import { storedRoundLabel } from '../../domain/roundLabel'
+import { ScrollMoreCue } from '../components/ScrollMoreCue'
 
 function YearbookPersonCard({ summary }: { summary: SeasonSummary }) {
   const { game, markLedgerPostTold } = useGameStore()
@@ -109,6 +110,7 @@ export function SeasonSummaryScreen() {
   const navigate = useNavigate()
   const params = useParams<{ season?: string }>()
   const { game, clearSeasonSummary } = useGameStore()
+  const scrollRef = useRef<HTMLDivElement | null>(null)
 
   // DREAM-013: generate and persist team photo when season ends
   useEffect(() => {
@@ -316,7 +318,7 @@ export function SeasonSummaryScreen() {
       height: '100%',
       overflowY: 'auto',
       background: 'var(--bg)',
-    }}>
+    }} ref={scrollRef}>
       <div style={{ padding: '0 16px 180px' }}>
 
         <IllustrationScene
@@ -1107,6 +1109,7 @@ export function SeasonSummaryScreen() {
           </div>
         )}
       </div>
+      <ScrollMoreCue scrollRef={scrollRef} style={{ bottom: 12 }} />
     </div>
   )
 }

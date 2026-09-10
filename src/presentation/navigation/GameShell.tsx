@@ -9,6 +9,7 @@ import { FeedbackButton, isFeedbackHiddenOnRoute } from '../components/FeedbackB
 import { useGameStore, useHasHydrated } from '../store/gameStore'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { getEventRenderTarget } from '../../domain/services/eventQueueService'
+import { GameScrollContext } from './GameScrollContext'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
 export function GameGuard() {
@@ -171,11 +172,13 @@ export function GameShell() {
             .mf-root:s height:100% korrekt mot en verklig viewport-bunden ram, och
             .commentary-feed:s egna overflow-y:auto (redan korrekt) scrollar
             matchflödet internt istället för att hela sidan bara växer. */}
-        <div key={location.pathname} className="screen-enter" style={{ height: '100%' }}>
-          <RouteBoundary>
-            <Outlet />
-          </RouteBoundary>
-        </div>
+        <GameScrollContext.Provider value={scrollRef}>
+          <div key={location.pathname} className="screen-enter" style={{ height: '100%' }}>
+            <RouteBoundary>
+              <Outlet />
+            </RouteBoundary>
+          </div>
+        </GameScrollContext.Provider>
       </div>
       {!hideBottomNav && <BottomNav />}
       {showFeedbackDock && <FeedbackButton />}

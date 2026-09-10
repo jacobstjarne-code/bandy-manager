@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { PlayoffBracket } from '../../../domain/entities/Playoff'
@@ -10,6 +10,7 @@ import { getWeatherEmoji, getConditionLabel } from '../../../domain/services/wea
 import { truncate } from '../../utils/formatters'
 import { getFinalIntroScene, FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import type { FinalTier } from '../../../domain/data/scenes/finalIntroScene'
+import { ScrollMoreCue } from '../ScrollMoreCue'
 
 const startBtn: React.CSSProperties = {
   padding: '16px',
@@ -395,6 +396,7 @@ export function FinalIntroScreen({
   tier = 'gold',
 }: FinalIntroScreenProps) {
   const [smStep, setSmStep] = useState<1 | 2>(1)
+  const cupLineupScrollRef = useRef<HTMLDivElement | null>(null)
 
   // SM-final: new two-step typographic scene (replaces old 3-slide design)
   if (variant === 'sm') {
@@ -481,7 +483,7 @@ export function FinalIntroScreen({
     .filter(Boolean)
 
   return (
-    <div style={{
+    <div ref={cupLineupScrollRef} style={{
       display: 'flex', flexDirection: 'column', position: 'fixed', inset: 0, zIndex: 300,
       background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
     }}>
@@ -513,6 +515,11 @@ export function FinalIntroScreen({
         </div>
       </div>
       <button onClick={onStart} style={startBtn}>SPELA CUPFINALEN</button>
+      <ScrollMoreCue
+        scrollRef={cupLineupScrollRef}
+        fadeColor="var(--bg-dark)"
+        style={{ bottom: 12, zIndex: 301 }}
+      />
     </div>
   )
 }

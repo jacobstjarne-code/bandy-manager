@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { positionShort, formatSalary } from '../utils/formatters'
+import { ScrollMoreCue } from '../components/ScrollMoreCue'
 
 /**
  * SeasonContractDemandsScreen — A-H2b RETENTION (DOM_AH2B_RETENTION_2026-08-28).
@@ -29,6 +30,7 @@ export function SeasonContractDemandsScreen() {
   const resolveContractDemands = useGameStore(s => s.resolveContractDemands)
 
   const demands = game?.pendingContractDemands ?? []
+  const scrollRef = useRef<HTMLDivElement | null>(null)
 
   // Default: obemött (spelaren måste aktivt välja att möta varje krav —
   // samma "inget sker automatiskt"-princip som renewContract/createOutgoingBid).
@@ -62,7 +64,7 @@ export function SeasonContractDemandsScreen() {
   const metCount = Object.values(decisions).filter(v => v === 'met').length
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflowY: 'auto' }}>
+    <div ref={scrollRef} style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflowY: 'auto' }}>
 
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 16px' }}>
@@ -153,6 +155,7 @@ export function SeasonContractDemandsScreen() {
           BEKRÄFTA BESLUT →
         </button>
       </div>
+      <ScrollMoreCue scrollRef={scrollRef} style={{ bottom: 12 }} />
     </div>
   )
 }

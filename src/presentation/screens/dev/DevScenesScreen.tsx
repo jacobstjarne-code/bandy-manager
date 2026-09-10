@@ -5,7 +5,7 @@
  * Add a scene: extend SCENES, create fingered game via makeGame(), render below.
  */
 
-import { useState, useEffect, useLayoutEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { SeasonSummary } from '../../../domain/entities/SeasonSummary'
@@ -28,6 +28,7 @@ import { MatchScreen } from '../MatchScreen'
 import { MatchLaddningScene } from '../../components/match/MatchLaddningScene'
 import { MatchLiveScreen } from '../match/MatchLiveScreen'
 import { BottomNav } from '../../navigation/BottomNav'
+import { GameScrollContext } from '../../navigation/GameScrollContext'
 import { TranareTab } from '../../components/club/TranareTab'
 import { ClubScreen } from '../ClubScreen'
 import { BoardMeetingScene } from '../scenes/BoardMeetingScene'
@@ -1865,6 +1866,7 @@ const boardGameN = {
 }
 
 export function DevScenesScreen() {
+  const devScrollRef = useRef<HTMLDivElement>(null)
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
   const initialScene = (typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('scene')
@@ -2037,7 +2039,8 @@ export function DevScenesScreen() {
     // körväg som inte är pålitlig. height:100vh + overflowY:auto ger skalet
     // sitt EGET scroll-sammanhang (som riktiga skärmar redan har), så normal
     // scroll-och-stitch fungerar utan specialfall.
-    <div style={{ background: '#080808', height: '100vh', overflowY: 'auto' }}>
+    <GameScrollContext.Provider value={devScrollRef}>
+    <div ref={devScrollRef} style={{ background: '#080808', height: '100vh', overflowY: 'auto' }}>
       {/* SKAL-REGEL (2026-08-12, se CLAUDE.md): dev-scenskalet får inte påverka det
           som fotograferas. Två separata regler följer av det:
           1. zIndex UNDER --z-modal (300), aldrig över — ett skal-element ska
@@ -2705,5 +2708,6 @@ export function DevScenesScreen() {
       </div>
       {navGate && <BottomNav />}
     </div>
+    </GameScrollContext.Provider>
   )
 }

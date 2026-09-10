@@ -32,6 +32,8 @@ import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
 import { getNextActionCue } from '../utils/nextActionCue'
+import { ScrollMoreCue } from '../components/ScrollMoreCue'
+import { useGameScrollContainer } from '../navigation/GameScrollContext'
 import { selectAtmosphereMarks, type AtmosphereMarkKind } from '../../domain/services/portal/atmosphereResolver'
 import { playoffRoundName } from '../../domain/roundLabel'
 import { ClubNotificationPrompt } from '../components/ClubNotificationPrompt'
@@ -45,6 +47,7 @@ export function PortalScreen() {
   const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown, markLedgerPostTold } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
+  const gameScrollRef = useGameScrollContainer()
   const [isAdvancing, setIsAdvancing] = useState(false)
 
   // Auto-skip rounds where managed team has no fixture (e.g. cup R1 for bye-teams,
@@ -409,6 +412,15 @@ export function PortalScreen() {
         <PortalInboxCounter game={game} />
         <ClubNotificationPrompt game={game} />
       </div>
+
+      <ScrollMoreCue
+        scrollRef={gameScrollRef}
+        fadeColor="var(--bg-portal)"
+        accentColor="var(--accent-portal)"
+        style={{
+          bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${weeklyDecisionPending ? 0 : Math.round(ctaHeight)}px)`,
+        }}
+      />
 
       {/* STICKY CTA — synlig ovanför BottomNav när inget veckobeslut pågår.
           Ett aktivt beslut äger ytan: en låst CTA gav ingen handling och täckte
