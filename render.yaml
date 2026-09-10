@@ -37,7 +37,7 @@ services:
       - key: ATTENTION_PUSH_ENABLED
         value: "false"
       - key: ATTENTION_CRON_SECRET
-        generateValue: true
+        sync: false
       - key: VAPID_SUBJECT
         sync: false
       - key: VAPID_PUBLIC_KEY
@@ -46,27 +46,6 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
-
-  - type: cron
-    name: bandy-manager-attention-hourly
-    runtime: node
-    region: frankfurt
-    schedule: "0 * * * *"
-    buildCommand: npm install --omit=dev
-    startCommand: node scripts/run-attention-cron.mjs
-    envVars:
-      - key: NODE_VERSION
-        value: 20.11.0
-      - key: ATTENTION_API_URL
-        fromService:
-          name: bandy-manager-attention-api
-          type: web
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: ATTENTION_CRON_SECRET
-        fromService:
-          name: bandy-manager-attention-api
-          type: web
-          envVarKey: ATTENTION_CRON_SECRET
 
 databases:
   - name: bandy-manager-attention-db

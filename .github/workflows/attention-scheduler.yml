@@ -1,0 +1,34 @@
+name: Attention scheduler
+
+on:
+  schedule:
+    # Undvik minut 0, där GitHub dokumenterar högst risk för köfördröjning.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: attention-scheduler
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: vars.ATTENTION_SCHEDULER_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Kör Attention Engine
+        env:
+          ATTENTION_API_URL: ${{ vars.ATTENTION_API_URL }}
+          ATTENTION_CRON_SECRET: ${{ secrets.ATTENTION_CRON_SECRET }}
+        run: |
+          if [ -z "$ATTENTION_API_URL" ] || [ -z "$ATTENTION_CRON_SECRET" ]; then
+            echo "ATTENTION_API_URL eller ATTENTION_CRON_SECRET saknas" >&2
+            exit 1
+          fi
+          curl --fail --show-error --silent \
+            --retry 2 --retry-delay 30 --max-time 180 \
+            --request POST \
+            --header "Authorization: Bearer ${ATTENTION_CRON_SECRET}" \
+            "${ATTENTION_API_URL%/}/api/attention/run"

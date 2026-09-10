@@ -122,7 +122,7 @@
 - Utgångna push-subscriptions (404/410) kopplas bort.
 - En Postgres-adapter implementerar samma store-kontrakt och skapar sitt schema idempotent vid serverstart. I produktion är `DATABASE_URL` obligatorisk; servern får inte tyst falla tillbaka till processminne.
 - Klienten använder `VITE_ATTENTION_API_BASE` när API:t körs separat och behåller `/api` på samma origin lokalt.
-- `render.yaml` beskriver nu den befintliga statiska appen, en separat Node-webbtjänst, Render Postgres och ett autentiserat timjobb. Databasadressen och det delade cron-secretet kopplas inom Render; VAPID-hemligheter och tillåtna origins lämnas uttryckligen till driftmiljön.
+- `render.yaml` beskriver nu den befintliga statiska appen, en separat Node-webbtjänst och Render Postgres. Det timvisa jobbet ligger kostnadsfritt i GitHub Actions på minut 17; det aktiveras först med en repo-flagga och delar ett skyddat cron-secret med Render. VAPID-hemligheter och tillåtna origins lämnas uttryckligen till driftmiljön.
 - `ATTENTION_PUSH_ENABLED` är opt-in och står på `false` i Blueprinten. Ett färdigt backendrör eller giltiga VAPID-nycklar kan därför inte ensamt tända spelarytan eller leverera push.
 
 ### Instrumentering
@@ -160,7 +160,7 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 
 ## Återstår innan skarp push
 
-1. Synka Blueprinten i Render och fyll `VAPID_*` samt `ALLOWED_ORIGINS` i Render-miljön. Om Vercel fortsatt är frontendvärd sätts samma API-adress som `VITE_ATTENTION_API_BASE` där; inget secret får heta `VITE_*`.
+1. Synka Blueprinten i Render och fyll `VAPID_*`, `ALLOWED_ORIGINS` och `ATTENTION_CRON_SECRET` i Render-miljön. Sätt API-adressen som repo-variabeln `ATTENTION_API_URL` och samma cron-secret som GitHub-secret; aktivera därefter `ATTENTION_SCHEDULER_ENABLED=true`. Om Vercel fortsatt är frontendvärd sätts API-adressen som `VITE_ATTENTION_API_BASE` där; inget secret får heta `VITE_*`.
 2. Koppla det låsta `STICKINESS_COPY_REGISTER_2026-09-04.md` till produktionssnapshotten och kör textgrinden. Adaptern och det leveransbekräftade `surface: push`-kvittot finns; narrativ aktivering är avsiktligt av tills resolvern är inkopplad. Berättarens steg 1–9 är klara.
 3. Bygg kategori-/quiet-hour-inställningar efter Designs mock. Den kontextuella pre-prompten och iOS-installationshjälpen finns nu, men förblir avsiktligt osynliga så länge `ATTENTION_PUSH_ENABLED=false`.
 4. Lägg till integrationsprov mot en riktig push-provider i HTTPS-miljön med verklig service worker och riktig enhet.
@@ -168,7 +168,7 @@ VAPID-nyckelparet ska genereras en gång och förvaras i hostingmiljöns secrets
 
 ## Blockerare och avgränsningar
 
-- **Produktionshosting:** den versionsstyrda Render-konfigurationen är nu komplett för statisk frontend + Node-API + Postgres + timjobb, men faktisk Blueprint-synk och driftstatus måste verifieras i Render innan punkten kan stängas.
+- **Produktionshosting:** den versionsstyrda konfigurationen är nu komplett för statisk frontend + Render Node-API + Render Postgres + GitHub Actions-timjobb, men faktisk Blueprint-synk och driftstatus måste verifieras innan punkten kan stängas. Gratis Render Web Service kan kallstarta efter 15 minuters vila; gratis Render Postgres upphör efter 30 dagar och är därför bara V1-/mjukreleasemiljö.
 - **Hållbar serverstate:** Postgres-adaptern är kopplad som obligatorisk produktionslagring. In-memory-adaptern finns endast kvar för lokal utveckling och test.
 - **Revalideringens auktoritet:** spelets save är local-first. Servern kan endast revalidera mot senaste minimerade snapshot som klienten hunnit skicka, inte läsa spelarens IndexedDB direkt.
 - **Berättarkonsumenter:** Portal, Efterklang, årsbok, Granska, press, kafferum och pushens leveranskvittoväg delar nu agenda/told-registret enligt respektive ytas gräns. Endast den rena matchförberedelse-loopen kan fortfarande bli push; narrativ pushaktivering är spärrad tills `stickiness-copy-roster` finns och kopplats in.
