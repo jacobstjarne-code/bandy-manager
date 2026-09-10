@@ -10,6 +10,9 @@ Codex kör den långa karriären och de kvalitativa grindarna på schema och dok
 - **Grind 2/3** (pågående, 8 säsonger) — den enda dokumenterbara långkörningen. Codex lämnar domunderlaget till Opus efter full körning; testaren arkiverar inte själv.
 - **`sluttest-validering-journal`** — följ-en-karriär-journalen ÄR Grind 2/3-journalen. Ingen separat körning; raden stängs mot journalen när grinden är klar.
 - **`sluttest-regressionsvit-22-24`** (Skutskär, kvalitativa punkter) — Codex kör dem som en checklista i grinden och flaggar avvikelser vidare till Jacobs kurerade spår.
+  - Punkt 22 → `sluttest-kvalitativ-uppfoljning`: minst två människor spelar samma svåra klubb med olika filosofi och markerar när rollspel övergår i mekaniskt val.
+  - Punkt 23 → `sluttest-validering-journal`: efter minst 24 timmar, återberätta tre händelser, ett dyrt beslut och varför styrelsen var nöjd/orolig utan att först läsa spelets historik.
+  - Punkt 24 → Grind 2/3-checklistan: varje ny storylinereplik som faktiskt möts ska kunna knytas till exakt state och ett relevant test; avvikelse blir en egen konkret post.
 
 Kadens: en säsong per pass — landning + öppna frågor (Grind 3-kriteriet), plus den öppna Grind 2-frågan (köpartitionering: återkommer burnout-brytpunkten/klackkonflikten/patronkortet efter den centrala dedup-fixen?).
 
