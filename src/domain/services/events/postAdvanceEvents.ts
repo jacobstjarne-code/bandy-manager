@@ -24,7 +24,7 @@ import {
 } from './eventFactories'
 import { formatValue, formatDecimalComma } from '../../format'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent, generateMecenatKravEvent, MECENAT_KRAV_HAPPINESS_THRESHOLD } from '../mecenatService'
+import { generateMecenatConflictEvent, generateMecenatAllianceEvent, generateMecenatKravEvent, MECENAT_KRAV_HAPPINESS_THRESHOLD } from '../mecenatService'
 import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
 import { rotateSubject, genericBeatExcludeCount } from '../narrativeCoordinatorService'
 import type { Player } from '../../entities/Player'
@@ -559,17 +559,6 @@ export function generatePostAdvanceEvents(
   }
 
   if (events.length >= 2) return events
-
-  // 5j. Silent shout events (mecenat influence thresholds)
-  const silentShoutTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
-  for (const mec of game.mecenater ?? []) {
-    if (events.length >= 2) break
-    if (!mec.isActive || mec.silentShout < 30) continue
-    const shoutEvent = generateSilentShoutEvent(mec, undefined, rand, silentShoutTactic?.mentality)
-    if (shoutEvent && !alreadyQueued.has(shoutEvent.id)) {
-      events.push(shoutEvent)
-    }
-  }
 
   // 5k. Mecenat conflict (~3% if 2+ active mecenater)
   if (events.length < 2) {

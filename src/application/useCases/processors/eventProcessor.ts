@@ -491,6 +491,20 @@ export function processGameEvents(
     return { ...mec, happiness: decayedHappiness }
   })
 
+  // SilentShout har en enda producent här. Id:t är stabilt per mecenat och
+  // tröskelvariant, så den befintliga kanoniska kön (pending + deferred +
+  // resolved) är hela minnet. Tidigare genererade även postAdvanceEvents samma
+  // kort, medan Date.now()-id:n gjorde båda vägarna omöjliga att deduplicera.
+  const silentShoutEventIds = new Set([
+    ...(game.pendingEvents ?? []).map(event => event.id),
+    ...(game.deferredDecisions ?? []).map(event => event.id),
+    ...(game.resolvedEventIds ?? []),
+    ...gameEvents.map(event => event.id),
+  ])
+  const hasSilentShoutVariant = (eventId: string): boolean =>
+    silentShoutEventIds.has(eventId) ||
+    [...silentShoutEventIds].some(existingId => existingId.startsWith(`${eventId}_`))
+
   // Medium 2 (Skutskär-auditen, 2026-08-22, Jacobs dom): säsongsminne DELAT
   // över alla mecenater i denna omgång — sätts en gång före loopen (läser
   // game.narrativeBeatLog) och uppdateras lokalt vid varje genererat event, så
@@ -521,8 +535,11 @@ export function processGameEvents(
       const playerName = randomPlayer ? `${randomPlayer.firstName} ${randomPlayer.lastName}` : undefined
       const managedTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
       const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand, managedTactic?.mentality)
-      if (shoutEvent) {
+      // Prefixgrenen läser gamla saves vars id avslutades med Date.now().
+      // Den stabila delen före tidsstämpeln är samma variantidentitet.
+      if (shoutEvent && !hasSilentShoutVariant(shoutEvent.id)) {
         gameEvents.push(shoutEvent)
+        silentShoutEventIds.add(shoutEvent.id)
       }
     }
 

@@ -432,7 +432,7 @@ export function generateSilentShoutEvent(
   // 30+: Media mentions
   if (ss >= 30 && ss < 50 && rand() < 0.15) {
     return {
-      id: `event_shout_media_${mecenat.id}_${Date.now()}`,
+      id: `event_shout_media_${mecenat.id}`,
       type: 'mecenatEvent',
       title: `📰 ${mecenat.name} i media`,
       sender: { name: mecenat.name, role: mecenat.business },
@@ -447,7 +447,7 @@ export function generateSilentShoutEvent(
   // 50+: Transfer suggestion
   if (ss >= 50 && ss < 70 && playerName && rand() < 0.20) {
     return {
-      id: `event_shout_transfer_${mecenat.id}_${Date.now()}`,
+      id: `event_shout_transfer_${mecenat.id}`,
       type: 'mecenatEvent',
       title: `💰 ${mecenat.name} har ett förslag`,
       sender: { name: mecenat.name, role: mecenat.business },
@@ -475,7 +475,7 @@ export function generateSilentShoutEvent(
   // oavsett vald taktik — gated på att laget inte redan spelar offensivt.
   if (ss >= 70 && ss < 90 && tacticMentality !== TacticMentality.Offensive && rand() < 0.15) {
     return {
-      id: `event_shout_tactic_${mecenat.id}_${Date.now()}`,
+      id: `event_shout_tactic_${mecenat.id}`,
       type: 'mecenatEvent',
       title: `⚠️ ${mecenat.name} har åsikter`,
       sender: { name: mecenat.name, role: mecenat.business },
@@ -510,7 +510,7 @@ export function generateSilentShoutEvent(
   // som domen kräver.
   if (ss >= 90 && rand() < 0.20) {
     return {
-      id: `event_shout_threat_${mecenat.id}_${Date.now()}`,
+      id: `event_shout_threat_${mecenat.id}`,
       type: 'mecenatEvent',
       title: `${mecenat.name} hotar`,
       sender: { name: mecenat.name, role: mecenat.business },
@@ -520,7 +520,7 @@ export function generateSilentShoutEvent(
         {
           id: 'submit',
           label: 'Vi lyssnar — vad vill du?',
-          subtitle: 'gläder mecenaten · silentShout ökar · kontrollfreak vinner',
+          subtitle: 'gläder mecenaten · kontrollfreak vinner',
           effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 20 },
         },
         {
