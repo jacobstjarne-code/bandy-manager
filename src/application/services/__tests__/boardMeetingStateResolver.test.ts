@@ -145,7 +145,7 @@ describe('resolveBoardMeetingState — tillstånd N (DOM_STYRELSEMOTE_NY_KLUBB_2
     })
 
     expect(resolveBoardMeetingState(game).takeoverLine)
-      .toBe('Du kom hit efter att Gamla BK tackat för sig.')
+      .toBe('Du kom hit efter att Gamla BK tackat för sig. · Stolen stod tom när du kom. Någon annan hade suttit där.')
   })
 
   it('visar återkomstklausulen, men fabricerar ingen rad utan liggarbelägg', () => {
@@ -170,6 +170,6 @@ describe('resolveBoardMeetingState — tillstånd N (DOM_STYRELSEMOTE_NY_KLUBB_2
       }],
     }
     expect(resolveBoardMeetingState(withEvidence).takeoverLine)
-      .toBe('Du lämnade Gamla BK för det här. · Du har suttit i det här båset förr. De minns vem du är.')
+      .toBe('Du lämnade Gamla BK för det här. · Stolen stod tom när du kom. Någon annan hade suttit där. · Du har suttit i det här båset förr. De minns vem du är.')
   })
 })

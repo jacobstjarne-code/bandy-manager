@@ -155,6 +155,15 @@ export function resolveBoardMeetingState(game: SaveGame): BoardMeetingData {
   } else if (state === 'N' && hasAppointmentEvidence && previousSpell?.endedBy === 'voluntary') {
     takeoverClauses.push(`Du lämnade ${previousSpell.clubName} för det här.`)
   }
+  // Företrädaren (OPUS_STRANGPOOLER_2026-09-10, "om känd"): spelet har ingen
+  // datakälla för en FÖREGÅNGARES placering — seasonSummaries följer bara
+  // DEN HÄR managerns karriär (switchManagedClub.ts), aldrig klubbens historik
+  // före hen. Den kända-varianten kan alltså aldrig triggas sanningsenligt;
+  // den låsta mallens egen tomma-stol-fallback är den enda hederliga
+  // klausulen, inte en utelämning.
+  if (state === 'N' && hasAppointmentEvidence) {
+    takeoverClauses.push('Stolen stod tom när du kom. Någon annan hade suttit där.')
+  }
   if (state === 'N' && hasAppointmentEvidence && isReturning) {
     takeoverClauses.push('Du har suttit i det här båset förr. De minns vem du är.')
   }
