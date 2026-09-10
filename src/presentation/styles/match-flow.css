@@ -393,6 +393,20 @@
 
 .mf-dock--block {
   z-index: var(--z-interaction); /* 500 */
+  /* DOM_POLISH_NEDSLACKNING_2026-09-10 §2 — scenen stiger, den slår inte upp.
+     Exit-varvet (klassen tappas): kortare, ingen delay. Entry-varvet nedan
+     (.open) skriver om transition-durationen till 220ms+80ms delay på samma
+     omslag — CSS läser transition-värdet ur den NYA beräknade stilen när
+     klassen läggs till, så samma property kan bära olika in/ut-timing utan
+     JS. Bara block — peek (Siffror-lådan) rörs inte.
+     */
+  opacity: 0;
+  transition: transform 180ms ease-out, opacity 180ms ease-out;
+}
+
+.mf-dock--block.open {
+  opacity: 1;
+  transition: transform 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 80ms, opacity 220ms ease 80ms;
 }
 
 /* Pull-handtag — peek only */
@@ -436,6 +450,8 @@
 /* K-2: z-skala tokeniserad, ingen hårdkodad siffra — z-index alltid ett uttryck
    av --z-interaction/--z-overlay, aldrig ett fristående tal som kan glida ur
    synk om skalan ändras. Fokus-dim för block-varianten, precis under docken. */
+/* DOM_POLISH_NEDSLACKNING_2026-09-10 §2 — dim 260ms in, 220ms ut (samma
+   asymmetriska klass-växlingsknep som .mf-dock--block ovan). */
 .mf-dock-scrim {
   position: absolute;
   inset: 0;
@@ -449,13 +465,47 @@
 .mf-dock-scrim.open {
   opacity: 1;
   pointer-events: auto;
+  transition: opacity 260ms ease;
 }
 
 /* B-1 (ratificerat 2026-06-11) — scoreboardet lyser kvar under block-interaktion.
    Tavlan (.scoreboard-root: sticky, egen stacking-context) lyfts över scrimmen
    (--z-interaction - 1) i den delade contexten. :has() scopar det till öppen
    block-scrim, så modaler (z-modal 300) fortsatt täcker tavlan. Ingen hårdkodad
-   topp-pixel → robust när tavlan växer (utvisningsraden). */
+   topp-pixel → robust när tavlan växer (utvisningsraden). DOM_POLISH_NEDSLACKNING
+   2026-09-10 bekräftade denna lösning som svaret på handoffens "top:54px"-krav
+   (§4: scrim-topp = scoreboard-höjd) — z-index-lyftet slår en hårdkodad
+   pixel-höjd rakt av, ingen mätning behövs alls. */
 .mf-root:has(.mf-dock-scrim.open) .scoreboard-root {
   z-index: var(--z-interaction); /* > scrim (z-interaction - 1); block-docken (z-interaction) kvar överst via DOM-ordning */
+}
+
+/* DOM_POLISH_NEDSLACKNING_2026-09-10 §1+§2 — "underlaget" (allt i .mf-content
+   utom tavlan: feed, momentumbar, kontroller) faller till ~34% ljus under
+   scrimmen. Samma asymmetriska in/ut-timing som scrimmen: filtret och dess
+   transition-duration skrivs på samma gång när :has()-selektorn börjar/slutar
+   matcha, så entry (260ms) och exit (220ms, "underlaget tänds tillbaka") är
+   olika utan JS. Undantar .scoreboard-root explicit — annars hade CSS-filter
+   dimmat tavlan trots dess högre z-index (filter respekterar inte stacking-
+   ordning, bara DOM-härkomst). */
+.mf-content > *:not(.scoreboard-root) {
+  transition: filter 220ms ease;
+}
+
+.mf-root:has(.mf-dock-scrim.open) .mf-content > *:not(.scoreboard-root) {
+  filter: brightness(0.34) saturate(0.7);
+  transition: filter 260ms ease;
+}
+
+/* DOM_POLISH_NEDSLACKNING_2026-09-10 §4 — "hoppa transform, behåll dim
+   (instant)": rörelsen (docken som glider/faders, tavlans lyft är redan
+   statiskt) stängs av, men själva mörkläggningen sker ändå — bara ograderat. */
+@media (prefers-reduced-motion: reduce) {
+  .mf-dock--block,
+  .mf-dock--block.open,
+  .mf-dock-scrim,
+  .mf-dock-scrim.open,
+  .mf-content > *:not(.scoreboard-root) {
+    transition: none;
+  }
 }
