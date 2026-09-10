@@ -114,7 +114,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| c-sy1-pilot1-playtest | C-SY1 Pilot 1 väntar playtest före skalning till fler pools | verifierad | Jacob | BACKLOG.md:625 | Jacob playtestar [Verifierat 2026-09-01 (Code): BACKLOG.md:625 upprepar "Pilot 1 väntar playtest före skalning till fler pools" utan någon efterföljande playtest-bekräftelse i BACKLOG/HANDOVER-filerna.] |
+| c-sy1-pilot1-playtest | C-SY1 Pilot 1 väntar playtest före skalning till fler pools | in_progress | Codex | BACKLOG.md:625 | CLAIM 2026-09-10T17:32:44+02:00 — verifiera om den gamla förgrinden är överspelad sedan Pilot 2 redan skalats, byggts och regressionstestats; avför bara om efterföljaren faktiskt bär samma kontrakt. |
 
 ## KF. SYSTEMKARTANS FYND
 
