@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| kafferum-exakt-aterfall-samma-slutspel | Exakt repliken `Det ringde tre gamla medlemmar...` visades före semifinal 1 och 4 både 2030/31 och 2031/32, därefter före kvart 3 samt semi 1, 2 och 4 under 2032/33. | rapporterad | Code | Grind 2, tre raka slutspel, 2026-09-10 | Kodläs kafferummets urval och narrativeBeatLog-cooldown. Detta är presentationstiming, inte händelsekanon; behåll gränsen mot eventLedger. |
+| kafferum-exakt-aterfall-samma-slutspel | Exakt repliken `Det ringde tre gamla medlemmar...` visades före semifinal 1 och 4 både 2030/31 och 2031/32, därefter före kvart 3 samt semi 1, 2 och 4 under 2032/33. | in_progress | Code | Grind 2, tre raka slutspel, 2026-09-10 | CLAIM 2026-09-10T23:26:01+02:00 — Code. Slutspelssegerns fasta rad saknar `coffeeSemanticKey`, så `completeScene` kan inte skriva visningskvitto och samma starka override återkommer efter varje slutspelsvinst. Ge seger-ekona semantisk visningsidentitet och gatea byte-identisk rad inom säsongen via `narrativeBeatLog`; ingen eventLedger-post och ingen ny copy. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
