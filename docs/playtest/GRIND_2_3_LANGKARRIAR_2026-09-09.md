@@ -168,3 +168,17 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Samma submits underrad säger `silentShout ökar`, medan valets enda deklarerade effekt är `mecenatHappiness +20`. Den observerade texten och state-kontraktet motsäger alltså varandra.
 - Beslutskön växte från fyra poster inför semifinal 1 till sju inför semifinal 3 och nio inför semifinal 4. Det återkomna hotkortet lämnas olöst tills fyndet är registrerat och dess state-kontrakt avgjort.
 - Fixverifiering: silentShout använder nu en enda producent, stabilt variant-id och den befintliga kanoniska köns minne; äldre tidsstämplade id:n känns igen via samma variantprefix. Submit-underradens obelagda `silentShout ökar` är struket. 23 riktade tester och full produktionsbuild med TypeScript samt fem grindar gröna. Det redan köade legacy-kortet i sparningen kan fortfarande lösas, men kan inte längre följas av en ny kopia av samma variant.
+
+### Säsong 5 — landning
+
+- Västanfors vann den avgörande semifinalen hemma mot Skutskär med 1–0 och serien med 3–2. SM-finalen mot Forsbacka förlorades 0–2.
+- Primär handling: förstaplatsen i serien bar laget till en avgörande semifinal och en andra raka SM-final. Nästa olösta fråga landade rent i finalen: kunde Västanfors försvara titeln? Svaret blev nej.
+- Årsboken bar förstaplats, SM-silver, cupsemifinal, +399 tkr och säsongens burnout-avlastning som en egen säsong. Den femte säsongens landning är därmed dokumenterad.
+- Det äldre tidsstämplade `Anna Johansson hotar`-kortet låg kvar i kön och kom fram i finalgranskningen. Det löstes med samma val som tidigare; den nya dedupen känner igen legacy-prefixet och ska hindra att samma variant produceras igen.
+
+### Säsong 6 — start
+
+- Personligt mål: `Etablera oss där. Två år i rad, inte ett.`
+- Kontraktsval: fem nyckelspelare fick sina lönekrav mötta — Tobias Hård, Bertil Holmgren, Jonas Dahl, Arne Granqvist och Oliver Norberg. Övriga sju behöll nuvarande lön. Det var ett avvägt ekonomiskt beslut för att undvika hela truppens stora löneökning; år-8-valet återstår fortfarande.
+- Cupkvartsfinalen mot Lesjöfors vanns 5–4 efter förlängning. Ett bud på reservmålvakten Timo Nordström möttes med motkravet 60 tkr i stället för direkt accept på 45 tkr.
+- Säsong 6 står nu inför cupsemifinal mot Forsbacka. Beslutskön låg på fem efter kvartsfinalen; inget nytt Anna-hot har producerats efter att legacy-kortet löstes.
