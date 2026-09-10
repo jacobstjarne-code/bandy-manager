@@ -174,7 +174,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| design-p1-tysta-ytor | Kafferum (085), cupintro (088), hallprövning (084), styrelsens ultimatum (099), mecenatmiddag (097): citat + knapp i stort svart fält läser som tomt, inte stilla | verifierad | Design + Code | Designgranskning 2026-09-03 P1 | 2026-09-09: kafferum, mecenatmiddag och styrelsens skarpaste ultimatum har nu egna godkända illustrationer på sina befintliga ytor; inga vardagslägen eller mildare styrelsezoner överillustreras. Samtliga tre browsergranskade på 390 px. Kvar i samlingsraden: cupintro och hallprövningens övriga stora tomytor. |
+| design-p1-tysta-ytor | Kafferum (085), cupintro (088), hallprövning (084), styrelsens ultimatum (099), mecenatmiddag (097): citat + knapp i stort svart fält läser som tomt, inte stilla | in_progress | Codex | Designgranskning 2026-09-03 P1 | CLAIM 2026-09-10T15:30:27+02:00 — Codex. Reconcile mot dagens kod och git-historik: de tre tidigare leveranserna bevaras; kontrollera om cupintrot redan komponerats med illustration och om hallprövningen ersatts av sin processhub. Stäng bara om de två kvarvarande gamla dumpfynden genuint är överspelade; ingen ny design improviseras. |
 
 ---
 
