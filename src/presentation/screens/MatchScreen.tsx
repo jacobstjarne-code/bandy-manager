@@ -633,7 +633,6 @@ export function MatchScreen() {
         <FatigueFloorConfirm
           game={game}
           belowFloorStarters={floorBreach.belowFloorStarters}
-          shortfall={floorBreach.shortfall}
           onConfirm={() => {
             setConfirmingMatchStart(false)
             handlePlayMatch()

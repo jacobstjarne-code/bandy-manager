@@ -47,23 +47,21 @@ import { Overlay } from '../primitives/Overlay'
 interface Props {
   game: SaveGame
   belowFloorStarters: Player[]
-  shortfall: number
   /** Bekräfta = gå in med dem ändå. Domens (c). */
   onConfirm: () => void
   onCancel: () => void
 }
 
-export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onConfirm, onCancel }: Props) {
+export function FatigueFloorConfirm({ game, belowFloorStarters, onConfirm, onCancel }: Props) {
   const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
 
   const squad = game.players.filter(p => p.clubId === game.managedClubId)
-  const availableAboveFloor = squad.filter(
-    p =>
-      !p.isInjured &&
-      p.suspensionGamesRemaining <= 0 &&
-      (p.restGamesRemaining ?? 0) === 0 &&
-      p.fitness >= FATIGUE_AVAILABILITY_FLOOR,
-  ).length
+  // Modalen gäller den ELVA spelaren just valt, inte hela truppens pool.
+  // Poolens shortfall kan vara noll samtidigt som en manuellt uttagen elva
+  // innehåller en trött favorit. Båda talen måste därför komma från samma
+  // faktiska population som öppnade grinden.
+  const selectedBelowFloor = belowFloorStarters.length
+  const selectedAboveFloor = Math.max(0, 11 - selectedBelowFloor)
 
   // Positionsbrist styr vilken junior som är mest värd att kalla upp — samma
   // sortering som NodtruppScene.tsx redan använder, inte en andra ordning.
@@ -126,15 +124,16 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, shortfall, onCon
               (så många av elva är över golvet, så många saknas); '[Opus]'
               nedan bär meningen. */}
           <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
-            {availableAboveFloor} av 11 har minst {FATIGUE_AVAILABILITY_FLOOR} % kondition
-            <span style={{ color: 'var(--danger-text)', marginLeft: 8 }}>−{shortfall}</span>
+            {selectedAboveFloor} av 11 har minst {FATIGUE_AVAILABILITY_FLOOR} % kondition
+            <span style={{ color: 'var(--danger-text)', marginLeft: 8 }}>−{selectedBelowFloor}</span>
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: brödtexten som namnger
-                kostnaden — vad det innebär att gå in {shortfall} spelare kort
+                kostnaden — vad det innebär att gå in med en vald elva där
+                spelare ligger under golvet
                 över golvet (höjd skaderisk + risk att förlora dem till nästa
                 match, A-H3:s två ben). */}
-            Du har inte elva spelare med tillräcklig kondition. Startar du de tröttaste ändå stiger skaderisken, och några kan tvingas stå över nästa match.
+            Den valda elvan har inte elva spelare med tillräcklig kondition. Startar du de tröttaste ändå stiger skaderisken, och några kan tvingas stå över nästa match.
           </p>
         </div>
 

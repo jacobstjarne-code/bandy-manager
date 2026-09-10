@@ -37,7 +37,6 @@ describe('FatigueFloorConfirm — mobil blockerare', () => {
         <FatigueFloorConfirm
           game={game}
           belowFloorStarters={[{ ...player, fitness: 20 }]}
-          shortfall={1}
           onConfirm={onConfirm}
           onCancel={() => {}}
         />,
@@ -48,6 +47,9 @@ describe('FatigueFloorConfirm — mobil blockerare', () => {
     expect(dialog).not.toBeNull()
     expect(appRoot.contains(dialog)).toBe(false)
     expect(dialog.style.zIndex).toBe('400')
+    expect(dialog.textContent).toContain('10 av 11 har minst 22 % kondition')
+    expect(dialog.textContent).toContain('Den valda elvan har inte elva spelare med tillräcklig kondition.')
+    expect(dialog.textContent).not.toContain('15 av 11')
 
     const confirm = [...dialog.querySelectorAll('button')]
       .find(button => button.textContent?.includes('Gå in med dem ändå')) as HTMLButtonElement

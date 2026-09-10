@@ -618,7 +618,6 @@ export function LineupStep({
         <FatigueFloorConfirm
           game={game}
           belowFloorStarters={pendingForcedAutoFill.belowFloorStarters}
-          shortfall={pendingForcedAutoFill.shortfall}
           onConfirm={onConfirmForcedAutoFill}
           onCancel={onCancelForcedAutoFill}
         />
@@ -629,7 +628,6 @@ export function LineupStep({
         <FatigueFloorConfirm
           game={game}
           belowFloorStarters={floorBreach.belowFloorStarters}
-          shortfall={floorBreach.shortfall}
           onConfirm={() => {
             setConfirmingOnNext(false)
             onNext()
