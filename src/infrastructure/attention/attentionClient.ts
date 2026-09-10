@@ -17,6 +17,16 @@ const ATTRIBUTION_KEY = 'bandy-notification-attribution-v1'
 const PUSH_COPY_ROTATION_KEY = 'bandy-attention-push-copy-rotation-v1'
 const PREFERENCES_KEY = 'bandy-attention-preferences-v1'
 
+export type AnalyticsEvent =
+  | 'install'
+  | 'game_created'
+  | 'onboarding_done'
+  | 'first_match'
+  | 'season_completed'
+  | 'game_over'
+  | 'session_start'
+  | 'session_end'
+
 /**
  * stickiness-copy-roster (2026-09-06) — per-installation "senast visad röst
  * per scenario" (register §8.1: aldrig samma variant två leveranser i rad).
@@ -97,6 +107,29 @@ function getOrCreateIdentity(): InstallationIdentity {
   return identity
 }
 
+let installationRegistration: Promise<void> | null = null
+let registeredInstallationId: string | null = null
+
+async function ensureAttentionInstallation(identity: InstallationIdentity): Promise<void> {
+  if (registeredInstallationId !== identity.installationId) {
+    registeredInstallationId = identity.installationId
+    installationRegistration = null
+  }
+  if (!installationRegistration) {
+    installationRegistration = api(`/api/notifications/installations/${identity.installationId}`, {
+      method: 'PUT',
+      headers: authHeaders(identity),
+      body: JSON.stringify({
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      }),
+    }).then(() => undefined).catch(error => {
+      installationRegistration = null
+      throw error
+    })
+  }
+  return installationRegistration
+}
+
 export function isAttentionEnabled(): boolean {
   try {
     return localStorage.getItem(ENABLED_KEY) === 'true'
@@ -167,10 +200,7 @@ export async function subscribeToClubNotifications(): Promise<PushSubscription> 
   if (capability.requiresHomeScreenInstall) throw new Error('home_screen_install_required')
 
   const identity = getOrCreateIdentity()
-  await api(`/api/notifications/installations/${identity.installationId}`, {
-    method: 'PUT',
-    headers: authHeaders(identity),
-  })
+  await ensureAttentionInstallation(identity)
   const keyResponse = await api('/api/notifications/vapid-public-key', { method: 'GET' })
   const { publicKey } = await keyResponse.json() as { publicKey: string }
   await recordNotificationEvent('push_permission_prompted')
@@ -335,10 +365,38 @@ export function getNotificationPreferences(): NotificationPreferences {
     if (!raw) return DEFAULT_NOTIFICATION_PREFERENCES
     const parsed = JSON.parse(raw) as Partial<NotificationPreferences>
     if (!parsed.categories || !parsed.quietHours) return DEFAULT_NOTIFICATION_PREFERENCES
-    return { categories: { ...DEFAULT_NOTIFICATION_PREFERENCES.categories, ...parsed.categories }, quietHours: parsed.quietHours }
+    return {
+      analytics: parsed.analytics !== false,
+      categories: { ...DEFAULT_NOTIFICATION_PREFERENCES.categories, ...parsed.categories },
+      quietHours: parsed.quietHours,
+    }
   } catch {
     return DEFAULT_NOTIFICATION_PREFERENCES
   }
+}
+
+export function isAnalyticsEnabled(): boolean {
+  return getNotificationPreferences().analytics !== false
+}
+
+/**
+ * Separat statistikkanal ovanpå installationens pseudonyma identitet.
+ * Den delar varken tabell eller händelsetyper med pushens responsprofil.
+ */
+export async function recordAnalyticsEvent(
+  event: AnalyticsEvent,
+  payload: Record<string, string | number> = {},
+): Promise<boolean> {
+  if (!isAnalyticsEnabled()) return false
+  const identity = getOrCreateIdentity()
+  await ensureAttentionInstallation(identity)
+  await api('/api/analytics-events', {
+    method: 'POST',
+    headers: authHeaders(identity),
+    body: JSON.stringify({ installationId: identity.installationId, event, payload }),
+    keepalive: true,
+  })
+  return true
 }
 
 /**
@@ -348,8 +406,12 @@ export function getNotificationPreferences(): NotificationPreferences {
  * tillbaka till DEFAULT_PREFERENCES tills nästa lyckade sync.
  */
 export async function setNotificationPreferences(preferences: NotificationPreferences): Promise<void> {
+  const mergedPreferences = {
+    ...getNotificationPreferences(),
+    ...preferences,
+  }
   try {
-    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences))
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(mergedPreferences))
   } catch {
     // Läses om vid nästa sidladdning ur DEFAULT_NOTIFICATION_PREFERENCES om detta missar.
   }
@@ -358,7 +420,7 @@ export async function setNotificationPreferences(preferences: NotificationPrefer
     await api(`/api/notifications/installations/${identity.installationId}/preferences`, {
       method: 'PUT',
       headers: authHeaders(identity),
-      body: JSON.stringify(preferences),
+      body: JSON.stringify(mergedPreferences),
     })
   } catch {
     // Best-effort synk — se funktionskommentaren ovan. En nätverksmiss får

@@ -110,10 +110,38 @@ describe('PostgresAttentionStore', () => {
   it('raderar hela installationens lagrade state vid uttrycklig avregistrering', async () => {
     await store.setSubscription(INSTALLATION_ID, TOKEN, { endpoint: 'https://push.test' })
     await store.setSnapshot(INSTALLATION_ID, TOKEN, snapshot('state-1', [candidate()]))
+    await store.recordAnalyticsEvent({
+      installationId: INSTALLATION_ID, event: 'first_match', payload: {},
+    })
 
     expect(await store.removeSubscription(INSTALLATION_ID, TOKEN)).toBe(true)
     expect(await store.authenticateInstallation(INSTALLATION_ID, TOKEN)).toBe(false)
     expect(await store.listDispatchable(new Date('2026-09-05T05:00:00.000Z'))).toEqual([])
+    expect((await pool.query('SELECT * FROM analytics_events')).rows).toEqual([])
+  })
+
+  it('keeps analytics out of attention_events, respects opt-out and prunes at 90-day boundary', async () => {
+    await store.ensureInstallation(INSTALLATION_ID, TOKEN)
+    expect(await store.recordAnalyticsEvent({
+      installationId: INSTALLATION_ID,
+      event: 'game_created',
+      payload: { club: 'slottsbron', difficulty: 'hard' },
+    }, new Date('2026-06-01T10:00:00.000Z'))).toBe(true)
+
+    expect((await pool.query('SELECT * FROM attention_events')).rows).toEqual([])
+    expect((await pool.query('SELECT event, payload FROM analytics_events')).rows).toEqual([{
+      event: 'game_created', payload: { club: 'slottsbron', difficulty: 'hard' },
+    }])
+
+    await store.setPreferences(INSTALLATION_ID, TOKEN, {
+      analytics: false,
+      categories: { match_preparation: true, narrative_return: true, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+    })
+    expect(await store.recordAnalyticsEvent({
+      installationId: INSTALLATION_ID, event: 'first_match', payload: {},
+    })).toBe(false)
+    expect(await store.pruneAnalyticsEvents(new Date('2026-08-01T00:00:00.000Z'))).toBe(1)
+    expect((await pool.query('SELECT * FROM analytics_events')).rows).toEqual([])
   })
 })
-

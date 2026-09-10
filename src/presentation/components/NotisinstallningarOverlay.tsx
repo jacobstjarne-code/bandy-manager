@@ -68,6 +68,10 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
     applyPrefs({ ...prefs, categories: { ...prefs.categories, [key]: !prefs.categories[key] } })
   }
 
+  const toggleAnalytics = () => {
+    applyPrefs({ ...prefs, analytics: prefs.analytics === false })
+  }
+
   const setQuietHour = (field: 'start' | 'end', value: string) => {
     const [hourStr, minuteStr] = value.split(':')
     const hour = Number(hourStr)
@@ -246,6 +250,30 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
             }}>
               Vi skickar högst en om dagen.
             </p>
+          </div>
+
+          <div style={{
+            fontFamily: 'var(--font-body)', fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+            textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px',
+          }}>Användningsstatistik</div>
+          <div className="card-sharp" style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', minHeight: 44,
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                Anonym användningsstatistik
+              </div>
+              <div style={{ fontSize: 11, lineHeight: 1.45, marginTop: 3, color: 'var(--text-muted)' }}>
+                Spelet kan skicka anonym, sammanslagen statistik om vilka lägen som spelas och var folk fastnar. Inget namn, ingen e-post och ingen sparfil lämnar din enhet. Du kan stänga av det här när som helst.
+              </div>
+            </div>
+            <ToggleSwitch
+              on={prefs.analytics !== false}
+              onChange={toggleAnalytics}
+              ariaLabel="Anonym användningsstatistik"
+            />
           </div>
 
           <div style={{ borderTop: '1px solid var(--border)', margin: '18px 0 14px' }} />

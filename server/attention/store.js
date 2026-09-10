@@ -22,6 +22,7 @@ export function secretsMatch(value, expectedHash) {
 // (src/domain/attention/types.ts's DEFAULT_NOTIFICATION_PREFERENCES) och
 // samma tysta-timmar-fönster dispatcher.js hittills hade hårdkodat.
 export const DEFAULT_PREFERENCES = {
+  analytics: true,
   categories: {
     match_preparation: true, narrative_return: true,
     calendar_anchor: false, season_context: false,
@@ -90,6 +91,7 @@ export class InMemoryAttentionStore {
   #installations = new Map()
   #deliveries = new Map()
   #events = []
+  #analyticsEvents = []
 
   authenticateInstallation(installationId, token) {
     const installation = this.#installations.get(installationId)
@@ -133,7 +135,7 @@ export class InMemoryAttentionStore {
   setPreferences(installationId, token, preferences) {
     const installation = this.ensureInstallation(installationId, token)
     if (!installation) return false
-    installation.preferences = preferences
+    installation.preferences = { ...(installation.preferences ?? {}), ...preferences }
     installation.updatedAt = new Date().toISOString()
     return true
   }
@@ -160,6 +162,9 @@ export class InMemoryAttentionStore {
     this.#events = this.#events.filter(event =>
       event.installationId !== installationId &&
       (!event.deliveryId || !removedDeliveryIds.has(event.deliveryId)),
+    )
+    this.#analyticsEvents = this.#analyticsEvents.filter(event =>
+      event.installationId !== installationId
     )
     return true
   }
@@ -294,6 +299,31 @@ export class InMemoryAttentionStore {
       recordedAt: recordedAt.toISOString(),
     })
     if (this.#events.length > 5_000) this.#events.splice(0, this.#events.length - 5_000)
+  }
+
+  recordAnalyticsEvent(event, recordedAt = new Date()) {
+    const installation = this.#installations.get(event.installationId)
+    if (!installation || installation.preferences?.analytics === false) return false
+    this.#analyticsEvents.push({
+      installationId: event.installationId,
+      event: event.event,
+      payload: event.payload ?? {},
+      recordedAt: recordedAt.toISOString(),
+    })
+    return true
+  }
+
+  listAnalyticsEvents(installationId) {
+    return this.#analyticsEvents.filter(event => event.installationId === installationId)
+  }
+
+  pruneAnalyticsEvents(before) {
+    const beforeMs = before.getTime()
+    const previousLength = this.#analyticsEvents.length
+    this.#analyticsEvents = this.#analyticsEvents.filter(event =>
+      Date.parse(event.recordedAt) >= beforeMs
+    )
+    return previousLength - this.#analyticsEvents.length
   }
 
   deliveryCountSince(installation, sinceMs) {

@@ -70,6 +70,19 @@ CREATE INDEX IF NOT EXISTS attention_events_installation_idx
   ON attention_events (installation_id, recorded_at DESC);
 CREATE INDEX IF NOT EXISTS attention_events_delivery_idx
   ON attention_events (delivery_id);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id bigserial PRIMARY KEY,
+  installation_id varchar(128) REFERENCES attention_installations(id) ON DELETE CASCADE,
+  event varchar(80) NOT NULL,
+  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  recorded_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS analytics_events_install_idx
+  ON analytics_events (installation_id, recorded_at);
+CREATE INDEX IF NOT EXISTS analytics_events_event_idx
+  ON analytics_events (event, recorded_at);
 `
 
 function iso(value) {
@@ -226,11 +239,14 @@ export class PostgresAttentionStore {
     return this.#withTransaction(async client => {
       const installation = await this.#ensureWith(client, installationId, token)
       if (!installation) return false
+      // En gammal klient som bara känner push-fälten får aldrig råka
+      // återaktivera en uttrycklig analytics-opt-out genom att ersätta jsonb.
+      const mergedPreferences = { ...(installation.preferences ?? {}), ...preferences }
       await client.query(
         `UPDATE attention_installations
          SET preferences = $2::jsonb, updated_at = now()
          WHERE id = $1`,
-        [installationId, JSON.stringify(preferences)],
+        [installationId, JSON.stringify(mergedPreferences)],
       )
       return true
     })
@@ -495,6 +511,30 @@ export class PostgresAttentionStore {
         recordedAt,
       ],
     )
+  }
+
+  async recordAnalyticsEvent(event, recordedAt = new Date()) {
+    const installation = await this.pool.query(
+      'SELECT preferences FROM attention_installations WHERE id = $1',
+      [event.installationId],
+    )
+    if (!installation.rows[0]) return false
+    const preferences = asObject(installation.rows[0].preferences, {})
+    if (preferences.analytics === false) return false
+    await this.pool.query(
+      `INSERT INTO analytics_events (installation_id, event, payload, recorded_at)
+       VALUES ($1, $2, $3::jsonb, $4)`,
+      [event.installationId, event.event, JSON.stringify(event.payload ?? {}), recordedAt],
+    )
+    return true
+  }
+
+  async pruneAnalyticsEvents(before) {
+    const result = await this.pool.query(
+      'DELETE FROM analytics_events WHERE recorded_at < $1',
+      [before],
+    )
+    return result.rowCount
   }
 
   deliveryCountSince(installation, sinceMs) {

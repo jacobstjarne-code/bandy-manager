@@ -98,6 +98,9 @@ export interface AttentionSnapshot extends AttentionEvaluation {
  * dispatcher.js:isQuietHours/listDispatchable).
  */
 export interface NotificationPreferences {
+  /** Berättigat-intresse-telemetrin är på som default men kan alltid
+   *  stängas av. Optional behåller gamla lokala preferenser giltiga. */
+  analytics?: boolean
   categories: Record<AttentionCategory, boolean>
   /** Tid-fält 0-23/0-59. Ett fönster som spänner över midnatt (start > slut
    *  i minuter-på-dygnet, t.ex. 21.30→08.00) är det normala fallet. */
@@ -111,6 +114,7 @@ export interface NotificationPreferences {
  * så av är rätt startläge oavsett.
  */
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  analytics: true,
   categories: {
     match_preparation: true,
     narrative_return: true,

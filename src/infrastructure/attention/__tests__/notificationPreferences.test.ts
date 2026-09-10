@@ -54,7 +54,7 @@ describe('getNotificationPreferences / setNotificationPreferences', () => {
       quietHours: { startHour: 22, startMinute: 0, endHour: 7, endMinute: 30 },
     }
     await setNotificationPreferences(next)
-    expect(getNotificationPreferences()).toEqual(next)
+    expect(getNotificationPreferences()).toEqual({ ...next, analytics: true })
   })
 
   it('falls back to defaults for corrupted localStorage content', () => {
@@ -70,5 +70,20 @@ describe('getNotificationPreferences / setNotificationPreferences', () => {
       expect.stringMatching(/\/api\/notifications\/installations\/.+\/preferences/),
       expect.objectContaining({ method: 'PUT' }),
     )
+  })
+
+  it('does not undo an analytics opt-out when a caller changes only push fields', async () => {
+    localStorage.setItem('bandy-attention-preferences-v1', JSON.stringify({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      analytics: false,
+    }))
+    const pushOnly = {
+      categories: { ...DEFAULT_NOTIFICATION_PREFERENCES.categories, match_preparation: false },
+      quietHours: DEFAULT_NOTIFICATION_PREFERENCES.quietHours,
+    }
+    await setNotificationPreferences(pushOnly)
+    expect(getNotificationPreferences().analytics).toBe(false)
+    const body = JSON.parse(String((vi.mocked(fetch).mock.calls[0][1] as RequestInit).body))
+    expect(body.analytics).toBe(false)
   })
 })

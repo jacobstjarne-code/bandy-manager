@@ -253,6 +253,20 @@ describe('InMemoryAttentionStore — notification preferences', () => {
     expect(store.getPreferences('installation-new')).toEqual(prefs)
   })
 
+  it('preserves analytics opt-out when an older client writes only push preferences', () => {
+    const store = new InMemoryAttentionStore()
+    store.setPreferences('installation-123', 'secret-one', {
+      analytics: false,
+      categories: { match_preparation: true, narrative_return: true, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 21, startMinute: 30, endHour: 8, endMinute: 0 },
+    })
+    store.setPreferences('installation-123', 'secret-one', {
+      categories: { match_preparation: false, narrative_return: true, calendar_anchor: false, season_context: false },
+      quietHours: { startHour: 22, startMinute: 0, endHour: 7, endMinute: 0 },
+    })
+    expect(store.getPreferences('installation-123').analytics).toBe(false)
+  })
+
   it('listDispatchable filters out a candidate whose category is turned off', () => {
     const store = new InMemoryAttentionStore()
     store.setSubscription('installation-123', 'secret-one', { endpoint: 'https://push.test' })
@@ -273,5 +287,39 @@ describe('InMemoryAttentionStore — notification preferences', () => {
     })
     store.setSnapshot('installation-123', 'secret-one', snapshot('state-1', [candidate({ category: 'match_preparation' })]))
     expect(store.listDispatchable(new Date('2026-09-05T05:00:00.000Z'))).toHaveLength(1)
+  })
+})
+
+describe('InMemoryAttentionStore — analytics isolation and retention', () => {
+  it('stores analytics separately and refuses it after opt-out', () => {
+    const store = new InMemoryAttentionStore()
+    store.ensureInstallation('installation-123', 'secret-one')
+
+    expect(store.recordAnalyticsEvent({
+      installationId: 'installation-123', event: 'first_match', payload: {},
+    }, new Date('2026-06-01T10:00:00.000Z'))).toBe(true)
+    store.setPreferences('installation-123', 'secret-one', {
+      ...store.getPreferences('installation-123'), analytics: false,
+    })
+    expect(store.recordAnalyticsEvent({
+      installationId: 'installation-123', event: 'season_completed', payload: { season: 1, placement: 4 },
+    })).toBe(false)
+    expect(store.listAnalyticsEvents('installation-123').map(event => event.event)).toEqual(['first_match'])
+  })
+
+  it('prunes only analytics older than the retention boundary', () => {
+    const store = new InMemoryAttentionStore()
+    store.ensureInstallation('installation-123', 'secret-one')
+    store.recordAnalyticsEvent(
+      { installationId: 'installation-123', event: 'install', payload: {} },
+      new Date('2026-06-01T10:00:00.000Z'),
+    )
+    store.recordAnalyticsEvent(
+      { installationId: 'installation-123', event: 'first_match', payload: {} },
+      new Date('2026-09-01T10:00:00.000Z'),
+    )
+
+    expect(store.pruneAnalyticsEvents(new Date('2026-08-01T00:00:00.000Z'))).toBe(1)
+    expect(store.listAnalyticsEvents('installation-123').map(event => event.event)).toEqual(['first_match'])
   })
 })
