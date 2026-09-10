@@ -111,7 +111,7 @@ describe('jobbetForsvannEvent — återfallstext', () => {
     const player = game.players.find(p => p.clubId === game.managedClubId)!
     const gameWithHistory = { ...game, resolvedEventIds: [`jobbet_forsvann_${player.id}_2024_10`] }
 
-    const event = jobbetForsvannEvent(player, 'ICA Maxi', gameWithHistory)
+    const event = jobbetForsvannEvent(player, 'sponsor_1', 'ICA Maxi', gameWithHistory)
 
     expect(event.body.startsWith('Andra jobbet han förlorat på ditt löfte.')).toBe(true)
   })
@@ -120,9 +120,28 @@ describe('jobbetForsvannEvent — återfallstext', () => {
     const game = baseGame()
     const player = game.players.find(p => p.clubId === game.managedClubId)!
 
-    const event = jobbetForsvannEvent(player, 'ICA Maxi', game)
+    const event = jobbetForsvannEvent(player, 'sponsor_1', 'ICA Maxi', game)
 
     expect(event.body.startsWith('Andra jobbet')).toBe(false)
+  })
+})
+
+describe('jobbetForsvannEvent — genereringsbevis', () => {
+  it('är sant bara när jobbgarantin pekar på exakt den sponsor som lämnat', () => {
+    const game = baseGame()
+    const player = boundPlayer(game, 'sponsor_right')
+
+    const matching = jobbetForsvannEvent(player, 'sponsor_right', 'Rätt sponsor', game)
+    const mismatching = jobbetForsvannEvent(player, 'sponsor_wrong', 'Fel sponsor', game)
+
+    expect(matching.proofSource).toMatchObject({
+      form: 'state-predicate',
+      evaluatedTrue: true,
+    })
+    expect(mismatching.proofSource).toMatchObject({
+      form: 'state-predicate',
+      evaluatedTrue: false,
+    })
   })
 })
 
@@ -134,7 +153,7 @@ describe('eventResolver — jobbet_forsvann-valens effekter', () => {
   it("'Höj lönen' höjer lönen med exakt 4000, rör inte moralen", () => {
     const game = baseGame()
     const player = game.players.find(p => p.clubId === game.managedClubId)!
-    const event = jobbetForsvannEvent(player, 'ICA Maxi', game)
+    const event = jobbetForsvannEvent(player, 'sponsor_1', 'ICA Maxi', game)
     const before = game.players.find(p => p.id === player.id)!
 
     const after = resolveEvent(withPendingEvent(game, event), event.id, 'raiseSalary', undefined, true)
@@ -150,7 +169,7 @@ describe('eventResolver — jobbet_forsvann-valens effekter', () => {
     const player = game.players.find(p => p.clubId === game.managedClubId)!
     const boundBefore = { ...player, jobGuaranteeSponsorId: 'gone_sponsor' }
     const gameWithPlayer = { ...game, players: game.players.map(p => p.id === player.id ? boundBefore : p) }
-    const event = jobbetForsvannEvent(boundBefore, 'Den gamla sponsorn', gameWithPlayer)
+    const event = jobbetForsvannEvent(boundBefore, 'gone_sponsor', 'Den gamla sponsorn', gameWithPlayer)
 
     const after = resolveEvent(withPendingEvent(gameWithPlayer, event), event.id, 'findAnother', undefined, true)
     const updated = after.players.find(p => p.id === player.id)!
@@ -167,7 +186,7 @@ describe('eventResolver — jobbet_forsvann-valens effekter', () => {
     const player = game.players.find(p => p.clubId === game.managedClubId)!
     const boundBefore = { ...player, jobGuaranteeSponsorId: 'gone_sponsor' }
     const gameWithPlayer = { ...game, players: game.players.map(p => p.id === player.id ? boundBefore : p) }
-    const event = jobbetForsvannEvent(boundBefore, 'Den gamla sponsorn', gameWithPlayer)
+    const event = jobbetForsvannEvent(boundBefore, 'gone_sponsor', 'Den gamla sponsorn', gameWithPlayer)
 
     const after = resolveEvent(withPendingEvent(gameWithPlayer, event), event.id, 'findAnother', undefined, true)
     const updated = after.players.find(p => p.id === player.id)!
@@ -179,7 +198,7 @@ describe('eventResolver — jobbet_forsvann-valens effekter', () => {
   it("'Det var inte vårt löfte att hålla' drar moral −25", () => {
     const game = baseGame()
     const player = game.players.find(p => p.clubId === game.managedClubId)!
-    const event = jobbetForsvannEvent(player, 'ICA Maxi', game)
+    const event = jobbetForsvannEvent(player, 'sponsor_1', 'ICA Maxi', game)
     const before = game.players.find(p => p.id === player.id)!
 
     const after = resolveEvent(withPendingEvent(game, event), event.id, 'honest', undefined, true)

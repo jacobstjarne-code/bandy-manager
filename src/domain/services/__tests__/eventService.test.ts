@@ -88,6 +88,18 @@ describe('generatePostAdvanceEvents', () => {
     expect(bidEvent!.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 
+  it('newBids-vägen skapar inte ett inkommande kort för ett utgående bud', () => {
+    const bid: TransferBid = {
+      id: 'outgoing-new', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: 200000, offeredSalary: 12000, contractYears: 3,
+      direction: 'outgoing', status: 'pending', createdRound: 5, expiresRound: 8,
+    }
+
+    const events = generatePostAdvanceEvents(makeGame(), [bid], 5, noRand)
+
+    expect(events.some(event => event.id === `event_bid_${bid.id}`)).toBe(false)
+  })
+
   it('accepterat motbud bär samma sanna beloppspredikat som gejtar kortet', () => {
     const bid: TransferBid = {
       id: 'b-counter-accept', playerId: 'p1', buyingClubId: 'c2', sellingClubId: 'c1',
@@ -189,7 +201,7 @@ describe('bidWar — höjning är ett bud, inte en omedelbar betalning eller gar
       direction: 'outgoing', status: 'pending', createdRound: 5, expiresRound: 6,
     }
     const game = makeGame({ transferBids: [bid] })
-    const event = bidWarEvent(bid, game)
+    const event = bidWarEvent(bid, game, true)
     const raise = event.choices.find(choice => choice.id === 'raise')!
     const financesBefore = game.clubs.find(club => club.id === 'c1')!.finances
     const budgetBefore = game.clubs.find(club => club.id === 'c1')!.transferBudget
@@ -202,6 +214,7 @@ describe('bidWar — höjning är ett bud, inte en omedelbar betalning eller gar
     expect(result.clubs.find(club => club.id === 'c1')?.transferBudget).toBe(budgetBefore)
     expect(raise.subtitle).toBeUndefined()
     expect(event.body).not.toContain('säkra affären')
+    expect(event.proofSource).toMatchObject({ form: 'state-predicate', evaluatedTrue: true })
   })
 })
 

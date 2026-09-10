@@ -132,7 +132,7 @@ export function processSponsors(
   for (const sponsorId of departedSponsorIds) {
     const sponsorName = sponsorNamesById.get(sponsorId) ?? 'sponsorn'
     for (const player of finalPlayers.filter(p => p.jobGuaranteeSponsorId === sponsorId)) {
-      jobLossEvents.push(jobbetForsvannEvent(player, sponsorName, game))
+      jobLossEvents.push(jobbetForsvannEvent(player, sponsorId, sponsorName, game))
     }
   }
 

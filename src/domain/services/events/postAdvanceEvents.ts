@@ -110,7 +110,7 @@ export function generatePostAdvanceEvents(
   for (const bid of newBids) {
     if (events.length >= 2) break
     const eid = `event_bid_${bid.id}`
-    const incomingBidDue = !alreadyQueued.has(eid)
+    const incomingBidDue = bid.direction === 'incoming' && bid.status === 'pending' && !alreadyQueued.has(eid)
     if (incomingBidDue) {
       events.push(bidReceivedEvent(bid, game, incomingBidDue))
     }
@@ -688,7 +688,7 @@ export function generatePostAdvanceEvents(
     const bidWarWindow = rand() <= 0.20
     if (!bidWarWindow) continue
     const eid = `event_bidwar_${bid.id}`
-    const bidWarDue = bid.direction === 'outgoing' && bid.status === 'pending' && !alreadyQueued.has(eid)
+    const bidWarDue = bidWarWindow && bid.direction === 'outgoing' && bid.status === 'pending' && !alreadyQueued.has(eid)
     if (bidWarDue) {
       events.push(bidWarEvent(bid, game, bidWarDue))
     }

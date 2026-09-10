@@ -821,10 +821,15 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
  * 'sponsor'-kind, så återfallet detekteras här mot resolvedEventIds i
  * stället för mot liggaren.
  */
-export function jobbetForsvannEvent(player: Player, sponsorName: string, game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'resolvedEventIds'>): GameEvent {
+export function jobbetForsvannEvent(
+  player: Player,
+  departedSponsorId: string,
+  sponsorName: string,
+  game: Pick<SaveGame, 'currentSeason' | 'currentMatchday' | 'resolvedEventIds'>,
+): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const isRelapse = (game.resolvedEventIds ?? []).some(id => id.startsWith(`jobbet_forsvann_${player.id}_`))
-  const jobLossDue = Boolean(player.jobGuaranteeSponsorId)
+  const jobLossDue = player.jobGuaranteeSponsorId === departedSponsorId
   return {
     id: `jobbet_forsvann_${player.id}_${game.currentSeason}_${game.currentMatchday ?? 0}`,
     type: 'jobbet_forsvann',

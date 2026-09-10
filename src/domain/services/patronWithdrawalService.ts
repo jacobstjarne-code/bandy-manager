@@ -86,7 +86,7 @@ export function applyPatronHappinessTransition(
   // omgång kan inte producera två identiska kort).
   const jobLossEvents = game.players
     .filter(p => p.jobGuaranteeSponsorId === patron.id)
-    .map(p => jobbetForsvannEvent(p, patron.name, game))
+    .map(p => jobbetForsvannEvent(p, patron.id, patron.name, game))
 
   return {
     patron: updatedPatron,
