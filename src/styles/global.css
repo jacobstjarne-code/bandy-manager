@@ -2064,3 +2064,9 @@ a {
   pointer-events: none;
   z-index: 0;
 }
+/* FatigueFloorConfirm: semantic danger color belongs in the stylesheet so
+   the design-adherence guard can audit it as a deliberate component state. */
+.fatigue-floor-shortfall {
+  color: var(--danger-text);
+  margin-left: 8px;
+}

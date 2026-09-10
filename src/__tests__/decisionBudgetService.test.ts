@@ -45,6 +45,27 @@ describe('legacy queue identity repair', () => {
     expect(result.deferredDecisions).toEqual([])
   })
 
+  it('uses the durable choice receipt when a migrated long-career save has lost the resolved-id cache entry', () => {
+    const gala = makeEvent('event_gala_2034')
+    const result = applyDecisionBudget(makeGame({
+      resolvedEventIds: [],
+      resolvedChoices: [{
+        resolutionId: 'event_gala_2034:1',
+        eventId: gala.id,
+        eventType: gala.type,
+        choiceId: 'attend',
+        label: 'Gå på galan — visa upp klubben',
+        madeByPlayer: true,
+        decisionKind: 'decision',
+      }],
+      pendingEvents: [gala],
+      deferredDecisions: [gala],
+    }), 7)
+
+    expect(result.pendingEvents).toEqual([])
+    expect(result.deferredDecisions).toEqual([])
+  })
+
   it('keeps one copy per id across both queues without merging distinct events', () => {
     const result = applyDecisionBudget(makeGame({
       pendingEvents: [makeEvent('same'), makeEvent('different')],

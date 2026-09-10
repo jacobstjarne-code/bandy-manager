@@ -125,7 +125,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, onConfirm, onCan
               nedan bär meningen. */}
           <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
             {selectedAboveFloor} av 11 har minst {FATIGUE_AVAILABILITY_FLOOR} % kondition
-            <span style={{ color: 'var(--danger-text)', marginLeft: 8 }}>−{selectedBelowFloor}</span>
+            <span className="fatigue-floor-shortfall">−{selectedBelowFloor}</span>
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: brödtexten som namnger

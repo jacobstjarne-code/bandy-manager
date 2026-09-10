@@ -164,7 +164,15 @@ export function applyDecisionBudget(game: SaveGame, currentMatchday: number): Sa
   // Older saves can contain the same event in both queues. Resolution removes
   // the surfaced copy; its durable id must also retire any queued copy before
   // promotion. Preserve FIFO and distinct ids, not one event per type.
-  const seenIds = new Set(game.resolvedEventIds ?? [])
+  // `resolvedEventIds` is a bounded trigger cache, while `resolvedChoices`
+  // is the durable receipt for decisions the player actually handled. Long
+  // careers and migrated saves can therefore still contain a queued legacy
+  // copy after its id has fallen out of (or was absent from) the cache. Treat
+  // either receipt as authoritative before repartitioning the queues.
+  const seenIds = new Set([
+    ...(game.resolvedEventIds ?? []),
+    ...(game.resolvedChoices ?? []).map(choice => choice.eventId),
+  ])
   const combined = [...priorDeferred, ...(game.pendingEvents ?? [])].filter(event => {
     if (seenIds.has(event.id)) return false
     seenIds.add(event.id)
