@@ -104,7 +104,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
 | forsoning-5-omfotografering | §5 verifiering: Jacob fotar om, Design re-auditar (grön/kvarstår) | verifierad | Jacob | BACKLOG.md:357 | Jacob fotar om [Verifierat 2026-09-01 (Code): docs/BACKLOG.md rad 349-357 listar FÖRSONINGSSPRINTEN fortfarande som "AKTIV" med §5 verifiering ostängd (ingen "STÄNGD"-markering hittades någonstans i repo för §5) — Jacobs ompaus-uppgift är en judgment call utan kodbevis på slutförande.] |
-| valet-ui-eriks-oga | Valet-UI väntar på Eriks öga (playtest-nivå residual) | verifierad | Jacob | BACKLOG.md:403 | playtest [Verifierat 2026-09-01 (Code): docs/BACKLOG.md:403 listar explicit "Valet-UI väntar Eriks öga" som öppen residual, ej stängd.] |
+| valet-ui-eriks-oga | Valet-UI väntar på Eriks öga (playtest-nivå residual) | in_progress | Codex | BACKLOG.md:403 | CLAIM 2026-09-10T17:28:29+02:00 — verifiera om residualen är en duplicerad kvalitativ kontroll som redan ägs av karriärjournalens Valet-kvitto; konsolidera i så fall utan att fabricera extern granskning. |
 
 ## B. SPECCAT KLART, VÄNTAR BYGGE
 
