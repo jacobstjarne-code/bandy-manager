@@ -45,6 +45,36 @@ describe('gameStore — M2: två flikar racear mot samma save', () => {
     vi.resetModules()
   })
 
+  it('karriärbyte öppnar samma konfliktsåterhämtning och bevarar båda sparningarna', async () => {
+    vi.stubGlobal('location', { ...window.location, reload: vi.fn() })
+    const tabA = await import('../gameStore')
+    const { CLUB_TEMPLATES } = await import('../../../domain/services/worldGenerator')
+    const storage = await import('../../../infrastructure/persistence/saveGameStorage')
+    tabA.useGameStore.getState().newGame('Manager A', CLUB_TEMPLATES[0].id)
+    await flush()
+    const id = tabA.useGameStore.getState().game!.id
+    const target = { ...tabA.useGameStore.getState().game!, id: 'target-career', revision: 0 }
+    expect((await storage.saveSaveGame(target)).success).toBe(true)
+    const targetBefore = await storage.loadSaveGame(target.id)
+
+    vi.resetModules()
+    const tabB = await import('../gameStore')
+    await tabB.useGameStore.getState().loadGame(id)
+    tabA.useGameStore.setState(s => ({ game: { ...s.game!, fanMood: 73 } }))
+    expect((await tabA.useGameStore.getState().saveGame()).success).toBe(true)
+
+    expect(await tabB.useGameStore.getState().switchToSave(target.id)).toBe(false)
+    expect(tabB.useGameStore.getState().game!.id).toBe(id)
+    expect(tabB.useGameStore.getState().saveConflict).toBe(true)
+    expect(await storage.loadSaveGame(target.id)).toEqual(targetBefore)
+
+    await tabB.useGameStore.getState().resolveSaveConflict()
+    expect(tabB.useGameStore.getState().game!.fanMood).toBe(73)
+    expect(await tabB.useGameStore.getState().switchToSave(target.id)).toBe(true)
+    expect(tabB.useGameStore.getState().game!.id).toBe(target.id)
+    expect((await storage.loadSaveGame(id))!.fanMood).toBe(73)
+  }, 30000)
+
   it('flik B (stale) kan INTE skriva över flik A:s redan sparade ändring — avvisas, saveConflict sätts', async () => {
     // Flik A skapar karriären.
     vi.resetModules()

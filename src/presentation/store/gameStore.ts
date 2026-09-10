@@ -480,13 +480,14 @@ export const useGameStore = create<GameState>()(
           // ingen konsekvens alls — bytet fortsatte, och den utgående karriärens
           // ospardade framsteg försvann tyst när loadGame(id) skrev över store:t.
           // Avbryt bytet om vi inte kan bekräfta att den är säker.
-          const result = await saveSaveGame(game)
+          // Use the shared revision/conflict handling: plain reload of the
+          // Zustand cache cannot recover a stale outgoing save. Its conflict
+          // modal explicitly reloads the authoritative CAS-protected copy.
+          const result = await persistGameSnapshot(game, set)
           if (!result.success) {
             console.error('switchToSave: kunde inte spara utgående karriär, avbryter bytet:', result.error)
-            set({ lastSaveError: result.error ?? 'Kunde inte spara' })
             return false
           }
-          set({ lastConfirmedSaveAt: new Date().toISOString(), lastSaveError: null })
         }
         return get().loadGame(id)
       },

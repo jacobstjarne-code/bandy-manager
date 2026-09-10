@@ -49,6 +49,20 @@ beforeEach(() => {
 
 describe('saveGameStorage', () => {
 
+  it.each(['0.1.0', '0.3.11'])('opens and resaves format %s through the existing migration path', async version => {
+    const game = { ...makeGame(`legacy_${version}`, 'club_forsbacka', '2025-10-01T10:00:00.000Z'), version, revision: 7 }
+    idbStore[`bandy_save_${game.id}`] = structuredClone(game)
+    const loaded = await loadSaveGame(game.id)
+    expect(loaded?.version).toBe(CURRENT_SAVE_VERSION)
+    expect(loaded?.revision).toBe(7)
+    expect(loaded?.managerName).toBe(game.managerName)
+    expect(loaded?.currentSeason).toBe(game.currentSeason)
+    expect(loaded?.players.map(p => p.id)).toEqual(game.players.map(p => p.id))
+    expect((await saveSaveGame(loaded!)).success).toBe(true)
+    expect((await loadSaveGame(game.id))?.version).toBe(CURRENT_SAVE_VERSION)
+    expect((await loadSaveGame(game.id))?.revision).toBe(8)
+  })
+
   it('saveSaveGame stores game and loadSaveGame retrieves identical object', async () => {
     const game = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
     await saveSaveGame(game)
