@@ -103,7 +103,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| forsoning-5-omfotografering | §5 verifiering: Jacob fotar om, Design re-auditar (grön/kvarstår) | verifierad | Jacob | BACKLOG.md:357 | Jacob fotar om [Verifierat 2026-09-01 (Code): docs/BACKLOG.md rad 349-357 listar FÖRSONINGSSPRINTEN fortfarande som "AKTIV" med §5 verifiering ostängd (ingen "STÄNGD"-markering hittades någonstans i repo för §5) — Jacobs ompaus-uppgift är en judgment call utan kodbevis på slutförande.] |
+| forsoning-5-omfotografering | §5 verifiering: Jacob fotar om, Design re-auditar (grön/kvarstår) | in_progress | Codex · 2026-09-10 18:09 CEST | BACKLOG.md:357 | Reconcile mot den senare fresh-eyes-granskningen av samtliga 111 deklarerade states (2026-09-03): verifiera att bilddump, faktisk Design-dom och uppföljningsrader tillsammans supersederar den gamla omfotograferingsgrinden innan arkivering. |
 
 ## B. SPECCAT KLART, VÄNTAR BYGGE
 
