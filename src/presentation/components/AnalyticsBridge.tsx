@@ -26,7 +26,7 @@ export function AnalyticsBridge() {
     game?.id,
     game?.onboardingComplete,
     game?.lastCompletedFixtureId,
-    game?.seasonSummaries.length,
+    game?.seasonSummaries?.length,
     game?.managerFired,
     game?.firedReason,
   ])

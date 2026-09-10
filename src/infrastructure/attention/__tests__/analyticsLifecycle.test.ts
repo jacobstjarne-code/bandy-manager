@@ -36,6 +36,14 @@ describe('analyticsLifecycle', () => {
 
   afterEach(() => vi.unstubAllGlobals())
 
+  it('accepts a dev save without season history without mutating it', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_slottsbron', seed: 45 })
+    const game = { ...base, seasonSummaries: undefined } as unknown as typeof base
+    expect(() => initializeAnalyticsBaseline(game)).not.toThrow()
+    expect(() => syncGameAnalytics(game)).not.toThrow()
+    expect(game.seasonSummaries).toBeUndefined()
+  })
+
   it('emits each durable game milestone once even when the same state is observed repeatedly', async () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_slottsbron', seed: 42 })
     game.onboardingComplete = true

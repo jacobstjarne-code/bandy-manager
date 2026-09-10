@@ -106,7 +106,7 @@ export function initializeAnalyticsBaseline(game: SaveGame | null): void {
         fixture.status === 'completed' &&
         (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
       )) remember(`first_match:${game.id}`)
-      for (const summary of game.seasonSummaries) {
+      for (const summary of game.seasonSummaries ?? []) {
         remember(`season_completed:${game.id}:${summary.season}`)
       }
       if (game.managerFired) remember(`game_over:${game.id}`)
@@ -136,7 +136,7 @@ export function syncGameAnalytics(game: SaveGame): void {
   )) {
     sendOnce(`first_match:${game.id}`, 'first_match')
   }
-  for (const summary of game.seasonSummaries) {
+  for (const summary of game.seasonSummaries ?? []) {
     sendOnce(`season_completed:${game.id}:${summary.season}`, 'season_completed', {
       season: summary.season,
       placement: summary.finalPosition,
@@ -145,7 +145,7 @@ export function syncGameAnalytics(game: SaveGame): void {
   if (game.managerFired) {
     sendOnce(`game_over:${game.id}`, 'game_over', {
       reason: gameOverReason(game),
-      seasonsSurvived: game.seasonSummaries.length,
+      seasonsSurvived: game.seasonSummaries?.length ?? 0,
     })
   }
 }

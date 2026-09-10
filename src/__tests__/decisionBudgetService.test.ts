@@ -35,6 +35,26 @@ function makeEvent(id: string): GameEvent {
   } as unknown as GameEvent
 }
 
+describe('legacy queue identity repair', () => {
+  it('does not promote an old copy of an already resolved event', () => {
+    const result = promoteFromQueue(makeGame({
+      resolvedEventIds: ['supporter_conflict_2030'],
+      deferredDecisions: [makeEvent('supporter_conflict_2030'), makeEvent('next')],
+    }))
+    expect(result.pendingEvents?.map(event => event.id)).toEqual(['next'])
+    expect(result.deferredDecisions).toEqual([])
+  })
+
+  it('keeps one copy per id across both queues without merging distinct events', () => {
+    const result = applyDecisionBudget(makeGame({
+      pendingEvents: [makeEvent('same'), makeEvent('different')],
+      deferredDecisions: [makeEvent('same'), makeEvent('same')],
+    }), 5)
+    expect(result.pendingEvents?.map(event => event.id)).toEqual(['same', 'different'])
+    expect(result.deferredDecisions).toEqual([])
+  })
+})
+
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
     id: 'test',

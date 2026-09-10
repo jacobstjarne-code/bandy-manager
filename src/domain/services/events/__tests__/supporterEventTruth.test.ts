@@ -8,6 +8,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { resolveEvent } from '../eventResolver'
 import { generateSupporterEvents } from '../supporterEvents'
 import { klackLeaderVoiceId } from '../../voiceIntroductionService'
+import { promoteFromQueue } from '../../decisionBudgetService'
 
 function supporterGroup(overrides: Partial<SupporterGroup> = {}): SupporterGroup {
   return {
@@ -84,5 +85,20 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
 
   it('rinner ut vid rollover eftersom alla supporterEvent-val ändrar state', () => {
     expect(getRolloverPolicy('supporterEvent')).toBe('expire')
+  })
+
+  it('en gammal kökopia försvinner efter riktig resolution och ger inte effekten två gånger', () => {
+    const game = { ...makeGame(supporterGroup({ tifoDone: true })), currentMatchday: 9, fanMood: 50 }
+    const event = generateSupporterEvents(game, 9, new Set(), () => 0)
+      .find(candidate => candidate.id.startsWith('supporter_conflict_'))!
+    const resolved = resolveEvent({ ...game, pendingEvents: [event], deferredDecisions: [{ ...event }] }, event.id, 'both', undefined, true)
+    const promoted = promoteFromQueue(resolved)
+    expect(promoted.pendingEvents?.some(candidate => candidate.id === event.id)).toBe(false)
+    expect(promoted.deferredDecisions).toEqual([])
+    expect(promoted.resolvedEventIds).toContain(event.id)
+    expect(promoted.supporterGroup?.conflictSeason).toBe(game.currentSeason)
+    expect(promoted.supporterGroup?.mood).toBe(65)
+    expect(promoted.fanMood).toBe(53)
+    expect(resolveEvent(promoted, event.id, 'both', undefined, true)).toBe(promoted)
   })
 })

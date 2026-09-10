@@ -141,7 +141,15 @@ export function partitionInterruptBudget(
 /** Applies the pure partition to all three decision-bearing SaveGame fields. */
 export function applyDecisionBudget(game: SaveGame, currentMatchday: number): SaveGame {
   const priorDeferred = game.deferredDecisions ?? []
-  const combined = [...priorDeferred, ...(game.pendingEvents ?? [])]
+  // Older saves can contain the same event in both queues. Resolution removes
+  // the surfaced copy; its durable id must also retire any queued copy before
+  // promotion. Preserve FIFO and distinct ids, not one event per type.
+  const seenIds = new Set(game.resolvedEventIds ?? [])
+  const combined = [...priorDeferred, ...(game.pendingEvents ?? [])].filter(event => {
+    if (seenIds.has(event.id)) return false
+    seenIds.add(event.id)
+    return true
+  })
   const { nonActionable, surface, deferred } = partitionInterruptBudget(
     combined,
     currentMatchday,
