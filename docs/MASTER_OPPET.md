@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| saveimport-filvaljare-opalitlig | Import av säkerhetskopia öppnar filväljaren men laddar inte vald fil stabilt i browser-/speltest; den tillfälliga karriären ligger kvar trots frisk och migrerbar JSON. | rapporterad | Code | Grind 2, 2026-09-10 | Verifiera filfältets livscykel och importera `bandy-Grindtest_2-s2030.json` i en riktig browser. |
+| saveimport-filvaljare-opalitlig | Import av säkerhetskopia öppnar filväljaren men laddar inte vald fil stabilt i browser-/speltest; den tillfälliga karriären ligger kvar trots frisk och migrerbar JSON. | in_progress | Codex | Grind 2, 2026-09-10 | CLAIM 2026-09-10T21:21:03+02:00 — Codex. Verifierat mot kod och browser: JSON:en migrerar rent; det frikopplade filfältet och den blockerande dialogkedjan gör filvalet opålitligt. Gör filfältets livscykel DOM-förankrad, regressionstesta och återimportera samma save. |
 | annandagsbeat-fel-kalenderlage | Matchladdningen visar "Annandagen" för omgång 8 den 17 oktober i den importerade Grind 2-karriären. | rapporterad | Code | Grind 2, 2026-09-10 | Kodläs kalender-/beat-gaten mot fixture-datum och verifiera om produkt eller gammal save-data orsakar motsägelsen. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
