@@ -223,3 +223,14 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Omgång 2 mot Lesjöfors förlorades 3–4 efter omfattande trupprotation. Bandygalan besöktes och mecenaten Anna Johansson fick förslag om succession. Föreningslotteriet förnyades inte.
 - Beslutskön låg kvar runt 9–10 trots att tre beslut hanterades per portalvecka. Det är fortsatt hög redaktionell belastning, men ingen ny separat MASTER-rad skapas utan kodverifiering.
 - Karriären står inför omgång 3 hemma mot Gagnef. Anläggningsträdet och det faktiska år-8-valet återstår.
+
+### Säsong 2031/32 — landning, fortsatt prov 2026-09-10
+
+- Omgång 11 och 12 spelades manuellt i snabbläge: 6–0 hemma mot Heros och 6–3 borta mot Slottsbron. Därefter snabbspolades återstående grundserie med spelets ordinarie funktion. Västanfors slutade trea på 28 poäng, 13–2–7 och +42.
+- Kvartsfinalen mot Heros vanns med 3–0. Semifinalen mot Skutskär gick till fem matcher och förlorades 2–3; avgörandet slutade 6–7. Grind 3 landade därmed säsongen rent i frågan om Västanfors kunde följa upp guldet, med svaret nej.
+- Årsboken visade tredjeplats, semifinal, cupkvartsfinal och −1,2 mkr. Den permanenta tränarhistoriken bar både att managern klev tillbaka och att managern körde vidare under samma vår.
+- Burnout-taket producerades två gånger samma säsong: efter omgång 11 valdes `Kliv tillbaka en period`; efter semifinal 5 visades samma återfallsdilemma igen och `Kör vidare` valdes. Båda oförenliga slutvalen skrevs därefter in i samma årsbok. Registrerat som `burnout-dubbelt-slutval-samma-sasong`.
+- Det frysta burnout-ankaret visade `4 år sedan` i omgång 12 men `3 år sedan` i semifinal 3–5, trots att headern hela tiden var 2031/32 och inget säsongsskifte skedde. Registrerat som `historikankare-skiftar-inom-sasong`.
+- Exakt samma kafferumsreplik om tre gamla medlemmar som ringde utan att vilja något visades före semifinal 1 och semifinal 4. Samma mönster observerades även i föregående säsongs semifinal. Den upprepade reproduktionen registreras nu som `kafferum-exakt-aterfall-samma-slutspel`.
+- Klackkonflikten mellan Birger och Klara återkom i omgång 12 efter tidigare resolution. Den här browsern kör dock produktbuild `7f8a493a`, äldre än den redan verifierade centrala dedup-reparationen; observationen dubbelrapporteras därför inte som en ny öppen post.
+- Karriären har rullat över rent till 2032/33. År-8-valet och återstående anläggningsnoder är fortsatt öppna testkrav.
