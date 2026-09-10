@@ -6,7 +6,7 @@ import { InboxItemType, MatchEventType, FixtureStatus } from '../../../domain/en
 import { getEventPriority } from '../../../domain/entities/GameEvent'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../../domain/services/supporterService'
-import { classifyVictory, generateVictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
+import { classifyVictory, generateVictoryEcho, shouldSurfaceVictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
 import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { detectArcTriggers, progressArcs } from '../../../domain/services/arcService'
@@ -76,8 +76,10 @@ export function processNarrative(
       const opponentClub = game.clubs.find(c => c.id === opponentId)
       const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndaren'
       const echo = generateVictoryEcho(victoryType, justCompletedManagedFixture, opponentName, game.managedClubId, game)
-      pendingVictoryEcho = echo
-      victoryEchoExpires = nextMatchday + 1
+      if (shouldSurfaceVictoryEcho(game, echo)) {
+        pendingVictoryEcho = echo
+        victoryEchoExpires = nextMatchday + 1
+      }
       if (echo.boardMessage) {
         inboxItems.push({
           id: `victory_board_${justCompletedManagedFixture.id}`,

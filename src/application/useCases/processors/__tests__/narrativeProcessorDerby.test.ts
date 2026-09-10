@@ -1,9 +1,39 @@
 import { describe, expect, it } from 'vitest'
 import { FixtureStatus } from '../../../../domain/enums'
+import { VICTORY_ECHO_PLAYOFF_WIN_KEY } from '../../../../domain/services/postVictoryNarrativeService'
 import { createNewGame } from '../../createNewGame'
 import { processNarrative, processUpcomingDerbyNotification } from '../narrativeProcessor'
 
 describe('narrativeProcessor — derbyförhandsnotis', () => {
+  it('köar inte samma fasta kafferumsrad efter ännu en slutspelsseger på cooldown', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_halleforsnas', season: 2025, seed: 42 })
+    const opponent = game.clubs.find(club => club.id !== game.managedClubId)!
+    const playoffWin = {
+      ...game.fixtures[0],
+      id: 'playoff-cooldown',
+      homeClubId: game.managedClubId,
+      awayClubId: opponent.id,
+      status: FixtureStatus.Completed,
+      isCup: false,
+      isKnockout: true,
+      homeScore: 4,
+      awayScore: 2,
+      events: [],
+    }
+
+    const result = processNarrative({
+      ...game,
+      narrativeBeatLog: [{
+        semanticKey: VICTORY_ECHO_PLAYOFF_WIN_KEY,
+        season: game.currentSeason,
+        round: playoffWin.matchday - 2,
+      }],
+    }, playoffWin, playoffWin.matchday, game.currentDate, () => 0.5)
+
+    expect(result.pendingVictoryEcho).toBeUndefined()
+    expect(result.victoryEchoExpires).toBeUndefined()
+  })
+
   it('skapar inte längre en parallell notis från den gamla fixture-snapshoten', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_halleforsnas', season: 2025, seed: 42 })
     const completed = game.fixtures.find(fixture =>

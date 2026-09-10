@@ -2,7 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from '../data/rivalries'
 import { deriveUtfall } from './matchTypeAxes'
-import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
+import { isOnCooldown, pickPoolIndexAvoidingCooldown } from './narrativeLogService'
 
 export type VictoryType = 'playoff_derby_win' | 'playoff_win' | 'big_derby_win' | 'derby_win' | 'blowout'
 
@@ -23,10 +23,25 @@ export interface VictoryEcho {
   coffeeLine: string
   /** Cooldown key written only when the coffee-room echo is actually shown. */
   coffeeSemanticKey?: string
+  /** Fixed one-line echoes may yield to other coffee-room material while this key is recent. */
+  coffeeCooldownSeasons?: number
   boardMessage?: string
 }
 
 export const VICTORY_ECHO_BLOWOUT_PREFIX = 'victory_echo_blowout_'
+export const VICTORY_ECHO_PLAYOFF_WIN_KEY = 'victory_echo_playoff_win'
+export const VICTORY_ECHO_PLAYOFF_DERBY_WIN_KEY = 'victory_echo_playoff_derby_win'
+
+/** Presentation timing only: the event remains true even when its fixed line rests. */
+export function shouldSurfaceVictoryEcho(game: SaveGame, echo: VictoryEcho): boolean {
+  if (!echo.coffeeSemanticKey || !echo.coffeeCooldownSeasons) return true
+  return !isOnCooldown(
+    game,
+    echo.coffeeSemanticKey,
+    echo.coffeeCooldownSeasons,
+    game.currentSeason,
+  )
+}
 
 export function classifyVictory(fixture: Fixture, managedClubId: string): VictoryType | null {
   const isHome = fixture.homeClubId === managedClubId
@@ -69,12 +84,16 @@ export function generateVictoryEcho(
       return {
         diaryLine: `Triumfen över ${opponentName} ekar fortfarande i korridorerna. Ingen hade sovit ordentligt på tre dagar.`,
         coffeeLine: `Kioskvakten: "Jag sålde korv till fyra personer som grät. Dom bad inte om ursäkt."`,
+        coffeeSemanticKey: VICTORY_ECHO_PLAYOFF_DERBY_WIN_KEY,
+        coffeeCooldownSeasons: 2,
         boardMessage: `Ordföranden: "Det är för sånt här jag satte mig i den här stolen. Tack."`,
       }
     case 'playoff_win':
       return {
         diaryLine: `Slutspelsvinsten mot ${opponentName} satte sig. Klubben känns tyngre på ett gott sätt.`,
         coffeeLine: `Sekreteraren: "Det ringde tre gamla medlemmar i förmiddags. Ingen ville något. De bara ville prata."`,
+        coffeeSemanticKey: VICTORY_ECHO_PLAYOFF_WIN_KEY,
+        coffeeCooldownSeasons: 2,
       }
     case 'big_derby_win':
       return {
