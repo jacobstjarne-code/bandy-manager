@@ -119,7 +119,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| kf8-fanmood-kalibrering | KF8 fanMood byggd; kvar är kalibrering mot nästa genomspelning (06-18-spec §B punkt 3) | verifierad | Jacob | BACKLOG.md:672 | Jacob genomspelar [Verifierat 2026-09-01 (Code): BACKLOG.md:672 säger fortfarande "Kvar enbart kalibrering mot NÄSTA genomspelning (06-18-spec §B punkt 3)" — ingen senare post bekräftar att den kalibreringsomgången genomförts.] **→ 2026-09-09 (Jacob): INGET dedikerat kalibreringspass. Codex vaktar fanMood i den pågående grind-2/3-långkarriären (`sluttest-grind2`/`grind3`) och rapporterar OM den läser fel; kalibrera bara då. En kalibrering utan känt problem är att gissa på en siffra. Skrivs in här så det inte glöms i testet.** |
+| kf8-fanmood-kalibrering | KF8 fanMood byggd; kvar är kalibrering mot nästa genomspelning (06-18-spec §B punkt 3) | in_progress | Codex | BACKLOG.md:672 | CLAIM 2026-09-10T17:35:57+02:00 — följ Jacobs uttryckliga beslut om inget dedikerat kalibreringspass; verifiera att inget känt fel kräver egen rad och konsolidera annars bevakningen till pågående Grind 2/3. |
 
 ## KF2. ÖVERLÄMNING 2 — TRE ÅTERSTÅENDE POSTER (2026-09-03 incoming-svep)
 
