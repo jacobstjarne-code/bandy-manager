@@ -198,3 +198,11 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - UI-importens frikopplade filfält gjorde först filvalet opålitligt. Efter DOM-förankring, gemensam städväg och avslutad confirm-event-loop importerades samma fil i en riktig browser. Headern visade därefter `Grindtest 2 · 2030/31 · OMG 8`; den tillfälliga testkarriären var ersatt. Punkten `saveimport-filvaljare-opalitlig` stängdes separat.
 - Vid omgång 8 visade matchladdningen datumet 17 oktober men samtidigt den faktiska texten `Annandagen. Hela stan är på benen.` Detta är en kalendermotsägelse, registrerad som `annandagsbeat-fel-kalenderlage`; ingen snabb specialfix gjordes under långspelet.
 - Inför omgången accepterades ett sponsoravtal på 1,5 tkr/vecka och Alexander Nieminen fick själv bestämma sitt pensionsbeslut. Beslutskön sjönk från fyra till tre. Matchen mot Hälleforsnäs är ännu inte färdigspelad i denna checkpoint.
+
+### Säsong 6 — omgång 8–11, fortsatt prov 2026-09-10
+
+- Omgång 8 slutfördes med 8–3 borta mot Hälleforsnäs. Granska visade tabellplats 2, nästa Målilla borta och fyra trötta startspelare; beslutskön stod på fyra efter veckans supporterfråga.
+- Omgång 9 vanns 3–1 borta mot Målilla. Säkert passningsspel valdes mot snöfallet och standardhörnor gav ett mål. Supporterbrevet från Bertil Karlsson besvarades varmt. I matchflödet låg formuleringen `Det börjar bli generande nu. Målilla gör vad de vill.` samtidigt som Målilla låg klart under; detta är en möjlig resultatsjälvmotsägelse som behöver verifieras mot momentumvillkoret innan en MASTER-rad skapas.
+- Omgång 10, annandagsmatch borta mot serieledande Forsbacka, förlorades 2–5. Den särskilda annandagsentrén visades på rätt kalenderpunkt. Två standardhörnor gav båda Västanfors mål. Konflikten i klacken hanterades genom att bjuda in båda parter till ett möte med truppen.
+- Omgång 11 vanns 5–2 hemma mot Heros via spelläget `Snabb`. Pekka Westberg och Olof Gran skickades till P19-samlingen och blev otillgängliga i två omgångar. Detta är ett avsiktligt simulerat resultat, inte en manuell kontroll av matchflödet.
+- Karriären står nu inför omgång 12 borta mot Slottsbron. Beslutskön har vuxit till tio och belastningen är åter hög. Halvvägs-scenen visades och stängdes korrekt; tre spelare är skadade och två juniorer är på landslagssamling.
