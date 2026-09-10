@@ -234,3 +234,24 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Exakt samma kafferumsreplik om tre gamla medlemmar som ringde utan att vilja något visades före semifinal 1 och semifinal 4. Samma mönster observerades även i föregående säsongs semifinal. Den upprepade reproduktionen registreras nu som `kafferum-exakt-aterfall-samma-slutspel`.
 - Klackkonflikten mellan Birger och Klara återkom i omgång 12 efter tidigare resolution. Den här browsern kör dock produktbuild `7f8a493a`, äldre än den redan verifierade centrala dedup-reparationen; observationen dubbelrapporteras därför inte som en ny öppen post.
 - Karriären har rullat över rent till 2032/33. År-8-valet och återstående anläggningsnoder är fortsatt öppna testkrav.
+
+### Säsong 2032/33 — halvvägs, fortsatt prov 2026-09-10
+
+- Säsongsstarten markerade uttryckligen managerns sjunde säsong. Personligt mål: `Etablera oss där. Två år i rad, inte ett.` Endast Jonas Dahl och Oliver Norberg fick sina lönekrav mötta; sex krav avslogs för att skydda ekonomin.
+- Anläggningsträdet är nu fullt utbyggt: alla nio ordinarie noder visas som byggda och vyn säger `Allt som gick att bygga är byggt`. Matchhallen är en separat prövning som kräver förankring, inte en saknad nod. Grind 2:s krav på hela det byggbara anläggningsträdet är därmed verifierat i spel.
+- Cupkvarten mot Slottsbron vanns 4–0; semifinalen mot Forsbacka förlorades 3–4 efter förlängning. Bo Kronqvist såldes till Söderfors för 130 tkr och gjorde senare mål mot Västanfors i derbyt, en fungerande kontinuitet mellan transfer och match.
+- Serieomgång 1–12 gav 8 segrar, 1 oavgjord och 3 förluster i det manuella provet. Västanfors står tvåa inför omgång 13. Kassan har sjunkit till 449 tkr och beslutskön har vuxit till åtta, vilket fortsatt belastar avbrottsbudgeten utan att blockera den primära matchvägen.
+- Burnout-återfallet visades en gång i omgång 8 och `Kliv tillbaka en period` valdes. Något andra slutval har ännu inte producerats denna säsong; kontrollen fortsätter genom slutspelet.
+- Samma riskfyllda sponsoravtal från Borgvik Bygg AB avböjdes i matchgranskningen efter omgång 8 och dök därefter upp igen som ett fyra omgångar gammalt köbeslut inför omgång 9. Det kan vara två separata händelse-id:n eller bristande resolution; ingen ny MASTER-rad skapas innan aktuell kod och sparningens id:n har verifierats.
+- Vid omgång 11–13 visas det frysta burnout-ankaret `Ett år sedan` stabilt. Ingen inom-säsongsskiftning har observerats hittills i 2032/33.
+
+### Säsong 2032/33–2033/34 — Grind 2/3 slutförd, 2026-09-10
+
+- 2032/33 slutade Västanfors trea i grundserien och åkte ur semifinalen mot Hälleforsnäs med 2–3 i matcher. Årsboken visade tredjeplats, semifinal och −715 tkr. Endast det faktiskt valda burnout-spåret `Kliv tillbaka en period` bars in i denna årsbok.
+- Kafferumsrepliken `Det ringde tre gamla medlemmar i förmiddags. Ingen ville något. De bara ville prata.` visades i 2032/33 före kvartsfinal 3, semifinal 1, semifinal 2 och semifinal 4. Den redan rapporterade cooldown-bristen reproducerades alltså tätare än i de två föregående slutspelen.
+- Burnout-ankaret stod som `Ett år sedan` i omgång 13 men bytte till `4 år sedan` från semifinal 3, fortfarande inom 2032/33. Den redan rapporterade skalförväxlingen reproducerades därmed igen.
+- 2033/34 markerades uttryckligen som managerns åttonde säsong. Med 173 tkr i ingående kassa, formell licensvarning och styrelsemål att öka kassan avslogs samtliga åtta lönekrav. Bertil Holmgren såldes senare för 85 tkr, två sponsoravtal accepterades och tre kostsamma ortsförnyelser avstod. Det är Grind 2:s faktiska ekonomiska avvägningsval: sportslig risk för att återställa ekonomin.
+- Västanfors vann Svenska Cupen efter 8–7 mot Hälleforsnäs. Grundserien slutade med sjätteplats, 23 poäng och en poängs marginal till slutspelsstrecket. Heros besegrades 3–2 i kvartsfinal; semifinalen mot Gagnef förlorades 1–3.
+- Årsboken 2033/34 visade cupguld, sjätteplats, semifinal och +81 tkr (173→254 tkr). Licensnämnden bekräftade att ekonomin åter var i balans. Den ekonomiska konsekvenskedjan nådde därmed både state, säsongsutfall och narrativ.
+- Burnout-taket producerades tre gånger 2033/34: efter omgång 8, efter kvartsfinal 4 och efter semifinal 1. Samma val gjordes varje gång för att undvika en konstgjord motsägelse, men årsboken skrev ändå exakt samma permanenta scar-rad två gånger. `burnout-dubbelt-slutval-samma-sasong` gäller alltså dubblett av slutgiltigt val generellt, inte bara oförenliga grenar.
+- Grind 2:s åtta säsonger i samma save, fullt byggbara anläggningsträd och verkliga år-8-ekonomival är slutförda. Grind 3:s manuella pivotkontroller är genomförda över cup, serie, slutspel och årsbok. Testaren arkiverar inte grindarna; materialet lämnas till Opus för dom enligt testinstruktionen.
