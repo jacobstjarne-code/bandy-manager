@@ -86,3 +86,11 @@ Gluggen ligger i anläggningslöftet: Västanfors fick två år i rad välja ”
 
 **Inte inträffat, men inte visat omöjligt:** färdig hallprövning, fullt anläggningsträd och senare avveckling testades inte i detta pass. Dagens ekonomimodell kalibrerades inte från noll.
 
+## Code-åtgärd 2026-09-10 — Matchhallsmålet
+
+- Verifierat mot `f40cc862` och filhistoriken: strukturell nodstatus användes som startbarhet. Fixen återanvänder `getPreSeasonChoices` för vanliga byggmål. En oprövad hall blir inte ett färdigställandemål, inte ens när det vanliga trädet är fullt; först ett verkligt `activeProject` för hallen ger det befintliga målet. Ingen ny hallmekanism eller textpool.
+- Två negativa regressionstester var röda före fix: tre byggda anläggningsnoder gav felaktigt Matchhall före Kiosk, och fullt vanligt träd gav ett hallmål utan bygge. Båda gröna efter fix. Positiva tester bevarar mål för pågående Matchhall/Belysning.
+- Falska chevronen borttagen från `HALLNODE_SUBS.vilande`. `FacilityTree` äger fortsatt den riktiga pilen och klickbarhetsvillkoret. Inga nya UI-stilar.
+- 76/76 fokustester gröna (säsongsmål, hallprövning och hallundertexter). `npm run build` inklusive TypeScript och fem grindar grönt. Fullsvit: 552/552 filer, 5 006/5 006 tester, exit 0. Kod `d363ae0a`; B1-raden arkiverad, 33→32 öppna (ny separat sparningsblockering tillkom under passet).
+- Browser, aktuell arbetskopia port 5176, 390 px: Byggets inaktiva Matchhall visas utan pil; Sommaren säsong 2 renderar målknapparna och fortsatt cupväg. De specifika hallförutsättningarna verifieras av testerna, inte av sommarfixturen.
+- Tidigare misslyckade löften skrivs inte om retroaktivt. Detta pass korrigerar framtida målurval; klubbbytesmötets textfråga är en separat MASTER-rad.
