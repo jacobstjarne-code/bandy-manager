@@ -654,8 +654,8 @@ export function isActiveAnniversaryCandidate(
 
 // ── Main aggregator ──────────────────────────────────────────────────────────
 
-export function getClubMemory(game: SaveGame): ClubMemoryView {
-  const managedClubId = game.managedClubId
+export function getClubMemory(game: SaveGame, clubId = game.managedClubId): ClubMemoryView {
+  const managedClubId = clubId
   const currentSeason = game.currentSeason
   const firstSeason = Math.max(1, currentSeason - (MAX_SEASONS - 1))
 

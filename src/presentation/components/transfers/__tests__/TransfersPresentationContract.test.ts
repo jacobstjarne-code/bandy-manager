@@ -40,4 +40,14 @@ describe('transferdomänens presentationskontrakt', () => {
 
     expect(renderedSource).not.toMatch(/[📋😤🔻💰📤🔥🔍🚨⚠️✅❌✕✓]/u)
   })
+
+  it('har exakt en primär knapp per transfermodal och rivalvarning bara på budytan', () => {
+    const bid = withoutComments(source('src/presentation/components/transfers/BidModal.tsx'))
+    const renew = withoutComments(source('src/presentation/components/transfers/RenewContractModal.tsx'))
+
+    expect(bid.match(/btn-primary/g)).toHaveLength(1)
+    expect(renew.match(/btn-primary/g)).toHaveLength(1)
+    expect(bid).toContain('transfers-rivalry-warning')
+    expect(renew).not.toContain('transfers-rivalry-warning')
+  })
 })

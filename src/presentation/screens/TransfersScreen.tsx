@@ -540,6 +540,7 @@ export function TransfersScreen() {
         return (
           <BidModal
             player={biddingPlayer}
+            game={game}
             managedClub={managedClub}
             onClose={() => setBiddingPlayerId(null)}
             onConfirm={handleBid}
@@ -558,6 +559,7 @@ export function TransfersScreen() {
         return (
           <BidModal
             player={agent}
+            game={game}
             managedClub={managedClub}
             onClose={() => setContractingFreeAgentId(null)}
             onConfirm={handleSignFreeAgent}

@@ -2303,8 +2303,9 @@ export function DevScenesScreen() {
         {scene === 'bid-modal' && (
           <BidModal
             player={interactionPlayer}
+            game={squadGame}
             managedClub={{ transferBudget: 400_000, finances: 650_000 }}
-            rivalry={{ name: 'Bollnäs GoIF', intensity: 2 }}
+            rivalry={{ clubIds: [squadGame.managedClubId, interactionPlayer.clubId], name: 'Bollnäs GoIF', intensity: 2 }}
             onClose={() => {}}
             onConfirm={() => {}}
           />
@@ -2312,6 +2313,7 @@ export function DevScenesScreen() {
         {scene === 'renew-contract-modal' && (
           <RenewContractModal
             player={interactionPlayer}
+            game={squadGame}
             currentSeason={squadGame.currentSeason}
             minSalary={interactionPlayer.salary + 1_000}
             onClose={() => {}}

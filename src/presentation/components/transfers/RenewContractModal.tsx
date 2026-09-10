@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { formatSalary, formatContractUntil } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
 import {
@@ -13,12 +14,15 @@ import {
 import { contractTermSummaryText } from '../../../domain/data/contractTermText'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { ContractTermChips } from './ContractTermChips'
+import { PlayerLedgerPanel } from './PlayerLedgerPanel'
+import { buildPlayerLedger } from '../../../domain/services/playerTransferLedgerService'
 import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
 
 interface RenewContractModalProps {
   player: Player
+  game: SaveGame
   currentSeason: number
   minSalary: number
   error?: string | null
@@ -33,7 +37,7 @@ interface RenewContractModalProps {
 }
 
 export function RenewContractModal({
-  player, currentSeason, minSalary, error, onClose, onConfirm,
+  player, game, currentSeason, minSalary, error, onClose, onConfirm,
   availableTerms = [], jobGuaranteeSponsor, imageRightsSponsor,
 }: RenewContractModalProps) {
   const salaryRange = getContractSalaryRange(minSalary)
@@ -46,6 +50,8 @@ export function RenewContractModal({
   const [years, setYears] = useState(2)
   const [terms, setTerms] = useState<ContractTermOffer>({})
   const requiredSalary = getRequiredContractSalary(player, minSalary, years)
+  const contextClub = game.clubs.find(club => club.id === player.clubId)
+  const ledger = contextClub ? buildPlayerLedger(game, player, contextClub, 'renew') : { rows: [] }
 
   return (
     <Overlay onClose={onClose} ariaLabel={`Förläng kontrakt med ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
@@ -62,6 +68,14 @@ export function RenewContractModal({
             {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
           </div>
           <div className="transfers-modal-content">
+            {contextClub && (
+              <PlayerLedgerPanel
+                rows={ledger.rows}
+                verdict={ledger.verdict}
+                clubName={contextClub.shortName || contextClub.name}
+                tone="renew"
+              />
+            )}
             <div className="transfers-info-box transfers-info-box--lg">
               <p className="transfers-info-primary">
                 Nuvarande: {formatSalary(player.salary)} · kontrakt {formatContractUntil(player.contractUntilSeason)}
@@ -91,7 +105,7 @@ export function RenewContractModal({
                   <button
                     key={y}
                     onClick={() => setYears(y)}
-                    className={`btn ${years === y ? 'btn-primary' : 'btn-outline'} transfers-year-btn`}
+                    className={`btn btn-outline transfers-year-btn ${years === y ? 'transfers-year-btn--selected' : ''}`}
                   >
                     {y} år
                   </button>
@@ -115,7 +129,7 @@ export function RenewContractModal({
         </div>
         <button
           onClick={() => onConfirm(player.id, newSalary, years, terms)}
-          className="mf-stamp"
+          className="btn btn-primary mf-stamp"
         >
           Förläng →
         </button>

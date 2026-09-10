@@ -148,6 +148,7 @@ export function ContractsTab({ initialRenewPlayerId, onConsumedDeepLink }: Contr
         return (
           <RenewContractModal
             player={renewingPlayer}
+            game={game}
             currentSeason={game.currentSeason}
             minSalary={minSalary}
             error={renewError}

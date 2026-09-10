@@ -13,6 +13,75 @@ export type PersonalityType = 'homebound' | 'ambitious' | 'family' | 'dream_club
 export type RivalryIntensity = 1 | 2 | 3
 
 /**
+ * Transfers-liggarvokabulär (OPUS_STRANGPOOLER_2026-09-10.md).
+ * Raderna väljs bara när playerTransferLedgerService kan belägga respektive
+ * proxy. Poolerna är presentation; sanningen och 0–3-urvalet bor i servicen.
+ */
+export const PLAYER_LEDGER_TENURE_LINES = [
+  'Sju säsonger i klubben. Har ratat två bud förr.',
+  'Nio år i tröjan. Han vet var isen är hårdast.',
+  'Kom hit som junior, har aldrig lämnat.',
+] as const
+
+export const PLAYER_LEDGER_DAY_JOB_LINES = [
+  'Kör grävmaskin åt kommunen på vardagarna.',
+  'Står i järnhandeln på stan mellan träningarna.',
+  'Vaktmästare på skolan. Alla ungar känner honom.',
+] as const
+
+export const PLAYER_LEDGER_BLOODLINE_LINES = [
+  '214 matcher. Fostrad av Ekström, fostrar Sjödin.',
+  'Bär numret hans farbror bar. Ingen glömmer det.',
+  'Tredje generationen i klubben. Det står i pärmen.',
+] as const
+
+export const PLAYER_LEDGER_TRIUMPH_LINES = [
+  'Nollade Skutskär i SM-finalen.',
+  'Avgjorde derbyt när det stod och vägde.',
+  'Gjorde målet som tog upp laget. Det pratas om det än.',
+] as const
+
+export const PLAYER_LEDGER_HOMEBOUND_LINES = [
+  'Aldrig krävt mer än laget tålde.',
+  'Har sagt att han spelar här tills benen tar slut.',
+  'Tackade nej till större klubbar två gånger. Stannade.',
+] as const
+
+export const PLAYER_LEDGER_BID_VERDICTS = [
+  'Hemmakär. Fler skäl att stanna än att gå.',
+  'Han hör hemma här. Liggaren pekar bara åt ett håll.',
+  'Rötterna är djupa. Ett bud rör inte det.',
+  'Klacken skulle förstå ett köp. De skulle inte förlåta det.',
+  'Allt i hans liggare säger nej.',
+] as const
+
+export const PLAYER_LEDGER_RENEW_VERDICTS = [
+  'Vill stanna. Det syns i varje rad.',
+  'Han har aldrig velat vara någon annanstans.',
+  'En förlängning är en formalitet. Han sa ja innan du frågade.',
+  'Klubben är hans. Papperet bekräftar bara det.',
+  'Håll honom. Sånt bevaras.',
+] as const
+
+export const TRANSFER_RIVALRY_LEDGER_WARNING: Record<RivalryIntensity, readonly string[]> = {
+  1: [
+    '{rival} är en gammal granne. Det märks lite extra den här.',
+    'Det finns en historia med {rival}. Inget som stör natten.',
+    'Klacken höjer ett ögonbryn. {rival}, minsann.',
+  ],
+  2: [
+    '{rival} är rival. ”{derby}” är ingen vanlig match.',
+    'Att handla med {rival} sätter sig i läktaren.',
+    'Det här är {derby}-mark. Klacken kommer att prata.',
+  ],
+  3: [
+    '{rival} är fienden. ”{derby}” delar bygden i två.',
+    'Att köpa från {rival} … klacken glömmer inte sånt i första taget.',
+    'Det finns bud man inte lägger. Det här är ett, om du frågar kurvan.',
+  ],
+}
+
+/**
  * M49 (textaudit 2026-07-04): transferPersonality tilldelas hash-seedat vid
  * worldGenerator-skapande, helt ålders-omedvetet — en 19-åring kan få
  * personlighetstypen 'family'. Dessa två strängar i PERSONALITY_REFUSAL.family

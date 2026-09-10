@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { TriangleAlert, X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
-import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { Rivalry } from '../../../domain/data/rivalries'
 import { formatValue } from '../../utils/formatters'
 import { Overlay } from '../primitives/Overlay'
 import {
@@ -12,16 +13,19 @@ import {
 } from '../../../domain/services/contractNegotiationService'
 import { contractTermSummaryText } from '../../../domain/data/contractTermText'
 import { ContractTermChips } from './ContractTermChips'
+import { PlayerLedgerPanel } from './PlayerLedgerPanel'
+import { buildPlayerLedger, buildTransferRivalryWarning } from '../../../domain/services/playerTransferLedgerService'
 import '../../styles/match-flow.css'
 
 const PERF_DOTS = Array.from({ length: 8 })
 
 interface BidModalProps {
   player: Player
+  game: SaveGame
   managedClub: { transferBudget: number; finances: number }
   onClose: () => void
   onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number, terms: ContractTermOffer) => void
-  rivalry?: { name: string; intensity: number } | null
+  rivalry?: Rivalry | null
   mode?: 'transfer' | 'freeAgent'
   salaryRange?: { min: number; max: number }
   availableTransferBudget?: number
@@ -36,7 +40,7 @@ interface BidModalProps {
 }
 
 export function BidModal({
-  player, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget,
+  player, game, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget,
   availableTerms = [], jobGuaranteeSponsor, imageRightsSponsor, minSalary,
 }: BidModalProps) {
   const isFreeAgent = mode === 'freeAgent'
@@ -50,6 +54,11 @@ export function BidModal({
   const availableBudget = availableTransferBudget ?? managedClub.transferBudget
   const canAfford = isFreeAgent || (availableBudget >= offerAmount && managedClub.finances - offerAmount >= -100000)
   const requiredSalary = isFreeAgent && minSalary !== undefined ? getRequiredContractSalary(player, minSalary, contractYears) : 0
+  const contextClub = game.clubs.find(club => club.id === player.clubId)
+  const ledger = contextClub ? buildPlayerLedger(game, player, contextClub, 'bid') : { rows: [] }
+  const rivalryWarning = !isFreeAgent && rivalry && contextClub
+    ? buildTransferRivalryWarning(player, contextClub, rivalry)
+    : null
 
   return (
     <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
@@ -66,6 +75,14 @@ export function BidModal({
             {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
           </div>
           <div className="transfers-modal-content">
+            {contextClub && (
+              <PlayerLedgerPanel
+                rows={ledger.rows}
+                verdict={ledger.verdict}
+                clubName={contextClub.shortName || contextClub.name}
+                tone="bid"
+              />
+            )}
             <div className="transfers-info-box">
               {isFreeAgent && salaryRange
                 ? `Lönekrav: ${Math.round(salaryRange.min / 1000)}–${Math.round(salaryRange.max / 1000)} tkr/mån`
@@ -95,7 +112,7 @@ export function BidModal({
                   <button
                     key={y}
                     onClick={() => setContractYears(y)}
-                    className={`btn ${contractYears === y ? 'btn-primary' : 'btn-outline'} transfers-year-btn`}
+                    className={`btn btn-outline transfers-year-btn ${contractYears === y ? 'transfers-year-btn--selected' : ''}`}
                   >
                     {y} år
                   </button>
@@ -117,12 +134,10 @@ export function BidModal({
                 </p>
               </>
             )}
-            {!isFreeAgent && rivalry && (
+            {rivalryWarning && (
               <div className="transfers-rivalry-warning">
-                {(() => {
-                  const pool = RIVALRY_WARNING_PER_INTENSITY[rivalry.intensity as 1 | 2 | 3]
-                  return pool ? pool[0] : null
-                })()}
+                <TriangleAlert className="transfers-rivalry-warning-mark" size={13} aria-hidden="true" />
+                <span>{rivalryWarning}</span>
               </div>
             )}
             {!isFreeAgent && availableBudget < offerAmount && <p className="transfers-error-text">Otillräcklig tillgänglig transferbudget</p>}
@@ -132,7 +147,7 @@ export function BidModal({
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears, terms)}
           disabled={!canAfford}
-          className="mf-stamp"
+          className="btn btn-primary mf-stamp"
         >
           {isFreeAgent ? 'Värva →' : 'Lägg bud →'}
         </button>
