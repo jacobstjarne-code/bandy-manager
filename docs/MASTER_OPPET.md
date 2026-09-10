@@ -100,7 +100,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| pt6-nedslackning-timing | Nedsläckning av matchhändelser går för långsamt i live-flödet | verifierad | Design | BACKLOG.md:300 | verifiera mot kod (timing-just) [Verifierat 2026-09-01 (Code): BACKLOG.md rad ~300 (PT-6) listar posten fortfarande öppen ("design/Code", ej STÄNGT), samma beskrivning om långsam nedsläckning.] |
+| pt6-nedslackning-timing | Nedsläckning av matchhändelser går för långsamt i live-flödet | in_progress | Codex | BACKLOG.md:300 | CLAIM 2026-09-10T13:12:40+02:00 — Codex. Avgör mot aktuell Stålvallen-arkitektur och git-historik om den gamla nedsläckningen fortfarande har en levande motsvarighet; ändra bara en timing om samma yta faktiskt finns kvar. [Verifierat 2026-09-01 (Code): BACKLOG.md rad ~300 (PT-6) listar posten fortfarande öppen ("design/Code", ej STÄNGT), samma beskrivning om långsam nedsläckning.] |
 
 ## A. AKTIVA SPRINTAR
 
