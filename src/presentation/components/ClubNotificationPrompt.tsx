@@ -1,31 +1,49 @@
 import { useMemo, useState } from 'react'
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import { isNotificationPromptEligible } from '../../domain/attention/attentionEngine'
+import {
+  getCompletedManagedMatchCount,
+  getNotificationPromptResumeMatchCount,
+  isNotificationPromptEligible,
+  isNotificationPromptPostponed,
+} from '../../domain/attention/attentionEngine'
 import { useClubNotifications } from '../hooks/useClubNotifications'
 
 const DISMISSED_PREFIX = 'bandy-notification-prompt-dismissed:'
 
-function wasDismissed(saveId: string): boolean {
+function readPostponedUntil(saveId: string, completedMatches: number): number {
   try {
-    return localStorage.getItem(`${DISMISSED_PREFIX}${saveId}`) === 'true'
+    const key = `${DISMISSED_PREFIX}${saveId}`
+    const stored = localStorage.getItem(key)
+    if (stored === 'true') {
+      // Den gamla knappen sade ”Inte nu” men sparade ett permanent nej. Tolka
+      // legacyvärdet som en enda verklig uppskjutning och migrera direkt.
+      const migrated = getNotificationPromptResumeMatchCount(completedMatches)
+      localStorage.setItem(key, String(migrated))
+      return migrated
+    }
+    const parsed = Number(stored)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
   } catch {
-    return false
+    return 0
   }
 }
 
 export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
   const { capability, backendAvailable, isSubscribed, isChanging, error, enable } = useClubNotifications()
-  const [dismissed, setDismissed] = useState(() => wasDismissed(game.id))
+  const completedMatches = getCompletedManagedMatchCount(game)
+  const [postponedUntil, setPostponedUntil] = useState(() => readPostponedUntil(game.id, completedMatches))
   const [showIosHelp, setShowIosHelp] = useState(false)
   const eligible = useMemo(() => isNotificationPromptEligible(game), [game])
+  const postponed = isNotificationPromptPostponed(completedMatches, postponedUntil)
 
-  if (!eligible || dismissed || !capability.supported || backendAvailable !== true || capability.permission === 'denied' || isSubscribed !== false) {
+  if (!eligible || postponed || !capability.supported || backendAvailable !== true || capability.permission === 'denied' || isSubscribed !== false) {
     return null
   }
 
-  function dismiss() {
-    try { localStorage.setItem(`${DISMISSED_PREFIX}${game.id}`, 'true') } catch { /* no-op */ }
-    setDismissed(true)
+  function postpone() {
+    const nextEligibleMatchCount = getNotificationPromptResumeMatchCount(completedMatches)
+    try { localStorage.setItem(`${DISMISSED_PREFIX}${game.id}`, String(nextEligibleMatchCount)) } catch { /* no-op */ }
+    setPostponedUntil(nextEligibleMatchCount)
   }
 
   return (
@@ -53,7 +71,7 @@ export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
             <button className="btn btn-outline" onClick={() => setShowIosHelp(value => !value)} style={{ flex: 1, fontSize: 11 }}>
               {showIosHelp ? 'Dölj hjälp' : 'Visa hur'}
             </button>
-            <button className="btn btn-ghost" onClick={dismiss} style={{ fontSize: 11 }}>Inte nu</button>
+            <button className="btn btn-ghost" onClick={postpone} style={{ fontSize: 11 }}>Inte nu</button>
           </div>
           {showIosHelp && (
             <p className="h-micro" style={{ color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.45 }}>
@@ -66,7 +84,7 @@ export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
           <button className="btn btn-primary" onClick={() => void enable()} disabled={isChanging} style={{ flex: 1, fontSize: 11 }}>
             {isChanging ? 'Kopplar in…' : 'Ja, säg till'}
           </button>
-          <button className="btn btn-ghost" onClick={dismiss} disabled={isChanging} style={{ fontSize: 11 }}>Inte nu</button>
+          <button className="btn btn-ghost" onClick={postpone} disabled={isChanging} style={{ fontSize: 11 }}>Inte nu</button>
         </div>
       )}
 

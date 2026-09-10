@@ -16,6 +16,7 @@ import {
 
 const FIRST_EVALUATION_DELAY_MS = 18 * 60 * 60 * 1000
 const CANDIDATE_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000
+export const NOTIFICATION_PROMPT_POSTPONE_MATCHES = 3
 
 interface CandidateDraft {
   type: AttentionCategory
@@ -145,17 +146,29 @@ export function evaluateAttention(
   }
 }
 
-/**
- * Värdegrind för browserns egen permission-dialog. Första kompletta veckan
- * betyder här: minst en hanterad match är färdig, Granska har faktiskt
- * besökts och den nya omgångens lag är fortfarande en sann open loop.
- */
-export function isNotificationPromptEligible(game: SaveGame): boolean {
-  const completedManagedMatches = game.fixtures.filter(fixture =>
+export function getCompletedManagedMatchCount(game: SaveGame): number {
+  return game.fixtures.filter(fixture =>
     fixture.status === 'completed' &&
     (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId),
   ).length
-  if (completedManagedMatches < 1 || !(game.visitedScreensThisRound ?? []).includes('review')) {
+}
+
+export function getNotificationPromptResumeMatchCount(completedMatches: number): number {
+  return completedMatches + NOTIFICATION_PROMPT_POSTPONE_MATCHES
+}
+
+export function isNotificationPromptPostponed(completedMatches: number, resumeAtMatchCount: number): boolean {
+  return completedMatches < resumeAtMatchCount
+}
+
+/**
+ * Värdegrind för klubbens egen pre-prompt (browserdialogen öppnas först vid
+ * ett aktivt ja). Jacob 2026-09-10: tre egna färdigspelade matcher krävs;
+ * efter det ska Granska faktiskt vara läst och den nya omgångens lag fortsatt
+ * vara en sann open loop. Då har spelaren upplevt loopen innan vi frågar.
+ */
+export function isNotificationPromptEligible(game: SaveGame): boolean {
+  if (getCompletedManagedMatchCount(game) < 3 || !(game.visitedScreensThisRound ?? []).includes('review')) {
     return false
   }
   return evaluateAttention(game).candidates.some(candidate =>

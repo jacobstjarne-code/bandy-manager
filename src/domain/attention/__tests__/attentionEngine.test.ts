@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { SaveGame } from '../../entities/SaveGame'
 import { FixtureStatus } from '../../enums'
-import { evaluateAttention, isNotificationPromptEligible } from '../attentionEngine'
+import {
+  evaluateAttention,
+  getCompletedManagedMatchCount,
+  getNotificationPromptResumeMatchCount,
+  isNotificationPromptEligible,
+  isNotificationPromptPostponed,
+} from '../attentionEngine'
 
 function gameFixture(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -146,19 +152,29 @@ describe('evaluateAttention', () => {
     expect(evaluation.badgeCount).toBe(0)
   })
 
-  it('earns the permission prompt only after Granska and with a new open lineup', () => {
-    const completed = {
+  it('earns the permission prompt only after three own matches, Granska and a new open lineup', () => {
+    const completed = [1, 2, 3].map(index => ({
       ...gameFixture().fixtures[0],
-      id: 'fixture-completed',
+      id: `fixture-completed-${index}`,
       status: FixtureStatus.Completed,
-    }
+    }))
     const game = gameFixture({
-      fixtures: [completed, ...gameFixture().fixtures],
+      fixtures: [...completed, ...gameFixture().fixtures],
       visitedScreensThisRound: ['review'],
     })
 
+    expect(getCompletedManagedMatchCount(game)).toBe(3)
     expect(isNotificationPromptEligible(game)).toBe(true)
+    expect(isNotificationPromptEligible({ ...game, fixtures: game.fixtures.slice(1) })).toBe(false)
     expect(isNotificationPromptEligible({ ...game, visitedScreensThisRound: [] })).toBe(false)
     expect(isNotificationPromptEligible({ ...game, lineupConfirmedThisRound: true })).toBe(false)
+  })
+
+  it('”Inte nu” skjuter upp nästa fråga tre egna matcher, inte permanent', () => {
+    const resumeAt = getNotificationPromptResumeMatchCount(3)
+    expect(resumeAt).toBe(6)
+    expect(isNotificationPromptPostponed(3, resumeAt)).toBe(true)
+    expect(isNotificationPromptPostponed(5, resumeAt)).toBe(true)
+    expect(isNotificationPromptPostponed(6, resumeAt)).toBe(false)
   })
 })
