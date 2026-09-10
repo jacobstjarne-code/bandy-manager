@@ -320,6 +320,10 @@ export interface GameEvent {
   title: string
   body: string
   choices: EventChoice[]
+  /** DOM_BESLUTSKORT_PRIMARREGEL_2026-09-08: explicit design/copy-dom.
+   * Osatt betyder att alternativen är symmetriska och därför alla neutrala.
+   * Renderingslagret får aldrig härleda en rekommendation ur effekten. */
+  primaryChoiceId?: string
   sender?: EventSender       // Named person + role
   /** Canonical instance id for a named recurring speaker. Omitted for the
    * narrator, system messages, ambient collectives and sponsor companies

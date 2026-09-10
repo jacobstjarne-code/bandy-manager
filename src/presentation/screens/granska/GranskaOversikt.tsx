@@ -675,6 +675,7 @@ export function GranskaOversikt({
                   chosenLabel={chosenLabels[event.id]}
                   chosenOutcome={chosenOutcomes[event.id]}
                   choices={event.choices}
+                  primaryChoiceId={event.primaryChoiceId}
                   onChoose={(id, label) => onChoice(event.id, id, label)}
                 />
               )
@@ -714,6 +715,7 @@ export function GranskaOversikt({
             chosenLabel={chosenLabels[pc.id]}
             chosenOutcome={chosenOutcomes[pc.id]}
             choices={pc.choices}
+            primaryChoiceId={pc.primaryChoiceId}
             onChoose={(id, label) => onChoice(pc.id, id, label)}
           />
         )
@@ -736,6 +738,7 @@ export function GranskaOversikt({
             chosenLabel={chosenLabels[cp.id]}
             chosenOutcome={chosenOutcomes[cp.id]}
             choices={cp.choices}
+            primaryChoiceId={cp.primaryChoiceId}
             onChoose={(id, label) => onChoice(cp.id, id, label)}
           />
         )
@@ -756,6 +759,7 @@ export function GranskaOversikt({
             chosenLabel={chosenLabels[rm.id]}
             chosenOutcome={chosenOutcomes[rm.id]}
             choices={rm.choices}
+            primaryChoiceId={rm.primaryChoiceId}
             onChoose={(id, label) => onChoice(rm.id, id, label)}
           />
         )

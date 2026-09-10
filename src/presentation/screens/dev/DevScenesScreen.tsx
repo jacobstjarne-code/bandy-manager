@@ -1202,6 +1202,7 @@ const sponsorMotbudGame = {
 const breakpointEvent = {
   id: 'dev-breakpoint-economy', type: 'criticalEconomy' as const, resolved: false,
   title: 'Kassan räcker inte', body: 'Klubben måste välja vad som ska skyddas.',
+  primaryChoiceId: 'squad',
   choices: [
     { id: 'squad', label: 'Skydda truppen', effect: { type: 'noOp' as const } },
     { id: 'facility', label: 'Skydda anläggningen', effect: { type: 'noOp' as const } },
@@ -2674,6 +2675,7 @@ export function DevScenesScreen() {
                 body={item.event.body}
                 resolved={false}
                 choices={item.event.choices}
+                primaryChoiceId={'primaryChoiceId' in item.event ? item.event.primaryChoiceId : undefined}
                 onChoose={() => {}}
               />
             ))}

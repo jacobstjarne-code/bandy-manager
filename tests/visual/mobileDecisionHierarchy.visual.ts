@@ -119,15 +119,15 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
   test('rund EventOverlay behåller brytpunktens accentkant', async ({ page }) => {
     await openMobileScene(page, 'event-overlay-breakpoint')
 
-    const card = page.locator('[data-decision-mode="brytpunkt"]')
-    await expect(card).toBeVisible()
-    const style = await card.evaluate(element => {
-      const computed = getComputedStyle(element)
-      return { borderLeftWidth: computed.borderLeftWidth, borderLeftStyle: computed.borderLeftStyle, shadow: computed.boxShadow }
-    })
-    expect(parseFloat(style.borderLeftWidth)).toBeGreaterThanOrEqual(3)
-    expect(style.borderLeftStyle).toBe('solid')
-    expect(style.shadow).not.toBe('none')
+    const scene = page.locator('.breakpoint-scene[data-decision-mode="brytpunkt"]')
+    await expect(scene).toBeVisible()
+    await expect(scene.locator('.scene-choice')).toHaveCount(2)
+    await expect(scene.locator('.scene-choice.weight')).toHaveCount(1)
+    await expect(scene.locator('.btn-primary')).toHaveCount(0)
+    await expect(scene.locator('.scene-choice__arrow')).toHaveCount(2)
+
+    const style = await scene.evaluate(element => getComputedStyle(element).boxShadow)
+    expect(style).not.toBe('none')
   })
 
   test('taktiktavlans elva spelarval har tumträffyta och går att välja', async ({ page }) => {

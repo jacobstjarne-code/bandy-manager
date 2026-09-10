@@ -68,6 +68,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   chosenLabel={chosenLabels[event.id]}
                   chosenOutcome={chosenOutcomes[event.id]}
                   choices={event.choices ?? []}
+                  primaryChoiceId={event.primaryChoiceId}
                   onChoose={(id, label) => onChoice(event.id, id, label)}
                 />
               </div>

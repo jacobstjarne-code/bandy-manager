@@ -12,6 +12,7 @@ import { DecisionCard } from './DecisionCard'
 import { getVoiceEligibleEvents } from '../../domain/services/voiceIntroductionService'
 import { IllustrationScene } from './illustration/IllustrationScene'
 import { getEventIllustrationName } from './eventIllustration'
+import { BreakpointDecisionScene } from './BreakpointDecisionScene'
 
 interface EventOverlayProps {
   // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
@@ -59,6 +60,7 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
 
   const total = getVoiceEligibleEvents(game, game.pendingEvents ?? []).filter(e => !e.resolved).length || 1
   const illustrationName = getEventIllustrationName(event)
+  const decisionMode = getEffectiveDecisionMode(event)
 
   // Presskonferens: dedikerad visuell scen istf generisk overlay
   if (event.type === 'pressConference') {
@@ -111,22 +113,38 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
           style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', aspectRatio: 'auto' }}
         />
       )}
-      <DecisionCard
-        shape="round"
-        size="lg"
-        entityId={entityId}
-        entitySource="EventOverlay"
-        mode={getEffectiveDecisionMode(event)}
-        label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
-        title={event.title}
-        body={event.body}
-        tags={tags}
-        whyNowLine={getEffectiveWhyNowLine(event) ?? undefined}
-        resolved={false}
-        choices={event.choices}
-        onChoose={(id) => handleChoice(id)}
-        style={{ position: 'relative', zIndex: 1 }}
-      />
+      {decisionMode === 'brytpunkt' ? (
+        <BreakpointDecisionScene
+          entityId={entityId}
+          entitySource="EventOverlay"
+          label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
+          title={event.title}
+          body={event.body}
+          whyNowLine={getEffectiveWhyNowLine(event) ?? undefined}
+          tags={tags}
+          choices={event.choices}
+          primaryChoiceId={event.primaryChoiceId}
+          onChoose={(id) => handleChoice(id)}
+        />
+      ) : (
+        <DecisionCard
+          shape="round"
+          size="lg"
+          entityId={entityId}
+          entitySource="EventOverlay"
+          mode={decisionMode}
+          label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
+          title={event.title}
+          body={event.body}
+          tags={tags}
+          whyNowLine={getEffectiveWhyNowLine(event) ?? undefined}
+          resolved={false}
+          choices={event.choices}
+          primaryChoiceId={event.primaryChoiceId}
+          onChoose={(id) => handleChoice(id)}
+          style={{ position: 'relative', zIndex: 1 }}
+        />
+      )}
 
       {/* Progress */}
       {total > 1 && (
