@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Target, Users, LineChart, GraduationCap, type LucideIcon } from 'lucide-react'
+import { Target, Users, LineChart, GraduationCap, ChevronDown, type LucideIcon } from 'lucide-react'
 import { Icon } from '../../components/primitives/Icon'
 import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
@@ -70,10 +70,19 @@ export function GranskaScreen() {
     setHasMoreContent(el.scrollTop + el.clientHeight < el.scrollHeight - 8)
   }
 
+  const scrollToMoreContent = () => {
+    const el = contentRef.current
+    if (!el) return
+    el.scrollBy({
+      top: Math.max(180, el.clientHeight * 0.65),
+      behavior: 'smooth',
+    })
+  }
+
   useEffect(() => {
     const frame = requestAnimationFrame(updateScrollCue)
     return () => cancelAnimationFrame(frame)
-  }, [step, visible, roundSummary])
+  }, [step, visible, roundSummary, resolvedEventIds])
 
   // Notifieringsdomen 2026-09-04: permission-frågan får tidigast visas
   // efter en faktiskt läst första Granska och när nästa lag ännu är öppet.
@@ -328,17 +337,34 @@ export function GranskaScreen() {
       }}>
         {hasMoreContent && (
           <div
-            aria-hidden="true"
             style={{
-              position: 'absolute', left: 0, right: 0, top: -22, height: 22,
-              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-              paddingBottom: 2,
-              color: 'var(--accent)', fontSize: 12,
+              position: 'absolute', left: 0, right: 0, top: -56, height: 56,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'linear-gradient(to bottom, transparent, var(--bg))',
               pointerEvents: 'none',
             }}
           >
-            ↓
+            <button
+              type="button"
+              aria-label="Visa mer av matchrapporten"
+              onClick={scrollToMoreContent}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                border: '2px solid var(--bg)',
+                background: 'var(--accent)',
+                color: 'var(--text-light)',
+                boxShadow: '0 3px 12px rgba(0,0,0,0.28)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+              }}
+            >
+              <Icon icon={ChevronDown} size={24} color="currentColor" />
+            </button>
           </div>
         )}
         {/* Step label */}
