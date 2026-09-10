@@ -1,5 +1,6 @@
 import type { GameEvent, GameEventType } from '../entities/GameEvent'
 import { getEffectivePriority } from './eventQueueService'
+import { isPassiveVoiceIntroduction } from './voiceIntroductionService'
 
 export type EventNature = 'critical' | 'player' | 'reactions' | 'inbox-only'
 
@@ -115,7 +116,7 @@ export const REACTION_TYPES = new Set<GameEventType>([
 export function classifyEventNature(event: GameEvent): EventNature {
   // Röstpresentationer är information, aldrig ett dolt kvittenskrav. Detta
   // fångar även journalistExclusive, som normalt är inbox-only.
-  if (event.introducesVoiceId && event.choices.length === 0) return 'reactions'
+  if (isPassiveVoiceIntroduction(event)) return 'reactions'
   if (CRITICAL_GRANSKA_TYPES.has(event.type)) {
     return event.choices.length === 0 ? 'reactions' : 'critical'
   }

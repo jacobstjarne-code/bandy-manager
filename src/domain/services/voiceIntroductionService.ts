@@ -9,6 +9,13 @@ import { logEvent } from './eventLedgerService'
 
 export const MAX_VOICE_INTRODUCTIONS_PER_MATCHDAY = 1
 
+/** Legacy saves may still contain the old one-button "Noterat" intro card. */
+export function isPassiveVoiceIntroduction(
+  event: Pick<GameEvent, 'introducesVoiceId' | 'choices'>,
+): boolean {
+  return !!event.introducesVoiceId && event.choices.every(choice => choice.effect.type === 'noOp')
+}
+
 function voicePart(value: string): string {
   return encodeURIComponent(value)
 }

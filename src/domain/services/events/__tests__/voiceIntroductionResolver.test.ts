@@ -7,7 +7,7 @@ import { mecenatVoiceId } from '../../voiceIntroductionService'
 import { resolveEvent } from '../eventResolver'
 
 describe('eventResolver — voice introductions', () => {
-  it('opens the gate and consumes the period budget when an intro card is answered', () => {
+  it('opens the gate and consumes the period budget when a legacy Noterat intro is auto-resolved', () => {
     const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 72 })
     const voiceId = mecenatVoiceId(base.managedClubId, 'm1')
     const intro: GameEvent = {
@@ -17,7 +17,7 @@ describe('eventResolver — voice introductions', () => {
       choices: [{ id: 'ack', label: 'Noterat', effect: { type: 'noOp' } }],
     }
 
-    const resolved = resolveEvent({ ...base, pendingEvents: [intro] }, intro.id, 'ack', () => 0.5, true)
+    const resolved = resolveEvent({ ...base, pendingEvents: [intro] }, intro.id, 'auto', () => 0.5, false)
 
     expect(resolved.pendingEvents).toEqual([])
     expect(resolved.introducedVoices?.[voiceId]).toMatchObject({
@@ -30,6 +30,7 @@ describe('eventResolver — voice introductions', () => {
     expect(resolved.eventLedger?.some(entry =>
       entry.type === 'voice_introduced' && entry.subject?.id === voiceId
     )).toBe(true)
+    expect(resolved.resolvedChoices ?? []).toEqual([])
   })
 
   it('cannot resolve a deferred voice event or a second intro on the same matchday', () => {

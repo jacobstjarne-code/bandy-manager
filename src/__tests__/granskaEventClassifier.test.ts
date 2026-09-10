@@ -97,6 +97,13 @@ describe('classifyEventNature', () => {
     }))).toBe('reactions')
   })
 
+  it('also routes a legacy Noterat-only voice introduction as a non-blocking reaction', () => {
+    expect(classifyEventNature(makeEvent('journalistExclusive', {
+      introducesVoiceId: 'local_press:malilla:test',
+      choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'noOp' } }],
+    }))).toBe('reactions')
+  })
+
   it('communityEvent (HIGH 11-följdfix 2026-08-31: fick en resolverbar yta) klassas nu som CRITICAL_GRANSKA_TYPES, samma ambient-regel som övriga', () => {
     expect(classifyEventNature(makeEvent('communityEvent'))).toBe('reactions')
     const withChoice = { choices: [{ id: 'yes', label: 'Ja', effect: {} }] }

@@ -30,7 +30,7 @@ import {
 } from '../storylineLedgerService'
 import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
-import { canEventPassVoiceGate, recordVoiceIntroduction } from '../voiceIntroductionService'
+import { canEventPassVoiceGate, isPassiveVoiceIntroduction, recordVoiceIntroduction } from '../voiceIntroductionService'
 import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
 
 /**
@@ -317,7 +317,7 @@ export function resolveEvent(
   // Events with no choices are observations, not decisions: consume the row and
   // remember its stable id for generator dedup, but never fabricate a
   // resolvedChoices entry or a player-attributed narrative beat.
-  if (event.choices.length === 0) {
+  if (event.choices.length === 0 || isPassiveVoiceIntroduction(event)) {
     return recordIntroducedVoice({
       ...game,
       pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
