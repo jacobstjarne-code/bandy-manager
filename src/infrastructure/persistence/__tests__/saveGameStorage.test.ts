@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot, restoreLatestSaveSnapshot } from '../saveGameStorage'
+import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame, snapshotSave, listSaveSnapshots, loadSaveSnapshot, restoreLatestSaveSnapshot, importSaveFromJson } from '../saveGameStorage'
 import { migrateSaveGame, CURRENT_SAVE_VERSION } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
@@ -48,6 +48,26 @@ beforeEach(() => {
 })
 
 describe('saveGameStorage', () => {
+
+  it('förankrar importens filfält i DOM och städar bort det efter lyckad import', async () => {
+    const game = makeGame('import_dom', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    const importPromise = importSaveFromJson()
+    const input = document.body.querySelector<HTMLInputElement>('input[type="file"]')
+
+    expect(input).not.toBeNull()
+    expect(input?.accept).toBe('.json')
+
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [{ text: async () => JSON.stringify(game) }],
+    })
+    input?.dispatchEvent(new Event('change'))
+
+    const imported = await importPromise
+    expect(imported?.id).toBe(game.id)
+    expect(document.body.contains(input)).toBe(false)
+    expect(idbStore[`bandy_save_${game.id}`]).toBeDefined()
+  })
 
   it.each(['0.1.0', '0.3.11'])('opens and resaves format %s through the existing migration path', async version => {
     const game = { ...makeGame(`legacy_${version}`, 'club_forsbacka', '2025-10-01T10:00:00.000Z'), version, revision: 7 }

@@ -183,15 +183,24 @@ export async function importSaveFromJson(): Promise<SaveGame | null> {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json'
+    input.style.display = 'none'
+    document.body.appendChild(input)
+    let openTimer: number | undefined
+    const finish = (game: SaveGame | null) => {
+      if (openTimer !== undefined) window.clearTimeout(openTimer)
+      input.remove()
+      resolve(game)
+    }
+    input.oncancel = () => finish(null)
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) { resolve(null); return }
+      if (!file) { finish(null); return }
       try {
         const text = await file.text()
         const parsed = JSON.parse(text)
         if (!isValidSaveGameStructure(parsed)) {
           console.warn('[importSaveFromJson] Ogiltig save-struktur — import avbruten')
-          resolve(null)
+          finish(null)
           return
         }
         const migrated = migrateSaveGame(parsed)
@@ -201,15 +210,18 @@ export async function importSaveFromJson(): Promise<SaveGame | null> {
         const result = await saveSaveGame(migrated, { force: true })
         if (!result.success) {
           console.error('[importSaveFromJson] saveSaveGame misslyckades:', result.error)
-          resolve(null)
+          finish(null)
           return
         }
-        resolve(migrated)
+        finish(migrated)
       } catch {
-        resolve(null)
+        finish(null)
       }
     }
-    input.click()
+    // Låt bekräftelsedialogens event-loop avslutas innan filväljaren öppnas.
+    // Annars kan Chromium behandla båda dialogerna som samma blockerande steg,
+    // vilket gör filvalet opålitligt i browser-/speltest.
+    openTimer = window.setTimeout(() => input.click(), 50)
   })
 }
 

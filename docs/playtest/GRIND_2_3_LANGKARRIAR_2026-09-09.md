@@ -191,3 +191,10 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Grind 3-fynd: båda veckorna hade en tydlig match-CTA, men den konkurrerade med **10 beslut i kö**, patronkrav, mecenatpåminnelse, burnout-återfall och två Efterklang-trådar. Det är inte flera primära CTA:er, men den redaktionella belastningen är fortsatt hög.
 - Mecenatpåminnelsen räknade upp sex olösta önskemål. Två par uttryckte samma underliggande krav (bygg något respektive använd egna unga) med olika ord. Detta är observerad berättelserepetition; ingen ny buggpost skapas innan kö-/state-identiteterna kan jämföras mot koden.
 - Browserkontrollen stoppades därefter av att den lokala browserns säkerhetsverifiering tillfälligt inte kunde genomföras. Sparningen hade redan avancerat rent till omgång 4; ingen alternativ eller kringgående browserväg användes.
+
+### Säsong 6 — återimport och omgång 8, 2026-09-10
+
+- Den bevarade säkerhetskopian `bandy-Grindtest_2-s2030.json` verifierades direkt mot aktuell `migrateSaveGame`: `Grindtest 2`, Västanfors, 2030/31. Migreringen var ren; ingen data behövde handredigeras.
+- UI-importens frikopplade filfält gjorde först filvalet opålitligt. Efter DOM-förankring, gemensam städväg och avslutad confirm-event-loop importerades samma fil i en riktig browser. Headern visade därefter `Grindtest 2 · 2030/31 · OMG 8`; den tillfälliga testkarriären var ersatt. Punkten `saveimport-filvaljare-opalitlig` stängdes separat.
+- Vid omgång 8 visade matchladdningen datumet 17 oktober men samtidigt den faktiska texten `Annandagen. Hela stan är på benen.` Detta är en kalendermotsägelse, registrerad som `annandagsbeat-fel-kalenderlage`; ingen snabb specialfix gjordes under långspelet.
+- Inför omgången accepterades ett sponsoravtal på 1,5 tkr/vecka och Alexander Nieminen fick själv bestämma sitt pensionsbeslut. Beslutskön sjönk från fyra till tre. Matchen mot Hälleforsnäs är ännu inte färdigspelad i denna checkpoint.
