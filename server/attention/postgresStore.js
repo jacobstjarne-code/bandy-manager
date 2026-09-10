@@ -511,6 +511,12 @@ export class PostgresAttentionStore {
         recordedAt,
       ],
     )
+    if (installationId) {
+      await this.pool.query(
+        'UPDATE attention_installations SET updated_at = $2 WHERE id = $1',
+        [installationId, recordedAt],
+      )
+    }
   }
 
   async recordAnalyticsEvent(event, recordedAt = new Date()) {
@@ -532,6 +538,16 @@ export class PostgresAttentionStore {
   async pruneAnalyticsEvents(before) {
     const result = await this.pool.query(
       'DELETE FROM analytics_events WHERE recorded_at < $1',
+      [before],
+    )
+    return result.rowCount
+  }
+
+  async pruneInactiveInstallations(before) {
+    // Installationstabellen är ägare till all pseudonym serverstate. Samma
+    // cascade-kontrakt som vid uttrycklig avregistrering gör gallringen hel.
+    const result = await this.pool.query(
+      'DELETE FROM attention_installations WHERE updated_at < $1',
       [before],
     )
     return result.rowCount

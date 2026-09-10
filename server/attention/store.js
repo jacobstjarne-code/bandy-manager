@@ -151,6 +151,11 @@ export class InMemoryAttentionStore {
     // Local-first-domen: avregistrering är också radering. När en spelare
     // stänger av push ska snapshot, kandidater, leveranser och installation
     // inte ligga kvar i den framtida persistenta adaptern.
+    this.#deleteInstallation(installationId)
+    return true
+  }
+
+  #deleteInstallation(installationId) {
     this.#installations.delete(installationId)
     const removedDeliveryIds = new Set()
     for (const [deliveryId, delivery] of this.#deliveries) {
@@ -166,7 +171,6 @@ export class InMemoryAttentionStore {
     this.#analyticsEvents = this.#analyticsEvents.filter(event =>
       event.installationId !== installationId
     )
-    return true
   }
 
   setSnapshot(installationId, token, snapshot) {
@@ -293,11 +297,14 @@ export class InMemoryAttentionStore {
 
   recordEvent(event, recordedAt = new Date()) {
     const delivery = event.deliveryId ? this.#deliveries.get(event.deliveryId) : null
+    const installationId = event.installationId ?? delivery?.installationId
     this.#events.push({
       ...event,
-      installationId: event.installationId ?? delivery?.installationId,
+      installationId,
       recordedAt: recordedAt.toISOString(),
     })
+    const installation = installationId ? this.#installations.get(installationId) : null
+    if (installation) installation.updatedAt = recordedAt.toISOString()
     if (this.#events.length > 5_000) this.#events.splice(0, this.#events.length - 5_000)
   }
 
@@ -324,6 +331,15 @@ export class InMemoryAttentionStore {
       Date.parse(event.recordedAt) >= beforeMs
     )
     return previousLength - this.#analyticsEvents.length
+  }
+
+  pruneInactiveInstallations(before) {
+    const beforeMs = before.getTime()
+    const inactiveIds = [...this.#installations.values()]
+      .filter(installation => Date.parse(installation.updatedAt) < beforeMs)
+      .map(installation => installation.id)
+    for (const installationId of inactiveIds) this.#deleteInstallation(installationId)
+    return inactiveIds.length
   }
 
   deliveryCountSince(installation, sinceMs) {

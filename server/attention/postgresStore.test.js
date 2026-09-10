@@ -120,6 +120,33 @@ describe('PostgresAttentionStore', () => {
     expect((await pool.query('SELECT * FROM analytics_events')).rows).toEqual([])
   })
 
+  it('gallrar hela installationens lagrade state efter 90 dagars inaktivitet', async () => {
+    await store.setSubscription(INSTALLATION_ID, TOKEN, { endpoint: 'https://push.test' })
+    await store.setSnapshot(INSTALLATION_ID, TOKEN, snapshot('state-1', [candidate()]))
+    await store.recordAnalyticsEvent({
+      installationId: INSTALLATION_ID, event: 'first_match', payload: {},
+    })
+    await store.ensureInstallation('installation-active', 'secret-active')
+    await pool.query(
+      'UPDATE attention_installations SET updated_at = $2 WHERE id = $1',
+      [INSTALLATION_ID, new Date('2026-06-01T00:00:00.000Z')],
+    )
+    await pool.query(
+      'UPDATE attention_installations SET updated_at = $2 WHERE id = $1',
+      ['installation-active', new Date('2026-06-01T00:00:00.000Z')],
+    )
+    await store.recordEvent(
+      { type: 'app_opened', installationId: 'installation-active' },
+      new Date('2026-08-31T00:00:00.000Z'),
+    )
+
+    expect(await store.pruneInactiveInstallations(new Date('2026-06-02T00:00:00.000Z'))).toBe(1)
+    expect(await store.authenticateInstallation(INSTALLATION_ID, TOKEN)).toBe(false)
+    expect(await store.authenticateInstallation('installation-active', 'secret-active')).toBe(true)
+    expect((await pool.query('SELECT * FROM attention_candidates')).rows).toEqual([])
+    expect((await pool.query('SELECT * FROM analytics_events')).rows).toEqual([])
+  })
+
   it('keeps analytics out of attention_events, respects opt-out and prunes at 90-day boundary', async () => {
     await store.ensureInstallation(INSTALLATION_ID, TOKEN)
     expect(await store.recordAnalyticsEvent({

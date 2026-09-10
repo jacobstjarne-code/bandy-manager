@@ -22,6 +22,7 @@ const ALLOWED_ANALYTICS_EVENTS = new Set([
   'season_completed', 'game_over', 'session_start', 'session_end',
 ])
 const ANALYTICS_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
+const INSTALLATION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
 
 function validId(value) {
   return typeof value === 'string' && /^[a-zA-Z0-9_-]{8,128}$/.test(value)
@@ -279,11 +280,16 @@ export function createAttentionRouter({
     if (!expected || req.headers.authorization !== `Bearer ${expected}`) {
       return res.status(401).json({ error: 'unauthorized' })
     }
+    const installationsPruned = await store.pruneInactiveInstallations?.(
+      new Date(Date.now() - INSTALLATION_RETENTION_MS),
+    ) ?? 0
+    // Gallra före leverans: en installation som passerat 90 dagar får inte
+    // väckas av en gammal kandidat i samma körning som den ska raderas.
     const dispatch = await dispatcher.dispatchDue()
     const analyticsPruned = await store.pruneAnalyticsEvents?.(
       new Date(Date.now() - ANALYTICS_RETENTION_MS),
     ) ?? 0
-    return res.json({ ...dispatch, analyticsPruned })
+    return res.json({ ...dispatch, analyticsPruned, installationsPruned })
   }))
 
   return { router, store, dispatcher }

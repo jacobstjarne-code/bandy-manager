@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createHash } from 'node:crypto'
 import { InMemoryAttentionStore } from './store.js'
 
@@ -32,6 +32,8 @@ function candidate(overrides = {}) {
 }
 
 describe('InMemoryAttentionStore', () => {
+  afterEach(() => vi.useRealTimers())
+
   it('rejects a second client that does not know the installation token', () => {
     const store = new InMemoryAttentionStore()
     expect(store.ensureInstallation('installation-123', 'secret-one')).not.toBeNull()
@@ -80,6 +82,32 @@ describe('InMemoryAttentionStore', () => {
     expect(store.authenticateInstallation('installation-123', 'secret-one')).toBe(false)
     expect(store.listDispatchable(new Date('2026-09-05T05:00:00.000Z'))).toEqual([])
     expect(store.authenticateDelivery('delivery-123', 'delivery-token')).toBe(false)
+  })
+
+  it('deletes the full state after 90 days of inactivity but keeps the boundary and active installations', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-01T00:00:00.000Z'))
+    const store = new InMemoryAttentionStore()
+    store.setSubscription('installation-old', 'secret-old', { endpoint: 'https://push.test/old' })
+    store.registerDelivery({
+      id: 'delivery-old',
+      installationId: 'installation-old',
+      tokenHash: createHash('sha256').update('delivery-token').digest(),
+    })
+    store.recordAnalyticsEvent({ installationId: 'installation-old', event: 'install', payload: {} })
+
+    vi.setSystemTime(new Date('2026-06-02T00:00:00.000Z'))
+    store.ensureInstallation('installation-boundary', 'secret-boundary')
+    store.ensureInstallation('installation-active', 'secret-active')
+    vi.setSystemTime(new Date('2026-08-31T00:00:00.000Z'))
+    store.recordEvent({ type: 'app_opened', installationId: 'installation-active' })
+
+    expect(store.pruneInactiveInstallations(new Date('2026-06-02T00:00:00.000Z'))).toBe(1)
+    expect(store.authenticateInstallation('installation-old', 'secret-old')).toBe(false)
+    expect(store.authenticateDelivery('delivery-old', 'delivery-token')).toBe(false)
+    expect(store.listAnalyticsEvents('installation-old')).toEqual([])
+    expect(store.authenticateInstallation('installation-boundary', 'secret-boundary')).toBe(true)
+    expect(store.authenticateInstallation('installation-active', 'secret-active')).toBe(true)
   })
 
   it('exposes a narrative receipt only after confirmed delivery and acknowledges it', () => {
