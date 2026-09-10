@@ -159,3 +159,11 @@ En första karriär med Forsbacka slutade med att managern fick sparken efter s�
 - Fullsvit avslutad GRÖNT: 552/552 filer, 5 002/5 002 tester, exit 0 (26 minuter, två workers). Kodcommit `1d0bd36b`. De två åtgärdsraderna arkiveras; aktuell räknare 34→32 inklusive parallella agenters förändringar. Grind 2/3 står fortsatt vid säsong 5:s semifinal; återstående långkarriärkrav är oförändrade.
 - Ytterligare browserprov: `portal-interruption-budget`, 390 px. Två separata sponsorbeslut avböjdes via ordinarie knappar; uppskjuten kö gick 2 → 1 → 0 och kommunbeslutet blev synligt. Fixturen har uttryckligen olika id:n för de två sponsorbesluten; fixen behåller dem trots samma text.
 - Slutbygget i gemensamma trädet stoppade på fyra `rule13_semantic_color`-träffar i parallellt ändrade FormationView/TacticBoardCard/GameOverScreen. Dessa filer lämnades orörda. Isolerat `c7b4b12e` plus enbart de sex ändrade kod-/testfilerna byggde GRÖNT inklusive TypeScript och alla fem grindar. Ingen baseline ändrad; byggfoten i arkivkopian är avsiktligt `unknown` eftersom kopian saknar .git.
+
+### Fortsatt semifinalspel 2026-09-10
+
+- Semifinal mot Skutskär: 5–1 hemma, 1–6 borta, 3–4 hemma och 3–0 borta. Serien står 2–2 inför avgörandet.
+- Före första semifinalen löstes `Anna Johansson hotar` med `Vi lyssnar — vad vill du?`. Exakt samma hotkort visades igen efter semifinal 4, tre omgångar senare. Detta är nygenerering i den aktuella körningen, inte kvarvarande ködata från före dedupe-fixen.
+- Kodläsning bekräftar att silentShout-generatorns fyra varianter använder `Date.now()` i id:t. Därmed får varje ny generation ett nytt id och kan inte kännas igen av `pendingEvents + deferredDecisions + resolvedEventIds`.
+- Samma submits underrad säger `silentShout ökar`, medan valets enda deklarerade effekt är `mecenatHappiness +20`. Den observerade texten och state-kontraktet motsäger alltså varandra.
+- Beslutskön växte från fyra poster inför semifinal 1 till sju inför semifinal 3 och nio inför semifinal 4. Det återkomna hotkortet lämnas olöst tills fyndet är registrerat och dess state-kontrakt avgjort.
