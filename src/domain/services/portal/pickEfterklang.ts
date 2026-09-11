@@ -4,9 +4,8 @@ import { EFTERKLANG_ECHO, ECONOMIC_SCAR_AFTERMATH, type EfterklangType } from '.
 import { mulberry32 } from '../../utils/random'
 import { FixtureStatus } from '../../enums'
 import { getNextManagedFixture } from './triggers/matchTriggers'
-import { matchdayToLeagueRound } from '../scheduleGenerator'
 import { buildMemoryEventFromLedger } from '../clubMemoryService'
-import { currentChronology } from '../currentChronology'
+import { currentChronology, narrativeChronologyLabel } from '../currentChronology'
 import { toldMarksFor } from '../ledgerToldService'
 import { resolveSubjectName } from '../momentLedgerService'
 import { agendaForSurface, redaktoren } from '../redaktorenService'
@@ -191,17 +190,17 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     // renderades ordagrant som "omg 0". `||` fångar 0 också.
     const premissN = firstMem?.matchday || round
     const premissSeason = firstMem?.season ?? season
-    // SKALA-BUGGEN steg B — premissN är en global matchdag, inte en serie-
-    // omgång. Konverterad mot posten EGEN säsong (kan skilja sig från
-    // innevarande, "senaste 10 interaktionerna" kan sträcka sig tillbaka).
-    // Cup-/slutspelsmatchdagar har ingen omgång — samma ärliga fallback
-    // ("matchdag N") som cupbracket-precedenset i TabellScreen.tsx.
-    const premissRound = matchdayToLeagueRound(premissN, premissSeason)
-    const premissLabel = premissRound !== undefined ? `omg ${premissRound}` : `matchdag ${premissN}`
+    // Den lagrade klockan är fortfarande global matchdag, men prosa ska tala
+    // spelarens tävlingsspråk: serieomgång, cupsteg eller slutspel. Ett rått
+    // "matchdag 1" efter en cupmatch lät som en intern debugetikett.
+    const premissLabel = narrativeChronologyLabel(premissSeason, premissN)
+    const chronologyJoin = premissLabel.startsWith('omg ') ? ', ' : ' i '
     const opp = firstMem?.opponentShort
     const stem = interpolate(JOURNALIST_PREMISS_STEM[ev] ?? '{journalist} hörde av sig', { journalist: name })
     const canAppendOpp = !!opp && (ev === 'good_answer' || ev === 'bad_answer' || ev === 'refused_press')
-    const premiss = canAppendOpp ? `${stem} efter ${opp}, ${premissLabel}.` : `${stem}, ${premissLabel}.`
+    const premiss = canAppendOpp
+      ? `${stem} efter ${opp}${chronologyJoin}${premissLabel}.`
+      : `${stem}${chronologyJoin}${premissLabel}.`
     const journalistAgendaItem = agenda.find(item => {
       const type = getStorylineTypeFromLedger(item.post)
       return type === 'journalist_feud' || type === 'journalist_redemption'

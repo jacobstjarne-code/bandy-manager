@@ -16,8 +16,8 @@ describe('roundOrMatchdayLabel — Efterklang-tråd flera säsonger bakåt', () 
     expect(roundOrMatchdayLabel(9, 1)).toBe('OMG 5')
   })
 
-  it('en cupmatchdag (1-4) i en gammal säsong är fortfarande MATCHDAG, aldrig en gissad omgång', () => {
-    expect(roundOrMatchdayLabel(2, 1)).toBe('MATCHDAG 2')
+  it('en cupmatchdag (1-4) visas som sitt riktiga cupsteg', () => {
+    expect(roundOrMatchdayLabel(2, 1)).toBe('CUPENS KVARTSFINAL')
   })
 
   it('samma matchdagsnummer ger olika omgångsetikett i olika säsonger om kalendrarna skiljer sig inte — men samma väg används oavsett säsong', () => {

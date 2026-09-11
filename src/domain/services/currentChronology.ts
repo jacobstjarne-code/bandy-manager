@@ -57,6 +57,29 @@ export function chronologyPointLabel(season: number, matchday: number): string {
   return round !== undefined ? `omgång ${round}` : `matchdag ${matchday}`
 }
 
+/**
+ * Competition-aware label for prose and narrative timelines. The global
+ * matchday remains the canonical clock, but exposing its internal ordinal in
+ * a sentence (for example "efter Heros, matchdag 1") makes cup and playoff
+ * memories sound like debug output. Keep the clock; project it to the stage
+ * the player actually recognises.
+ */
+export function narrativeChronologyLabel(season: number, matchday: number): string {
+  const slot = buildSeasonCalendar(season).find(candidate => candidate.matchday === matchday)
+  if (slot?.type === 'league') return `omg ${slot.leagueRound}`
+  if (slot?.type === 'cup') {
+    const cupStage: Record<number, string> = {
+      1: 'cupens förstarunda',
+      2: 'cupens kvartsfinal',
+      3: 'cupens semifinal',
+      4: 'cupfinalen',
+    }
+    return cupStage[slot.cupRound ?? 0] ?? 'cupen'
+  }
+  if (matchday >= 27) return 'slutspelet'
+  return 'tidigare under säsongen'
+}
+
 export function currentChronology(game: SaveGame): CurrentChronology {
   return {
     season: game.currentSeason,

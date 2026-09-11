@@ -1,18 +1,14 @@
 import type { EfterklangMemory } from '../../../../domain/services/portal/pickEfterklang'
 import { EFTERKLANG_TYPE_ICON } from '../../../../domain/data/efterklangText'
 import { Overlay } from '../../primitives/Overlay'
-import { leagueRoundExactAt } from '../../../../domain/services/currentChronology'
+import { narrativeChronologyLabel } from '../../../../domain/services/currentChronology'
 
-// SKALA-BUGGEN steg B (2026-09-02) — entry.matchday är global, ingen serie-
-// omgång. Cup-/slutspelsmatchdagar har ingen omgång — samma ärliga fallback
-// ("MATCHDAG N") som cupbracket-precedenset i TabellScreen.tsx, aldrig ett
-// påhittat rond-nummer. berattaren-en-kronologi (2026-09-07): trådar spänner
-// ofta flera säsonger bakåt (anniversary-poster) — migrerad till Berättarens
-// klocka, som nu är säsongssäker (routar genom buildSeasonCalendar(season),
-// inte längre den nollställda game.fixtures).
+// entry.matchday är den globala klockan, inte en serieomgång. Tråden
+// projicerar därför den genom den säsongssäkra kalendern till verklig
+// serieomgång, cupsteg eller slutspel — aldrig ett påhittat rondnummer eller
+// en intern matchdagsordinal.
 export function roundOrMatchdayLabel(matchday: number, season: number): string {
-  const round = leagueRoundExactAt(season, matchday)
-  return round !== undefined ? `OMG ${round}` : `MATCHDAG ${matchday}`
+  return narrativeChronologyLabel(season, matchday).toLocaleUpperCase('sv-SE')
 }
 
 interface Props {

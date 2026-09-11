@@ -106,9 +106,8 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
     expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 5.')
   })
 
-  it('journalist: cup-/slutspelsmatchdag har ingen serieomgång — "matchdag N", aldrig ett påhittat rond-nummer (SKALA-BUGGEN steg B)', () => {
-    // Matchdag 28 är slutspel och minnet är fortfarande färskt — matchdayToLeagueRound
-    // returnerar undefined, precis som cupbracket-precedenset i TabellScreen.tsx.
+  it('journalist: slutspelsminnet visas som tävlingsfas, inte intern matchdag', () => {
+    // Matchdag 28 är slutspel och minnet är fortfarande färskt.
     const game = makeGame({
       currentMatchday: 30,
       journalist: {
@@ -116,7 +115,18 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
         memory: [{ season: 3, matchday: 28, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
       } as never,
     })
-    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, matchdag 28.')
+    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg i slutspelet.')
+  })
+
+  it('journalist: cupminnet visas med sitt riktiga cupsteg', () => {
+    const game = makeGame({
+      currentMatchday: 5,
+      journalist: {
+        name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
+        memory: [{ season: 3, matchday: 1, event: 'good_answer', sentiment: 4, opponentShort: 'Heros' }],
+      } as never,
+    })
+    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Heros i cupens förstarunda.')
   })
 
   it('journalist: ett odaterat gammalt minne får vila i stället för att dateras om till idag', () => {
