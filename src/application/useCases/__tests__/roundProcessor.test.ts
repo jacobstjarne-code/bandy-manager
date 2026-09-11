@@ -893,6 +893,7 @@ describe('roundProcessor — pool 1c spela-på-gambling', () => {
 
     const gameWithAccepted: SaveGame = {
       ...lineupGame,
+      introducedInboxTopics: ['squad', 'transfers', 'club'],
       players: lineupGame.players.map(p =>
         p.id === starterId ? { ...p, isInjured: false, injuryDaysRemaining: 10, playingThroughInjury: true } : p
       ),
@@ -925,6 +926,7 @@ describe('roundProcessor — pool 1c spela-på-gambling', () => {
 
     const gameWithAccepted: SaveGame = {
       ...lineupGame,
+      introducedInboxTopics: ['squad', 'transfers', 'club'],
       players: lineupGame.players.map(p =>
         p.id === starterId ? { ...p, isInjured: false, injuryDaysRemaining: 10, playingThroughInjury: true } : p
       ),

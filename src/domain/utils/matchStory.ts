@@ -44,7 +44,9 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
     } else if (fixture.overtimeResult) {
       sentences.push(`Seger efter förlängning mot ${oppClub?.shortName ?? 'motståndet'}.`)
     } else if (wasTrailing) {
-      sentences.push(`Seger efter vändning — ni låg under men tog två poäng till slut.`)
+      sentences.push(fixture.isCup || fixture.isKnockout
+        ? 'Seger efter vändning — ni låg under men vann till slut.'
+        : 'Seger efter vändning — ni låg under men tog två poäng till slut.')
     } else if (myScore - theirScore >= 4) {
       sentences.push(`Övertygande seger mot ${oppClub?.shortName ?? 'motståndet'}.`)
     } else {
@@ -63,7 +65,9 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
   if (topScorerName && topScorerGoals >= 2) {
     sentences.push(`${topScorerName} stod för ${topScorerGoals} mål.`)
   } else if (topScorerName && topScorerGoals === 1 && myGoalEvents.length >= 1) {
-    sentences.push(`Bland annat ${topScorerName} på skytteligget.`)
+    sentences.push(myGoalEvents.length === 1
+      ? `${topScorerName} gjorde målet.`
+      : `${topScorerName} var en av målskyttarna.`)
   }
 
   if (cornerGoals >= 2) {

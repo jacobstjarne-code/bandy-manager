@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment, StorylineEntry } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
+import { patronVoiceId } from '../../domain/services/voiceIntroductionService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
@@ -1362,6 +1363,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         date: game.currentDate,
         type: InboxItemType.PatronInfluence,
         title: `${updatedPatron.name} kräver inflytande`,
+        voiceId: patronVoiceId(game.managedClubId, updatedPatron.id),
         body: `${updatedPatron.name} har bidragit med totalt ${newTotalContributed.toLocaleString('sv-SE')} kr och känner att han förtjänar mer att säga till om i klubbens beslut.`,
         isRead: false,
       } as InboxItem)

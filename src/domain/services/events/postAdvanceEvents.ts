@@ -292,6 +292,7 @@ export function generatePostAdvanceEvents(
             },
           ],
           relatedPlayerId: picked.pid,
+          relatedFixtureId: lastFixture.id,
           resolved: false,
           rotationKey: `${STAR_PERFORMANCE_PREFIX}${picked.pid}`,
         })
@@ -508,7 +509,7 @@ export function generatePostAdvanceEvents(
         const eid = `event_praise_${praiser.id}_${praised.id}_s${game.currentSeason}`
         const playerPraiseDue = playerPraiseWindow && praiser.morale > 75 && !alreadyQueued.has(eid)
         if (playerPraiseDue) {
-          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue), rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
+          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue), relatedFixtureId: justCompletedFixture.id, rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
         }
       }
     }

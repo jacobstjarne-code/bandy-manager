@@ -28,6 +28,8 @@ import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import { getEventTypeMeta } from '../../../domain/data/eventTypeLabels'
 import { DecisionChoices } from '../DecisionChoices'
 import { SponsorCounterModal } from './SponsorCounterModal'
+import { MecenatDinnerEvent } from '../events/MecenatDinnerEvent'
+import { getEventContextLabel } from '../../../domain/services/eventContextService'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Player } from '../../../domain/entities/Player'
 import type { Sponsor } from '../../../domain/entities/Sponsor'
@@ -92,12 +94,15 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const previewSponsorCounter = useGameStore(s => s.previewSponsorCounter)
   const commitSponsorCounter = useGameStore(s => s.commitSponsorCounter)
-  const players = useGameStore(s => s.game?.players)
+  const game = useGameStore(s => s.game)
+  const players = game?.players
+  const contextLabel = game ? getEventContextLabel(event, game) : undefined
   // DOM_SPONSOR_MOTBUD_2026-08-31.md: choiceId==='counter' fångas HÄR, före
   // resolveEvent — Y är fri inmatning (SponsorCounterModal), inte ett
   // fördefinierat val. Detta är den enda platsen sponsorOffer faktiskt
   // renderas (PortalEventSlot → EventCardInline), se rotorsak i D-fact.
   const [showCounterModal, setShowCounterModal] = useState(false)
+  const [dinnerEventId, setDinnerEventId] = useState<string | null>(null)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventSourceLabel(event)
   const injuryTag = getInjuryTag(event, players)
@@ -178,6 +183,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
       )}
 
       {/* Body-text */}
+      {contextLabel && <p className="portal-card-eyebrow">{contextLabel}</p>}
       <p style={{
         fontFamily: 'Georgia, serif',
         fontSize: 13,
@@ -194,11 +200,23 @@ export function EventCardInline({ event, currentMatchday }: Props) {
           gav första action .btn-primary här, vilket kolliderade med CTA:n
           och slog upp osynligt tills portal-bid-single/-multi registrerades
           i sceneRegistry.ts, 2026-08-22 — samma lucka-klass som Å3/Å4. */}
-      <DecisionChoices
-        choices={actions.map(a => ({ id: a.choiceId, label: a.label }))}
-        onChoose={(id) => handleAction(id)}
-        layout="inline"
-      />
+      {event.type === 'mecenatDinner' ? (
+        <>
+          <button className="btn btn-outline" onClick={() => setDinnerEventId(event.id)}>Följ med</button>
+          {dinnerEventId === event.id && (
+            <MecenatDinnerEvent key={event.id} event={event} onFinish={choiceId => {
+              setDinnerEventId(null)
+              handleAction(choiceId)
+            }} />
+          )}
+        </>
+      ) : (
+        <DecisionChoices
+          choices={actions.map(a => ({ id: a.choiceId, label: a.label }))}
+          onChoose={(id) => handleAction(id)}
+          layout="inline"
+        />
+      )}
 
       {sponsorForCounter && (
         <SponsorCounterModal

@@ -711,7 +711,7 @@ export const commentary = {
   // ── Händelsevariation (Sprint D) ──────────────────────────────────────────
 
   tactical_shift: [
-    '{opponent} byter formation. Ser ut som en tre-fem-tvåa nu.',
+  '{opponent} rullar bollen mellan sig och söker en öppning.',
     'Omställning borta. Tränaren har reagerat efter målet.',
     '{opponent} drar sig tillbaka. Defensivt nu.',
     'Nytt mönster hos {opponent}. Forwarden spelar bredare.',

@@ -9,6 +9,7 @@ import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcess
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { isActiveLicenseWarning } from '../../../domain/services/licenseService'
 import { jobbetForsvannEvent } from '../../../domain/services/events/eventFactories'
+import { patronVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 export interface SponsorProcessorResult {
   updatedSponsors: Sponsor[]
@@ -148,6 +149,7 @@ export function processSponsors(
           date: newDate,
           type: InboxItemType.PatronInfluence,
           title: `${v09Patron.name} vill bli inbjuden till matcher`,
+          voiceId: patronVoiceId(game.managedClubId, v09Patron.id),
           body: `${v09Patron.name} har bidragit generöst och hör av sig: "Jag skulle gärna se ett par matcher live i år."`,
           isRead: false,
         } as InboxItem)

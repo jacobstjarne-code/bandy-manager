@@ -88,7 +88,7 @@ export function deriveContext(
   const myStanding = getCurrentLeaguePosition(managedClubId, game) !== null
     ? game.standings.find(s => s.clubId === managedClubId)
     : null
-  if (myStanding) {
+  if (myStanding && !fixture.isCup && !fixture.isKnockout) {
     const pos = myStanding.position
     const myPoints = myStanding.points
 
@@ -119,11 +119,9 @@ export function deriveContext(
     let opponentWins = 0
     let opponentLosses = 0
     for (const f of opponentCompleted) {
-      const oppIsHome = f.homeClubId === opponentId
-      const oppScore = oppIsHome ? f.homeScore : f.awayScore
-      const othScore = oppIsHome ? f.awayScore : f.homeScore
-      if (oppScore > othScore) opponentWins++
-      else if (oppScore < othScore) opponentLosses++
+      const outcome = deriveUtfall(f, opponentId)
+      if (outcome === 'vunnet') opponentWins++
+      else if (outcome === 'forlorat') opponentLosses++
     }
     if (opponentWins >= 4) {
       return { trigger: 'opp_hot', subs: { opp } }
@@ -142,9 +140,7 @@ export function deriveContext(
       let homeUnbeaten = 0
       for (let i = opponentHomeCompleted.length - 1; i >= 0; i--) {
         const f = opponentHomeCompleted[i]
-        const oppScore = f.homeScore
-        const othScore = f.awayScore
-        if (oppScore >= othScore) {
+        if (deriveUtfall(f, opponentId) !== 'forlorat') {
           homeUnbeaten++
         } else {
           break

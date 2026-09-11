@@ -84,27 +84,27 @@ export const BURNOUT_MARK_RELAPSE = {
   quotesByZone: {
     markbar: [
       'Jag känner igen det här nu. Det börjar som förra gången.',
-      'Samma tyngd som i fjol, samma tid på säsongen. Jag vet vart det bär.',
+      'Samma tyngd som förra gången. Jag känner igen mönstret.',
       'De sena kvällarna igen. Jag har sett vad de leder till.',
       'Det är inte nytt längre. Det är det som oroar mig.',
-      'Kroppen minns förra året innan huvudet hinner med.',
+      'Kroppen minns förra gången innan huvudet hinner med.',
     ],
     hog: [
-      'Här är jag igen. Samma vägg som förra säsongen.',
+      'Här är jag igen. Samma vägg som förra gången.',
       'Jag lovade mig själv att inte hamna här en gång till. Ändå.',
-      'Förra gången höll jag ut. Jag vet inte om det gör det lättare eller inte.',
-      'Det är andra gången nu. Man tror man ska lära sig. Man gör inte det.',
-      'Folk på Konsum frågar igen. De frågade förra vintern också.',
+      'Jag har varit här förut. Jag vet inte om det gör det lättare eller inte.',
+      'Det händer igen. Man tror man ska lära sig. Man gör inte det.',
+      'Jag känner igen tröttheten. Det är svårt att förklara den för andra.',
     ],
   },
   helpersByZone: {
     markbar: [
-      'Det här kände du förra året. Ta paus tidigare den här gången.',
+      'Det här har du känt förut. Ta paus tidigare den här gången.',
       'Du vet vart det leder. Bryt mönstret medan det går.',
     ],
     hog: [
-      'Samma punkt som i fjol. Förra gången höll det — men inte gratis.',
-      'Det gick en gång. Att lita på att det går igen är ingen vila.',
+      'Samma gräns igen. Det du känner behöver tas på allvar.',
+      'Att känna igen mönstret är ingen vila i sig.',
     ],
   },
 }
@@ -122,7 +122,7 @@ export const BURNOUT_CAUSE_LINES: Record<'losses' | 'losses_eased' | 'inbox' | '
   losses_eased: [
     'Segern gav andrum. Men det som tärde finns kvar under.',
     'En vinst äntligen. Den räcker inte för att sudda de andra.',
-    'Tre poäng lugnar magen för stunden. Inte huvudet.',
+    'Segern lugnar magen för stunden. Inte huvudet.',
     'Det lättade lite ikväll. Men veckorna innan sitter kvar.',
   ],
   inbox: [

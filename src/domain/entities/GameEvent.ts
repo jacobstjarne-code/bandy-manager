@@ -349,6 +349,8 @@ export interface GameEvent {
   relatedClubId?: string
   relatedBidId?: string
   relatedFixtureId?: string
+  /** Time of the underlying statement, retained while the event waits in a queue. */
+  occurredAt?: { season: number; matchday: number; date: string }
   /** C-SY1 Pilot 2: stabilt id för csPress-frågan som faktiskt visas. */
   journalistQuestionId?: string
   sponsorData?: string

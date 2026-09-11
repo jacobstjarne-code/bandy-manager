@@ -2,6 +2,8 @@ import type { SaveGame } from '../entities/SaveGame'
 import { getNextManagedFixture } from './portal/triggers/matchTriggers'
 import { getUpcomingAnchor, type UpcomingAnchor } from './calendarLookahead'
 import { safeStandingPosition } from './standingsService'
+import { deriveUtfall } from './matchTypeAxes'
+import type { Fixture } from '../entities/Fixture'
 
 /**
  * B3 (2026-07-19): Granska slutar i dag i administration ("KLAR — NÄSTA
@@ -18,6 +20,7 @@ export interface NextOpponentTeaserFacts {
   opponentName: string
   opponentShortName: string
   isHome: boolean
+  isLeagueMatch?: boolean
   matchday: number
   date: string | null
   opponentForm: FormResult[]        // senaste 5, äldst→nyast
@@ -34,16 +37,16 @@ export interface NextOpponentTeaserFacts {
     managedScore: number
     opponentScore: number
     isHome: boolean
+    outcome?: FormResult
+    isLeagueMatch?: boolean
   } | null
   calendarAnchor: UpcomingAnchor | null
 }
 
-function resultFor(managedId: string, homeId: string, homeScore: number, awayScore: number): FormResult {
-  const isHome = homeId === managedId
-  const own = isHome ? homeScore : awayScore
-  const opp = isHome ? awayScore : homeScore
-  if (own > opp) return 'V'
-  if (own < opp) return 'F'
+function resultFor(managedId: string, fixture: Fixture): FormResult {
+  const outcome = deriveUtfall(fixture, managedId)
+  if (outcome === 'vunnet') return 'V'
+  if (outcome === 'forlorat') return 'F'
   return 'O'
 }
 
@@ -60,10 +63,12 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
 
   // Motståndarens form — senaste 5 avslutade ligamatcher (alla motståndare, inte bara mot oss)
   const opponentCompleted = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout && (f.homeClubId === opponentId || f.awayClubId === opponentId))
+    .filter(f => f.status === 'completed' && f.season === game.currentSeason
+      && (nextFixture.isKnockout || (!f.isCup && !f.isKnockout))
+      && (f.homeClubId === opponentId || f.awayClubId === opponentId))
     .sort((a, b) => a.matchday - b.matchday)
   const opponentForm = opponentCompleted.slice(-5).map(f =>
-    resultFor(opponentId, f.homeClubId, f.homeScore ?? 0, f.awayScore ?? 0)
+    resultFor(opponentId, f)
   )
 
   // Motståndarens obesegrade svit PÅ DEN PLANEN vi nu möter dem (deras hemmaplan om vi
@@ -75,7 +80,7 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
   let streakSinceDate: string | null = null
   for (let i = venueFixtures.length - 1; i >= 0; i--) {
     const f = venueFixtures[i]
-    const result = resultFor(opponentId, f.homeClubId, f.homeScore ?? 0, f.awayScore ?? 0)
+    const result = resultFor(opponentId, f)
     if (result === 'F') break
     unbeatenStreak++
     streakSinceDate = f.date ?? streakSinceDate
@@ -85,7 +90,7 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
   // Tidigare möte denna säsong (om spelat)
   const priorMeeting = game.fixtures
     .filter(f =>
-      f.status === 'completed' && !f.isCup && !f.isKnockout && f.season === game.currentSeason &&
+      f.status === 'completed' && f.season === game.currentSeason &&
       ((f.homeClubId === managedId && f.awayClubId === opponentId) ||
        (f.homeClubId === opponentId && f.awayClubId === managedId))
     )
@@ -96,12 +101,15 @@ export function getNextOpponentTeaserFacts(game: SaveGame): NextOpponentTeaserFa
     managedScore: priorMeeting.homeClubId === managedId ? (priorMeeting.homeScore ?? 0) : (priorMeeting.awayScore ?? 0),
     opponentScore: priorMeeting.homeClubId === managedId ? (priorMeeting.awayScore ?? 0) : (priorMeeting.homeScore ?? 0),
     isHome: priorMeeting.homeClubId === managedId,
+    outcome: resultFor(managedId, priorMeeting),
+    isLeagueMatch: !priorMeeting.isCup && !priorMeeting.isKnockout,
   } : null
 
   return {
     opponentName: opponent.name,
     opponentShortName: opponent.shortName ?? opponent.name,
     isHome,
+    isLeagueMatch: !nextFixture.isCup && !nextFixture.isKnockout,
     matchday: nextFixture.matchday,
     date: nextFixture.date ?? null,
     opponentForm,

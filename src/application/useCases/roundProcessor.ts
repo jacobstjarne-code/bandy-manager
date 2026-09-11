@@ -931,7 +931,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         // playoffNarrativeService.ts's isPlayoffNarrativeCardStillValid.
         isPlayoffNarrativeCardStillValid(e.id, updatedBracket, game.managedClubId)
       ),
-      ...allNewEvents,
+      ...allNewEvents.map(event => ({
+        ...event,
+        occurredAt: event.occurredAt ?? { season: game.currentSeason, matchday: nextMatchday, date: newDate },
+      })),
     ],
     // 2026-08-17: staleEventIds fångade tidigare bara pendingEvents. Ett event
     // som blivit undanträngt till deferredDecisions (KF3-avbrottsbudgeten,

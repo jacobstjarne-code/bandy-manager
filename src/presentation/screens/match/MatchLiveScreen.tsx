@@ -9,6 +9,7 @@
 import { useState, useEffect, useReducer, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useManagedClub } from '../../store/gameStore'
+import { interactiveCornerGoalEvent } from './interactiveCornerEvent'
 import { simulateSecondHalf, simulateFromMidMatch } from '../../../domain/services/matchSimulator'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MATCH_GOAL_DIFFERENCE_CAP, MATCH_TOTAL_GOAL_CAP } from '../../../domain/services/matchCore'
@@ -861,8 +862,8 @@ export function MatchLiveScreen() {
       const updatedCurrent = prev.map((s, idx) => {
         if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
-          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: outcome.scorerId,
-              description: outcome.description, isCorner: true }
+          ? interactiveCornerGoalEvent({ minute, clubId: managedClubId, playerId: outcome.scorerId,
+              description: outcome.description })
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
         const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)

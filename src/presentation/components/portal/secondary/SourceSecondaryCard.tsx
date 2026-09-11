@@ -18,7 +18,7 @@ const SOURCE_CONFIG: Record<SourceKey, SourceConfig> = {
   mecenat: {
     label: 'Mecenaten',
     icon: '💼',
-    dormantBody: 'Eklund hörde av sig förra veckan. Det dröjer innan nästa.',
+    dormantBody: 'Inget nytt från mecenaten just nu.',
   },
   lokaltidningen: {
     label: 'Lokaltidningen',

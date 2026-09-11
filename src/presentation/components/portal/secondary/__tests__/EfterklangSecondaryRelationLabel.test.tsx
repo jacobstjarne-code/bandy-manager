@@ -48,7 +48,7 @@ function makeGame(): SaveGame {
       relationship: 60,
       pressRefusals: 0,
       memory: [
-        { season: 3, matchday: 2, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' },
+        { season: 3, matchday: 8, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' },
       ],
     },
     // hasJournalistSparkline kräver >= MIN_POINTS (5) snapshots

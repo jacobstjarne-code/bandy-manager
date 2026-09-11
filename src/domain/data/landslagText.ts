@@ -30,10 +30,10 @@ export const CALLUP_MODAL_LINES: string[] = [
   'Brevet kom med posten, stämplat från förbundet. {spelare} ska till VM.\n\nDet är sådant man minns långt efter att tabellen är glömd.',
 ]
 
-/** LandslagsFrånvaroSecondary — under uppehållet (~1 omg). Serien rullar vidare utan honom. */
+/** The camp records a call-up, not a match-availability ban. Do not promise absence. */
 export const ABSENCE_SECONDARY_LINES: string[] = [
-  '{spelare} är i landslagslägret. Laget får klara nästa omgång utan honom.',
-  'VM pågår. {spelare} sitter i landslaget medan serien rullar vidare här hemma.',
+  'VM-kallelsen gäller {spelare}. Det är stort för både spelaren och klubben.',
+  'Landslaget har kallat {spelare}. Uttagningen blir en del av klubbens historia.',
 ]
 
 /**

@@ -1,4 +1,5 @@
 import type { InboxItemType } from '../enums'
+import type { VoiceId } from './Voice'
 
 export interface InboxItem {
   id: string
@@ -9,11 +10,13 @@ export interface InboxItem {
   relatedClubId?: string
   relatedPlayerId?: string
   relatedFixtureId?: string
+  /** Named speaker uses the same introduction registry as event cards. */
+  voiceId?: VoiceId
   isRead: boolean
   createdMatchday?: number  // For inbox cleanup: gallra read informative items after 2 rounds
   /** Säsongen då faktumet skapades. Hindrar negativ ålder efter rollover. */
   createdSeason?: number
-  createdRound?: number | null  // Liga-omgångsnummer för UI-etiketten; null = cup/slutspelsomgång → "Cupen"
+  createdRound?: number | null  // Liga-omgångsnummer; null saknar entydig tävlingsetikett (datum visas fortfarande).
   // Sprint 18 — coach tone
   tone?: 'coach'
   fromRole?: string

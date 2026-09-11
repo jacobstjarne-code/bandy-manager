@@ -228,11 +228,13 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       return 'league_halfway'
     }
 
-    // Midwinter — after Annandagen (Dec 26) has been played
+    // Texten säger januari: spelad annandag ensam räcker inte som kalenderankare.
     const annandagenPlayed = game.fixtures.some(
-      f => f.isAnnandagen === true && f.status === FixtureStatus.Completed
+      f => f.isAnnandagen === true && f.status === FixtureStatus.Completed && f.season === game.currentSeason
     )
-    if (annandagenPlayed && !seen.includes('league_midwinter')) {
+    const isMidJanuary = game.currentDate >= `${game.currentSeason + 1}-01-10`
+      && game.currentDate <= `${game.currentSeason + 1}-01-31`
+    if (annandagenPlayed && isMidJanuary && getSeasonEndPhase(game) === 'regular_active' && !seen.includes('league_midwinter')) {
       return 'league_midwinter'
     }
 

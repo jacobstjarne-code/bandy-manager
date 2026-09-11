@@ -56,6 +56,7 @@ import FacilityScreen from '../FacilityScreen'
 import { GameOverScreen } from '../GameOverScreen'
 import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
+import { EventCardInline } from '../../components/portal/EventCardInline'
 import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import { ClubSelectionScreen } from '../ClubSelectionScreen'
@@ -2684,7 +2685,7 @@ export function DevScenesScreen() {
 
         {scene === 'mecenat-dinner' && mecenatDinnerEventForScene && (
           <div style={{ position: 'relative', minHeight: 500 }}>
-            <EventOverlay event={mecenatDinnerEventForScene} />
+            <EventCardInline event={mecenatDinnerEventForScene} currentMatchday={mecenatDinnerGame.currentMatchday} />
           </div>
         )}
 

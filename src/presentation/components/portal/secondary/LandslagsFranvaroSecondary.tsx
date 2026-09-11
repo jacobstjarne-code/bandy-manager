@@ -21,7 +21,7 @@ export function LandslagsFranvaroSecondary({ game }: CardRenderProps) {
   return (
     <div className="card-sharp" style={{ padding: '10px 12px', marginBottom: 8 }}>
       <div className="h-label" style={{ color: 'var(--cold, var(--text-muted))', marginBottom: 6 }}>
-        VM-uppehåll
+        VM-uttagning
       </div>
       <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
         {text}

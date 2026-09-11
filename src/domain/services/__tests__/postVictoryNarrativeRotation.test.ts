@@ -110,6 +110,7 @@ describe('segrarens kafferumseko', () => {
 
     expect(generateVictoryEcho('big_derby_win', home, 'Rivalen', 'managed').diaryLine).toContain('4-1 mot Rivalen')
     expect(generateVictoryEcho('big_derby_win', away, 'Rivalen', 'managed').diaryLine).toContain('4-1 mot Rivalen')
-    expect(generateVictoryEcho('derby_win', away, 'Rivalen', 'managed').coffeeLine).toContain('RIVALEN ÅKTE HEM')
+    expect(generateVictoryEcho('derby_win', home, 'Rivalen', 'managed').coffeeLine).toContain('RIVALEN ÅKTE HEM')
+    expect(generateVictoryEcho('derby_win', away, 'Rivalen', 'managed').coffeeLine).toContain('VI VANN BORTA MOT RIVALEN')
   })
 })

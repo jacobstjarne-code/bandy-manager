@@ -10,13 +10,13 @@ export const PLAYOFF_ANSLAG: Record<PlayoffAnslagKey, AnslagText> = {
     chapter: '⬩ Säsongens slut ⬩',
     variants: [
       {
-        body: `{motståndare} avgjorde serien, {resultat}, och går till semifinalen. Vallen tystnade fortare än vanligt. Resten åkte vi hem i.`,
+        body: `{motståndare} avgjorde serien, {resultat}, och går till semifinalen. Vi stod kvar en stund efter slutsignalen. Det var svårt att hitta orden.`,
       },
       {
         body: `Vi packade tröjorna utan att säga mycket. {motståndare} står kvar. {resultat} i avgörandet. Vintern är inte slut för dem än.`,
       },
       {
-        body: `{motståndare} vann den sista matchen, {resultat}. Bussen hem genom mörker. Killarna höll låg ton. Vi syns i höst.`,
+        body: `{motståndare} vann den sista matchen, {resultat}. Killarna höll låg ton i omklädningsrummet. Vi syns i höst.`,
       },
     ],
   },

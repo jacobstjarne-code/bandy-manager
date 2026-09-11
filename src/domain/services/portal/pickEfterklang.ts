@@ -166,7 +166,11 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
   }
 
   // Journalist memory — only surface when a real logged interaction exists
-  const journalistMemories = game.journalist?.memory ?? []
+  // Same four-matchday freshness window as the editor's since_last queue.
+  // The full relationship history remains available in the relationship scene.
+  const journalistMemories = (game.journalist?.memory ?? []).filter(memory =>
+    memory.season === season && round >= memory.matchday && round - memory.matchday <= 4,
+  )
   if (game.journalist?.name && journalistMemories.length > 0) {
     const name = game.journalist.name
     const echo = interpolate(pickEcho('journalist', seed + 2), { journalist: name })

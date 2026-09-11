@@ -7,11 +7,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
-import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
+import type { InboxItem } from '../../domain/entities/SaveGame'
 import { Check, ArrowLeftRight, Clock, Zap, Activity, Ban, Newspaper, GraduationCap, Dumbbell, Building2, Search, LineChart, AlertTriangle, Banknote, Mail, type LucideIcon } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
 import { Icon } from '../components/primitives/Icon'
+import { getInboxGroup as getGroup, type InboxGroup } from '../../domain/services/inboxPresentationService'
 
 // ── Fynd 12 + PC-5: agerbara poster routar till sin handlingsyta ──
 // Förfrågningar MED egen yta länkas dit (Övergångar, Trupp, Klubb) i stället för
@@ -80,49 +81,6 @@ function InboxTypeIcon({ type }: { type: InboxItemType }) {
 
 // ── Severity grouping ────────────────────────────────────────────
 
-type InboxGroup = 'kräver-svar' | 'nyheter' | 'rapporter'
-
-function getGroup(item: InboxItem, game: SaveGame): InboxGroup {
-  switch (item.type) {
-    case InboxItemType.BoardFeedback:
-    case InboxItemType.LicenseReview:
-    case InboxItemType.ContractExpiring:
-    case InboxItemType.Injury:
-    case InboxItemType.Suspension:
-    case InboxItemType.EconomicCrisis:
-    case InboxItemType.Scandal:
-      return 'kräver-svar'
-    case InboxItemType.TransferBidReceived:
-    case InboxItemType.TransferOffer: {
-      const hasOpenBid = game.transferBids.some(
-        b => b.playerId === item.relatedPlayerId &&
-             b.direction === 'incoming' &&
-             b.status === 'pending',
-      )
-      return hasOpenBid ? 'kräver-svar' : 'nyheter'
-    }
-    case InboxItemType.Media:
-    case InboxItemType.BoardFeedback:
-    case InboxItemType.MediaEvent:
-    case InboxItemType.Transfer:
-    case InboxItemType.TransferRumor:
-    case InboxItemType.TransferBidResult:
-    case InboxItemType.Community:
-    case InboxItemType.KommunBidrag:
-    case InboxItemType.PatronInfluence:
-    case InboxItemType.YouthIntake:
-    case InboxItemType.Recovery:
-    case InboxItemType.Derby:
-    case InboxItemType.Playoff:
-    case InboxItemType.ReputationMilestone:
-    case InboxItemType.SponsorNetwork:
-    case InboxItemType.BandyLetter:
-      return 'nyheter'
-    default:
-      return 'rapporter'
-  }
-}
-
 const GROUP_META: Record<InboxGroup, { label: string; dot: DotColor }> = {
   'kräver-svar': { label: 'KRÄVER SVAR',  dot: 'danger' },
   'nyheter':     { label: 'NYHETER',       dot: 'accent' },
@@ -150,7 +108,7 @@ const GROUP_ORDER: InboxGroup[] = ['kräver-svar', 'nyheter', 'rapporter']
  * vid skapandet, som roundProcessor.ts redan gör för alla andra rader.
  */
 function getRoundLabel(item: InboxItem): string | null {
-  if (item.createdRound === null) return 'Cupen'
+  if (item.createdRound === null) return null
   if (item.createdRound !== undefined) return `Omg ${item.createdRound}`
   return null
 }

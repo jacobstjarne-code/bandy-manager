@@ -107,7 +107,9 @@ export function generateVictoryEcho(
     case 'derby_win':
       return {
         diaryLine: `Derbyvinsten sitter bra. Bygden kan andas en vecka till.`,
-        coffeeLine: `Någon skrev "${opponentName.toUpperCase()} ÅKTE HEM" på tavlan i omklädningsrummet. Ingen har tagit bort det.`,
+        coffeeLine: isHome
+          ? `Någon skrev "${opponentName.toUpperCase()} ÅKTE HEM" på tavlan i omklädningsrummet. Ingen har tagit bort det.`
+          : `Någon skrev "VI VANN BORTA MOT ${opponentName.toUpperCase()}" på tavlan i omklädningsrummet. Ingen har tagit bort det.`,
         coffeeSemanticKey: VICTORY_ECHO_DERBY_WIN_KEY,
         coffeeCooldownSeasons: 2,
       }

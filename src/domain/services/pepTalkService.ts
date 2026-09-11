@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCurrentAct } from './seasonActService'
 import { pickPoolIndexAvoidingCooldown } from './narrativeLogService'
+import { deriveUtfall } from './matchTypeAxes'
 
 /**
  * DOM_PEPTALK_YTA_2026-09-02 (Opus + Jacob): wirad till förbered-fasen som
@@ -31,7 +32,7 @@ const PEP_WIN = [
 
 const PEP_LOSS = [
   'Vi förlorade en match. Inte vår identitet. Tillbaka på isen imorgon.',
-  'Ingen kommer ihåg den här matchen i mars. Men de kommer ihåg hur vi reagerade.',
+  'Vi kan inte spela om den här matchen. Men vi kan bestämma hur vi reagerar.',
   'Ibland lär man sig mer av en förlust än tio vinster. Frågan är om ni har modet att lyssna.',
   'Det enda jag inte accepterar är att ge upp. Och det gjorde ni inte idag.',
   'Vi var inte tillräckligt bra. Punkt. Nu jobbar vi.',
@@ -39,7 +40,7 @@ const PEP_LOSS = [
 
 const PEP_DRAW = [
   'En poäng kan vara guld eller skit. Beror på vad vi gör med den.',
-  'Vi hämtade en poäng borta. Minns det i mars när det skiljer ett poäng.',
+  'Vi tog en poäng. Den kan bli viktig när serien summeras.',
   'Inte nöjd. Men inte besviken. Det är mellanrummet där lag formas.',
 ]
 
@@ -68,6 +69,7 @@ export interface PepTalkSelection {
   index: number
   /** roundNumber på matchen reflektionen gäller — bara relevant för win/loss/draw:s aktsuffix. */
   lastFixtureRoundNumber: number
+  isLeagueMatch: boolean
 }
 
 /**
@@ -78,31 +80,29 @@ export interface PepTalkSelection {
  */
 export function selectPepTalk(game: SaveGame): PepTalkSelection | null {
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
-  if (!standing || standing.played === 0) return null
 
   const lastFixture = game.fixtures
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     .sort((a, b) => b.matchday - a.matchday)[0]
 
   if (!lastFixture) return null
-
-  const isHome = lastFixture.homeClubId === game.managedClubId
-  const myScore = isHome ? lastFixture.homeScore : lastFixture.awayScore
-  const theirScore = isHome ? lastFixture.awayScore : lastFixture.homeScore
+  const isLeagueMatch = !lastFixture.isCup && !lastFixture.isKnockout
+  if (isLeagueMatch && (!standing || standing.played === 0)) return null
+  const outcome = deriveUtfall(lastFixture, game.managedClubId)
 
   // Use round number as deterministic tie-break seed for quote selection
   const seed = lastFixture.roundNumber
 
   let category: PepTalkCategory
   // Crisis: position 11-12 or way more losses than wins
-  if (standing.position >= 11 || standing.losses >= standing.wins + 3) {
+  if (isLeagueMatch && standing && (standing.position >= 11 || standing.losses >= standing.wins + 3)) {
     category = 'crisis'
   // Top: position 1-3 after 5+ rounds
-  } else if (standing.position <= 3 && standing.played >= 5) {
+  } else if (isLeagueMatch && standing && standing.position <= 3 && standing.played >= 5) {
     category = 'top'
-  } else if (myScore > theirScore) {
+  } else if (outcome === 'vunnet') {
     category = 'win'
-  } else if (myScore < theirScore) {
+  } else if (outcome === 'forlorat') {
     category = 'loss'
   } else {
     category = 'draw'
@@ -111,14 +111,20 @@ export function selectPepTalk(game: SaveGame): PepTalkSelection | null {
   const poolLength = POOL_BY_CATEGORY[category].length
   const index = pickPoolIndexAvoidingCooldown(game, game.currentSeason, poolLength, `${PEPTALK_QUOTE_PREFIX}${category}_`, seed, 1)
 
-  return { category, index, lastFixtureRoundNumber: lastFixture.roundNumber }
+  return { category, index, lastFixtureRoundNumber: lastFixture.roundNumber, isLeagueMatch }
 }
 
 export function getPepTalk(game: SaveGame): string | null {
   const selection = selectPepTalk(game)
   if (!selection) return null
-  const { category, index, lastFixtureRoundNumber } = selection
+  const { category, index, lastFixtureRoundNumber, isLeagueMatch } = selection
   const text = POOL_BY_CATEGORY[category][index]
+
+  if (!isLeagueMatch) {
+    if (category === 'win' && index === 1) return 'En seger. Inget snack. Nu fokuserar vi framåt.'
+    if (category === 'draw') return 'Oavgjort vid slutsignalen. Vi behöver mer för att avgöra.'
+    return text
+  }
 
   if (category === 'crisis' || category === 'top') return text
 

@@ -2,6 +2,7 @@ import { getBurnoutZone, getManagerDisplayName, isBurnoutRelapse, BURNOUT_MARK_F
 import { BURNOUT_MARK, BURNOUT_MARK_RELAPSE, BURNOUT_CAUSE_LINES } from '../../../domain/data/managerKaraktarText'
 import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteIndex, pickBurnoutRelapseHelperIndex } from '../../../domain/services/burnoutReliefService'
 import { wasLoggedThisRound } from '../../../domain/services/narrativeLogService'
+import { getBurnoutRelapseText } from '../../../domain/services/burnoutMemoryTextService'
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
 
 export function BurnoutMark({ game }: CardRenderProps) {
@@ -36,8 +37,9 @@ export function BurnoutMark({ game }: CardRenderProps) {
   const relapseHelperPool = BURNOUT_MARK_RELAPSE.helpersByZone[zone]
   const useRelapse = relapse && relapseQuotePool.length > 0 && relapseHelperPool.length > 0
 
-  const quotes = useRelapse ? relapseQuotePool : BURNOUT_MARK.quotesByZone[zone]
-  const helpers = useRelapse ? relapseHelperPool : BURNOUT_MARK.helpersByZone[zone]
+  const relapseText = getBurnoutRelapseText(game, zone)
+  const quotes = useRelapse ? relapseText.quotes : BURNOUT_MARK.quotesByZone[zone]
+  const helpers = useRelapse ? relapseText.helpers : BURNOUT_MARK.helpersByZone[zone]
   const quoteIdx = useRelapse
     ? pickBurnoutRelapseQuoteIndex(game, zone, quotes.length)
     : pickBurnoutQuoteIndex(game, zone, quotes.length)

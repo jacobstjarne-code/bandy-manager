@@ -41,12 +41,14 @@ export function buildNextOpponentHook(facts: NextOpponentTeaserFacts): NextOppon
 
   const prior = facts.previousMeetingThisSeason
   if (prior) {
-    if (prior.managedScore < prior.opponentScore) return { title, factLine: 'Sist tog de två poäng av er.' }
-    if (prior.managedScore > prior.opponentScore) return { title, factLine: 'Ni vann senast. De minns det.' }
+    const outcome = prior.outcome ?? (prior.managedScore > prior.opponentScore ? 'V' : prior.managedScore < prior.opponentScore ? 'F' : 'O')
+    if (outcome === 'F') return { title, factLine: prior.isLeagueMatch === false ? 'De vann förra mötet.' : 'Sist tog de två poäng av er.' }
+    if (outcome === 'V') return { title, factLine: 'Ni vann senast. De minns det.' }
     return { title, factLine: 'Sist skildes ni oavgjorda.' }
   }
 
   if (
+    facts.isLeagueMatch !== false &&
     facts.managedLeaguePoints !== null && facts.opponentLeaguePoints !== null &&
     Math.abs(facts.managedLeaguePoints - facts.opponentLeaguePoints) === 2
   ) {
@@ -54,6 +56,7 @@ export function buildNextOpponentHook(facts: NextOpponentTeaserFacts): NextOppon
   }
 
   if (
+    facts.isLeagueMatch !== false &&
     facts.managedLeaguePosition !== null && facts.opponentLeaguePosition !== null &&
     facts.opponentLeaguePosition === facts.managedLeaguePosition + 1
   ) {

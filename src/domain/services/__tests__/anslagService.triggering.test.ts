@@ -166,7 +166,7 @@ describe('computeNextAnslag — prioritet', () => {
     expect(computeNextAnslag(game)).toBe('cup_done')
   })
 
-  it('league_midwinter triggers after Annandagen (isAnnandagen=true) is played', () => {
+  it('league_midwinter triggers in January after Annandagen is played', () => {
     const fixtures = [
       ...Array.from({ length: 7 }, (_, i) =>
         makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
@@ -175,8 +175,10 @@ describe('computeNextAnslag — prioritet', () => {
       makeFixture({ id: 'f-annandagen', roundNumber: 8, matchday: 12, isAnnandagen: true }),
     ]
     const game = makeGame({
+      currentSeason: 2026,
+      currentDate: '2027-01-15',
       cupBracket: makeMinimalBracket({ completed: true }),
-      fixtures,
+      fixtures: fixtures.map(f => ({ ...f, season: 2026 })),
       seenAnslag: ['cup_start', 'cup_done', 'league_start'],
     })
     expect(computeNextAnslag(game)).toBe('league_midwinter')

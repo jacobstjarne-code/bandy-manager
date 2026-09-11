@@ -2961,7 +2961,7 @@ export function resolveEvent(
       matchdaysDelay: 3 + Math.floor(rand() * 3), // 3-5 matchdays
       createdMatchday: currentMatchday,
       type: 'simple_inbox',
-      data: { text: followUpText } as Record<string, unknown>,
+      data: { text: followUpText, voiceId: event.voiceId } as Record<string, unknown>,
     }
     updatedGame = {
       ...updatedGame,

@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { getEventTypeLabel } from './EventCardInline'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
+import { getEventContextLabel } from '../../../domain/services/eventContextService'
 
 interface Props {
   event: GameEvent
@@ -29,6 +30,8 @@ interface Props {
  */
 export function AmbientEventRow({ event }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const game = useGameStore(s => s.game)
+  const contextLabel = game ? getEventContextLabel(event, game) : undefined
   const typeLabel = getEventTypeLabel(event)
   const emoji = typeLabel.split(' ')[0]
 
@@ -58,6 +61,7 @@ export function AmbientEventRow({ event }: Props) {
           {emoji}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
+          {contextLabel && <div className="portal-card-eyebrow">{contextLabel}</div>}
           <div className="h-quote" style={{ color: 'var(--text-light-secondary)', lineHeight: 1.55 }}>
             {event.body}
           </div>

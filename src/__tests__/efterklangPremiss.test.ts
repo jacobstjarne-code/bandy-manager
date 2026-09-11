@@ -107,18 +107,19 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
   })
 
   it('journalist: cup-/slutspelsmatchdag har ingen serieomgång — "matchdag N", aldrig ett påhittat rond-nummer (SKALA-BUGGEN steg B)', () => {
-    // matchday 2 är alltid en cupmatchdag (1-4) — matchdayToLeagueRound
+    // Matchdag 28 är slutspel och minnet är fortfarande färskt — matchdayToLeagueRound
     // returnerar undefined, precis som cupbracket-precedenset i TabellScreen.tsx.
     const game = makeGame({
+      currentMatchday: 30,
       journalist: {
         name: 'Britta Sandström', relationship: 60, pressRefusals: 0,
-        memory: [{ season: 3, matchday: 2, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
+        memory: [{ season: 3, matchday: 28, event: 'good_answer', sentiment: 4, opponentShort: 'Karlsborg' }],
       } as never,
     })
-    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, matchdag 2.')
+    expect(find(game, 'journalist')?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, matchdag 28.')
   })
 
-  it('journalist: nollvärdesvakt — matchday 0 (preseason-sentinel/gammalt save) visas ALDRIG som "omg 0", faller till currentMatchday', () => {
+  it('journalist: ett odaterat gammalt minne får vila i stället för att dateras om till idag', () => {
     // A-L1 (SLUTTEST_KO.md): matchday 0 är alltid en föregångare-sentinel
     // (createNewGame.ts sätter currentMatchday:0 innan omgång 1), aldrig en
     // riktig omgång att referera i text. Testar display-vakten i
@@ -130,13 +131,8 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
       } as never,
     })
     const mem = find(game, 'journalist')
-    expect(mem?.premiss).not.toContain('omg 0')
-    // currentMatchday 10, säsong 3 → leagueRound = 10 - 4 = 6 (SKALA-BUGGEN
-    // steg B: fallbacken konverteras nu också, visas inte längre rått).
-    expect(mem?.premiss).toBe('Du gav Britta Sandström ett rakt svar efter Karlsborg, omg 6.')
-    // Tidslinjen (EfterklangThreadModal renderar den konverterade etiketten)
-    // ska inte heller bära en synlig 0:a.
-    expect(mem?.threadEntries.every(e => e.matchday !== 0)).toBe(true)
+    expect(mem).toBeUndefined()
+    expect(game.journalist?.memory).toHaveLength(1)
   })
 
   it('journalist: utan opponentShort faller tillbaka på ", omg {N}."', () => {

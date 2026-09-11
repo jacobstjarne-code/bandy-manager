@@ -20,6 +20,7 @@ import { generateSilentMatchReport } from '../../../domain/services/silentMatchR
 import { generateQuickSummary, getStartedTiredDirection, getSecondHalfKvittoDir, findRotationSubstituteRating, resolvedWithAssertedLabel, rankManagerChoiceLog } from './helpers'
 import { DecisionCard } from '../../components/DecisionCard'
 import { getEffectiveDecisionMode } from '../../../domain/services/decisionTierService'
+import { getEventContextLabel } from '../../../domain/services/eventContextService'
 import { Swords } from 'lucide-react'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
@@ -669,6 +670,7 @@ export function GranskaOversikt({
                   mode={getEffectiveDecisionMode(event)}
                   label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
                   title={event.title}
+                  subtitle={getEventContextLabel(event, game)}
                   body={event.body}
                   tags={tags}
                   resolved={resolved}

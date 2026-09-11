@@ -8,13 +8,15 @@ function game(overrides: Partial<SaveGame> = {}): SaveGame {
     currentSeason: 2026,
     currentMatchday: 3,
     inbox: [],
+    transferBids: [{ playerId: 'offer-player', direction: 'incoming', status: 'pending' }],
     introducedInboxTopics: ['squad', 'transfers', 'club'],
     ...overrides,
   } as SaveGame
 }
 
 function item(id: string, type: InboxItemType = InboxItemType.Community): InboxItem {
-  return { id, date: '2026-10-01', type, title: `Rubrik ${id}`, body: `Bröd ${id}`, isRead: false }
+  return { id, date: '2026-10-01', type, title: `Rubrik ${id}`, body: `Bröd ${id}`, isRead: false,
+    relatedPlayerId: type === InboxItemType.TransferOffer ? 'offer-player' : undefined }
 }
 
 const chronology = { season: 2026, matchday: 4, leagueRound: null, date: '2026-10-08' }

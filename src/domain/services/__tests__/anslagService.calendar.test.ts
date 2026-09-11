@@ -10,7 +10,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     managerName: 'Test',
     managedClubId: 'managed',
     currentDate: '2026-10-04',
-    currentSeason: 1,
+    currentSeason: 2026,
     currentMatchday: 1,
     clubs: [],
     players: [],
@@ -52,7 +52,7 @@ function makeLeagueFixture(roundNumber: number, managedClubId = 'managed'): Fixt
   return {
     id: `league-r${roundNumber}`,
     leagueId: 'L',
-    season: 1,
+    season: 2026,
     roundNumber,
     matchday,
     homeClubId: managedClubId,
@@ -88,20 +88,24 @@ describe('currentLeagueRound', () => {
 })
 
 describe('Round-baserad trigging är konsistent', () => {
-  it('league_midwinter triggas exakt en gång — efter Annandagen (matchday 12)', () => {
+  it('league_midwinter väntar till januari efter spelad annandag och triggas en gång', () => {
     const cupDoneBracket = { season: 1, matches: [], byeTeamIds: [], completed: true }
     const seenBase = ['cup_start', 'cup_done', 'league_start']
 
     // Round 8 (matchday 12 = Annandagen, roundNumber+4=12 → roundNumber=8) — triggers
     const g7 = makeGame({
+      currentDate: '2027-01-15',
       cupBracket: cupDoneBracket,
       fixtures: Array.from({ length: 8 }, (_, i) => makeLeagueFixture(i + 1)),
       seenAnslag: [...seenBase],
     })
     expect(computeNextAnslag(g7)).toBe('league_midwinter')
+    expect(computeNextAnslag({ ...g7, currentDate: '2026-12-26' })).not.toBe('league_midwinter')
+    expect(computeNextAnslag({ ...g7, currentDate: '2027-01-05' })).not.toBe('league_midwinter')
 
     // Round 8 — after marking seen, should NOT trigger again
     const g8 = makeGame({
+      currentDate: '2027-01-17',
       cupBracket: cupDoneBracket,
       fixtures: Array.from({ length: 8 }, (_, i) => makeLeagueFixture(i + 1)),
       seenAnslag: [...seenBase, 'league_midwinter'],

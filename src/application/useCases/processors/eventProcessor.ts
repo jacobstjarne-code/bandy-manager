@@ -37,7 +37,7 @@ import type { Patron } from '../../../domain/entities/Community'
 import { applyPatronHappinessTransition } from '../../../domain/services/patronWithdrawalService'
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { buildScandalLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
-import { generateRosterVoiceIntroductions } from '../../../domain/services/voiceIntroductionService'
+import { generateRosterVoiceIntroductions, mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
 import { evaluateBoard, generateBoardMessage } from '../../../domain/services/boardService'
 import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
 import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
@@ -132,6 +132,7 @@ export function processPendingFollowUps(game: SaveGame, nextMatchday: number): S
       type: InboxItemType.BoardFeedback,
       title: 'Uppföljning',
       body: text,
+      voiceId: typeof followUp.data?.voiceId === 'string' ? followUp.data.voiceId as GameEvent['voiceId'] : undefined,
       isRead: false,
     })
     return false
@@ -616,6 +617,7 @@ export function processGameEvents(
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
           title: `${mecAfterDemand.name} påminner`,
+          voiceId: mecenatVoiceId(game.managedClubId, mecAfterDemand.id),
           body: `${mecAfterDemand.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
           isRead: false,
         } as InboxItem)

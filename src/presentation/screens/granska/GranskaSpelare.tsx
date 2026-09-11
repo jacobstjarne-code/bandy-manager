@@ -10,6 +10,7 @@ import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { DecisionCard } from '../../components/DecisionCard'
 import { getEffectiveDecisionMode } from '../../../domain/services/decisionTierService'
+import { getEventContextLabel } from '../../../domain/services/eventContextService'
 
 interface GranskaSpelareProps {
   game: SaveGame
@@ -62,6 +63,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   mode={getEffectiveDecisionMode(event)}
                   label={event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
                   title={event.title}
+                  subtitle={getEventContextLabel(event, game)}
                   body={event.body}
                   tags={relatedPlayer ? [{ label: `${relatedPlayer.firstName} ${relatedPlayer.lastName}`, tone: 'accent' }] : undefined}
                   resolved={resolvedEventIds.has(event.id)}

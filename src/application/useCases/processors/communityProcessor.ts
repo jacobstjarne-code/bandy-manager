@@ -15,6 +15,7 @@ import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { adjustSupporterMood } from '../../../domain/services/supporterService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { buildFacilityBuiltLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
+import { mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -375,6 +376,7 @@ export function processCommunity(
         date: game.currentDate,
         type: InboxItemType.PatronInfluence,
         title: `${mec.name} är missnöjd`,
+        voiceId: mecenatVoiceId(game.managedClubId, mec.id),
         body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
         isRead: false,
       } as InboxItem)
@@ -387,6 +389,7 @@ export function processCommunity(
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
           title: `${mec.name} överväger att lämna`,
+          voiceId: mecenatVoiceId(game.managedClubId, mec.id),
           body: `${mec.name} är allvarligt missnöjd. "Om inget förändras snart får ni klara er utan mig."`,
           isRead: false,
         } as InboxItem)
@@ -400,6 +403,7 @@ export function processCommunity(
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
           title: `${mec.name} är nöjd`,
+          voiceId: mecenatVoiceId(game.managedClubId, mec.id),
           body: `${mec.name} från ${mec.business} är mycket nöjd med klubbens utveckling. "Det här är precis vad jag ville se."`,
           isRead: false,
         } as InboxItem)
@@ -417,6 +421,7 @@ export function processCommunity(
           date: game.currentDate,
           type: InboxItemType.PatronInfluence,
           title: `Ny mecenat: ${mec.name}`,
+          voiceId: mecenatVoiceId(game.managedClubId, mec.id),
           // M34 (textaudit 2026-07-03): mec.contribution läggs till totalContributed
           // en gång per säsong (updateSilentShout) — inte månadsvis.
           body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/säsong.`,
