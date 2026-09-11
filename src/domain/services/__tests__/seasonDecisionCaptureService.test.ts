@@ -362,7 +362,7 @@ describe('captureSystemDecision — transferBidReceived/accept (form 2, sökt)',
     const gameAfter = applySale(gameWithBid, playerId)
     const candidate = captureSystemDecision(gameWithBid, gameAfter, event, 'accept')
     const name = `${player.firstName} ${player.lastName}`
-    expect(candidate!.sentence).toBe(`Du tog budet på ${name}. Det gav 500 tkr, och tog ${name}.`)
+    expect(candidate!.sentence).toBe(`Du accepterade budet på ${name}. Klubben fick 500 tkr; ${name} lämnade.`)
     expect(candidate!.systemsAffectedCount).toBe(2)
     expect(candidate!.irreversible).toBe(true)
     expect(candidate!.namedPerson).toBe(name)

@@ -117,7 +117,7 @@ const OFFER_PRO_SINGLE = 'Du gav {lastName} heltidskontrakt. Det kostade {amount
 const OFFER_PRO_MULTI = 'Du gav de varslade heltidskontrakt. Det kostade {amount} i året.'
 const DET_OMOJLIGA_VALET_SELL = 'Du sålde {name} innan han hunnit spela klart. Det kostade er akademins bästa år.'
 const DET_OMOJLIGA_VALET_KEEP = 'Du lät det vara. {name} spelar kvar.'
-const TRANSFER_BID_ACCEPT = 'Du tog budet på {name}. Det gav {amount}, och tog {name}.'
+const TRANSFER_BID_ACCEPT = 'Du accepterade budet på {name}. Klubben fick {amount}; {name} lämnade.'
 const MECENAT_OFFER_TRIBUTE = 'Du tackade av {name} som han förtjänade. Det gav ett avsked ingen glömmer, och tog 25 tkr.'
 
 export function sentenceForSellStar(template: string, t: SellStarTokens): string | null {
