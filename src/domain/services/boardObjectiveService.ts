@@ -372,6 +372,11 @@ export function generateBoardObjectives(
   return objectives
 }
 
+/** Samma resultatrubrik i säsongsslutets inkorg och årsbokens utfallshero. */
+export function boardObjectiveResultTitle(label: string, result: 'met' | 'failed'): string {
+  return result === 'met' ? `${label} — uppfyllt` : `${label} — misslyckat`
+}
+
 // ── Evaluate objectives ─────────────────────────────────────────────────────
 
 /**

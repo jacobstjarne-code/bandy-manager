@@ -39,7 +39,7 @@ import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
-import { evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
+import { boardObjectiveResultTitle, evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import { calculateLicenseReputationLoss, checkLicenseStatus, buildLicenseInboxItem, isActiveLicenseWarning, LICENSE_ACTION_PLAN_CAPITAL_INCOME } from '../../domain/services/licenseService'
 import type { AdvanceResult } from './advanceTypes'
@@ -1190,7 +1190,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
       date: game.currentDate,
       type: InboxItemType.BoardFeedback,
-      title: finalStatus === 'met' ? `${obj.label} — uppfyllt` : `${obj.label} — misslyckat`,
+      title: boardObjectiveResultTitle(obj.label, finalStatus),
       body: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
       isRead: false,
     } as InboxItem)
@@ -1216,6 +1216,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     active: objectiveStatuses.filter(s => s === 'active').length,
     failed: objectiveStatuses.filter(s => s === 'failed').length,
   }
+  const placementObjectiveResult = objectiveResults.find(result => {
+    const objective = (game.boardObjectives ?? []).find(candidate => candidate.id === result.objectiveId)
+    return objective?.measureFn === 'topHalf' || objective?.measureFn === 'avoidRelegation'
+  })
+  const placementObjectiveOutcome = placementObjectiveResult
+    ? {
+        objectiveId: placementObjectiveResult.objectiveId,
+        label: placementObjectiveResult.label,
+        result: placementObjectiveResult.result,
+        ownerReaction: placementObjectiveResult.ownerReaction,
+      }
+    : undefined
 
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
@@ -1867,6 +1879,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       seasonEndGameView,
       Math.min(100, newCommunityStanding + communityStandingDelta),
       summerIntakeProspects,
+      placementObjectiveOutcome,
     ),
     retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
     matchOfTheSeason: matchHighlight ?? undefined,

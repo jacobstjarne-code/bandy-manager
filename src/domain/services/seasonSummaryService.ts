@@ -547,6 +547,7 @@ export function generateSeasonSummary(
   game: SaveGame,
   communityStandingEnd?: number,
   intakeProspects: readonly IntakeProspect[] = [],
+  placementObjectiveOutcome?: SeasonSummary['placementObjectiveOutcome'],
 ): SeasonSummary {
   const managedClubId = game.managedClubId
   const club = game.clubs.find(c => c.id === managedClubId)!
@@ -911,9 +912,14 @@ export function generateSeasonSummary(
   })
 
   // Narrative summary
-  const verdictSentence = buildExpectationVerdictSentence(
-    club.name, expectationVerdict, finalPosition, boardExpectation, isChampion, game.currentSeason
-  )
+  // Ett explicit tabellmål är mer precist än den grova ClubExpectation-
+  // kategorin. Återanvänd den redan godkända ägarreaktionen från samma
+  // BoardObjective som portal och inkorg; skapa ingen tredje bedömningstext.
+  const verdictSentence = placementObjectiveOutcome && !isChampion
+    ? placementObjectiveOutcome.ownerReaction
+    : buildExpectationVerdictSentence(
+        club.name, expectationVerdict, finalPosition, boardExpectation, isChampion, game.currentSeason,
+      )
   let narrative = verdictSentence
 
   if (formTrend === 'improving') {
@@ -1035,6 +1041,7 @@ export function generateSeasonSummary(
     metExpectation,
     expectationVerdict,
     verdictSentence,
+    placementObjectiveOutcome,
     topScorer,
     topAssister,
     topRated,
@@ -1131,6 +1138,34 @@ export function placeringsdomText(
 }
 
 /**
+ * Årsbokens synliga dom prioriterar den frusna resolutionen för ett konkret
+ * tabellmål. Den grövre ClubExpectation-domen ligger kvar som egen axel i
+ * summary/boardTruth, men får inte skriva över portalens och inkorgens mer
+ * precisa besked. Ett SM-guld är det enda undantaget.
+ */
+export function yearbookAssessmentVerdict(
+  summary: Pick<SeasonSummary, 'expectationVerdict'>
+    & Partial<Pick<SeasonSummary, 'placementObjectiveOutcome' | 'playoffResult'>>,
+): SeasonSummary['expectationVerdict'] {
+  if (summary.playoffResult === 'champion') return 'exceeded'
+  if (!summary.placementObjectiveOutcome) return summary.expectationVerdict
+  return summary.placementObjectiveOutcome.result === 'met' ? 'met' : 'failed'
+}
+
+/** Samma låsta placeringsmeningar, men med det konkreta målets resolution. */
+export function yearbookPlacementVerdictText(
+  summary: Pick<SeasonSummary, 'boardExpectation' | 'finalPosition' | 'playoffResult' | 'placementObjectiveOutcome'>,
+  totalTeams: number,
+): string {
+  if (summary.playoffResult === 'champion' || !summary.placementObjectiveOutcome) {
+    return placeringsdomText(summary.boardExpectation, summary.finalPosition, totalTeams)
+  }
+  const placering = ORDINAL_DEFINITE[summary.finalPosition] ?? `${summary.finalPosition}:e platsen`
+  const rating = summary.placementObjectiveOutcome.result === 'met' ? 3 : 2
+  return PLACERINGSDOM_TEMPLATES[rating](placering)
+}
+
+/**
  * ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md (Jacobs dom): "när
  * placeringsdomen och uppdragsutfallet pekar åt olika håll ska båda stå i
  * samma mening... förbundna med men." Pekar de åt samma håll (eller finns
@@ -1153,13 +1188,14 @@ export function placeringsdomText(
  * @cites SeasonSummary.expectationVerdict, SeasonSummary.objectiveOutcome.met, SeasonSummary.objectiveOutcome.atRisk, SeasonSummary.objectiveOutcome.failed
  */
 export function seasonTwoTruthsSentence(
-  summary: Pick<SeasonSummary, 'expectationVerdict' | 'objectiveOutcome'>,
+  summary: Pick<SeasonSummary, 'expectationVerdict'>
+    & Partial<Pick<SeasonSummary, 'objectiveOutcome' | 'placementObjectiveOutcome' | 'playoffResult'>>,
   placeringsdom: string,
 ): string | null {
   const outcome = summary.objectiveOutcome
   if (!outcome) return null
 
-  const placeringBra = summary.expectationVerdict !== 'failed'
+  const placeringBra = yearbookAssessmentVerdict(summary) !== 'failed'
   const { met, atRisk, failed } = outcome
 
   // Rotorsak (SEXSÄSONGSAUDITEN 2026-08-26, "det de bad om., men..."):

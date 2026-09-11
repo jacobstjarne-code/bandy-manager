@@ -5,7 +5,12 @@
  * placeringsdomen, ingen tvåsanningsmening.
  */
 import { describe, it, expect } from 'vitest'
-import { seasonTwoTruthsSentence, placeringsdomText } from '../seasonSummaryService'
+import {
+  seasonTwoTruthsSentence,
+  placeringsdomText,
+  yearbookAssessmentVerdict,
+  yearbookPlacementVerdictText,
+} from '../seasonSummaryService'
 import { ClubExpectation } from '../../enums'
 
 describe('placeringsdomText — Jacobs låsta text, fem betyg', () => {
@@ -116,5 +121,32 @@ describe('seasonTwoTruthsSentence', () => {
     const result = seasonTwoTruthsSentence(s, dom)
     expect(result).not.toMatch(/\.\./)
     expect(result).toBe(`${dom} Ett uppdrag hängde löst ända in i mars.`)
+  })
+})
+
+describe('årsbokens konkreta tabellmål', () => {
+  const failedTopSix = {
+    boardExpectation: ClubExpectation.MidTable,
+    finalPosition: 8,
+    playoffResult: 'didNotQualify' as const,
+    expectationVerdict: 'exceeded' as const,
+    placementObjectiveOutcome: {
+      objectiveId: 'topHalf',
+      label: 'Sluta topp 6',
+      result: 'failed' as const,
+      ownerReaction: 'Styrelsen: "Under nedre halvan. Inte godkänt."',
+    },
+  }
+
+  it('låter den frusna toppliste-resolutionen vinna över en bredare MidTable-dom', () => {
+    expect(yearbookAssessmentVerdict(failedTopSix)).toBe('failed')
+    expect(yearbookPlacementVerdictText(failedTopSix, 12)).toBe('Åttondeplatsen låg under målet.')
+  })
+
+  it('tvåsanningsmeningen använder samma konkreta dom, inte det äldre grova verdictfältet', () => {
+    expect(seasonTwoTruthsSentence({
+      ...failedTopSix,
+      objectiveOutcome: { met: 0, atRisk: 0, active: 1, failed: 0 },
+    }, yearbookPlacementVerdictText(failedTopSix, 12))).toBeNull()
   })
 })

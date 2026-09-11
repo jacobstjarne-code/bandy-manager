@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { seasonTwoTruthsSentence, placeringsdomText } from '../../domain/services/seasonSummaryService'
+import { seasonTwoTruthsSentence, yearbookAssessmentVerdict, yearbookPlacementVerdictText } from '../../domain/services/seasonSummaryService'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
@@ -19,6 +19,7 @@ import { ScoreBlock } from '../components/primitives/ScoreBlock'
 import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
 import { seasonSpanLabel, seasonStartYear } from '../../domain/utils/seasonYear'
 import { RELEGATION_ZONE_SIZE, seasonVerdictText } from '../../domain/services/boardService'
+import { boardObjectiveResultTitle } from '../../domain/services/boardObjectiveService'
 import { BookOpen, Share2 } from 'lucide-react'
 import { getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
@@ -276,6 +277,9 @@ export function SeasonSummaryScreen() {
     || game.clubs.length
   const showRelegationIllustration = isRelegationZoneFinish(summary.finalPosition, totalTeams)
   const seasonIllustrationName = getSeasonSummaryIllustrationName(summary.finalPosition, totalTeams)
+  // Lokal projektion för denna yta: bevara den frusna summaryn i store, men
+  // låt årsbokens befintliga färg-/ikonkontrakt läsa det konkreta tabellmålet.
+  summary = { ...summary, expectationVerdict: yearbookAssessmentVerdict(summary) }
 
   // AUDIT DEL 2 A3, uppföljning (2026-08-09): reversibel dedup mellan DIN
   // SÄSONG och DINA VAL läser samma liggarstyrda resolution-projektion.
@@ -332,6 +336,9 @@ export function SeasonSummaryScreen() {
   }
 
   function verdictText(s: SeasonSummary): string {
+    if (s.playoffResult !== 'champion' && s.placementObjectiveOutcome) {
+      return boardObjectiveResultTitle(s.placementObjectiveOutcome.label, s.placementObjectiveOutcome.result)
+    }
     return seasonVerdictText(s.boardExpectation, s.finalPosition, totalTeams)
   }
 
@@ -547,9 +554,8 @@ export function SeasonSummaryScreen() {
               Placeringsdomen (fem rader, en per betyg 1-5) text låst av
               Jacob 2026-08-24, ordagrant — se placeringsdomText. */}
           {(() => {
-            const placeringsdom = placeringsdomText(
-              summary.boardExpectation,
-              summary.finalPosition,
+            const placeringsdom = yearbookPlacementVerdictText(
+              summary,
               summary.standingsSnapshot?.length ?? 12,
             )
             const twoTruths = seasonTwoTruthsSentence(summary, placeringsdom)

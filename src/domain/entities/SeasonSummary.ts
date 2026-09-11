@@ -272,6 +272,21 @@ export interface SeasonSummary {
     failed: number
   }
 
+  /**
+   * Det konkreta tabellbundna styrelsekravet och dess frusna säsongssluts-
+   * resolution. `expectationVerdict` beskriver fortfarande den grövre
+   * ClubExpectation-axeln; årsboken prioriterar denna post när den finns så
+   * ett explicit "Sluta topp 6" aldrig kan döljas av en bredare MidTable-dom.
+   * `ownerReaction` och `label` kommer från samma BoardObjective-instans som
+   * portal och säsongsslutets inkorgskort, inte från en ny årsboksmall.
+   */
+  placementObjectiveOutcome?: {
+    objectiveId: string
+    label: string
+    result: 'met' | 'failed'
+    ownerReaction: string
+  }
+
   /** O18 fält 2 (SASONGENS_BESLUT_2026-08-23.md, Jacobs dom 2026-08-24):
    *  säsongens viktigaste beslut — den rankade vinnaren bland de O19-märkta
    *  systemhandelse-val spelaren faktiskt löste (seasonDecisionCaptureService.ts,
