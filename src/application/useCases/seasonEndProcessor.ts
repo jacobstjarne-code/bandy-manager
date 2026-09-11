@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment, StorylineEntry } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment, StorylineEntry, YouthIntakeRecord } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
 import { patronVoiceId } from '../../domain/services/voiceIntroductionService'
 
@@ -12,7 +12,7 @@ import type { FollowUp, GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype, ClubExpectation } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
-import { generateYouthIntake } from '../../domain/services/youthIntakeService'
+import { BANDY_SCHOOL_BASIC_YOUTH_RECRUITMENT_BONUS, generateYouthIntake } from '../../domain/services/youthIntakeService'
 import { generateSchedule, buildSeasonCalendar, stampFixturesFromCalendar } from '../../domain/services/scheduleGenerator'
 import {
   generateCupFixtures,
@@ -36,7 +36,7 @@ import { applyBurnoutRecoveryAtTransition } from '../../domain/services/seasonTr
 import { summerFitnessTarget, summerSeasonForm } from '../../domain/services/fitnessRecoveryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
-import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
+import { BANDY_GALA_SEMANTIC_ID, generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { boardObjectiveResultTitle, evaluateObjective, generateBoardObjectives, isRepeatedObjectiveFailure } from '../../domain/services/boardObjectiveService'
@@ -47,7 +47,7 @@ import { getRetirementCandidate, getRetirementQuote } from '../../domain/service
 import { appendFinanceLog, applyFinanceChange, deriveSeasonTransferBudget, type FinanceEntry } from '../../domain/services/economyService'
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
-import { getDecisionSemanticId } from '../../domain/services/decisionLifecycleService'
+import { getDecisionSemanticId, getKnownDecisionIdentities } from '../../domain/services/decisionLifecycleService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
@@ -59,6 +59,7 @@ import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
 import { appendNewlyResolvedStorylines, getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 import { closeActiveMentorshipForYouth } from '../../domain/services/academyMentorshipService'
 import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
+import { swedishGenitive } from '../../domain/utils/swedishGrammar'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -168,17 +169,19 @@ export function rolloverYouthAvailability(
   }))
 }
 
-/** Bevara återstående "ramp först"-frist över säsongsskiftet (steg C, DOM_BURNOUT_TAK-ordern 2026-09-02). */
+/** Sommaruppehållet läker matchskador och avslutar den korta återfallsrampen. */
 export function rolloverPlayerInjuryRamp(
   players: Player[],
-  completedSeasonMatchday: number,
+  _completedSeasonMatchday: number,
 ): Player[] {
   return players.map(player => ({
     ...player,
-    recentlyInjuredUntil: rebaseFutureMatchday(
-      player.recentlyInjuredUntil,
-      completedSeasonMatchday,
-    ),
+    // April–oktober är längre än spelets skadevaraktigheter. En kvarhängande
+    // matchdagstimer gjorde annars att spelaren började nästa vinter skadad
+    // trots att konditionen samtidigt hade återställts av sommaren.
+    isInjured: false,
+    injuryDaysRemaining: 0,
+    recentlyInjuredUntil: undefined,
   }))
 }
 
@@ -472,10 +475,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     updatedClubs[i] = { ...updatedClubs[i], reputation: Math.max(0, Math.min(100, current + repDelta)) }
   }
 
-  let youthIntakeResultForManagedClub: ReturnType<typeof generateYouthIntake> | null = null
-
   for (let i = 0; i < updatedClubs.length; i++) {
     const club = updatedClubs[i]
+    // Den hanterade klubben har den riktiga P19-truppen nedan. Den äldre
+    // Player-generatorn används fortsatt för AI-klubbar, som saknar P19-UI.
+    // Att köra båda för managerklubben skapade en dold extrakull direkt i
+    // A-truppen och fick årsbok/akademimål att säga något annat än truppen.
+    if (club.id === game.managedClubId) continue
     const existingPlayers = [...game.players, ...youthPlayers].filter(
       p => p.clubId === club.id,
     )
@@ -485,9 +491,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       season: game.currentSeason,
       date: game.currentDate,
       seed: baseSeed + i,
-      // CommunityActivities är managerklubbens state. Barnskolan matar den
-      // befintliga intagspipelinen svagt; AI-klubbar får ingen låtsasaktivitet.
-      communityActivities: club.id === game.managedClubId ? game.communityActivities : undefined,
     })
 
     youthPlayers.push(...intakeResult.newPlayers)
@@ -496,10 +499,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       squadPlayerIds: [...club.squadPlayerIds, ...intakeResult.newPlayers.map(p => p.id)],
     }
     youthRecords.push(intakeResult.record)
-
-    if (club.id === game.managedClubId) {
-      youthIntakeResultForManagedClub = intakeResult
-    }
   }
 
   // A-M5 (SEXSÄSONGSAUDITEN 2026-08-26): offseasonFinanceLog samlar samma
@@ -631,19 +630,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  // Youth intake inbox for managed club
-  if (youthIntakeResultForManagedClub !== null) {
-    const managedClub = updatedClubs.find(c => c.id === game.managedClubId)!
-    newInboxItems.push(
-      createYouthIntakeItem(
-        youthIntakeResultForManagedClub,
-        managedClub,
-        game.currentDate,
-        youthIntakeResultForManagedClub.scoutTexts,
-      ),
-    )
-  }
-
   const nextSeason = game.currentSeason + 1
   const academyUpgradeCompletes = game.academyUpgradeInProgress === true
     && game.academyUpgradeSeason === nextSeason
@@ -656,19 +642,47 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // exakt en gång här och återanvänd resultatet när nästa SaveGame byggs.
   const managedClubForYouth = updatedClubs.find(c => c.id === game.managedClubId)
     ?? game.clubs.find(c => c.id === game.managedClubId)!
+  // Det äldre direktintaget till A-truppen är avstängt för den hanterade
+  // klubben. BandyKul-bonusen ska ändå inte försvinna med den vägen: den
+  // påverkar nu den enda kanoniska sommarkullen, P19, via samma lilla +1.
+  const managedClubForYouthPipeline = game.communityActivities?.bandySchoolBasic
+    ? {
+        ...managedClubForYouth,
+        youthQuality: Math.min(
+          100,
+          managedClubForYouth.youthQuality + BANDY_SCHOOL_BASIC_YOUTH_RECRUITMENT_BONUS,
+        ),
+      }
+    : managedClubForYouth
   const nextYouthTeamBase = game.youthTeam && game.youthTeam.players.length > 0
-    ? carryOverYouthTeam(game.youthTeam, managedClubForYouth, nextAcademyLevel, nextSeason, baseSeed + 77777)
-    : generateYouthTeam(managedClubForYouth, nextAcademyLevel, nextSeason, baseSeed + 77777)
+    ? carryOverYouthTeam(game.youthTeam, managedClubForYouthPipeline, nextAcademyLevel, nextSeason, baseSeed + 77777)
+    : generateYouthTeam(managedClubForYouthPipeline, nextAcademyLevel, nextSeason, baseSeed + 77777)
   const nextYouthTeam = {
     ...nextYouthTeamBase,
     players: rolloverYouthAvailability(nextYouthTeamBase.players, game.currentMatchday),
   }
   const previousYouthIds = new Set((game.youthTeam?.players ?? []).map(player => player.id))
   const newP19Players = nextYouthTeam.players.filter(player => !previousYouthIds.has(player.id))
-  const summerIntakeProspects = [
-    ...(youthIntakeResultForManagedClub?.newPlayers ?? []),
-    ...newP19Players,
-  ]
+  const summerIntakeProspects = newP19Players
+  if (newP19Players.length > 0) {
+    const topProspect = newP19Players.reduce((best, player) =>
+      player.potentialAbility > best.potentialAbility ? player : best
+    )
+    const managedYouthRecord: YouthIntakeRecord = {
+      season: game.currentSeason,
+      clubId: game.managedClubId,
+      date: game.currentDate,
+      playerIds: newP19Players.map(player => player.id),
+      topProspectId: topProspect.id,
+    }
+    youthRecords.push(managedYouthRecord)
+    newInboxItems.push(createYouthIntakeItem(
+      { record: managedYouthRecord, newPlayers: newP19Players, scoutTexts: {} },
+      managedClubForYouth,
+      game.currentDate,
+      {},
+    ))
+  }
 
   // H4 Heros-uppföljning (Jacobs dom 2026-08-25): boardExpectation-stegningen
   // körde tidigare BARA den hanterade klubben — precis som renommédeltat
@@ -1473,7 +1487,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         ...(updatedPatron?.isActive ? [{
           id: 'patron',
           label: `Be ${updatedPatron.name} ställa upp`,
-          subtitle: `🤝 +15 ${updatedPatron.name}s välvilja (inga pengar nu)`,
+          subtitle: `🤝 +15 ${swedishGenitive(updatedPatron.name)} välvilja (inga pengar nu)`,
           effect: { type: 'patronHappiness' as const, amount: 15 },
         }] : []),
       ],
@@ -1592,7 +1606,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let galaStorylinesForSeason: StorylineEntry[] = []
   let galaLedgerEntriesForSeason: EventLedgerEntry[] = []
   if (galaNominations.length > 0) {
-    seasonEndPendingEvents.push(generateGalaEvent(game, galaNominations))
+    // Priserna delas ut varje år, men den hållna galascenen är en avslutad
+    // karriärbeat. Semantisk identitet spärrar nya säsongs-id efter resolution;
+    // prefixkontrollen täcker äldre saves från före semanticId-fältet.
+    const knownDecisionIdentities = getKnownDecisionIdentities(game)
+    const legacyGalaResolved = (game.resolvedEventIds ?? []).some(id => id.startsWith('event_gala_'))
+      || (game.resolvedChoices ?? []).some(choice => choice.eventId.startsWith('event_gala_'))
+    if (!knownDecisionIdentities.has(BANDY_GALA_SEMANTIC_ID) && !legacyGalaResolved) {
+      seasonEndPendingEvents.push(generateGalaEvent(game, galaNominations))
+    }
     const {
       inboxItems: galaInbox,
       storylines: galaStorylines,

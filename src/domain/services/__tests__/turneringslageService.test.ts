@@ -249,7 +249,7 @@ describe('getMidSeriesTurneringslageText', () => {
       { id: 'f1', managedWon: false }, { id: 'f2', managedWon: false }, { id: 'f3', managedWon: true },
     ])
     expect(getMidSeriesTurneringslageText(game, 'slutspel')).toBe(
-      'Serien står 1–2. Förlust ikväll och säsongen är slut.',
+      'Serien står 1–2. En förlust till och säsongen är slut.',
     )
   })
 

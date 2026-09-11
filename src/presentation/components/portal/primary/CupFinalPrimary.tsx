@@ -58,7 +58,7 @@ export function CupFinalPrimary({ game }: CardRenderProps) {
         className="btn btn-outline"
         style={{ width: '100%', marginTop: 12 }}
       >
-        Sätt lineup för cupfinalen →
+        Ta ut laget till cupfinalen →
       </button>
     </div>
   )

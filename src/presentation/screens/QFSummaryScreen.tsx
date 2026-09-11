@@ -56,7 +56,7 @@ export function QFSummaryScreen() {
             ? 'Semifinalerna väntar. Bäst av fem.'
             : managedNeverQualified
               ? 'Ni kvalificerade er inte för slutspelet.'
-              : 'Ni är utslagna. Bra fight.'}
+              : 'Ni är utslagna. Bra kämpat.'}
         </p>
       </div>
 

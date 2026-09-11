@@ -2,13 +2,16 @@ import { useEffect } from 'react'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { getReactionEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { SectionLabel } from '../SectionLabel'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { getEventContextLabel } from '../../../domain/services/eventContextService'
 
 interface ReaktionerKortProps {
+  game: SaveGame
   pendingEvents: GameEvent[]
   onResolve: (ids: string[]) => void
 }
 
-export function ReaktionerKort({ pendingEvents, onResolve }: ReaktionerKortProps) {
+export function ReaktionerKort({ game, pendingEvents, onResolve }: ReaktionerKortProps) {
   const reactions = getReactionEventsForGranska(pendingEvents)
 
   useEffect(() => {
@@ -29,9 +32,16 @@ export function ReaktionerKort({ pendingEvents, onResolve }: ReaktionerKortProps
       <SectionLabel style={{ marginBottom: 8 }}>💬 KRING MATCHEN</SectionLabel>
       {visible.map(event => (
         <div key={event.id} style={{ marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>
-          {event.sender && (
+          {event.sender ? (
             <p className="h-label" style={{ marginBottom: 2 }}>
               {event.sender.name} · {event.sender.role}
+            </p>
+          ) : event.title ? (
+            <p className="h-label" style={{ marginBottom: 2 }}>{event.title}</p>
+          ) : null}
+          {getEventContextLabel(event, game) && (
+            <p style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>
+              {getEventContextLabel(event, game)}
             </p>
           )}
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{event.body}</p>

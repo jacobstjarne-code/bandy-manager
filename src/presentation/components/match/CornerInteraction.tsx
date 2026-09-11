@@ -2,7 +2,7 @@
  * CornerInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-01. Uses InteractionShell with:
- * - timer: 5s (T5b, 2026-07-13/14: ringen — se InteractionShell)
+ * - timer: 8s (utökad för läsbart matchflyt; ringen ägs av InteractionShell)
  * - SVG pitch: LED palette (amber own, red defenders, steel-blue GK, green selected zone)
  * - Monospace LED sub-choice buttons (HÅRT / LÅGT / KORT)
  * - cta.variant = 'copper'
@@ -22,7 +22,7 @@ interface CornerInteractionProps {
   outcome: CornerOutcome | null
   onChoose: (zone: CornerZone, delivery: CornerDelivery) => void
   coach?: AssistantCoach
-  /** Övningsläge (Tillträdet F3): släck 5s-timern — spelaren får all tid.
+  /** Övningsläge (Tillträdet F3): släck 8s-timern — spelaren får all tid.
    *  Konsekvens-suppression sköts av harnesset (onChoose), inte här. */
   practice?: boolean
 }

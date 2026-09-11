@@ -228,13 +228,14 @@ describe('season rollover — absoluta matchday-fält', () => {
       .toMatchObject({ startRound: -1, endRound: 1 })
   })
 
-  it('bevarar återstående "ramp först"-frist för nyligen skadade spelare (steg C)', () => {
-    const player = { id: 'p1', recentlyInjuredUntil: 25 } as Player
+  it('låter hela sommaruppehållet läka skada och återfallsramp', () => {
+    const player = { id: 'p1', isInjured: true, injuryDaysRemaining: 21, recentlyInjuredUntil: 25 } as Player
     const untouched = { id: 'p2' } as Player
 
     const [rolled, rolledUntouched] = rolloverPlayerInjuryRamp([player, untouched], 22)
 
-    expect(rolled.recentlyInjuredUntil).toBe(3)
+    expect(rolled).toMatchObject({ isInjured: false, injuryDaysRemaining: 0 })
+    expect(rolled.recentlyInjuredUntil).toBeUndefined()
     expect(rolledUntouched.recentlyInjuredUntil).toBeUndefined()
   })
 

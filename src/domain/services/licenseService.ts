@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
 import { readClubLedger } from './eventLedgerService'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -152,14 +153,14 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
   },
   first_warning: {
     titles: [
-      'Licensnämnden: Första varningen efter två förlustsäsonger',
-      'Två röda år — RF kräver plan',
+      'Licensnämnden: Första varningen efter återkommande underskott',
+      'Röda bokslut — RF kräver plan',
       'Licensnämnden bevakar {KLUBB}',
     ],
     bodies: [
-      'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Två säsonger med underskott. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess. Planen nämnden vill se är inte komplicerad: lönerna ner eller intäkterna upp, före nästa bokslut.',
-      'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: två förlustsäsonger i rad är inte acceptabelt. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader. Det som räknas är bokslutet — en lönelista kassan bär, eller sponsorer och publik som bär lönelistan.',
-      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Nästa förlustår kommer kosta poäng. Det enda nämnden lyssnar på är ett plus i bokslutet.',
+      'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Underskotten har blivit återkommande. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess. Planen nämnden vill se är inte komplicerad: lönerna ner eller intäkterna upp, före nästa bokslut.',
+      'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: klubbens återkommande underskott är inte acceptabla. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader. Det som räknas är bokslutet — en lönelista kassan bär, eller sponsorer och publik som bär lönelistan.',
+      'Underskotten har blivit återkommande. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Ännu ett förlustår kommer kosta poäng. Det enda nämnden lyssnar på är ett plus i bokslutet.',
     ],
   },
   point_deduction: {
@@ -169,7 +170,7 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'RF beslutar: Tre poäng från {KLUBB}',
     ],
     bodies: [
-      'Tre säsonger med underskott. Tre poängs avdrag inför nästa säsong. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad." Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
+      'Underskotten har fortsatt. Tre poängs avdrag inför nästa säsong. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad." Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
       'Brevet kom på en tisdag. Tre poängs avdrag inför nästa säsong. Inget mer att säga. Styrelsemöte på torsdag — det enda alla redan vet är att något måste bort. Frågan är vem. Ett minus till, och det är inte en spelare som får gå. Det är licensen.',
       'Licensnämnden har genomfört sin tredje granskning av {KLUBB}. Beslutet är minskning av poäng inför nästa säsong med 3 enheter. Klubben har inte följt återhämtningsplanen. "Vi har gett er chanser. Det är slut nu." Vänd bokslutet i år. Annars är nästa brev det sista.',
     ],
@@ -181,7 +182,7 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'RF nekar elitlicens — {KLUBB} flyttas ner',
     ],
     bodies: [
-      'Fyra säsonger av underskott. Det går inte längre. RF:s licensnämnd har idag fattat beslutet att inte bevilja {KLUBB} elitlicens för nästa säsong. Klubben kommer att placeras i lägre serie. "Detta är inte en straff", står det i beslutet. "Det är en konsekvens." Tränaren får sparken samma kväll.',
+      'Underskotten har blivit varaktiga. Det går inte längre. RF:s licensnämnd har idag fattat beslutet att inte bevilja {KLUBB} elitlicens för nästa säsong. Klubben kommer att placeras i lägre serie. "Detta är inte en straff", står det i beslutet. "Det är en konsekvens." Tränaren får sparken samma kväll.',
       'Beslutet kom som ingen överraskning, men det blev ändå tyst i styrelserummet när det kom. {KLUBB} förlorar elitlicensen. Inga undantag, inga överklaganden. Tränaren avgår innan kvällen är slut. Säsongen — och din tid på jobbet — tar slut här.',
       'Tränaren samlar styrelsen i klubbhuset. Det blir kort. RF:s beslut är slutgiltigt — elitlicensen dras in. {KLUBB} kommer att spela en serie ner från och med nästa säsong. Det här är inte en omstart. Det är ett slut. Tränaren tar farväl utan tårar och utan ord.',
     ],
@@ -193,7 +194,9 @@ function pick(arr: string[], seed: number): string {
 }
 
 function fillTokens(text: string, clubName: string): string {
-  return text.replace(/{KLUBB}/g, clubName)
+  return text
+    .replace(/{KLUBB}s\b/g, swedishGenitive(clubName))
+    .replace(/{KLUBB}/g, clubName)
 }
 
 // ── Core logic ─────────────────────────────────────────────────────────────
@@ -201,7 +204,10 @@ function fillTokens(text: string, clubName: string): string {
 function computeNetResult(game: SaveGame): number {
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub) return 0
-  const startFinances = game.seasonStartSnapshot?.finances ?? managedClub.finances
+  // Samma frusna säsongsstart som årsboken, ekonomifliken och styrelsemålen.
+  // seasonStartSnapshot är en äldre, delvis fylld ficka och kunde få
+  // licensnämnden att kalla ett synligt plusår för ett förlustår.
+  const startFinances = game.seasonStartFinances ?? managedClub.finances
   return managedClub.finances - startFinances
 }
 

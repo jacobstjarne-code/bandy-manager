@@ -177,12 +177,10 @@ export function stripCompletedFixture(
 
   const isManagedFixture = managedClubId != null &&
     (fixture.homeClubId === managedClubId || fixture.awayClubId === managedClubId)
-  const margin = Math.abs((fixture.homeScore ?? 0) - (fixture.awayScore ?? 0))
-  const preserveRatings = isManagedFixture && (
-    getRivalry(fixture.homeClubId, fixture.awayClubId) !== null ||
-    fixture.matchday > 22 ||
-    margin >= 3
-  )
+  // Årsbokens toppbetyg aggregerar dessa rapporter. Att bara bevara derbyn,
+  // sena matcher och storsegrar skapade en systematiskt skev restmängd.
+  // Bevara därför betygen för alla egna matcher; AI-rapporter komprimeras än.
+  const preserveRatings = isManagedFixture
 
   // Keep durable scoring/suspension facts. Transient live-match events are
   // discarded here so completed fixtures do not make saves grow indefinitely.

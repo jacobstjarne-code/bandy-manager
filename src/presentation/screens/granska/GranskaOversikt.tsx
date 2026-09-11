@@ -754,7 +754,7 @@ export function GranskaOversikt({
         return (
           <DecisionCard
             style={fadeIn(4)}
-            label="🏟️ DOMARENS LOCKER ROOM"
+            label="🏟️ DOMARENS OMKLÄDNINGSRUM"
             subtitle={rm.sender?.name}
             body={rm.body}
             bodyAsQuote
@@ -769,7 +769,7 @@ export function GranskaOversikt({
       })()}
 
       {/* GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
-      {visasFor('reaktioner', axes.tavlingstyp, axes.skede) && <ReaktionerKort pendingEvents={pendingEvents} onResolve={onResolve} />}
+      {visasFor('reaktioner', axes.tavlingstyp, axes.skede) && <ReaktionerKort game={game} pendingEvents={pendingEvents} onResolve={onResolve} />}
 
       {/* Media */}
       {(() => {

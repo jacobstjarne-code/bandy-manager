@@ -82,6 +82,26 @@ describe('getCoffeeRoomScene — GENERIC_EXCHANGES anti-repeat efter historiken 
     const game = makeGame({ currentMatchday: 20, lastCoffeeSceneIndices: [] })
     expect(() => getCoffeeRoomScene(game)).not.toThrow()
   })
+
+  it('spärrar exakt renderade vardagsrepliker över säsongsgränsen', () => {
+    const firstGame = makeGame({ currentSeason: 2030, currentMatchday: 1 })
+    const first = Array.from({ length: 22 }, (_, index) =>
+      getCoffeeRoomScene({ ...firstGame, currentMatchday: index + 1 })
+    ).find(scene => scene?.narrativeKeys?.some(key => key.startsWith('coffee_exchange_')))
+    const shownKeys = (first?.narrativeKeys ?? []).filter(key => key.startsWith('coffee_exchange_'))
+    expect(shownKeys.length).toBeGreaterThan(0)
+
+    for (let matchday = 1; matchday <= 22; matchday++) {
+      const second = getCoffeeRoomScene({
+        ...firstGame,
+        currentSeason: 2031,
+        currentMatchday: matchday,
+        narrativeBeatLog: shownKeys.map(key => ({ semanticKey: key, season: 2030, round: 8 })),
+      })
+      const secondKeys = (second?.narrativeKeys ?? []).filter(key => key.startsWith('coffee_exchange_'))
+      expect(secondKeys.some(key => shownKeys.includes(key))).toBe(false)
+    }
+  })
 })
 
 describe('getCoffeeRoomScene — fatigue använder den kanoniska visningsloggen', () => {

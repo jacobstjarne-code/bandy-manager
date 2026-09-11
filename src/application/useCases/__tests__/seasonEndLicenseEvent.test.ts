@@ -38,6 +38,7 @@ describe('handleSeasonEnd — license_event-post', () => {
       licenseRiskScore: 40,
       licenseStatus: 'first_warning' as const,
       // Frusen säsongsstart 50 000 rikare än nuvarande kassa → netResult -50 000.
+      seasonStartFinances: managedClub.finances + 50_000,
       seasonStartSnapshot: {
         season: game.currentSeason, finalPosition: 6, finances: managedClub.finances + 50_000,
         communityStanding: 50, squadSize: 20, supporterMembers: 100, academyPromotions: 0,
@@ -62,6 +63,7 @@ describe('handleSeasonEnd — license_event-post', () => {
       licenseRiskScore: 40,
       licenseStatus: 'first_warning',
       pendingPointDeductions: { [game.managedClubId]: 2, [otherClubId]: 1 },
+      seasonStartFinances: managedClub.finances + 50_000,
       seasonStartSnapshot: {
         season: game.currentSeason, finalPosition: 6, finances: managedClub.finances + 50_000,
         communityStanding: 50, squadSize: 20, supporterMembers: 100, academyPromotions: 0,

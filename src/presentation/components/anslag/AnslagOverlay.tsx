@@ -9,7 +9,9 @@ import { Overlay } from '../primitives/Overlay'
 // Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
 // dess fallback-gradient + stämpel. Fler anslag (derby, nedflyttning) läggs till här.
 const ANSLAG_BAND_IMAGE: Record<string, string> = {
-  league_midwinter: 'annandagen',
+  // Januarins halvtidsanslag är inte en andra annandag. Bruksortsbilden bär
+  // vintern utan att felmärka scenen eller återanvända högtidsidentiteten.
+  league_midwinter: 'bruksort-header',
 }
 
 interface AnslagOverlayProps {

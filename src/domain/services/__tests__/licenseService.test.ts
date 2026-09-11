@@ -38,6 +38,7 @@ function makeGame(overrides: {
         squadPlayerIds: [],
       } as never,
     ],
+    seasonStartFinances: startFinances,
     seasonStartSnapshot: { season: 1, finalPosition: 6, finances: startFinances, communityStanding: 50, squadSize: 20, supporterMembers: 100, academyPromotions: 0 },
     licenseStatus,
     licenseRiskScore,
@@ -81,6 +82,12 @@ describe('calculateLicenseReputationLoss — formellt behållen skala 2026-09-07
 // ── checkLicenseStatus — ackumulatorn (Jacobs dom 2026-08-26) ────────────────
 
 describe('checkLicenseStatus — ackumulator, +20 straff / -18 lättnad', () => {
+  it('läser samma frusna startkassa som årsboken även om legacy-snapshoten avviker', () => {
+    const game = makeGame({ finances: 120000, startFinances: 100000 })
+    game.seasonStartSnapshot = { ...game.seasonStartSnapshot!, finances: 150000 }
+    expect(checkLicenseStatus(game, 1).netResult).toBe(20000)
+  })
+
   it('en konsekvent dålig klubb följer EXAKT samma kadens som det gamla systemet: 20→40→60→80', () => {
     let game = makeGame({ finances: 80000, startFinances: 100000 })  // netResult -20 000, poäng 0→20
     let result = checkLicenseStatus(game, 1)

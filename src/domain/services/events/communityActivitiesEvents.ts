@@ -281,7 +281,7 @@ export function generateCommunityActivitiesEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Fikakväll för supportrarna',
-        body: 'Arrangera en fikakväll med spelarna. Den kostar 500 kr och höjer fanMood med 8 poäng.',
+        body: 'Arrangera en fikakväll med spelarna. Den kostar 500 kr och lyfter stämningen på läktaren.',
         choices: [
           {
             id: 'fika',

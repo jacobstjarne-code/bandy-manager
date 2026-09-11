@@ -2,7 +2,7 @@
  * CounterInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-04. Uses InteractionShell with:
- * - timer: 5s (T5b, 2026-07-13/14: ringen — se InteractionShell)
+ * - timer: 8s (utökad för läsbart matchflyt; ringen ägs av InteractionShell)
  * - SVG pitch: LED palette (amber runner + support, red defenders + GK steel-blue)
  * - Monospace LED sub-choice buttons (BRYT / SPELA AV / BYGG)
  * - cta.variant = 'copper'

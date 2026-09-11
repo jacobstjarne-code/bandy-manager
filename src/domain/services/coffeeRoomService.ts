@@ -3,7 +3,7 @@ import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 import { pickKlackEchoText } from '../data/klackEchoText'
-import { mulberry32 } from '../utils/random'
+import { mulberry32, stringHashUnsigned } from '../utils/random'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { pickAnniversaryKafferum } from '../data/anniversaryKafferumText'
 import { fillTemplate } from '../data/matchCommentary'
@@ -147,6 +147,21 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Vaktmästaren', 'Någon hade lämnat grinden öppen.', 'Kioskvakten', 'Räven igen, kanske.'],
   ['Kassören', 'Medlemsavgifterna trillar in nu.', 'Ordföranden', 'Det gör de alltid när det vänder.'],
 ]
+
+const GENERIC_COFFEE_COOLDOWN_SEASONS = 2
+
+/**
+ * Poolindex är inte en identitet: den dynamiska ungdomsraden och streakrader
+ * flyttar index mellan besök. Hashen av den färdigrenderade repliken följer
+ * däremot exakt det spelaren faktiskt såg, även över säsongsskiften.
+ */
+function coffeeExchangeSemanticKey(exchange: [string, string, string, string]): string {
+  return `coffee_exchange_${stringHashUnsigned(exchange.join('\u241f')).toString(36)}`
+}
+
+function coffeeNarratorSemanticKey(line: CoffeeNarratorLine): string {
+  return `coffee_narrator_${stringHashUnsigned(`${line.speaker ?? ''}\u241f${line.text}`).toString(36)}`
+}
 
 // Transfer-triggered exchanges — shown after a sale/buy
 const TRANSFER_SALE_EXCHANGES: Array<[string, string, string, string]> = [
@@ -876,8 +891,8 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   const maxAvoidable = Math.max(0, pool.length - count - 1)
   const lastIndices = new Set(lastIndicesAll.slice(-maxAvoidable))
 
-  // Plocka `count` distinkta index
-  // TODO: GENERIC_EXCHANGES bör utökas — sju utbyten är för få för ett återkommande inslag (Opus levererar fler om önskat)
+  // Plocka `count` distinkta index. Både den korta indexhistoriken och den
+  // durabla, textbaserade tvåsäsongscooldownen måste vara rena.
   const used = new Set<number>()
   const pickedIndices: number[] = []
   const exchanges: Array<[string, string, string, string]> = []
@@ -887,7 +902,14 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     // Hoppa över index som redan valts ELLER som visades senast (inom det
     // storleksanpassade fönstret)
     while (
-      (used.has(idx) || lastIndices.has(idx)) &&
+      (used.has(idx)
+        || lastIndices.has(idx)
+        || isOnCooldown(
+          game,
+          coffeeExchangeSemanticKey(pool[idx]),
+          GENERIC_COFFEE_COOLDOWN_SEASONS,
+          game.currentSeason,
+        )) &&
       guard < pool.length
     ) {
       idx = (idx + 1) % pool.length
@@ -915,6 +937,7 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   return {
     exchanges,
     pickedIndices,
+    narrativeKeys: exchanges.map(coffeeExchangeSemanticKey),
     meta: {
       title: 'Kafferummet',
       subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',
@@ -930,11 +953,48 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
 export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   const scene = buildCoffeeRoomScene(game)
   if (!scene) return null
+  // Sista gemensamma grind för ALLA innehållsgrenar. Specialreaktioner,
+  // ankare, hall, klack och resultat har egna selektorer; här får de samma
+  // exakta tvåsäsongscooldown som generisk/fatigue/victory. Därmed kan en ny
+  // gren inte råka kringgå minnet bara för att den returnerar tidigt ovan.
+  const freshExchanges = scene.exchanges.filter(exchange =>
+    !isOnCooldown(
+      game,
+      coffeeExchangeSemanticKey(exchange),
+      GENERIC_COFFEE_COOLDOWN_SEASONS,
+      game.currentSeason,
+    )
+  )
+  const freshNarratorLine = scene.narratorLine && !isOnCooldown(
+    game,
+    coffeeNarratorSemanticKey(scene.narratorLine),
+    GENERIC_COFFEE_COOLDOWN_SEASONS,
+    game.currentSeason,
+  ) ? scene.narratorLine : undefined
+  const contentKeys = [
+    ...freshExchanges.map(coffeeExchangeSemanticKey),
+    ...(freshNarratorLine ? [coffeeNarratorSemanticKey(freshNarratorLine)] : []),
+  ]
   const ledgerEcho = selectCoffeeRoomLedgerEcho(game)
   const retiredVictoryEcho = !!game.pendingVictoryEcho &&
     !shouldSurfaceVictoryEcho(game, game.pendingVictoryEcho)
+  if (freshExchanges.length === 0 && !freshNarratorLine && !scene.question && !ledgerEcho && !retiredVictoryEcho) {
+    return null
+  }
   return {
     ...scene,
+    exchanges: freshExchanges,
+    narratorLine: freshNarratorLine,
+    // Exakta exchange-nycklar byggs om från det innehåll som verkligen
+    // överlevde grinden. Behåll bara grenens egna semantiska nycklar (t.ex.
+    // fatigue/victory) när scenen fortfarande har färskt innehåll; annars
+    // skulle liggaren kunna märka en bortfiltrerad repris som visad igen.
+    narrativeKeys: freshExchanges.length > 0 || freshNarratorLine
+      ? [...new Set([
+          ...(scene.narrativeKeys ?? []).filter(key => !key.startsWith('coffee_exchange_')),
+          ...contentKeys,
+        ])]
+      : [],
     ...(ledgerEcho && { ledgerEcho }),
     ...(retiredVictoryEcho && { retiredVictoryEcho: true }),
   }

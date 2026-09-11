@@ -180,5 +180,5 @@ export function shouldTriggerRefereeMeeting(
 // ── Get formatted referee display name ──────────────────────────────────────
 
 export function getRefereeDisplayName(ref: Referee): string {
-  return `${ref.firstName} ${ref.lastName} (${ref.homeTown}, ${ref.yearsOfExperience} år)`
+  return `${ref.firstName} ${ref.lastName} (${ref.homeTown}, ${ref.yearsOfExperience} år som domare)`
 }

@@ -42,7 +42,7 @@ describe('akademins liggarpresentation', () => {
     }
 
     expect(academyEconomyYearbookLine(game)).toBe(
-      'Akademin: 150 + 110 tkr. Gav 1 uppflyttade och 11 i utveckling.',
+      'Akademin: investering 150 tkr · drift 110 tkr. Gav 1 uppflyttad och 11 i utveckling.',
     )
   })
 
@@ -86,7 +86,7 @@ describe('akademins liggarpresentation', () => {
     expect(latestLoanReturnAttribution(game)).toContain('Senaste Spelaren tillbaka från Testklubben')
     expect(academyYearbookLines(game)).toEqual([
       'Torsten Isaksson tillbaka från Testklubben: 43→54. Lånet gav 5, träningen resten.',
-      'Ung Talang, 3 stjärnor, lämnade akademin vid tjugo.',
+      'Ung Talang, 3 stjärnor, lämnade akademin vid tjugo års ålder.',
       'Senaste Spelaren tillbaka från Testklubben: 43→54. Lånet gav 5, träningen resten.',
     ])
   })
@@ -103,7 +103,7 @@ describe('akademins liggarpresentation', () => {
     }
 
     expect(academyYearbookLines(game)).toEqual([
-      'Filip Dahlberg, 1 stjärna, lämnade akademin vid tjugo.',
+      'Filip Dahlberg, 1 stjärna, lämnade akademin vid tjugo års ålder.',
     ])
   })
 })

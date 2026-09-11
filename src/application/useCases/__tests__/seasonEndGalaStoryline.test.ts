@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { handleSeasonEnd } from '../seasonEndProcessor'
-import { generateGalaInbox, type GalaNomination } from '../../../domain/services/bandyGalaService'
+import { BANDY_GALA_SEMANTIC_ID, generateGalaInbox, type GalaNomination } from '../../../domain/services/bandyGalaService'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { FixtureStatus } from '../../../domain/enums'
 import { seasonChampionYear } from '../../../domain/utils/seasonYear'
@@ -89,5 +89,22 @@ describe('Bandygalan — gala_winner storyline', () => {
       clubId: game.managedClubId,
       subject: { kind: 'player', id: winner.id },
     }))
+    expect(result.pendingEvents.find(event => event.id === `event_gala_${game.currentSeason}`)?.semanticId)
+      .toBe(BANDY_GALA_SEMANTIC_ID)
+  })
+
+  it('delar ut årliga priser men startar inte om den hållna galascenen efter resolution', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 2 })
+    const players = base.players.map((player, index) => ({
+      ...player,
+      seasonStats: { ...player.seasonStats, gamesPlayed: index === 0 ? 5 : 0 },
+    }))
+    const result = handleSeasonEnd({
+      ...base,
+      players,
+      resolvedEventIds: ['event_gala_2024'],
+    }, 321).game
+
+    expect(result.pendingEvents.some(event => event.id.startsWith('event_gala_'))).toBe(false)
   })
 })

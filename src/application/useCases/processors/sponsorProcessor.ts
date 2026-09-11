@@ -6,6 +6,7 @@ import { InboxItemType, TrainingType, TrainingIntensity } from '../../../domain/
 import { mulberry32 } from '../../../domain/utils/random'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
+import { swedishGenitive } from '../../../domain/utils/swedishGrammar'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { isActiveLicenseWarning } from '../../../domain/services/licenseService'
 import { jobbetForsvannEvent } from '../../../domain/services/events/eventFactories'
@@ -342,7 +343,9 @@ export function applyRiskySponsorMaturation(
       date: newDate,
       type: InboxItemType.BoardFeedback,
       title: picked.title,
-      body: picked.body.replace(/{KLUBB}/g, clubName),
+      body: picked.body
+        .replace(/{KLUBB}s\b/g, swedishGenitive(clubName))
+        .replace(/{KLUBB}/g, clubName),
       isRead: false,
     } as InboxItem],
   }

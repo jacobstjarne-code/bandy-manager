@@ -369,7 +369,7 @@ export function generatePlayerPraiseEvent(
   return {
     id: `event_praise_${praiser.id}_${praised.id}`,
     type: 'playerPraise',
-    title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
+    title: `📰 ${name1} hyllar ${name2}`,
     body: pickPlayerPraiseText(praiser, praised),
     proofSource: {
       form: 'state-predicate',
@@ -724,7 +724,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
     id: `event_mec_intervention_${mec.id}_s${season}_r${roundNumber}`,
     type: 'mecenatInteraction',
     title: `⚠️ ${mec.name} är på väg att tappa tron`,
-    body: `${mec.name} från ${mec.business} har blivit allt tystare på sistone. Happiness: ${mec.happiness}/100.\n\nDu kan ta initiativet och bjuda in till ${eventLabel} (kostnad: ${eventCost.toLocaleString('sv')} kr), eller låta det rinna av.`,
+    body: `${mec.name} från ${mec.business} har blivit allt tystare på sistone. Mecenatens tålamod: ${mec.happiness}/100.\n\nDu kan ta initiativet och bjuda in till ${eventLabel} (kostnad: ${eventCost.toLocaleString('sv')} kr), eller låta det rinna av.`,
     proofSource: {
       form: 'state-predicate',
       description: 'mecenaten är aktiv och happiness är under 40',

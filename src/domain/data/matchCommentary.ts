@@ -184,7 +184,7 @@ export const commentary = {
     "{team} utnyttjar utvisningen och trycker på nu.",
     "{team} styr spelet nu, men {opponent} försvarar sig bra.",
     "Utvisningen skapar lite mer utrymme. {team} försöker hitta läget.",
-    "{team} söker avgörandet. {opponent} försvarar sig med näbbar och klor.",
+    "{team} söker ännu ett mål. {opponent} försvarar sig med näbbar och klor.",
     "{team} trycker på med en man mer!",
   ],
 
@@ -256,7 +256,7 @@ export const commentary = {
   ],
 
   weatherCold: [
-    "Bollen går trögt i kylan. Spelarna stampar för att hålla värmen.",
+    "Kylan biter. Spelarna stampar för att hålla värmen.",
     "Minusgraderna biter — fingrarna domnar i handskarna.",
     "Iskallt ikväll. Spelarna har det inte bättre ute på isen.",
   ],
@@ -869,11 +869,8 @@ export const commentary = {
   ],
 }
 
-/** Svensk genitiv: namn som redan slutar på s, x eller z får inget extra s. */
-export function swedishGenitive(value: string): string {
-  const trimmed = value.trimEnd()
-  return /[sxz]$/i.test(trimmed) ? value : `${value}s`
-}
+export { swedishGenitive } from '../utils/swedishGrammar'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 // Helper to fill in a template. Genitiv-token (`{name}s`) behandlas först så
 // Söderfors blir Söderfors, medan Målilla blir Målillas.
@@ -943,7 +940,7 @@ export function getTraitCommentary(
     ],
     lokal: [
       `Hela orten jublar! ${name} — en av deras egna.`,
-      `Lokalhjälten ${name}! Det kan inte bli bättre på hemmaplan.`,
+      `Lokalhjälten ${name}! Det kan inte bli bättre än så.`,
       `${name} med ett mål som orten kommer prata om länge.`,
     ],
     ledare: [

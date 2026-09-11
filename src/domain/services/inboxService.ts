@@ -2,6 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
 import type { InboxItem } from '../entities/SaveGame'
+import type { YouthIntakeRecord } from '../entities/SaveGame'
 import type { YouthIntakeResult } from './youthIntakeService'
 import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
@@ -178,8 +179,13 @@ export function createPlayThroughAftermathItem(
   }
 }
 
+type YouthIntakePresentation = Pick<YouthIntakeResult, 'record' | 'scoutTexts'> & {
+  newPlayers: Array<Pick<Player, 'id' | 'firstName' | 'lastName' | 'position' | 'potentialAbility'>>
+  record: YouthIntakeRecord
+}
+
 export function createYouthIntakeItem(
-  result: YouthIntakeResult,
+  result: YouthIntakePresentation,
   club: Club,
   currentDate: string,
   scoutTexts: Record<string, string>,

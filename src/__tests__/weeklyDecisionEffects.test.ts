@@ -10,6 +10,7 @@ import {
   resolveWeeklyDecision,
   generateWeeklyDecision,
   hasAcceptedWeeklyDecision,
+  hasResolvedWeeklyDecision,
 } from '../domain/services/weeklyDecisionService'
 import { createNewGame } from '../application/useCases/createNewGame'
 import { PlayerPosition } from '../domain/enums'
@@ -127,6 +128,36 @@ describe('Fynd 11 — veckans beslut-effekter', () => {
     }
     for (let round = 1; round <= 22; round++) {
       expect(generateWeeklyDecision(acceptedGame, round)?.id).not.toBe('ismaskin_offer')
+    }
+  })
+
+  it('startar inte om den lösta klackkonflikten en senare säsong, oavsett svar', () => {
+    const conflict = {
+      ...decision('supporter_conflict_mediate'),
+      category: 'supporter' as const,
+      repeatPolicy: 'once' as const,
+    }
+    const receipt = buildWeeklyDecisionLedgerEntry(
+      conflict,
+      'B',
+      [{ type: 'noop' }],
+      { ...game, currentSeason: game.currentSeason - 1 },
+      { ...game, currentSeason: game.currentSeason - 1 },
+      12,
+    )
+    expect(receipt.irreversible).toBe(true)
+    expect(hasResolvedWeeklyDecision([receipt], conflict.id)).toBe(true)
+
+    const laterGame = {
+      ...game,
+      currentSeason: game.currentSeason + 1,
+      eventLedger: [receipt],
+      pendingWeeklyDecision: undefined,
+      weeklyDecisionLastRound: undefined,
+      resolvedWeeklyDecisions: [],
+    }
+    for (let round = 1; round <= 22; round++) {
+      expect(generateWeeklyDecision(laterGame, round)?.id).not.toBe('supporter_conflict_mediate')
     }
   })
 

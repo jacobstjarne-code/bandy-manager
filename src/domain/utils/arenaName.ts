@@ -1,10 +1,6 @@
 export function formatArenaName(stadium: string): string {
-  if (!stadium) return ''
-  const lower = stadium.toLowerCase()
-  const alreadyHasSuffix =
-    lower.endsWith(' arena') ||
-    lower.endsWith('vallen') ||
-    lower.endsWith('hallen') ||
-    lower.endsWith('planen')
-  return alreadyHasSuffix ? stadium : `${stadium} arena`
+  // arenaName är ett egennamn i världsmodellen, inte ett ortnamn som behöver
+  // typbeteckning. Automatiskt suffix gav "Planlunden arena", "Ässjan arena"
+  // och liknande konstruktioner som stred mot all etablerad klubbcopy.
+  return stadium.trim()
 }

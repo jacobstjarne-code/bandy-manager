@@ -547,7 +547,7 @@ export function LineupStep({
                       <span
                         className="tag tag-red"
                         style={{ padding: '2px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}
-                        title="Startar under fitness-golvet — risk att förlora honom till nästa match"
+                        title="Startar med låg kondition — högre skaderisk och risk att missa nästa match"
                       >
                         <Icon icon={AlertTriangle} size={9} style={{ flexShrink: 0 }} />
                         Sliten

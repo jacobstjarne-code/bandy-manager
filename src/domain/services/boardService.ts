@@ -608,7 +608,7 @@ export function seasonVerdictText(
   const rating = computeSeasonVerdictRating(expectation, finalPosition, totalTeams)
   switch (rating) {
     case 5: return 'Styrelsen hade inte väntat sig det här.'
-    case 4: return 'Styrelsen fick mer än de bad om.'
+    case 4: return 'Sammantaget fick styrelsen mer än de bad om.'
     case 3: return 'Säsongen blev vad styrelsen räknade med.'
     case 2: return 'Styrelsen hade hoppats på mer av vintern.'
     case 1: return 'Vintern blev en besvikelse för styrelsen.'

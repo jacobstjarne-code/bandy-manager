@@ -57,7 +57,7 @@ export function academyEconomyYearbookLine(game: SaveGame, season = game.current
   const completedRounds = season === game.currentSeason ? Math.max(0, game.currentMatchday ?? 0) : 0
   const operatingCost = academyOperatingCostPerRound(game.academyLevel ?? 'basic') * completedRounds
 
-  return `Akademin: ${Math.round(startCost / 1_000)} + ${Math.round(operatingCost / 1_000)} tkr. Gav ${promotedCount} uppflyttade och ${developmentGain} i utveckling.`
+  return `Akademin: investering ${Math.round(startCost / 1_000)} tkr · drift ${Math.round(operatingCost / 1_000)} tkr. Gav ${formatSwedishCount(promotedCount, 'uppflyttad', 'uppflyttade')} och ${developmentGain} i utveckling.`
 }
 
 interface RankedAcademyLine {
@@ -131,7 +131,7 @@ export function academyYearbookLines(game: SaveGame, season = game.currentSeason
         significance: entry.significance,
         matchday: entry.matchday,
         semanticKey: entry.semanticKey,
-        text: `${name}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo.`,
+        text: `${name}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo års ålder.`,
       })
       continue
     }

@@ -4,7 +4,7 @@ export const STAR_PERFORMANCE_VARIANTS: readonly string[] = [
   `{NAME} var med på allt som hade betydelse. Det är inte vanligt. Betyg: {RATING}.`,
   `Sture klappade {NAME} på axeln på väg in i omklädningsrummet. Mer blev det inte sagt. Betyg: {RATING}.`,
   `{NAME} satt kvar i omklädningsrummet ett tag. Ingen frågade vad han tänkte på. Betyg: {RATING}.`,
-  `{NAME} satte sig sist på bussen. Det blev tyst där bak — på det bra sättet. Betyg: {RATING}.`,
+  `{NAME} blev sist kvar i omklädningsrummet. Det blev tyst — på det bra sättet. Betyg: {RATING}.`,
 ]
 
 export const PLAYER_PRAISE_VARIANTS: readonly string[] = [
@@ -12,7 +12,7 @@ export const PLAYER_PRAISE_VARIANTS: readonly string[] = [
   `{A} efter morgonträningen, om {B}:\n\n"Han gör mitt jobb hälften så svårt."`,
   `{A} när någon frågade om kemin med {B}:\n\n"Vi spelade inte ihop som juniorer. Synd."`,
   `Sture i kafferummet:\n\n"{A} och {B} hittar varandra på planen. Konstigt nog."`,
-  `{A} i bussen hem, om {B}:\n\n"{LASTNAME_B} måste sluta. Han får mig att se bra ut."`,
+  `{A} på väg från vallen, om {B}:\n\n"{LASTNAME_B} måste sluta. Han får mig att se bra ut."`,
   `{A} till lokaltidningen om {B}:\n\n"Han vinner brytningar jag inte ens visste fanns."`,
 ]
 

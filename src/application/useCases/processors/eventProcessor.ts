@@ -31,6 +31,7 @@ import {
   MECENAT_WITHDRAWAL_FALLBACK,
 } from '../../../domain/data/eventProcessorStrings'
 import { seededPick } from '../../../domain/utils/random'
+import { swedishGenitive } from '../../../domain/utils/swedishGrammar'
 import { pickDemandCategory, createPendingDemand, isDemandFulfilled } from '../../../domain/services/demandEngine'
 import type { MecenatDemand } from '../../../domain/entities/Mecenat'
 import type { Patron } from '../../../domain/entities/Community'
@@ -358,6 +359,7 @@ export interface EventProcessorResult {
 function fillL2Tokens(text: string, tokens: Record<string, string>): string {
   let result = text
   for (const [key, value] of Object.entries(tokens)) {
+    result = result.replace(new RegExp(`{${key}}s\\b`, 'g'), swedishGenitive(value))
     result = result.replace(new RegExp(`{${key}}`, 'g'), value)
   }
   return result

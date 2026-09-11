@@ -42,4 +42,13 @@ describe('getTraitCommentary — ledare-poolen kräver faktisk captaincy (captai
     expect(text).not.toBeNull()
     expect(text).not.toMatch(/Kaptenen|bindel/)
   })
+
+  it('lokaltraitets målpool är venue-säker även när den används på bortaplan', () => {
+    for (let i = 0; i < 30; i++) {
+      const id = `lokal-${i}`
+      const players = [makePlayer({ id, lastName: `Spelare${i}`, trait: 'lokal' })]
+      const text = getTraitCommentary(id, 'goal', players)
+      expect(text).not.toMatch(/hemmaplan|hemma/i)
+    }
+  })
 })

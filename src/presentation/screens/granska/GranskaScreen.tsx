@@ -351,7 +351,7 @@ export function GranskaScreen() {
         <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {unresolved > 0 && (
             <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: 0 }}>
-              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — hantera dem i Översikt eller Spelare
+              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — hantera {unresolved === 1 ? 'den' : 'dem'} i Översikt eller Spelare
             </p>
           )}
           <button onClick={handleContinue} disabled={unresolved > 0} className="btn btn-primary btn-cta">

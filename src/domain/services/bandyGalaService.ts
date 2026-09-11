@@ -6,6 +6,9 @@ import { formatRating } from '../format'
 import { seasonChampionYear } from '../utils/seasonYear'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 
+/** Den hållna galascenen är en karriärbeat; årliga priser och inboxbrev fortsätter. */
+export const BANDY_GALA_SEMANTIC_ID = 'bandy_gala'
+
 // ── Awards ──────────────────────────────────────────────────────────────────
 
 export interface GalaNomination {
@@ -161,6 +164,7 @@ export function generateGalaEvent(
 
   return {
     id: `event_gala_${game.currentSeason}`,
+    semanticId: BANDY_GALA_SEMANTIC_ID,
     type: 'communityEvent',
     title: '🏆 Bandygalan',
     body: `Bandygalan ${seasonChampionYear(game.currentSeason)} — årets prisutdelning!\n\n${nomineeList}${hasWinner ? `\n\n${managedClub?.name} har ${managedWinners.length} pristagare!` : ''}`,

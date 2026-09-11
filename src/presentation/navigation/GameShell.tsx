@@ -167,7 +167,7 @@ export function GameShell() {
             min-height) — en golv-höjd tillåter obegränsad tillväxt uppåt, vilket
             gjorde att .mf-root (match/live, height:100% + overflow:hidden) aldrig
             fick en definit förälderhöjd att klippa mot. Resultat: hela dockflödet
-            (inkl. interaktionspaneler + 5s-timer) renderades hundratals px under
+            (inkl. interaktionspaneler + 8s-timer) renderades hundratals px under
             vikningen, onåbart även vid maxscroll. Med en definit höjd här löser
             .mf-root:s height:100% korrekt mot en verklig viewport-bunden ram, och
             .commentary-feed:s egna overflow-y:auto (redan korrekt) scrollar

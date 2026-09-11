@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
+import { swedishGenitive } from '../utils/swedishGrammar'
 import { InboxItemType } from '../enums'
 import { POLITICIAN_PROFILES } from '../data/politicianData'
 import { applyFinanceChange } from './economyService'
@@ -351,6 +352,8 @@ function fillTemplate(
   politician?: { name: string; party: string },
 ): string {
   let result = text
+    .replace(/{KLUBB}s\b/g, swedishGenitive(club.name))
+    .replace(/{ANDRA_KLUBB}s\b/g, swedishGenitive(secondaryClub?.name ?? 'grannklubben'))
     .replace(/{KLUBB}/g, club.name)
     .replace(/{club}/g, club.name)
     .replace(/{city}/g, club.name.split(' ').slice(-1)[0])

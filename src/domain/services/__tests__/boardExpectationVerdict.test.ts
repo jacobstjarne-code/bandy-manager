@@ -219,7 +219,7 @@ describe('generateSeasonSummary narrative sentence agrees with expectationVerdic
 describe('seasonVerdictText — låst text, en mening per rating, aldrig ett omdöme om managern', () => {
   const CASES: [1 | 2 | 3 | 4 | 5, string][] = [
     [5, 'Styrelsen hade inte väntat sig det här.'],
-    [4, 'Styrelsen fick mer än de bad om.'],
+    [4, 'Sammantaget fick styrelsen mer än de bad om.'],
     [3, 'Säsongen blev vad styrelsen räknade med.'],
     [2, 'Styrelsen hade hoppats på mer av vintern.'],
     [1, 'Vintern blev en besvikelse för styrelsen.'],

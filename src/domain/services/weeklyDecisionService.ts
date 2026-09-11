@@ -48,10 +48,11 @@ export interface WeeklyDecision {
   requiredEra?: ClubEra[]
   /**
    * `season` är standard: samma situation kan återkomma en senare säsong.
-   * `untilAccepted` beskriver en faktisk engångsförändring i klubben. När A
-   * väl valts är ledgern sanningskällan för att förändringen redan skett.
+   * `untilAccepted` beskriver en bestående förändring som får återkomma tills
+   * A väljs. `once` beskriver en avslutad berättelse och spärras efter vilket
+   * spelarsvar som helst. Ledgern är sanningskälla över säsongsgränsen.
    */
-  repeatPolicy?: 'season' | 'untilAccepted'
+  repeatPolicy?: 'season' | 'untilAccepted' | 'once'
   systemhandelse?: boolean  // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
                               // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
@@ -83,7 +84,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
   // records. Keep them as roles here; named voices must first be introduced
   // through the canonical voice/event flow.
   const veteran = 'En veteran i klacken'
-  const youth   = 'En yngre supporter'
+  const youth   = 'en yngre supporter'
   const family  = 'En familjesupporter'
   const sg      = game.supporterGroup
   const groupName = sg?.name ?? 'Klacken'
@@ -151,6 +152,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
     {
       id: 'supporter_conflict_mediate',
       category: 'supporter',
+      repeatPolicy: 'once',
       question: `${leader}: "${veteran} och ${youth} bråkar om musiken igen. Kan du säga något?"`,
       optionA: { label: 'Medla', preview: '+stämning · alla nöjda', effectColor: 'success' },
       optionB: { label: 'Låt dem lösa det', preview: '50/50 chans', effectColor: 'muted' },
@@ -168,7 +170,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
       optionA: { label: 'Hörnor', preview: 'vassare i hörnorna', effectColor: 'success' },
-      optionB: { label: '📋 Matchprep', preview: 'stabilare i hörnförsvaret (sårbar back)', effectColor: 'success' },
+      optionB: { label: '📋 Matchförberedelse', preview: 'stabilare i hörnförsvaret (sårbar back)', effectColor: 'success' },
     },
     {
       id: 'scout_opponent_corners',
@@ -290,6 +292,10 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
   const available = pool.filter(d => {
     if (resolved.includes(`${d.id}_${game.currentSeason}`)) return false
     if (d.repeatPolicy === 'untilAccepted' && hasAcceptedWeeklyDecision(game.eventLedger, d.id)) return false
+    if (d.repeatPolicy === 'once' && (
+      hasResolvedWeeklyDecision(game.eventLedger, d.id)
+      || resolved.some(key => key.startsWith(`${d.id}_`))
+    )) return false
     if (d.requiredEra && !d.requiredEra.includes(currentEra)) return false
     if ((d.id === 'corner_extra_training' || d.id === 'training_corners_vs_matchprep') && !hasCornerCandidate) return false
     if (d.id === 'player_weekend_off' && !hasWearyPlayer) return false
@@ -324,6 +330,19 @@ export function hasAcceptedWeeklyDecision(
     entry.type === 'decision'
       && entry.madeByPlayer === true
       && entry.semanticKey === acceptedKey,
+  )
+}
+
+/** Ett berättelseavslut räknas efter båda valen; semantiknyckeln bär svaret. */
+export function hasResolvedWeeklyDecision(
+  entries: readonly EventLedgerEntry[] | undefined,
+  decisionId: string,
+): boolean {
+  const prefix = `${WEEKLY_DECISION_KEY}${decisionId}:`
+  return (entries ?? []).some(entry =>
+    entry.type === 'decision'
+      && entry.madeByPlayer === true
+      && entry.semanticKey.startsWith(prefix),
   )
 }
 
@@ -392,7 +411,8 @@ export function buildWeeklyDecisionLedgerEntry(
   const moneyAmount = financesBefore !== undefined && financesAfter !== undefined
     ? Math.abs(financesAfter - financesBefore)
     : 0
-  const irreversible = decision.repeatPolicy === 'untilAccepted' && choice === 'A'
+  const irreversible = decision.repeatPolicy === 'once'
+    || (decision.repeatPolicy === 'untilAccepted' && choice === 'A')
 
   return {
     type: 'decision',

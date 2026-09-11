@@ -72,6 +72,11 @@ describe('fixtureProcessor', () => {
     expect(result.report?.playerRatings).toEqual({})
   })
 
+  it('bevarar spelaromdömena från varje egen match till årsbokens helhetsbetyg', () => {
+    const result = stripCompletedFixture(completedFixture(), undefined, 'managed')
+    expect(result.report?.playerRatings).toEqual({ p1: 7 })
+  })
+
   it('skapar annandagsnotisen från den lagrade kalendern', () => {
     const fixture = completedFixture({ status: FixtureStatus.Scheduled })
     const save = game({ seasonCalendar: [{ matchday: 4, isAnnandagen: true }] })

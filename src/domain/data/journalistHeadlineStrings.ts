@@ -44,17 +44,17 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
 
 const WIN_HEADLINES: Record<Persona, SimplePool> = {
   supportive: [
-    'Två poäng efter god kamp',
+    'Seger efter god kamp',
     'Arbetsseger som betalde sig',
-    'Ortens lag tog hem två poäng',
+    'Ortens lag tog hem segern',
     'Förtjänt seger, inget att orda om',
     'Gick i mål när det krävdes',
   ],
   sensationalist: [
-    'Fällde {opp} — två poäng hem',
+    'Fällde {opp} — segern i hamn',
     '{scoreline} — och segern i hamn',
     'Vilken seger — {opp} slagna!',
-    'Två poäng — skriv upp det med stora bokstäver',
+    'Seger — skriv upp det med stora bokstäver',
     'Slog {opp} — mer behöver ingen veta',
   ],
   analytical: [
@@ -66,7 +66,7 @@ const WIN_HEADLINES: Record<Persona, SimplePool> = {
   ],
   critical: [
     'Vann trots ojämn insats — mer krävs framöver',
-    'Två poäng som inte ska tolkas för optimistiskt',
+    'En seger som inte ska tolkas för optimistiskt',
     'Godkänt — men inte mer',
     'Vinsten skymmer underliggande problem',
     'Räddat resultat, inte räddat spel',

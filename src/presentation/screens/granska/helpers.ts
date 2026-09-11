@@ -207,13 +207,17 @@ export function generateQuickSummary(
   const lines: string[] = []
 
   if (won) {
-    if (margin >= 4) lines.push('En övertygande seger.')
+    if (wonByPenalties) lines.push('En dramatisk seger efter straffar.')
+    else if (wonByOT) lines.push('En dramatisk seger efter förlängning.')
+    else if (margin >= 4) lines.push('En övertygande seger.')
     else if (margin === 3) lines.push('En klar seger.')
     else if (margin === 2) lines.push('En välförtjänt seger.')
     else if (lateDecider) lines.push('En dramatisk seger i slutminuterna.')
     else lines.push('En knapp men viktig seger.')
   } else if (lost) {
-    if (margin <= -4) lines.push('En tung matchdag att glömma.')
+    if (lostByPenalties) lines.push('En bitter förlust efter straffar.')
+    else if (lostByOT) lines.push('En bitter förlust efter förlängning.')
+    else if (margin <= -4) lines.push('En tung matchdag att glömma.')
     else if (margin === -3) lines.push('En klar förlust.')
     else if (lateDecider) lines.push('En bitter förlust i matchens slutskede.')
     else lines.push('En förlust att analysera.')

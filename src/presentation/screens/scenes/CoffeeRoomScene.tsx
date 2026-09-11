@@ -40,7 +40,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
 
   const question = scene.question
 
-  const footerLabel = question && selectedId ? 'Säg det →' : 'Tillbaka till klubben'
+  const footerLabel = question && selectedId ? 'Säg det' : 'Tillbaka till klubben'
   const footerAction = question && selectedId
     ? () => onComplete(`${question.questionId}:${selectedId}`)
     : () => onComplete()
@@ -151,7 +151,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
                   fontStyle: 'italic',
                 }}
               >
-                {'"' + scene.narratorLine.text + '"'}
+                {scene.narratorLine.text}
               </div>
             </div>
           </div>

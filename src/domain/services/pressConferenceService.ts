@@ -18,6 +18,7 @@ import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren, type AgendaItem } from './redaktorenService'
 import { getScandalPressTopic } from './scandalService'
 import { recordLedgerPostToldByKey } from './ledgerToldService'
+import { swedishGenitive } from '../utils/swedishGrammar'
 import { localPressVoiceId } from './voiceIntroductionService'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
@@ -1172,7 +1173,7 @@ export function generatePressConference(
   } else if (cs < 35 && rand() < 0.25) {
     question = { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: ['tp_ort5', 'tp_ort3', 'tp_ort2'] }
   } else if (newMecenat && rand() < 0.25) {
-    question = { text: `Ni har fått ${newMecenat.name}s stöd. Gör det skillnad i omklädningsrummet?`, preferIds: ['tp_ort7', 'tp_ort6', 'tp_liv3'] }
+    question = { text: `Ni har fått ${swedishGenitive(newMecenat.name)} stöd. Gör det skillnad i omklädningsrummet?`, preferIds: ['tp_ort7', 'tp_ort6', 'tp_liv3'] }
   } else if (game.facilityState?.activeProject != null && round >= 8 && rand() < 0.20) {
     question = { text: 'Det byggs vid arenan. Hur påverkar det koncentrationen?', preferIds: ['tp_ort8', 'tp_ort9', 'tp_ort6'] }
   } else if (game.players.some(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20) && round >= 4 && rand() < 0.20) {

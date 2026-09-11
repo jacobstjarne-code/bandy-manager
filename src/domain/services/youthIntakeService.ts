@@ -40,8 +40,9 @@ export interface YouthIntakeResult {
   scoutTexts: Record<string, string>
 }
 
-/** BandyKul matar samma säsongsintag som youthRecruitment, men svagare än
- * den avancerade bandyskolans permanenta +2. Ingen separat akademipipeline. */
+/** BandyKul ger +1 i den kanoniska sommarkullen. För AI-klubbar används
+ * värdet i legacy-intaget här; för den hanterade klubben läser P19-pipelinen
+ * samma konstant i seasonEndProcessor. Ingen parallell ungdomskull skapas. */
 export const BANDY_SCHOOL_BASIC_YOUTH_RECRUITMENT_BONUS = 1
 
 const IDEAL_DISTRIBUTION: Record<PlayerPosition, number> = {
