@@ -943,7 +943,7 @@ export function getTraitCommentary(
     ],
     lokal: [
       `Hela orten jublar! ${name} — en av deras egna.`,
-      `Lokalhjälten ${name}! Det kan inte bli bättre på hemmaplan.`,
+      `Lokalhjälten ${name}! Sånt bär han med sig vart laget än spelar.`,
       `${name} med ett mål som orten kommer prata om länge.`,
     ],
     ledare: [

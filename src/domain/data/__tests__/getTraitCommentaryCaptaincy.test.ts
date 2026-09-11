@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getTraitCommentary } from '../matchCommentary'
 import type { Player } from '../../entities/Player'
 
@@ -11,6 +11,8 @@ import type { Player } from '../../entities/Player'
 function makePlayer(overrides: Partial<Player> = {}): Player {
   return { id: 'p1', firstName: 'Test', lastName: 'Spelaren', trait: undefined, ...overrides } as unknown as Player
 }
+
+afterEach(() => vi.restoreAllMocks())
 
 describe('getTraitCommentary — ledare-poolen kräver faktisk captaincy (captainPlayerId), inte trait', () => {
   it('en spelare med trait=ledare som INTE är kapten får INGEN ledare-text', () => {
@@ -41,5 +43,16 @@ describe('getTraitCommentary — ledare-poolen kräver faktisk captaincy (captai
     const text = getTraitCommentary('p1', 'goal', players, undefined, 'p2')
     expect(text).not.toBeNull()
     expect(text).not.toMatch(/Kaptenen|bindel/)
+  })
+})
+
+describe('getTraitCommentary — lokalhjälten är venue-säker', () => {
+  it('ingen målvariant påstår hemmaplan eftersom selektorn används både hemma och borta', () => {
+    const players = [makePlayer({ id: 'lokal', trait: 'lokal' })]
+
+    for (const roll of [0, 0.34, 0.67]) {
+      vi.spyOn(Math, 'random').mockReturnValueOnce(roll)
+      expect(getTraitCommentary('lokal', 'goal', players)).not.toContain('hemmaplan')
+    }
   })
 })
