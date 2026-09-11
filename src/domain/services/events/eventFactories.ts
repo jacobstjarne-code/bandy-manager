@@ -246,7 +246,7 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string, triggerProo
     id: `event_unhappy_${playerId}_${game.currentSeason}`,
     type: 'playerUnhappy',
     title: `😤 Missnöjd spelare — ${playerName}`,
-    body: `${playerName} är missnöjd med sin speltid. Morale: ${player.morale}.`,
+    body: `${playerName} är missnöjd med sin speltid. Moral: ${player.morale}.`,
     proofSource: {
       form: 'state-predicate',
       description: 'spelaren har moral under 35 och har bänkats i minst två av de tre senaste matcherna',

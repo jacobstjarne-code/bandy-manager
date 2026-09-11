@@ -211,7 +211,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       subLabel: 'tystnar',
       title: lowTitles[seed % lowTitles.length],
       body: lowBodies[seed % lowBodies.length],
-      note: `mood ${sg.mood} · ${sg.members} medlemmar`,
+      note: `Stämning ${sg.mood} · ${sg.members} medlemmar`,
     }
   }
 
@@ -232,7 +232,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       subLabel: 'i brand',
       title: highTitles[seed % highTitles.length],
       body: highBodies[seed % highBodies.length],
-      note: `mood ${sg.mood} · ${sg.members} medlemmar`,
+      note: `Stämning ${sg.mood} · ${sg.members} medlemmar`,
     }
   }
 
@@ -250,7 +250,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
   return {
     type: 'person',
     groupName: sg.name,
-    moodLabel: sg.mood >= 65 ? `mood ${sg.mood}` : sg.mood >= 40 ? `mood ${sg.mood}` : `mood ${sg.mood}`,
+    moodLabel: sg.mood >= 65 ? `Stämning ${sg.mood}` : sg.mood >= 40 ? `Stämning ${sg.mood}` : `Stämning ${sg.mood}`,
     members: sg.members,
     role,
     character,
