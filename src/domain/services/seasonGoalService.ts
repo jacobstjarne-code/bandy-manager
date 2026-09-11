@@ -474,7 +474,7 @@ function deriveGoalHalfwayLine(goal: { type: SeasonGoalType; referenceId?: strin
       const games = player?.seasonStats.gamesPlayed ?? 0
       const name = player?.firstName ?? 'Spelaren'
       const onTrack = games >= CARRY_HALFWAY_GAMES_TARGET
-      return `Du sa ${phrase}. ${name} har spelat ${games} matcher hittills.${onTrack ? '' : reminder}`
+      return `Du sa ${phrase}. ${name} har spelat ${games} ${games === 1 ? 'match' : 'matcher'} hittills.${onTrack ? '' : reminder}`
     }
     case 'rival': {
       const { wins, draws, losses } = goal.referenceId ? tallyVsClub(game, goal.referenceId) : { wins: 0, draws: 0, losses: 0 }

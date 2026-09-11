@@ -130,7 +130,7 @@ export function createSuspensionItem(
       .replace('{omgfras}', omgfras)
       .replace('{kvar}', String(gamesOut))
   } else {
-    body = `${spelareStr} är avstängd i ${gamesOut} match(er).`
+    body = `${spelareStr} är avstängd i ${gamesOut} ${gamesOut === 1 ? 'match' : 'matcher'}.`
   }
   return {
     id: generateId(InboxItemType.Suspension),

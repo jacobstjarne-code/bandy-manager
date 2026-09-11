@@ -81,5 +81,5 @@ export const JOBBET_FORSVANN_TEXT = {
 
 /** §6 — pressfråga (k11-stam, ansikte). */
 export function imageRightsPressQuestion(name: string, sponsorName: string, matchesWithoutGoal: number): string {
-  return `${name} hänger på ${swedishGenitive(sponsorName)} affischer och har inte gjort mål på ${matchesWithoutGoal} matcher. Är han värd sin plats — på planen eller på väggen?`
+  return `${name} hänger på ${swedishGenitive(sponsorName)} affischer och har inte gjort mål på ${matchesWithoutGoal} ${matchesWithoutGoal === 1 ? 'match' : 'matcher'}. Är han värd sin plats — på planen eller på väggen?`
 }

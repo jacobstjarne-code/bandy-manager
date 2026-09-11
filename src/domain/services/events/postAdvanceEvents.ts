@@ -976,7 +976,7 @@ export function buildSponsorOfferEvent(
     title: rivalSponsor ? `${offer.name} vill in` : `Sponsorerbjudande — ${offer.name}`,
     body: rivalSponsor
       ? `${offer.name} vill synas på tröjan. De betalar ${weeklyFmt}. De gör samma sak i den här bygden, och de tänker inte dela på platsen. Tar ni deras pengar får ${rivalSponsor.name} beskedet av er, inte av dem.`
-      : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
+      : `${offer.name} vill sponsra ${managedClubName ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} ${offer.contractRounds === 1 ? 'omgång' : 'omgångar'} (totalt ${totalFmt}).`,
     proofSource: {
       form: 'state-predicate',
       description: 'sponsorerbjudandet har positiv ersättning/löptid och eventuell konfliktpartner har samma kategori',

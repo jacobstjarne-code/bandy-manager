@@ -210,7 +210,7 @@ export function getSituation(game: SaveGame): Situation {
     const playoffFrag = getPlayoffContextFragment(game)
     const oppFrag = getOpponentStandingFragment(game)
     const body = joinFragments([phaseFrag, playoffFrag, oppFrag])
-    return { label: 'AVGÖRANDE SLUTSPURT', body: body || `${roundsLeft} omgångar kvar.` }
+    return { label: 'AVGÖRANDE SLUTSPURT', body: body || `${roundsLeft} ${roundsLeft === 1 ? 'omgång' : 'omgångar'} kvar.` }
   }
 
   // ── Halvtid ──────────────────────────────────────────────────────

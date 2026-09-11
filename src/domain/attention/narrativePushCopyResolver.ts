@@ -177,7 +177,7 @@ export function createNarrativePushCopyResolver(
         return {
           voice: 'chair',
           title: 'Serieseger inom räckhåll.',
-          body: `${payload.pointsTo.title} poäng, ${payload.roundsRemaining} omgångar. Ordföranden har inte sovit.`,
+          body: `${payload.pointsTo.title} poäng, ${payload.roundsRemaining} ${payload.roundsRemaining === 1 ? 'omgång' : 'omgångar'}. Ordföranden har inte sovit.`,
         }
       }
 
@@ -188,12 +188,12 @@ export function createNarrativePushCopyResolver(
           ? {
               voice,
               title: `${payload.pointsTo.playoff} poäng till slutspel.`,
-              body: `${payload.roundsRemaining} omgångar kvar. Styrelsen räknar. Det gör vi alla.`,
+              body: `${payload.roundsRemaining} ${payload.roundsRemaining === 1 ? 'omgång' : 'omgångar'} kvar. Styrelsen räknar. Det gör vi alla.`,
             }
           : {
               voice,
               title: 'Slutspelet går att nå.',
-              body: `${payload.pointsTo.playoff} poäng på ${payload.roundsRemaining} matcher. Jag tror på det. Laget vet inte än.`,
+              body: `${payload.pointsTo.playoff} poäng på ${payload.roundsRemaining} ${payload.roundsRemaining === 1 ? 'match' : 'matcher'}. Jag tror på det. Laget vet inte än.`,
             }
       }
 
@@ -204,7 +204,7 @@ export function createNarrativePushCopyResolver(
           ? {
               voice,
               title: `${payload.position}:e plats.`,
-              body: `${payload.pointsTo.safety} poäng till säkerhet, ${payload.roundsRemaining} omgångar. Vi behöver inte prata om vad det betyder.`,
+              body: `${payload.pointsTo.safety} poäng till säkerhet, ${payload.roundsRemaining} ${payload.roundsRemaining === 1 ? 'omgång' : 'omgångar'}. Vi behöver inte prata om vad det betyder.`,
             }
           : {
               voice,

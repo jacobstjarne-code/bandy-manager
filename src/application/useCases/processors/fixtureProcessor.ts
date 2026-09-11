@@ -16,11 +16,11 @@ import {
 
 type Lineup = Fixture['homeLineup']
 
-function stripLineup(lineup: Lineup): Lineup {
+function stripLineup(lineup: Lineup, preserveBench = false): Lineup {
   if (!lineup) return undefined
   return {
     startingPlayerIds: lineup.startingPlayerIds,
-    benchPlayerIds: [],
+    benchPlayerIds: preserveBench ? lineup.benchPlayerIds : [],
     tactic: {
       mentality: lineup.tactic.mentality,
       tempo: lineup.tactic.tempo,
@@ -177,12 +177,6 @@ export function stripCompletedFixture(
 
   const isManagedFixture = managedClubId != null &&
     (fixture.homeClubId === managedClubId || fixture.awayClubId === managedClubId)
-  const margin = Math.abs((fixture.homeScore ?? 0) - (fixture.awayScore ?? 0))
-  const preserveRatings = isManagedFixture && (
-    getRivalry(fixture.homeClubId, fixture.awayClubId) !== null ||
-    fixture.matchday > 22 ||
-    margin >= 3
-  )
 
   // Keep durable scoring/suspension facts. Transient live-match events are
   // discarded here so completed fixtures do not make saves grow indefinitely.
@@ -193,9 +187,20 @@ export function stripCompletedFixture(
   return {
     ...fixture,
     events: strippedEvents,
-    homeLineup: stripLineup(fixture.homeLineup),
-    awayLineup: stripLineup(fixture.awayLineup),
-    report: preserveRatings || !fixture.report
+    homeLineup: stripLineup(
+      fixture.homeLineup,
+      isManagedFixture && fixture.homeClubId === managedClubId,
+    ),
+    awayLineup: stripLineup(
+      fixture.awayLineup,
+      isManagedFixture && fixture.awayClubId === managedClubId,
+    ),
+    // Årsbokens spelarpris summerar den hanterade klubbens hela ligasäsong
+    // ur dessa betyg. Att bara bevara derby-, storseger- och senmatchsbetyg
+    // gav ett systematiskt skevt urval. AI-matcher komprimeras fortsatt;
+    // hanterade matcher försvinner vid säsongsrollover och växer därför inte
+    // över karriären.
+    report: isManagedFixture || !fixture.report
       ? fixture.report
       : { ...fixture.report, playerRatings: {} },
   }

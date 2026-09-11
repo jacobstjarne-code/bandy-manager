@@ -577,7 +577,7 @@ export function LineupStep({
               {p.isInjured
                 ? 'är skadad'
                 : p.suspensionGamesRemaining > 0
-                ? `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`
+                ? `är avstängd (${p.suspensionGamesRemaining} ${p.suspensionGamesRemaining === 1 ? 'match' : 'matcher'} kvar)`
                 : 'vilar efter förra matchen'}
             </span>
           ))}

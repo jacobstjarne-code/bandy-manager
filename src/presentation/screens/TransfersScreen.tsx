@@ -224,7 +224,7 @@ export function TransfersScreen() {
       const rounds = result.roundsRemaining ?? 0
       setScoutMessage(rounds === 0
         ? `Rapport om ${player.firstName} ${player.lastName} klar direkt!`
-        : `Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång.`)
+        : `Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} ${rounds === 1 ? 'omgång' : 'omgångar'}.`)
       setTimeout(() => setScoutMessage(null), 4000)
     } else {
       setScoutMessage(result.error ?? 'Kunde inte skicka scout.')

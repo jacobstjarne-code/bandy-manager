@@ -72,6 +72,23 @@ describe('fixtureProcessor', () => {
     expect(result.report?.playerRatings).toEqual({})
   })
 
+  it('bevarar betygen från varje vanlig match för den hanterade klubbens årsbok', () => {
+    const routineLeagueMatch = completedFixture({
+      id: 'routine-managed',
+      matchday: 8,
+      roundNumber: 8,
+      homeScore: 2,
+      awayScore: 1,
+      report: { playerRatings: { p1: 7.2, p2: 6.4, p3: 6.8 } } as never,
+    })
+
+    const result = stripCompletedFixture(routineLeagueMatch, undefined, 'managed')
+
+    expect(result.homeLineup?.benchPlayerIds).toEqual(['p2'])
+    expect(result.awayLineup?.benchPlayerIds).toEqual([])
+    expect(result.report?.playerRatings).toEqual({ p1: 7.2, p2: 6.4, p3: 6.8 })
+  })
+
   it('skapar annandagsnotisen från den lagrade kalendern', () => {
     const fixture = completedFixture({ status: FixtureStatus.Scheduled })
     const save = game({ seasonCalendar: [{ matchday: 4, isAnnandagen: true }] })

@@ -79,7 +79,7 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
       triggers.push({
         type: 'comebackKing',
         headline: `Comebackkung: ${comebackKing.firstName} ${comebackKing.lastName}`,
-        body: `Trots skadebekymmer kämpade ${comebackKing.firstName} ${comebackKing.lastName} sig tillbaka och satte ${comebackKing.seasonStats.goals} mål på bara ${comebackKing.seasonStats.gamesPlayed} matcher.`,
+        body: `Trots skadebekymmer kämpade ${comebackKing.firstName} ${comebackKing.lastName} sig tillbaka och satte ${comebackKing.seasonStats.goals} mål på bara ${comebackKing.seasonStats.gamesPlayed} ${comebackKing.seasonStats.gamesPlayed === 1 ? 'match' : 'matcher'}.`,
         relatedPlayerId: comebackKing.id,
       })
     }

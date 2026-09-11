@@ -74,11 +74,11 @@ export function sambandTextISecondHalfChase(goals: number, conceded: number): st
 export const SAMBAND_TEXT_I_DERBY = 'Derbyt jämnade ut det — i derbyn drar motorn lagen mot varandra. Skillnaden i klass räknades mindre.'
 
 export function sambandTextIHotHand(n: number, k: number): string {
-  return `Målen kom i skur: ${n} inom ${k} minuter.`
+  return `Målen kom i skur: ${n} inom ${k} ${k === 1 ? 'minut' : 'minuter'}.`
 }
 
 export function sambandTextIEqualizerMomentum(k: number): string {
-  return `Kvitteringen bar: ledningsmålet kom ${k} minuter senare.`
+  return `Kvitteringen bar: ledningsmålet kom ${k} ${k === 1 ? 'minut' : 'minuter'} senare.`
 }
 
 export function sambandTextJ(n: number, x: number, y: number): string {

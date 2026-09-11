@@ -898,7 +898,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           date: game.currentDate,
           type: InboxItemType.Retirement,
           title: `${player.firstName} ${player.lastName} avslutar karriären`,
-          body: `${player.firstName} ${player.lastName} (${player.age} år) lägger skridskorna på hyllan. ${retData.totalGames > 0 ? `${retData.totalGames} matcher, ${retData.totalGoals} mål. ` : ''}${generateFarewellQuote(player)}`,
+          body: `${player.firstName} ${player.lastName} (${player.age} år) lägger skridskorna på hyllan. ${retData.totalGames > 0 ? `${retData.totalGames} ${retData.totalGames === 1 ? 'match' : 'matcher'}, ${retData.totalGoals} mål. ` : ''}${generateFarewellQuote(player)}`,
           isRead: false,
         } as InboxItem)
         seasonTransitionEvents.push({ type: 'retired', playerId: player.id, playerLastName: player.lastName })

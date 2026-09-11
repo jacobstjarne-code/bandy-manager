@@ -62,7 +62,7 @@ export function getInjuryTag(event: GameEvent, players: Player[] | undefined): s
   }
   const severity = getInjurySeverity(player.injuryDaysRemaining)
   const severityLabel = severity.charAt(0).toUpperCase() + severity.slice(1)
-  return `${player.firstName} ${player.lastName} · ${severityLabel} skada · ${player.injuryDaysRemaining} dagar kvar`
+  return `${player.firstName} ${player.lastName} · ${severityLabel} skada · ${player.injuryDaysRemaining} ${player.injuryDaysRemaining === 1 ? 'dag' : 'dagar'} kvar`
 }
 
 interface Props {

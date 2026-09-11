@@ -75,7 +75,7 @@ export function CeremonyRetirement({ game, event }: Props) {
 
       {/* Stats row */}
       <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 24, textAlign: 'center' }}>
-        {seasons > 0 && `${seasons} säsonger · `}{games} matcher{goals > 0 && ` · ${goals} mål`}
+        {seasons > 0 && `${seasons} ${seasons === 1 ? 'säsong' : 'säsonger'} · `}{games} {games === 1 ? 'match' : 'matcher'}{goals > 0 && ` · ${goals} mål`}
       </p>
 
       {/* Ceremony headline — OPUS_COPY */}

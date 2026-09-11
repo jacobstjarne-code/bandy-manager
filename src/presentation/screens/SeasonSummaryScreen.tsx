@@ -842,7 +842,7 @@ export function SeasonSummaryScreen() {
             )}
             {summary.topRated && (
               <AwardCard icon="⭐" title="Högst betyg" name={summary.topRated.name}
-                value={`${summary.topRated.avgRating} snitt (${summary.topRated.games} matcher)`} />
+                value={`${summary.topRated.avgRating} snitt (${summary.topRated.games} ${summary.topRated.games === 1 ? 'match' : 'matcher'})`} />
             )}
             {summary.mostImproved && (
               <AwardCard icon="📈" title="Mest förbättrad" name={summary.mostImproved.name}
@@ -927,8 +927,8 @@ export function SeasonSummaryScreen() {
         {/* STREAKS */}
         <div className="card-sharp card-stagger-5" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STREAKS OCH EXTREMER</SectionLabel>
-          <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} matcher`} color="var(--success)" />
-          <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} matcher`} color="var(--danger)" />
+          <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} ${summary.longestWinStreak === 1 ? 'match' : 'matcher'}`} color="var(--success)" />
+          <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} ${summary.longestLossStreak === 1 ? 'match' : 'matcher'}`} color="var(--danger)" />
           {summary.biggestWin && (
             <StatRow label="Största vinst" value={`${summary.biggestWin.score} mot ${summary.biggestWin.opponent} (${storedRoundLabel(summary.biggestWin.roundLabel, summary.biggestWin.round).toLowerCase()})`} color="var(--success)" />
           )}

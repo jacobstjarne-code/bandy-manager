@@ -868,7 +868,7 @@ export function resolveEvent(
             date: updatedGame.currentDate,
             type: InboxItemType.BoardFeedback,
             title: `🤝 Nytt sponsoravtal: ${sponsor.name}`,
-            body: `${sponsor.name} har tecknat avtal. +${sponsor.weeklyIncome} kr/omgång i ${sponsor.contractRounds} omgångar.`,
+            body: `${sponsor.name} har tecknat avtal. +${sponsor.weeklyIncome} kr/omgång i ${sponsor.contractRounds} ${sponsor.contractRounds === 1 ? 'omgång' : 'omgångar'}.`,
             isRead: false,
           }],
         }

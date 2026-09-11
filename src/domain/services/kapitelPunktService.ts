@@ -51,9 +51,10 @@ export function getKapitelPunktText(kind: KapitelPunktKind, avsked?: KapitelPunk
     const title = `${avsked.firstName} ${avsked.lastName} spelade sin sista match.`
     // Under tio mål: satsen om målen byts mot en om tjänstgöringstiden — en
     // låg målsiffra (back/målvakt) ska inte vara den siffra som lyfts fram.
+    const gamesWord = avsked.games === 1 ? 'match' : 'matcher'
     const subtitle = avsked.goals < 10
-      ? `${avsked.games} matcher för samma klubb. Det är inte många som gör det.`
-      : `${avsked.games} matcher, ${avsked.goals} mål. Han går av isen för egen maskin, och alla reser sig.`
+      ? `${avsked.games} ${gamesWord} för samma klubb. Det är inte många som gör det.`
+      : `${avsked.games} ${gamesWord}, ${avsked.goals} mål. Han går av isen för egen maskin, och alla reser sig.`
     return { title, subtitle }
   }
   return FIXED_COPY[kind]
