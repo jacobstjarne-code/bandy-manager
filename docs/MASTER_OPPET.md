@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| gameover-saveexport-saknas | Efter ett definitivt avsked saknar Game Over den vanliga JSON-exporten, så slut-saven kan inte tas ut via spelets UI trots att den finns kvar i lagringen. | rapporterad | Code | KARRIARJOURNAL_VASTANFORS_2026-09-09.md:118 | Kod- och historikverifiera om någon exportväg fortfarande är nåbar efter `managerFired`; om inte, återanvänd den kanoniska save-exporten på terminalytan utan att skapa ett nytt lagringssystem. |
+| gameover-saveexport-saknas | Efter ett definitivt avsked saknar Game Over den vanliga JSON-exporten, så slut-saven kan inte tas ut via spelets UI trots att den finns kvar i lagringen. | in_progress | Code | KARRIARJOURNAL_VASTANFORS_2026-09-09.md:118 | CLAIM 2026-09-11T00:18:04Z — Code. Verifierad mot kod och historik: Game Over och dess Historik ligger avsiktligt utanför `GameShell`, medan den enda save-exportknappen sedan `baf10f4c` lever i `GameHeader`; ingen av terminalrutterna renderar den. Sparningen bevaras enligt Kontrakt A men kan inte exporteras från UI:t. Återanvänd `exportSaveAsJson(game)` direkt på terminalytan och regressionstesta att exakt den aktuella avslutade saven lämnas till den kanoniska exportören. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
