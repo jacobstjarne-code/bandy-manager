@@ -106,6 +106,27 @@ describe('D4-regressionsfix, andra omgången — de fyra sista pooler', () => {
     expect(scene?.narratorLine?.text).toBe('Segerlinje utan avslutad ligarunda.')
   })
 
+  it('renderar inte ett fast victory-eko som redan ligger på cooldown', () => {
+    const semanticKey = 'victory_echo_playoff_win'
+    const g = makeGame({
+      fixtures: [completed],
+      currentSeason: 2030,
+      currentMatchday: 3,
+      narrativeBeatLog: [{ semanticKey, season: 2030, round: 1 }],
+      pendingVictoryEcho: {
+        diaryLine: 'd',
+        coffeeLine: 'Den här raden ska vila.',
+        coffeeSemanticKey: semanticKey,
+        coffeeCooldownSeasons: 2,
+      } as never,
+    })
+
+    const scene = getCoffeeRoomScene(g)
+
+    expect(scene?.narratorLine?.text).not.toBe('Den här raden ska vila.')
+    expect(scene?.retiredVictoryEcho).toBe(true)
+  })
+
   it('klackEcho-i-kafferum (pickKlackEchoText, kontext "kafferum") syns som narratorLine', () => {
     const found = findAcrossMatchdays(
       md => makeGame({

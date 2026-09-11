@@ -83,3 +83,56 @@ describe('getCoffeeRoomScene — GENERIC_EXCHANGES anti-repeat efter historiken 
     expect(() => getCoffeeRoomScene(game)).not.toThrow()
   })
 })
+
+describe('getCoffeeRoomScene — fatigue använder den kanoniska visningsloggen', () => {
+  it('väljer inte samma fatigue-rad igen under tvåsäsongscooldownen', () => {
+    const firstGame = makeGame({ currentSeason: 2030, currentMatchday: 20, fatigueHotStreak: 3 })
+    const first = getCoffeeRoomScene(firstGame)
+    const firstKey = first?.narrativeKeys?.[0]
+
+    expect(firstKey).toMatch(/^coffee_fatigue_warm_/)
+
+    const second = getCoffeeRoomScene({
+      ...firstGame,
+      currentMatchday: 21,
+      narrativeBeatLog: [{ semanticKey: firstKey!, season: 2030, round: 10 }],
+    })
+
+    expect(second?.narrativeKeys?.[0]).not.toBe(firstKey)
+    expect(second?.exchanges).not.toEqual(first?.exchanges)
+  })
+
+  it('ger hot-läget sexton unika, redan godkända fatigue-rader innan det faller tillbaka', () => {
+    let game = makeGame({
+      currentSeason: 2030,
+      currentMatchday: 20,
+      fatigueHotStreak: 3,
+      deferredDecisions: Array.from({ length: 7 }, (_, index) => ({
+        id: `deferred-${index}`,
+        deferredAt: 0,
+      })) as never,
+      narrativeBeatLog: [],
+    })
+    const keys: string[] = []
+
+    for (let visit = 0; visit < 16; visit++) {
+      const scene = getCoffeeRoomScene(game)
+      const key = scene?.narrativeKeys?.[0]
+      expect(key).toMatch(/^coffee_fatigue_(hot|warm)_/)
+      keys.push(key!)
+      game = {
+        ...game,
+        currentMatchday: game.currentMatchday + 1,
+        narrativeBeatLog: [
+          ...(game.narrativeBeatLog ?? []),
+          { semanticKey: key!, season: game.currentSeason, round: visit + 1 },
+        ],
+      }
+    }
+
+    expect(new Set(keys).size).toBe(16)
+
+    const afterExhaustion = getCoffeeRoomScene(game)
+    expect(afterExhaustion?.narrativeKeys?.some(key => key.startsWith('coffee_fatigue_'))).not.toBe(true)
+  })
+})

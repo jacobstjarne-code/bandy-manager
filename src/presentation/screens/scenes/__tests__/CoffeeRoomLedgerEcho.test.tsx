@@ -68,4 +68,33 @@ describe('CoffeeRoomScene — Berättaren steg 8 wiring', () => {
       matchday: game.currentMatchday,
     }])
   })
+
+  it('pensionerar ett victory-eko på cooldown utan att skriva ett falskt nytt visningskvitto', () => {
+    const { game } = setup()
+    const semanticKey = 'victory_echo_playoff_win'
+    useGameStore.setState({
+      game: {
+        ...game,
+        pendingVictoryEcho: {
+          diaryLine: 'd',
+          coffeeLine: 'Den här raden ska vila.',
+          coffeeSemanticKey: semanticKey,
+          coffeeCooldownSeasons: 2,
+        },
+        victoryEchoExpires: game.currentMatchday + 1,
+        narrativeBeatLog: [{
+          semanticKey,
+          season: game.currentSeason,
+          round: 1,
+        }],
+      },
+    })
+
+    useGameStore.getState().completeScene('coffee_room')
+
+    const updated = useGameStore.getState().game!
+    expect(updated.pendingVictoryEcho).toBeUndefined()
+    expect(updated.victoryEchoExpires).toBeUndefined()
+    expect(updated.narrativeBeatLog?.filter(entry => entry.semanticKey === semanticKey)).toHaveLength(1)
+  })
 })

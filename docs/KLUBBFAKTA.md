@@ -749,7 +749,7 @@ Per klubb, fyra fält + färg. "Krock" = står spelets lore-motiv mot ortens/klu
 - Verklig symbol: Gävles vapen = tre guldankare + silverbjälke på blått (hamnstad). Forsbacka IK = "Gula Faran", **gult**. Forsbacka Jernverk.
 - Lore: Slagghögen / Järnklacken → järn/slagg.
 - Krock: nej på motiv (järn genomgående). Ankaret tillhör dock Söderfors (separation).
-- **Valt: böjt järn/järnstång (behåll). Färg → GUL, inte blå.** Liten men verklig rättelse.
+- **Valt: böjt järn/järnstång (behåll). Färg → GUL (verifierat: "spelar självklart i gult"), inte blå.**
 
 ### Söderfors (Tierp kommun)
 - Verklig symbol: Sveriges enda **ankarsmedja** (ankaren åt flottan, Anckarström 1690). Klubbfärg orange-svart-vit.
@@ -758,28 +758,28 @@ Per klubb, fyra fält + färg. "Krock" = står spelets lore-motiv mot ortens/klu
 - **Valt: ANKARE. Färg orange-svart.** Största uppgraderingen i setet (stjärna → ankare). Verkligheten vinner.
 
 ### Västanfors (Fagersta kommun)
-- Verklig symbol: Fagerstas vapen = **järnmärke** + lilja + bevingat hjul (silver/blå). Västanfors IF = **röd-vita**. Bergslagen/stål.
+- Verklig symbol: Fagerstas vapen = **järnmärke** + lilja + bevingat hjul (silver/blå). Västanfors IF = **röd-vita** (verifierat). Bergslagen/stål.
 - Lore: Schaktvallen / Bergskurvan → gruva/berg.
 - Krock: JA. Nuvarande krona stöds inte av vapnet; nuvarande gröna färg är fel.
 - **Valt: JÄRNMÄRKET (alkemiska järntecknet). Färg → RÖD-VIT.** Krona faller, grönt faller. Järnmärket är kommunens figur OCH järn-DNA, och en distinkt glyf mot Forsbackas böjda järn / Hälleforsnäs hammare.
 
 ### Karlsborg (Kalix kommun)
-- Verklig symbol: pappersbruk vid Kalixälvens mynning, nordligast i bandy-Sverige. (Kalix kommunvapen ej sökt — FLAGGA.) Karlsborgs BK-färg ej verifierad.
+- Verklig symbol: pappersbruk vid Kalixälvens mynning, nordligast i bandy-Sverige. Kalix kommunvapen = **guldkalk** (Calix, kantande) — svagt för en arktisk bruksort. Karlsborgs BK = **svart-gult** (verifierat).
 - Lore: Bastionen / Norrskensklacken → fästning/norrsken.
 - Krock: ja — nuvarande **vågmotiv krockar med Slottsbrons våg** (separationsbrott i setet just nu).
-- **Valt: NORRSKEN (el. bastion) — spelets egen lore, distinkt. Bort från våg.** Färg: verifiera klubbfärg, behåll mörkröd tills vidare.
+- **Valt: NORRSKEN. Färg → SVART-GUL (nuvarande mörkröd fel).** Kalkvapnet passar inte orten; lore vinner. Bort från våg (löser separationen mot Slottsbron).
 
 ### Målilla (Hultsfred kommun)
 - Verklig symbol: **15 m-termometern på torget** ("temperaturhuvudstaden") + Dackarna speedway + 13 bandy-SM. Målilla GoIF = **RÖD-VIT**. Glas-loren är påhittad — Målilla ligger i Hultsfred, inte Glasriket.
 - Lore: Hyttvallen / Glasblåsarna → glas.
 - Krock: JA — skarpast i hela setet.
-- **Valt: TERMOMETER. Färg → RÖD-VIT (nuvarande lila fel).** Verkligheten slår glaset på både motiv och färg.
+- **Valt: TERMOMETER. Färg → RÖD-VIT (nuvarande lila fel; röd-vit verifierad).** Verkligheten slår glaset på både motiv och färg.
 
 ### Gagnef (Gagnef kommun)
-- Verklig symbol: Gagnefs vapen = **guld vågbildat gaffelkors (Y)** på **rött** — sammanflödet Öster-/Västerdalälven vid Djurås.
+- Verklig symbol: Gagnefs vapen = **guld vågbildat gaffelkors (Y)** på **rött** — sammanflödet Öster-/Västerdalälven vid Djurås. **Ingen verklig bandyklubb finns** (Gagnefs IF = fotboll/skidor; IBF Gagnef = innebandy) — så vapnet är det sannaste ankaret för både motiv och färg.
 - Lore: Älvvallen / Dalkurvan → älv.
 - Krock: nej — lore (älv) och verklighet (älvmöte) sammanfaller.
-- **Valt: GULD VÅG-Y (gaffelkors) på RÖTT.** Nuvarande triangel/berg säger motsatsen — faller. Färg redan röd → rätt.
+- **Valt: GULD VÅG-Y (gaffelkors) på RÖTT.** Nuvarande triangel/berg säger motsatsen — faller. Färg + motiv båda ur kommunvapnet (inte en klubbtröja — ingen finns).
 
 ### Hälleforsnäs (Flen kommun)
 - Verklig symbol: gjuteri/järn (bruk sedan 1659), **"Brukets Blå"** → blå. (Flen kommunvapen ej sökt.)
@@ -791,13 +791,13 @@ Per klubb, fyra fält + färg. "Krock" = står spelets lore-motiv mot ortens/klu
 - Verklig symbol: **industrifjädrar** (Sveriges första), fjäderfabrik, järnbruk vid fors. Lesjöfors IF-färg ej verifierad (nuvarande orange — FLAGGA).
 - Lore: Kolbottnen / Skogsklacken → kolmila/skog/bruk.
 - Krock: delvis — verklig plan **Stålvallen** vs kodad **Kolbottnen** (arenanamn); temat järn/fjäder/fors sammanfaller.
-- **Valt: FJÄDER (industrifjäder), ev. fjäder+fors.** Nuvarande flagga säger ingenting. Färg: verifiera.
+- **Valt: FJÄDER (industrifjäder), ev. fjäder+fors.** Nuvarande flagga säger ingenting. Färg → **BLÅ-GULD** (verifierat ur klubbmärket, Bandybaronerna; spelets orange fel).
 
 ### Rögle (Ängelholm kommun)
 - Verklig symbol: fiktiv bandyklubb (verkliga Rögle = hockey, rör ej). Ängelholms vapen = **korsade laxar** + krona + kerub på blått (laxfisket i Rönne å).
 - Lore: Planlunden / Sydkurvan → lund/kust (tunt).
 - Krock: nej (ingen verklig bandysymbol att krocka med).
-- **Valt: KORSADE LAXAR (kust-Skåne, ur Ängelholm-vapnet, rör ej hockey-Rögle). Alt: fyr (Kullen).** Färg fri (lore) — nuvarande grå/svart OK.
+- **Valt: FYR (Kullen) — laxen flyttad till Skutskär (starkare anspråk där).** Kust-Skåne, distinkt, rör ej hockey-Rögle. Färg fri (lore) — nuvarande grå/svart OK.
 
 ### Slottsbron (Grums kommun)
 - Verklig symbol: orten är en **bro** över sundet; Slottsbrons IF = **"Blåtomtarna"** (blå); Vänern.
@@ -806,26 +806,39 @@ Per klubb, fyra fält + färg. "Krock" = står spelets lore-motiv mot ortens/klu
 - **Valt: BRO (bropelare).** Nuvarande våg krockar med Karlsborg — bron löser separationen. Färg blå → redan rätt.
 
 ### Skutskär (Älvkarleby kommun)
-- Verklig symbol: pappersbruk/sulfat, byggde egen bana. Skutskärs IF = **grön-gult** (trolig rätt). (Älvkarleby kommunvapen ej sökt — Älvkarlebyfallen möjligt motiv, FLAGGA.)
+- Verklig symbol: **Älvkarleby kommunvapen = lax på vågbjälke** (Laxön / Fallens dag — Sveriges mest ikoniska laxfiske; centralorten är Skutskär). Pappersbruk/sulfat, byggde egen bana. Skutskärs IF = **grön-gult**.
 - Lore: Sulfatvallen / Fabrikskurvan → pappersbruk/sulfat.
-- Krock: nej på färg. Tall (nuvarande) = svag särskiljare.
-- **Valt: BESLUT — överväg pappersbruk/fabrik el. älvfall mot nuvarande tall.** Färg grön-gul trolig rätt → behåll.
+- Krock: nej. Tall (nuvarande) = svag särskiljare.
+- **Valt: LAX (Älvkarlebys lax — starkare anspråk än Rögles, därför hit). Färg grön-gul.** Tallen faller. Alt om bruks-storyn ska bära: fabrik/pappersmotiv.
 
 ### Heros (Smedjebacken kommun)
 - Verklig symbol: Smedjebackens vapen = **röd segelbåt** (Norra Barken/Strömsholms kanal) + tre kugghjul (stål). Namnet Heros = hjältar. IK Heros-färg ej verifierad (FLAGGA).
 - Lore: Hedvallen / Hjältarna → hjältar.
 - Krock: björnen (nuvarande) är oförankrad — varken namn eller ort.
-- **Valt: SEGELBÅT (Norra Barken/kanal, ren siluett) — verklighets-default. Alt: smedja/hammare (stål).** Björnen faller. Färg: verifiera.
+- **Valt: SEGELBÅT (Norra Barken/kanal, ur Smedjebackens vapen, ren siluett). Alt: smedja/hammare (stål).** Björnen faller. Färg → **GUL-SVART** (verifierat ur klubbmärket: svart bjälke på gul sköld; mitt tidigare röd/silver var en gissning — fel).
 
 ### Separationskoll (efter valen ovan)
 
-Inga två klubbar delar längre industri-/naturmotiv. Järn-klustret divergerar: Forsbacka böjt järn, Söderfors ankare, Västanfors järnmärke-glyf, Hälleforsnäs hammare, Lesjöfors fjäder. Vattenkrocken Karlsborg/Slottsbron löst (norrsken vs bro). Kvar att bevaka: Skutskär får inte bli "ännu ett grönt naturtecken" — därför fabrik/älvfall-övervägandet.
+Inga två klubbar delar längre motiv. Järn-klustret divergerar: Forsbacka böjt järn, Söderfors ankare, Västanfors järnmärke-glyf, Hälleforsnäs hammare, Lesjöfors fjäder. Vattenkrocken Karlsborg/Slottsbron löst (norrsken vs bro). Lax-krocken löst: laxen till Skutskär (Älvkarlebys starkare anspråk), Rögle till fyr.
+
+**Men de verkliga färgerna klustrar hårt** — och verklighetsregeln förbjuder att färga isär dem:
+- Gul/svart-familjen: Forsbacka (gul), Karlsborg (svart-gul), Heros (gul-svart), Söderfors (orange-svart-vit) — FYRA.
+- Blå-familjen: Hälleforsnäs (blå), Slottsbron (blå), Lesjöfors (blå-guld) — TRE.
+- Röd/röd-vit: Västanfors (röd-vit), Målilla (röd-vit), Gagnef (röd) — TRE.
+- Grön: Skutskär. Fri: Rögle.
+
+Slutsats för kontraktet: **färgen bär INGEN separation** — siluetten gör hela jobbet, och inom varje färgkluster måste motiven vara maximalt olika (t.ex. gul/svart-kvartetten: böjt järn / norrsken / segelbåt / ankare — håll dem läsbart åtskilda vid 10 px). Rögle är fri och kan ta en avvikande kulör (grön/kust) för att avlasta ett kluster.
 
 ### Öppet (före kontraktet)
 
-1. Kommunvapen ej sökta: Kalix (Karlsborg), Flen (Hälleforsnäs), Filipstad (Lesjöfors), Älvkarleby (Skutskär), Hultsfred (Målilla). De fyra sistnämnda är redan låsta på annat underlag; Kalix behövs för att bekräfta norrsken/bastion.
-2. Klubbfärg ej verifierad: Karlsborg, Lesjöfors, Heros. Verifierade: Forsbacka gul, Söderfors orange-svart-vit, Västanfors röd-vit, Hälleforsnäs blå, Målilla röd-vit, Slottsbron blå, Skutskär grön-gul. Gagnef röd (vapnet).
-3. Skutskärs motiv — designbeslut kvar.
+1. Kommunvapen inarbetade (Kalix kalk, Fagersta järnmärke, Gagnef våg-Y, Gävle ankare, Ängelholm lax, Smedjebacken segelbåt, Älvkarleby lax). Kvar (låg prio, klubbar redan låsta): Flen, Filipstad, Hultsfred.
+2. Klubbfärg nu grundad för alla tolv — med provenienser ärligt märkta:
+   - Webb-verifierad: Forsbacka gul, Västanfors röd-vit, Karlsborg svart-gul, Målilla röd-vit, Söderfors orange-svart-vit, Skutskär grön-gul, Hälleforsnäs blå (Brukets Blå = identitet).
+   - Ur klubbmärke (Jacobs bilder): Heros gul-svart, Lesjöfors blå-guld.
+   - Smeknamnsgrundad (ej exakt tröjsida): Slottsbron blå (Blåtomtarna).
+   - Ur kommunvapnet, ingen verklig bandyklubb finns: Gagnef guld-på-rött.
+   - Fri (fiktiv): Rögle.
+3. Inga öppna färg- eller motivbeslut. Enda kvarstående designfråga inför kontraktet: paletten klustrar (se separationskollen) — siluetten måste bära all separation, färgen kan inte.
 
 ---
 

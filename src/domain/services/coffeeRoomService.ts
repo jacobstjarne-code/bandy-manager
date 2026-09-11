@@ -18,6 +18,8 @@ import { currentChronology } from './currentChronology'
 import { resolveSubjectName } from './momentLedgerService'
 import { agendaForSurface, redaktoren } from './redaktorenService'
 import { recordLedgerPostToldByKey } from './ledgerToldService'
+import { isOnCooldown } from './narrativeLogService'
+import { shouldSurfaceVictoryEcho } from './postVictoryNarrativeService'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -53,6 +55,8 @@ export interface CoffeeScene {
   exchanges: Array<[string, string, string, string]>
   /** B9 T1B — index i pool som valdes; sparas i SaveGame.lastCoffeeSceneIndices */
   pickedIndices: number[]
+  /** Kanoniska visningsidentiteter som skrivs till narrativeBeatLog när scenen stängs. */
+  narrativeKeys?: string[]
   meta: {
     title: string
     subtitle?: string
@@ -63,6 +67,10 @@ export interface CoffeeScene {
   consumedReturnQuestionId?: string
   /** D4-regressionsfix — se CoffeeNarratorLine. Ersätter exchanges för det besöket när satt. */
   narratorLine?: CoffeeNarratorLine
+  /** Victory-ekot visades och ska både kvitteras och tas ur pending-state. */
+  consumedVictoryEcho?: boolean
+  /** Ett gammalt victory-eko låg redan på cooldown och ska pensioneras utan nytt kvitto. */
+  retiredVictoryEcho?: boolean
   /** SPEC_BERATTAREN steg 8 — liten, sista rad från den kanoniska agendan. */
   ledgerEcho?: { text: string; postKey: string }
 }
@@ -547,6 +555,52 @@ const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
   ['Sture', 'Han bad om en veckas andrum i morse.', 'Magnus', 'Det är inte veckan som är problemet. Det är högen.'],
 ]
 
+const FATIGUE_WARM_PREFIX = 'coffee_fatigue_warm_'
+const FATIGUE_HOT_PREFIX = 'coffee_fatigue_hot_'
+const FATIGUE_COOLDOWN_SEASONS = 2
+
+interface FatigueExchange {
+  exchange: [string, string, string, string]
+  semanticKey: string
+}
+
+/**
+ * Hot får hela den redan Opus-godkända fatigue-brunnen: de åtta skarpa
+ * raderna plus de åtta varma. Identiteten följer själva raden, så en varm
+ * rad som redan synts kan inte väljas på nytt när trycket går över i hot.
+ */
+function fatigueExchangePool(pressure: 'warm' | 'hot'): FatigueExchange[] {
+  const warm = FATIGUE_WARM_EXCHANGES.map((exchange, index) => ({
+    exchange,
+    semanticKey: `${FATIGUE_WARM_PREFIX}${index}`,
+  }))
+  if (pressure === 'warm') return warm
+  return [
+    ...FATIGUE_HOT_EXCHANGES.map((exchange, index) => ({
+      exchange,
+      semanticKey: `${FATIGUE_HOT_PREFIX}${index}`,
+    })),
+    ...warm,
+  ]
+}
+
+function pickFatigueExchange(
+  game: SaveGame,
+  pressure: 'warm' | 'hot',
+  seed: number,
+): FatigueExchange | null {
+  const eligible = fatigueExchangePool(pressure).filter(item =>
+    !isOnCooldown(
+      game,
+      item.semanticKey,
+      FATIGUE_COOLDOWN_SEASONS,
+      game.currentSeason,
+    ),
+  )
+  if (eligible.length === 0) return null
+  return eligible[hashSeed(seed) % eligible.length]
+}
+
 /**
  * getCoffeeRoomScene — returnerar 1-3 exchanges för Kafferummet-scenen.
  * Returnerar null om ingen omgång spelats (säsongsstart) eller data saknas.
@@ -565,12 +619,15 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   // orört här) eller säsongssammanfattningens matchOfTheSeason (helt separat
   // mekanism, en gång per säsong). .diaryLine förblir dödt (ingen konsument
   // fanns ens i gamla getCoffeeRoomQuote) — utanför den här portens scope.
-  if (game.pendingVictoryEcho) {
+  if (game.pendingVictoryEcho && shouldSurfaceVictoryEcho(game, game.pendingVictoryEcho)) {
+    const echoKey = game.pendingVictoryEcho.coffeeSemanticKey
     return {
       exchanges: [],
       pickedIndices: [],
+      narrativeKeys: echoKey ? [echoKey] : [],
       meta: { title: 'Kafferummet' },
       narratorLine: { text: game.pendingVictoryEcho.coffeeLine },
+      consumedVictoryEcho: true,
     }
   }
 
@@ -625,14 +682,17 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   const hotStreak = game.fatigueHotStreak ?? 0
   if (hotStreak >= 2) {
     const { pressure } = getFatigueState(game)
-    const pool = pressure === 'hot' ? FATIGUE_HOT_EXCHANGES : FATIGUE_WARM_EXCHANGES
+    const fatiguePressure = pressure === 'hot' ? 'hot' : 'warm'
     const matchday = game.currentMatchday ?? 1
     const seed = matchday * 17 + game.currentSeason * 29
-    const idx = hashSeed(seed) % pool.length
-    return {
-      exchanges: [pool[idx]],
-      pickedIndices: [idx],
-      meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
+    const picked = pickFatigueExchange(game, fatiguePressure, seed)
+    if (picked) {
+      return {
+        exchanges: [picked.exchange],
+        pickedIndices: [],
+        narrativeKeys: [picked.semanticKey],
+        meta: { title: 'Kafferummet', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
+      }
     }
   }
 
@@ -871,7 +931,13 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   const scene = buildCoffeeRoomScene(game)
   if (!scene) return null
   const ledgerEcho = selectCoffeeRoomLedgerEcho(game)
-  return ledgerEcho ? { ...scene, ledgerEcho } : scene
+  const retiredVictoryEcho = !!game.pendingVictoryEcho &&
+    !shouldSurfaceVictoryEcho(game, game.pendingVictoryEcho)
+  return {
+    ...scene,
+    ...(ledgerEcho && { ledgerEcho }),
+    ...(retiredVictoryEcho && { retiredVictoryEcho: true }),
+  }
 }
 
 /**

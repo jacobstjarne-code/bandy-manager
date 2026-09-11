@@ -122,7 +122,60 @@ Karaktär: prime, satta vuxna drag — ingen ung valpighet, ingen veteran-väder
 8. 25, mycket kort buzz, renrakat, tung bred käke, tjock nacke, tydligt kraftig (EXTREM: den ende kraftige) — rak stadig blick
 9. 23, kort mellanblont, lätt stubb, magert kantigt, slank-lång — trekvart vänster
 10. 26, kort brunt rufsigt, kort fullt skägg, fyrkantig, medel-satt — frontal lätt lutning
-## Fack: ERFAREN (27–31) — ej skrivet
+11. 22, kort mörkblont sidbena, renrakat, smalt ovalt, slank — trekvart höger
+12. 25, kort brunt, kraftig stubb, brett runt, satt — blick vid sidan
+13. 24, kort svartbrunt snagg, kort skägg, kantigt, medel-lång — frontal
+14. 26, kort ljusbrunt rufsigt, renrakat, fyrkantig, kompakt — trekvart vänster
+15. 23, kort brunt, lätt stubb, oliv (andra gen turkiet), ovalt, slank — blick mot kameran
+16. 25, kort mörkbrunt sidbena, fullt kort skägg, rakt brett, satt — trekvart höger
+17. 22, kort mellanblont snagg, renrakat, runt, medel — blick vid sidan
+18. 26, kort brunt, stubb med mustaschansats, magert långt, slank-lång — frontal lätt lutning
+19. 24, kort svart hår, kort mörkt skägg, mörkhyad (andra gen östafrika), kantig, medel — trekvart vänster
+20. 25, kort brunt rufsigt, renrakat, bred käke, kompakt-satt — rak blick
+21. 23, kort ljusblont, lätt stubb, ovalt mjukt, slank — trekvart höger
+22. 26, kort mörkbrunt, kort välansat skägg, fyrkantig tung, satt — blick vid sidan
+23. 22, kort brunt snagg, renrakat, smalt kantigt, slank-medel — frontal
+24. 25, kort mörkblont, kraftig stubb, brett runt, medel-satt — trekvart vänster
+25. 24, kort brunt sidbena, kort skägg, ovalt, medel — blick mot kameran
+26. 26, kort svartbrunt rufsigt, renrakat, kantig mager, slank-lång — trekvart höger
+27. 23, kort ljusbrunt, lätt stubb, oliv (andra gen mellanöstern), rund, medel — blick vid sidan
+28. 25, kort brunt, fullt kort skägg, bred fyrkantig, satt-kompakt — frontal lätt lutning
+29. 22, kort mellanblont snagg, renrakat, ovalt, slank — trekvart vänster
+30. 26, kort mörkbrunt, kraftig stubb, rakt brett, medel — rak stadig blick
+## Fack: ERFAREN (27–31) — skrivet 2026-09-10
+
+Karaktär: bryggan mot veteran. Mer satt och sliten än mid — begynnande vikar, första svaga fåror, tyngre byggnader vanligare, mer skägg, någon gråstänkt vid tinningarna i den övre åldern (30–31). Inget rött. En helgrå elder placerad (9), extrem-budgetens andra grå. Två tredjedelar ordinära, separationsregeln mot varje granne.
+
+1. 28, kort brunt, begynnande vikar, kort skägg, kantigt, medel — trekvart höger
+2. 30, kort mörkblont tunnande, renrakat, brett satt, satt — blick vid sidan
+3. 27, kort brunt snagg, kraftig stubb, rakt magert, slank-lång — frontal
+4. 31, kort brunt med grå stänk vid tinningarna, kort gråsprängt skägg, fårat kantigt, medel-satt — trekvart vänster
+5. 29, kort svartbrunt, kort mörkt skägg, oliv (andra gen balkan), brett, satt — blick mot kameran
+6. 28, kort ljusbrunt vikande, renrakat, ovalt tyngre, medel-satt — trekvart höger
+7. 30, kort brunt, fullt kort skägg, tung fyrkantig, kompakt-satt — blick vid sidan
+8. 27, kort mörkblont, lätt stubb, kantigt, medel — frontal lätt lutning
+9. 31, helgrått kortklippt, renrakat, fårat magert, slank-medel — rak stadig blick
+10. 28, kort brunt snagg, kort skägg, brett runt, satt — trekvart vänster
+11. 29, kort svart hår, kort mörkt skägg, mörkhyad (andra gen västafrika), kantig, medel-lång — blick vid sidan
+12. 27, kort brunt vikande, renrakat, ovalt, slank — trekvart höger
+13. 30, kort mörkbrunt, kraftig gråstänkt stubb, brett satt, satt-kompakt — frontal
+14. 28, kort ljusbrunt, kort fullt skägg, magert fårat, slank-lång — trekvart vänster
+15. 31, kort brunt tunnande, renrakat, tung bred käke, tydligt satt — blick mot kameran
+16. 27, kort mörkblont snagg, lätt stubb, rakt kantigt, medel — trekvart höger
+17. 29, kort brunt, kort skägg, oliv (andra gen mellanöstern), ovalt, medel-satt — blick vid sidan
+18. 30, kort brunt begynnande vikar, renrakat, brett runt, satt — frontal lätt lutning
+19. 28, kort svartbrunt, fullt kort skägg, kantig tung, kompakt — trekvart vänster
+20. 27, kort ljusbrunt, kraftig stubb, ovalt mjukt, medel — rak blick
+21. 31, kort brunt gråstänkt vid tinningarna, kort skägg, fårat brett, satt — trekvart höger
+22. 29, kort mörkblont vikande, renrakat, magert kantigt, slank-medel — blick vid sidan
+23. 28, kort brunt snagg, kort mörkt skägg, rakt brett, medel-satt — frontal
+24. 30, kort brunt, lätt stubb, tung fyrkantig, satt — trekvart vänster
+25. 27, kort svart hår, kort skägg, oliv-mörk (andra gen nordafrika), kantig, medel — blick mot kameran
+26. 29, kort ljusbrunt tunnande, renrakat, ovalt tyngre, medel-satt — trekvart höger
+27. 28, kort mörkbrunt, kraftig stubb, brett satt, kompakt-satt — blick vid sidan
+28. 31, kort brunt gråstänkt, kort gråsprängt skägg, fårat magert, slank-lång — frontal lätt lutning
+29. 27, kort mellanblont snagg, renrakat, rakt kantigt, medel — trekvart vänster
+30. 30, kort brunt vikande, kort fullt skägg, brett runt tungt, satt — rak stadig blick
 
 ## Extrem-budget (hela poolen, 8–12)
 

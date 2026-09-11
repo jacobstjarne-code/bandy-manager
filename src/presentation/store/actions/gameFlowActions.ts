@@ -781,22 +781,24 @@ export function gameFlowActions(get: Get, set: Set) {
           for (const idx of coffeeScene.pickedIndices) {
             updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, `coffee_pool_${idx}`, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
           }
+          for (const semanticKey of coffeeScene.narrativeKeys ?? []) {
+            updatedGame.narrativeBeatLog = logNarrativeBeat(
+              updatedGame,
+              semanticKey,
+              updatedGame.currentSeason,
+              getCurrentLeagueRound(updatedGame),
+            )
+          }
           // D3 — återkomsten visades: ta bort den ur kön, den landar bara en gång.
           if (coffeeScene.consumedReturnQuestionId) {
             updatedGame.coffeeRoomPendingReturns = (updatedGame.coffeeRoomPendingReturns ?? [])
               .filter(p => p.questionId !== coffeeScene.consumedReturnQuestionId)
           }
           updatedGame = recordCoffeeRoomLedgerEchoShown(updatedGame, coffeeScene.ledgerEcho?.postKey)
-          if (updatedGame.pendingVictoryEcho) {
-            const echoKey = updatedGame.pendingVictoryEcho.coffeeSemanticKey
-            if (echoKey) {
-              updatedGame.narrativeBeatLog = logNarrativeBeat(
-                updatedGame,
-                echoKey,
-                updatedGame.currentSeason,
-                updatedGame.currentMatchday,
-              )
-            }
+          if (
+            updatedGame.pendingVictoryEcho &&
+            (coffeeScene.consumedVictoryEcho || coffeeScene.retiredVictoryEcho)
+          ) {
             updatedGame.pendingVictoryEcho = undefined
             updatedGame.victoryEchoExpires = undefined
           }

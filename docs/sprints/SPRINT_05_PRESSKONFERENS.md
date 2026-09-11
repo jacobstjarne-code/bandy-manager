@@ -158,7 +158,7 @@ export function generatePreMatchOpponentQuote(opponentClub: Club, isDerby: boole
   const quotes: Record<string, string[]> = {
     confident: [
       `${mgr.name}: "Vi räknar med att vinna det här derbyt."`,
-      `${mgr.name}: "Respekt för motståndaren, men poängen ska stanna hemma."`,
+      `${mgr.name}: "Respekt för motståndaren, men poängen behåller vi."`,
     ],
     defensive: [
       `${mgr.name}: "Vi tar ingenting för givet. Det blir en tuff match."`,

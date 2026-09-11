@@ -92,7 +92,12 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
         alt=""
         style={{ position: 'absolute', inset: 0, zIndex: 0 }}
       />
-      <div className="arrival-scrim" />
+      <div
+        className="arrival-scrim"
+        style={{
+          background: 'linear-gradient(180deg, rgba(250,244,233,0.54) 0px, rgba(250,244,233,0.26) 72px, rgba(250,244,233,0) 118px)',
+        }}
+      />
       <div className="arrival-lamp-overlay" />
 
       {/* MEDIUM 14 (audit 2026-08-29): etiketten lovade "introduktionen" men
@@ -103,14 +108,41 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
           isReturning → noll träffar utanför ett orelaterat testnamn). Etiketten
           rättas till vad knappen FAKTISKT gör; "Ankomsten" är scenens eget
           rubrikord tio rader ned. */}
-      <button className="scene-skip" aria-label="Hoppa över ankomsten" onClick={onComplete}>Hoppa över ↘</button>
+      <button
+        className="scene-skip"
+        aria-label="Hoppa över ankomsten"
+        onClick={onComplete}
+        style={{
+          color: '#4F382D',
+          fontWeight: 700,
+          textShadow: '0 1px 0 rgba(255,255,255,0.55), 0 0 7px rgba(250,244,233,0.8)',
+        }}
+      >
+        Hoppa över ↘
+      </button>
 
       {/* Header */}
       <div style={{ position: 'relative', zIndex: 2, padding: '32px 24px 0', textAlign: 'center' }}>
-        <div className="h-scene-genre">⬩ &nbsp;Ankomsten&nbsp; ⬩</div>
+        <div
+          className="h-scene-genre"
+          style={{
+            color: '#7A3F20',
+            opacity: 0.95,
+            textShadow: '0 1px 0 rgba(255,255,255,0.55), 0 0 7px rgba(250,244,233,0.8)',
+          }}
+        >
+          ⬩ &nbsp;Ankomsten&nbsp; ⬩
+        </div>
         <div className="beat-progress" style={{ marginTop: 14 }}>
           {dotLit.map((lit, i) => (
-            <span key={i} className={`dot${lit ? ' active' : ''}`} />
+            <span
+              key={i}
+              className={`dot${lit ? ' active' : ''}`}
+              style={{
+                background: lit ? '#7A3F20' : 'rgba(88,52,34,0.42)',
+                boxShadow: '0 0 0 1px rgba(255,248,236,0.28)',
+              }}
+            />
           ))}
         </div>
       </div>
