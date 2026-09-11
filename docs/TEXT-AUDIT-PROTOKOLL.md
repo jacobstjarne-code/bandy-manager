@@ -1148,7 +1148,7 @@ MISSTANKAR — döm i kontext, luta konservativt:
     stramades åt" ljuger där; kvittot är dessutom per match, inte per
     matchserie).
   · eventCardInlineStrings (7): "Rating:" (engelska) → "Betyg:" ×6 ·
-    "ställde fram klubban i stället" → "ställde klubban i stället".
+    "ställde fram klubban i stället" → "ställde klubban i hörnet".
     Sture-referenserna behållna (fast kafferumsfigur, kanon; playerNames
     verifierad — ingen Sture/Kurt-kollision). Bandypuls = riktig media,
     vardagsfärg ✓.

@@ -1,5 +1,5 @@
 export const STAR_PERFORMANCE_VARIANTS: readonly string[] = [
-  `{NAME} ställde klubban i stället, lade tröjan i tvättkorgen. Nickade till Sture på vägen ut. Betyg: {RATING}.`,
+  `{NAME} ställde klubban i hörnet, lade tröjan i tvättkorgen. Nickade till Sture på vägen ut. Betyg: {RATING}.`,
   `Materialaren bad {NAME} om hjälp att bära ut näten. Han var en av få som var kvar på vallen. Betyg: {RATING}.`,
   `{NAME} var med på allt som hade betydelse. Det är inte vanligt. Betyg: {RATING}.`,
   `Sture klappade {NAME} på axeln på väg in i omklädningsrummet. Mer blev det inte sagt. Betyg: {RATING}.`,
