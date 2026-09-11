@@ -43,7 +43,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| kafferum-derbyeko-saknar-cooldown | Två fasta derbyrepliker återkommer inom kafferummets tvåsäsongers cooldown | verifierad | Codex | playtest/GRIND2_NYKARRIAR_LESJOFORS_2026-09-11.md + kodläsning 2026-09-11 | `postVictoryNarrativeService` ger `playoff_win`, `playoff_derby_win` och blowout-poolen en `coffeeSemanticKey`, men de två fasta grenarna `derby_win` och `big_derby_win` saknar både identitet och cooldown. `shouldSurfaceVictoryEcho` släpper därför alltid igenom dem. Ge båda fasta derbygrenarna stabil visningsidentitet och två säsongers cooldown; testa vanlig/stor derbyseger samt hemma-/bortaperspektiv utan att ändra matchmotorn. |
+| kafferum-derbyeko-saknar-cooldown | Två fasta derbyrepliker återkommer inom kafferummets tvåsäsongers cooldown | in_progress | Codex · 2026-09-11T10:04:39+02:00 | playtest/GRIND2_NYKARRIAR_LESJOFORS_2026-09-11.md + kodläsning 2026-09-11 | `postVictoryNarrativeService` ger `playoff_win`, `playoff_derby_win` och blowout-poolen en `coffeeSemanticKey`, men de två fasta grenarna `derby_win` och `big_derby_win` saknar både identitet och cooldown. `shouldSurfaceVictoryEcho` släpper därför alltid igenom dem. Ge båda fasta derbygrenarna stabil visningsidentitet och två säsongers cooldown; testa vanlig/stor derbyseger samt hemma-/bortaperspektiv utan att ändra matchmotorn. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
