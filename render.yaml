@@ -6,8 +6,11 @@ services:
     staticPublishPath: dist
     pullRequestPreviewsEnabled: true
     envVars:
+      # Node 20 gick ur support 2026-04-30 (EOL, inga säkerhetsfixar). 22 är
+      # LTS till 2027-04; samma major i app-ci.yml och visual-baselines.yml.
+      # Bara major, så Render plockar senaste 22.x-patchen själv.
       - key: NODE_VERSION
-        value: 20.11.0
+        value: "22"
       - key: VITE_ATTENTION_API_BASE
         fromService:
           name: bandy-manager-attention-api
@@ -30,7 +33,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
-        value: 20.11.0
+        value: "22"
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
