@@ -118,7 +118,10 @@ export const CS_PRESS_PUBLISHED_QUOTES: Record<PressChoice, readonly string[]> =
     `"Strukturen håller. Det är det vi har byggt." {COACH_LASTNAME} efter nollan.`,
   ],
   silent: [
-    `{COACH_LASTNAME} avstod kommentar. Det är inte första gången.`,
+    // Språksvep 4 D (2026-09-12): "Det är inte första gången" valdes på
+    // matchbunden hash utan någon räkning av tidigare tysta svar — kunde
+    // visas på tränarens första. Samma ton, inget påstående om historik.
+    `{COACH_LASTNAME} avstod kommentar. {JOURNALIST} noterade det.`,
     `Tystnad från tränarens kontor. {JOURNALIST} fortsätter ändå.`,
     `Inga ord från {COACH_LASTNAME} efter matchen. Det säger något i sig.`,
   ],

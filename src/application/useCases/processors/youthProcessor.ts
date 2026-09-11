@@ -265,7 +265,13 @@ export function processYouth(
         // premissen redan bygger på så spelarytan kan visa vem händelsen gäller.
         relatedPlayerId: player.id,
         title: `${player.firstName} ${player.lastName} slår igenom`,
-        body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "${academyBreakthroughQuote(player.id)}"`,
+        // DOM_SPRAKSVEP4 (2026-09-12), Code-punkt 1: seasonsInAcademy räknas ur
+        // youthTeam.players — men promoteYouthPlayer TAR BORT spelaren därifrån
+        // (academyActions.ts), så lookupen träffar aldrig efter uppflyttning.
+        // Wirad exakt som domen bad om ändå (ingen ny state på Player, "hellre
+        // tyst än falsk" håller by construction) — se DOM_SPRAKSVEP4-uppföljningen
+        // om tidsbundna rader någonsin ska bli nåbara i praktiken.
+        body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "${academyBreakthroughQuote(player.id, game.currentSeason - (game.youthTeam?.players.find(p => p.id === player.id)?.joinedSeason ?? game.currentSeason))}"`,
         choices: [{ id: 'ack', label: 'Grattis akademin', effect: { type: 'noOp' } }],
         resolved: false,
       })

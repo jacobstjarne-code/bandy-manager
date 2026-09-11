@@ -699,8 +699,11 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `${n} behöver höra att han hör hit.`,
           ],
           grumpy: [
-            `${n} klagar igen. Men han har en poäng.`,
-            `${n} muttrar i omklädningsrummet, inte första gången.`,
+            // Språksvep 4 D (2026-09-12): "igen"/"inte första gången" valdes på
+            // spelar-id-hash utan räkning av tidigare missnöje — falskt vid
+            // första tillfället. Grumpy utan historikpåstående.
+            `${n} klagar. Men han har en poäng.`,
+            `${n} muttrar i omklädningsrummet. Det hörs genom väggen.`,
             `${n} är inte nöjd, och det blir sällan bättre av att vänta.`,
           ],
           philosophical: [

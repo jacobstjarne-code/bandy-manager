@@ -63,7 +63,10 @@ export const REFEREE_MEETING_QUOTES_INCONSISTENT: Record<'win' | 'loss' | 'neutr
   ],
   loss: [
     'Det gick inte vår väg i dag. Ibland gör det inte det.',
-    'Han dömde likadant åt båda hållen. Vi gjorde för lite med det.',
+    // Språksvep 4 (2026-09-12): "Han dömde" var kodat mot stil, inte domare —
+    // råkade aldrig träffa Hanna Ekström (strict) men skulle vid en omgruppering.
+    // Passiv form säger samma sak utan pronomen.
+    'Det dömdes likadant åt båda hållen. Vi gjorde för lite med det.',
     'Två situationer kunde gått annorlunda. Vi ska inte ha behövt vara där.',
     'Domaren är inte förklaringen. Vi vet var förklaringen finns.',
   ],

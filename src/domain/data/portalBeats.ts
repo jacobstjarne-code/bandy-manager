@@ -544,7 +544,13 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'first_win',
     emoji: '✓',
-    text: 'Första segern. Omklädningsrummet lät inte likadant efteråt.',
+    // Språksvep 4 D (2026-09-12): beatet är oncePerSeason och triggar på
+    // säsongens första seger — texten sa "Första segern" varje säsong. Absolut
+    // form bara när det är managerkarriärens första (inga avslutade säsonger),
+    // annars säsongsförbehåll. Trigger och nyckel oförändrade.
+    text: (g) => (g.seasonSummaries ?? []).length === 0
+      ? 'Första segern. Omklädningsrummet lät inte likadant efteråt.'
+      : 'Säsongens första seger. Omklädningsrummet lät inte likadant efteråt.',
     trigger: (g) => {
       const completed = g.fixtures
         .filter(fixture => fixture.season === g.currentSeason
@@ -563,7 +569,10 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'first_derby',
     emoji: '🔥',
-    text: 'Första derbyt. Det här är matcher som lever längre än säsongen.',
+    // Språksvep 4 D: samma säsongsförbehåll som first_win.
+    text: (g) => (g.seasonSummaries ?? []).length === 0
+      ? 'Första derbyt. Det här är matcher som lever längre än säsongen.'
+      : 'Säsongens första derby. Det här är matcher som lever längre än säsongen.',
     trigger: (g) => {
       const nextIsDerby = firesBeforeNextFixture(g, (_fixture, opponentId) =>
         getRivalry(g.managedClubId, opponentId) !== null
