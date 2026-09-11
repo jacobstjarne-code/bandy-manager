@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { timingSafeEqual } from 'node:crypto'
 import { InMemoryAttentionStore } from './store.js'
 import { createAttentionDispatcher } from './dispatcher.js'
 
@@ -32,6 +33,17 @@ function tokenFrom(req) {
   return typeof req.headers['x-installation-token'] === 'string'
     ? req.headers['x-installation-token']
     : ''
+}
+
+// Konstanttids-jämförelse av cron-hemligheten. En vanlig `!==` kortsluter vid
+// första avvikande byte, vilket i teorin läcker hur många tecken som stämmer.
+// Olika längd är alltid fel utan att timingSafeEqual (som kräver lika längd)
+// behöver kastas på.
+function secretMatches(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string' || !expected) return false
+  const a = Buffer.from(provided)
+  const b = Buffer.from(expected)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 function asyncRoute(handler) {
@@ -277,7 +289,7 @@ export function createAttentionRouter({
 
   router.post('/attention/run', asyncRoute(async (req, res) => {
     const expected = env.ATTENTION_CRON_SECRET
-    if (!expected || req.headers.authorization !== `Bearer ${expected}`) {
+    if (!expected || !secretMatches(req.headers.authorization, `Bearer ${expected}`)) {
       return res.status(401).json({ error: 'unauthorized' })
     }
     const installationsPruned = await store.pruneInactiveInstallations?.(

@@ -10,6 +10,13 @@ import { createAttentionStore } from './server/attention/runtime.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 
+// Render (och alla andra PaaS) terminerar TLS i en proxy framför processen.
+// Utan trust proxy ser express-rate-limit proxyns IP för VARJE klient, så
+// alla spelare delar en enda 100-req/min-hink — och `req.secure`/HSTS-
+// logiken tror att trafiken är okrypterad. Ett hopp (Renders edge) är rätt
+// värde; `true` skulle låta en klient förfalska X-Forwarded-For.
+app.set('trust proxy', 1)
+
 // ── Säkerhetsheaders ───────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
@@ -59,8 +66,12 @@ const attention = createAttentionRouter({ store: attentionStore })
 app.use('/api', attention.router)
 
 // ── Health check ────────────────────────────────
+// Version = deployens commit, inte ett handskrivet tal (server.js sa '0.3.0',
+// package.json '0.1.0', saven '0.3.12' — tre nummer, ingen sanning). Render
+// exponerar RENDER_GIT_COMMIT; lokalt saknas den och vi säger det rakt ut.
+const BUILD_VERSION = process.env.RENDER_GIT_COMMIT?.slice(0, 7) ?? 'local'
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '0.3.0' })
+  res.json({ status: 'ok', version: BUILD_VERSION })
 })
 
 // ── SPA fallback ────────────────────────────────
