@@ -50,6 +50,7 @@ export function PortalScreen() {
   const navigate = useNavigate()
   const gameScrollRef = useGameScrollContainer()
   const [isAdvancing, setIsAdvancing] = useState(false)
+  const [isSimulatingRemaining, setIsSimulatingRemaining] = useState(false)
   // DOM_POLISH_SMFINAL_SKARV_2026-09-10: SM-finalens gold-CTA navigerar inte
   // direkt — SceneSeam sveper CTA:ns fyllning till scenens accent först
   // (~260ms), sen navigerar onComplete. Wira bara smfinal nu (hållpunkten);
@@ -255,22 +256,35 @@ export function PortalScreen() {
     !nextManagedScheduled?.isCup &&
     game.pendingScreen !== PendingScreen.HalfTimeSummary
 
-  const handleSimulateRemaining = () => {
-    if (!canSimulateRemaining) return
+  // Mätt 2026-09-11 (Jacobs körorder, kod-audit-uppföljning): en verklig
+  // 7-säsongers save vid 390px blockerade huvudtråden i sammanlagt ~8s över
+  // 22 delmoment — det första ensamt ~3s — när alla 120 stegen kördes
+  // synkront i en enda tight loop. `await` på en setTimeout(0) mellan varje
+  // steg lämnar tillbaka tråden till webbläsaren (paint, indata) utan att
+  // ändra loopens logik eller brytvillkor — samma resultat, bara inte som
+  // en enda ohejdad synkron körning.
+  const handleSimulateRemaining = async () => {
+    if (!canSimulateRemaining || isSimulatingRemaining) return
     playSound('click')
-    const HALT_SCREENS: (PendingScreen | null | undefined)[] = [
-      PendingScreen.HalfTimeSummary,
-      PendingScreen.PlayoffIntro,
-      PendingScreen.QFSummary,
-    ]
-    for (let step = 0; step < 120; step++) {
-      const result = simulateRemainingStep()
-      if (!result) break
-      if (result.seasonEnded) { navigate('/game/sim-summary'); return }
-      if (result.playoffStarted) break
-      const currentGame = result.game
-      if (HALT_SCREENS.includes(currentGame?.pendingScreen)) break
-      if (!currentGame?.fixtures.some(f => f.status === 'scheduled')) break
+    setIsSimulatingRemaining(true)
+    try {
+      const HALT_SCREENS: (PendingScreen | null | undefined)[] = [
+        PendingScreen.HalfTimeSummary,
+        PendingScreen.PlayoffIntro,
+        PendingScreen.QFSummary,
+      ]
+      for (let step = 0; step < 120; step++) {
+        const result = simulateRemainingStep()
+        if (!result) break
+        if (result.seasonEnded) { navigate('/game/sim-summary'); return }
+        if (result.playoffStarted) break
+        const currentGame = result.game
+        if (HALT_SCREENS.includes(currentGame?.pendingScreen)) break
+        if (!currentGame?.fixtures.some(f => f.status === 'scheduled')) break
+        await new Promise(resolve => setTimeout(resolve, 0))
+      }
+    } finally {
+      setIsSimulatingRemaining(false)
     }
   }
 
@@ -492,10 +506,11 @@ export function PortalScreen() {
           // aldrig kan kollapsa under 44px oavsett cue-textens längd.
           <button
             onClick={handleSimulateRemaining}
+            disabled={isSimulatingRemaining}
             className="btn btn-ghost"
             style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24 }}
           >
-            <Icon icon={FastForward} size={13} /> Simulera resterande säsong
+            <Icon icon={FastForward} size={13} /> {isSimulatingRemaining ? '···' : 'Simulera resterande säsong'}
           </button>
         )}
         {/* Drag 3 (§11 punkt 6) — "Vad nu?"-affordansen. Bildtext på handlingen,
