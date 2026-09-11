@@ -56,14 +56,7 @@ import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { CoffeeRoomScene } from '../screens/scenes/CoffeeRoomScene'
-
-const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
-  [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
-  [PendingScreen.PlayoffIntro]:    '/game/playoff-intro',
-  [PendingScreen.QFSummary]:       '/game/qf-summary',
-  [PendingScreen.SeasonSummary]:   '/game/season-summary',
-  [PendingScreen.ContractDemands]: '/game/contract-demands',
-}
+import { getPendingScreenRedirect } from './pendingScreenRedirect'
 
 // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
 // visa historik för en avslutad (managerFired) karriär. GameShell redirectar
@@ -81,22 +74,27 @@ function DashboardOrPortal() {
   const game = useGameStore(s => s.game)
   const completeScene = useGameStore(s => s.completeScene)
   const navigate = useNavigate()
-  const redirected = useRef(false)
+  const redirectedScreen = useRef<PendingScreen | null>(null)
 
   const attention = game ? getCurrentAttention(game) : { kind: 'idle' as const }
   const pendingScreen = attention.kind === 'screen' ? attention.screen : null
 
-  // B6: rensa redirected.current när pendingScreen försvinner, så nästa pendingScreen triggar useEffect
+  // B6: rensa vakten när skärmflödet tar slut. Själva skärmens identitet
+  // ligger i refen så en direkt QF-summary → season-summary-kedja också
+  // räknas som ett nytt omdirigeringsmål.
   useEffect(() => {
     if (attention.kind !== 'screen') {
-      redirected.current = false
+      redirectedScreen.current = null
     }
   }, [attention.kind])
 
   useEffect(() => {
-    if (!game || redirected.current || !pendingScreen) return
-    const route = PENDING_SCREEN_ROUTES[pendingScreen]
-    if (route) { redirected.current = true; navigate(route, { replace: true }) }
+    if (!game) return
+    const route = getPendingScreenRedirect(redirectedScreen.current, pendingScreen)
+    if (route && pendingScreen) {
+      redirectedScreen.current = pendingScreen
+      navigate(route, { replace: true })
+    }
   }, [game, pendingScreen, navigate])
 
   if (!game) return <PortalScreen />
