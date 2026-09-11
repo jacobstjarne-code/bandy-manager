@@ -1,0 +1,321 @@
+/* HANDOFF-GALAN-GESTALTNING_2026-09-10 — hållen scen, liggarlandning, verkligt
+   val. Guld-disciplin (R3+, samma regel som SM-final-skarven): en fylld
+   guldyta (medaljen) eller ingen, aldrig två. Tokens: --gold/--gold-deep/
+   --gold-soft (colors_and_type.css / global.css). */
+
+.gala-scene {
+  position: relative;
+  width: 100%;
+  max-width: 392px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-portal);
+  box-shadow: var(--shadow-modal);
+}
+
+.gala-scene__header {
+  height: 40px;
+  background: var(--bg-leather);
+  border-bottom: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+.gala-scene__club {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text-light);
+}
+.gala-scene__season {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-light-secondary);
+}
+
+/* Hållen scen — nedsläckning-register: dämpat, sätter dagen. */
+.gala-scene__held {
+  position: relative;
+  padding: 22px 18px 20px;
+  background: linear-gradient(168deg, var(--bg-portal-elevated) 0%, var(--bg-scene) 72%);
+  overflow: hidden;
+}
+.gala-scene__held::before {
+  content: '';
+  position: absolute;
+  top: -32%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  height: 74%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--gold) 15%, transparent) 0%, transparent 62%);
+}
+.gala-scene__held--gra::before {
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--text-muted) 12%, transparent) 0%, transparent 62%);
+}
+.gala-scene__held > * {
+  position: relative;
+}
+
+.gala-scene__genre {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: center;
+  margin: 0 0 14px;
+}
+.gala-scene__held--gra .gala-scene__genre { color: var(--text-muted); }
+
+.gala-scene__setting {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-light-secondary);
+  line-height: 1.55;
+  text-align: center;
+  margin: 0 0 18px;
+}
+
+.gala-scene__medal-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.gala-scene__medal {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 12px;
+  background: radial-gradient(circle at 50% 34%, var(--gold-soft), var(--gold-deep));
+  border: 2px solid color-mix(in srgb, var(--gold-soft) 55%, transparent);
+  box-shadow: var(--shadow-gold);
+}
+.gala-scene__held--gra .gala-scene__medal {
+  background: var(--bg-portal-surface);
+  border: 2px solid var(--border-dark);
+  box-shadow: none;
+}
+.gala-scene__award-eyebrow {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 7px;
+}
+.gala-scene__held--gra .gala-scene__award-eyebrow { color: var(--text-muted); }
+.gala-scene__award-name {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text-light);
+  line-height: 1.15;
+  margin: 0;
+}
+.gala-scene__award-stat {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--gold-soft);
+  margin: 8px 0 0;
+}
+.gala-scene__held--gra .gala-scene__award-stat { color: var(--text-light-secondary); }
+.gala-scene__award-line {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-light-secondary);
+  line-height: 1.5;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 0.5px solid color-mix(in srgb, var(--gold) 30%, transparent);
+}
+
+.gala-scene__body {
+  padding: 14px 13px 4px;
+}
+
+/* Liggarlandning — protokollform, guld som accent, noll fyllning. */
+.gala-scene__land-label {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 2px 2px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gala-scene__protok {
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+.gala-scene__ledger {
+  position: relative;
+  background: var(--bg-portal-surface);
+  border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);
+  border-radius: 8px;
+  padding: 8px 12px 6px 32px;
+  margin-bottom: 12px;
+}
+.gala-scene__perf {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  border-right: 1px dashed color-mix(in srgb, var(--gold) 24%, transparent);
+  background-image: radial-gradient(circle at 13px 11px, var(--bg-portal) 2.6px, rgba(0,0,0,0.3) 2.8px, transparent 3.6px);
+  background-size: 26px 21px;
+  background-repeat: repeat-y;
+}
+.gala-scene__lrow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(245,241,235,0.07);
+}
+.gala-scene__lrow:last-child { border-bottom: none; }
+.gala-scene__lrow-award {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-light-secondary);
+}
+.gala-scene__lrow-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+.gala-scene__lrow-club {
+  color: var(--text-light-secondary);
+  font-size: 11px;
+}
+.gala-scene__lrow-stat {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-light-secondary);
+  white-space: nowrap;
+  text-align: right;
+}
+.gala-scene__lrow--ours .gala-scene__lrow-name { color: var(--text-light); }
+.gala-scene__lrow--ours .gala-scene__lrow-award { color: var(--gold); }
+.gala-scene__lrow--ours .gala-scene__lrow-stat { color: var(--gold-soft); }
+.gala-scene__goldprick {
+  position: absolute;
+  left: -25px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2.5px var(--bg-portal-surface);
+}
+.gala-scene__land-foot {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--text-light-secondary);
+  line-height: 1.45;
+  margin: 0 2px 14px;
+  padding-left: 11px;
+  border-left: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+}
+.gala-scene__land-foot b {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--gold);
+  font-size: 10px;
+}
+
+/* Det verkliga valet — real attend/skip, en primär. */
+.gala-scene__decision {
+  padding: 0 13px 16px;
+}
+.gala-scene__dec-q {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin: 0 0 11px;
+  text-align: center;
+}
+.gala-scene__dec-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* HANDOFF-GALAN-GESTALTNING_2026-09-10, Jacobs fix-först-punkt: mockens
+   .btn-prim var guld-gradient — det bryter gold-disciplinen (medaljen ska
+   vara den ENDA fyllda guldytan i scenen). Flat koppar (--accent-dark),
+   samma register som Beslutskortens .btn-primary-regel. */
+.gala-scene__btn-prim {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text-light);
+  background: var(--accent-dark);
+  box-shadow: var(--shadow-primary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.gala-scene__btn-prim small {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 9.5px;
+  letter-spacing: 0.2px;
+  color: rgba(245,241,235,0.75);
+}
+.gala-scene__btn-out {
+  width: 100%;
+  padding: 11px;
+  border: 1.5px solid rgba(245,241,235,0.28);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light-secondary);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.gala-scene__btn-out small {
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--text-light-secondary);
+  opacity: 0.75;
+}

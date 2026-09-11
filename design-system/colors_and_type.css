@@ -232,6 +232,7 @@
   --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
   --gold:       #E8B95C;  /* cup-vinnare / specialanslag */
   --gold-deep:  #B88838;
+  --gold-soft:  #E8C97A;  /* highlight-ton, ceremoni-guld (medalj/gradient) */
   --shadow-gold: 0 3px 12px rgba(232, 185, 92, 0.32);
 
   --scroll-padding-bottom: 120px;

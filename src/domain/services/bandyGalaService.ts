@@ -23,7 +23,7 @@ export type GalaAward =
   | 'arets_nykomling'     // Årets nykomling (störst CA-ökning, ålder ≤22)
   | 'arets_veteran'       // Årets veteran (bäst betyg, ålder ≥32)
 
-const AWARD_LABELS: Record<GalaAward, string> = {
+export const AWARD_LABELS: Record<GalaAward, string> = {
   arets_spelare: 'Årets spelare',
   arets_forward: 'Årets forward',
   arets_malvakt: 'Årets målvakt',
@@ -111,6 +111,34 @@ export function generateNominations(game: SaveGame): GalaNomination[] {
   }
 
   return nominations
+}
+
+/** Prioritetsordning för vilket EGET pris som bär den hållna scenens känsla. */
+const HELD_AWARD_PRIORITY: GalaAward[] = [
+  'arets_nykomling', 'arets_veteran', 'arets_spelare', 'arets_forward', 'arets_malvakt',
+]
+
+/**
+ * HANDOFF-GALAN-GESTALTNING_2026-09-10 §2/§6 — vilket pris bär den hållna
+ * scenens känsla. `managedWinners` = förfiltrerad delmängd av `nominations`
+ * (anroparen känner till spelarnas clubId, den här funktionen behöver bara
+ * priot). Egen vinnare finns → nykomling/veteran väger tyngst (avskeds-/
+ * framtidston), sen resten i priolistan. Ingen egen vinnare → scenen håller
+ * topp-liga-priset (Årets spelare, eller första nomineringen om den saknas)
+ * i grå ton, ingen guldprick.
+ */
+export function pickHeldAward(
+  nominations: GalaNomination[],
+  managedWinners: GalaNomination[],
+): { nomination: GalaNomination; isOwn: boolean } | null {
+  if (managedWinners.length > 0) {
+    const sorted = [...managedWinners].sort(
+      (a, b) => HELD_AWARD_PRIORITY.indexOf(a.award) - HELD_AWARD_PRIORITY.indexOf(b.award)
+    )
+    return { nomination: sorted[0], isOwn: true }
+  }
+  const top = nominations.find(n => n.award === 'arets_spelare') ?? nominations[0]
+  return top ? { nomination: top, isOwn: false } : null
 }
 
 // ── Generate gala event for season end ──────────────────────────────────────

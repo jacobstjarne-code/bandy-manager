@@ -13,6 +13,7 @@ import { getVoiceEligibleEvents } from '../../domain/services/voiceIntroductionS
 import { IllustrationScene } from './illustration/IllustrationScene'
 import { getEventIllustrationName } from './eventIllustration'
 import { BreakpointDecisionScene } from './BreakpointDecisionScene'
+import { GalaScene } from './GalaScene'
 
 interface EventOverlayProps {
   // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
@@ -83,6 +84,26 @@ export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
         event={event}
         onFinish={handleChoice}
       />
+    )
+  }
+
+  // HANDOFF-GALAN-GESTALTNING_2026-09-10: Bandygalan — dedikerad scen istf
+  // generisk textklump. id-prefixet är specifikt (bandyGalaService.ts:s
+  // `event_gala_${season}`) — communityEvent-typen ensam täcker många andra
+  // event, inte bara galan.
+  if (event.id.startsWith('event_gala_')) {
+    return (
+      <div
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'flex-start',
+          paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
+        }}
+      >
+        <GalaScene event={event} game={game} onChoose={(id) => handleChoice(id)} />
+      </div>
     )
   }
 
