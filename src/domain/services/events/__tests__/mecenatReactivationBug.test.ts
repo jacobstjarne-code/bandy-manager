@@ -48,6 +48,23 @@ function makeWithdrawnMecenat(): Mecenat {
 }
 
 describe('K5 — permanent avskedad mecenat kan inte röras av mecenatHappiness', () => {
+  it('aktiverar en ny mecenat från dess genererade grundnivå utan att ett positivt val blir en sänkning', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
+    const incoming = { ...makeWithdrawnMecenat(), id: 'mecenat_incoming', happiness: 76, permanentlyWithdrawn: false }
+    const intro: GameEvent = {
+      id: 'event_mecenat_intro_mecenat_incoming', type: 'mecenatEvent', title: 't', body: 'b', resolved: false,
+      choices: [{ id: 'welcome', label: 'Välkomna samarbetet', effect: { type: 'mecenatHappiness', targetMecenatId: incoming.id, amount: 20 } }],
+    }
+    game = { ...game, mecenater: [incoming], pendingEvents: [intro] }
+
+    game = resolveEvent(game, intro.id, 'welcome', undefined, true)
+
+    expect(game.mecenater?.[0]).toMatchObject({ isActive: true, happiness: 96 })
+    expect(game.resolvedChoices?.at(-1)?.outcomeDeltas).toContainEqual({
+      resource: 'mecenatHappiness', delta: 20, subjectName: 'Test Mecenat',
+    })
+  })
+
   it('top-level mecenatHappiness-effekt mot en avskedad mecenat gör ingenting alls', () => {
     let game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
     game = { ...game, mecenater: [makeWithdrawnMecenat()] }

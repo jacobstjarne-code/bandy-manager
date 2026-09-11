@@ -68,6 +68,14 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
       .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(false)
   })
 
+  it('garanterar den kanoniska tifostarten innan konfliktfönstret öppnar', () => {
+    const game = { ...makeGame(supporterGroup()), currentMatchday: 7, lastProcessedMatchday: 99 }
+    expect(generateSupporterEvents(game, 7, new Set(), () => 0.99)
+      .some(candidate => candidate.id.startsWith('supporter_tifo_'))).toBe(true)
+    expect(generateSupporterEvents({ ...game, currentMatchday: 6 }, 6, new Set(), () => 0.99)
+      .some(candidate => candidate.id.startsWith('supporter_tifo_'))).toBe(false)
+  })
+
   it('bortaresan söker kommande fixture.matchday och beskrivs som planerad, inte genomförd', () => {
     const base = makeGame(supporterGroup({ tifoDone: true }))
     const fixture = {

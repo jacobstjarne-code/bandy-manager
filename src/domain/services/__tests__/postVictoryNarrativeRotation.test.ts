@@ -32,6 +32,28 @@ describe('segrarens kafferumseko', () => {
 
     expect(second.coffeeSemanticKey).not.toBe(first.coffeeSemanticKey)
     expect(second.coffeeLine).not.toBe(first.coffeeLine)
+    expect(first.coffeeCooldownSeasons).toBe(2)
+  })
+
+  it('roterar bort en storseger-rad även under nästa säsong', () => {
+    const fixture = {
+      id: 'fixture-one', homeClubId: 'managed', awayClubId: 'other',
+      homeScore: 7, awayScore: 1,
+    } as Fixture
+    const firstSeason = {
+      currentSeason: 2026, currentMatchday: 8, narrativeBeatLog: [],
+    } as unknown as SaveGame
+    const first = generateVictoryEcho('blowout', fixture, 'Motståndaren', 'managed', firstSeason)
+    const nextSeason = {
+      ...firstSeason,
+      currentSeason: 2027,
+      narrativeBeatLog: [{ semanticKey: first.coffeeSemanticKey!, season: 2026, round: 8 }],
+    }
+    const second = generateVictoryEcho('blowout', { ...fixture, id: 'fixture-two' }, 'Motståndaren', 'managed', nextSeason)
+
+    expect(shouldSurfaceVictoryEcho(nextSeason, first)).toBe(false)
+    expect(second.coffeeSemanticKey).not.toBe(first.coffeeSemanticKey)
+    expect(second.coffeeLine).not.toBe(first.coffeeLine)
   })
 
   it('låter den fasta slutspelsraden vila samma och följande säsong efter visning', () => {

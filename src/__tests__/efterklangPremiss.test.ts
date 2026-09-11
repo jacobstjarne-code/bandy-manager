@@ -190,16 +190,19 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
     expect(find(game, 'rivalSale')?.premiss).toBe('Ni sålde en nyckelspelare till en rival.')
   })
 
-  it('anniversary: delta 1 → "Ett år sedan", delta 3 → "3 år sedan"', () => {
+  it('anniversary: idiomatisk tidsinledning utan dubbla sluttecken', () => {
     const ann = (yearsAgo: number) => ({
       eventId: 'e1', originalSeason: 3 - yearsAgo, yearsAgo, matchday: 5,
       type: 'match', outcome: 'won', significance: 80, echoSize: 'medium',
       originalEventText: 'segern mot Karlsborg',
     })
     expect(find(makeGame({ activeAnniversaries: [ann(1)] as never }), 'anniversary')?.premiss)
-      .toBe('Ett år sedan segern mot Karlsborg.')
+      .toBe('För ett år sedan segern mot Karlsborg.')
     expect(find(makeGame({ activeAnniversaries: [ann(3)] as never }), 'anniversary')?.premiss)
-      .toBe('3 år sedan segern mot Karlsborg.')
+      .toBe('För 3 år sedan segern mot Karlsborg.')
+    const punctuated = { ...ann(1), originalEventText: 'Orten drog sig undan. 73→68. Det märks på läktaren först.' }
+    expect(find(makeGame({ activeAnniversaries: [punctuated] as never }), 'anniversary')?.premiss)
+      .toBe('För ett år sedan Orten drog sig undan. 73→68…')
   })
 
   it('klackEcho: premiss skiftar på currentWeight', () => {
@@ -307,7 +310,7 @@ describe('pickEfterklang — Berättarens agenda', () => {
     const memory = pickEfterklang(canonicalGame({ eventLedger: [oldPost] }), 8)
       .find(item => item.type === 'anniversary')
 
-    expect(memory?.premiss).toMatch(/^Ett år sedan /)
+    expect(memory?.premiss).toMatch(/^För ett år sedan /)
     expect(memory?.sourcePost).toBe(oldPost)
     expect(memory?.threadEntries[0]).toMatchObject({ season: 2, matchday: 10 })
     expect(pickEfterklang(canonicalGame({ eventLedger: [oldPost] }), 8)

@@ -128,13 +128,14 @@ export function generateVictoryEcho(
               pool.length,
               VICTORY_ECHO_BLOWOUT_PREFIX,
               game.currentMatchday * 31 + fixture.id.length,
-              1,
+              2,
             )
           : 0
       return {
         diaryLine: `${score} är en hård siffra. Det vet vi. Men det var en säsong vi behövde den.`,
         coffeeLine: pool[index],
         coffeeSemanticKey: `${VICTORY_ECHO_BLOWOUT_PREFIX}${index}`,
+        coffeeCooldownSeasons: 2,
       }
       }
   }

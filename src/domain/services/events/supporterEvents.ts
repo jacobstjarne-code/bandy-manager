@@ -25,7 +25,11 @@ export function generateSupporterEvents(
   // ── Tifo-eventet — Elin vill organisera tifo (omg 5-7, max en gång per säsong) ──
   if (currentRound >= 5 && currentRound <= 7 && !sg.tifoDone) {
     const eid = `supporter_tifo_${game.currentSeason}`
-    if (!alreadyQueued.has(eid) && rand() < 0.7) {
+    // Det här är den kanoniska tifoberättelsen. Det äldre generiska
+    // veckokortet är pensionerat vid generering (weeklyDecisionService), så
+    // sista triggerdagen måste vara en garanti — annars kan hela klackbågen
+    // utebli trots en full naturlig säsong.
+    if (!alreadyQueued.has(eid) && (currentRound === 7 || rand() < 0.7)) {
       events.push({
         id: eid,
         type: 'supporterEvent',

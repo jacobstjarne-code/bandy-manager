@@ -1225,7 +1225,12 @@ export function resolveEvent(
           ...updatedGame,
           mecenater: updatedGame.mecenater.map(m =>
             m.id === targetId
-              ? { ...m, isActive: true, happiness: Math.min(100, 50 + delta), lastInteractionRound: updatedGame.currentMatchday }
+              // Inaktiv betyder här "ännu inte introducerad"; mecenaten har
+              // redan en genererad grundnivå av happiness. Den gamla fasta
+              // 50-baslinjen kunde därför göra ett positivt välkomstval till
+              // en faktisk sänkning (t.ex. 76→70), som Granska sanningsenligt
+              // visade trots att kortet lovade "gläder mecenaten".
+              ? { ...m, isActive: true, happiness: Math.max(0, Math.min(100, m.happiness + delta)), lastInteractionRound: updatedGame.currentMatchday }
               : m
           ),
         }

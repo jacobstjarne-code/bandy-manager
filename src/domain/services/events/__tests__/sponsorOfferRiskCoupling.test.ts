@@ -36,10 +36,12 @@ function makeSponsor(overrides: Partial<Sponsor> = {}): Sponsor {
 
 describe('buildSponsorOfferEvent — synlighetsraden i accept-subtitlen (plain)', () => {
   it('visar totalsumma och den låsta synlighetsraden (normalfall)', () => {
-    const offer = makeSponsor({ weeklyIncome: 1000, contractRounds: 12 })
+    const offer = makeSponsor({ weeklyIncome: 1500, contractRounds: 11 })
     const event = buildSponsorOfferEvent(offer, [], 'Testklubben', 6)
     const accept = event.choices.find(c => c.id === 'accept')!
-    expect(accept.subtitle).toContain('Platsen är er i 12 omgångar. Kommer något bättre i vinter får ni tacka nej.')
+    expect(event.body).toContain('1,5 tkr/vecka i 11 omgångar (totalt 16,5 tkr)')
+    expect(accept.label).toBe('Acceptera (1,5 tkr/vecka)')
+    expect(accept.subtitle).toContain('Platsen är er i 11 omgångar. Kommer något bättre i vinter får ni tacka nej.')
   })
 
   it('sista lediga platsen (maxSponsors nås av detta accept) → "Sista platsen"-varianten', () => {

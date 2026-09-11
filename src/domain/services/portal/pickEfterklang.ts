@@ -98,6 +98,20 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
 
   const candidates: EfterklangCandidate[] = []
 
+  const anniversaryPremiss = (yearsAgo: number, sourceText: string): string => {
+    // Minnestexterna är ofta redan fullständiga meningar. Ta bort deras
+    // sluttecken innan de bäddas in och lägg aldrig en punkt efter en
+    // avkortningsellipsis; annars blev det synliga "73→68. ….". "För ett
+    // år sedan" är dessutom den idiomatiska meningsinledningen, till
+    // skillnad från den tidigare rubrikformen "Ett år sedan".
+    const clean = sourceText.trim().replace(/[.!?…]+$/u, '')
+    const clipped = clean.length > 30
+      ? `${clean.slice(0, 29).trimEnd().replace(/[.!?,;:]+$/u, '')}…`
+      : clean
+    const prefix = yearsAgo === 1 ? 'För ett år sedan' : `För ${yearsAgo} år sedan`
+    return `${prefix} ${clipped}${clipped.endsWith('…') ? '' : '.'}`
+  }
+
   // Anniversary — canonical agenda first. activeAnniversaries remains only as
   // a retire-last fallback for legacy/non-ledger memories.
   const anniversaryItem = agenda.find(item =>
@@ -109,8 +123,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     const yearsAgo = season - anniversaryItem.post.season
     const echo = interpolate(pickEcho('anniversary', seed), {})
     const name = ledgerMemory.text.length > 28 ? ledgerMemory.text.slice(0, 26) + '…' : ledgerMemory.text
-    const eventText = ledgerMemory.text.length > 30 ? ledgerMemory.text.slice(0, 29) + '…' : ledgerMemory.text
-    const premiss = yearsAgo === 1 ? `Ett år sedan ${eventText}.` : `${yearsAgo} år sedan ${eventText}.`
+    const premiss = anniversaryPremiss(yearsAgo, ledgerMemory.text)
     candidates.push({
       type: 'anniversary',
       score: anniversaryItem.scoresBySurface.efterklang.total,
@@ -134,9 +147,8 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     if (ann) {
       const echo = interpolate(pickEcho('anniversary', seed), {})
       const name = ann.originalEventText.length > 28 ? ann.originalEventText.slice(0, 26) + '…' : ann.originalEventText
-      // B4 — premiss: "{N} år sedan {händelse}." (delta 1 → "Ett år sedan …")
-      const annEvent = ann.originalEventText.length > 30 ? ann.originalEventText.slice(0, 29) + '…' : ann.originalEventText
-      const premiss = ann.yearsAgo === 1 ? `Ett år sedan ${annEvent}.` : `${ann.yearsAgo} år sedan ${annEvent}.`
+      // B4 — premiss: "För {N} år sedan {händelse}."
+      const premiss = anniversaryPremiss(ann.yearsAgo, ann.originalEventText)
       candidates.push({
         type: 'anniversary',
         score: ann.significance * (ann.echoSize === 'big' ? 1.3 : 1.0),

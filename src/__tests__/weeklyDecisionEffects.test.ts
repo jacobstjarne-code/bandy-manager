@@ -161,10 +161,10 @@ describe('Fynd 11 — veckans beslut-effekter', () => {
     }
   })
 
-  it('erbjuder inte parallellt tifo eller generisk supporterstrid efter den namngivna tifostarten', () => {
+  it('genererar aldrig de pensionerade parallella tifo- och konfliktkorten', () => {
     const tifoGame = {
       ...game,
-      supporterGroup: { ...game.supporterGroup!, tifoDone: true },
+      supporterGroup: { ...game.supporterGroup!, tifoDone: false },
       pendingWeeklyDecision: undefined,
       weeklyDecisionLastRound: undefined,
       resolvedWeeklyDecisions: [],
