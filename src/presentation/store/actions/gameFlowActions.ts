@@ -176,8 +176,19 @@ export function gameFlowActions(get: Get, set: Set) {
       // Auto-advance through matchdays where managed club has no fixture (e.g. cup rounds
       // for other teams after elimination). Without this, every cup round requires a
       // separate advance-click and "omgång 1" re-appears confusingly each time.
+      //
+      // Rot-diagnos (Jacobs körorder 2026-09-11, matchdag-26-fyndet): `!result.playoffStarted`
+      // saknades i stoppvillkoret. playoffTransition.ts:106 dokumenterar redan
+      // "Return playoffStarted so UI can react" — men reagerade aldrig, eftersom
+      // DENNA loopen fortsatte köra advanceToNextEvent() på klubbar utan
+      // hanterad match (spelaren kvalade inte till slutspel, alltså ALDRIG
+      // hasManagedCupMatch) och skrev över `result` med senare varv, tills
+      // grinden till slut fastnade på nästa HALT_SCREEN (QFSummary) många
+      // matchdagar senare. Övergångens eget pendingScreen (PlayoffIntro) blev
+      // aldrig den signal som nådde spelaren — svalt av detta varv, inte av
+      // en trasig pendingScreen-sättning (den var redan korrekt).
       let autoLoops = 0
-      while (!justEliminatedFromPlayoff && !result.hasManagedCupMatch && !result.seasonEnded && !result.game.managerFired && autoLoops < 10) {
+      while (!justEliminatedFromPlayoff && !result.hasManagedCupMatch && !result.seasonEnded && !result.playoffStarted && !result.game.managerFired && autoLoops < 10) {
         const g = result.game
         const scheduledAll = g.fixtures.filter(f => f.status === 'scheduled')
         if (scheduledAll.length === 0) break

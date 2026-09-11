@@ -283,7 +283,21 @@ export function PortalScreen() {
         if (result.playoffStarted) break
         const currentGame = result.game
         if (HALT_SCREENS.includes(currentGame?.pendingScreen)) break
-        if (!currentGame?.fixtures.some(f => f.status === 'scheduled')) break
+        // Rot-diagnos (Jacobs körorder 2026-09-11, matchdag-26-fyndet): INGET
+        // extra brytvillkor på "inga schemalagda matcher kvar" här. Regel-
+        // säsongens sista omgång tömmer fixturlistan ETT steg INNAN
+        // advanceToNextEvent()s säsongsslutsvakt (derivePreRoundContext.ts)
+        // faktiskt körs — den vakten triggar FÖRST på NÄSTA anrop, och det
+        // är DEN som sätter playoffStarted/pendingScreen (kvalar till
+        // slutspel) eller seasonEnded (kvalar inte, eller slutspelet redan
+        // helt klart). Ett brytvillkor här stängde loopen precis INNAN den
+        // riktiga övergången hann köras — spelaren såg matchdag 26 med
+        // pendingScreen fortsatt null, ingen skärmövergång, en tyst
+        // "fastnad kö" som i praktiken var loopen som slutade ett steg för
+        // tidigt. derivePreRoundContext.ts garanterar att NÄSTA anrop alltid
+        // slutar i antingen playoffStarted eller seasonEnded när schemat är
+        // tomt — de två villkoren ovan fångar redan båda, oavsett
+        // slutspelsplats.
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     } finally {
