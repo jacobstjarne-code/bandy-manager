@@ -86,3 +86,27 @@ förhands-/efterkanalen.
 4. Låt `burnoutRelief`, `communityActivityRenewal` och `burnoutCeiling` stå
    som hypoteser tills fler oberoende beslutsfattare finns; de har verkliga
    motkostnader och ska inte dömas enbart från en karriär.
+
+## Mekaniskt åtgärdat efter provet
+
+Commit `319ccd93` stänger två av provets verifierade fel:
+
+- varje nytt `ResolvedChoice`-kvitto sparar en stabil
+  `decisionTemplateKey`; standarden är eventtyp plus den sorterade
+  choice-seten och producenter kan ange ett explicit mall-id när två olika
+  beslut medvetet återanvänder samma choice-id:n;
+- analysen grupperar nu per beslutsmall och exkluderar äldre kvitton som
+  saknar säker mallidentitet, så en frisk fördelning i en bred eventfamilj
+  inte längre kan dölja en dominant mall;
+- patronintroduktionen är en ambient enknappskvittens utan state-effekt.
+  Den tidigare gratisrangordningen +20 mot +5 är borta, medan både patronens
+  introduktionsstämpel och röstregistret uppdateras när kortet konsumeras.
+
+Verifiering: riktade kontrakt 77/77 gröna och full build inklusive TypeScript
+och fem grindar grön. Helsviten gav först 5 187/5 192 därför att fem exakta
+schemaassertioner fortfarande väntade det gamla kvittoformatet; efter att de
+uppdaterats kördes samtliga berörda resolver-, patron- och entropivägar grönt
+26/26.
+
+O12 är fortfarande öppet. `refereeMeeting` väntar en spelmässig dom, och
+80-procentsgrinden behöver därefter ny naturlig population från aktuell main.
