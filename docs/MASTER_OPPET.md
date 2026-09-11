@@ -144,7 +144,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| arsbok-managersektion-kontext | Din säsong som tränare staplar burnout-lättnad, val och ärr utan att förklara vad raderna är | verifierad | — | Grind 2-skärmbild 2026-09-11 + SeasonSummaryScreen.tsx:1075–1094 + ManagerProfile.ts:15–22 | Sektionen renderar tre semantiskt skilda `ManagerNarrativeEntry.type` som identisk löptext. I provet är raderna lättnad, beslut och varningsspår, men typinformationen kastas bort. Behåll fryst text och visa en lågmäld typetikett per rad samt en inramning som säger att detta är vad tränarjobbet lämnade efter sig. |
+| arsbok-managersektion-kontext | Din säsong som tränare staplar burnout-lättnad, val och ärr utan att förklara vad raderna är | in_progress | Codex | Grind 2-skärmbild 2026-09-11 + SeasonSummaryScreen.tsx:1075–1094 + ManagerProfile.ts:15–22 | CLAIM 2026-09-11T10:00:00+02:00 — Codex. Sektionen renderar tre semantiskt skilda `ManagerNarrativeEntry.type` som identisk löptext. I provet är raderna lättnad, beslut och varningsspår, men typinformationen kastas bort. Behåll fryst text och visa en lågmäld typetikett per rad samt en inramning som säger att detta är vad tränarjobbet lämnade efter sig. |
 | arsbok-hero-integrering | Årsbokens toppillustration läses som en konstig lös beskärning ovanför första blocket | rapporterad | — | Grind 2-skärmbild 2026-09-11 | Integrera den befintliga godkända utfallsbilden som bakgrund i årsbokens första resultatblock med en svag läsplatta; nedflyttningsvarianten ska fortsatt styras av verkligt tabellutfall. |
 
 ---
