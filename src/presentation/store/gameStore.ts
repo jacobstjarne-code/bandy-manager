@@ -737,7 +737,10 @@ export const useGameStore = create<GameState>()(
                 isRead: false,
               }],
             }
-          set({ game: finalizeDirectInboxMutation(game, afterWalkaway) })
+          const afterPromote = (afterWalkaway.deferredDecisions ?? []).length > 0
+            ? promoteFromQueue(afterWalkaway)
+            : afterWalkaway
+          set({ game: finalizeDirectInboxMutation(game, afterPromote) })
           return
         }
 
@@ -758,7 +761,10 @@ export const useGameStore = create<GameState>()(
           pendingEvents: (game.pendingEvents ?? []).map(e => e.id === eventId ? patchedEvent : e),
         }
         const afterResolve = resolveEventFn(patchedGame, eventId, 'accept', undefined, true)
-        set({ game: finalizeDirectInboxMutation(game, afterResolve) })
+        const afterPromote = (afterResolve.deferredDecisions ?? []).length > 0
+          ? promoteFromQueue(afterResolve)
+          : afterResolve
+        set({ game: finalizeDirectInboxMutation(game, afterPromote) })
       },
 
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {
