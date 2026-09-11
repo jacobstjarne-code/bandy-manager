@@ -252,15 +252,67 @@ interface GameState {
   resolveSaveConflict: () => Promise<void>
 }
 
+// Rot-diagnos 797d6720/matchdag-26-mätningen (2026-09-11): zustands EGEN
+// persist-middleware skriver hela `{game}`-blobben till IndexedDB på VARJE
+// set()-anrop, oavsett hur trivial mutationen är. En simulateRemainingStep-
+// loop gör flera set() per steg (advance, ev. fasmärken) — det stod för en
+// betydande del av de 178 IndexedDB-put som mättade huvudtråden i en
+// 30-stegs mätning (den andra delen var den separata persistAutosave-vägen,
+// se scheduleWrite/koalesceringen i saveGameStorage.ts).
+//
+// Koalescerar EXAKT samma mönster som saveGameStorage.ts: om ett skrivvarv
+// mot 'bandy-game-store' redan pågår när nästa set()-mutation kommer in,
+// startas inget nytt varv — den senaste blobben väntar i en enda delad
+// plats och skrivs i EN trailing-skrivning när det pågående varvet är
+// klart. En tidsbaserad debounce (setTimeout) hade gjort samma sak men
+// bryter en verklig kontraktsgaranti: onRehydrateStorage/hasHydrated()
+// (U7, se saveRecoveryHydration.test.ts) förutsätter att setItem()s
+// returnerade promise inte löser ut förrän datan FAKTISKT ligger på disk —
+// annars kan rehydrering rapportera klart innan den migrerade kopian
+// hunnit skrivas tillbaka. Koalescering här ändrar ALDRIG den kontrakts-
+// garantin (varje anrops promise löser fortfarande ut när en verklig
+// skrivning landat) — den slår bara ihop flera ANROP som råkar överlappa
+// i tid till färre faktiska IndexedDB-operationer.
+let activeMirrorWrite: Promise<void> | null = null
+let pendingMirrorWrite: { name: string; value: string; promise: Promise<void>; resolve: () => void } | null = null
+
+function runMirrorWrite(name: string, value: string): Promise<void> {
+  const run = idbSet(name, value)
+  activeMirrorWrite = run
+  run.finally(() => {
+    if (activeMirrorWrite === run) activeMirrorWrite = null
+  })
+  return run
+}
+
 const indexedDBStorage = {
   getItem: async (name: string): Promise<string | null> => {
     const val = await idbGet<string>(name)
     return val ?? null
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await idbSet(name, value)
+    if (!activeMirrorWrite) {
+      await runMirrorWrite(name, value)
+      return
+    }
+    if (pendingMirrorWrite) {
+      pendingMirrorWrite.name = name
+      pendingMirrorWrite.value = value
+      return pendingMirrorWrite.promise
+    }
+    let resolveFn!: () => void
+    const promise = new Promise<void>(resolve => { resolveFn = resolve })
+    pendingMirrorWrite = { name, value, promise, resolve: resolveFn }
+    activeMirrorWrite.finally(() => {
+      const current = pendingMirrorWrite
+      if (!current) return
+      pendingMirrorWrite = null
+      runMirrorWrite(current.name, current.value).then(current.resolve)
+    })
+    return promise
   },
   removeItem: async (name: string): Promise<void> => {
+    pendingMirrorWrite = null
     await idbDel(name)
   },
 }

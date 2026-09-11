@@ -321,7 +321,59 @@ export interface SaveWriteResult {
 // skrivning syns bara via disken, exakt det CAS-kollen nedan fortfarande
 // jämför mot.
 const tabLastWrittenRevision = new Map<string, number>()
-const inFlightWrites = new Map<string, Promise<SaveWriteResult>>()
+
+// Rot-diagnos 797d6720/matchdag-26-mätningen (2026-09-11): en 30-stegs
+// simulateRemainingStep()-loop gav 178 IndexedDB-put, 57 av dem fortfarande
+// köade EFTER att loopens synkrona del var klar — huvudtråden mättades av en
+// backlog, inte av spellogiken (den var klar på 30 rena steg, ≤190ms/steg).
+// Roten: `inFlightWrites` kedjade EN doSaveSaveGame() (fullt läs+skriv-varv
+// mot IndexedDB) per anrop, i turordning — N anrop under samma synkrona
+// körning gav N seriella varv, oavsett hur snabbt de kom. De mellanliggande
+// tillstånden hann aldrig synas (nästa anrop hade redan en nyare game-
+// snapshot), så varje extra varv utom det sista var ren spilld I/O.
+//
+// Fixen koalescerar: högst ETT skrivvarv pågår åt gången per save-id
+// (`activeWrites`). Ett anrop som kommer in MEDAN ett varv redan pågår
+// lägger sig i `pendingWrites` istället för att starta ett eget — bara den
+// SENASTE game-snapshoten sparas där, en ny skrivning skriver över en
+// gammal. När det pågående varvet är klart körs högst EN trailing-skrivning
+// med den senaste snapshoten, och alla anrop som köade upp sig under tiden
+// delar samma promise/resultat. En 120-stegs simulering ger därmed så många
+// skrivvarv som IndexedDB hinner med, inte ett per anrop.
+//
+// M3-garantin (se doSaveSaveGame nedan) är oförändrad: aldrig mer än ETT
+// doSaveSaveGame()-anrop läser disken åt gången för samma save-id — det är
+// fortfarande sant, coalescing bara styr VILKEN game-snapshot det nästa
+// varvet skriver, inte om två varv kan overlappa. `scheduleWrite()` är den
+// ENDA platsen som får förlänga `activeWrites` — varje anrop till den läser
+// aktuell "senast schemalagda"-post och byter ut den atomiskt (synkront,
+// ingen await emellan läsning och skrivning), vilket håller kedjan strikt
+// seriell oavsett i vilken ordning force-anrop och köade trailing-varv
+// faktiskt triggas.
+const activeWrites = new Map<string, Promise<SaveWriteResult>>()
+
+interface PendingWrite {
+  game: SaveGame
+  opts?: { force?: boolean }
+  promise: Promise<SaveWriteResult>
+  resolve: (result: SaveWriteResult) => void
+}
+// EN köad, ännu opåbörjad skrivning per save-id. Flera koalescerande anrop
+// delar samma slot (senaste game-snapshoten vinner, samma promise till
+// alla) — se saveSaveGame() nedan. force-anrop använder ALDRIG denna kö,
+// se samma ställe.
+const pendingWrites = new Map<string, PendingWrite>()
+
+/** Enda platsen som faktiskt förlänger `activeWrites` — se kommentaren däruppe. */
+function scheduleWrite(key: string, game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
+  const prior = activeWrites.get(key) ?? Promise.resolve({ success: true } as SaveWriteResult)
+  const run = prior.then(() => doSaveSaveGame(game, opts), () => doSaveSaveGame(game, opts))
+  activeWrites.set(key, run)
+  run.finally(() => {
+    if (activeWrites.get(key) === run) activeWrites.delete(key)
+  })
+  return run
+}
 
 /**
  * C1 (oberoende speltest- och produktaudit, deploy 5c9a7a8, 2026-08-24) —
@@ -372,21 +424,49 @@ const inFlightWrites = new Map<string, Promise<SaveWriteResult>>()
  *    om skadan här är mindre än fall 2.
  */
 export async function saveSaveGame(game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
-  // M3: kedja denna skrivningen EFTER varje annan pågående skrivning till
-  // SAMMA save-id i den här fliken — se kommentaren vid tabLastWrittenRevision
-  // ovan. Utan detta kan två fire-and-forget-anrop (t.ex. newGame()s egen
-  // sparning + intro-scenens completeScene-autosave) båda läsa disken innan
-  // någon av dem skrivit, och den ena avvisas som en falsk "annan flik"-
-  // konflikt mot sitt eget syskonanrop.
   const key = `${SAVE_PREFIX}${game.id}`
-  const prior = inFlightWrites.get(key) ?? Promise.resolve({ success: true } as SaveWriteResult)
-  const chained = prior.then(() => doSaveSaveGame(game, opts), () => doSaveSaveGame(game, opts))
-  inFlightWrites.set(key, chained)
-  try {
-    return await chained
-  } finally {
-    if (inFlightWrites.get(key) === chained) inFlightWrites.delete(key)
+
+  // force: en explicit, redan spelarbekräftad ersättning (import/åter-
+  // ställning, se doSaveSaveGame-kommentaren). Aldrig koalescerad bort eller
+  // ersatt av ett senare anrops snapshot — väntar in ett ev. pågående varv
+  // (scheduleWrite läser `activeWrites` färskt) men får alltid EN egen,
+  // odelad skrivning av exakt den inskickade datan.
+  if (opts?.force) {
+    return scheduleWrite(key, game, opts)
   }
+
+  if (!activeWrites.has(key)) {
+    return scheduleWrite(key, game, opts)
+  }
+
+  // M3 (ursprunget) + koalescering (rot-diagnos 797d6720/matchdag-26,
+  // 2026-09-11, se kommentaren vid activeWrites ovan): ett skrivvarv pågår
+  // redan för detta save-id. Lägg oss i kön istället för att starta ett
+  // eget — om ett köat, ännu opåbörjat varv redan finns delar vi dess
+  // promise och byter bara ut game-snapshoten mot vår egen (senaste vinner).
+  const existing = pendingWrites.get(key)
+  if (existing) {
+    existing.game = game
+    return existing.promise
+  }
+
+  let resolveFn!: (result: SaveWriteResult) => void
+  const promise = new Promise<SaveWriteResult>(resolve => { resolveFn = resolve })
+  const slot: PendingWrite = { game, opts, promise, resolve: resolveFn }
+  pendingWrites.set(key, slot)
+
+  activeWrites.get(key)!.finally(() => {
+    // En annan väg kan i teorin redan ha konsumerat/bytt ut posten — läs
+    // alltid det som FAKTISKT ligger kvar i kön just nu, aldrig `slot`
+    // direkt (den kan ha fått sin `.game` uppdaterad av senare koalescerande
+    // anrop, se ovan).
+    const current = pendingWrites.get(key)
+    if (!current) return
+    pendingWrites.delete(key)
+    scheduleWrite(key, current.game, current.opts).then(current.resolve)
+  })
+
+  return promise
 }
 
 async function doSaveSaveGame(game: SaveGame, opts?: { force?: boolean }): Promise<SaveWriteResult> {
