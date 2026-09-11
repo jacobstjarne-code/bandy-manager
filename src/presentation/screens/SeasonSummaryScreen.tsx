@@ -444,17 +444,28 @@ export function SeasonSummaryScreen() {
             ? 'Tom bandyplan efter en säsong i nedflyttningszonen'
             : 'Isen tinar efter den avslutade bandysäsongen'}
           objectPosition={showRelegationIllustration ? 'center 40%' : 'center 84%'}
-          style={{ margin: '0 -16px 16px' }}
-        />
-
-        {/* HEADER */}
-        <div style={{
-          background: 'var(--bg)',
-          padding: '16px 0 12px',
-          textAlign: 'center',
-          marginBottom: 16,
-          position: 'relative',
-        }}>
+          fadeTo="rgba(12, 14, 20, 0.34)"
+          style={{
+            height: 'auto',
+            minHeight: 480,
+            margin: '0 -16px 16px',
+            borderRadius: '0 0 var(--radius-lg) var(--radius-lg)',
+          }}
+        >
+          {/* HEADER — utfallet och motivet är nu en sammanhållen hero. Den
+              svaga plattan håller texten läsbar utan att gömma illustrationen. */}
+          <div style={{
+            background: 'color-mix(in srgb, var(--bg) 86%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--bg) 65%, transparent)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: '0 10px 30px rgba(12, 14, 20, 0.16)',
+            backdropFilter: 'blur(3px)',
+            WebkitBackdropFilter: 'blur(3px)',
+            padding: '16px 14px 12px',
+            textAlign: 'center',
+            margin: '20px 16px',
+            position: 'relative',
+          }}>
           <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 16, left: 0, background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 22, cursor: 'pointer' }}>←</button>
 
           {/* R2-1: ÅRSBOK → .h-eyebrow (11/3px accent). h1 → .h-display-hero (ceremoniell 52/900). */}
@@ -548,7 +559,8 @@ export function SeasonSummaryScreen() {
               </p>
             )
           })()}
-        </div>
+          </div>
+        </IllustrationScene>
 
         <ChapterDivider label="Berättelsen" />
 
