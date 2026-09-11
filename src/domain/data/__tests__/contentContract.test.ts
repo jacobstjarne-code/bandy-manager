@@ -191,13 +191,16 @@ describe('getContentContractEntry', () => {
     expect(entry?.notes).toContain('garanterar inget utfall')
   })
 
-  it('låser communityEvent-familjens kapten-, orts- och P19-effekter', () => {
+  it('låser communityEvent-familjens kapten-, orts-, P19- och galalivscykel', () => {
     const entry = getContentContractEntry('GameEventType', 'communityEvent')
     expect(entry).toMatchObject({ filled: true, semanticKey: expect.stringContaining('communityEvent') })
     expect(entry?.cooldownSeasons).toBeUndefined()
     expect(entry?.stateEffect).toContain('captainPlayerId')
     expect(entry?.stateEffect).toContain('selectedPlayerIds')
     expect(entry?.stateEffect).toContain('fika +8')
+    expect(entry?.lifespan).toContain('priser, vinnarnotiser och pris-storylines är årliga')
+    expect(entry?.lifespan).toContain('hållna beslutsscenen är en karriärbeat')
+    expect(entry?.semanticKey).toContain('bandy_gala')
     expect(entry?.notes).toContain('kunde gå under noll')
   })
 
