@@ -8,6 +8,7 @@ import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType } from '../enums'
 import { positionShort } from '../format'
 import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES } from '../data/suspensionText'
+import { swedishGenitive } from '../data/matchCommentary'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
 import type { DoctorIdentity } from '../data/injuryDoctorText'
@@ -269,7 +270,7 @@ export function createContractExpiringItem(
     date: currentDate,
     type: InboxItemType.ContractExpiring,
     title: `Kontrakt går ut: ${player.firstName} ${player.lastName}`,
-    body: `${player.firstName} ${player.lastName}s kontrakt går ut efter säsong ${seasonSpanLabel(seasonExpiry)}. Överväg förlängning.`,
+    body: `${player.firstName} ${swedishGenitive(player.lastName)} kontrakt går ut efter säsong ${seasonSpanLabel(seasonExpiry)}. Överväg förlängning.`,
     relatedPlayerId: player.id,
     isRead: false,
   }

@@ -41,7 +41,7 @@ describe('buildMemoryEventFromLedger — youth_aged_out (DOM_AKADEMI_LIGGARE §4
       type: 'youth_aged_out',
       season: 1,
       matchday: 22,
-      text: 'Gabriel Bengtsson, 1 stjärna, lämnade akademin vid tjugo.',
+      text: 'Gabriel Bengtsson, 1 stjärna, lämnade akademin vid tjugo års ålder.',
       emoji: '👤',
       significance: 60,
       subjectPlayerId: 'youth_1',

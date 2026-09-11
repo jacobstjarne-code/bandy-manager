@@ -754,7 +754,7 @@ export function GranskaOversikt({
         return (
           <DecisionCard
             style={fadeIn(4)}
-            label="🏟️ DOMARENS LOCKER ROOM"
+            label="🏟️ DOMARENS OMKLÄDNINGSRUM"
             subtitle={rm.sender?.name}
             body={rm.body}
             bodyAsQuote

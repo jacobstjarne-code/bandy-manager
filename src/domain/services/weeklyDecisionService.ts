@@ -151,7 +151,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
     {
       id: 'supporter_conflict_mediate',
       category: 'supporter',
-      question: `${leader}: "${veteran} och ${youth} bråkar om musiken igen. Kan du säga något?"`,
+      question: `${leader}: "${veteran} och ${youth.charAt(0).toLowerCase()}${youth.slice(1)} bråkar om musiken igen. Kan du säga något?"`,
       optionA: { label: 'Medla', preview: '+stämning · alla nöjda', effectColor: 'success' },
       optionB: { label: 'Låt dem lösa det', preview: '50/50 chans', effectColor: 'muted' },
     },
@@ -168,7 +168,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
       optionA: { label: 'Hörnor', preview: 'vassare i hörnorna', effectColor: 'success' },
-      optionB: { label: '📋 Matchprep', preview: 'stabilare i hörnförsvaret (sårbar back)', effectColor: 'success' },
+      optionB: { label: '📋 Matchförberedelse', preview: 'stabilare i hörnförsvaret (sårbar back)', effectColor: 'success' },
     },
     {
       id: 'scout_opponent_corners',

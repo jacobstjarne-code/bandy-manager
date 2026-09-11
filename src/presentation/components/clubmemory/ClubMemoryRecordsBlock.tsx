@@ -44,7 +44,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
 
   if (records.highestRatingSeason) {
     cards.push({
-      label: 'Högsta rating',
+      label: 'Högsta betyg',
       value: `${records.highestRatingSeason.rating.toFixed(1)}`,
       sub: `${records.highestRatingSeason.playerName}, ${seasonSpanLabel(records.highestRatingSeason.season)}`,
     })

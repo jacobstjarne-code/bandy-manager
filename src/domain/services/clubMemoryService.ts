@@ -333,7 +333,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       if (!playerName || !entry.youthAgedOut) return null
       return {
         type: 'youth_aged_out', season: entry.season, matchday: entry.matchday,
-        text: `${playerName}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo.`,
+        text: `${playerName}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo års ålder.`,
         emoji: '👤', significance: entry.significance, subjectPlayerId: playerId,
       }
     }

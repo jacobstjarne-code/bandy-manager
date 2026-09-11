@@ -63,7 +63,7 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
     {
       text: `Jag heter ${firstName} ${lastName} och är ${age} år gammal. Jag kommer från ${origin}.\n\nJag såg min första ${club.name}-match med min far ${memYear}. Det snöade så hårt att han lade en filt över mig under andra halvlek. Vi vann 4-3 mot ett lag vars namn jag glömt — men känslan glömmer jag aldrig.\n\nJag har följt klubben sedan dess. Jag tänkte bara att ni skulle veta.`,
       replyOptions: [
-        { id: 'reply_warm', label: 'Svara varmt — filen och 4-3-segern lever', replyText: `Kära ${firstName},\n\nTack för att du delade det minnet. Den sortens lojalitet är grunden för allt vi bygger. Din far visste uppenbarligen vad han höll på med när han tog med sig dig den kvällen.\n\n— ${game.managerName}` },
+        { id: 'reply_warm', label: 'Svara varmt — filten och 4-3-segern lever', replyText: `Kära ${firstName},\n\nTack för att du delade det minnet. Den sortens lojalitet är grunden för allt vi bygger. Din far visste uppenbarligen vad han höll på med när han tog med sig dig den kvällen.\n\n— ${game.managerName}` },
         { id: 'archive_no_reply', label: 'Lägg i arkivet (inget svar)', replyText: undefined },
       ],
     },

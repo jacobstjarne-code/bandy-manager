@@ -113,7 +113,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         className="btn btn-outline"
         style={{ width: '100%', marginTop: 12 }}
       >
-        Sätt lineup för finalen →
+        Sätt laget för finalen →
       </button>
     </div>
   )

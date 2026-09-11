@@ -131,7 +131,7 @@ export function academyYearbookLines(game: SaveGame, season = game.currentSeason
         significance: entry.significance,
         matchday: entry.matchday,
         semanticKey: entry.semanticKey,
-        text: `${name}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo.`,
+        text: `${name}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo års ålder.`,
       })
       continue
     }

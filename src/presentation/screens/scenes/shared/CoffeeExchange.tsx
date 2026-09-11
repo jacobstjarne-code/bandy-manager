@@ -10,6 +10,8 @@
 // renderades — en enradig scen (narratorLine, noll exchanges) fick då aldrig
 // keyframet och blev liggande på opacity: 0.
 
+import { wrapQuote } from '../../../../domain/utils/quoteWrap'
+
 interface SpeakerRowProps {
   initial: string
   speakerName: string
@@ -69,7 +71,7 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
             fontStyle: 'italic',
           }}
         >
-          {'"' + text + '"'}
+          {wrapQuote(text)}
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { Fixture } from '../entities/Fixture'
 import type { ProofSource } from '../entities/ProofSource'
 import { getRivalry } from '../data/rivalries'
+import { swedishGenitive } from '../data/matchCommentary'
 import { FixtureStatus, MatchEventType } from '../enums'
 import { deriveUtfall, computeTrailedAtHalf } from './matchTypeAxes'
 import {
@@ -1057,7 +1058,7 @@ export function generatePressConference(
       const arcQuestions: Partial<Record<import('../entities/Narrative').ArcType, string>> = {
         hungrig_breakthrough: `${arcPlayer.firstName} ${arcPlayer.lastName} har det tungt. Tror du fortfarande på honom?`,
         joker_redemption: `${arcPlayer.firstName} ${arcPlayer.lastName} delar fansen. Kostar han mer än han ger?`,
-        veteran_farewell: `Blir det här ${arcPlayer.firstName} ${arcPlayer.lastName}s sista säsong?`,
+        veteran_farewell: `Blir det här ${arcPlayer.firstName} ${swedishGenitive(arcPlayer.lastName)} sista säsong?`,
         contract_drama: `Rykten säger att ${arcPlayer.firstName} ${arcPlayer.lastName} kan lämna. Kommentar?`,
       }
       // 4.2: topikanpassade preferIds per arc-typ — se docs/SVAR_STORYLINE_FRAGOR_2026-08-19.md
@@ -1140,7 +1141,7 @@ export function generatePressConference(
       const rescuePlayer = rescueStory.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
       const rescueScorerMatch = rescuePlayer && managedGoalScorerIds.has(rescuePlayer.id)
       if (rescuePlayer && rescueScorerMatch) {
-        question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: ['tp_liv1', 'tp_liv4', 'tp_liv2'] }
+        question = { text: `Berätta om ${rescuePlayer.firstName} ${swedishGenitive(rescuePlayer.lastName)} resa tillbaka.`, preferIds: ['tp_liv1', 'tp_liv4', 'tp_liv2'] }
         if (rescuePlayer.isFullTimePro) excludedResponseIds.push('tp_liv1')
       } else {
         question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: ['tp_liv2', 'tp_liv8', 'tp_liv3'] }

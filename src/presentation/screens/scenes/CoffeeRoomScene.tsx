@@ -15,6 +15,7 @@
 import { useState } from 'react'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
+import { wrapQuote } from '../../../domain/utils/quoteWrap'
 import { SceneHeader } from './shared/SceneHeader'
 import { CoffeeExchange } from './shared/CoffeeExchange'
 import { SceneCTA } from './shared/SceneCTA'
@@ -151,7 +152,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
                   fontStyle: 'italic',
                 }}
               >
-                {'"' + scene.narratorLine.text + '"'}
+                {wrapQuote(scene.narratorLine.text)}
               </div>
             </div>
           </div>
@@ -200,7 +201,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
                     fontStyle: 'italic',
                   }}
                 >
-                  {'"' + question.text + '"'}
+                  {wrapQuote(question.text)}
                 </div>
               </div>
             </div>
@@ -232,7 +233,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
                       lineHeight: 1.5,
                     }}
                   >
-                    {'"' + a.text + '"'}
+                    {wrapQuote(a.text)}
                   </button>
                 )
               })}

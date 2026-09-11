@@ -4,6 +4,7 @@ import type { ActiveArc, ArcType, StorylineEntry } from '../entities/Narrative'
 import type { GameEvent } from '../entities/GameEvent'
 import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
+import { swedishGenitive } from '../data/matchCommentary'
 import { mulberry32 } from '../utils/random'
 import { getCurrentLeagueRound } from '../data/seasonPhases'
 import {
@@ -1081,8 +1082,8 @@ export function progressArcs(
           const resolvedId = `arc_resolved_generic_${updatedArc.id}`
           if (!arc.eventsFired.includes(resolvedId)) {
             const arcExitTexts: Partial<Record<string, string>> = {
-              hungrig_breakthrough: `${player.firstName} ${player.lastName}s genombrott uteblev denna säsong. Men hungern finns kvar.`,
-              veteran_farewell: `${player.firstName} ${player.lastName}s era tog slut. Tysta steg ut ur omklädningsrummet.`,
+              hungrig_breakthrough: `${player.firstName} ${swedishGenitive(player.lastName)} genombrott uteblev denna säsong. Men hungern finns kvar.`,
+              veteran_farewell: `${player.firstName} ${swedishGenitive(player.lastName)} era tog slut. Tysta steg ut ur omklädningsrummet.`,
               lokal_hero: `${player.firstName} ${player.lastName} spelade sin roll. Orten minns.`,
               contract_drama: `Kontraktshistorien kring ${player.firstName} ${player.lastName} avslutades utan drama.`,
               derby_echo: `Derbykänslan har lagt sig. Nästa gång räknas igen.`,
