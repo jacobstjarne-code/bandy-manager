@@ -57,8 +57,8 @@ describe('yearbookTimelineRoundBadge', () => {
     expect(yearbookTimelineRoundBadge('Omgång 14', 19)).toBe('Omg 14')
   })
 
-  it('kallar aldrig en obelagd global matchdag för ligaomgång', () => {
-    expect(yearbookTimelineRoundBadge(undefined, 3)).toBe('Dag 3')
+  it('visar ingen intern global matchdag när tävlingsetikett saknas', () => {
+    expect(yearbookTimelineRoundBadge(undefined, 3)).toBe('Säsongen')
   })
 
   it('bevarar tävlingsnamn som redan är sanna', () => {

@@ -42,17 +42,18 @@ export interface YearbookTimelineItem {
 /**
  * Årsbokens frysta matchhändelser kan belägga en riktig tävlingsetikett.
  * Storyline-projektioner bär däremot bara global matchdag; kalla aldrig den
- * siffran ligaomgång. Äldre saves kan ha sparat den långa ligaformen.
+ * siffran ligaomgång eller visa den interna kalenderpositionen som "Dag N".
+ * Utan en fryst tävlingsetikett är "Säsongen" den sannaste precisionen.
  */
-export function yearbookTimelineRoundBadge(roundLabel: string | undefined, matchday: number): string {
+export function yearbookTimelineRoundBadge(roundLabel: string | undefined, _matchday: number): string {
   const leagueRound = roundLabel?.match(/^Omg(?:ång)?\s+(\d+)$/i)
   if (leagueRound) return `Omg ${leagueRound[1]}`
-  return roundLabel ?? `Dag ${matchday}`
+  return roundLabel ?? 'Säsongen'
 }
 
 function YearbookRoundBadge({ roundLabel, matchday }: { roundLabel?: string; matchday: number }) {
   const label = yearbookTimelineRoundBadge(roundLabel, matchday)
-  const fixedNumericWidth = /^(?:Omg|Dag) \d+$/.test(label)
+  const fixedNumericWidth = /^Omg \d+$/.test(label)
   return (
     <div style={{
       width: fixedNumericWidth ? 58 : undefined,
