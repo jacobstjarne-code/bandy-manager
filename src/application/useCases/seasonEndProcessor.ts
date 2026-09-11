@@ -2424,16 +2424,23 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // Lager 3: Licensnämnden
     licenseStatus: newLicenseStatus,
     licenseRiskScore: newLicenseRiskScore,
-    // pendingPointDeductions from this season → pointDeductions for next season
-    pointDeductions: game.pendingPointDeductions ?? {},
-    // pendingPointDeductions for next season: merge scandal-accumulated + license-generated
-    pendingPointDeductions: (() => {
+    // Alla avdrag som beslutats under den avslutade säsongen gäller den nya
+    // säsongen direkt. Licensdomen skapas i just denna rollover och måste
+    // därför slås ihop med redan väntande skandalavdrag innan nästa state
+    // sparas — annars hamnar licensens "nästa säsong" ett helt år för sent.
+    pointDeductions: (() => {
       const merged: Record<string, number> = {}
+      for (const [id, pts] of Object.entries(game.pendingPointDeductions ?? {})) {
+        merged[id] = (merged[id] ?? 0) + pts
+      }
       for (const [id, pts] of Object.entries(licensePendingDeductions)) {
         merged[id] = (merged[id] ?? 0) + pts
       }
-      return Object.keys(merged).length > 0 ? merged : undefined
+      return merged
     })(),
+    // Den avslutade säsongens väntrum har nu konsumerats. Nya beslut under
+    // den kommande säsongen fyller fältet på nytt via sina egna producenter.
+    pendingPointDeductions: undefined,
     // Säsongssignatur: ny för kommande säsong. Historik för den avslutade
     // säsongen bärs redan av seasonSummaries[].signatureRubric (skriven
     // ovan/nedan via seasonSummaryService) — pastSeasonSignatures-fältet

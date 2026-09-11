@@ -169,7 +169,7 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'RF beslutar: Tre poäng från {KLUBB}',
     ],
     bodies: [
-      'Tre säsonger med underskott. Tre poäng. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad." Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
+      'Tre säsonger med underskott. Tre poängs avdrag inför nästa säsong. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad." Ett plus i årets bokslut lyfter avdraget. Ett minus till drar in licensen.',
       'Brevet kom på en tisdag. Tre poängs avdrag inför nästa säsong. Inget mer att säga. Styrelsemöte på torsdag — det enda alla redan vet är att något måste bort. Frågan är vem. Ett minus till, och det är inte en spelare som får gå. Det är licensen.',
       'Licensnämnden har genomfört sin tredje granskning av {KLUBB}. Beslutet är minskning av poäng inför nästa säsong med 3 enheter. Klubben har inte följt återhämtningsplanen. "Vi har gett er chanser. Det är slut nu." Vänd bokslutet i år. Annars är nästa brev det sista.',
     ],

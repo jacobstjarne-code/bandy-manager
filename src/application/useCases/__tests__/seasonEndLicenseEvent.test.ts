@@ -49,5 +49,30 @@ describe('handleSeasonEnd — license_event-post', () => {
     expect(entry?.significance).toBe(75)
     expect(entry?.licenseEvent?.pointsDeducted).toBe(3)
     expect(entry?.licenseEvent?.deficitKr).toBe(50_000)
+    expect(result.pointDeductions?.[game.managedClubId]).toBe(3)
+    expect(result.pendingPointDeductions).toBeUndefined()
+  })
+
+  it('aktiverar och summerar tidigare väntande avdrag med den nya licensdomen i nästa säsong', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, season: 2025, seed: 1 })
+    const managedClub = game.clubs.find(c => c.id === game.managedClubId)!
+    const otherClubId = game.clubs.find(c => c.id !== game.managedClubId)!.id
+    const result = handleSeasonEnd({
+      ...game,
+      licenseRiskScore: 40,
+      licenseStatus: 'first_warning',
+      pendingPointDeductions: { [game.managedClubId]: 2, [otherClubId]: 1 },
+      seasonStartSnapshot: {
+        season: game.currentSeason, finalPosition: 6, finances: managedClub.finances + 50_000,
+        communityStanding: 50, squadSize: 20, supporterMembers: 100, academyPromotions: 0,
+      },
+    }, 1).game
+
+    expect(result.currentSeason).toBe(game.currentSeason + 1)
+    expect(result.pointDeductions).toEqual({
+      [game.managedClubId]: 5,
+      [otherClubId]: 1,
+    })
+    expect(result.pendingPointDeductions).toBeUndefined()
   })
 })
