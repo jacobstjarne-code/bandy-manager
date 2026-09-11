@@ -144,7 +144,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| arsbok-hero-integrering | Årsbokens toppillustration läses som en konstig lös beskärning ovanför första blocket | rapporterad | — | Grind 2-skärmbild 2026-09-11 | Integrera den befintliga godkända utfallsbilden som bakgrund i årsbokens första resultatblock med en svag läsplatta; nedflyttningsvarianten ska fortsatt styras av verkligt tabellutfall. |
+| arsbok-hero-integrering | Årsbokens toppillustration läses som en konstig lös beskärning ovanför första blocket | verifierad | Codex | Grind 2-skärmbild 2026-09-11 + kodläsning 2026-09-11 | `SeasonSummaryScreen` renderar utfallsbilden som ett fristående `IllustrationScene mode="header"` före ett helt ogenomskinligt resultatblock. Integrera samma sanningsstyrda bildval som bakgrund i resultatblocket med en svag läsplatta; nedflyttningsvarianten ska fortsatt styras av verkligt tabellutfall. |
 
 ---
 
