@@ -422,6 +422,91 @@ describe('deriveSeasonPersonChange — prioritetsordning', () => {
     expect(change?.kind).toBe('establishedStarter')
     expect(change?.playerId).toBe(playerId)
   })
+
+  // Rot-diagnos (Jacobs körorder 2026-09-11): seasonHistory är kapad till de
+  // senaste 10 säsongerna (seasonEndProcessor.ts, .slice(-10)). En spelare
+  // med 11+ säsonger i klubben tappar sin genombrottssäsong ur fönstret —
+  // utan en durabel flagga (oberoende av fönstret) fick milstolpen annonseras
+  // igen, samma "spelet upprepar sig"-klass som underkände Grind 2.
+  it('genombrottet hände för 11+ säsonger sen, utanför seasonHistory-fönstret: annonseras INTE igen tack vare den durabla flaggan', () => {
+    const game = baseGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const template = game.fixtures.find(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)!
+    const seasonFixtures = Array.from({ length: 5 }, (_, i) => ({
+      ...template,
+      id: `breakthrough11_f${i}`,
+      season: game.currentSeason,
+      isCup: false,
+      roundNumber: i + 1,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: template.homeClubId === game.managedClubId ? template.awayClubId : template.homeClubId,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [playerId], benchPlayerIds: [], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      report: { playerRatings: { [playerId]: 6.5 } } as never,
+    }))
+    // 10 fyllda säsonger (fönstrets tak) — ingen av dem visar den
+    // ursprungliga genombrottssäsongen, den föll ut för länge sen.
+    const rollingHistory = Array.from({ length: 10 }, (_, i) => ({
+      season: game.currentSeason - 10 + i, goals: 0, assists: 0, games: 1, rating: 6.0, clubId: club.id,
+    }))
+    const gameWithHistory = {
+      ...game,
+      fixtures: [...game.fixtures, ...seasonFixtures],
+      players: game.players.map(p => p.id === playerId ? {
+        ...p,
+        promotedFromAcademy: true,
+        isHomegrown: true,
+        age: 20,
+        seasonHistory: rollingHistory,
+        breakthroughAnnouncedSeason: game.currentSeason - 11,
+      } : p),
+    }
+    const change = deriveSeasonPersonChange(gameWithHistory, [])
+    expect(change?.playerId).not.toBe(playerId)
+  })
+
+  it('etableringen hände för 11+ säsonger sen, utanför seasonHistory-fönstret: annonseras INTE igen tack vare den durabla flaggan', () => {
+    const game = baseGame()
+    const club = game.clubs.find(c => c.id === game.managedClubId)!
+    const playerId = club.squadPlayerIds[0]
+    const template = game.fixtures.find(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)!
+    const seasonFixtures = Array.from({ length: 15 }, (_, i) => ({
+      ...template,
+      id: `established11_f${i}`,
+      season: game.currentSeason,
+      isCup: false,
+      roundNumber: i + 1,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: template.homeClubId === game.managedClubId ? template.awayClubId : template.homeClubId,
+      homeScore: 2, awayScore: 1,
+      homeLineup: { startingPlayerIds: [playerId], benchPlayerIds: [], tactic: {} as never },
+      awayLineup: { startingPlayerIds: [], benchPlayerIds: [], tactic: {} as never },
+      report: { playerRatings: { [playerId]: 6.5 } } as never,
+    }))
+    // Senaste 10 säsongerna visar bara en skadedrabbad säsong (prevGames<=8)
+    // — den faktiska etableringssäsongen (≥15 matcher) föll ur fönstret.
+    const rollingHistory = [
+      ...Array.from({ length: 9 }, (_, i) => ({
+        season: game.currentSeason - 10 + i, goals: 0, assists: 0, games: 1, rating: 6.0, clubId: club.id,
+      })),
+      { season: game.currentSeason - 1, goals: 0, assists: 0, games: 4, rating: 6.0, clubId: club.id },
+    ]
+    const gameWithHistory = {
+      ...game,
+      fixtures: [...game.fixtures, ...seasonFixtures],
+      players: game.players.map(p => p.id === playerId ? {
+        ...p,
+        seasonHistory: rollingHistory,
+        establishedStarterAnnouncedSeason: game.currentSeason - 11,
+      } : p),
+    }
+    const change = deriveSeasonPersonChange(gameWithHistory, [])
+    expect(change?.playerId).not.toBe(playerId)
+  })
 })
 
 describe('deriveRivalryStanding / deriveRivalryLine', () => {

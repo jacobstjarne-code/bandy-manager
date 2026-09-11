@@ -328,11 +328,20 @@ export function deriveSeasonPersonChange(
   // sig och SEDAN såldes fortfarande hittas — samma mönster som topScorer.
   const seasonGamesPlayed = countSeasonGamesPlayedByPlayer(game)
 
+  // Rot-diagnos (Jacobs körorder 2026-09-11): seasonHistory är kapad till
+  // de senaste 10 säsongerna (seasonEndProcessor.ts, .slice(-10)) — en
+  // spelare med 11+ säsonger i klubben kan ha sin genombrottssäsong utanför
+  // fönstret, vilket lät milstolpen annonseras igen. `!p.breakthroughAnnouncedSeason`
+  // är den durabla, aldrig-rullande spärren (Player.ts) — OR:ad med
+  // seasonHistory-kollen, inte en ersättning: seasonHistory räcker inom
+  // fönstret utan att äldre saves behöver migreras, flaggan tar över bortom
+  // det (satt i seasonEndProcessor.ts när denna funktion väljer spelaren).
   const breakthrough = game.players.find(p =>
     (seasonGamesPlayed[p.id] ?? 0) >= 3 &&
     p.promotedFromAcademy === true &&
     p.age < CARRY_AGE_LIMIT &&
     p.isHomegrown === true &&
+    !p.breakthroughAnnouncedSeason &&
     !(p.seasonHistory ?? []).some(h => h.games >= 3)
   )
   if (breakthrough) {
@@ -344,11 +353,13 @@ export function deriveSeasonPersonChange(
   // Jämförde bara mot FÖREGÅENDE säsong — en redan etablerad ordinarie som
   // fick en skadedrabbad säsong (≤8 matcher) och sen återhämtade sig
   // (≥15 matcher) fick "bragden" påstådd på nytt, trots att den redan hänt.
+  // `establishedStarterAnnouncedSeason` (samma rot-diagnos som breakthrough
+  // ovan): durabel spärr, OR:ad med everEstablished, bortom 10-säsongersfönstret.
   const reserveToStarter = game.players
     .filter(p => (seasonGamesPlayed[p.id] ?? 0) > 0)
     .map(p => {
       const prevGames = (p.seasonHistory ?? []).at(-1)?.games ?? 0
-      const everEstablished = (p.seasonHistory ?? []).some(h => h.games >= 15)
+      const everEstablished = !!p.establishedStarterAnnouncedSeason || (p.seasonHistory ?? []).some(h => h.games >= 15)
       return { p, prevGames, thisGames: seasonGamesPlayed[p.id] ?? 0, everEstablished }
     })
     .filter(x => x.prevGames <= 8 && x.thisGames >= 15 && !x.everEstablished)

@@ -179,6 +179,18 @@ export interface Player {
   // playoff rounds when managed club is eliminated"-rekursion — se
   // SLUTTEST_KO.md för full spårning).
   seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string; cupGames?: number; cupGoals?: number; cupAssists?: number }>
+  // Rot-diagnos (Jacobs körorder 2026-09-11): seasonGoalService.ts:s
+  // breakthrough/establishedStarter-idempotens läste ENBART seasonHistory
+  // (ovan) — den rullande 10-säsongersfönstret .slice(-10) i
+  // seasonEndProcessor.ts. En spelare med 11+ säsonger i klubben tappade sin
+  // genombrotts-/etableringssäsong ur fönstret och kunde få milstolpen
+  // annonserad igen, samma "spelet upprepar sig"-klass som underkände
+  // Grind 2. Durabla flaggor, satta EN gång (samma mönster som
+  // firstNationalTeamCallupSeason ovan) — kollas TILLSAMMANS med
+  // seasonHistory (OR, aldrig ersättning): seasonHistory räcker inom
+  // fönstret utan migrering av äldre saves, flaggan minns bortom det.
+  breakthroughAnnouncedSeason?: number
+  establishedStarterAnnouncedSeason?: number
 
   // Sprint 9 — DREAM-012: injury narrative
   familyContext?: string    // generated once, persists across injuries

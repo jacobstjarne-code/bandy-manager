@@ -1891,6 +1891,21 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ? evaluateSeasonGoal(seasonEndGameView, activeGoal, { contractExpiredIds, retiredPlayerIds })
     : undefined
   const personChange = deriveSeasonPersonChange(seasonEndGameView, retiredManagedPlayers)
+  // Rot-diagnos (Jacobs körorder 2026-09-11): stämpla den durabla
+  // breakthroughAnnouncedSeason/establishedStarterAnnouncedSeason-flaggan
+  // (Player.ts) VARJE gång seasonGoalService.ts faktiskt väljer milstolpen
+  // — annars finns ingenting som skiljer "aldrig hänt" från "hände för 11+
+  // säsonger sen, föll ur seasonHistory-fönstret". Flaggan är write-once
+  // (satt := currentSeason bara om den inte redan är satt) så en spelare
+  // som redan har den från en tidigare säsong aldrig kan skrivas över —
+  // relevant efter en migrering som backfyllt den, eller om denna körning
+  // av någon anledning råkar peka på samma spelare två gånger.
+  if (personChange?.kind === 'breakthrough' || personChange?.kind === 'establishedStarter') {
+    const field = personChange.kind === 'breakthrough' ? 'breakthroughAnnouncedSeason' : 'establishedStarterAnnouncedSeason'
+    playersAfterLicense = playersAfterLicense.map(p =>
+      p.id === personChange.playerId && !p[field] ? { ...p, [field]: game.currentSeason } : p
+    )
+  }
   const rivalryStanding = deriveRivalryStanding(seasonEndGameView)
   const clubEraSnapshot = calculateClubEra(seasonEndGameView)
   seasonSummary = {
