@@ -9,8 +9,9 @@ export type PortraitTier = 'young' | 'mid' | 'exp' | 'vet'
 
 /**
  * Curated portrait assets that are actually approved and present in the product.
- * Keep gaps explicit: veteran #3 was rejected and must never be selected merely
- * because its old placeholder file still exists on disk.
+ * Keep gaps explicit: veteran #3 was approved by Jacob 2026-09-11 as the
+ * replacement for the byte-identical #5/#6 pair. #6 remains excluded so two
+ * player identities cannot resolve to the same portrait.
  */
 export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly number[]>> = {
   young: [1, 2, 3, 4, 5, 6],
@@ -24,7 +25,7 @@ export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly nu
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
   ],
-  vet: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+  vet: [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
 }
 
 /** Ålder → karriär-tier i illustrationsstilen. Gränser speglar bandy-karriärbågen. */
