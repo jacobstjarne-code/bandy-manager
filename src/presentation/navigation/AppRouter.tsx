@@ -125,7 +125,7 @@ function DashboardOrPortal() {
             borderRadius: '14px 14px 0 0',
             background: 'var(--bg-scene)',
           }}>
-            <CoffeeRoomScene game={game} onComplete={() => completeScene('coffee_room')} />
+            <CoffeeRoomScene game={game} onComplete={(choiceId) => completeScene('coffee_room', choiceId)} />
           </div>
         </div>
       </div>

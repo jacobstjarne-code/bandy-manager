@@ -15,8 +15,8 @@ export function fillSwedishTemplate(
   values: Readonly<Record<string, string>>,
 ): string {
   return template
-    .replace(/\{(\w+)\}s\b/g, (match, key: string) =>
+    .replace(/\{([\p{L}\p{N}_]+)\}s\b/gu, (match, key: string) =>
       values[key] === undefined ? match : swedishGenitive(values[key]))
-    .replace(/\{(\w+)\}/g, (match, key: string) =>
+    .replace(/\{([\p{L}\p{N}_]+)\}/gu, (match, key: string) =>
       values[key] === undefined ? match : values[key])
 }

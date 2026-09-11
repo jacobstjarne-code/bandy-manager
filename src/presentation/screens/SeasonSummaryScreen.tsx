@@ -140,8 +140,16 @@ export function mergeYearbookTimelineItems(
   )
   const guaranteedStorylines = hydratedStorylines.slice(0, cap)
   const remainingBudget = Math.max(0, cap - guaranteedStorylines.length)
-  return [...guaranteedStorylines, ...uniqueKeyMoments.slice(0, remainingBudget)]
+  const seenHeadlines = new Set<string>()
+  return [...guaranteedStorylines, ...uniqueKeyMoments]
     .sort((a, b) => a.round - b.round)
+    .filter(item => {
+      const key = item.headline.trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv-SE')
+      if (seenHeadlines.has(key)) return false
+      seenHeadlines.add(key)
+      return true
+    })
+    .slice(0, guaranteedStorylines.length + remainingBudget)
 }
 
 function YearbookPersonCard({ summary }: { summary: SeasonSummary }) {

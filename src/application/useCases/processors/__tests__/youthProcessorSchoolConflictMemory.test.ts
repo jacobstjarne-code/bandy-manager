@@ -3,6 +3,21 @@ import { createNewGame } from '../../createNewGame'
 import { processYouth } from '../youthProcessor'
 
 describe('processYouth — skolkonflikten minns personen', () => {
+  it('böjer landslagsuttagningen i singular för en ensam uttagen spelare', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2026, seed: 42 })
+    const onlyCandidate = { ...base.youthTeam!.players[0], potentialAbility: 70 }
+    const game = {
+      ...base,
+      youthTeam: {
+        ...base.youthTeam!,
+        players: [onlyCandidate],
+      },
+    }
+    const result = processYouth(game, game.players, 8, '2026-11-01', 42, () => 0)
+    const callup = result.gameEvents.find(event => event.id.startsWith('event_district_callup_'))
+    expect(callup?.body).toContain(`${onlyCandidate.firstName} ${onlyCandidate.lastName} är kallad till Sveriges P19-samling.`)
+  })
+
   it('erbjuder inte samma P19-spelare samma isolerade konflikt två gånger under en säsong', () => {
     const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
     const youth = base.youthTeam!.players[0]

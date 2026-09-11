@@ -301,6 +301,11 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
     if ((d.id === 'corner_extra_training' || d.id === 'training_corners_vs_matchprep') && !hasCornerCandidate) return false
     if (d.id === 'player_weekend_off' && !hasWearyPlayer) return false
     if (d.id === 'scout_opponent_corners' && (game.scoutBudget ?? 0) === 0) return false
+    // Den namngivna tifoberättelsen äger de här motiven efter att tifot har
+    // genomförts. De generiska veckobesluten kunde annars erbjuda ett nytt
+    // tifo och ännu en veteran/ungdom-konflikt senare samma säsong trots att
+    // den kanoniska berättelsen redan var igång eller avslutad.
+    if (game.supporterGroup?.tifoDone && (d.id === 'tifo_contribution' || d.id === 'supporter_conflict_mediate')) return false
     return true
   })
   if (available.length === 0) return null

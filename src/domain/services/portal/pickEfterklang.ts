@@ -68,6 +68,11 @@ interface EfterklangCandidate {
 
 function pickEcho(type: EfterklangType, seed: number): string {
   const pool = EFTERKLANG_ECHO[type]
+  // Klackekot ligger kvar flera omgångar i följd. Två rader räcker om de
+  // alternerar; ett nytt slumpdrag varje omgång kunde däremot visa exakt
+  // samma citat tre gånger på raken och fick en avsiktlig efterklang att
+  // kännas som en dublett.
+  if (type === 'klackEcho') return pool[Math.abs(seed) % pool.length]
   return pool[Math.floor(mulberry32(seed)() * pool.length)]
 }
 

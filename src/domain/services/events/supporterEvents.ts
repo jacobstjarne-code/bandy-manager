@@ -74,7 +74,10 @@ export function generateSupporterEvents(
     && !legacyConflictSeen
   ) {
     const eid = `supporter_conflict_${game.currentSeason}`
-    if (!alreadyQueued.has(eid) && rand() < 0.5) {
+    // Omgång 9–10 behåller den seedade chansen. Sista giltiga omgången är
+    // däremot en garanti: en karriärbärande konflikt får inte tyst försvinna
+    // i 12,5 % av naturliga körningar bara för att tre slumpdrag missar.
+    if (!alreadyQueued.has(eid) && (currentRound === 11 || rand() < 0.5)) {
       events.push({
         id: eid,
         semanticId: conflictSemanticId,

@@ -85,5 +85,10 @@ export function pickUpptaktPhaseMark(state: UpptaktSubState, seed: number, seen:
 export function pickCountdownText(state: UpptaktSubState, remainingRounds: number, seed: number, seen: Set<number>): string {
   const { item, index } = seededPickNoRepeat(UPPTAKT_COUNTDOWN[state], seed, seen)
   seen.add(index)
-  return item.replace('{N}', String(remainingRounds))
+  const rendered = item.replace('{N}', String(remainingRounds))
+  if (remainingRounds !== 1) return rendered
+  return rendered
+    .replace('1 omgångar', '1 omgång')
+    .replace('1 matcher', '1 match')
+    .replace('1 sista matcherna', '1 sista match')
 }

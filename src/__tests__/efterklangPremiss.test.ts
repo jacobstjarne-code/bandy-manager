@@ -79,6 +79,13 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
       fixtures: [...leagueFixtures(6), nextVsNemesis] as never,
     })
     expect(find(game, 'nemesis')?.premiss).toBe('3 mål mot er.')
+    expect(find(game, 'nemesis')?.echo).not.toContain('{motståndare}')
+  })
+
+  it('klackekot alternerar i följande matchdays i stället för att upprepa samma citat', () => {
+    const first = makeGame({ currentMatchday: 10, klackEcho: { currentWeight: 0.7 } as never })
+    const second = { ...first, currentMatchday: 11 }
+    expect(find(first, 'klackEcho')?.echo).not.toBe(find(second, 'klackEcho')?.echo)
   })
 
   it('nemesis visas INTE när nästa motståndare är någon annan (fynd 9)', () => {

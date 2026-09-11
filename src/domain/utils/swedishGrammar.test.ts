@@ -22,4 +22,9 @@ describe('svensk genitiv', () => {
   it('behandlar ersättningsvärden bokstavligt', () => {
     expect(fillSwedishTemplate('{namn}s avtal', { namn: 'A$&B' })).toBe('A$&Bs avtal')
   })
+
+  it('fyller svenska tokennamn med diakritiska tecken', () => {
+    expect(fillSwedishTemplate('{motståndare} igen', { motståndare: 'Västanfors' }))
+      .toBe('Västanfors igen')
+  })
 })

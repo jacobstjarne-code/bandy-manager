@@ -161,6 +161,20 @@ describe('Fynd 11 — veckans beslut-effekter', () => {
     }
   })
 
+  it('erbjuder inte parallellt tifo eller generisk supporterstrid efter den namngivna tifostarten', () => {
+    const tifoGame = {
+      ...game,
+      supporterGroup: { ...game.supporterGroup!, tifoDone: true },
+      pendingWeeklyDecision: undefined,
+      weeklyDecisionLastRound: undefined,
+      resolvedWeeklyDecisions: [],
+    }
+    for (let round = 1; round <= 100; round++) {
+      expect(generateWeeklyDecision(tifoGame, round)?.id).not.toBe('tifo_contribution')
+      expect(generateWeeklyDecision(tifoGame, round)?.id).not.toBe('supporter_conflict_mediate')
+    }
+  })
+
   it('ledgern påstår inte en konsekvens som klampades bort', () => {
     const machine = {
       ...decision('ismaskin_offer'),

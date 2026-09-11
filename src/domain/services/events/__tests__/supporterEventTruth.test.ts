@@ -60,6 +60,14 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     expect(getKlackDisplay(result, 9)?.body).not.toContain('tystare')
   })
 
+  it('garanterar konflikten i sista naturliga triggeromgången om de tidigare slumpdragen missade', () => {
+    const game = { ...makeGame(supporterGroup({ tifoDone: true })), currentMatchday: 11, lastProcessedMatchday: 99 }
+    expect(generateSupporterEvents(game, 11, new Set(), () => 0.99)
+      .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(true)
+    expect(generateSupporterEvents({ ...game, currentMatchday: 10 }, 10, new Set(), () => 0.99)
+      .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(false)
+  })
+
   it('bortaresan söker kommande fixture.matchday och beskrivs som planerad, inte genomförd', () => {
     const base = makeGame(supporterGroup({ tifoDone: true }))
     const fixture = {

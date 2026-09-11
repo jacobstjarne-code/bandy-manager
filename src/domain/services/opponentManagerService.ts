@@ -58,7 +58,7 @@ const SCANDAL_AFFECTED_LOST = [
 
 const SCANDAL_AFFECTED_WON = [
   '"Killarna höll fokus. Det är inte självklart i läget vi är i."',
-  '"Truppen har stängt allt utanför planen ute. Det är jag stolt över. Mer behöver inte sägas."',
+  '"Truppen har stängt ute allt utanför planen. Det är jag stolt över. Mer behöver inte sägas."',
   '"Bra för killarna. De förtjänar att slippa rubriker en gång."',
 ]
 

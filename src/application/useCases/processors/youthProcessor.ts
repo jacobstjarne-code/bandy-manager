@@ -141,11 +141,12 @@ export function processYouth(
       const selected = callupCandidates.slice(0, Math.min(2, callupCandidates.length))
       const names = selected.map(p => `${p.firstName} ${p.lastName}`).join(' och ')
       const pronoun = selected.length === 1 ? 'Han' : 'De'
+      const callupVerb = selected.length === 1 ? 'är kallad' : 'är kallade'
       gameEvents.push({
         id: `event_district_callup_${nextMatchday}_${game.currentSeason}`,
         type: 'communityEvent',
         title: `Juniorlandslagssamling — ${names}`,
-        body: `${names} är kallade till Sveriges P19-samling. ${pronoun} missar 2 P19-matcher men kan få värdefull landslagserfarenhet.`,
+        body: `${names} ${callupVerb} till Sveriges P19-samling. ${pronoun} missar 2 P19-matcher men kan få värdefull landslagserfarenhet.`,
         // M3: exakt de spelare kortet namnger — resolvern (eventResolver.ts)
         // ska verka på dessa, inte återfiltrera potentialAbility>50 på nytt.
         selectedPlayerIds: selected.map(p => p.id),
