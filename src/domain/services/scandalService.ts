@@ -439,7 +439,20 @@ export function applyScandalEffect(
   const isPositiveMunicipal = scandal.type === 'municipal_scandal' && scandal.variant === 'positive'
 
   const titlePool = isPositiveMunicipal && text.titlesPositive ? text.titlesPositive : text.titles
-  const bodyPool  = isPositiveMunicipal && text.bodiesPositive  ? text.bodiesPositive  : text.bodies
+  let bodyPool  = isPositiveMunicipal && text.bodiesPositive  ? text.bodiesPositive  : text.bodies
+
+  // "Inte första gången" (municipal_scandal) påstår upprepning — filtreras
+  // bort om klubben inte har en tidigare municipal_scandal i historiken.
+  // Defensiv guard: töm aldrig poolen.
+  if (scandal.type === 'municipal_scandal') {
+    const hadPriorMunicipalScandal = (game.scandalHistory ?? []).some(
+      s => s.affectedClubId === scandal.affectedClubId && s.type === 'municipal_scandal',
+    )
+    if (!hadPriorMunicipalScandal) {
+      const filtered = bodyPool.filter(b => !b.includes('inte första gången'))
+      if (filtered.length > 0) bodyPool = filtered
+    }
+  }
 
   const title = fillTemplate(pick(titlePool, rand), club, secondaryClub, politician)
   const body  = fillTemplate(pick(bodyPool, rand),  club, secondaryClub, politician)

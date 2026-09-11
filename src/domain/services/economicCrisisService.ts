@@ -193,7 +193,10 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
     const pathTexts: string[] = []
     if (bestPlayer) pathTexts.push(`**${pathLetters[pathTexts.length]}. Sälj ${bestName}.** Budet ligger på 350 000 kr. Det löser skulden men laget försvagas.`)
     pathTexts.push(`**${pathLetters[pathTexts.length]}. Kommunlån.** 300 000 kr över tre år. Räntan äter hälften av intäkterna. Politiskt känsligt.`)
-    if (richestMecenat) pathTexts.push(`**${pathLetters[pathTexts.length]}. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan han täcka 200 000 kr. Men det kostar i lojalitet.`)
+    if (richestMecenat) {
+      const mecenatPronoun = richestMecenat.gender === 'female' ? 'hon' : 'han'
+      pathTexts.push(`**${pathLetters[pathTexts.length]}. Be mecenaten om hjälp.** Om ni har en aktiv mecenat kan ${mecenatPronoun} täcka 200 000 kr. Men det kostar i lojalitet.`)
+    }
 
     const pathCountWord = pathTexts.length === 3 ? 'tre' : pathTexts.length === 2 ? 'två' : 'en'
     const pathWord = pathTexts.length === 1 ? 'väg' : 'vägar'

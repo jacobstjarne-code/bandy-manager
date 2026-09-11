@@ -41,7 +41,11 @@ export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: numb
   // Build choices from game history
   const summaries = game.seasonSummaries ?? []
   const notableSeason = summaries.find(s => s.finalPosition <= 3 || s.playoffResult === 'champion' || s.playoffResult === 'finalist')
-  const clubLegend = (game.clubLegends ?? [])[0]
+  // [0] var pensioneringsordning, inte kvalitet — kunde göra en medioker
+  // legend till "en av de bästa som någonsin". Samma urvalskriterium (högst
+  // totalGoals, namnordning vid lika) som findLegendRecordChase (portalBeats.ts,
+  // O11-fixen, contentContract.ts:1053) redan etablerat för samma fråga.
+  const clubLegend = [...(game.clubLegends ?? [])].sort((a, b) => b.totalGoals - a.totalGoals || a.name.localeCompare(b.name))[0]
 
   const choices: GameEvent['choices'] = []
 

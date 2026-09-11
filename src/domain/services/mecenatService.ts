@@ -671,11 +671,17 @@ const MECENAT_KRAV_HAPPINESS_DELTA_LET_GO = -18
 
 export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, season: number): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
+  // Samma pro-mönster som generateMecenatIntroEvent (rad 307) — denna
+  // funktion saknade det, så en kvinnlig mecenat (~hälften) fick "han/hans".
+  // Ordagrant oförändrad text i övrigt (TEXT LÅST, SPEC_O1_MECENATENS_KRAV).
+  const pro = mecenat.gender === 'female'
+    ? { subj: 'Hon', subjLower: 'hon', poss: 'Hennes' }
+    : { subj: 'Han', subjLower: 'han', poss: 'Hans' }
   return {
     id: `event_mecenat_krav_${mecenat.id}_s${season}`,
     type: 'mecenatEvent',
     title: `${mecenat.name} har en önskan`,
-    body: `Över kaffet säger ${mecenat.name} det rakt ut, utan att göra en grej av det: han skulle vilja se ${playerName} få ett år till. Han var med när det var tunnare än nu, och mecenaten har ett gott öga till honom. Det är inget krav han uttalar — men du förstår ändå. Hans välvilja har en form, och det här är den.`,
+    body: `Över kaffet säger ${mecenat.name} det rakt ut, utan att göra en grej av det: ${pro.subjLower} skulle vilja se ${playerName} få ett år till. ${pro.subj} var med när det var tunnare än nu, och mecenaten har ett gott öga till honom. Det är inget krav ${pro.subjLower} uttalar — men du förstår ändå. ${pro.poss} välvilja har en form, och det här är den.`,
     proofSource: {
       form: 'state-predicate',
       description: `mecenat.happiness ≥ ${MECENAT_KRAV_HAPPINESS_THRESHOLD} och en veteran finns i truppen`,
