@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getSeasonalTone } from '../../../domain/services/portal/seasonalTone'
 import { CLUB_EXTENDED_INFO } from '../../../domain/data/clubExtendedInfo'
-import { ClubBadge } from '../ClubBadge'
+import { ClubBadgeOnImage } from '../ClubBadge'
 
 /**
  * MiljoHeader — "den närvarande bruksorten" (BESTALLNINGSBRIEF-MILJOHEADER, bygg-spec).
@@ -84,8 +84,8 @@ export function MiljoHeader({ date, club, mode = 'portal', children }: Props) {
 
       {/* ClubBadge-vattenstämpel ger klubbidentitet ovanpå den gemensamma ortsbilden. */}
       {club && (
-        <div style={{ position: 'absolute', right: 14, top: mode === 'portal' ? 18 : 12, opacity: hasImage ? 0.5 : 0.16, pointerEvents: 'none' }}>
-          <ClubBadge clubId={club.id} name={club.name} size={mode === 'portal' ? 56 : 40} />
+        <div style={{ position: 'absolute', right: 14, top: mode === 'portal' ? 18 : 12, opacity: hasImage ? 0.9 : 0.16, pointerEvents: 'none' }}>
+          <ClubBadgeOnImage clubId={club.id} name={club.name} size={mode === 'portal' ? 56 : 40} />
         </div>
       )}
 

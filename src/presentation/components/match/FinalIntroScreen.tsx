@@ -11,6 +11,7 @@ import { truncate } from '../../utils/formatters'
 import { getFinalIntroScene, FINAL_STAT_LABELS } from '../../../domain/data/scenes/finalIntroScene'
 import type { FinalTier } from '../../../domain/data/scenes/finalIntroScene'
 import { ScrollMoreCue } from '../ScrollMoreCue'
+import { ClubBadge } from '../ClubBadge'
 
 const startBtn: React.CSSProperties = {
   padding: '16px',
@@ -250,9 +251,6 @@ function SmFinalLagpresentation({
     background: 'var(--accent)',
   }
 
-  const homeInitial = homeClubName.charAt(0).toUpperCase()
-  const awayInitial = awayClubName.charAt(0).toUpperCase()
-
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
@@ -275,16 +273,13 @@ function SmFinalLagpresentation({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 16 }}>
           {/* Home */}
           <div style={{ textAlign: 'center', width: 104 }}>
-            <div style={{
-              width: 54, height: 60,
-              borderRadius: '8px 8px 50% 50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
-              margin: '0 auto',
-              background: 'radial-gradient(circle at 38% 30%, var(--badge-us-start), var(--badge-us-end))',
-              border: '1.5px solid var(--accent)',
-            }}>
-              {homeInitial}
+            <div style={{ width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+              <ClubBadge
+                clubId={fixture.homeClubId}
+                name={homeClubName}
+                size={56}
+                strokeColor="var(--accent)"
+              />
             </div>
             <h4 style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: 'var(--text-light)', marginTop: 7, fontWeight: 700 }}>
               {truncate(homeClubName, 12)}
@@ -302,16 +297,13 @@ function SmFinalLagpresentation({
 
           {/* Away */}
           <div style={{ textAlign: 'center', width: 104 }}>
-            <div style={{
-              width: 54, height: 60,
-              borderRadius: '8px 8px 50% 50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
-              margin: '0 auto',
-              background: 'radial-gradient(circle at 38% 30%, var(--badge-them-start), var(--badge-them-end))',
-              border: '1.5px solid var(--ice)',
-            }}>
-              {awayInitial}
+            <div style={{ width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+              <ClubBadge
+                clubId={fixture.awayClubId}
+                name={awayClubName}
+                size={56}
+                strokeColor="var(--ice)"
+              />
             </div>
             <h4 style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: 'var(--text-light)', marginTop: 7, fontWeight: 700 }}>
               {truncate(awayClubName, 12)}

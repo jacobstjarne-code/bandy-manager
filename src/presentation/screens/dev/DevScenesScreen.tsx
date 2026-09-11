@@ -26,6 +26,7 @@ import { PortalScreen } from '../PortalScreen'
 import { HalfTimeSummaryScreen } from '../HalfTimeSummaryScreen'
 import { MatchScreen } from '../MatchScreen'
 import { MatchLaddningScene } from '../../components/match/MatchLaddningScene'
+import { FinalIntroScreen } from '../../components/match/FinalIntroScreen'
 import { MatchLiveScreen } from '../match/MatchLiveScreen'
 import { BottomNav } from '../../navigation/BottomNav'
 import { GameScrollContext } from '../../navigation/GameScrollContext'
@@ -47,6 +48,8 @@ import { PlayerCard } from '../../components/PlayerCard'
 import { ScoreBlock as ScoreBlockComp } from '../../components/primitives/ScoreBlock'
 import { Sparkline as SparklineComp } from '../../components/primitives/Sparkline'
 import { MiljoHeader } from '../../components/environment/MiljoHeader'
+import { ClubBadge, ClubBadgeOnImage } from '../../components/ClubBadge'
+import { getClubIntroIllustrationSrc } from '../../components/illustration/IllustrationScene'
 import { MomentumBar } from '../../components/match/MomentumBar'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
@@ -206,8 +209,8 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
-  | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar'
-  | 'granska-level3' | 'board-patience-minimal' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
+  | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar' | 'match-laddning-final' | 'final-intro-lagpresentation'
+  | 'granska-level3' | 'board-patience-minimal' | 'club-badge-contact-sheet' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
@@ -256,6 +259,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'match-laddning-derby', label: 'Matchladdning — derby' },
   { id: 'match-laddning-cup', label: 'Matchladdning — cup' },
   { id: 'match-laddning-nyar', label: 'Matchladdning — nyår' },
+  { id: 'match-laddning-final', label: 'Matchladdning — SM-finalens lagpresentation' },
+  { id: 'final-intro-lagpresentation', label: 'FinalIntro — SM-finalens lagpresentation' },
   { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
   { id: 'momentumbar',   label: 'MomentumBar (ärlig — kvitterings-läge)' },
   { id: 'tacticmodal',   label: 'TacticChangeModal (🟥 mörk panel)' },
@@ -327,6 +332,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'mecenat-dinner', label: 'Mecenatmiddag — tre frågor och verklig resolution' },
   { id: 'granska-level3', label: 'Granska — löst val med belagt citat' },
   { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
+  { id: 'club-badge-contact-sheet', label: 'Klubbmärken — kontaktkarta 16/32/64 + bildprov' },
   { id: 'next-match-forsbacka', label: 'Nästa match — Forsbacka klubbmärkespilot' },
   { id: 'next-match-derby', label: 'Nästa match — derby i portal' },
   { id: 'next-match-annandagen', label: 'Nästa match — annandagen i portal' },
@@ -600,6 +606,31 @@ const board = [
 
 const cupGame    = makeGame([...makeLeagueFixtures(), cupFinalFixture])
 const smGame     = makeGame([...makeLeagueFixtures(), smFinalFixture])
+const badgeFinalFixture = {
+  ...smFinalFixture,
+  homeClubId: 'club_forsbacka',
+  awayClubId: 'club_gagnef',
+}
+const remapBadgeClubId = (clubId: string) => clubId === HOME_ID
+  ? 'club_forsbacka'
+  : clubId === AWAY_ID
+    ? 'club_gagnef'
+    : clubId
+const badgeFinalGame: SaveGame = {
+  ...smGame,
+  managedClubId: 'club_forsbacka',
+  clubs: smGame.clubs.map(club => club.id === HOME_ID
+    ? { ...club, id: 'club_forsbacka', name: 'Forsbacka', shortName: 'FOR' }
+    : club.id === AWAY_ID
+      ? { ...club, id: 'club_gagnef', name: 'Gagnef', shortName: 'GAG' }
+      : club),
+  players: smGame.players.map(player => ({ ...player, clubId: remapBadgeClubId(player.clubId) })),
+  fixtures: smGame.fixtures.map(fixture => ({
+    ...fixture,
+    homeClubId: remapBadgeClubId(fixture.homeClubId),
+    awayClubId: remapBadgeClubId(fixture.awayClubId),
+  })),
+}
 const arcGame    = makeGame(makeLeagueFixtures())
 const portalGame = makeGame(makeLeagueFixtures())
 const squadGame  = makeGame(makeLeagueFixtures(), { captainPlayerId: 'p-d1', board })
@@ -2195,6 +2226,66 @@ export function DevScenesScreen() {
           )
         })()}
 
+        {scene === 'club-badge-contact-sheet' && (
+          <div style={{ minHeight: '844px', background: 'var(--bg-portal)', padding: '24px 14px 32px' }}>
+            <p className="h-label" style={{ color: 'var(--accent)', margin: '0 0 4px' }}>Klubbmärken</p>
+            <h1 style={{ color: 'var(--text-light)', fontFamily: 'var(--font-display)', fontSize: 28, margin: '0 0 6px' }}>
+              Tolv klubbar
+            </h1>
+            <p style={{ color: 'var(--text-light-secondary)', fontSize: 11, margin: '0 0 20px' }}>
+              Full 64 px · kompakt 32 px · mikro 16 px
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {([
+                ['club_forsbacka', 'Forsbacka'], ['club_gagnef', 'Gagnef'],
+                ['club_halleforsnas', 'Hälleforsnäs'], ['club_heros', 'Heros'],
+                ['club_karlsborg', 'Karlsborg'], ['club_lesjofors', 'Lesjöfors'],
+                ['club_malilla', 'Målilla'], ['club_rogle', 'Rögle'],
+                ['club_skutskar', 'Skutskär'], ['club_slottsbron', 'Slottsbron'],
+                ['club_soderfors', 'Söderfors'], ['club_vastanfors', 'Västanfors'],
+              ] as const).map(([clubId, name]) => (
+                <div key={clubId} style={{
+                  minHeight: 202,
+                  border: '1px solid color-mix(in srgb, var(--copper) 32%, transparent)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-portal-surface)',
+                  padding: '12px 10px 10px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 12, minHeight: 64 }}>
+                    <ClubBadge clubId={clubId} name={name} size={64} />
+                    <ClubBadge clubId={clubId} name={name} size={32} />
+                    <ClubBadge clubId={clubId} name={name} size={16} />
+                  </div>
+                  <p style={{ color: 'var(--text-light-secondary)', fontSize: 11, fontWeight: 700, textAlign: 'center', margin: '8px 0 0' }}>
+                    {name}
+                  </p>
+                  <div style={{
+                    height: 74,
+                    marginTop: 9,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: 8,
+                    border: '1px solid rgba(245,241,235,0.1)',
+                  }}>
+                    <img
+                      src={getClubIntroIllustrationSrc(clubId)}
+                      alt=""
+                      aria-hidden
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 46%', display: 'block' }}
+                    />
+                    <ClubBadgeOnImage
+                      clubId={clubId}
+                      name={name}
+                      size={32}
+                      style={{ position: 'absolute', top: 6, right: 6 }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {scene === 'squad' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <SquadScreen />
@@ -2435,6 +2526,43 @@ export function DevScenesScreen() {
         {scene === 'arrival' && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
             <ArrivalScene />
+          </div>
+        )}
+        {scene === 'match-laddning-final' && (() => {
+          const opponent = badgeFinalGame.clubs.find(club => club.id === badgeFinalFixture.awayClubId)
+          return opponent ? (
+            <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
+              <MatchLaddningScene
+                occasion="final"
+                isFinal
+                game={badgeFinalGame}
+                opponent={opponent}
+                nextFixture={badgeFinalFixture as never}
+                onContinue={() => {}}
+              />
+            </div>
+          ) : null
+        })()}
+        {scene === 'final-intro-lagpresentation' && (
+          <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
+            <FinalIntroScreen
+              variant="sm"
+              slide={1}
+              onNext={() => {}}
+              onStart={() => {}}
+              homeClubName={badgeFinalGame.clubs.find(club => club.id === badgeFinalFixture.homeClubId)?.name ?? 'Hemmalaget'}
+              awayClubName={badgeFinalGame.clubs.find(club => club.id === badgeFinalFixture.awayClubId)?.name ?? 'Bortalaget'}
+              homeLineup={ceremonyHomeLineup}
+              awayLineup={ceremonyAwayLineup}
+              season={badgeFinalGame.currentSeason}
+              homeStanding={{ clubId: badgeFinalFixture.homeClubId, position: 1, played: 22, wins: 17, draws: 2, losses: 3, goalsFor: 112, goalsAgainst: 54, goalDifference: 58, points: 36 }}
+              awayStanding={{ clubId: badgeFinalFixture.awayClubId, position: 2, played: 22, wins: 15, draws: 3, losses: 4, goalsFor: 96, goalsAgainst: 61, goalDifference: 35, points: 33 }}
+              clubs={badgeFinalGame.clubs}
+              players={badgeFinalGame.players}
+              fixture={badgeFinalFixture as never}
+              game={badgeFinalGame}
+              tier="gold"
+            />
           </div>
         )}
         {(scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar') && storeGame && (() => {

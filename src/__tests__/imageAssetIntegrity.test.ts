@@ -40,6 +40,14 @@ describe('product image asset integrity', () => {
     }
   })
 
+  it('has all three production badge sizes for every playable club', () => {
+    for (const name of clubIntroNames) {
+      expectNonEmptyPublicAsset(`assets/clubs/${name}/badge-16.svg`)
+      expectNonEmptyPublicAsset(`assets/clubs/${name}/badge-32.svg`)
+      expectNonEmptyPublicAsset(`assets/clubs/${name}/badge-64.svg`)
+    }
+  })
+
   it('has all directly linked shell and brand images', () => {
     for (const path of ['bandymanager-logo.png', 'buryfen-logo.png', 'intro-bg.jpg', 'icon-192.png', 'icon-512.png', 'icon.svg']) {
       expectNonEmptyPublicAsset(path)

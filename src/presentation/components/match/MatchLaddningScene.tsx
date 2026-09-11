@@ -14,6 +14,7 @@ import { getSeasonContext } from '../../../domain/services/seasonContextService'
 import { seededPick } from '../../../domain/utils/random'
 import { getClubIntroIllustrationAssetName, getClubIntroIllustrationSrc, IllustrationPlaceholder } from '../illustration/IllustrationScene'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { ClubBadge } from '../ClubBadge'
 
 // Assets confirmed in repo; missing future occasions fall back to the opponent's
 // club illustration and finally to the deliberate typographic scene.
@@ -294,16 +295,13 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 16 }}>
             {/* Home */}
             <div style={{ textAlign: 'center', width: 104 }}>
-              <div style={{
-                width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
-                background: 'radial-gradient(circle at 38% 30%, var(--badge-us-start), var(--badge-us-end))',
-                border: '1.5px solid var(--led-us, var(--accent))',
-                margin: '0 auto',
-              }}>
-                {/* ds-exempt: klubb-initial i per-klubb-färgad badge */}
-                {(homeClub?.shortName ?? homeClub?.name ?? 'H')[0].toUpperCase()}
+              <div style={{ width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                <ClubBadge
+                  clubId={homeClub?.id ?? nextFixture.homeClubId}
+                  name={homeClub?.name ?? 'Hemmalaget'}
+                  size={56}
+                  strokeColor="var(--led-us, var(--accent))"
+                />
               </div>
               <h4 className="h-num-sm" style={{ color: 'var(--text-light)', marginTop: 7 }}>
                 {homeClub?.shortName ?? homeClub?.name ?? '?'}
@@ -320,16 +318,13 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
             {/* Away */}
             <div style={{ textAlign: 'center', width: 104 }}>
-              <div style={{
-                width: 54, height: 60, borderRadius: '8px 8px 50% 50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: 'var(--text-light)',
-                background: 'radial-gradient(circle at 38% 30%, var(--badge-them-start), var(--badge-them-end))',
-                border: '1.5px solid var(--led-them, var(--ice))',
-                margin: '0 auto',
-              }}>
-                {/* ds-exempt: klubb-initial i per-klubb-färgad badge */}
-                {(awayClub?.shortName ?? awayClub?.name ?? 'B')[0].toUpperCase()}
+              <div style={{ width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                <ClubBadge
+                  clubId={awayClub?.id ?? nextFixture.awayClubId}
+                  name={awayClub?.name ?? 'Bortalaget'}
+                  size={56}
+                  strokeColor="var(--led-them, var(--ice))"
+                />
               </div>
               <h4 className="h-num-sm" style={{ color: 'var(--text-light)', marginTop: 7 }}>
                 {awayClub?.shortName ?? awayClub?.name ?? '?'}

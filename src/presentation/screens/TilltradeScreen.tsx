@@ -6,6 +6,7 @@ import { LineupStep } from '../components/match/LineupStep'
 import { CornerInteraction } from '../components/match/CornerInteraction'
 import { getClubIntroIllustrationSrc, IllustrationScene } from '../components/illustration/IllustrationScene'
 import { CoachFraming } from '../components/CoachFraming'
+import { ClubBadgeOnImage } from '../components/ClubBadge'
 import {
   buildCornerInteractionData,
   resolveCorner,
@@ -27,32 +28,6 @@ type Step = 1 | 2 | 3 | 4
 
 const STEP_TITLES = ['Ankomst', 'Startelva', 'Hörnan', 'Klart']
 
-/** Shield-märke med klubbinitial — F1 mock: 64×76px */
-function ClubShield({ initial }: { initial: string }) {
-  return (
-    <svg
-      width="64" height="76" viewBox="0 0 64 76" fill="none"
-      style={{ display: 'block', margin: '8px auto 4px' }}
-      aria-hidden="true"
-    >
-      <path
-        d="M32 3L61 13V36C61 58 32 73 32 73C32 73 3 58 3 36V13Z"
-        fill="var(--copper)" fillOpacity="0.06"
-        stroke="var(--copper)" strokeWidth="1.5" strokeOpacity="0.55"
-      />
-      <text
-        x="32" y="46"
-        textAnchor="middle"
-        fontFamily="Georgia, serif"
-        fontSize="24"
-        fontWeight="800"
-        fill="var(--copper)"
-        fillOpacity="0.85"
-      >{initial}</text>
-    </svg>
-  )
-}
-
 /** Beat-progress — horisontella staplar.
  *  lg = F1/F4 (18×3px, gap 7), sm = F2/F3 header (14×3px, gap 5).
  *  Kumulativ: alla steg ≤ current lyser i koppar. */
@@ -63,7 +38,7 @@ function BeatBars({ step, size }: { step: number; size: 'lg' | 'sm' }) {
     <div style={{ display: 'flex', justifyContent: 'center', gap, marginTop: size === 'lg' ? 10 : 0 }}>
       {[1, 2, 3, 4].map(i => (
         <span key={i} style={{
-          display: 'inline-block', width: w, height: 3, borderRadius: 2,
+          display: 'inline-block', width: w, height: 3, borderRadius: 3,
           background: i <= step
             ? 'var(--accent)'
             : 'color-mix(in srgb, var(--accent) 25%, transparent)',
@@ -128,7 +103,6 @@ export function TilltradeScreen() {
   const firstName = coach.name.split(' ')[0]
   const lastName = coach.name.split(' ')[1] ?? ''
   const coachInitials = `${firstName[0] ?? ''}${lastName[0] ?? ''}`
-  const clubInitial = managedClub?.name?.[0]?.toUpperCase() ?? '?'
   const introIllustrationSrc = getClubIntroIllustrationSrc(game?.managedClubId ?? '')
 
   async function finish() {
@@ -191,7 +165,12 @@ export function TilltradeScreen() {
             }}>
               {step === 1 && (
                 <>
-                  <ClubShield initial={clubInitial} />
+                  <ClubBadgeOnImage
+                    clubId={managedClub?.id ?? game.managedClubId}
+                    name={managedClub?.name ?? 'Klubben'}
+                    size={64}
+                    style={{ margin: '8px auto 4px' }}
+                  />
                   <p style={{
                     fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700,
                     color: 'var(--text-light)', textAlign: 'center', margin: 0,

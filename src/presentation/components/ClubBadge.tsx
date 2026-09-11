@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 type Symbol =
   | 'hammer' | 'star' | 'crown' | 'river' | 'shield'
   | 'mountain' | 'elk' | 'axe' | 'tower' | 'wave' | 'tree' | 'bear'
@@ -17,11 +19,19 @@ const CLUB_BADGES: Record<string, { primary: string; secondary: string; symbol: 
   'club_heros':{ primary: '#990000', secondary: '#FFFFFF', symbol: 'bear' },
 }
 
-const CLUB_BADGE_ASSETS: Partial<Record<string, { compact: string; full: string }>> = {
-  club_forsbacka: {
-    compact: '/assets/clubs/forsbacka/badge-32.svg',
-    full: '/assets/clubs/forsbacka/badge-64.svg',
-  },
+const CLUB_BADGE_ASSET_SLUGS: Partial<Record<string, string>> = {
+  club_forsbacka: 'forsbacka',
+  club_soderfors: 'soderfors',
+  club_vastanfors: 'vastanfors',
+  club_karlsborg: 'karlsborg',
+  club_malilla: 'malilla',
+  club_gagnef: 'gagnef',
+  club_halleforsnas: 'halleforsnas',
+  club_lesjofors: 'lesjofors',
+  club_rogle: 'rogle',
+  club_slottsbron: 'slottsbron',
+  club_skutskar: 'skutskar',
+  club_heros: 'heros',
 }
 
 // Shield path for 64×64 viewBox
@@ -148,16 +158,21 @@ interface ClubBadgeProps {
 }
 
 export function ClubBadge({ clubId, name, size = 40, strokeColor }: ClubBadgeProps) {
-  const asset = CLUB_BADGE_ASSETS[clubId]
-  if (asset) {
+  const assetSlug = CLUB_BADGE_ASSET_SLUGS[clubId]
+  if (assetSlug) {
+    const assetSize = size <= 24 ? 16 : size <= 40 ? 32 : 64
     return (
       <img
-        src={size <= 40 ? asset.compact : asset.full}
+        src={`/assets/clubs/${assetSlug}/badge-${assetSize}.svg`}
         alt={`${name} klubbmärke`}
         width={size}
         height={size}
         draggable={false}
-        style={{ display: 'block', objectFit: 'contain' }}
+        style={{
+          display: 'block',
+          objectFit: 'contain',
+          filter: strokeColor ? `drop-shadow(0 0 1px ${strokeColor})` : undefined,
+        }}
       />
     )
   }
@@ -227,5 +242,41 @@ export function ClubBadge({ clubId, name, size = 40, strokeColor }: ClubBadgePro
         opacity="0.2"
       />
     </svg>
+  )
+}
+
+/**
+ * Gemensam kontrastplatta när ett klubbmärke ligger direkt ovanpå en illustration.
+ * Bildytor varierar kraftigt mellan klubbarna; plattan håller både ljusa och mörka
+ * märken läsbara utan att varje scen bygger en egen speciallösning.
+ */
+export function ClubBadgeOnImage({
+  clubId,
+  name,
+  size = 40,
+  strokeColor = 'rgba(245,241,235,0.42)',
+  style,
+}: ClubBadgeProps & { style?: CSSProperties }) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 4,
+      borderRadius: 14,
+      background: 'rgba(10,8,12,0.48)',
+      border: '1px solid rgba(245,241,235,0.16)',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.28)',
+      backdropFilter: 'blur(2px)',
+      WebkitBackdropFilter: 'blur(2px)',
+      ...style,
+    }}>
+      <ClubBadge
+        clubId={clubId}
+        name={name}
+        size={size}
+        strokeColor={strokeColor}
+      />
+    </span>
   )
 }

@@ -24,6 +24,38 @@ test('all twelve club images are wired in arrival and opponent-intro surfaces', 
   }
 })
 
+test('all club badge sizes load and every image-overlay implementation uses the production assets', async ({ page }) => {
+  const clubs = [
+    'forsbacka', 'gagnef', 'halleforsnas', 'heros', 'karlsborg', 'lesjofors',
+    'malilla', 'rogle', 'skutskar', 'slottsbron', 'soderfors', 'vastanfors',
+  ]
+
+  // Kontaktkartan provar alla tre storlekar och samma kontrastplatta som används
+  // ovanpå klubbarnas skiftande ljusa/mörka introillustrationer.
+  await page.goto('/dev/scenes?scene=club-badge-contact-sheet&width=390&inspect=1')
+  for (const club of clubs) {
+    for (const size of [16, 32, 64]) {
+      await expectLoadedImage(page, `/assets/clubs/${club}/badge-${size}.svg`)
+    }
+  }
+
+  // De två faktiska produktimplementationerna där märket ligger över bild.
+  await page.goto('/dev/scenes?scene=tilltrade&club=club_vastanfors&width=390&inspect=1')
+  await expectLoadedImage(page, '/assets/clubs/vastanfors/badge-64.svg')
+  await page.goto('/dev/scenes?scene=miljoheader-forsbacka&width=390&inspect=1')
+  await expectLoadedImage(page, '/assets/clubs/forsbacka/badge-64.svg')
+  await expectLoadedImage(page, '/assets/clubs/forsbacka/badge-32.svg')
+
+  // Båda finalflödena hade egna bokstavssköldar och ska nu läsa samma kanoniska
+  // ClubBadge-assets. Klicket är nödvändigt: märkena visas först i LAGEN-steget.
+  for (const scene of ['match-laddning-final', 'final-intro-lagpresentation']) {
+    await page.goto(`/dev/scenes?scene=${scene}&width=390&inspect=1`)
+    await page.getByRole('button', { name: /LAGEN/ }).click()
+    await expectLoadedImage(page, '/assets/clubs/forsbacka/badge-64.svg')
+    await expectLoadedImage(page, '/assets/clubs/gagnef/badge-64.svg')
+  }
+})
+
 test('every product moment with a dedicated image renders a loaded asset', async ({ page }) => {
   const scenes: Array<[string, string]> = [
     ['annandagen', 'annandagen.jpg'],
