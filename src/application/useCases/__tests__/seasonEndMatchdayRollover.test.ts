@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { archiveCompletedSeasonInbox, handleSeasonEnd, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverRiskySponsorContract, rolloverSeasonMatchdayAnchors, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
+import { archiveCompletedSeasonInbox, handleSeasonEnd, offseasonRecoveryDays, rebaseFutureMatchday, rolloverActiveArcs, rolloverCoffeeRoomReturns, rolloverEconomicCrisis, rolloverFollowUps, rolloverLeadershipActions, rolloverNationalTeamCamp, rolloverPendingDemand, rolloverPlayerInjuryRamp, rolloverRiskySponsorContract, rolloverSeasonMatchdayAnchors, rolloverTransientEchoMatchdays, rolloverYouthAvailability } from '../seasonEndProcessor'
 import { createNewGame } from '../createNewGame'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { InboxItemType } from '../../../domain/enums'
@@ -236,6 +236,37 @@ describe('season rollover — absoluta matchday-fält', () => {
 
     expect(rolled.recentlyInjuredUntil).toBe(3)
     expect(rolledUntouched.recentlyInjuredUntil).toBeUndefined()
+  })
+
+  it('låter kalenderdagarna under sommaren läka skador och rensar spela-på-läget', () => {
+    const long = {
+      id: 'p1', isInjured: true, injuryDaysRemaining: 30, playingThroughInjury: true,
+    } as Player
+    const short = { id: 'p2', isInjured: true, injuryDaysRemaining: 7 } as Player
+
+    const [stillInjured, healed] = rolloverPlayerInjuryRamp([long, short], 22, 14)
+
+    expect(stillInjured).toMatchObject({ injuryDaysRemaining: 16, isInjured: true, playingThroughInjury: false })
+    expect(healed).toMatchObject({ injuryDaysRemaining: 0, isInjured: false, playingThroughInjury: false })
+    expect(offseasonRecoveryDays('2026-03-21', 2026)).toBe(194)
+  })
+
+  it('kopplar in sommarens skadeåterhämtning i det verkliga rollovern', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, season: 2026, seed: 44 })
+    const injured = {
+      ...base.players[0], isInjured: true, injuryDaysRemaining: 120, playingThroughInjury: true,
+    }
+    const rolled = handleSeasonEnd({
+      ...base,
+      currentDate: '2026-03-21',
+      players: base.players.map(player => player.id === injured.id ? injured : player),
+    }, 44).game
+
+    expect(rolled.players.find(player => player.id === injured.id)).toMatchObject({
+      injuryDaysRemaining: 0,
+      isInjured: false,
+      playingThroughInjury: false,
+    })
   })
 
   it('bevarar periodiseringslägets faktiska elapsed-tid över säsongsskiftet (steg C)', () => {

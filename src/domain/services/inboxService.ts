@@ -1,8 +1,7 @@
 import type { Fixture } from '../entities/Fixture'
 import type { Player } from '../entities/Player'
 import type { Club } from '../entities/Club'
-import type { InboxItem } from '../entities/SaveGame'
-import type { YouthIntakeResult } from './youthIntakeService'
+import type { InboxItem, YouthIntakeRecord } from '../entities/SaveGame'
 import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType } from '../enums'
@@ -180,7 +179,10 @@ export function createPlayThroughAftermathItem(
 }
 
 export function createYouthIntakeItem(
-  result: YouthIntakeResult,
+  result: {
+    record: Pick<YouthIntakeRecord, 'topProspectId'>
+    newPlayers: Array<Pick<Player, 'id' | 'firstName' | 'lastName' | 'position' | 'potentialAbility'>>
+  },
   club: Club,
   currentDate: string,
   scoutTexts: Record<string, string>,
