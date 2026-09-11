@@ -55,10 +55,10 @@ export const UPPTAKT_COUNTDOWN: Record<UpptaktSubState, string[]> = {
   ],
   farozon: [
     '{N} omgångar kvar — till slutspelet eller hemfärd.',
-    '{N} till spel som avgör säsongen.',
+    '{N} matcher kvar som avgör säsongen.',
     '{N} matcher kvar. Marginalen tål inte slarv.',
     '{N} omgångar att hålla isär det här.',
-    '{N} kvar. Poängen måste in — helst alla.',
+    'En match kvar. Poängen måste in — helst alla.',
   ],
   bottenstrid: [
     '{N} omgångar kvar — för att hålla oss ifrån kvalet.',

@@ -137,6 +137,17 @@ export function processUpcomingFixtureInbox(
 } {
   const inboxItems: InboxItem[] = []
   let pendingAnnandagsVal = game.pendingAnnandagsVal ?? false
+  // Ett obesvarat arrangemangsval får inte bli ett permanent portalkort när
+  // själva annandagsmatchen redan är spelad. Behåll valet fram till avslag,
+  // men pensionera det så snart dess enda möjliga målmatch har passerat.
+  const completedAnnandagenHomeFixture = fixtures.find(fixture =>
+    fixture.isAnnandagen &&
+    fixture.homeClubId === game.managedClubId &&
+    fixture.status === FixtureStatus.Completed
+  )
+  if (pendingAnnandagsVal && completedAnnandagenHomeFixture) {
+    pendingAnnandagsVal = false
+  }
   const annandagenHomeFixture = (!game.annandagsValGjort && !game.pendingAnnandagsVal)
     ? fixtures.find(fixture =>
         fixture.isAnnandagen &&

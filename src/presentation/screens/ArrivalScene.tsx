@@ -158,13 +158,13 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
         flexDirection: 'column',
         gap: 20,
       }}>
-        {/* Narrativ-panel — mörk backing så texten blir läsbar mot den ljusa
-            illustrationen, även när tidigare repliker dimmats. */}
+        {/* Narrativ-panel — tillräckligt tät mörk backing för att den ljusa
+            texten ska läsa även mot klubbmotiv med mörka hus/fasader. */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 18,
-          background: 'rgba(10,8,12,0.52)',
+          background: 'rgba(10,8,12,0.70)',
           border: '1px solid rgba(245,241,235,0.06)',
           borderRadius: 'var(--radius)',
           padding: '20px 18px',

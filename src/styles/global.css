@@ -1593,7 +1593,16 @@ a {
    ljusa klubbmotiv. Behåll hierarkin men inte på bekostnad av läsbarheten. */
 .arrival-scene .scene-setting.in.dimmed,
 .arrival-scene .scene-replica.in.dimmed {
-  opacity: 0.82;
+  opacity: 0.9;
+}
+
+/* Explicit kontrakt i stället för en ärvd token: ankomsttext ligger alltid
+   ovanpå fotografisk/illustrerad bakgrund och får aldrig få portalens mörka
+   textfärg genom en framtida temaremappning. */
+.arrival-scene .scene-setting,
+.arrival-scene .scene-setting strong,
+.arrival-scene .h-scene-quote {
+  color: #f5f1eb;
 }
 
 .arrival-scene .h-scene-speaker {

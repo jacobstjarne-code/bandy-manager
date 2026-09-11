@@ -121,6 +121,19 @@ describe('fixtureProcessor', () => {
     expect(result.upcomingManagedFixture?.id).toBe(annandagen.id)
   })
 
+  it('pensionerar ett obesvarat annandagsval när hemmamatchen har passerat', () => {
+    const annandagen = completedFixture({
+      status: FixtureStatus.Completed,
+      matchday: 12,
+      isAnnandagen: true,
+    })
+    const save = game({ pendingAnnandagsVal: true })
+
+    const result = processUpcomingFixtureInbox([annandagen], save, 13)
+
+    expect(result.pendingAnnandagsVal).toBe(false)
+  })
+
   it('skyddar alla handlingskrävande inkorgstyper från åldersrensning', () => {
     expect(INBOX_PROTECTED_TYPES).toEqual(new Set([
       InboxItemType.TransferOffer,
