@@ -37,6 +37,29 @@ taktik, beslut och säsongsövergång fortsatte därefter genom produktgränssni
 Den delen är därför **diagnostisk fortsättning efter ett redan konstaterat
 underkännande**, inte ett påstående om en obruten naturlig tvåsäsongskörning.
 
+## Efterföljande blockerarpass — `593fa055`
+
+De fyra nådda blockerarna är rotfixade utan ändring i matchmotor,
+sannolikheter eller den datadrivna balanseringen:
+
+- anslagslagrets fokus-/inertlivscykel överlever portalens omrenderingar och
+  dismiss använder alltid den senaste callbacken,
+- karaktärsspelarval genereras bara för den egna klubbens spelare,
+- årsbokens hero kan inte vara grön när ett fruset styrelseuppdrag är missat,
+  och den nya säsongens mål räknas från noll mot den nya säsongens state,
+- transferbud med samma kanoniska id kollapsas atomärt och en terminal status
+  kan inte återkomma som `pending`.
+
+Regressionerna passerar. Den fulla sviten passerade 5 163/5 163 före den sista
+rena heropresentationen; därefter passerade 25/25 riktade årsbokstester samt
+full produktionsbuild med samtliga design- och innehållsgrindar. Den befintliga
+femsäsongskalibreringen var oförändrad på 9,39 mål per match och 21,9 procent
+hörnmål.
+
+Detta stänger de fyra specifika blockerraderna, men inte själva Grind 2-provet.
+Ett nytt obrutet naturligt tvåsäsongsprov på medel mot `593fa055` krävs innan
+huvudraden kan arkiveras.
+
 ## Omfattning och utfall
 
 - Säsong 2026/27: cupsemifinal, 3:e plats med 24 poäng, kvartsfinalförlust
