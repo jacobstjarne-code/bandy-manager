@@ -1,6 +1,7 @@
 import type { AssistantCoach, CoachPersonality, CoachBackground } from '../entities/AssistantCoach'
 import type { NoteTag } from './playerNotesService'
 import { seededPick, stringHash } from '../utils/random'
+import { swedishGenitive } from '../data/matchCommentary'
 
 // Svenska förnamn + efternamn — speglar aiCoachService
 const FIRST_NAMES = ['Leif', 'Björn', 'Håkan', 'Stefan', 'Per', 'Johan', 'Anders', 'Mikael', 'Lars', 'Gunnar', 'Ulf', 'Rolf', 'Kent', 'Peter', 'Sven']
@@ -689,7 +690,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `${n} är inte nöjd, och det blir sällan bättre av att vänta.`,
           ],
           philosophical: [
-            `${n}s missnöje är en signal. Lyssna innan det eskalerar.`,
+            `${swedishGenitive(n)} missnöje är en signal. Lyssna innan det eskalerar.`,
             `Missnöje gror i tystnad — ${n} säger mer med blicken än med orden.`,
             `${n} bär på något som inte löser sig av sig självt.`,
           ],

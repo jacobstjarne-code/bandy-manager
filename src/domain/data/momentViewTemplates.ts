@@ -2,6 +2,7 @@ import type { MomentSource, TransferRole } from '../entities/Moment'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import type { ClubEra } from '../entities/SaveGame'
 import type { MatchHighlightCategory } from '../entities/SeasonSummary'
+import { swedishGenitive } from './matchCommentary'
 
 /**
  * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 4, Skärpning 3 (Opus
@@ -75,7 +76,7 @@ const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
       case 'kapten':
         return { title: 'Kaptenen lämnar', body: `${who} tar bindeln av sig och går till ${to}. Sånt känns i hela omklädningsrummet.` }
       case 'klackfavorit':
-        return { title: 'Klackens favorit går', body: `${who} var den läktaren sjöng om. Nu bär han ${to}s tröja. Det tar tid att förlåta.` }
+        return { title: 'Klackens favorit går', body: `${who} var den läktaren sjöng om. Nu bär han ${swedishGenitive(to)} tröja. Det tar tid att förlåta.` }
       case 'legend':
         return { title: 'En legend lämnar', body: `${who} gav klubben år som inte glöms. Att se honom gå till ${to} gör ont, hur rätt affären än var.` }
       case 'akademiprodukt':

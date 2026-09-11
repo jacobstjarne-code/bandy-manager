@@ -1,6 +1,7 @@
 import type { Mecenat } from '../entities/Mecenat'
 import type { GameEvent } from '../entities/GameEvent'
 import type { SaveGame } from '../entities/SaveGame'
+import { swedishGenitive } from '../data/matchCommentary'
 
 export interface DinnerOption {
   id: string
@@ -102,7 +103,7 @@ function getSettingDescription(setting: 'jakt' | 'bastu' | 'whisky', mec: Mecena
     return `Dimman ligger låg över Stormyren. Geväret på axeln, hunden framför. ${mec.name} stannar vid en kulle och häller upp kaffe ur termosen.`
   }
   if (setting === 'whisky') {
-    return `Biblioteket i ${mec.name}s hus. Brasan sprakar. En flaska Lagavulin 16 på bordet. "Jag har funderat", säger hen.`
+    return `Biblioteket i ${swedishGenitive(mec.name)} hus. Brasan sprakar. En flaska Lagavulin 16 på bordet. "Jag har funderat", säger hen.`
   }
   return `Ångan ligger tung. Björkris hänger på kroken. ${mec.name} lutar sig mot bastuväggen och blundar. "Kan vi prata om nästa säsong?"`
 }
@@ -154,7 +155,7 @@ export function generateDinnerScene(mec: Mecenat, _season: number): DinnerScene 
     },
     {
       id: 'q2',
-      text: `"Jag hörde att det finns intresse för ${name.split(' ')[0]}s pengar från andra håll i kommunen. Du vet vad jag menar?" ${name} lägger ner glaset.`,
+      text: `"Jag hörde att det finns intresse för ${swedishGenitive(name.split(' ')[0])} pengar från andra håll i kommunen. Du vet vad jag menar?" ${name} lägger ner glaset.`,
       options: [
         {
           id: 'q2_opt0',

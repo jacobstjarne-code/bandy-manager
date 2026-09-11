@@ -5,6 +5,7 @@
  * strängar nedan är Opus text, bara interpolerade av kod.
  */
 import type { ContractTermKey } from '../services/contractNegotiationService'
+import { swedishGenitive } from './matchCommentary'
 
 export const CONTRACT_TERM_CHIP_LABELS: Record<ContractTermKey, string> = {
   signOnBonus: 'Handpenning',
@@ -60,13 +61,13 @@ export function contractTermAcceptText(key: ContractTermKey, name: string, spons
     case 'jobGuarantee':
       return `${name} skrev på. Måndag börjar han hos ${sponsorName ?? 'sponsorn'}. Träning tisdag.`
     case 'imageRights':
-      return `${name} skrev på. Om en vecka hänger han på ${sponsorName ?? 'sponsorn'}s skyltfönster.`
+      return `${name} skrev på. Om en vecka hänger han på ${swedishGenitive(sponsorName ?? 'sponsorn')} skyltfönster.`
   }
 }
 
 /** §6 — event jobbet_forsvann, avfyras när sponsorn/patronen bakom en bunden jobbgaranti lämnar. */
 export const JOBBET_FORSVANN_TEXT = {
-  title: (name: string) => `${name}s jobb är borta`,
+  title: (name: string) => `${swedishGenitive(name)} jobb är borta`,
   body: (sponsorName: string, name: string) =>
     `${sponsorName} lämnade — och med dem jobbet du lovade ${name}. Han står i kansliet med en fråga du inte kan svara på med ett leende.`,
   choices: {
@@ -80,5 +81,5 @@ export const JOBBET_FORSVANN_TEXT = {
 
 /** §6 — pressfråga (k11-stam, ansikte). */
 export function imageRightsPressQuestion(name: string, sponsorName: string, matchesWithoutGoal: number): string {
-  return `${name} hänger på ${sponsorName}s affischer och har inte gjort mål på ${matchesWithoutGoal} matcher. Är han värd sin plats — på planen eller på väggen?`
+  return `${name} hänger på ${swedishGenitive(sponsorName)} affischer och har inte gjort mål på ${matchesWithoutGoal} matcher. Är han värd sin plats — på planen eller på väggen?`
 }

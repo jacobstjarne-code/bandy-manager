@@ -115,6 +115,16 @@ describe('mecenatens krav — triggern (generatePostAdvanceEvents)', () => {
   })
 })
 
+describe('mecenatens krav — genitiv (Jacobs körorder 2026-09-11: wira ALLA mecenat-/sponsornamn genom swedishGenitive)', () => {
+  it('s-slutande mecenatnamn får INGET extra s i "let_go"-subtiteln', () => {
+    const mecenat = makeMecenat({ name: 'Fors' })
+    const player: Player = { id: 'p1', firstName: 'Anders', lastName: 'Berg' } as Player
+    const event = generateMecenatKravEvent(mecenat, player, 5)
+    expect(event.choices[1].subtitle).toBe('prövar Fors tålamod')
+    expect(event.choices[1].subtitle).not.toContain('Forss')
+  })
+})
+
 describe('mecenatens krav — resolution (resolveEvent)', () => {
   it('"Behåll honom": spelaren stannar i truppen, mecenatHappiness +12, inbox-notis', () => {
     const game = makeGameWithVeteranAndMecenat()

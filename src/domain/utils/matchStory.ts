@@ -2,6 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { SaveGame } from '../entities/SaveGame'
 import { MatchEventType } from '../enums'
 import { formatArenaName } from './arenaName'
+import { swedishGenitive } from '../data/matchCommentary'
 import { deriveUtfall } from '../services/matchTypeAxes'
 
 export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
@@ -77,7 +78,7 @@ export function generateMatchStory(fixture: Fixture, game: SaveGame): string {
   }
 
   if (fixture.attendance && managedIsHome && managedClub) {
-    sentences.push(`${fixture.attendance} på ${formatArenaName(managedClub.arenaName ?? managedClub.name + 's IP')}.`)
+    sentences.push(`${fixture.attendance} på ${formatArenaName(managedClub.arenaName ?? `${swedishGenitive(managedClub.name)} IP`)}.`)
   }
 
   return sentences.join(' ')

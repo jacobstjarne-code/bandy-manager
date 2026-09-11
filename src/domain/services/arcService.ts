@@ -701,7 +701,7 @@ export function progressArcs(
             id: `inbox_arc_resolved_generic_${arc.id}`,
             type: InboxItemType.MediaEvent,
             title: `Berättelsen om ${name}`,
-            body: `${name}s andra torka. Hungern är kvar. Tålamodet är en annan sak.`,
+            body: `${swedishGenitive(name)} andra torka. Hungern är kvar. Tålamodet är en annan sak.`,
             relatedPlayerId: p.id,
             isRead: false,
             date: currentDate,
@@ -757,7 +757,7 @@ export function progressArcs(
               : `Styrelsen frågar om ${name}`,
             body: isRecurrenceVariant
               ? `Du trodde på ${name} förra gången, och han gav er rätt. Nu sitter han utvisad igen. Styrelsen vill veta om det är samma svar.`
-              : `Styrelsen undrar om ${name}s osäkerhet är värt risken. De vill ha ett klart besked om hans roll i laget.`,
+              : `Styrelsen undrar om ${swedishGenitive(name)} osäkerhet är värt risken. De vill ha ett klart besked om hans roll i laget.`,
             choices: [
               {
                 id: 'back_joker',

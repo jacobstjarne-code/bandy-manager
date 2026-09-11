@@ -29,12 +29,13 @@ const BUSINESS_TYPES = [
 ]
 
 import type { Sponsor } from '../entities/SaveGame'
+import { swedishGenitive } from '../data/matchCommentary'
 
 function generateSponsorName(rand: () => number): { name: string; category: string } {
   const first = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)]
   const biz = BUSINESS_TYPES[Math.floor(rand() * BUSINESS_TYPES.length)]
   const name = rand() > 0.3
-    ? `${first}s ${biz.suffix}`
+    ? `${swedishGenitive(first)} ${biz.suffix}`
     : `${biz.suffix} ${first}`
   return { name, category: biz.category }
 }

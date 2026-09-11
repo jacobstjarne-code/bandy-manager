@@ -3,6 +3,7 @@ import type { GameEvent } from '../entities/GameEvent'
 import type { Player } from '../entities/Player'
 import { TacticMentality } from '../enums'
 import { mecenatVoiceId } from './voiceIntroductionService'
+import { swedishGenitive } from '../data/matchCommentary'
 
 const MECENAT_SOCIAL_KEY_PREFIX = 'mecenat_social_'
 export const MECENAT_SOCIAL_MAX_PER_SEASON = 2
@@ -691,7 +692,7 @@ export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, seaso
       {
         id: 'let_go',
         label: 'Låt honom gå',
-        subtitle: `prövar ${mecenat.name}s tålamod`,
+        subtitle: `prövar ${swedishGenitive(mecenat.name)} tålamod`,
         effect: {
           type: 'multiEffect',
           subEffects: JSON.stringify([
