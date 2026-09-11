@@ -424,6 +424,27 @@ describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_K
     expect(restoredIds).toContain('s3')
   })
 
+  it('rotation är per orsak: två pre_migration-snapshots roterar ALDRIG ut en pre_newgame (2026-09-11)', async () => {
+    // loadSaveGame() tar en pre_migration vid varje laddning. Med en total
+    // rotation på 2 hade två sidladdningar alltid raderat återställnings-
+    // punkten för det farligaste momentet (nytt spel). Nu överlever den.
+    const safety = makeGame('safety', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    await snapshotSave('pre_newgame', safety)
+    for (let i = 0; i < 3; i++) {
+      await snapshotSave('pre_migration', makeGame(`mig${i}`, 'club_forsbacka', '2025-10-02T10:00:00.000Z'))
+    }
+
+    const snapshots = await listSaveSnapshots()
+    const byReason = snapshots.reduce<Record<string, number>>((acc, s) => {
+      acc[s.reason] = (acc[s.reason] ?? 0) + 1
+      return acc
+    }, {})
+    expect(byReason).toEqual({ pre_newgame: 1, pre_migration: 2 })
+    const restoredIds = await Promise.all(snapshots.map(s => loadSaveSnapshot(s.key).then(g => g?.id)))
+    expect(restoredIds).toContain('safety')
+    expect(restoredIds).not.toContain('mig0')
+  })
+
   it('loadSaveSnapshot returnerar null för en okänd nyckel', async () => {
     expect(await loadSaveSnapshot('bandy_snapshot_okand_123_0')).toBeNull()
     expect(getSaveRecoveryReport().restores).toMatchObject({

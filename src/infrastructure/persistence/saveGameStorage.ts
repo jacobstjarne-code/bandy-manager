@@ -14,7 +14,16 @@ import { recordRestoreResult, recordSnapshotResult } from './saveRecoveryMetrics
 // (gameStore.ts) och migreringssteget i loadSaveGame() nedan. Samma
 // idb-keyval-mönster som resten av filen — ingen ny lagringsmekanism.
 const SNAPSHOT_KEY_PREFIX = 'bandy_snapshot_'
+// Rotationen är PER ORSAK, inte total (2026-09-11). Tidigare 2 totalt: eftersom
+// loadSaveGame() tar en 'pre_migration'-snapshot vid VARJE laddning hade två
+// sidladdningar alltid roterat ut 'pre_newgame' — skyddsnätet för det
+// farligaste momentet höll bara tills spelaren laddat om två gånger.
 const SNAPSHOT_ROTATION_SIZE = 2
+
+function snapshotReasonOf(key: string): string {
+  const parts = key.slice(SNAPSHOT_KEY_PREFIX.length).split('_')
+  return parts.slice(0, parts.length - 2).join('_')
+}
 export const SAVE_RECOVERY_NEEDED_KEY = 'bandy-save-recovery-needed'
 export const SAVE_RECOVERY_NEEDED_EVENT = 'bandy-save-recovery-needed'
 
@@ -35,9 +44,15 @@ export async function snapshotSave(reason: string, game: SaveGame): Promise<stri
     const key = `${SNAPSHOT_KEY_PREFIX}${reason}_${Date.now()}_${snapshotCounter++}`
     await set(key, game)
     const updated = [...keys, key]
-    while (updated.length > SNAPSHOT_ROTATION_SIZE) {
-      const oldest = updated.shift()
-      if (oldest) await del(oldest).catch(() => {})
+    // Rotera bara bort äldre snapshots med SAMMA orsak — en 'pre_migration'
+    // får aldrig tränga ut en 'pre_newgame'. Indexet är kronologiskt (append),
+    // så första träffen med samma orsak är den äldsta.
+    let sameReason = updated.filter(k => snapshotReasonOf(k) === reason)
+    while (sameReason.length > SNAPSHOT_ROTATION_SIZE) {
+      const oldest = sameReason[0]
+      sameReason = sameReason.slice(1)
+      updated.splice(updated.indexOf(oldest), 1)
+      await del(oldest).catch(() => {})
     }
     await set(`${SNAPSHOT_KEY_PREFIX}index`, updated)
     recordSnapshotResult(reason, true)
@@ -90,11 +105,9 @@ export async function listSaveSnapshots(): Promise<SaveSnapshotSummary[]> {
     // Format: bandy_snapshot_{reason}_{takenAt}_{counter} — reason kan i
     // teorin innehålla understreck, så parsa från HÖGER (counter, sen
     // takenAt) istället för att gissa var reason slutar.
-    const withoutPrefix = key.slice(SNAPSHOT_KEY_PREFIX.length)
-    const parts = withoutPrefix.split('_')
+    const parts = key.slice(SNAPSHOT_KEY_PREFIX.length).split('_')
     const takenAt = Number(parts[parts.length - 2])
-    const reason = parts.slice(0, parts.length - 2).join('_')
-    return { key, reason, takenAt }
+    return { key, reason: snapshotReasonOf(key), takenAt }
   }).sort((a, b) => b.takenAt - a.takenAt)
 }
 
