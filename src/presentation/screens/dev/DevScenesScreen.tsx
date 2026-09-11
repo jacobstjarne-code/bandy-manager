@@ -207,7 +207,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
   | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar'
-  | 'granska-level3' | 'board-patience-minimal' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
+  | 'granska-level3' | 'board-patience-minimal' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
@@ -327,6 +327,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'mecenat-dinner', label: 'Mecenatmiddag — tre frågor och verklig resolution' },
   { id: 'granska-level3', label: 'Granska — löst val med belagt citat' },
   { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
+  { id: 'next-match-forsbacka', label: 'Nästa match — Forsbacka klubbmärkespilot' },
   { id: 'next-match-derby', label: 'Nästa match — derby i portal' },
   { id: 'next-match-annandagen', label: 'Nästa match — annandagen i portal' },
   { id: 'corner-interaction', label: 'Matchinteraktion — hörna' },
@@ -1102,6 +1103,15 @@ function makeSpecialNextMatchGame(kind: 'derby' | 'annandagen'): SaveGame {
 
 const nextMatchDerbyGame = makeSpecialNextMatchGame('derby')
 const nextMatchAnnandagenGame = makeSpecialNextMatchGame('annandagen')
+const nextMatchForsbackaGame = (() => {
+  const base = makeBaseGame({ seed: 42, clubId: 'club_forsbacka' })
+  const fixture = base.fixtures.find(f =>
+    f.status === 'scheduled'
+      && (f.homeClubId === base.managedClubId || f.awayClubId === base.managedClubId),
+  )
+  if (!fixture) throw new Error('Forsbackas dev-fixtur saknar en schemalagd match')
+  return { ...base, currentMatchday: Math.max(0, fixture.matchday - 1), fixtures: [fixture] }
+})()
 
 // PORTAL-TAKREGEL (2026-08-09) — §5-baselinen, fyra tillstånd.
 // portal-full: matchday 24 valt specifikt — inom upptakt-fönstret (sista 3
@@ -2030,6 +2040,7 @@ export function DevScenesScreen() {
           tilltradeStep: 1 as const,
         }
       : scene === 'board-patience-minimal' ? boardPatienceWarningGame
+      : scene === 'next-match-forsbacka' ? nextMatchForsbackaGame
       : scene === 'next-match-derby' ? nextMatchDerbyGame
       : scene === 'next-match-annandagen' ? nextMatchAnnandagenGame
       : scene === 'manager-fired-redirect' ? gameOverGame
@@ -2397,9 +2408,13 @@ export function DevScenesScreen() {
             </div>
           </div>
         )}
-        {(scene === 'next-match-derby' || scene === 'next-match-annandagen') && (
+        {(scene === 'next-match-forsbacka' || scene === 'next-match-derby' || scene === 'next-match-annandagen') && (
           <div style={{ minHeight: '844px', background: 'var(--bg-portal)', padding: '28px 12px' }}>
-            <NextMatchPrimary game={scene === 'next-match-derby' ? nextMatchDerbyGame : nextMatchAnnandagenGame} />
+            <NextMatchPrimary game={scene === 'next-match-forsbacka'
+              ? nextMatchForsbackaGame
+              : scene === 'next-match-derby'
+                ? nextMatchDerbyGame
+                : nextMatchAnnandagenGame} />
           </div>
         )}
         {(scene === 'sommaren-s2' || scene === 'sommaren-titelforsvarare' || scene === 'sommaren-tomt' || scene === 'sommaren-siffra') && (
