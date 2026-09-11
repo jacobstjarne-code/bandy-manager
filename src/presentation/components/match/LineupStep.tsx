@@ -302,7 +302,7 @@ export function LineupStep({
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
               Fyll laget automatiskt
             </span>
-            <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>ett tryck fyller — inget läge att välja</span>
+            <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>välj prioritering med ett tryck</span>
           </div>
           <div style={{ display: 'flex', gap: 7, marginTop: 7 }}>
             {(['strongest', 'rested', 'matchfit'] as const).map(mode => {

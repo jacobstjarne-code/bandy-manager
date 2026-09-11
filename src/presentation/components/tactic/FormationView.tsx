@@ -241,7 +241,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
           Fyll laget automatiskt
         </span>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ett tryck fyller — inget läge att välja</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>välj prioritering med ett tryck</span>
       </div>
       <div style={{ display: 'flex', gap: 7, marginBottom: autoFillMsg ? 4 : 8 }}>
         {/* DOM_TAKTIKTAVLA_PRIMARHIERARKI_2026-09-10 (1a): assistenten i
