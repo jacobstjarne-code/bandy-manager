@@ -3,6 +3,7 @@ import type { GameEvent } from '../../entities/GameEvent'
 import type { YouthPlayer } from '../../entities/Academy'
 import { klackLeaderVoiceId } from '../voiceIntroductionService'
 import { seasonalUnitRoll } from '../seasonalRollService'
+import { swedishGenitive } from '../../utils/swedishGrammar'
 
 // O1 candidates 2–4. The values are deliberately modest: these events are
 // memorable cross-system choices, not a shortcut around the ordinary
@@ -137,7 +138,7 @@ export function generateYouthBurnRiskEvent(
       {
         id: 'throw_in',
         label: 'Kasta in honom',
-        subtitle: `riskerar ${name}s utveckling`,
+        subtitle: `riskerar ${swedishGenitive(name)} utveckling`,
         effect: { type: 'developmentRateDelta', targetPlayerId: youth.id, amount: O1_YOUTH_DEVELOPMENT_COST },
       },
       { id: 'let_mature', label: 'Låt honom mogna', effect: { type: 'noOp' } },

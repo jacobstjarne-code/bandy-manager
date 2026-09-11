@@ -2,6 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { getCharacterName } from '../supporterService'
 import { klackLeaderVoiceId } from '../voiceIntroductionService'
+import { swedishGenitive } from '../../utils/swedishGrammar'
 
 export function generateSupporterEvents(
   game: SaveGame,
@@ -66,7 +67,7 @@ export function generateSupporterEvents(
         id: eid,
         type: 'supporterEvent',
         title: `Konflikt i klacken`,
-        body: `${sture} hör av sig. Han tycker att ${elin}s tifo var bra, men oroar sig för att klacken "tappat sitt ursprung". Han vill att det ska vara som det alltid har varit.\n\n${elin} hörde talas om det och är upprörd. De pratar inte längre.\n\n"Du behöver inte göra något", säger ${rolf}. "Men det hjälper om du visar att du bryr dig om båda."`,
+        body: `${sture} hör av sig. Han tycker att ${swedishGenitive(elin)} tifo var bra, men oroar sig för att klacken "tappat sitt ursprung". Han vill att det ska vara som det alltid har varit.\n\n${elin} hörde talas om det och är upprörd. De pratar inte längre.\n\n"Du behöver inte göra något", säger ${rolf}. "Men det hjälper om du visar att du bryr dig om båda."`,
         choices: [
           {
             id: 'both',
@@ -108,7 +109,7 @@ export function generateSupporterEvents(
       events.push({
         id: eid,
         type: 'supporterEvent',
-        title: `${tommy}s öppna brev`,
+        title: `${swedishGenitive(tommy)} öppna brev`,
         body: `${tommy} har skrivit ett öppet brev till ${paperName}. Han skriver om varför han och familjen fortfarande kommer — och vad de hoppas på.\n\n"Vi är inte missnöjda med spelet. Vi är missnöjda med känslan. Det är skillnad."\n\nBrevet har fått många reaktioner i kommentarsfältet.`,
         choices: [
           {

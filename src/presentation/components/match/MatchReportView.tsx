@@ -2,6 +2,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { MatchEventType, PlayoffRound } from '../../../domain/enums'
 import { formatArenaName } from '../../../domain/utils/arenaName'
+import { swedishGenitive } from '../../../domain/utils/swedishGrammar'
 import { generateMatchStory } from '../../../domain/utils/matchStory'
 import { ScoreboardStalvallen } from './scoreboard/ScoreboardStalvallen'
 import type { ScoreboardEvent } from './scoreboard/ScoreboardStalvallen'
@@ -96,7 +97,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
         {/* Arena line */}
         <div className="report-arena-line">
-          <span>{formatArenaName(homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`)}</span>
+          <span>{formatArenaName(homeClub?.arenaName ?? `${swedishGenitive(homeClub?.shortName ?? '?')} IP`)}</span>
           {fixture.attendance && (
             <>
               <span className="report-arena-sep">·</span>

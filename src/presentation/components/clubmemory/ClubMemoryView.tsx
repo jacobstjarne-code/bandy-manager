@@ -12,6 +12,7 @@ import { Spine } from '../shared/Spine'
 import type { SpineItem } from '../shared/Spine'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { readClubLedger } from '../../../domain/services/eventLedgerService'
+import { swedishGenitive } from '../../../domain/utils/swedishGrammar'
 
 const KIND_LABEL: Record<string, string> = {
   triumph: 'Triumf',
@@ -72,7 +73,7 @@ export function buildBlodslinje(game: SaveGame): SpineItem[] {
     const juniorName = resolveSubjectName(game, entry.subject, entry.subjectSnapshot) ?? 'En spelare'
     const mentorName = resolveSubjectName(game, entry.subject2, entry.subject2Snapshot) ?? 'Okänd mentor'
     if (!ended) {
-      items.push({ label: mentorName, season: entry.season, text: `${juniorName} är ${mentorName}s adept.` })
+      items.push({ label: mentorName, season: entry.season, text: `${juniorName} är ${swedishGenitive(mentorName)} adept.` })
       continue
     }
     const startedPayload = entry.mentorship && 'juniorCaAtStart' in entry.mentorship ? entry.mentorship : undefined
@@ -114,7 +115,7 @@ export function buildBlodslinje(game: SaveGame): SpineItem[] {
       ? `${juniorName} tog steget upp.`
       : record.outcome === 'ended'
       ? `${juniorName} och ${seniorName} gick skilda vägar.`
-      : `${juniorName} är ${seniorName}s adept.`
+      : `${juniorName} är ${swedishGenitive(seniorName)} adept.`
     items.push({ label, season: record.endSeason ?? game.currentSeason, text, dimmed: record.outcome === 'ended' })
   }
   return items

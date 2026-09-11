@@ -953,7 +953,7 @@ export function getTraitCommentary(
   const traitSuspensions: Record<string, string[]> = {
     joker: [
       `${name} gör det igen. Briljant ena sekunden, utvisad nästa.`,
-      `{minuter} minuter utanför. ${name}s temperament kostar laget.`,
+      `{minuter} minuter utanför. ${swedishGenitive(name)} temperament kostar laget.`,
       `${name} med en tackling ingen förstår. Domaren blåser. Solklart.`,
       `Karaktäristiskt ${name}. Genialitet och utvisning samma kvart.`,
       `${name} ut. Han skrattar. Det är värre.`,

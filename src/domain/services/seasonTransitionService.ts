@@ -2,6 +2,7 @@ import type { SeasonSummary } from '../entities/SeasonSummary'
 import type { SeasonTransitionEvent } from '../entities/SaveGame'
 import type { Skede, Tavlingstyp } from './matchTypeAxes'
 import { getBurnoutZone } from './managerProfileService'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 /**
  * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18, DOM given samma dag).
@@ -127,7 +128,7 @@ export function selectAwayEventLines(events: SeasonTransitionEvent[]): string[] 
 
 function formatAwayEventLine(event: SeasonTransitionEvent): string {
   switch (event.type) {
-    case 'contractExpired': return `${event.playerLastName}s kontrakt gick ut. Ingen ringde honom i tid.`
+    case 'contractExpired': return `${swedishGenitive(event.playerLastName)} kontrakt gick ut. Ingen ringde honom i tid.`
     case 'retired': return `${event.playerLastName} la av.`
     case 'aged': return `${event.playerLastName} fyllde ${event.age}.`
     case 'promoted': return `${event.playerLastName} kom upp från P19.`

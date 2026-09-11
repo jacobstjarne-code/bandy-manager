@@ -6,6 +6,7 @@ import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '..
 import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
+import { swedishGenitive } from '../utils/swedishGrammar'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 import { formatRating } from '../format'
 import { getRoundLabel } from '../roundLabel'
@@ -148,7 +149,7 @@ function computeKeyMoments(
   ] as const
 
   const HAT_TRICK_POOL = [
-    (name: string, goals: number) => `${goals} mål av en och samma man. ${name}s kväll.`,
+    (name: string, goals: number) => `${goals} mål av en och samma man. ${swedishGenitive(name)} kväll.`,
     (name: string, goals: number) => `${name} satte ${goals}. Bollen åkte hem med honom, enligt traditionen.`,
     (name: string, _goals: number) => `Hattrick av ${name}. Vissa kvällar väljer en spelare.`,
   ] as const

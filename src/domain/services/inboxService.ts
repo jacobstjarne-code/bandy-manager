@@ -15,6 +15,7 @@ import type { DoctorIdentity } from '../data/injuryDoctorText'
 import { deriveUtfall } from './matchTypeAxes'
 import { chronologyPointLabel } from './currentChronology'
 import { seasonSpanLabel } from '../utils/seasonYear'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 function generateId(type: InboxItemType): string {
   return `inbox_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
@@ -275,7 +276,7 @@ export function createContractExpiringItem(
     date: currentDate,
     type: InboxItemType.ContractExpiring,
     title: `Kontrakt går ut: ${player.firstName} ${player.lastName}`,
-    body: `${player.firstName} ${player.lastName}s kontrakt går ut efter säsong ${seasonSpanLabel(seasonExpiry)}. Överväg förlängning.`,
+    body: `${swedishGenitive(`${player.firstName} ${player.lastName}`)} kontrakt går ut efter säsong ${seasonSpanLabel(seasonExpiry)}. Överväg förlängning.`,
     relatedPlayerId: player.id,
     isRead: false,
   }

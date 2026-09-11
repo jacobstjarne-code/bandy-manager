@@ -1,3 +1,5 @@
+import { swedishGenitive } from '../utils/swedishGrammar'
+
 const FIRST_NAMES = [
   'Bengtsson', 'Karlsson', 'Lindström', 'Eriksson', 'Pettersson',
   'Johansson', 'Andersson', 'Nilsson', 'Lundqvist', 'Bergström',
@@ -34,7 +36,7 @@ function generateSponsorName(rand: () => number): { name: string; category: stri
   const first = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)]
   const biz = BUSINESS_TYPES[Math.floor(rand() * BUSINESS_TYPES.length)]
   const name = rand() > 0.3
-    ? `${first}s ${biz.suffix}`
+    ? `${swedishGenitive(first)} ${biz.suffix}`
     : `${biz.suffix} ${first}`
   return { name, category: biz.category }
 }

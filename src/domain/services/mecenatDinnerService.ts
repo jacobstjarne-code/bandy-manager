@@ -155,7 +155,7 @@ export function generateDinnerScene(mec: Mecenat, _season: number): DinnerScene 
     },
     {
       id: 'q2',
-      text: `"Jag hörde att det finns intresse för ${name.split(' ')[0]}s pengar från andra håll i kommunen. Du vet vad jag menar?" ${name} lägger ner glaset.`,
+      text: `"Jag hörde att det finns intresse för ${swedishGenitive(name.split(' ')[0])} pengar från andra håll i kommunen. Du vet vad jag menar?" ${name} lägger ner glaset.`,
       options: [
         {
           id: 'q2_opt0',

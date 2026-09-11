@@ -5,6 +5,7 @@ import { calculateClubEra } from './clubEraService'
 import { mulberry32 } from '../utils/random'
 import { formatResolvedChoiceOutcome } from './eventChoiceReceiptService'
 import type { EventLedgerEntry, LedgerConsequence } from '../entities/Narrative'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
 
@@ -138,7 +139,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'supporter',
       question: `${leader} har hyrt en buss till ${awayOpponent}. ${veteran} har redan bokat sin plats. Bidra med 3 000 kr?`,
       optionA: { label: 'Bidra', preview: '−3 tkr · lyfter stämningen på läktaren', effectColor: 'success' },
-      optionB: { label: 'Låt dem ordna', preview: `grumlar ${groupName}s stämning`, effectColor: 'danger' },
+      optionB: { label: 'Låt dem ordna', preview: `grumlar ${swedishGenitive(groupName)} stämning`, effectColor: 'danger' },
       systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
@@ -214,7 +215,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       repeatPolicy: 'untilAccepted',
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
       optionA: { label: 'Acceptera', preview: '+20 tkr engång · −stolthet', effectColor: 'success' },
-      optionB: { label: 'Behåll namnet', preview: `lyfter ${groupName}s stämning · tär på styrelsens tålamod`, effectColor: 'muted' },
+      optionB: { label: 'Behåll namnet', preview: `lyfter ${swedishGenitive(groupName)} stämning · tär på styrelsens tålamod`, effectColor: 'muted' },
       systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {

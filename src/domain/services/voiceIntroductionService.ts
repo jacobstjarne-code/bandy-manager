@@ -6,6 +6,7 @@ import type {
   VoiceIntroductionRecord,
 } from '../entities/Voice'
 import { logEvent } from './eventLedgerService'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 export const MAX_VOICE_INTRODUCTIONS_PER_MATCHDAY = 1
 
@@ -128,7 +129,7 @@ function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
         id: `voice_intro_klack_leader_${voicePart(game.managedClubId)}_${voicePart(leader.name)}`,
         type: 'supporterEvent',
         title: `${leader.name}.`,
-        body: `Håller ihop ${clubName}s klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
+        body: `Håller ihop ${swedishGenitive(clubName)} klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
         sender: { name: leader.name, role: 'Klackledare' },
         choices: [],
         resolved: false,

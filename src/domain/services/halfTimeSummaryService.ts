@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { MatchEventType } from '../enums'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
+import { swedishGenitive } from '../utils/swedishGrammar'
 
 export interface HalfTimeMoment {
   emoji: string
@@ -109,7 +110,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
       if (activeArc.type === 'hungrig_breakthrough') {
         arcText = `${name} har fortfarande inte gjort mål — genombrott krävs.`
       } else if (activeArc.type === 'veteran_farewell') {
-        arcText = `🏅 ${name}s kontrakt tickar — beslut krävs före mars.`
+        arcText = `🏅 ${swedishGenitive(name)} kontrakt tickar — beslut krävs före mars.`
       } else if (activeArc.type === 'contract_drama') {
         arcText = `📋 ${name} i blåsväder — kontraktsfrågan hänger i luften.`
       } else if (activeArc.type === 'joker_redemption') {
