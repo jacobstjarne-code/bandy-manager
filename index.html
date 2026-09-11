@@ -2,7 +2,10 @@
 <html lang="sv">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+    <!-- Ingen maximum-scale: den låser pinch-zoom (WCAG 1.4.4). iOS Safari
+         ignorerar den ändå av tillgänglighetsskäl sedan iOS 10, så den skyddade
+         aldrig mot input-autozoom där; på Android gjorde den bara spelet ozoombart. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0D1B2A" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

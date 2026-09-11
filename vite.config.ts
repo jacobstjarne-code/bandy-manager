@@ -56,7 +56,22 @@ export default defineConfig({
       },
       workbox: {
         importScripts: ['notification-sw.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,webp,svg,woff2}'],
+        // 2026-09-11 (genomgång): bildmaterialet precachas INTE längre. Med
+        // `png,jpg,jpeg,webp` i mönstret drog service workern hem ~9 MB
+        // porträtt (84 × ~110 kB) + ~12 MB illustrationer vid FÖRSTA install
+        // — ~24 MB på en mobil-first-PWA innan appen ens var "installerad".
+        // Skalet (js/css/html/svg/ikoner/logotyper) precachas fortfarande;
+        // porträtt och illustrationer hämtas när de faktiskt visas och
+        // cachas då via runtimeCaching nedan (CacheFirst — filnamnen är
+        // stabila, innehållet ändras aldrig utan nytt namn). Klubbmärkena
+        // är svg och små, de ligger kvar i precachen.
+        globPatterns: [
+          '**/*.{js,css,html,ico,svg,woff2}',
+          'icon-*.png',
+          'bandymanager-logo.png',
+          'buryfen-logo.png',
+          'intro-bg.jpg',
+        ],
         // 2026-07-21: huvudbunten passerade workbox default (2 MiB) — spelets
         // textmängd (domain/data) växer med varje sprint, bundeln med den.
         // 3 MiB ger headroom utan att dölja en verklig storleksregression;
@@ -66,6 +81,17 @@ export default defineConfig({
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
+          },
+          {
+            // Porträtt + illustrationer: se globPatterns-kommentaren ovan.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && /^\/assets\/(portraits|illustrations)\//.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'bandy-images-v1',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
         ],
         navigateFallbackDenylist: [/^\/api\//],
