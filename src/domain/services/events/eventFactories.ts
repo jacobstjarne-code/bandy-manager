@@ -260,13 +260,18 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string, triggerProo
 }
 
 // ── Day job conflict event ─────────────────────────────────────────────────
-export function generateDayJobConflictEvent(player: Player, roundNumber: number, triggerProof: boolean): GameEvent {
+export function generateDayJobConflictEvent(
+  player: Player,
+  _roundNumber: number,
+  triggerProof = true,
+  season = 0,
+): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const dayJobTitle = player.dayJob?.title ?? 'jobbet'
-  const period = Math.floor(roundNumber / 5)
 
   return {
-    id: `event_dayjob_${player.id}_period${period}`,
+    id: `event_dayjob_${player.id}_s${season}`,
+    semanticId: `dayJobConflict:${player.id}:s${season}`,
     type: 'dayJobConflict',
     title: 'Jobbet kolliderar med träningen',
     body: `${playerName} kämpar med att kombinera sin roll som ${dayJobTitle} med det tuffa matchschemat. Något måste ge.`,

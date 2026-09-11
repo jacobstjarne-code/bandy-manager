@@ -47,6 +47,7 @@ import { getRetirementCandidate, getRetirementQuote } from '../../domain/service
 import { appendFinanceLog, applyFinanceChange, deriveSeasonTransferBudget, type FinanceEntry } from '../../domain/services/economyService'
 import { computeSeasonEndContractDemands } from '../../domain/services/contractDemandService'
 import { resolveDeferredAtRollover } from '../../domain/services/deferredRolloverService'
+import { getDecisionSemanticId } from '../../domain/services/decisionLifecycleService'
 import { FALLBACK_SEASON_DEADLINE_MATCHDAY } from '../../domain/services/decisionTierService'
 import { calculateWageBudget } from '../../domain/services/wageBudgetService'
 import { buildSeasonStartSquadSnapshot } from '../../domain/services/seasonStartSquadSnapshotService'
@@ -2321,9 +2322,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): kön
     // töms fortfarande här — läckage-garantin ovan är oförändrad — men
     // besluten försvinner inte längre TYST. Passet nedan (efter det här
-    // objektet, resolveDeferredAtRollover) kör resolve-or-expire över exakt
-    // den här kön: default-utfall tillämpat + EN inboxrad, eller en
-    // uttrycklig utrinning. Slutläget är identiskt ([]), spåret är nytt.
+    // objektet, resolveDeferredAtRollover) kör resolve-or-expire över både
+    // aktiva och uppskjutna val: default-utfall eller uttrycklig utrinning,
+    // med ett kanoniskt kvitto per val och högst en samlad inkorgsrapport.
     deferredDecisions: [],
     handledContractPlayerIds: [],
     // C-T8 (SPEC_FORHANDLING_TERMER_2026-09-04) §3C — jobbgarantins
@@ -2480,10 +2481,24 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // nollställningen av deferredDecisions är förbjuden. Kön töms fortfarande i
   // objektet ovan (samma läckage-garanti som 2026-08-17-fixen, skyddad av
   // seasonRolloverStaleEvents.test.ts), men varje post får först sitt utfall:
-  // default-val tillämpat + EN inboxrad, eller en uttrycklig utrinning.
+  // default-val eller uttrycklig utrinning, kvitto per val och en rapport.
   // Körs MOT den rollade-över staten — effekterna landar i den säsong
   // spelaren faktiskt går in i, och inboxraden daterar sig därefter.
-  const deferredAtRollover = game.deferredDecisions ?? []
+  const seenRolloverIdentities = new Set<string>()
+  const deferredAtRollover = [
+    ...(game.pendingEvents ?? []),
+    ...(game.deferredDecisions ?? []),
+    ...(game.pendingPressConference ? [game.pendingPressConference] : []),
+    ...(game.pendingCSPress ? [game.pendingCSPress] : []),
+    ...(game.pendingRefereeMeeting ? [game.pendingRefereeMeeting] : []),
+  ].filter(event => {
+    if (event.resolved || event.choices.length === 0) return false
+    const semanticId = getDecisionSemanticId(event)
+    if (seenRolloverIdentities.has(event.id) || seenRolloverIdentities.has(semanticId)) return false
+    seenRolloverIdentities.add(event.id)
+    seenRolloverIdentities.add(semanticId)
+    return true
+  })
   const rolloverResolution = deferredAtRollover.length > 0
     ? resolveDeferredAtRollover(updatedGame, deferredAtRollover, game.currentSeason, mulberry32(baseSeed + 4242))
     : null

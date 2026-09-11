@@ -14,6 +14,7 @@ import { generateDetailedAnalysis } from '../../../domain/services/opponentAnaly
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
+import { recordDecisionLifecycle } from '../../../domain/services/decisionLifecycleService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
@@ -209,7 +210,13 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!hasManagedClubFutureFixture(result.game)) {
         const clearedPendingEvents = clearDatedOffersAtSeasonEnd(result.game.pendingEvents)
         if (clearedPendingEvents.length !== result.game.pendingEvents.length) {
-          result = { ...result, game: { ...result.game, pendingEvents: clearedPendingEvents } }
+          const retainedIds = new Set(clearedPendingEvents.map(event => event.id))
+          const expiredOffers = result.game.pendingEvents.filter(event => !retainedIds.has(event.id))
+          const withLifecycleReceipts = expiredOffers.reduce(
+            (current, event) => recordDecisionLifecycle(current, event, 'expired'),
+            result.game,
+          )
+          result = { ...result, game: { ...withLifecycleReceipts, pendingEvents: clearedPendingEvents } }
         }
       }
 

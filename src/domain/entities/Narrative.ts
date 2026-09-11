@@ -174,6 +174,7 @@ export type EventLedgerType =
   | 'retirement' | 'facility_built' | 'transfer_signed' | 'transfer_sold'
   | 'storyline_resolution' | 'scandal' | 'national_team_callup'
   | 'decision'
+  | 'decision_lifecycle'
   // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Skärpning 3 (Opus dom,
   // femte verklighetskollen) — Moments otäckta källor (Moment.ts's
   // MomentSource, minus 'mecenat_left', som släpptes som död i samma dom).
@@ -317,6 +318,10 @@ export interface EventLedgerEntry {
   type: EventLedgerType
   /** narrativeBeatLogs nyckel, bärs vidare redan nu så Fas 3 inte behöver bakåtfylla. */
   semanticKey: string
+  /** Present only for decision_lifecycle entries: the concrete queue id. */
+  sourceEventId?: string
+  /** Present only for decision_lifecycle entries. */
+  resolution?: 'resolved' | 'expired'
 
   /**
    * Klubben som händelsen inträffade för. Liggaren följer hela

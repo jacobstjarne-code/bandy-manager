@@ -74,6 +74,26 @@ describe('legacy queue identity repair', () => {
     expect(result.pendingEvents?.map(event => event.id)).toEqual(['same', 'different'])
     expect(result.deferredDecisions).toEqual([])
   })
+
+  it('does not surface a regenerated concrete card with an already resolved semantic identity', () => {
+    const regenerated = { ...makeEvent('dayjob_new_instance'), semanticId: 'dayJobConflict:p1:s2028' }
+    const result = applyDecisionBudget(makeGame({
+      resolvedChoices: [{
+        resolutionId: 'dayjob_old_instance:1',
+        eventId: 'dayjob_old_instance',
+        eventSemanticId: 'dayJobConflict:p1:s2028',
+        eventType: 'dayJobConflict',
+        choiceId: 'press',
+        label: 'Han klarar det',
+        madeByPlayer: true,
+        decisionKind: 'decision',
+      }],
+      pendingEvents: [regenerated],
+    }), 5)
+
+    expect(result.pendingEvents).toEqual([])
+    expect(result.deferredDecisions).toEqual([])
+  })
 })
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
@@ -330,14 +350,14 @@ describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors fak
     expect(next.deferredDecisions).toHaveLength(0)
   })
 
-  it('imminenta beslut deferreras aldrig även när de överskrider trebudgeten', () => {
+  it('imminenta beslut prioriteras men skapar aldrig en fjärde aktiv plats', () => {
     const pending = ['a', 'b', 'c', 'd'].map(id => ({
       ...makeTypedEvent(id, 'contractRequest'),
       deadlineRound: 6,
     }))
     const { surface, deferred } = partitionInterruptBudget(pending, 5)
-    expect(surface.map(event => event.id)).toEqual(['a', 'b', 'c', 'd'])
-    expect(deferred).toHaveLength(0)
+    expect(surface.map(event => event.id)).toEqual(['a', 'b', 'c'])
+    expect(deferred.map(event => event.id)).toEqual(['d'])
   })
 
   it('weekly decision reserverar en av tre platser', () => {
@@ -360,9 +380,21 @@ describe('partitionInterruptBudget — KF3-avbrottsbudgeten (roundProcessors fak
       pendingWeeklyDecision: { id: 'weekly' } as never,
     })
     const result = applyDecisionBudget(game, 5)
-    expect(result.pendingEvents).toHaveLength(3)
+    expect(result.pendingEvents).toHaveLength(2)
     expect(result.pendingWeeklyDecision).toEqual({ id: 'weekly' })
     expect(getWaitingDecisionCount(result)).toBe(1)
+    expect(getActiveDecisionCount(result)).toBe(3)
+  })
+
+  it('en valbar portalscen räknas i samma trebudget', () => {
+    const game = makeGame({
+      pendingEvents: ['a', 'b', 'c'].map(id => makeTypedEvent(id, 'sponsorOffer')),
+      pendingScene: { sceneId: 'sunday_training', triggeredAt: '2026-10-15' },
+    })
+    const result = applyDecisionBudget(game, 5)
+    expect(result.pendingEvents.map(event => event.id)).toEqual(['a', 'b'])
+    expect(result.deferredDecisions.map(event => event.id)).toEqual(['c'])
+    expect(getActiveDecisionCount(result)).toBe(3)
   })
 
   it('cappar månadsbeslut vid 3 och deferrerar resten', () => {

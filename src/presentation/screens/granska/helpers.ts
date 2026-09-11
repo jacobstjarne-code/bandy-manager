@@ -6,7 +6,7 @@ import { formatResolvedChoiceOutcome } from '../../../domain/services/eventChoic
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { Tavlingstyp, Skede } from '../../../domain/services/matchTypeAxes'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
-import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
+import { getCriticalEventsForGranska, getPlayerEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { SPELKLARHET_FITNESS_FLOOR } from '../../utils/lineupNudge'
 
 /** Finalens ceremoni går via Granska innan säsongsavslutningen. Bara den
@@ -85,9 +85,24 @@ export function countUnresolvedGranskaDecisions(
 ): number {
   const unresolvedCritical = getCriticalEventsForGranska(pendingEvents)
     .filter(event => !resolvedEventIds.has(event.id)).length
+  const unresolvedPlayer = getPlayerEventsForGranska(pendingEvents)
+    .filter(event => !resolvedEventIds.has(event.id)).length
   const standalone = [pendingPressConference, pendingCSPress, pendingRefereeMeeting]
     .filter((event): event is GameEvent => !!event && !resolvedEventIds.has(event.id)).length
-  return unresolvedCritical + standalone
+  return unresolvedCritical + unresolvedPlayer + standalone
+}
+
+/**
+ * Keep resolved cards frozen for their visible receipt, but append decisions
+ * promoted from the deferred queue while the player remains in Granska.
+ */
+export function mergePendingEventsSnapshot(
+  snapshot: GameEvent[],
+  livePendingEvents: GameEvent[],
+): GameEvent[] {
+  const known = new Set(snapshot.map(event => event.id))
+  const promoted = livePendingEvents.filter(event => !known.has(event.id))
+  return promoted.length > 0 ? [...snapshot, ...promoted] : snapshot
 }
 
 /**

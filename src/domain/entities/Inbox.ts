@@ -10,6 +10,9 @@ export interface InboxItem {
   relatedClubId?: string
   relatedPlayerId?: string
   relatedFixtureId?: string
+  /** Decision-lifecycle provenance for aggregated rollover notices. */
+  sourceEventIds?: string[]
+  sourceSemanticIds?: string[]
   /** Named speaker uses the same introduction registry as event cards. */
   voiceId?: VoiceId
   isRead: boolean

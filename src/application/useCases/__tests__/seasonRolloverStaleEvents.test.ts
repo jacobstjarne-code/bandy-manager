@@ -200,16 +200,15 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
 
     // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md), §"Rollover — aldrig
     // tyst": tomningen får inte längre vara TYST. Varje post som låg i kön
-    // ska ha lämnat exakt EN inboxrad efter sig (tillämpat default-utfall
-    // eller uttrycklig utrinning). Texten är Opus och ännu tom — därför
-    // räknas rader, inte innehåll.
+    // ska bära ett resolutionskvitto, medan inkorgen får högst EN samlad
+    // rapport — aldrig en notis per gammalt beslut.
     const rolloverLines = game.inbox.filter(
       i => i.type === InboxItemType.DecisionRollover && !inboxIdsBeforeRollover.has(i.id)
     )
-    expect(
-      rolloverLines.length,
-      `deferrade beslut vid rollover: ${JSON.stringify(deferredJustBeforeRollover)}`
-    ).toBe(deferredJustBeforeRollover.length)
+    expect(rolloverLines).toHaveLength(1)
+    expect(rolloverLines[0].sourceEventIds).toEqual(expect.arrayContaining(deferredJustBeforeRollover))
+    expect(new Set(rolloverLines[0].sourceEventIds ?? []).size).toBe(rolloverLines[0].sourceEventIds?.length)
+    expect(game.resolvedEventIds).toEqual(expect.arrayContaining(deferredJustBeforeRollover))
     // Icke-vakuum-grind: kön ska faktiskt ha innehållit något vid rollovern,
     // annars bevisar raden ovan (0 === 0) ingenting. Verifierat 2026-08-31 —
     // seeden som når SM-final har deferrade beslut i kön vid säsongsbytet.

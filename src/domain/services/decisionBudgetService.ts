@@ -9,6 +9,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, DecisionTier } from '../entities/GameEvent'
 import { classifyInterrupt, isPendingSceneActionable } from './interruptClassifier'
+import { getDecisionSemanticId } from './decisionLifecycleService'
 
 export const MAX_DECISIONS_PER_ROUND = 3
 /** Kept as an API alias for older callers. */
@@ -42,14 +43,19 @@ function getSingularDecisionCount(game: SaveGame): number {
     + (isPendingSceneActionable(game) ? 1 : 0)
 }
 
-/**
- * Returns active event cards plus the weekly decision. Scene reservation is
- * deliberately resolved only inside the budget/waiting selectors: coffee-room
- * construction itself reads this active count for its fatigue copy.
- */
-export function getActiveDecisionCount(game: SaveGame): number {
+/** Internal pressure without a scene counting itself while being built. */
+export function getActiveDecisionCountExcludingScene(game: SaveGame): number {
   const pendingEventsCount = (game.pendingEvents ?? []).filter(isActionableEvent).length
   return pendingEventsCount + (game.pendingWeeklyDecision ? 1 : 0)
+}
+
+/**
+ * Returns every surfaced actionable interruption. This is the canonical
+ * number used by the portal, the queue and generation gates.
+ */
+export function getActiveDecisionCount(game: SaveGame): number {
+  return getActiveDecisionCountExcludingScene(game)
+    + (isPendingSceneActionable(game) ? 1 : 0)
 }
 
 /** Compatibility selector: KF3 now has one definition of actionable. */
@@ -65,28 +71,13 @@ export function getDeferredDecisionCount(game: SaveGame): number {
 }
 
 /**
- * Decisions not currently surfaced as ordinary event cards. Normally this is
- * exactly the deferred FIFO. If protected deadlines consume the whole budget,
- * a retained weekly decision/actionable scene is also waiting.
+ * Decisions not currently surfaced as ordinary event cards. The strict
+ * partition never lets surfaced decisions exceed the cap, so this is the
+ * deferred FIFO plus any overflow found in a legacy save before maintenance.
  */
 export function getWaitingDecisionCount(game: SaveGame): number {
-  const deferred = getDeferredDecisionCount(game)
-  const singular = getSingularDecisionCount(game)
-  if (singular === 0) return deferred
-
-  const currentMatchday = game.currentMatchday ?? 0
-  const imminent = (game.pendingEvents ?? [])
-    .filter(isActionableEvent)
-    .filter(event => {
-      const deadline = getDeadlineRound(event)
-      return deadline != null && deadline <= currentMatchday + 1
-    })
-    .length
-  const singularOverflow = Math.min(
-    singular,
-    Math.max(0, imminent + singular - MAX_DECISIONS_PER_ROUND),
-  )
-  return deferred + singularOverflow
+  return getDeferredDecisionCount(game)
+    + Math.max(0, getActiveDecisionCount(game) - MAX_DECISIONS_PER_ROUND)
 }
 
 /** Compatibility gate for isolated callers; production uses the final partition. */
@@ -115,8 +106,9 @@ export interface InterruptBudgetPartition {
 
 /**
  * Pure KF3 partition. `reservedSlots` represents the singular weekly decision
- * and actionable scene. Imminent deadlines always surface; flexible events use
- * the remaining slots in deadline order, with stable FIFO for equal deadlines.
+ * and actionable scene. Imminent deadlines sort first; they do not create a
+ * fourth slot. Flexible events use the remaining slots in deadline order,
+ * with stable FIFO for equal deadlines.
  */
 export function partitionInterruptBudget(
   allPending: GameEvent[],
@@ -150,11 +142,12 @@ export function partitionInterruptBudget(
       return (getDeadlineRound(a) ?? Infinity) - (getDeadlineRound(b) ?? Infinity)
     })
 
-  const budget = Math.max(0, MAX_DECISIONS_PER_ROUND - reservedSlots - imminent.length)
+  const budget = Math.max(0, MAX_DECISIONS_PER_ROUND - reservedSlots)
+  const ordered = [...imminent, ...flexible]
   return {
     nonActionable,
-    surface: [...imminent, ...flexible.slice(0, budget)],
-    deferred: flexible.slice(budget),
+    surface: ordered.slice(0, budget),
+    deferred: ordered.slice(budget),
   }
 }
 
@@ -169,13 +162,19 @@ export function applyDecisionBudget(game: SaveGame, currentMatchday: number): Sa
   // careers and migrated saves can therefore still contain a queued legacy
   // copy after its id has fallen out of (or was absent from) the cache. Treat
   // either receipt as authoritative before repartitioning the queues.
-  const seenIds = new Set([
+  const seenIdentities = new Set([
     ...(game.resolvedEventIds ?? []),
     ...(game.resolvedChoices ?? []).map(choice => choice.eventId),
+    ...(game.resolvedChoices ?? []).flatMap(choice => choice.eventSemanticId ? [choice.eventSemanticId] : []),
+    ...(game.eventLedger ?? [])
+      .filter(entry => entry.type === 'decision_lifecycle')
+      .flatMap(entry => [entry.sourceEventId, entry.semanticKey].filter((id): id is string => !!id)),
   ])
   const combined = [...priorDeferred, ...(game.pendingEvents ?? [])].filter(event => {
-    if (seenIds.has(event.id)) return false
-    seenIds.add(event.id)
+    const semanticId = getDecisionSemanticId(event)
+    if (seenIdentities.has(event.id) || seenIdentities.has(semanticId)) return false
+    seenIdentities.add(event.id)
+    seenIdentities.add(semanticId)
     return true
   })
   const { nonActionable, surface, deferred } = partitionInterruptBudget(

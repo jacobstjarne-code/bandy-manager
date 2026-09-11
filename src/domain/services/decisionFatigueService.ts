@@ -1,5 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
-import { getActiveDecisionCount } from './decisionBudgetService'
+import { getActiveDecisionCountExcludingScene } from './decisionBudgetService'
 
 export type FatiguePressure = 'calm' | 'warm' | 'hot'
 
@@ -28,7 +28,9 @@ export function getItemAge(event: { deferredAt?: number }, currentMatchday: numb
 export function getFatigueState(game: SaveGame): FatigueState {
   const deferred = game.deferredDecisions ?? []
   const matchday = game.currentMatchday ?? 0
-  const activeCount = getActiveDecisionCount(game)
+  // A pending coffee-room scene asks this service whether it contains a
+  // choice. Count cards + weekly decision here, never the scene itself.
+  const activeCount = getActiveDecisionCountExcludingScene(game)
   const unansweredCount = activeCount + deferred.length
 
   if (unansweredCount === 0) return { meter: 0, pressure: 'calm' }

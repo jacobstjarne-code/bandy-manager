@@ -32,6 +32,7 @@ import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 import { canEventPassVoiceGate, isPassiveVoiceIntroduction, recordVoiceIntroduction } from '../voiceIntroductionService'
 import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
+import { getDecisionSemanticId, recordDecisionLifecycle } from '../decisionLifecycleService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -46,7 +47,7 @@ import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
 function recordResolvedChoice(
   before: SaveGame,
   after: SaveGame,
-  event: Pick<GameEvent, 'id' | 'type' | 'choices'>,
+  event: Pick<GameEvent, 'id' | 'semanticId' | 'type' | 'choices'>,
   choiceId: string,
   label: string,
   madeByPlayer: boolean,
@@ -58,6 +59,7 @@ function recordResolvedChoice(
   return [...(after.resolvedChoices ?? []), {
     resolutionId: `${event.id}:${resolutionOrdinal}`,
     eventId: event.id,
+    ...(event.semanticId ? { eventSemanticId: getDecisionSemanticId(event) } : {}),
     eventType: event.type,
     choiceId,
     label,
@@ -339,10 +341,10 @@ export function resolveEvent(
   // remember its stable id for generator dedup, but never fabricate a
   // resolvedChoices entry or a player-attributed narrative beat.
   if (event.choices.length === 0 || isPassiveVoiceIntroduction(event)) {
-    return recordIntroducedVoice({
+    return recordDecisionLifecycle(recordIntroducedVoice({
       ...retireResolvedEvent(game, eventId),
       resolvedEventIds: recordResolvedId(game, eventId),
-    })
+    }), event, 'resolved')
   }
 
   const choice = event.choices.find(c => c.id === choiceId)
@@ -360,10 +362,10 @@ export function resolveEvent(
       || (game.managerProfile?.diary ?? []).some(entry =>
         entry.type === 'burnout_scar' && entry.season === game.currentSeason)
     if (alreadyResolvedThisSeason) {
-      return {
+      return recordDecisionLifecycle({
         ...retireResolvedEvent(game, eventId),
         resolvedEventIds: recordResolvedId(game, eventId),
-      }
+      }, event, 'resolved')
     }
   }
 
@@ -384,8 +386,12 @@ export function resolveEvent(
       resolvedEventIds: recordResolvedId(afterEffects, eventId),
     }
     resolvedGame = appendSeasonDecisionLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer)
-    return recordIntroducedVoice(
-      appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer),
+    return recordDecisionLifecycle(
+      recordIntroducedVoice(
+        appendDecisionConsequenceLedgerEntry(game, resolvedGame, event, choiceId, madeByPlayer),
+      ),
+      event,
+      'resolved',
     )
   }
 
@@ -3141,7 +3147,11 @@ export function resolveEvent(
     }
   }
 
-  return recordIntroducedVoice(
-    appendNewlyResolvedStorylines(game, updatedGame, updatedGame.currentMatchday),
+  return recordDecisionLifecycle(
+    recordIntroducedVoice(
+      appendNewlyResolvedStorylines(game, updatedGame, updatedGame.currentMatchday),
+    ),
+    event,
+    'resolved',
   )
 }

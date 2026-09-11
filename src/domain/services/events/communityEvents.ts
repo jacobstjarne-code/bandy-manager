@@ -8,17 +8,14 @@ import { generateSponsorEvents } from './sponsorEvents'
 import { generateSupporterEvents } from './supporterEvents'
 import { generateHallProcessEvent } from './hallProcessService'
 import { generateO1SystemEvents } from './o1SystemEvents'
+import { getKnownDecisionIdentities } from '../decisionLifecycleService'
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
   currentRound: number,
   rand: () => number,
 ): GameEvent[] {
-  const alreadyQueued = new Set([
-    ...(game.pendingEvents ?? []).map(e => e.id),
-    ...(game.deferredDecisions ?? []).map(e => e.id),
-    ...(game.resolvedEventIds ?? []),
-  ])
+  const alreadyQueued = getKnownDecisionIdentities(game)
 
   // B1 §5: hallDebateService ersatt av hallProcessService (fas-maskin med tillstånd).
   // Cooldown-gate tas bort — processen har sin egen cooldown via hallProcess.lastStepRound.

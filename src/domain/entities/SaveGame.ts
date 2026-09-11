@@ -76,6 +76,9 @@ export interface ResolvedChoice {
    */
   resolutionId?: string
   eventId: string
+  /** Semantic identity copied from the event at resolution time. Optional
+   * for legacy saves and events whose concrete id is already canonical. */
+  eventSemanticId?: string
   eventType?: GameEventType
   choiceId: string
   label: string

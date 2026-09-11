@@ -646,11 +646,12 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* Critical events — max 3, kräver val. GRANSKA DEL 4 (2026-08-12):
+      {/* Critical events — högst 3 olösta samtidigt, men lösta kvitton ligger
+          kvar medan kön promoverar nästa val. GRANSKA DEL 4 (2026-08-12):
           registrerad i granskaSectionRegistry.ts (✓ i alla lägen — en väntande
           transferbud-decision försvinner inte för att matchen var en final). */}
       {visasFor('criticalEvents', axes.tavlingstyp, axes.skede) && (() => {
-        const criticalEvents = getCriticalEventsForGranska(pendingEvents).slice(0, 3)
+        const criticalEvents = getCriticalEventsForGranska(pendingEvents)
         const playerEvents = getPlayerEventsForGranska(pendingEvents)
         const inboxOnlyCount = pendingEvents.filter(e => !e.resolved && classifyEventNature(e) === 'inbox-only').length
         return (

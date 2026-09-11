@@ -316,6 +316,10 @@ export function getEventPriority(type: GameEventType): EventPriority {
 
 export interface GameEvent {
   id: string
+  /** Stable meaning across queue moves and regenerated concrete instances.
+   * `id` identifies this concrete card; `semanticId` identifies the decision
+   * the player must only face once within its declared scope. */
+  semanticId?: string
   type: GameEventType
   title: string
   body: string

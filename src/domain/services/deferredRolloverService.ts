@@ -7,9 +7,9 @@
  * i säsong N+1, daterade och kontextuellt fel. Men den löste den genom att
  * radera kön, inte genom att avsluta besluten. Domen förbjuder engros-
  * nollställningen: "Vid rollover får varje obesvarat beslut ANTINGEN ett
- * dokumenterat default-utfall (tillämpat + EN inboxrad) ELLER en uttrycklig
- * utrinning." Slutläget är detsamma (tom kö, inget läckage), men varje post
- * lämnar ett spår efter sig.
+ * dokumenterat default-utfall ELLER en uttrycklig utrinning." Slutläget är
+ * detsamma (tom kö, inget läckage), men varje post lämnar ett kanoniskt spår.
+ * Inkorgen får en samlad rapport i stället för en notis per gammalt beslut.
  *
  * Måste-nivån (kontraktsdeadline, licenskrav) kan aldrig hamna här — den är
  * undantagen throttlen och defereras aldrig (decisionTierService.ts,
@@ -33,6 +33,7 @@ import type { InboxItem } from '../entities/Inbox'
 import { InboxItemType } from '../enums'
 import { resolveEvent } from './events/eventResolver'
 import { getDeferredResolvedText, getDeferredExpiredText } from '../data/deferredRolloverText'
+import { getDecisionSemanticId, recordDecisionLifecycle } from './decisionLifecycleService'
 
 /**
  * Per-typ-deklarationen domen kräver ("Varje defererbart event måste alltså
@@ -207,8 +208,7 @@ export interface DeferredRolloverResult {
 /**
  * Kör resolve-or-expire-passet över `deferred` mot `game` (den redan
  * rollade-över säsong N+1-staten). Returnerar spelet med default-utfallen
- * tillämpade, EN inboxpost per post i kön, och en strukturerad utfallslista
- * (testbar utan att läsa text).
+ * tillämpade, en strukturerad utfallslista och högst EN samlad inkorgspost.
  *
  * `game.deferredDecisions` rörs INTE här — anropsstället (seasonEndProcessor.ts)
  * sätter den till [] i samma rollover-objekt. Slutläget är alltså detsamma som
@@ -267,6 +267,7 @@ export function resolveDeferredAtRollover(
       continue
     }
 
+    g = recordDecisionLifecycle(g, event, 'expired')
     outcomes.push({ eventId: event.id, type: event.type, kind: 'expired' })
     const text = getDeferredExpiredText({ event, season: seasonThatEnded })
     inboxItems.push({
@@ -281,5 +282,29 @@ export function resolveDeferredAtRollover(
     })
   }
 
-  return { game: g, outcomes, inboxItems }
+  if (inboxItems.length <= 1) {
+    const single = inboxItems[0]
+      ? [{
+          ...inboxItems[0],
+          sourceEventIds: outcomes.map(outcome => outcome.eventId),
+          sourceSemanticIds: deferred.map(getDecisionSemanticId),
+        }]
+      : []
+    return { game: g, outcomes, inboxItems: single }
+  }
+
+  return {
+    game: g,
+    outcomes,
+    inboxItems: [{
+      id: `inbox_deferred_rollover_${seasonThatEnded}`,
+      date: g.currentDate,
+      type: InboxItemType.DecisionRollover,
+      title: `Säsong ${seasonThatEnded} · ${outcomes.length} beslut`,
+      body: inboxItems.map(item => `${item.title}\n${item.body}`).join('\n\n'),
+      isRead: false,
+      sourceEventIds: outcomes.map(outcome => outcome.eventId),
+      sourceSemanticIds: deferred.map(getDecisionSemanticId),
+    }],
+  }
 }

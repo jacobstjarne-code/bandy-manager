@@ -3,8 +3,8 @@
  * §"Rollover — aldrig tyst".
  *
  * Domen: varje obesvarat beslut i kön vid säsongsbytet får ANTINGEN ett
- * tillämpat default-utfall + EN inboxrad, ELLER en uttrycklig utrinning.
- * Aldrig noll rader. Slutläget (tom kö, inget läckage till säsong N+1) är
+ * tillämpat default-utfall ELLER en uttrycklig utrinning i livscykelliggaren.
+ * Inkorgen får högst en samlad rapport. Slutläget (tom kö, inget läckage till säsong N+1) är
  * detsamma som före — det skyddas separat av
  * application/useCases/__tests__/seasonRolloverStaleEvents.test.ts.
  */
@@ -123,7 +123,7 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
     expect(result.inboxItems[0].id).toContain('expired')
   })
 
-  it('varje post i kön ger exakt EN rad — ingen försvinner tyst', () => {
+  it('varje post får ett utfall men inkorgen får bara en samlad rapport', () => {
     const deferred = [
       evt('d1', 'patronEvent', [{ id: 'skip', label: 'Avstå', effect: { type: 'noOp' } }]),
       evt('d2', 'criticalEconomy', [{ id: 'wait', label: 'Avvakta', effect: { type: 'noOp' } }]),
@@ -131,10 +131,12 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
     ]
     const result = resolveDeferredAtRollover(game(), deferred, 2026)
     expect(result.outcomes).toHaveLength(3)
-    expect(result.inboxItems).toHaveLength(3)
+    expect(result.inboxItems).toHaveLength(1)
     expect(result.outcomes.map(o => o.kind)).toEqual(['resolved', 'expired', 'expired'])
-    // Inga dubbletter av inbox-id.
-    expect(new Set(result.inboxItems.map(i => i.id)).size).toBe(3)
+    expect(result.inboxItems[0].sourceEventIds).toEqual(['d1', 'd2', 'd3'])
+    expect(result.game.eventLedger?.filter(entry => entry.type === 'decision_lifecycle')).toHaveLength(2)
+    expect(result.game.resolvedChoices?.some(receipt => receipt.eventId === 'd1')).toBe(true)
+    expect(result.game.resolvedEventIds).toEqual(expect.arrayContaining(['d1', 'd2', 'd3']))
   })
 
   it('tom kö → inga rader, spelet orört', () => {

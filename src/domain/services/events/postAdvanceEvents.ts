@@ -28,6 +28,7 @@ import { generateMecenatConflictEvent, generateMecenatAllianceEvent, generateMec
 import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
 import { rotateSubject, genericBeatExcludeCount } from '../narrativeCoordinatorService'
 import type { Player } from '../../entities/Player'
+import { getKnownDecisionIdentities } from '../decisionLifecycleService'
 
 // ── Journalistreportagets säsongsspärr + spelarrotation (A-H4a) ────────────
 // Se GameEvent.journalistExclusiveKey för hela rotorsaksförklaringen.
@@ -90,11 +91,7 @@ export function generatePostAdvanceEvents(
   justCompletedFixture?: Fixture,
 ): GameEvent[] {
   const events: GameEvent[] = []
-  const alreadyQueued = new Set([
-    ...(game.pendingEvents ?? []).map(e => e.id),
-    ...(game.deferredDecisions ?? []).map(e => e.id),
-    ...(game.resolvedEventIds ?? []),
-  ])
+  const alreadyQueued = getKnownDecisionIdentities(game)
 
   // Centralredaktören, punkt 3: K=5-formeln (genericBeatExcludeCount) ska
   // storleksbedömas mot den TRUPP rotationen ska kännas naturlig över
@@ -327,11 +324,17 @@ export function generatePostAdvanceEvents(
         return lineup && lineup.startingPlayerIds.includes(p.id)
       }).length
       if (gamesInLast5 >= 3) {
-        const period = Math.floor(roundPlayed / 5)
-        const eid = `event_dayjob_${p.id}_period${period}`
-        const dayJobConflictDue = dayJobWindow && gamesInLast5 >= 3 && !alreadyQueued.has(eid)
+        const eid = `event_dayjob_${p.id}_s${game.currentSeason}`
+        const semanticId = `dayJobConflict:${p.id}:s${game.currentSeason}`
+        const legacyDayJobSeen = [...alreadyQueued]
+          .some(identity => identity.startsWith(`event_dayjob_${p.id}_period`))
+        const dayJobConflictDue = dayJobWindow
+          && gamesInLast5 >= 3
+          && !alreadyQueued.has(eid)
+          && !alreadyQueued.has(semanticId)
+          && !legacyDayJobSeen
         if (dayJobConflictDue) {
-          events.push(generateDayJobConflictEvent(p, roundPlayed, dayJobConflictDue))
+          events.push(generateDayJobConflictEvent(p, roundPlayed, dayJobConflictDue, game.currentSeason))
         }
       }
     }

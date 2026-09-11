@@ -10,7 +10,7 @@ import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
 import { GranskaAnalys } from './GranskaAnalys'
-import { countUnresolvedGranskaDecisions, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
+import { countUnresolvedGranskaDecisions, mergePendingEventsSnapshot, mergeResolvedChoices, shouldReviewContinueToChampion } from './helpers'
 import { canEventPassVoiceGate, getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
 import { ScrollMoreCue } from '../../components/ScrollMoreCue'
 
@@ -38,26 +38,18 @@ export function GranskaScreen() {
   const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
   const contentRef = useRef<HTMLDivElement | null>(null)
   const didRedirect = useRef(false)
-  // M10 (audit 5c9a7a8, 2026-08-24): FRUSEN vid mount, inte game.pendingEvents
-  // läst live. handleChoice nedan löser domänen (resolveEvent) SYNKRONT nu —
-  // om korten renderades från live pendingEvents skulle ett löst event
-  // försvinna ur criticalEvents-listan (GranskaOversikt.tsx) i SAMMA
-  // ögonblick det löstes, innan spelaren ens hunnit se sin egen ✓-markering
-  // (DecisionCard visar resolved-läget permanent, ingen egen timing).
-  // Ingen ny händelse tillkommer normalt medan spelaren står kvar på
-  // Granska (advance() körs inte här) — en engångs-snapshot är därför säker
-  // mot att MISSA något.
-  // Känd, medveten avvägning: om en runda har FLER än 3 kritiska events
-  // (criticalEvents.slice(0,3)) rullar det 4:e inte längre in i listan efter
-  // att ett av de tre lösts, som det gjorde förut när listan lästes live —
-  // det ligger kvar olöst i game.pendingEvents (inte tappat, bara inte visat
-  // HÄR under DEN HÄR skärmvisningen). Sällsynt läge (taket är redan satt
-  // till 3 som om det vore ovanligt att nå), och att lösa det utan att
-  // återinföra en timing-baserad "släpp in nästa efter en stund"-mekanik
-  // hade motverkat hela poängen med denna fix.
-  const [pendingEventsSnapshot] = useState(() => game
+  // Resolved cards stay frozen long enough to show their receipt. Queue
+  // promotion is the exception: newly surfaced cards are appended live so a
+  // terminal Granska can drain the queue instead of stranding it at rollover.
+  const [pendingEventsSnapshot, setPendingEventsSnapshot] = useState(() => game
     ? getVoiceEligibleEvents(game, game.pendingEvents ?? [])
     : [])
+
+  useEffect(() => {
+    if (!game) return
+    const liveEligible = getVoiceEligibleEvents(game, game.pendingEvents ?? [])
+    setPendingEventsSnapshot(previous => mergePendingEventsSnapshot(previous, liveEligible))
+  }, [game])
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -153,8 +145,7 @@ export function GranskaScreen() {
     : { tavlingstyp: 'liga' as const, skede: undefined, plats: 'hemma' as const, utfall: 'oavgjort' as const, gavLigapoang: false, arDerby: false }
   const completedSmFinal = shouldReviewContinueToChampion(game, fixture)
 
-  // M10: snapshot (se useState ovan), inte live game.pendingEvents — se den
-  // kommentaren för varför.
+  // Snapshot + live queue promotion (see useEffect above).
   const pendingEvents = pendingEventsSnapshot
 
   // PÅSTÅENDEKARTAN (2026-08-24): se helpers.ts:s mergeResolvedChoices —
@@ -360,7 +351,7 @@ export function GranskaScreen() {
         <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {unresolved > 0 && (
             <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: 0 }}>
-              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem i Översikt
+              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — hantera dem i Översikt eller Spelare
             </p>
           )}
           <button onClick={handleContinue} disabled={unresolved > 0} className="btn btn-primary btn-cta">

@@ -237,6 +237,12 @@ describe('resolveEvent with extendContract', () => {
 describe('dayJobConflict — deklarerad text har verklig state-effekt', () => {
   const dayJob = { title: 'Lärare', flexibility: 55, weeklyIncome: 2000 }
 
+  it('bär en säsongsstabil konkret och semantisk identitet', () => {
+    const event = generateDayJobConflictEvent(makePlayer({ dayJob }), 11, true, 2028)
+    expect(event.id).toBe('event_dayjob_p1_s2028')
+    expect(event.semanticId).toBe('dayJobConflict:p1:s2028')
+  })
+
   it('"Ge honom vila" ger moral och spärrar spelaren i exakt nästa match', () => {
     const player = makePlayer({ morale: 70, dayJob, isFullTimePro: false })
     const event = generateDayJobConflictEvent(player, 6)
