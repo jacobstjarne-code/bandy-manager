@@ -144,7 +144,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| arsbok-ortsstod-kontext | Årsboken visar naket “Lokalstöd 0” utan skala eller förklaring | rapporterad | — | Grind 2-skärmbild 2026-09-11 | State kan legitimt nå 0 på skalan 0–100; gör skala och nivå begriplig och behåll eventuella faktiska skiftrader. Fabricera inte en orsak som inte lagrats. |
+| arsbok-ortsstod-kontext | Årsboken visar naket “Lokalstöd 0” utan skala | verifierad | — | Grind 2-skärmbild 2026-09-11 + SaveGame.ts:576 + SeasonSummaryScreen.tsx:961–990 | `communityStanding` startar på 50, är uttryckligen en 0–100-skala och alla uppdateringar klampas; 0 är därför ett giltigt långkarriärutfall, inte saknad data. Visa `{värde} av 100` så golvet går att tolka. Behåll faktiska `communityShift`-rader men fabricera ingen orsak när historiken saknar en. |
 | arsbok-managersektion-kontext | Din säsong som tränare staplar burnout-lättnad, val och ärr utan att förklara vad raderna är | rapporterad | — | Grind 2-skärmbild 2026-09-11 | Återanvänd entry.type för tydliga svenska typetiketter så förloppet blir läsbart; ändra inte den frysta dagbokstextens kanon. |
 | arsbok-hero-integrering | Årsbokens toppillustration läses som en konstig lös beskärning ovanför första blocket | rapporterad | — | Grind 2-skärmbild 2026-09-11 | Integrera den befintliga godkända utfallsbilden som bakgrund i årsbokens första resultatblock med en svag läsplatta; nedflyttningsvarianten ska fortsatt styras av verkligt tabellutfall. |
 
