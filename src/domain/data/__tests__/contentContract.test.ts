@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { CONTENT_CONTRACT, getContentContractEntry, getWhyNowLine } from '../contentContract'
+import { WHYNOW_ENTRIES } from '../contentContractRuntime'
 import { PORTAL_BEATS } from '../portalBeats'
 
 /**
@@ -84,6 +85,32 @@ describe('CONTENT_CONTRACT — struktur', () => {
     for (const e of todo) {
       const anyWhyNowSet = e.deadlineLabel || e.whyNowPerson || e.wholeEventIrreversible || e.seasonDefining
       expect(anyWhyNowSet, `${e.id}: har whyNow-fält satta trots filled:false`).toBeFalsy()
+    }
+  })
+})
+
+/**
+ * Pass 2 (CODE_KORORDER_GENOMGANG_2026-09-12 §1 punkt 5): whyNow-lookupen
+ * som produktionskoden faktiskt använder (EventOverlay.tsx,
+ * eventQueueService.ts) läser contentContractRuntime.ts:s slimmade
+ * WHYNOW_ENTRIES, inte den här filens fulla CONTENT_CONTRACT-register.
+ * De två får aldrig glida isär — samma id:n, samma whyNow-fält.
+ */
+describe('WHYNOW_ENTRIES matchar CONTENT_CONTRACT', () => {
+  it('samma (source, id)-mängd i båda', () => {
+    const bigKeys = CONTENT_CONTRACT.map(e => `${e.source}:${e.id}`).sort()
+    const slimKeys = WHYNOW_ENTRIES.map(e => `${e.source}:${e.id}`).sort()
+    expect(slimKeys).toEqual(bigKeys)
+  })
+
+  it('samma whyNow-fältvärden per post', () => {
+    for (const big of CONTENT_CONTRACT) {
+      const slim = WHYNOW_ENTRIES.find(e => e.source === big.source && e.id === big.id)
+      expect(slim, `${big.source}:${big.id} saknas i WHYNOW_ENTRIES`).toBeDefined()
+      expect(slim?.deadlineLabel, `${big.source}:${big.id}.deadlineLabel`).toBe(big.deadlineLabel)
+      expect(slim?.whyNowPerson, `${big.source}:${big.id}.whyNowPerson`).toBe(big.whyNowPerson)
+      expect(slim?.wholeEventIrreversible, `${big.source}:${big.id}.wholeEventIrreversible`).toBe(big.wholeEventIrreversible)
+      expect(slim?.seasonDefining, `${big.source}:${big.id}.seasonDefining`).toBe(big.seasonDefining)
     }
   })
 })

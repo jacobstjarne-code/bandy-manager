@@ -12,7 +12,9 @@
  * Medium 4 (Skutskär-auditen, 2026-08-22): mockar getEffectiveWhyNowLine
  * direkt — se eventRenderRouting.test.ts för rotorsaken (internt samma-
  * fil-anrop i contentContract.ts som getContentContractEntry-mocken inte
- * längre fångar).
+ * längre fångar). Pass 2 (CODE_KORORDER_GENOMGANG_2026-09-12 §1 punkt 5)
+ * flyttade getEffectiveWhyNowLine till contentContractRuntime.ts, dit
+ * eventQueueService.ts nu importerar den ifrån — mocken följer med.
  */
 import { describe, it, expect, vi } from 'vitest'
 import { getCurrentAttention } from '../domain/services/attentionRouter'
@@ -21,8 +23,8 @@ import type { SaveGame } from '../domain/entities/SaveGame'
 import type { GameEvent } from '../domain/entities/GameEvent'
 import { PendingScreen } from '../domain/enums'
 
-vi.mock('../domain/data/contentContract', async () => {
-  const actual = await vi.importActual<typeof import('../domain/data/contentContract')>('../domain/data/contentContract')
+vi.mock('../domain/data/contentContractRuntime', async () => {
+  const actual = await vi.importActual<typeof import('../domain/data/contentContractRuntime')>('../domain/data/contentContractRuntime')
   return {
     ...actual,
     getEffectiveWhyNowLine: () => 'Svaret måste komma före omgång 14.',

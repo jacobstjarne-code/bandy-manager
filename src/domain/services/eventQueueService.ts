@@ -7,7 +7,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, EventPriority } from '../entities/GameEvent'
 import { getEventPriority } from '../entities/GameEvent'
-import { getEffectiveWhyNowLine } from '../data/contentContract'
+import { getEffectiveWhyNowLine } from '../data/contentContractRuntime'
 import { getVoiceEligibleEvents } from './voiceIntroductionService'
 
 // Numerisk rank per prio — lägre tal = högre prioritet

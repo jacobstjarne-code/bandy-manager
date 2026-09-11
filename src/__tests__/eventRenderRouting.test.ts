@@ -23,10 +23,13 @@ import type { GameEvent } from '../domain/entities/GameEvent'
  * direkt, inte längre getContentContractEntry — eventQueueService.ts
  * anropar sedan den instans-medvetna wrappern, och getEffectiveWhyNowLine
  * anropar getContentContractEntry LOKALT inom samma modul (ett internt
- * samma-fil-anrop Vitests modul-mock inte fångar).
+ * samma-fil-anrop Vitests modul-mock inte fångar). Pass 2
+ * (CODE_KORORDER_GENOMGANG_2026-09-12 §1 punkt 5) flyttade
+ * getEffectiveWhyNowLine till contentContractRuntime.ts, dit
+ * eventQueueService.ts nu importerar den ifrån — mocken följer med.
  */
-vi.mock('../domain/data/contentContract', async () => {
-  const actual = await vi.importActual<typeof import('../domain/data/contentContract')>('../domain/data/contentContract')
+vi.mock('../domain/data/contentContractRuntime', async () => {
+  const actual = await vi.importActual<typeof import('../domain/data/contentContractRuntime')>('../domain/data/contentContractRuntime')
   return {
     ...actual,
     getEffectiveWhyNowLine: () => 'Svaret måste komma före omgång 14.',

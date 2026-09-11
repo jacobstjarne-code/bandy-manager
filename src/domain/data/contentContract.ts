@@ -59,7 +59,15 @@
 import type { GameEventType } from '../entities/GameEvent'
 import type { StorylineType, ArcType } from '../entities/Narrative'
 
-export type ContractSource = 'GameEventType' | 'StorylineType' | 'ArcType' | 'PortalBeat'
+// ContractSource, getWhyNowLine och getEffectiveWhyNowLine flyttade till
+// contentContractRuntime.ts (Pass 2, CODE_KORORDER_GENOMGANG_2026-09-12 §1
+// punkt 5) — det är den enda delen av det här registret produktionskoden
+// faktiskt läser vid körning; att importera HELA denna fil (267 kB prosa)
+// bara för fyra fält höll den kvar i huvudchunken i onödan. Re-exporterade
+// härifrån så befintliga tester/anrop inte behöver ändra importväg.
+export type { ContractSource } from './contentContractRuntime'
+export { getWhyNowLine, getEffectiveWhyNowLine } from './contentContractRuntime'
+import type { ContractSource } from './contentContractRuntime'
 
 export interface ContentContractEntry {
   id: string
@@ -101,46 +109,6 @@ export interface ContentContractEntry {
   wholeEventIrreversible?: boolean
   /** Det som avgörs här bär hela säsongen. */
   seasonDefining?: boolean
-}
-
-/**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 4 — "därför nu"-raden.
- * "Den sista punkten är den viktigaste: 'därför nu'-raden är inte dekoration
- * på pivotal, den är kriteriet för pivotal." Fem former, denna funktion
- * returnerar den FÖRSTA som matchar i domens prioritetsordning, eller null
- * om ingen av de fyra formerna är satt på contentContract-raden — då är
- * eventet enligt domen inte pivotal, vikten sänks (getEffectivePriority i
- * eventQueueService.ts). Copy ordagrant låst i domen, ingen ny text här.
- */
-export function getWhyNowLine(entry: Pick<ContentContractEntry, 'deadlineLabel' | 'whyNowPerson' | 'wholeEventIrreversible' | 'seasonDefining'> | undefined): string | null {
-  if (!entry) return null
-  if (entry.deadlineLabel) return `Svaret måste komma före ${entry.deadlineLabel}.`
-  if (entry.whyNowPerson) return `${entry.whyNowPerson} väntar på besked.`
-  if (entry.wholeEventIrreversible) return 'Det här går inte att göra ogjort.'
-  if (entry.seasonDefining) return 'Det som bestäms här bär hela våren.'
-  return null
-}
-
-/**
- * Medium 4 (Skutskär-auditen, 2026-08-22): "Prioritera per undertyp/instans,
- * inte bara GameEventType. En bastu är normal; ett irreversibelt stjärnsälj
- * eller ett faktiskt ultimatum är pivotal." getWhyNowLine() läste tidigare
- * ENBART den TYP-nivå-rad Jacobs D1-dom (2026-08-21) explicit band den till
- * — alla instanser av t.ex. `criticalEconomy` (en bastuinbjudan OCH ett
- * stjärnsälj-ultimatum delar samma GameEventType) fick antingen samma
- * critical-status eller samma nedgradering, aldrig särskiljda.
- *
- * `event.whyNow` (GameEvent.ts) är den nya, PER-INSTANS-satta motsvarigheten
- * — samma fyra fält, samma låsta copy (getWhyNowLine ändras inte, bara VAR
- * den läser ifrån). Konstruktionsstället sätter den bara när formen faktiskt
- * är grundad i spårad data för DEN HÄR instansen (D1:s egen disciplin,
- * oförändrad) — instansen vinner över typ-raden om båda är satta, eftersom
- * en instans-specifik brådska alltid är mer exakt än en typ-generell.
- */
-export function getEffectiveWhyNowLine(event: { type: string; whyNow?: Pick<ContentContractEntry, 'deadlineLabel' | 'whyNowPerson' | 'wholeEventIrreversible' | 'seasonDefining'> }): string | null {
-  const instanceLine = getWhyNowLine(event.whyNow)
-  if (instanceLine) return instanceLine
-  return getWhyNowLine(getContentContractEntry('GameEventType', event.type))
 }
 
 // Exporterad (A-M3, SEXSÄSONGSAUDITEN 2026-08-26) så eventTypeLabels.test.ts

@@ -24,30 +24,21 @@ import { SaveManagerScreen } from '../screens/SaveManagerScreen'
 import { ClubSelectionScreen } from '../screens/ClubSelectionScreen'
 import { IntroSequence } from '../screens/IntroSequence'
 import { ArrivalScene } from '../screens/ArrivalScene'
-import { TilltradeScreen } from '../screens/TilltradeScreen'
 import { GameShell, GameGuard } from './GameShell'
 import { PortalScreen } from '../screens/PortalScreen'
 import { SceneScreen } from '../screens/scenes/SceneScreen'
-import { SquadScreen } from '../screens/SquadScreen'
 import { MatchScreen } from '../screens/MatchScreen'
-import { MatchLiveScreen } from '../screens/match/MatchLiveScreen'
-import { TransfersScreen } from '../screens/TransfersScreen'
 import { ClubScreen } from '../screens/ClubScreen'
-import { TabellScreen } from '../screens/TabellScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
-import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
 import { SeasonContractDemandsScreen } from '../screens/SeasonContractDemandsScreen'
 import { SeasonTransitionScene } from '../screens/scenes/SeasonTransitionScene'
-import { InboxScreen } from '../screens/InboxScreen'
 
-import { GameOverScreen } from '../screens/GameOverScreen'
 import { CareerBreakScreen } from '../screens/CareerBreakScreen'
 import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 import FacilityScreen from '../screens/FacilityScreen'
 import HallProvningScreen from '../screens/HallProvningScreen'
 
-import { HistoryScreen } from '../screens/HistoryScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { PlayoffIntroScreen } from '../screens/PlayoffIntroScreen'
 import { QFSummaryScreen } from '../screens/QFSummaryScreen'
@@ -58,6 +49,21 @@ import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { CoffeeRoomScene } from '../screens/scenes/CoffeeRoomScene'
 import { getPendingScreenRedirect } from './pendingScreenRedirect'
 
+// Pass 2 (CODE_KORORDER_GENOMGANG_2026-09-12 §1): route-lazy tunga skärmar +
+// matchbundeln (MatchLiveScreen + matchCore/matchEngine + components/match/*)
+// som en egen chunk — huvudchunken var 2,79 MB, en fil.
+const EmptyFallback = () => <div style={{ height: '100%', background: 'var(--bg)' }} />
+
+const SquadScreen = lazy(() => import('../screens/SquadScreen').then(m => ({ default: m.SquadScreen })))
+const TransfersScreen = lazy(() => import('../screens/TransfersScreen').then(m => ({ default: m.TransfersScreen })))
+const TabellScreen = lazy(() => import('../screens/TabellScreen').then(m => ({ default: m.TabellScreen })))
+const SeasonSummaryScreen = lazy(() => import('../screens/SeasonSummaryScreen').then(m => ({ default: m.SeasonSummaryScreen })))
+const InboxScreen = lazy(() => import('../screens/InboxScreen').then(m => ({ default: m.InboxScreen })))
+const HistoryScreen = lazy(() => import('../screens/HistoryScreen').then(m => ({ default: m.HistoryScreen })))
+const GameOverScreen = lazy(() => import('../screens/GameOverScreen').then(m => ({ default: m.GameOverScreen })))
+const TilltradeScreen = lazy(() => import('../screens/TilltradeScreen').then(m => ({ default: m.TilltradeScreen })))
+const MatchLiveScreen = lazy(() => import('../screens/match/MatchLiveScreen').then(m => ({ default: m.MatchLiveScreen })))
+
 // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
 // visa historik för en avslutad (managerFired) karriär. GameShell redirectar
 // bort managerFired-spel innan /game/history hinner rendera, så denna rutten
@@ -67,7 +73,11 @@ import { getPendingScreenRedirect } from './pendingScreenRedirect'
 function FiredCareerHistoryScreen() {
   const location = useLocation()
   const snapshot = (location.state as { snapshot?: import('../../domain/entities/SaveGame').SaveGame } | null)?.snapshot
-  return <HistoryScreen snapshot={snapshot} />
+  return (
+    <Suspense fallback={<EmptyFallback />}>
+      <HistoryScreen snapshot={snapshot} />
+    </Suspense>
+  )
 }
 
 function DashboardOrPortal() {
@@ -148,24 +158,24 @@ export function AppRouter() {
         <Route path="/new-game" element={<NameInputScreen />} />
         <Route path="/club-selection" element={<ClubSelectionScreen />} />
         <Route path="/intro" element={<ArrivalScene />} />
-        <Route path="/tilltrade" element={<TilltradeScreen />} />
+        <Route path="/tilltrade" element={<Suspense fallback={<EmptyFallback />}><TilltradeScreen /></Suspense>} />
         <Route path="/game" element={<GameShell />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardOrPortal />} />
-          <Route path="squad" element={<SquadScreen />} />
+          <Route path="squad" element={<Suspense fallback={<EmptyFallback />}><SquadScreen /></Suspense>} />
           <Route path="match" element={<MatchScreen />} />
-          <Route path="match/live" element={<MatchLiveScreen />} />
-          <Route path="transfers" element={<TransfersScreen />} />
+          <Route path="match/live" element={<Suspense fallback={<EmptyFallback />}><MatchLiveScreen /></Suspense>} />
+          <Route path="transfers" element={<Suspense fallback={<EmptyFallback />}><TransfersScreen /></Suspense>} />
           <Route path="club" element={<ClubScreen />} />
-          <Route path="tabell" element={<TabellScreen />} />
+          <Route path="tabell" element={<Suspense fallback={<EmptyFallback />}><TabellScreen /></Suspense>} />
           <Route path="champion" element={<ChampionScreen />} />
-          <Route path="season-summary" element={<SeasonSummaryScreen />} />
-          <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
+          <Route path="season-summary" element={<Suspense fallback={<EmptyFallback />}><SeasonSummaryScreen /></Suspense>} />
+          <Route path="season-summary/:season" element={<Suspense fallback={<EmptyFallback />}><SeasonSummaryScreen /></Suspense>} />
           <Route path="contract-demands" element={<SeasonContractDemandsScreen />} />
           <Route path="season-transition" element={<SeasonTransitionScene />} />
-          <Route path="inbox" element={<InboxScreen />} />
+          <Route path="inbox" element={<Suspense fallback={<EmptyFallback />}><InboxScreen /></Suspense>} />
 
-          <Route path="history" element={<HistoryScreen />} />
+          <Route path="history" element={<Suspense fallback={<EmptyFallback />}><HistoryScreen /></Suspense>} />
           <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
           <Route path="playoff-intro" element={<PlayoffIntroScreen />} />
           <Route path="qf-summary" element={<QFSummaryScreen />} />
@@ -179,7 +189,7 @@ export function AppRouter() {
           <Route path="hall-provning" element={<HallProvningScreen />} />
         </Route>
         <Route element={<GameGuard />}>
-          <Route path="/game/game-over" element={<GameOverScreen />} />
+          <Route path="/game/game-over" element={<Suspense fallback={<EmptyFallback />}><GameOverScreen /></Suspense>} />
           <Route path="/game/game-over/historik" element={<FiredCareerHistoryScreen />} />
           {/* O13 (DOM_TRANARMARKNADEN_2026-08-26): ligger under GameGuard, inte
               GameShell — GameShell redirectar bort varje managerFired-spel till
