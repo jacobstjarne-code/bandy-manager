@@ -51,6 +51,10 @@ export function yearbookTimelineRoundBadge(roundLabel: string | undefined, _matc
   return roundLabel ?? 'Säsongen'
 }
 
+export function communityStandingDisplay(value: number): string {
+  return `${value} av 100`
+}
+
 function YearbookRoundBadge({ roundLabel, matchday }: { roundLabel?: string; matchday: number }) {
   const label = yearbookTimelineRoundBadge(roundLabel, matchday)
   const fixedNumericWidth = /^Omg \d+$/.test(label)
@@ -967,10 +971,17 @@ export function SeasonSummaryScreen() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokalstöd vid säsongsslut</span>
                 <span style={{ fontSize: 16, fontWeight: 700, color: csColor(summary.communityStandingEnd) }}>
-                  {summary.communityStandingEnd}
+                  {communityStandingDisplay(summary.communityStandingEnd)}
                 </span>
               </div>
-              <div style={{ height: 6, background: 'color-mix(in srgb, var(--ink) 8%, transparent)', borderRadius: 3 }}>
+              <div
+                role="progressbar"
+                aria-label="Lokalstöd vid säsongsslut"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={summary.communityStandingEnd}
+                style={{ height: 6, background: 'color-mix(in srgb, var(--ink) 8%, transparent)', borderRadius: 3 }}
+              >
                 <div style={{
                   height: '100%',
                   width: `${summary.communityStandingEnd}%`,

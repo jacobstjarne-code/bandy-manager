@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeYearbookTimelineItems, yearbookTimelineRoundBadge, type YearbookTimelineItem } from '../SeasonSummaryScreen'
+import { communityStandingDisplay, mergeYearbookTimelineItems, yearbookTimelineRoundBadge, type YearbookTimelineItem } from '../SeasonSummaryScreen'
 
 function item(overrides: Partial<YearbookTimelineItem> = {}): YearbookTimelineItem {
   return {
@@ -64,5 +64,12 @@ describe('yearbookTimelineRoundBadge', () => {
   it('bevarar tävlingsnamn som redan är sanna', () => {
     expect(yearbookTimelineRoundBadge('Cup · final', 4)).toBe('Cup · final')
     expect(yearbookTimelineRoundBadge('Slutspel · semifinal', 29)).toBe('Slutspel · semifinal')
+  })
+})
+
+describe('communityStandingDisplay', () => {
+  it('visar skalan även vid det giltiga golvvärdet', () => {
+    expect(communityStandingDisplay(0)).toBe('0 av 100')
+    expect(communityStandingDisplay(50)).toBe('50 av 100')
   })
 })
