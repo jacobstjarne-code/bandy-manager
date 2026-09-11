@@ -241,6 +241,52 @@ export function MatchLiveScreen() {
 
   const hasSimulated = useRef(false)
 
+  // Genomgång 2026-09-11: EN kontextkälla för alla fyra generatoranropen
+  // (första simuleringen, halvtidens andra halvlek, taktikbytet mitt i matchen
+  // och regenereringen efter ett interaktivt mål). Tidigare fick bara det
+  // första anropet hela listan — de tre andra tappade isPlayoff/matchPhase
+  // (en SM-final simulerades som 'regular' från första hörnmålet: PHASE_
+  // CONSTANTS.final goalMod 0.768 → 1.0, homeAdvDelta → 0), kapten, klack,
+  // hall, annandag/nyår/finalhelg, skandal och rivalförsäljning. Samma klass
+  // som LESSONS #30 (asymmetrisk halvleks-state), här på inparametrarna.
+  // Seed och initial*-räknare sätts fortfarande per anrop — de ÄR olika.
+  function liveMatchContext() {
+    const homeClubObj = game?.clubs.find(c => c.id === fixture?.homeClubId)
+    const liveSlot = (game?.seasonCalendar ?? []).find(s => s.matchday === fixture?.matchday)
+    return {
+      homeAdvantage: fixture?.isNeutralVenue ? 0 : undefined,
+      weather: matchWeather?.weather,
+      homeClubName: homeClubName || undefined,
+      awayClubName: awayClubName || undefined,
+      isPlayoff: matchPhase !== 'regular',
+      matchPhase,
+      rivalry: rivalry ?? undefined,
+      storylines: game
+        ? getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText }))
+        : [],
+      managedIsHome: !!fixture && fixture.homeClubId === game?.managedClubId,
+      captainPlayerId: game?.captainPlayerId,
+      fanFavoritePlayerId: game?.supporterGroup?.favoritePlayerId,
+      supporterContext: game?.supporterGroup ? {
+        mood: game.supporterGroup.mood,
+        members: game.supporterGroup.members,
+        leaderName: getCharacterName(game, 'leader'),
+      } : undefined,
+      ownScandalThisSeason: (game?.scandalHistory ?? []).some(s =>
+        s.season === game?.currentSeason &&
+        s.affectedClubId === game?.managedClubId &&
+        s.type !== 'small_absurdity'
+      ),
+      arenaName: homeClubObj?.arenaName,
+      isAnnandagen: !!liveSlot?.isAnnandagen,
+      isNyarsbandy: !!liveSlot?.isNyarsbandy,
+      isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
+      hallInomhus: !!fixture && fixture.homeClubId === game?.managedClubId && (homeClubObj?.hasIndoorArena ?? false),
+      lastRivalSaleMatchday: game?.lastRivalSaleMatchday,
+      currentMatchday: game?.currentMatchday,
+    }
+  }
+
   useEffect(() => {
     // A-H6: fixture ÄR redan completed i ceremony-only-läget — det är förväntat,
     // inte ett övergivet/redan-visat läge att navigera bort ifrån.
@@ -311,44 +357,13 @@ export function MatchLiveScreen() {
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
-    const homeClubObj = game.clubs.find(c => c.id === fixture.homeClubId)
-    // Use stored seasonCalendar — single source of truth
-    const storedCal = game.seasonCalendar ?? []
-    const liveSlot = storedCal.find(s => s.matchday === fixture.matchday)
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      ...liveMatchContext(),
       // PT-7 (BACKLOG.md 2026-07-10): Date.now() gjorde live-matcher irreproducerbara
       // — bröt projektets seed-disciplin och försvårade PT-3-sekvensutredningen.
       // fixtureSeed(fixture.id) matchar konventionen i matchActions.ts/matchEngine.ts.
       seed: fixtureSeed(fixture.id),
-      weather: matchWeather?.weather,
-      homeClubName: homeClubName || undefined,
-      awayClubName: awayClubName || undefined,
-      isPlayoff: matchPhase !== 'regular',
-      matchPhase,
-      rivalry: rivalry ?? undefined,
-      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
-      managedIsHome: fixture.homeClubId === game.managedClubId,
-      captainPlayerId: game.captainPlayerId,
-      fanFavoritePlayerId: game.supporterGroup?.favoritePlayerId,
-      supporterContext: game.supporterGroup ? {
-        mood: game.supporterGroup.mood,
-        members: game.supporterGroup.members,
-        leaderName: getCharacterName(game, 'leader'),
-      } : undefined,
-      ownScandalThisSeason: (game.scandalHistory ?? []).some(s =>
-        s.season === game.currentSeason &&
-        s.affectedClubId === game.managedClubId &&
-        s.type !== 'small_absurdity'
-      ),
-      arenaName: homeClubObj?.arenaName,
-      isAnnandagen: !!liveSlot?.isAnnandagen,
-      isNyarsbandy: !!liveSlot?.isNyarsbandy,
-      isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
-      hallInomhus: fixture.homeClubId === game.managedClubId && (homeClubObj?.hasIndoorArena ?? false),
-      lastRivalSaleMatchday: game.lastRivalSaleMatchday,
-      currentMatchday: game.currentMatchday,
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
@@ -778,24 +793,21 @@ export function MatchLiveScreen() {
     const gen = simulateFromMidMatch({
       fixture, homeLineup, awayLineup,
       homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      ...liveMatchContext(),
       // PT-7: fixtureSeed(fixture.id, atStep) — deterministisk per fixture+ingreppspunkt,
       // istf Date.now() som gjorde regenereringen irreproducerbar (BACKLOG.md 2026-07-10).
       seed: fixtureSeed(fixture.id, atStep),
-      weather: matchWeather?.weather,
-      homeClubName: homeClubName || undefined,
-      awayClubName: awayClubName || undefined,
-      rivalry: rivalry ?? undefined,
       initialHomeScore: newHomeScore,
       initialAwayScore: newAwayScore,
       initialShotsHome: currentStepData.shotsHome,
       initialShotsAway: currentStepData.shotsAway,
+      initialOnTargetHome: currentStepData.onTargetHome,
+      initialOnTargetAway: currentStepData.onTargetAway,
       initialCornersHome: currentStepData.cornersHome,
       initialCornersAway: currentStepData.cornersAway,
       initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
       managedIsHome,
-      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []
@@ -1182,18 +1194,16 @@ export function MatchLiveScreen() {
     const gen = simulateSecondHalf({
       fixture, homeLineup: updatedHome, awayLineup: updatedAway,
       homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      ...liveMatchContext(),
       // PT-7: fixtureSeed(fixture.id, 31) — 31 är halvtidssteget (samma gräns som
       // steps.slice(0,31)/setCurrentStep(31) nedan), deterministiskt istf Date.now().
       seed: fixtureSeed(fixture.id, 31),
-      weather: matchWeather?.weather,
-      homeClubName: homeClubName || undefined,
-      awayClubName: awayClubName || undefined,
-      rivalry: rivalry ?? undefined,
       initialHomeScore: halftimeStep?.homeScore ?? 0,
       initialAwayScore: halftimeStep?.awayScore ?? 0,
       initialShotsHome: halftimeStep?.shotsHome ?? 0,
       initialShotsAway: halftimeStep?.shotsAway ?? 0,
+      initialOnTargetHome: halftimeStep?.onTargetHome ?? 0,
+      initialOnTargetAway: halftimeStep?.onTargetAway ?? 0,
       initialCornersHome: halftimeStep?.cornersHome ?? 0,
       initialCornersAway: halftimeStep?.cornersAway ?? 0,
       initialHomeSuspensions: halftimeStep?.activeSuspensions.homeCount ?? 0,
@@ -1201,7 +1211,6 @@ export function MatchLiveScreen() {
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
       pauseLean: effectiveLean,
-      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     })
     const firstHalf = steps.slice(0, 31)
     const newSecondHalf: MatchStep[] = []
@@ -1264,24 +1273,21 @@ export function MatchLiveScreen() {
     const gen = simulateFromMidMatch({
       fixture, homeLineup: newHome, awayLineup: newAway,
       homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      ...liveMatchContext(),
       // PT-7: fixtureSeed(fixture.id, fromStep) — deterministisk per fixture+ingreppspunkt,
       // istf Date.now() (BACKLOG.md 2026-07-10).
       seed: fixtureSeed(fixture.id, fromStep),
-      weather: matchWeather?.weather,
-      homeClubName: homeClubName || undefined,
-      awayClubName: awayClubName || undefined,
-      rivalry: rivalry ?? undefined,
       initialHomeScore: currentMatchStep.homeScore,
       initialAwayScore: currentMatchStep.awayScore,
       initialShotsHome: currentMatchStep.shotsHome,
       initialShotsAway: currentMatchStep.shotsAway,
+      initialOnTargetHome: currentMatchStep.onTargetHome,
+      initialOnTargetAway: currentMatchStep.onTargetAway,
       initialCornersHome: currentMatchStep.cornersHome,
       initialCornersAway: currentMatchStep.cornersAway,
       initialHomeSuspensions: currentMatchStep.activeSuspensions.homeCount,
       initialAwaySuspensions: currentMatchStep.activeSuspensions.awayCount,
       managedIsHome,
-      storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []
@@ -1482,12 +1488,16 @@ export function MatchLiveScreen() {
     const currentMin = currentMatchStep.minute
     const allEventsSoFar = displayedSteps.flatMap(s => s.events)
     const playerById = new Map(game.players.map(p => [p.id, p]))
+    // Genomgång 2026-09-11: utvisningen bär sin egen längd (5 eller 10 min,
+    // M15) — tavlan räknade tidigare alltid ner från 10, så en femminutare
+    // visade 10:00 och låg kvar på tavlan fem minuter efter att spelaren
+    // faktiskt var tillbaka på isen.
     return allEventsSoFar
-      .filter(e => e.type === MatchEventType.Suspension && currentMin - (e.minute ?? 0) < 10)
+      .filter(e => e.type === MatchEventType.Suspension && currentMin - (e.minute ?? 0) < (e.durationMinutes ?? 10))
       .map(e => {
         const p = e.playerId ? playerById.get(e.playerId) : null
         const elapsed = currentMin - (e.minute ?? 0)
-        const remaining = Math.max(0, 10 - elapsed)
+        const remaining = Math.max(0, (e.durationMinutes ?? 10) - elapsed)
         return {
           team: (e.clubId === fixture.homeClubId ? 'home' : 'away') as 'home' | 'away',
           num: p?.shirtNumber ?? 0,

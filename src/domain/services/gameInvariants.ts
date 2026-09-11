@@ -320,7 +320,7 @@ function checkStaleContracts(game: SaveGame): InvariantFinding[] {
 export const INVARIANT_NAMES = [
   'tableSum', 'fixtureCount', 'playerAges', 'squadSize', 'positionCoverage',
   'finance', 'cupBracket', 'playoffBracket', 'noUndefined', 'matchdayMonotonic',
-  'pendingScreenConsistency', 'saveGameSize', 'noNaN', 'staleContracts',
+  'pendingScreenConsistency', 'saveGameSize', 'noNaN', 'staleContracts', 'uniquePlayerIds',
 ] as const
 
 export function checkInvariants(game: SaveGame): InvariantFinding[] {
@@ -339,5 +339,27 @@ export function checkInvariants(game: SaveGame): InvariantFinding[] {
     ...checkSaveGameSize(game),
     ...checkNoNaN(game),
     ...checkStaleContracts(game),
+    ...checkUniquePlayerIds(game),
   ]
+}
+
+// 4.15 uniquePlayerIds — genomgång 2026-09-11: signFreeAgent append:ade en
+// spelare som redan låg i game.players som 'free_agent' (seasonEndProcessor
+// behåller kontraktsutgångna där OCH kopierar dem till freeAgents). Två
+// poster med samma id gör varje `find(id)` till en lottdragning och varje
+// `map`-uppdatering till en dubbelskrivning. Stresstestet signar aldrig fria
+// agenter, så klassen nådde aldrig en invariant — nu gör den det.
+function checkUniquePlayerIds(game: SaveGame): InvariantFinding[] {
+  const seen = new Set<string>()
+  const dupes = new Set<string>()
+  for (const p of game.players) {
+    if (seen.has(p.id)) dupes.add(p.id)
+    seen.add(p.id)
+  }
+  if (dupes.size === 0) return []
+  return [{
+    name: 'uniquePlayerIds',
+    severity: 'crash',
+    message: `${dupes.size} spelar-id förekommer mer än en gång i game.players: ${[...dupes].slice(0, 3).join(', ')}`,
+  }]
 }

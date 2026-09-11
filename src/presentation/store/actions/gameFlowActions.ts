@@ -33,6 +33,8 @@ import { applyContractDemandResolutions } from '../../../domain/services/contrac
 import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 import { getFinalIntroScene, type FinalTier } from '../../../domain/data/scenes/finalIntroScene'
 import { getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
+import { pickBestEleven } from '../../../domain/services/squadEvaluator'
+import { isPlayerInMatchSquad } from '../../../domain/services/matchSquadService'
 
 interface GetState {
   game: SaveGame | null
@@ -762,13 +764,26 @@ export function gameFlowActions(get: Get, set: Set) {
         return { game: get().game!, roundPlayed: null, seasonEnded: false }
       }
       if (!game.managedClubPendingLineup) {
-        const available = game.players
-          .filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining <= 0)
-          .sort((a, b) => b.currentAbility - a.currentAbility)
+        // Genomgång 2026-09-11: tidigare sorterades top-11 på rå currentAbility utan
+        // positionshänsyn — en målvakt utanför CA-topp-11 gav en elva UTAN målvakt
+        // (goalkeeperScore 20 i evaluateSquad) genom hela den simulerade
+        // säsongsresten, och vilande spelare (restGamesRemaining) filtrerades
+        // inte bort så setLineup kunde avvisa tyst och lämna fixturen som
+        // Scheduled. pickBestEleven är den redan etablerade enda sanningen
+        // (squadEvaluator.ts: MV först, fitnessgolv, samma viktning som
+        // motorn) — samma urval som "Fyll bästa elvan" och AI-klubbarna.
+        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        const available = game.players.filter(p =>
+          (managedClub ? isPlayerInMatchSquad(p, managedClub) : p.clubId === game.managedClubId) &&
+          !p.isInjured &&
+          p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) <= 0,
+        )
+        const picked = pickBestEleven(available, 'matchfit')
+        const captain = [...picked.starters].sort((a, b) => b.currentAbility - a.currentAbility)[0]
         setPlayerLineup(
-          available.slice(0, 11).map(p => p.id),
-          available.slice(11, 16).map(p => p.id),
-          available[0]?.id,
+          picked.starters.map(p => p.id),
+          picked.rest.slice(0, 5).map(p => p.id),
+          captain?.id,
           true,
         )
       }

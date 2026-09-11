@@ -89,10 +89,16 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   }
 
   let lastStep: MatchStep | null = null
+  // Genomgång 2026-09-11: wentToOvertime lästes tidigare bara ur SISTA steget.
+  // En match som gick till straffar har sista fas 'penalties', så förlängningen
+  // som faktiskt spelades registrerades aldrig (wentToOvertime = undefined).
+  // Spåra fasen löpande i stället.
+  let sawOvertimeStep = false
   const secondHalfEvents: MatchEvent[] = []
 
   for (const step of simulateSecondHalf(secondHalfInput)) {
     lastStep = step
+    if (step.phase === 'overtime') sawOvertimeStep = true
     secondHalfEvents.push(...step.events)
   }
 
@@ -206,7 +212,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   }
 
   // Overtime / penalty metadata from events and last step
-  const wentToOvertime  = lastStep?.phase === 'overtime' || finalStep?.phase === 'overtime' || undefined
+  const wentToOvertime  = sawOvertimeStep || undefined
   const wentToPenalties = finalStep?.phase === 'penalties' || undefined
   const overtimeResult  = (() => {
     for (const step of [lastStep, finalStep]) {

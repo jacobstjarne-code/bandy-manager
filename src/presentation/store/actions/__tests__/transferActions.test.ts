@@ -297,4 +297,23 @@ describe('transferflödets rotfixar', () => {
       type: 'transfer_signed', subject: { kind: 'player', id: 'free' },
     }))
   })
+
+  it('en fri agent som redan ligger i game.players (säsongsslutets form) ersätts på plats — aldrig två poster med samma id', () => {
+    // Genomgång 2026-09-11: seasonEndProcessor behåller kontraktsutgångna i
+    // game.players med clubId 'free_agent' OCH kopierar dem till freeAgents.
+    const agent = makePlayer({ id: 'free', clubId: 'free_agent', salary: 9000, contractUntilSeason: 2024 })
+    const game = makeGame({
+      players: [makePlayer(), agent],
+      transferState: { freeAgents: [agent], pendingOffers: [] },
+      eventLedger: [],
+    })
+    const store = makeStore(game)
+    const result = transferActions(store.get, store.set).signFreeAgent('free', 20000, 3)
+
+    expect(result.success).toBe(true)
+    const after = store.getGame()!
+    expect(after.players.filter(p => p.id === 'free')).toHaveLength(1)
+    expect(after.players.find(p => p.id === 'free')).toMatchObject({ clubId: 'c1', salary: 20000, contractUntilSeason: 2028 })
+    expect(after.transferState.freeAgents.some(p => p.id === 'free')).toBe(false)
+  })
 })

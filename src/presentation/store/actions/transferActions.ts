@@ -339,7 +339,18 @@ export function transferActions(get: Get, set: Set) {
         salary: offeredSalary,
         contractUntilSeason: game.currentSeason + contractYears,
       }
-      const updatedPlayers = [...game.players, agentWithClub]
+      // Dubbelidentitet (genomgång 2026-09-11): seasonEndProcessor låter en
+      // kontraktsutgången spelare LIGGA KVAR i game.players (clubId 'free_agent',
+      // se gameInvariants.ts:checkStaleContracts) OCH lägger en kopia i
+      // transferState.freeAgents. En ren append här gav då TVÅ poster med samma
+      // id i game.players — varje `players.find(id)` träffade den äldre
+      // 'free_agent'-kopian (utan nya kontraktet), och varje `players.map`-
+      // uppdatering (stats, åldrande) slog på båda. Ersätt på plats om spelaren
+      // redan finns; append bara när han inte gör det (äldre saves/tester).
+      const alreadyInPlayers = game.players.some(p => p.id === agentId)
+      const updatedPlayers = alreadyInPlayers
+        ? game.players.map(p => (p.id === agentId ? agentWithClub : p))
+        : [...game.players, agentWithClub]
       const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
       const updatedClubs0 = game.clubs.map(c =>
         c.id === game.managedClubId

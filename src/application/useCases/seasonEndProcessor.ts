@@ -1123,6 +1123,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // are computed dynamically each season end (≥5 seasons + ≥100 matches).
   resetPlayers = updateActiveLegendFlags(resetPlayers, game.managedClubId) as typeof resetPlayers
 
+  // Genomgång 2026-09-11: kaptenen nollställdes bara vid pensionering (28-A
+  // ovan). En kapten vars kontrakt löpte ut blev 'free_agent' men satt kvar
+  // som game.captainPlayerId — en bindel på en spelare som inte längre finns
+  // i truppen (generateIncomingBids, matchCore:s kaptenskommentarer och
+  // Trupp-vyn läser alla fältet rakt av).
+  if (nextCaptainPlayerId && contractExpiredIds.has(nextCaptainPlayerId)) {
+    nextCaptainPlayerId = undefined
+  }
+
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))
     .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
