@@ -110,3 +110,27 @@ uppdaterats kördes samtliga berörda resolver-, patron- och entropivägar grön
 
 O12 är fortfarande öppet. `refereeMeeting` väntar en spelmässig dom, och
 80-procentsgrinden behöver därefter ny naturlig population från aktuell main.
+
+## Avgränsat återprov 2026-09-12
+
+Ett nytt riktigt saveprov visade att rapportens patronfix och den synliga
+mecenatintroduktionen kom från två skilda producenter. `patronEvents.ts` var
+korrekt förenklad, men `generateMecenatIntroEvent` erbjöd fortfarande
+`welcome` (+20) och `cautious` (+5) utan motkostnad, bredvid det verkliga
+avböj-valet.
+
+Den kvarvarande dominansen är nu rotfixad i rätt producent. Det försiktiga
+ja-svaret är borttaget, medan acceptera/avböj står kvar. Eftersom beslutskort
+fryses i sparfilen migreras även redan köade introevent i både
+`pendingEvents` och `deferredDecisions`; save-schemat är bumpat till 0.3.13
+så migreringen verkligen körs för befintliga karriärer.
+
+Browserprov på en verklig legacy-save visade först det gamla kortet med tre
+val och efter migrering exakt två val. `Välkomna samarbetet` gick att lösa
+och nästa riktiga kökort tog över. Helsviten passerade 5 207/5 207 tester och
+produktionsbygget inklusive TypeScript och samtliga grindar var grönt.
+
+Det här stänger den verifierade mecenatbuggen, inte populationsgrinden. Ett
+naturligt val av en beslutsfattare är inte ett statistiskt omprov av
+80-procentskravet; den domen väntar fortfarande oberoende spelare eller
+telemetri från aktuell version.

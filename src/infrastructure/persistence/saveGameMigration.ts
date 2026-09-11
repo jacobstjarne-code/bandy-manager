@@ -52,6 +52,24 @@ function migrateTacticShape(tactic: Record<string, unknown> | undefined): void {
   delete tactic.press
 }
 
+/**
+ * O12: den gamla mecenatintroduktionen hade två ja-svar på samma axel:
+ * `welcome` gav +20 och `cautious` +5 utan motkostnad. Producenten behåller
+ * nu bara det verkliga acceptera/avböj-valet. Event ligger frusna i saven,
+ * så redan köade intro måste följa samma kontrakt vid laddning.
+ */
+function migrateMecenatIntroChoices(event: unknown): unknown {
+  if (typeof event !== 'object' || event === null) return event
+  const record = event as Record<string, unknown>
+  if (typeof record.id !== 'string' || !record.id.startsWith('event_mecenat_intro_')) return event
+  if (!Array.isArray(record.choices)) return event
+  record.choices = record.choices.filter(choice => {
+    if (typeof choice !== 'object' || choice === null) return true
+    return (choice as Record<string, unknown>).id !== 'cautious'
+  })
+  return record
+}
+
 // B1 §5 — migrera gamla facilityProjects → ny facilityState. SJÄLVSTÄNDIG legacy-shape
 // (importerar inte den borttagna FacilityProject-typen) så den överlever utfasningen.
 interface LegacyFacilityProject { id: string; status: string; startedMatchday?: number }
@@ -264,6 +282,12 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.pendingEvents === undefined) data.pendingEvents = []
   if (data.pendingDecisions === undefined) data.pendingDecisions = []
   if (data.deferredDecisions === undefined) data.deferredDecisions = []
+  if (Array.isArray(data.pendingEvents)) {
+    data.pendingEvents = data.pendingEvents.map(migrateMecenatIntroChoices)
+  }
+  if (Array.isArray(data.deferredDecisions)) {
+    data.deferredDecisions = data.deferredDecisions.map(migrateMecenatIntroChoices)
+  }
   if (data.lastRumorRound === undefined) data.lastRumorRound = 0
   if (data.lastEventQueueRound === undefined) data.lastEventQueueRound = 0
   if (data.resolvedEventIds === undefined) data.resolvedEventIds = []

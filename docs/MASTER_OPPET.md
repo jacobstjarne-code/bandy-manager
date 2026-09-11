@@ -25,7 +25,7 @@
 
 **MASTER-split genomförd 2026-09-08 (Code, reconcile-fönster).** Filen bar tidigare alla ~653 poster oavsett status — varje session-start drog in 517 stängda/stale rader i kontexten för att komma åt 136 aktiva. De 517 (336 `klar` + 181 `stale`) är flyttade till `docs/MASTER_ARKIV.md`, kollapsade till id + status + commit-hash + källpekare, ingen fulltext. Fulltexten finns kvar i git-historiken och i respektive DOM-/RAPPORT-/RECON-fil — arkivraden är bara ett register, inte en andra sanning.
 
-**18 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen. **Räkneregel:** räkna bara faktiska datarader (aldrig tabellhuvuden eller avdelningsrubriker), och uppdatera detta tal i samma commit som en post läggs till eller flyttas till arkivet. Historik förs i `MASTER_ARKIV.md`; senaste räknarändring: O12-återprovet registrerade `o12-mecenatintro-dominant`, 15→16.
+**17 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen. **Räkneregel:** räkna bara faktiska datarader (aldrig tabellhuvuden eller avdelningsrubriker), och uppdatera detta tal i samma commit som en post läggs till eller flyttas till arkivet. Historik förs i `MASTER_ARKIV.md`; senaste räknarändring: O12-återprovet stängde `o12-mecenatintro-dominant`, 18→17.
 
 **Räknaruppdatering 2026-09-11:** blockerarpasset i `593fa055` stängde fyra reproducerade Grind 2-rader; råkontrollerat 10→6 aktiva poster. Själva obrutna tvåsäsongsåterprovet ligger kvar öppet.
 
@@ -61,8 +61,6 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| o12-mecenatintro-dominant | O12-återprovet visade att mecenatintroduktionen fortfarande har ett strikt dominerat försiktigt ja (+5) bredvid välkomna (+20); förra fixen träffade den separata patronproducenten. | in_progress | Codex | RAPPORT_O12_NATURLIGT_PROV_2026-09-11.md + browserprov 2026-09-12 | CLAIM 2026-09-12T00:05:16+0200. Behåll verkliga acceptera/avböj-valet, ta bort den strikt sämre mellanvägen i producent och migrera redan köade introevent; riktade tester + build + riktigt saveprov. |
-
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
 ## Checkpoint 2026-09-01 — Codex +100-rundan mot `55b2aa9d`

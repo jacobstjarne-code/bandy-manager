@@ -321,12 +321,6 @@ export function generateMecenatIntroEvent(mecenat: Mecenat, clubId?: string): Ga
         effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 20 },
       },
       {
-        id: 'cautious',
-        label: 'Tack, men vi tar det lugnt',
-        subtitle: 'gläder mecenaten försiktigt',
-        effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 5 },
-      },
-      {
         id: 'decline',
         label: 'Vi klarar oss själva',
         subtitle: 'Ingen effekt. Mecenaten kan återkomma.',
