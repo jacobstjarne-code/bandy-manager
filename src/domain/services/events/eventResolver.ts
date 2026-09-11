@@ -71,6 +71,78 @@ function recordResolvedChoice(
 }
 
 /**
+ * Domarrelationens enda skrivväg för både fristående och sammansatta effekter.
+ * Tröskelkorsningarna måste följa med när refereeMeeting använder multiEffect;
+ * annars skulle O12:s motkostnad göra den befintliga liggarbågen tyst.
+ */
+function applyRefereeRelationship(
+  game: SaveGame,
+  refereeId: string | undefined,
+  delta: number,
+): SaveGame {
+  if (!refereeId) throw new Error("effect 'refereeRelationship' saknar obligatoriskt fält refereeId")
+  if (game.refereeRelations === undefined) return game
+
+  const existing = game.refereeRelations.find(relation => relation.refereeId === refereeId)
+  if (!existing) {
+    const clubReaction = Math.max(-2, Math.min(2, delta)) as -2 | -1 | 0 | 1 | 2
+    return {
+      ...game,
+      refereeRelations: [
+        ...game.refereeRelations,
+        {
+          refereeId,
+          lastMatchSeason: game.currentSeason,
+          lastMatchRound: 0,
+          totalMatches: 0,
+          totalCardsGiven: 0,
+          totalPenaltiesGiven: 0,
+          clubReaction,
+        },
+      ],
+    }
+  }
+
+  const clubReaction = Math.max(-2, Math.min(2, existing.clubReaction + delta)) as -2 | -1 | 0 | 1 | 2
+  let updatedGame: SaveGame = {
+    ...game,
+    refereeRelations: game.refereeRelations.map(relation =>
+      relation.refereeId === refereeId ? { ...relation, clubReaction } : relation
+    ),
+  }
+
+  if (clubReaction === -2 && existing.clubReaction > -2) {
+    updatedGame = {
+      ...updatedGame,
+      eventLedger: logEvent(updatedGame, {
+        type: 'referee_feud',
+        semanticKey: `referee_feud_${refereeId}`,
+        season: updatedGame.currentSeason,
+        matchday: updatedGame.currentMatchday,
+        subject: { kind: 'referee', id: refereeId },
+        significance: 65,
+        madeByPlayer: true,
+      }),
+    }
+  } else if (clubReaction === 2 && existing.clubReaction < 2) {
+    updatedGame = {
+      ...updatedGame,
+      eventLedger: logEvent(updatedGame, {
+        type: 'referee_trust',
+        semanticKey: `referee_trust_${refereeId}`,
+        season: updatedGame.currentSeason,
+        matchday: updatedGame.currentMatchday,
+        subject: { kind: 'referee', id: refereeId },
+        significance: 65,
+        madeByPlayer: true,
+      }),
+    }
+  }
+
+  return updatedGame
+}
+
+/**
  * MEDIUM 15 (audit 2026-08-29): "sponsorernas motbud återställer förhandlingen".
  *
  * Rotorsak: sponsorOffer/riskySponsorOffer är fyra TIDIGA returer som går förbi
@@ -1277,7 +1349,7 @@ export function resolveEvent(
         // saknar ett obligatoriskt fält ska INTE fångas av samma catch — det
         // var precis vad som gjorde makeFullTimePro-no-open (varsel offer_pro)
         // osynlig. Parsning och validering separerade i två steg.
-        let subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string; targetMecenatId?: string; targetClubId?: string; contractYears?: number }> | null = null
+        let subList: Array<{ type: string; amount?: number; value?: number; refereeId?: string; targetPlayerId?: string; targetMecenatId?: string; targetClubId?: string; contractYears?: number }> | null = null
         try {
           subList = JSON.parse(effect.subEffects)
         } catch { /* ignore parse errors */ }
@@ -1408,6 +1480,8 @@ export function resolveEvent(
                   },
                 }
               }
+            } else if (sub.type === 'refereeRelationship') {
+              updatedGame = applyRefereeRelationship(updatedGame, sub.refereeId, sub.value ?? 0)
             } else if (sub.type === 'boostMorale') {
               // 2.5 (choice-label-svepet, 2026-08-17): villkoret var tidigare
               // `&& sub.targetPlayerId` — ett saknat fält gjorde att grenen
@@ -1976,75 +2050,7 @@ export function resolveEvent(
       // 2.5-vakt-svepet (2026-08-17): utan refereeId sker ingen uppdatering
       // alls, men pendingRefereeMeeting rensades ändå — mötet såg "avklarat"
       // ut för spelaren trots att relationen aldrig rördes.
-      const delta = effect.value ?? 0
-      const refId = effect.refereeId
-      if (!refId) throw new Error("effect 'refereeRelationship' saknar obligatoriskt fält refereeId")
-      if (updatedGame.refereeRelations !== undefined) {
-        const existing = updatedGame.refereeRelations.find(r => r.refereeId === refId)
-        if (existing) {
-          const newReaction = Math.max(-2, Math.min(2, existing.clubReaction + delta)) as -2 | -1 | 0 | 1 | 2
-          updatedGame = {
-            ...updatedGame,
-            refereeRelations: updatedGame.refereeRelations.map(r =>
-              r.refereeId === refId ? { ...r, clubReaction: newReaction } : r
-            ),
-          }
-          // DOM_DOMARRELATION_2026-09-02 (Jacobs beslut, nivå 3): clubReaction-
-          // valet blir sant på riktigt — när attityden korsar en tröskel (in
-          // i -2/+2 FRÅN ett mindre extremt läge, aldrig bara "ligger kvar
-          // där") skrivs en liggarpost, samma steg-2-3-mönster som patron/
-          // burnout. Första gången SKAPAR relationen (existing===undefined)
-          // kan aldrig träffa tröskeln direkt (delta är max ±1) — bara denna
-          // gren kan korsa. madeByPlayer: true — bara ett spelarval når hit.
-          if (newReaction === -2 && existing.clubReaction > -2) {
-            updatedGame = {
-              ...updatedGame,
-              eventLedger: logEvent(updatedGame, {
-                type: 'referee_feud',
-                semanticKey: `referee_feud_${refId}`,
-                season: updatedGame.currentSeason,
-                matchday: updatedGame.currentMatchday,
-                subject: { kind: 'referee', id: refId },
-                significance: 65,
-                madeByPlayer: true,
-              }),
-            }
-          } else if (newReaction === 2 && existing.clubReaction < 2) {
-            updatedGame = {
-              ...updatedGame,
-              eventLedger: logEvent(updatedGame, {
-                type: 'referee_trust',
-                semanticKey: `referee_trust_${refId}`,
-                season: updatedGame.currentSeason,
-                matchday: updatedGame.currentMatchday,
-                subject: { kind: 'referee', id: refId },
-                significance: 65,
-                madeByPlayer: true,
-              }),
-            }
-          }
-        } else {
-          // First time — create relation. delta är max ±1 (en enda mötes-
-          // choice), kan aldrig träffa ±2-tröskeln direkt — ingen liggarpost
-          // härifrån, se grenen ovan.
-          const newReaction = Math.max(-2, Math.min(2, delta)) as -2 | -1 | 0 | 1 | 2
-          updatedGame = {
-            ...updatedGame,
-            refereeRelations: [
-              ...(updatedGame.refereeRelations ?? []),
-              {
-                refereeId: refId,
-                lastMatchSeason: updatedGame.currentSeason,
-                lastMatchRound: 0,
-                totalMatches: 0,
-                totalCardsGiven: 0,
-                totalPenaltiesGiven: 0,
-                clubReaction: newReaction,
-              },
-            ],
-          }
-        }
-      }
+      updatedGame = applyRefereeRelationship(updatedGame, effect.refereeId, effect.value ?? 0)
       // Also clear pending referee meeting
       updatedGame = { ...updatedGame, pendingRefereeMeeting: undefined }
       break

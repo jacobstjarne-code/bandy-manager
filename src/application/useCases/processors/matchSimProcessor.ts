@@ -32,6 +32,31 @@ const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Technical]: '532_triangel',
 }
 
+/** DOM_O12_DOMARMOTE_AVVAGNING_2026-09-11 — en kanonisk valkatalog. */
+export function buildRefereeMeetingChoices(refereeId: string): GameEvent['choices'] {
+  return [
+    {
+      id: 'respect',
+      label: 'Respektera',
+      subtitle: 'Du skakar hand. Klacken buar.',
+      effect: { type: 'multiEffect', subEffects: JSON.stringify([
+        { type: 'refereeRelationship', refereeId, value: 1 },
+        { type: 'supporterMood', amount: -2 },
+      ]) },
+    },
+    { id: 'neutral', label: 'Neutral', subtitle: 'Du rycker på axlarna och går.', effect: { type: 'noOp' } },
+    {
+      id: 'protest',
+      label: 'Protestera',
+      subtitle: 'Du säger vad du tycker. Domaren minns namn.',
+      effect: { type: 'multiEffect', subEffects: JSON.stringify([
+        { type: 'refereeRelationship', refereeId, value: -1 },
+        { type: 'supporterMood', amount: 2 },
+      ]) },
+    },
+  ]
+}
+
 function createRegenPlayer(club: Club, index: number, rand: () => number): Player {
   const positions = [PlayerPosition.Defender, PlayerPosition.Midfielder, PlayerPosition.Forward]
   const pos = positions[Math.floor(rand() * positions.length)]
@@ -362,11 +387,7 @@ export function simulateRound(
           title: `${referee.firstName} ${referee.lastName} vill träffas`,
           body: quote,
           sender: { name: getRefereeDisplayName(referee), role: 'Domare' },
-          choices: [
-            { id: 'respect', label: 'Respektera', effect: { type: 'refereeRelationship', refereeId: referee.id, value: 1 } },
-            { id: 'neutral', label: 'Neutral', effect: { type: 'refereeRelationship', refereeId: referee.id, value: 0 } },
-            { id: 'protest', label: 'Protestera', effect: { type: 'refereeRelationship', refereeId: referee.id, value: -1 } },
-          ],
+          choices: buildRefereeMeetingChoices(referee.id),
           resolved: false,
         }
         pendingRefereeMeeting = meetingEvent

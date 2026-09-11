@@ -25,6 +25,7 @@ const FIELD_BY_LABEL: Record<string, LedgerConsequence['field']> = {
   Kassan: 'finances',
   Transferbudget: 'transferBudget',
   Moralen: 'playerMorale',
+  Domaren: 'refereeRelationship',
 }
 
 /**

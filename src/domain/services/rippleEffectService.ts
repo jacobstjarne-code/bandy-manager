@@ -101,6 +101,14 @@ export function describeRippleChain(
   const sponsD = (after.sponsorNetworkMood ?? 50) - (before.sponsorNetworkMood ?? 50)
   if (sponsD !== 0) steps.push({ label: 'Sponsorerna', dir: sponsD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(sponsD)) })
 
+  // O12 domarmöte: relationen är ett verkligt klubbutfall på samma sätt som
+  // klackens stämning. Ett möte ändrar högst en domarrelation, men jämförelsen
+  // görs på id så även en nyskapad relation fångas utan copy-parsning.
+  const beforeReferees = new Map((before.refereeRelations ?? []).map(relation => [relation.refereeId, relation.clubReaction]))
+  const refereeD = (after.refereeRelations ?? []).reduce((sum, relation) =>
+    sum + relation.clubReaction - (beforeReferees.get(relation.refereeId) ?? 0), 0)
+  if (refereeD !== 0) steps.push({ label: 'Domaren', dir: refereeD > 0 ? 'up' : 'down', scope: 'club', magnitude: humorMagnitude(Math.abs(refereeD)) })
+
   // AUDIT DEL 4 steg 2 (2026-08-12): ekonomi — kassan och transferbudgeten.
   // Klubb-nivå (managedClubId), inte SaveGame-nivå som de fem ovan — RIPPLE_
   // AFFECTED_FIELDS (denna fils topp) kan inte utökas med dem rakt av, den

@@ -10,6 +10,7 @@ import { resolveEvent } from '../eventResolver'
 import { resolveSubjectName } from '../../momentLedgerService'
 import type { SaveGame } from '../../../entities/SaveGame'
 import type { GameEvent } from '../../../entities/GameEvent'
+import { buildRefereeMeetingChoices } from '../../../../application/useCases/processors/matchSimProcessor'
 
 function makeMeetingEvent(refereeId: string): GameEvent {
   return {
@@ -18,11 +19,7 @@ function makeMeetingEvent(refereeId: string): GameEvent {
     title: 'Domaren vill träffas',
     body: 'test',
     sender: { name: 'Domare Testsson', role: 'Domare' },
-    choices: [
-      { id: 'respect', label: 'Respektera', effect: { type: 'refereeRelationship', refereeId, value: 1 } },
-      { id: 'neutral', label: 'Neutral', effect: { type: 'refereeRelationship', refereeId, value: 0 } },
-      { id: 'protest', label: 'Protestera', effect: { type: 'refereeRelationship', refereeId, value: -1 } },
-    ],
+    choices: buildRefereeMeetingChoices(refereeId),
     resolved: false,
   } as GameEvent
 }
@@ -38,6 +35,7 @@ function baseGame(): SaveGame {
     referees: [{ id: 'ref1', firstName: 'Domare', lastName: 'Testsson', homeTown: 'Test', yearsOfExperience: 10, style: 'strict', personality: 'neutral', managedMatches: 0 }],
     refereeRelations: [],
     eventLedger: [],
+    supporterGroup: { id: 'supporters_test', name: 'Testklacken', mood: 50, size: 100, loyalty: 50, conflictLevel: 0, leaders: [] },
   } as unknown as SaveGame
 }
 
@@ -67,7 +65,7 @@ describe('DOM_DOMARRELATION_2026-09-02 — tröskelkorsning skriver liggaren', (
     game = protest(game, 1)
     const relation = game.refereeRelations!.find(r => r.refereeId === 'ref1')!
     expect(relation.clubReaction).toBe(-1)
-    expect(game.eventLedger ?? []).toHaveLength(0)
+    expect((game.eventLedger ?? []).filter(entry => entry.type === 'referee_feud' || entry.type === 'referee_trust')).toHaveLength(0)
   })
 
   it('andra protesten i rad (-1→-2) korsar tröskeln — skriver referee_feud', () => {

@@ -291,13 +291,14 @@ export type EventLedgerType =
  * är RippleChainSteps `label` uttryckt som fältnamn i stället för svensk
  * text: Stämningen→fanMood, Klacken→supporterMood, Orten→communityStanding,
  * Styrelsen→boardPatience, Sponsorerna→sponsorNetworkMood, Kassan→finances,
- * Transferbudget→transferBudget, Moralen→playerMorale. `dir`/`magnitude`
+ * Transferbudget→transferBudget, Moralen→playerMorale,
+ * Domaren→refereeRelationship. `dir`/`magnitude`
  * återanvänder ripple-kedjans egen skala rakt av — ingen ny form.
  */
 export interface LedgerConsequence {
   field: 'fanMood' | 'communityStanding' | 'boardPatience'
         | 'sponsorNetworkMood' | 'supporterMood' | 'playerMorale'
-        | 'finances' | 'transferBudget'
+        | 'finances' | 'transferBudget' | 'refereeRelationship'
   dir: 'up' | 'down'
   magnitude: 'knappt' | 'tydligt' | 'kraftigt'
 }

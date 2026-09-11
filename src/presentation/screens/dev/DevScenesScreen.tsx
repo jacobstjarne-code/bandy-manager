@@ -105,6 +105,7 @@ import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDat
 import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
+import { buildRefereeMeetingChoices } from '../../../application/useCases/processors/matchSimProcessor'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-forsbacka' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -210,7 +211,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
   | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar' | 'match-laddning-final' | 'final-intro-lagpresentation'
-  | 'granska-level3' | 'board-patience-minimal' | 'club-badge-contact-sheet' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
+  | 'granska-level3' | 'granska-referee-meeting' | 'board-patience-minimal' | 'club-badge-contact-sheet' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
@@ -331,6 +332,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'ceremony-retirement', label: 'Avskedsceremoni — klubbikon slutar' },
   { id: 'mecenat-dinner', label: 'Mecenatmiddag — tre frågor och verklig resolution' },
   { id: 'granska-level3', label: 'Granska — löst val med belagt citat' },
+  { id: 'granska-referee-meeting', label: 'Granska — domarmötets tvåaxliga val' },
   { id: 'board-patience-minimal', label: 'Portal minimal — styrelsens ultimatum' },
   { id: 'club-badge-contact-sheet', label: 'Klubbmärken — kontaktkarta 16/32/64 + bildprov' },
   { id: 'next-match-forsbacka', label: 'Nästa match — Forsbacka klubbmärkespilot' },
@@ -1526,6 +1528,22 @@ const granskaLevel3Game = {
   ...granskaGame,
   resolvedChoices: [{ eventId: 'dev-critical-1', choiceId: 'accept', label: 'Godkänn kravet' }],
 } as SaveGame
+const granskaRefereeMeetingGame = {
+  ...granskaGame,
+  pendingEvents: [],
+  pendingRefereeMeeting: {
+    id: 'referee_meeting_dev',
+    type: 'refereeMeeting' as const,
+    title: 'Rut Rask vill träffas',
+    body: 'Det där eftersnacket tar vi här inne.',
+    sender: { name: 'Rut Rask', role: 'Domare' },
+    choices: buildRefereeMeetingChoices('ref_dev'),
+    resolved: false,
+  },
+  referees: [{ id: 'ref_dev', firstName: 'Rut', lastName: 'Rask', homeTown: 'Falun', yearsOfExperience: 12, style: 'strict' as const, personality: 'veteran' as const, managedMatches: 4 }],
+  refereeRelations: [{ refereeId: 'ref_dev', lastMatchSeason: devSeason(8), lastMatchRound: 20, totalMatches: 2, totalCardsGiven: 5, totalPenaltiesGiven: 1, clubReaction: 0 as const }],
+  supporterGroup: { ...granskaGame.supporterGroup!, mood: 50 },
+} as SaveGame
 // Upptakt sub-states — fingerade tabeller (played=19, 3 omg kvar)
 function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
   const rows = [
@@ -1996,6 +2014,7 @@ export function DevScenesScreen() {
       : scene === 'stillness' ? stillnessGame
       : scene === 'granska' ? granskaGame
       : scene === 'granska-level3' ? granskaLevel3Game
+      : scene === 'granska-referee-meeting' ? granskaRefereeMeetingGame
       : scene === 'granska-cup' ? granskaCupGame
       : scene === 'granska-cup-final' ? granskaCupFinalGame
       : scene === 'granska-slutspel' ? granskaPlayoffGame
@@ -2083,7 +2102,7 @@ export function DevScenesScreen() {
       : scene === 'intro-sequence' || scene === 'name-input' || scene === 'klubbparm' ? squadGame
       : portalGame
     const roundSummaryForScene =
-      scene === 'granska' || scene === 'granska-level3' ? granskaRoundSummary
+      scene === 'granska' || scene === 'granska-level3' || scene === 'granska-referee-meeting' ? granskaRoundSummary
       : scene === 'granska-cup' ? granskaCupRoundSummary
       : scene === 'granska-cup-final' ? granskaCupFinalRoundSummary
       : scene === 'granska-slutspel' ? granskaPlayoffRoundSummary
@@ -2685,7 +2704,7 @@ export function DevScenesScreen() {
           </div>
         )}
 
-        {(scene === 'granska' || scene === 'granska-level3' || scene === 'granska-cup' || scene === 'granska-cup-final'
+        {(scene === 'granska' || scene === 'granska-level3' || scene === 'granska-referee-meeting' || scene === 'granska-cup' || scene === 'granska-cup-final'
           || scene === 'granska-slutspel' || scene === 'granska-sm-final' || scene === 'granska-avsked') && storeReady && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <GranskaScreen />

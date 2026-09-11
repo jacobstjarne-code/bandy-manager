@@ -7,7 +7,7 @@ import { FixtureStatus, MatchEventType } from '../../../../domain/enums'
 import { getDefaultRolloverChoice, getRolloverPolicy } from '../../../../domain/services/deferredRolloverService'
 import { resolveEvent } from '../../../../domain/services/events/eventResolver'
 import { mulberry32 } from '../../../../domain/utils/random'
-import { simulateRound } from '../matchSimProcessor'
+import { buildRefereeMeetingChoices, simulateRound } from '../matchSimProcessor'
 
 function referee(): Referee {
   return {
@@ -22,16 +22,20 @@ function meeting(refereeId: string): GameEvent {
     type: 'refereeMeeting',
     title: 'Domaren vill träffas',
     body: 'Vi såg samma match.',
-    choices: [
-      { id: 'respect', label: 'Respektera', effect: { type: 'refereeRelationship', refereeId, value: 1 } },
-      { id: 'neutral', label: 'Neutral', effect: { type: 'refereeRelationship', refereeId, value: 0 } },
-      { id: 'protest', label: 'Protestera', effect: { type: 'refereeRelationship', refereeId, value: -1 } },
-    ],
+    choices: buildRefereeMeetingChoices(refereeId),
     resolved: false,
   }
 }
 
 describe('refereeMeeting — O11:s text/state-kontrakt', () => {
+  it('bär de tre låsta, asymmetriska förhandstexterna', () => {
+    expect(buildRefereeMeetingChoices('ref_truth').map(choice => choice.subtitle)).toEqual([
+      'Du skakar hand. Klacken buar.',
+      'Du rycker på axlarna och går.',
+      'Du säger vad du tycker. Domaren minns namn.',
+    ])
+  })
+
   it('matchsimuleringen bevarar den uppdaterade domarhistoriken i sitt resultat', () => {
     const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 23 })
     const fixture = base.fixtures.find(candidate =>
@@ -76,7 +80,7 @@ describe('refereeMeeting — O11:s text/state-kontrakt', () => {
     expect(result.updatedReferees[0].managedMatches).toBe(5)
   })
 
-  it('mötessvaret ändrar bara reaktionen ovanpå redan sparad matchhistorik', () => {
+  it('respekt höjer domarrelationen, sänker klacken och bevarar matchhistoriken', () => {
     const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 23 })
     const event = meeting('ref_truth')
     const beforeRelation = {
@@ -85,15 +89,71 @@ describe('refereeMeeting — O11:s text/state-kontrakt', () => {
     }
     const pending: SaveGame = {
       ...base,
+      referees: [referee()],
       pendingRefereeMeeting: event,
       refereeRelations: [beforeRelation],
+      supporterGroup: { ...base.supporterGroup!, mood: 50 },
     }
     const resolved = resolveEvent(pending, event.id, 'respect', undefined, true)
 
     expect(resolved.refereeRelations).toEqual([{ ...beforeRelation, clubReaction: 2 }])
+    expect(resolved.supporterGroup?.mood).toBe(48)
     expect(resolved.pendingRefereeMeeting).toBeUndefined()
     expect(resolved.resolvedEventIds).toContain(event.id)
     expect(resolved.resolvedChoices?.at(-1)).toMatchObject({ choiceId: 'respect', label: 'Respektera' })
+    expect(resolved.resolvedChoices?.at(-1)?.outcomeDeltas).toEqual([
+      { resource: 'supporterMood', delta: -2 },
+      { resource: 'refereeRelationship', delta: 1, subjectName: 'Rut Rask' },
+    ])
+    expect(resolved.eventLedger?.at(-1)?.consequences).toEqual([
+      { field: 'supporterMood', dir: 'down', magnitude: 'knappt' },
+      { field: 'refereeRelationship', dir: 'up', magnitude: 'knappt' },
+    ])
+  })
+
+  it('neutral lämnar både domarrelation och klack oförändrade', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 23 })
+    const event = meeting('ref_truth')
+    const relation = {
+      refereeId: 'ref_truth', lastMatchSeason: 2025, lastMatchRound: 9,
+      totalMatches: 3, totalCardsGiven: 7, totalPenaltiesGiven: 2, clubReaction: 0 as const,
+    }
+    const pending = {
+      ...base,
+      referees: [referee()],
+      pendingRefereeMeeting: event,
+      refereeRelations: [relation],
+      supporterGroup: { ...base.supporterGroup!, mood: 50 },
+    }
+    const resolved = resolveEvent(pending, event.id, 'neutral', undefined, true)
+
+    expect(resolved.refereeRelations).toEqual([relation])
+    expect(resolved.supporterGroup?.mood).toBe(50)
+    expect(resolved.resolvedChoices?.at(-1)?.outcomeDeltas).toBeUndefined()
+  })
+
+  it('protest sänker domarrelationen och höjer klacken med clampade verkliga deltan', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 23 })
+    const event = meeting('ref_truth')
+    const relation = {
+      refereeId: 'ref_truth', lastMatchSeason: 2025, lastMatchRound: 9,
+      totalMatches: 3, totalCardsGiven: 7, totalPenaltiesGiven: 2, clubReaction: 0 as const,
+    }
+    const pending = {
+      ...base,
+      referees: [referee()],
+      pendingRefereeMeeting: event,
+      refereeRelations: [relation],
+      supporterGroup: { ...base.supporterGroup!, mood: 99 },
+    }
+    const resolved = resolveEvent(pending, event.id, 'protest', undefined, true)
+
+    expect(resolved.refereeRelations?.[0].clubReaction).toBe(-1)
+    expect(resolved.supporterGroup?.mood).toBe(100)
+    expect(resolved.resolvedChoices?.at(-1)?.outcomeDeltas).toEqual([
+      { resource: 'supporterMood', delta: 1 },
+      { resource: 'refereeRelationship', delta: -1, subjectName: 'Rut Rask' },
+    ])
   })
 
   it('reaktionen klampas till −2…2', () => {
