@@ -163,16 +163,82 @@ describe('evaluateSeasonGoal', () => {
     expect(record.outcome).toBe('not')
   })
 
-  it('playerCarry — met/close/not efter antal matcher', () => {
+  it('playerCarry — met/close/not efter starter i den egna klubben', () => {
     const game = baseGame()
     const player = game.players.find(p => p.clubId === game.managedClubId)!
-    const withGames = (n: number) => ({
+    const template = game.fixtures.find(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)!
+    const withStarts = (n: number) => ({
       ...game,
-      players: game.players.map(p => p.id === player.id ? { ...p, seasonStats: { ...p.seasonStats, gamesPlayed: n } } : p),
+      fixtures: Array.from({ length: n }, (_, i) => ({
+        ...template,
+        id: `carry-start-${i}`,
+        season: game.currentSeason,
+        status: FixtureStatus.Completed,
+        homeClubId: game.managedClubId,
+        awayClubId: 'opponent',
+        homeLineup: { startingPlayerIds: [player.id], benchPlayerIds: [], tactic: {} as never },
+      })),
     })
-    expect(evaluateSeasonGoal(withGames(16), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('met')
-    expect(evaluateSeasonGoal(withGames(12), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('close')
-    expect(evaluateSeasonGoal(withGames(2), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('not')
+    expect(evaluateSeasonGoal(withStarts(15), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('met')
+    expect(evaluateSeasonGoal(withStarts(12), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('close')
+    expect(evaluateSeasonGoal(withStarts(2), { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('not')
+  })
+
+  it('playerCarry — inhopp och matcher för en köpande klubb räknas inte som egna starter', () => {
+    const game = baseGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const template = game.fixtures[0]
+    const managedBenchFixtures = Array.from({ length: 8 }, (_, i) => ({
+      ...template,
+      id: `carry-bench-${i}`,
+      season: game.currentSeason,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: 'opponent',
+      homeLineup: { startingPlayerIds: [], benchPlayerIds: [player.id], tactic: {} as never },
+    }))
+    const buyerFixtures = Array.from({ length: 12 }, (_, i) => ({
+      ...template,
+      id: `carry-buyer-${i}`,
+      season: game.currentSeason,
+      status: FixtureStatus.Completed,
+      homeClubId: 'buyer',
+      awayClubId: 'opponent',
+      homeLineup: { startingPlayerIds: [player.id], benchPlayerIds: [], tactic: {} as never },
+    }))
+    const transferred = {
+      ...game,
+      fixtures: [...managedBenchFixtures, ...buyerFixtures],
+      players: game.players.map(candidate => candidate.id === player.id
+        ? { ...candidate, clubId: 'buyer', seasonStats: { ...candidate.seasonStats, gamesPlayed: 20 } }
+        : candidate),
+    }
+
+    expect(evaluateSeasonGoal(transferred, { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('not')
+  })
+
+  it('playerCarry — verkliga starter före en försäljning bevaras', () => {
+    const game = baseGame()
+    const player = game.players.find(p => p.clubId === game.managedClubId)!
+    const template = game.fixtures[0]
+    const ownStarts = Array.from({ length: 15 }, (_, i) => ({
+      ...template,
+      id: `carry-before-sale-${i}`,
+      season: game.currentSeason,
+      status: FixtureStatus.Completed,
+      homeClubId: game.managedClubId,
+      awayClubId: 'opponent',
+      homeLineup: { startingPlayerIds: [player.id], benchPlayerIds: [], tactic: {} as never },
+    }))
+    const soldAfterFifteenStarts = {
+      ...game,
+      fixtures: ownStarts,
+      players: game.players.map(candidate => candidate.id === player.id
+        ? { ...candidate, clubId: 'buyer' }
+        : candidate),
+    }
+
+    expect(evaluateSeasonGoal(soldAfterFifteenStarts, { type: 'playerCarry', referenceId: player.id }, { contractExpiredIds: new Set(), retiredPlayerIds: new Set() }).outcome).toBe('met')
   })
 
   it('rival — met vid minst en vinst, close vid oavgjort utan vinst, not annars', () => {

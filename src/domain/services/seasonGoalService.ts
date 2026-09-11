@@ -126,6 +126,24 @@ function tallyVsClub(game: SaveGame, opponentClubId: string): { wins: number; dr
   return { wins, draws, losses }
 }
 
+/**
+ * O3:s dom säger starter, inte spelarens globala appearance-räknare. Fixtures
+ * behåller dessutom klubbkontexten efter en transfer, så en start för köparen
+ * kan aldrig uppfylla ett löfte som gavs till den managerstyrda klubben.
+ */
+function countManagedClubStarts(game: SaveGame, playerId: string): number {
+  return game.fixtures.filter(fixture => {
+    if (fixture.season !== game.currentSeason || fixture.status !== FixtureStatus.Completed) return false
+    if (fixture.homeClubId === game.managedClubId) {
+      return fixture.homeLineup?.startingPlayerIds.includes(playerId) ?? false
+    }
+    if (fixture.awayClubId === game.managedClubId) {
+      return fixture.awayLineup?.startingPlayerIds.includes(playerId) ?? false
+    }
+    return false
+  }).length
+}
+
 /** Delad av evaluateSeasonGoal (facility-fallet) och halvtidsraden (Port 4 — en källa). */
 function facilityProgress(game: SaveGame, nodeId: string | undefined): { built: boolean; fraction: number } {
   const built = nodeId ? (game.facilityState?.builtNodeIds ?? []).includes(nodeId) : false
@@ -168,9 +186,8 @@ export function evaluateSeasonGoal(
       return { type: goal.type, outcome }
     }
     case 'playerCarry': {
-      const player = goal.referenceId ? game.players.find(p => p.id === goal.referenceId) : undefined
-      const games = player?.seasonStats.gamesPlayed ?? 0
-      const outcome: SeasonGoalOutcome = games >= 15 ? 'met' : games >= 10 ? 'close' : 'not'
+      const starts = goal.referenceId ? countManagedClubStarts(game, goal.referenceId) : 0
+      const outcome: SeasonGoalOutcome = starts >= 15 ? 'met' : starts >= 10 ? 'close' : 'not'
       return { type: goal.type, referenceId: goal.referenceId, outcome }
     }
     case 'rival': {

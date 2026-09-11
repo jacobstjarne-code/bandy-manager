@@ -111,7 +111,7 @@ Den detaljerade QA-kronologin, inklusive omgångar och kodverifierade sidofynd, 
 
 **Vad jag valde och varför.** Jag sålde Simon Vind för 75 tkr när kassan var djupt negativ, lät assistenten ta pressen vid återfallet och avstod huvudsponsorns räddningskrav efter sista kvartsfinalen. Jag tackade ja till Lena Erikssons samtal; det kändes som en sista chans att hålla relationen levande.
 
-**Minns spelet?** Ja: `3 år sedan` återkallade beslutet att köra vidare trots kroppens varning, och Karriärhistoriken bar Bo Mattssons avsked. Men den sade också `Du sa att Simon skulle bära laget i somras. Du gjorde det` trots att Simon såldes under krisen; formuleringen är tvetydig snarare än ett säkert faktafel.
+**Minns spelet?** Ja: `3 år sedan` återkallade beslutet att köra vidare trots kroppens varning, och Karriärhistoriken bar Bo Mattssons avsked. Den sade också `Du sa att Simon skulle bära laget i somras. Du gjorde det` trots att Simon såldes under krisen. Exakt hur många egna starter Simon hade går inte att retroaktivt belägga ur journaltexten, men kodspårningen hittade ett verkligt kontraktsfel: domen krävde 15 starter för den egna klubben medan implementationen räknade alla appearances, även inhopp och matcher efter klubbbyte. Utfallet härleds nu ur fixture-elvor med rätt klubbkontext; 15 verkliga egna starter före en försäljning bevaras som uppfyllt.
 
 **Ögonblicket.** `Bussen hem genom mörker. Killarna höll låg ton.` landade efter kvartsfinalen. Avskedet landade också: `Vintern som gick höll måttet. Men för mycket hade redan gått förlorat innan den`. Platt: slutspelets hela intro visades två gånger i följd.
 
