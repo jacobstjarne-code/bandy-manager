@@ -31,6 +31,8 @@ export interface VictoryEcho {
 export const VICTORY_ECHO_BLOWOUT_PREFIX = 'victory_echo_blowout_'
 export const VICTORY_ECHO_PLAYOFF_WIN_KEY = 'victory_echo_playoff_win'
 export const VICTORY_ECHO_PLAYOFF_DERBY_WIN_KEY = 'victory_echo_playoff_derby_win'
+export const VICTORY_ECHO_BIG_DERBY_WIN_KEY = 'victory_echo_big_derby_win'
+export const VICTORY_ECHO_DERBY_WIN_KEY = 'victory_echo_derby_win'
 
 /** Presentation timing only: the event remains true even when its fixed line rests. */
 export function shouldSurfaceVictoryEcho(game: SaveGame, echo: VictoryEcho): boolean {
@@ -99,11 +101,15 @@ export function generateVictoryEcho(
       return {
         diaryLine: `${score} mot ${opponentName} är redan en berättelse. Det kommer pratas om den i fem år.`,
         coffeeLine: `Materialaren: "Jag hittade fyra flaskor bakom sargen. Två var tomma."`,
+        coffeeSemanticKey: VICTORY_ECHO_BIG_DERBY_WIN_KEY,
+        coffeeCooldownSeasons: 2,
       }
     case 'derby_win':
       return {
         diaryLine: `Derbyvinsten sitter bra. Bygden kan andas en vecka till.`,
         coffeeLine: `Någon skrev "${opponentName.toUpperCase()} ÅKTE HEM" på tavlan i omklädningsrummet. Ingen har tagit bort det.`,
+        coffeeSemanticKey: VICTORY_ECHO_DERBY_WIN_KEY,
+        coffeeCooldownSeasons: 2,
       }
     case 'blowout':
       {

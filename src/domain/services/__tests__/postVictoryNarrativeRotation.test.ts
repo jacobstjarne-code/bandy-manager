@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Fixture } from '../../entities/Fixture'
 import type { SaveGame } from '../../entities/SaveGame'
-import { generateVictoryEcho, shouldSurfaceVictoryEcho } from '../postVictoryNarrativeService'
+import {
+  generateVictoryEcho,
+  shouldSurfaceVictoryEcho,
+  VICTORY_ECHO_BIG_DERBY_WIN_KEY,
+  VICTORY_ECHO_DERBY_WIN_KEY,
+} from '../postVictoryNarrativeService'
 
 describe('segrarens kafferumseko', () => {
   it('använder visningsloggen så två storsegrar inte ger exakt samma rad', () => {
@@ -55,5 +60,56 @@ describe('segrarens kafferumseko', () => {
     expect(shouldSurfaceVictoryEcho(afterShown, echo)).toBe(false)
     expect(shouldSurfaceVictoryEcho({ ...afterShown, currentSeason: 2031 }, echo)).toBe(false)
     expect(shouldSurfaceVictoryEcho({ ...afterShown, currentSeason: 2032 }, echo)).toBe(true)
+  })
+
+  it.each([
+    ['derby_win', VICTORY_ECHO_DERBY_WIN_KEY],
+    ['big_derby_win', VICTORY_ECHO_BIG_DERBY_WIN_KEY],
+  ] as const)('låter den fasta %s-raden vila i två säsonger', (type, semanticKey) => {
+    const fixture = {
+      id: `fixture-${type}`,
+      homeClubId: 'managed',
+      awayClubId: 'rival',
+      homeScore: type === 'big_derby_win' ? 5 : 2,
+      awayScore: 1,
+    } as Fixture
+    const base = {
+      currentSeason: 2030,
+      currentMatchday: 12,
+      narrativeBeatLog: [],
+    } as unknown as SaveGame
+    const echo = generateVictoryEcho(type, fixture, 'Rivalen', 'managed', base)
+
+    expect(echo.coffeeSemanticKey).toBe(semanticKey)
+    expect(echo.coffeeCooldownSeasons).toBe(2)
+    const afterShown = {
+      ...base,
+      narrativeBeatLog: [{ semanticKey, season: 2030, round: 12 }],
+    }
+    expect(shouldSurfaceVictoryEcho(afterShown, echo)).toBe(false)
+    expect(shouldSurfaceVictoryEcho({ ...afterShown, currentSeason: 2031 }, echo)).toBe(false)
+    expect(shouldSurfaceVictoryEcho({ ...afterShown, currentSeason: 2032 }, echo)).toBe(true)
+  })
+
+  it('formulerar derbyekot ur managerklubbens perspektiv hemma och borta', () => {
+    const home = {
+      id: 'derby-home',
+      homeClubId: 'managed',
+      awayClubId: 'rival',
+      homeScore: 4,
+      awayScore: 1,
+    } as Fixture
+    const away = {
+      ...home,
+      id: 'derby-away',
+      homeClubId: 'rival',
+      awayClubId: 'managed',
+      homeScore: 1,
+      awayScore: 4,
+    } as Fixture
+
+    expect(generateVictoryEcho('big_derby_win', home, 'Rivalen', 'managed').diaryLine).toContain('4-1 mot Rivalen')
+    expect(generateVictoryEcho('big_derby_win', away, 'Rivalen', 'managed').diaryLine).toContain('4-1 mot Rivalen')
+    expect(generateVictoryEcho('derby_win', away, 'Rivalen', 'managed').coffeeLine).toContain('RIVALEN ÅKTE HEM')
   })
 })
