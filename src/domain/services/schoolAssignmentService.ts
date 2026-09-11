@@ -66,7 +66,10 @@ export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: numb
       label: `Berätta om ${clubLegend.name} — legenden`,
       effect: {
         type: 'saveSchoolAssignment' as const,
-        replyText: `${clubLegend.name} spelade ${clubLegend.seasons} säsonger för oss och gjorde ${clubLegend.totalGoals} mål. En av de bästa som någonsin burit vår tröja.`,
+        // Språksvep 4 D: "en av de bästa som någonsin" var ett omdöme tröskeln
+        // (100 matcher ELLER 4 säsonger) inte bär. Urvalet är nu högst totalGoals
+        // bland legenderna — då är det HÄR påståendet sant per konstruktion.
+        replyText: `${clubLegend.name} spelade ${clubLegend.seasons} säsonger för oss och gjorde ${clubLegend.totalGoals} mål. Ingen som lämnat oss har gjort fler.`,
       },
     })
   }

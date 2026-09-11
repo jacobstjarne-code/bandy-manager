@@ -193,7 +193,10 @@ const SCANDAL_TEXT: Record<Exclude<ScandalType, 'small_absurdity'>, {
     bodies: [
       '{POLITIKER} {PARTI} har lämnat in motion om att se över kommunbidraget till {KLUBB}. "Vi har skola och omsorg som väntar." Beslut tas i nästa fullmäktige. Bidraget kan halveras.',
       'En lokal tidning har börjat nysta i hur {KLUBB} fick köpa kommunens fastighet förra året. Trottoarkanten som skiftade ägare i samma affär väcker frågor. Skatteverket har efterfrågat papper.',
-      'Kommunen sålde en bit mark till {KLUBB} för en symbolisk summa. Oppositionen kräver utredning. "Det är inte första gången pengar rinner åt fel håll här", säger {POLITIKER} till lokalpressen.',
+      // Språksvep 4 D (2026-09-12): "inte första gången pengar rinner åt fel håll"
+      // slumpades utan kontroll mot klubbens skandalhistorik. Oppositions-
+      // politikern får vara lika skarp utan att påstå upprepning.
+      'Kommunen sålde en bit mark till {KLUBB} för en symbolisk summa. Oppositionen kräver utredning. "Skattepengar ska inte rinna åt fel håll, oavsett vilken klubb det gäller", säger {POLITIKER} till lokalpressen.',
     ],
     titlesPositive: [
       '{POLITIKER} {PARTI}: "Vi satsar på {KLUBB}"',
@@ -439,20 +442,7 @@ export function applyScandalEffect(
   const isPositiveMunicipal = scandal.type === 'municipal_scandal' && scandal.variant === 'positive'
 
   const titlePool = isPositiveMunicipal && text.titlesPositive ? text.titlesPositive : text.titles
-  let bodyPool  = isPositiveMunicipal && text.bodiesPositive  ? text.bodiesPositive  : text.bodies
-
-  // "Inte första gången" (municipal_scandal) påstår upprepning — filtreras
-  // bort om klubben inte har en tidigare municipal_scandal i historiken.
-  // Defensiv guard: töm aldrig poolen.
-  if (scandal.type === 'municipal_scandal') {
-    const hadPriorMunicipalScandal = (game.scandalHistory ?? []).some(
-      s => s.affectedClubId === scandal.affectedClubId && s.type === 'municipal_scandal',
-    )
-    if (!hadPriorMunicipalScandal) {
-      const filtered = bodyPool.filter(b => !b.includes('inte första gången'))
-      if (filtered.length > 0) bodyPool = filtered
-    }
-  }
+  const bodyPool  = isPositiveMunicipal && text.bodiesPositive  ? text.bodiesPositive  : text.bodies
 
   const title = fillTemplate(pick(titlePool, rand), club, secondaryClub, politician)
   const body  = fillTemplate(pick(bodyPool, rand),  club, secondaryClub, politician)
