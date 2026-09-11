@@ -56,6 +56,22 @@ export interface LoanProcessorResult {
 }
 
 /**
+ * Ett transferbud har ett deterministiskt id och får därför bara ha en
+ * livscykelpost. Äldre sparningar kan redan bära både en löst och en pending
+ * kopia; då vinner den lösta posten så att beslutet inte öppnas igen.
+ */
+function canonicalTransferBids(bids: TransferBid[]): TransferBid[] {
+  const canonical = new Map<string, TransferBid>()
+  for (const bid of bids) {
+    const previous = canonical.get(bid.id)
+    if (!previous || (previous.status === 'pending' && bid.status !== 'pending')) {
+      canonical.set(bid.id, bid)
+    }
+  }
+  return [...canonical.values()]
+}
+
+/**
  * Creates the transfer-window deadline prompt for the next managed fixture.
  * The deterministic random stream is supplied by the round orchestrator so
  * extraction does not change simulation order or outcomes.
@@ -125,7 +141,7 @@ export function processTransferBids(
   const windowNow = getTransferWindowStatus(newDate)
   const windowClosed = windowNow.status === 'closed'
 
-  const existingBids: TransferBid[] = game.transferBids ?? []
+  const existingBids = canonicalTransferBids(game.transferBids ?? [])
   const resolvedBids: TransferBid[] = existingBids.map(b => {
     // Avbryt utgående bud om transferfönstret stängde sedan budet lades
     if (b.direction === 'outgoing' && b.status === 'pending' && windowClosed) {
@@ -163,7 +179,9 @@ export function processTransferBids(
     transferBids: resolvedBids,
   }
 
+  const knownBidIds = new Set(resolvedBids.map(bid => bid.id))
   const newBids = generateIncomingBids(preEventGame, nextMatchday, localRand)
+    .filter(bid => !knownBidIds.has(bid.id))
   const allBids: TransferBid[] = [...resolvedBids, ...newBids]
 
   // Incoming bid notifications

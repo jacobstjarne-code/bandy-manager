@@ -16,6 +16,32 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 describe('processTransferBids — transfer_target_missed', () => {
+  it('reparerar ett dubblerat inkommande bud och låter terminal status vinna', () => {
+    const game = makeGame()
+    const target = game.players.find(player => player.clubId === game.managedClubId)!
+    const buyer = game.clubs.find(club => club.id !== game.managedClubId)!
+    const pending: TransferBid = {
+      id: `bid_2_${target.id}_${buyer.id}`,
+      playerId: target.id,
+      buyingClubId: buyer.id,
+      sellingClubId: game.managedClubId,
+      offerAmount: 100_000,
+      offeredSalary: target.salary,
+      contractYears: 3,
+      direction: 'incoming',
+      status: 'pending',
+      createdRound: 2,
+      expiresRound: 5,
+    }
+    const rejected: TransferBid = { ...pending, status: 'rejected', resolvedRound: 2 }
+    const gameWithDuplicate = { ...game, transferBids: [rejected, pending] }
+
+    const result = processTransferBids(gameWithDuplicate, game.players, 2, '2027-09-02', () => 0)
+
+    expect(result.allBids.filter(bid => bid.id === pending.id)).toEqual([rejected])
+    expect(result.newBids.some(bid => bid.id === pending.id)).toBe(false)
+  })
+
   it('avslaget utgående bud (club council nej) skriver en transfer_target_missed-post', () => {
     const game = makeGame()
     const target = game.players.find(p => p.clubId !== game.managedClubId)!

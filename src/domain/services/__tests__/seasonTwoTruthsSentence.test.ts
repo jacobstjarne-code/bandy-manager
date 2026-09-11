@@ -9,6 +9,7 @@ import {
   seasonTwoTruthsSentence,
   placeringsdomText,
   yearbookAssessmentVerdict,
+  yearbookHeroVerdict,
   yearbookPlacementVerdictText,
 } from '../seasonSummaryService'
 import { ClubExpectation } from '../../enums'
@@ -40,6 +41,17 @@ describe('placeringsdomText — Jacobs låsta text, fem betyg', () => {
 })
 
 describe('seasonTwoTruthsSentence', () => {
+  it('hero blir aldrig grönt när ett namngivet styrelseuppdrag missades', () => {
+    expect(yearbookHeroVerdict({
+      expectationVerdict: 'exceeded',
+      objectiveOutcome: { met: 1, atRisk: 0, active: 0, failed: 1 },
+    })).toBe('failed')
+    expect(yearbookHeroVerdict({
+      expectationVerdict: 'exceeded',
+      objectiveOutcome: { met: 2, atRisk: 0, active: 0, failed: 0 },
+    })).toBe('exceeded')
+  })
+
   it('ingen objectiveOutcome-data: null', () => {
     expect(seasonTwoTruthsSentence({ expectationVerdict: 'met' }, 'X')).toBeNull()
   })

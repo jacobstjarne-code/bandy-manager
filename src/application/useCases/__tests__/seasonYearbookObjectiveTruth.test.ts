@@ -30,7 +30,7 @@ const TOP_SIX_OBJECTIVE: BoardObjective = {
   carryOver: false,
 }
 
-function gameAtPositionEight() {
+function gameAtPositionEight(expectation = ClubExpectation.MidTable) {
   const game = createNewGame({ managerName: 'Test', clubId: MANAGED_ID, season: 2025, seed: 42 })
   const opponents = game.clubs.map(club => club.id).filter(id => id !== MANAGED_ID)
   const winners = opponents.slice(0, 7)
@@ -53,9 +53,9 @@ function gameAtPositionEight() {
   return {
     ...game,
     clubs: game.clubs.map(club => club.id === MANAGED_ID
-      ? { ...club, boardExpectation: ClubExpectation.MidTable }
+      ? { ...club, boardExpectation: expectation }
       : club),
-    seasonStartBoardExpectation: ClubExpectation.MidTable,
+    seasonStartBoardExpectation: expectation,
     fixtures,
     standings,
     boardObjectives: [TOP_SIX_OBJECTIVE],
@@ -90,5 +90,46 @@ describe('seasonEndProcessor — årsboken läser samma topplistemål som portal
       result: 'failed',
       label: 'Sluta topp 6',
     })
+
+    expect(result.boardObjectives?.length).toBeGreaterThan(0)
+    expect(result.boardObjectives?.every(objective => objective.assignedSeason === 2026)).toBe(true)
+    expect(result.boardObjectives?.find(objective => objective.measureFn === 'cupRun')?.currentValue ?? 0).toBe(0)
+    expect(result.boardObjectives?.find(objective => objective.measureFn === 'beatRival')?.currentValue ?? 0).toBe(0)
+  })
+
+  it('nya cup- och derbymål börjar i den nya säsongen utan gamla framsteg', () => {
+    const base = gameAtPositionEight(ClubExpectation.ChallengeTop)
+    const legacyCupBracket = base.cupBracket && {
+      ...base.cupBracket,
+      matches: [
+        ...base.cupBracket.matches,
+        {
+          id: 'legacy_cup_final',
+          round: 4,
+          fixtureId: 'legacy_cup_final',
+          homeClubId: MANAGED_ID,
+          awayClubId: 'legacy_opponent',
+          winnerId: MANAGED_ID,
+        },
+      ],
+    }
+    const result = handleSeasonEnd({
+      ...base,
+      boardObjectives: [],
+      cupBracket: legacyCupBracket,
+      rivalryHistory: {
+        legacy_rival: { wins: 1, losses: 0, draws: 0, lastResult: 'win', currentStreak: 1 },
+      },
+    }, 1).game
+
+    const cupGoal = result.boardObjectives?.find(objective => objective.measureFn === 'cupRun')
+    const derbyGoal = result.boardObjectives?.find(objective => objective.measureFn === 'beatRival')
+    const freshCupBaseline = result.cupBracket?.byeTeamIds?.includes(MANAGED_ID) ? 1 : 0
+    expect(cupGoal).toMatchObject({
+      assignedSeason: 2026,
+      currentValue: freshCupBaseline,
+      startValue: freshCupBaseline,
+    })
+    expect(derbyGoal).toMatchObject({ assignedSeason: 2026, currentValue: 0, startValue: 0 })
   })
 })

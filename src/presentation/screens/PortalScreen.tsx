@@ -131,6 +131,11 @@ export function PortalScreen() {
     }
   }, [game?.currentDate])
 
+  const nextAnslag = game ? computeNextAnslag(game) : null
+  const dismissAnslag = useCallback(() => {
+    if (nextAnslag) markAnslagSeen(nextAnslag)
+  }, [markAnslagSeen, nextAnslag])
+
   if (!game || !layout) return (
     <div style={{ padding: 20 }}>
       <div className="shimmer" style={{ height: 160, borderRadius: 3, marginBottom: 10 }} />
@@ -138,8 +143,6 @@ export function PortalScreen() {
       <div className="shimmer" style={{ height: 80, borderRadius: 3 }} />
     </div>
   )
-
-  const nextAnslag = computeNextAnslag(game)
 
   // ── CTA logic ────────────────────────────────────────────────────
   const bracket = game.playoffBracket
@@ -391,7 +394,7 @@ export function PortalScreen() {
         <AnslagOverlay
           game={game}
           anslagKey={nextAnslag}
-          onDismiss={() => markAnslagSeen(nextAnslag)}
+          onDismiss={dismissAnslag}
         />
       )}
       <div

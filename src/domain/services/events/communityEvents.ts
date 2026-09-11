@@ -26,7 +26,7 @@ export function generateEvents(
     ...generatePatronEvents(game, currentRound, alreadyQueued, rand),
     ...generatePoliticianEvents(game, currentRound, alreadyQueued, rand),
     ...generateSponsorEvents(game, currentRound, alreadyQueued, rand),
-    ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand, game.captainPlayerId),
+    ...generateCharacterPlayerEvents(game.players ?? [], game.managedClubId, currentRound, alreadyQueued, rand, game.captainPlayerId),
     ...generateSupporterEvents(game, currentRound, alreadyQueued, rand),
     ...generateO1SystemEvents(game, currentRound, alreadyQueued),
     ...(hallEvent ? [hallEvent] : []),

@@ -1152,6 +1152,19 @@ export function yearbookAssessmentVerdict(
   return summary.placementObjectiveOutcome.result === 'met' ? 'met' : 'failed'
 }
 
+/**
+ * Årsbokens utfallshero sammanfattar hela styrelseutfallet, inte bara
+ * tabellplaceringen. Placeringsdomen hålls separat för tvåsanningsmeningen,
+ * men ett faktiskt missat uppdrag får aldrig ligga under ett grönt helhetskvitto.
+ */
+export function yearbookHeroVerdict(
+  summary: Pick<SeasonSummary, 'expectationVerdict'>
+    & Partial<Pick<SeasonSummary, 'objectiveOutcome' | 'placementObjectiveOutcome' | 'playoffResult'>>,
+): SeasonSummary['expectationVerdict'] {
+  if ((summary.objectiveOutcome?.failed ?? 0) > 0) return 'failed'
+  return yearbookAssessmentVerdict(summary)
+}
+
 /** Samma låsta placeringsmeningar, men med det konkreta målets resolution. */
 export function yearbookPlacementVerdictText(
   summary: Pick<SeasonSummary, 'boardExpectation' | 'finalPosition' | 'playoffResult' | 'placementObjectiveOutcome'>,

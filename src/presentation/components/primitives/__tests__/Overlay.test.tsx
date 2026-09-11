@@ -8,7 +8,7 @@
  * Manuell createRoot+act-rendering (samma mönster som GameShell.test.tsx)
  * — projektet saknar @testing-library/react.
  */
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, beforeAll, vi } from 'vitest'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import type { ComponentProps } from 'react'
@@ -160,5 +160,29 @@ describe('Overlay — M4: dialog-semantik, fokusfälla, Escape, inert bakgrund',
     renderOverlay(() => {}, <button data-testid="first">Första</button>)
     const first = document.body.querySelector('[data-testid="first"]') as HTMLButtonElement
     expect(document.activeElement).toBe(first)
+  })
+
+  it('startar inte om fokus- och inert-livscykeln när onClose får ny identitet', () => {
+    renderOverlay(() => {}, <button data-testid="stable">Knapp</button>)
+    const setAttribute = vi.spyOn(appRoot, 'setAttribute')
+    const removeAttribute = vi.spyOn(appRoot, 'removeAttribute')
+    let latestCloseCount = 0
+
+    act(() => {
+      root!.render(
+        <Overlay onClose={() => { latestCloseCount++ }} ariaLabel="Test-dialog">
+          <button data-testid="stable">Knapp</button>
+        </Overlay>,
+      )
+    })
+
+    expect(setAttribute).not.toHaveBeenCalledWith('inert', '')
+    expect(removeAttribute).not.toHaveBeenCalledWith('inert')
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+    expect(latestCloseCount).toBe(1)
+    setAttribute.mockRestore()
+    removeAttribute.mockRestore()
   })
 })

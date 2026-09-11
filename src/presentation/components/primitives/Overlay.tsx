@@ -72,6 +72,8 @@ export function Overlay({
 }: OverlayProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement | null
@@ -87,7 +89,7 @@ export function Overlay({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && closeOnEscape) {
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab' || !trapFocus) return
@@ -112,7 +114,7 @@ export function Overlay({
       }
       if (autoFocus) previouslyFocused.current?.focus?.()
     }
-  }, [autoFocus, closeOnEscape, inertBackground, onClose, trapFocus])
+  }, [autoFocus, closeOnEscape, inertBackground, trapFocus])
 
   const overlay = (
     <div
@@ -129,7 +131,7 @@ export function Overlay({
         ...(backdropPadding ? { padding: backdropPadding } : {}),
         ...backdropStyle,
       }}
-      onClick={closeOnBackdrop ? onClose : undefined}
+      onClick={closeOnBackdrop ? () => onCloseRef.current() : undefined}
     >
       <div
         ref={contentRef}

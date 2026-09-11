@@ -84,13 +84,17 @@ export function updateLoyaltyScores(players: Player[]): Player[] {
 // Called inside generateEvents — returns additional events for character players
 export function generateCharacterPlayerEvents(
   players: Player[],
+  managedClubId: string,
   currentRound: number,
   alreadyQueued: Set<string>,
   rand: () => number,
   captainPlayerId?: string,
 ): GameEvent[] {
   const events: GameEvent[] = []
-  const characterPlayers = players.filter(p => p.isCharacterPlayer)
+  // Karaktärshändelser är samtal mellan managern och den egna truppen.
+  // Hela ligans spelare finns i SaveGame, så utan klubbgrinden kunde en
+  // motståndares spelare dyka upp som om managern hade personalansvar för honom.
+  const characterPlayers = players.filter(p => p.isCharacterPlayer && p.clubId === managedClubId)
 
   for (const player of characterPlayers) {
     const name = `${player.firstName} ${player.lastName}`

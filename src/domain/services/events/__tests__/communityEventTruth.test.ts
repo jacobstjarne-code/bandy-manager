@@ -17,7 +17,7 @@ describe('communityEvent — text och deklarerad state-effekt håller ihop', () 
       isCharacterPlayer: true,
       trait: 'ledare' as const,
     }
-    const events = generateCharacterPlayerEvents([leader], 2, new Set(), () => 0, undefined)
+    const events = generateCharacterPlayerEvents([leader], base.managedClubId, 2, new Set(), () => 0, undefined)
     const event = events.find(candidate => candidate.id === `captain_${leader.id}`)!
     const beforeStanding = base.communityStanding ?? 50
 
@@ -30,6 +30,33 @@ describe('communityEvent — text och deklarerad state-effekt håller ihop', () 
 
     expect(result.captainPlayerId).toBe(leader.id)
     expect(result.communityStanding).toBe(Math.min(100, beforeStanding + 2))
+  })
+
+  it('skapar aldrig personalsamtal för en karaktärsspelare i motståndarlaget', () => {
+    const base = makeGame()
+    const own = {
+      ...base.players.find(player => player.clubId === base.managedClubId)!,
+      age: 22,
+      isCharacterPlayer: true,
+      trait: 'hungrig' as const,
+      loyaltyScore: 3,
+      seasonStats: { gamesPlayed: 10, goals: 6, assists: 0, averageRating: 7, yellowCards: 0, redCards: 0 },
+    }
+    const opponent = {
+      ...base.players.find(player => player.clubId !== base.managedClubId)!,
+      age: 22,
+      isCharacterPlayer: true,
+      trait: 'hungrig' as const,
+      loyaltyScore: 3,
+      seasonStats: { gamesPlayed: 10, goals: 6, assists: 0, averageRating: 7, yellowCards: 0, redCards: 0 },
+    }
+
+    const events = generateCharacterPlayerEvents(
+      [own, opponent], base.managedClubId, 16, new Set(), () => 0, undefined,
+    )
+
+    expect(events.some(event => event.relatedPlayerId === own.id)).toBe(true)
+    expect(events.some(event => event.relatedPlayerId === opponent.id)).toBe(false)
   })
 
   it('fikakvällen visar exakt pris och kvalitativ stämningsriktning, sedan appliceras +8 fanMood', () => {

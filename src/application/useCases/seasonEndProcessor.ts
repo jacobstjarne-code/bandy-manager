@@ -1549,7 +1549,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     else firedReason = 'licenseDenied'
   }
 
-  const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
+  const objRand = mulberry32((seed ?? 42) + nextSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
   // SLUTTEST 2026-08-08 (punkt 4b): currentValue satt till 0 vid generering,
   // uppdaterades bara i checkInObjectives (omg 7/14/22) — hela introt +
@@ -1560,10 +1560,29 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // (omg 7/14/22) orörd.
   // SLUTTEST RUNDA 3 (punkt 3): startValue = samma initiala evaluateObjective-
   // värde som currentValue skrivs in med — se createNewGame.ts för samma mönster.
+  // Nya uppdrag måste både skapas och nollmätas mot den NYA säsongens
+  // värld. Den gamla cupbracketen och derbyhistoriken gjorde annars att
+  // färska mål kunde börja på exempelvis 2/3 respektive 1/1.
+  const newSeasonObjectiveGame: SaveGame = {
+    ...game,
+    currentSeason: nextSeason,
+    currentMatchday: 0,
+    currentDate: `${nextSeason}-10-01`,
+    clubs: updatedClubs,
+    players: playersAfterLicense,
+    fixtures: newFixtures,
+    standings: calculateStandings(updatedClubs.map(c => c.id), []),
+    cupBracket: newCupBracket,
+    playoffBracket: null,
+    rivalryHistory: {},
+    seasonStartFinances: managedClubForObj?.finances ?? game.seasonStartFinances,
+    seasonContractExtensionCount: 0,
+    seasonNetTransferSpend: 0,
+  }
   const newSeasonObjectives = managedClubForObj && game.board
-    ? generateBoardObjectives(managedClubForObj, game, game.board, objRand)
+    ? generateBoardObjectives(managedClubForObj, newSeasonObjectiveGame, game.board, objRand)
         .map(obj => {
-          const startingValue = evaluateObjective(obj, game).value
+          const startingValue = evaluateObjective(obj, newSeasonObjectiveGame).value
           return { ...obj, currentValue: startingValue, startValue: startingValue }
         })
     : []

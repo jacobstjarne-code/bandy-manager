@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { seasonTwoTruthsSentence, yearbookAssessmentVerdict, yearbookPlacementVerdictText } from '../../domain/services/seasonSummaryService'
+import { seasonTwoTruthsSentence, yearbookAssessmentVerdict, yearbookHeroVerdict, yearbookPlacementVerdictText } from '../../domain/services/seasonSummaryService'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
@@ -336,7 +336,16 @@ export function SeasonSummaryScreen() {
   }
 
   function verdictText(s: SeasonSummary): string {
-    if (s.playoffResult !== 'champion' && s.placementObjectiveOutcome) {
+    // Om styrelsen satte ett uttryckligt placeringsmål är det den frusna
+    // måldomen som gäller även efter ett slutspelsguld. Den generiska
+    // förväntningstexten kunde annars säga att styrelsen fick mer än de bad
+    // om samtidigt som ett av deras namngivna uppdrag stod som misslyckat.
+    if (s.placementObjectiveOutcome?.result === 'failed') {
+      return boardObjectiveResultTitle(s.placementObjectiveOutcome.label, s.placementObjectiveOutcome.result)
+    }
+    const failed = s.objectiveOutcome?.failed ?? 0
+    if (failed > 0) return failed === 1 ? 'Ett uppdrag missades' : `${failed} uppdrag missades`
+    if (s.placementObjectiveOutcome) {
       return boardObjectiveResultTitle(s.placementObjectiveOutcome.label, s.placementObjectiveOutcome.result)
     }
     return seasonVerdictText(s.boardExpectation, s.finalPosition, totalTeams)
@@ -533,20 +542,23 @@ export function SeasonSummaryScreen() {
           )}
 
           {/* Board verdict */}
-          <div style={{
+          {(() => {
+            const heroVerdict = yearbookHeroVerdict(summary)
+            return <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
             padding: '6px 12px',
             borderRadius: 99,
-            background: summary.expectationVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 15%, transparent)' : 'color-mix(in srgb, var(--success) 15%, transparent)',
-            border: `1px solid ${summary.expectationVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 40%, transparent)' : 'color-mix(in srgb, var(--success) 40%, transparent)'}`,
+            background: heroVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 15%, transparent)' : 'color-mix(in srgb, var(--success) 15%, transparent)', // adherence-semantic-key: yearbookHeroVerdict
+            border: `1px solid ${heroVerdict === 'failed' ? 'color-mix(in srgb, var(--danger) 40%, transparent)' : 'color-mix(in srgb, var(--success) 40%, transparent)'}`, // adherence-semantic-key: yearbookHeroVerdict
           }}>
-            <span style={{ fontSize: 12 }}>{verdictIcon(summary.expectationVerdict)}</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: summary.expectationVerdict === 'failed' ? 'var(--danger)' : 'var(--success)' }}>
+            <span style={{ fontSize: 12 }}>{verdictIcon(heroVerdict)}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: heroVerdict === 'failed' ? 'var(--danger)' : 'var(--success)' }}> {/* adherence-semantic-key: yearbookHeroVerdict */}
               {verdictText(summary)}
             </span>
           </div>
+          })()}
 
           {/* O18/High 1 (ÅRSBOKENS_TVASANNINGSMENING_2026-08-23.md): när
               placeringsdomen och uppdragsutfallet pekar åt olika håll står

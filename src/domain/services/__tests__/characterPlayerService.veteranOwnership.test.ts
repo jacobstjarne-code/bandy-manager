@@ -14,7 +14,7 @@ describe('veteranens kontraktsfråga har en enda ägare', () => {
       loyaltyScore: 5,
     }
 
-    const events = generateCharacterPlayerEvents([veteran], 1, new Set(), () => 0.5)
+    const events = generateCharacterPlayerEvents([veteran], game.managedClubId, 1, new Set(), () => 0.5)
 
     expect(events.some(event => event.id === `veteran_retirement_${veteran.id}`)).toBe(false)
     expect(events.some(event => /stanna ett år till/i.test(event.choices?.[0]?.label ?? ''))).toBe(false)
