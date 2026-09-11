@@ -42,6 +42,7 @@ export function generatePatronEvents(
         events.push({
           id: eid,
           type: 'patronEvent',
+          decisionTemplateId: 'patron_intro',
           title: `💼 ${patron.name} visar intresse`,
           sender: { name: patron.name, role: `ägare, ${patron.business}` },
           body: `${patron.name} från ${patron.business} har hört om er förening och vill diskutera ett samarbete.\n\n"Jag har alltid brunnit för bandy. Ni gör ett fantastiskt jobb — jag vill hjälpa till."`,
@@ -54,14 +55,7 @@ export function generatePatronEvents(
             {
               id: 'welcome',
               label: 'Välkomna samarbetet',
-              subtitle: 'gläder patronen · årligt bidrag fortsätter',
-              effect: { type: 'patronHappiness', amount: 20 },
-            },
-            {
-              id: 'cautious',
-              label: 'Tack, men vi tar det lugnt',
-              subtitle: 'gläder patronen · årligt bidrag fortsätter',
-              effect: { type: 'patronHappiness', amount: 5 },
+              effect: { type: 'noOp' },
             },
           ],
           resolved: false,

@@ -3,7 +3,7 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { generatePatronEmergenceEvent, generatePatronEvents } from '../patronEvents'
 import { resolveEvent } from '../eventResolver'
-import { patronVoiceId } from '../../voiceIntroductionService'
+import { isPassiveVoiceIntroduction, patronVoiceId } from '../../voiceIntroductionService'
 
 function makeGame() {
   return createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
@@ -93,6 +93,14 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
     expect(base.patron.introducedSeason).toBeUndefined()
     const resolved = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'welcome', undefined, true)
     expect(resolved.patron?.introducedSeason).toBe(2026)
+    expect(resolved.patron?.happiness).toBe(80)
+    expect(event.choices).toEqual([expect.objectContaining({
+      id: 'welcome',
+      effect: { type: 'noOp' },
+    })])
+    expect(isPassiveVoiceIntroduction(event)).toBe(true)
+    expect(resolved.resolvedChoices).toBeUndefined()
+    expect(resolved.resolvedEventIds).toContain(event.id)
   })
 
   it('återskapar ett saknat introkort vid en senare första förekomst', () => {

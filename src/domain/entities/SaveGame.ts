@@ -80,6 +80,10 @@ export interface ResolvedChoice {
    * for legacy saves and events whose concrete id is already canonical. */
   eventSemanticId?: string
   eventType?: GameEventType
+  /** O12 identity for the exact decision template that was presented.
+   * Unlike eventType, this separates different choice sets that happen to
+   * share a broad event family. Optional for legacy saves. */
+  decisionTemplateKey?: string
   choiceId: string
   label: string
   madeByPlayer?: boolean

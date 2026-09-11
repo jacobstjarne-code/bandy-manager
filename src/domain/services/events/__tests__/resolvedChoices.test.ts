@@ -38,7 +38,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_canonical', 'ack', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_canonical')
-    expect(entry).toEqual({ resolutionId: 'event_canonical:1', eventId: 'event_canonical', eventType: 'communityEvent', choiceId: 'ack', label: 'Notera det', madeByPlayer: true, decisionKind: 'acknowledgement' })
+    expect(entry).toEqual({ resolutionId: 'event_canonical:1', eventId: 'event_canonical', eventType: 'communityEvent', decisionTemplateKey: 'communityEvent:ack', choiceId: 'ack', label: 'Notera det', madeByPlayer: true, decisionKind: 'acknowledgement' })
   })
 
   it('sponsorOffer — accept-grenen (specialfall 1/4): skrivs innan den egna early-returnen', () => {
@@ -59,7 +59,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_accept', 'accept', () => 0.5, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_accept')
-    expect(entry).toEqual({ resolutionId: 'event_sponsor_accept:1', eventId: 'event_sponsor_accept', eventType: 'sponsorOffer', choiceId: 'accept', label: 'Acceptera sponsorn', madeByPlayer: true, decisionKind: 'decision' })
+    expect(entry).toEqual({ resolutionId: 'event_sponsor_accept:1', eventId: 'event_sponsor_accept', eventType: 'sponsorOffer', decisionTemplateKey: 'sponsorOffer:accept|reject', choiceId: 'accept', label: 'Acceptera sponsorn', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('sponsorOffer — reject-grenen (specialfall 2/4)', () => {
@@ -80,7 +80,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_sponsor_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_sponsor_reject')
-    expect(entry).toEqual({ resolutionId: 'event_sponsor_reject:1', eventId: 'event_sponsor_reject', eventType: 'sponsorOffer', choiceId: 'reject', label: 'Tacka nej', madeByPlayer: true, decisionKind: 'decision' })
+    expect(entry).toEqual({ resolutionId: 'event_sponsor_reject:1', eventId: 'event_sponsor_reject', eventType: 'sponsorOffer', decisionTemplateKey: 'sponsorOffer:accept|reject', choiceId: 'reject', label: 'Tacka nej', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('riskySponsorOffer — accept-grenen, lyckad JSON-parse (specialfall 3/4)', () => {
@@ -101,7 +101,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_accept', 'accept', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_accept')
-    expect(entry).toEqual({ resolutionId: 'event_risky_accept:1', eventId: 'event_risky_accept', eventType: 'riskySponsorOffer', choiceId: 'accept', label: 'Ta risken', madeByPlayer: true, decisionKind: 'decision' })
+    expect(entry).toEqual({ resolutionId: 'event_risky_accept:1', eventId: 'event_risky_accept', eventType: 'riskySponsorOffer', decisionTemplateKey: 'riskySponsorOffer:accept|reject', choiceId: 'accept', label: 'Ta risken', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('riskySponsorOffer — reject-grenen, faller till den avslutande early-returnen (specialfall 4/4)', () => {
@@ -122,7 +122,7 @@ describe('resolveEvent — resolvedChoices skrivs på alla fem exit-punkter', ()
     game = resolveEvent(game, 'event_risky_reject', 'reject', undefined, true)
 
     const entry = game.resolvedChoices?.find(c => c.eventId === 'event_risky_reject')
-    expect(entry).toEqual({ resolutionId: 'event_risky_reject:1', eventId: 'event_risky_reject', eventType: 'riskySponsorOffer', choiceId: 'reject', label: 'Nej tack', madeByPlayer: true, decisionKind: 'decision' })
+    expect(entry).toEqual({ resolutionId: 'event_risky_reject:1', eventId: 'event_risky_reject', eventType: 'riskySponsorOffer', decisionTemplateKey: 'riskySponsorOffer:accept|reject', choiceId: 'reject', label: 'Nej tack', madeByPlayer: true, decisionKind: 'decision' })
   })
 
   it('capas till senaste 200, precis som resolvedEventIds', () => {

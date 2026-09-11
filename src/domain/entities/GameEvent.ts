@@ -320,6 +320,11 @@ export interface GameEvent {
    * `id` identifies this concrete card; `semanticId` identifies the decision
    * the player must only face once within its declared scope. */
   semanticId?: string
+  /** Stable identity for the decision template rather than this concrete
+   * event instance. O12 normally derives it from event type + choice ids;
+   * producers may set this when two semantically different templates share
+   * the same choice set. */
+  decisionTemplateId?: string
   type: GameEventType
   title: string
   body: string

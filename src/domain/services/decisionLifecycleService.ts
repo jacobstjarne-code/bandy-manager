@@ -15,6 +15,21 @@ export function getDecisionSemanticId(
   return event.semanticId ?? event.id
 }
 
+/**
+ * O12 uses the presented choice set as the default template identity. This
+ * keeps concrete season/player ids out of the metric while separating broad
+ * families such as patronEvent into the actual decisions the player faced.
+ * An explicit producer id is the escape hatch for semantically different
+ * templates that intentionally reuse the same choice ids.
+ */
+export function getDecisionTemplateKey(
+  event: Pick<GameEvent, 'type' | 'choices' | 'decisionTemplateId'>,
+): string {
+  if (event.decisionTemplateId) return `${event.type}:${event.decisionTemplateId}`
+  const choiceSet = event.choices.map(choice => choice.id).sort().join('|')
+  return `${event.type}:${choiceSet}`
+}
+
 function addEventIdentities(target: Set<string>, event: Pick<GameEvent, 'id' | 'semanticId'>): void {
   target.add(event.id)
   target.add(getDecisionSemanticId(event))

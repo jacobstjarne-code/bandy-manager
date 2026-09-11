@@ -12,6 +12,7 @@ export interface ChoiceCount {
 
 export interface ChoiceEntropyRow {
   eventType: GameEventType
+  decisionTemplateKey: string
   total: number
   choices: ChoiceCount[]
   dominantChoiceId: string
@@ -51,7 +52,9 @@ function normalizedEntropy(counts: readonly number[]): number {
  * Samma save kan exporteras flera gånger; `(save.id, resolutionId)`
  * dedupliceras därför innan fördelningen räknas. Event-id räcker inte:
  * samma förhandling kan bära motbud och slutsvar som två mänskliga steg.
- * Bara explicit spelarattribuerade flervalsbeslut med lagrad eventType ingår.
+ * Bara explicit spelarattribuerade flervalsbeslut med lagrad eventType och
+ * beslutsmallsidentitet ingår. Bred eventType får aldrig slå ihop olika
+ * choice sets och därmed maskera ett dominant alternativ i en enskild mall.
  * Äldre poster, kvittenser och auto-resolutioner rapporteras separat och får
  * aldrig smyga in i spelarens valfördelning.
  */
@@ -60,7 +63,7 @@ export function analyzeChoiceEntropy(
   dominanceLimit = CHOICE_DOMINANCE_LIMIT,
 ): ChoiceEntropyReport {
   const seen = new Set<string>()
-  const byEventType = new Map<GameEventType, Map<string, number>>()
+  const byTemplate = new Map<string, { eventType: GameEventType; choiceCounts: Map<string, number> }>()
   let totalRecords = 0
   let analyzedPlayerChoices = 0
   let excludedAutoChoices = 0
@@ -90,7 +93,10 @@ export function analyzeChoiceEntropy(
         excludedAutoChoices++
         continue
       }
-      if (choice.madeByPlayer !== true || choice.eventType === undefined || choice.decisionKind === undefined) {
+      if (choice.madeByPlayer !== true
+        || choice.eventType === undefined
+        || choice.decisionKind === undefined
+        || choice.decisionTemplateKey === undefined) {
         excludedLegacyOrUnknownChoices++
         continue
       }
@@ -100,13 +106,16 @@ export function analyzeChoiceEntropy(
       }
 
       analyzedPlayerChoices++
-      const choiceCounts = byEventType.get(choice.eventType) ?? new Map<string, number>()
-      choiceCounts.set(choice.choiceId, (choiceCounts.get(choice.choiceId) ?? 0) + 1)
-      byEventType.set(choice.eventType, choiceCounts)
+      const template = byTemplate.get(choice.decisionTemplateKey) ?? {
+        eventType: choice.eventType,
+        choiceCounts: new Map<string, number>(),
+      }
+      template.choiceCounts.set(choice.choiceId, (template.choiceCounts.get(choice.choiceId) ?? 0) + 1)
+      byTemplate.set(choice.decisionTemplateKey, template)
     }
   }
 
-  const rows = [...byEventType.entries()].map(([eventType, choiceCounts]): ChoiceEntropyRow => {
+  const rows = [...byTemplate.entries()].map(([decisionTemplateKey, { eventType, choiceCounts }]): ChoiceEntropyRow => {
     const total = [...choiceCounts.values()].reduce((sum, count) => sum + count, 0)
     const choices = [...choiceCounts.entries()]
       .map(([choiceId, count]) => ({ choiceId, count, share: count / total }))
@@ -114,6 +123,7 @@ export function analyzeChoiceEntropy(
     const dominant = choices[0]
     return {
       eventType,
+      decisionTemplateKey,
       total,
       choices,
       dominantChoiceId: dominant.choiceId,
@@ -123,7 +133,8 @@ export function analyzeChoiceEntropy(
     }
   }).sort((a, b) => Number(a.passesDominanceGate) - Number(b.passesDominanceGate)
     || b.dominantShare - a.dominantShare
-    || a.eventType.localeCompare(b.eventType))
+    || a.eventType.localeCompare(b.eventType)
+    || a.decisionTemplateKey.localeCompare(b.decisionTemplateKey))
 
   return {
     rows,
@@ -146,6 +157,7 @@ export function isResolvedChoice(value: unknown): value is ResolvedChoice {
     && typeof choice.label === 'string'
     && (choice.eventType === undefined
       || (typeof choice.eventType === 'string' && Object.hasOwn(EVENT_TYPE_LABELS, choice.eventType)))
+    && (choice.decisionTemplateKey === undefined || typeof choice.decisionTemplateKey === 'string')
     && (choice.madeByPlayer === undefined || typeof choice.madeByPlayer === 'boolean')
     && (choice.decisionKind === undefined
       || choice.decisionKind === 'decision'

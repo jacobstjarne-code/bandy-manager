@@ -32,7 +32,7 @@ import { buildBurnoutDecisionLedgerEntry } from '../burnoutReliefService'
 import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 import { canEventPassVoiceGate, isPassiveVoiceIntroduction, recordVoiceIntroduction } from '../voiceIntroductionService'
 import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
-import { getDecisionSemanticId, recordDecisionLifecycle } from '../decisionLifecycleService'
+import { getDecisionSemanticId, getDecisionTemplateKey, recordDecisionLifecycle } from '../decisionLifecycleService'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -47,7 +47,7 @@ import { getDecisionSemanticId, recordDecisionLifecycle } from '../decisionLifec
 function recordResolvedChoice(
   before: SaveGame,
   after: SaveGame,
-  event: Pick<GameEvent, 'id' | 'semanticId' | 'type' | 'choices'>,
+  event: Pick<GameEvent, 'id' | 'semanticId' | 'decisionTemplateId' | 'type' | 'choices'>,
   choiceId: string,
   label: string,
   madeByPlayer: boolean,
@@ -61,6 +61,7 @@ function recordResolvedChoice(
     eventId: event.id,
     ...(event.semanticId ? { eventSemanticId: getDecisionSemanticId(event) } : {}),
     eventType: event.type,
+    decisionTemplateKey: getDecisionTemplateKey(event),
     choiceId,
     label,
     madeByPlayer,
@@ -336,15 +337,26 @@ export function resolveEvent(
     event.introducesVoiceId
       ? recordVoiceIntroduction(resolvedGame, event.introducesVoiceId, event.sender)
       : resolvedGame
+  const recordPatronIntroduction = (resolvedGame: SaveGame): SaveGame =>
+    eventId.startsWith('patron_intro_') && resolvedGame.patron
+      ? {
+          ...resolvedGame,
+          patron: { ...resolvedGame.patron, introducedSeason: resolvedGame.currentSeason },
+        }
+      : resolvedGame
 
   // Events with no choices are observations, not decisions: consume the row and
   // remember its stable id for generator dedup, but never fabricate a
   // resolvedChoices entry or a player-attributed narrative beat.
   if (event.choices.length === 0 || isPassiveVoiceIntroduction(event)) {
-    return recordDecisionLifecycle(recordIntroducedVoice({
-      ...retireResolvedEvent(game, eventId),
-      resolvedEventIds: recordResolvedId(game, eventId),
-    }), event, 'resolved')
+    return recordDecisionLifecycle(
+      recordIntroducedVoice(recordPatronIntroduction({
+        ...retireResolvedEvent(game, eventId),
+        resolvedEventIds: recordResolvedId(game, eventId),
+      })),
+      event,
+      'resolved',
+    )
   }
 
   const choice = event.choices.find(c => c.id === choiceId)
@@ -2611,12 +2623,7 @@ export function resolveEvent(
   // sina anropare, men mostRecentRound kom härifrån på ligarond-skala).
   // Standardiserat till updatedGame.currentMatchday (global) — den globala
   // skalan liggarens EventLedgerEntry.matchday redan kräver.
-  if (eventId.startsWith('patron_intro_') && updatedGame.patron) {
-    updatedGame = {
-      ...updatedGame,
-      patron: { ...updatedGame.patron, introducedSeason: updatedGame.currentSeason },
-    }
-  }
+  updatedGame = recordPatronIntroduction(updatedGame)
 
   updatedGame = {
     ...retireResolvedEvent(updatedGame, eventId),

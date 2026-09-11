@@ -50,7 +50,7 @@ if (paths.length === 0) {
       const distribution = row.choices
         .map(choiceRow => `${choiceRow.choiceId}=${choiceRow.count} (${(choiceRow.share * 100).toFixed(1)} %)`)
         .join(', ')
-      console.log(`${status} ${row.eventType}: n=${row.total}, max=${(row.dominantShare * 100).toFixed(1)} %, H=${row.normalizedEntropy.toFixed(3)} — ${distribution}`)
+      console.log(`${status} ${row.decisionTemplateKey}: n=${row.total}, max=${(row.dominantShare * 100).toFixed(1)} %, H=${row.normalizedEntropy.toFixed(3)} — ${distribution}`)
     }
   }
 }
