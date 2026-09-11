@@ -119,7 +119,7 @@ function SmFinalUppspelet({
       {isGold && (
         <div style={{ position: 'relative', height: 290, flexShrink: 0, overflow: 'hidden' }}>
           <img
-            src="/assets/illustrations/final.jpg"
+            src="/assets/illustrations/final.webp"
             alt="SM-final"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 38%', display: 'block' }}
           />

@@ -43,7 +43,7 @@ export function getMatchLaddningIllustration(
   if (useOccasionAsset) {
     return {
       assetName: occasionAsset,
-      assetSrc: `/assets/illustrations/${occasionAsset}.jpg`,
+      assetSrc: `/assets/illustrations/${occasionAsset}.webp`,
     }
   }
   if (opponentId && clubAsset) {

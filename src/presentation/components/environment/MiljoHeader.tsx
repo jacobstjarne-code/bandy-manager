@@ -15,11 +15,11 @@ import { ClubBadgeOnImage } from '../ClubBadge'
  *    scanian_coast mildast/ljusast, osv. Härlett ur befintliga cold-tokens (token-rent).
  *  - väder (snabb modulation): partikel/fönsterljus — hook finns, byggs med bilden.
  *
- * Bilden ligger i public/assets/illustrations/bruksort-header.jpg (§1: public/ ej src/).
+ * Bilden ligger i public/assets/illustrations/bruksort-header.webp (§1: public/ ej src/).
  * Om filen saknas eller inte kan läsas återstår den avsiktliga fallbacken: motivlös
  * säsongstonad gradient + ClubBadge-vattenstämpel + dev-only-stämpel. Aldrig SVG-proxy.
  */
-const IMG_SRC = '/assets/illustrations/bruksort-header.jpg'
+const IMG_SRC = '/assets/illustrations/bruksort-header.webp'
 const PAPER = 'var(--bg)' // ljust pappers-kropp som bandet fadar ned mot
 
 // klimateArchetype → tint-karaktär ur befintliga cold-tokens (token-rent; ingen ny hex).

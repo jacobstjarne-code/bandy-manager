@@ -19,10 +19,10 @@ describe('getMatchLaddningIllustration', () => {
 
   it('keeps the dedicated seasonal art for annandagen, final and new year', () => {
     expect(getMatchLaddningIllustration('annandagen', 'club_malilla').assetSrc)
-      .toBe('/assets/illustrations/annandagen.jpg')
+      .toBe('/assets/illustrations/annandagen.webp')
     expect(getMatchLaddningIllustration('final', 'club_malilla').assetSrc)
-      .toBe('/assets/illustrations/final.jpg')
+      .toBe('/assets/illustrations/final.webp')
     expect(getMatchLaddningIllustration('nyar', 'club_malilla').assetSrc)
-      .toBe('/assets/illustrations/nyar.jpg')
+      .toBe('/assets/illustrations/nyar.webp')
   })
 })

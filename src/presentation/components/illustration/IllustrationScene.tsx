@@ -9,7 +9,8 @@ import { useState } from 'react'
  *  - band:      övre 50% bild, fade ned i portal-mörk, text under (anslag/ceremoni)
  *  - header:    200px band överst, fade till portal, mark över (finalhelg)
  *
- * Bilder ligger i public/assets/illustrations/ → ref /assets/illustrations/{name}.jpg.
+ * Bilder ligger i public/assets/illustrations/ → ref /assets/illustrations/{name}.webp
+ * (Pass 1, CODE_KORORDER_GENOMGANG_2026-09-12 §2 — konverterade från jpg, 12→3,7 MB).
  * Saknas bilden (eller 404) → IllustrationPlaceholder, samma dimensioner (inget hoppar
  * när bilden landar). Text aldrig naken på bild — scrim alltid.
  */
@@ -35,7 +36,7 @@ export function getClubIntroIllustrationSrc(clubId: string): string {
   const assetName = getClubIntroIllustrationAssetName(clubId)
   return assetName
     ? `/assets/illustrations/${assetName}.webp`
-    : '/assets/illustrations/intro.jpg'
+    : '/assets/illustrations/intro.webp'
 }
 
 /** Returnerar bara en levererad klubbspecifik bild; används när fallbacken är typografisk. */
@@ -45,7 +46,7 @@ export function getClubIntroIllustrationAssetName(clubId: string): string | unde
 
 interface Props {
   mode: IllustrationMode
-  /** asset-namn → /assets/illustrations/{name}.jpg + placeholder-etikett */
+  /** asset-namn → /assets/illustrations/{name}.webp + placeholder-etikett */
   name: string
   /** explicit src-override (annars härleds ur name) */
   src?: string
@@ -110,7 +111,7 @@ export function IllustrationPlaceholder({ name, style }: { name: string; style?:
 
 export function IllustrationScene({ mode, name, src, alt, children, style, objectPosition, fadeTo = 'var(--bg-portal)' }: Props) {
   const [failed, setFailed] = useState(false)
-  const resolvedSrc = src ?? `/assets/illustrations/${name}.jpg`
+  const resolvedSrc = src ?? `/assets/illustrations/${name}.webp`
   const showImage = !!resolvedSrc && !failed
 
   return (

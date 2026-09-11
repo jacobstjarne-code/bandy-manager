@@ -41,7 +41,7 @@ export function CupFinalVictoryScene({ game, onComplete }: Props) {
     >
       {/* Cupguldet är efterfesten, inte ännu en bild av pokallyftet. */}
       <img
-        src="/assets/illustrations/cupguld.jpg"
+        src="/assets/illustrations/cupguld.webp"
         alt=""
         style={{
           position: 'absolute', inset: 0,

@@ -89,7 +89,7 @@ export function CeremonyCupFinal({
       {managedWon && (
         <>
           <img
-            src="/assets/illustrations/cupguld.jpg"
+            src="/assets/illustrations/cupguld.webp"
             alt=""
             style={{
               position: 'absolute', inset: 0,

@@ -25,7 +25,7 @@ function expectNonEmptyPublicAsset(relativePath: string) {
 describe('product image asset integrity', () => {
   it('has every illustration selected by a production image surface', () => {
     for (const name of illustrationNames) {
-      expectNonEmptyPublicAsset(`assets/illustrations/${name}.jpg`)
+      expectNonEmptyPublicAsset(`assets/illustrations/${name}.webp`)
     }
     for (const name of clubIntroNames) {
       expectNonEmptyPublicAsset(`assets/illustrations/intro-${name}.webp`)

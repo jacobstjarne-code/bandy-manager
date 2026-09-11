@@ -20,7 +20,7 @@ describe('getClubIntroIllustrationSrc', () => {
   })
 
   it('keeps the generic intro for clubs without a delivered illustration', () => {
-    expect(getClubIntroIllustrationSrc('club_edsbyn')).toBe('/assets/illustrations/intro.jpg')
+    expect(getClubIntroIllustrationSrc('club_edsbyn')).toBe('/assets/illustrations/intro.webp')
     expect(getClubIntroIllustrationAssetName('club_edsbyn')).toBeUndefined()
   })
 })
