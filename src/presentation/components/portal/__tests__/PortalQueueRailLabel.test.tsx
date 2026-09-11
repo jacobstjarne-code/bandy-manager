@@ -53,4 +53,11 @@ describe('PortalQueueRail — kö-räknarens etikett', () => {
     )
     expect(html).toContain('<strong>2</strong>')
   })
+
+  it('förklarar kögrafens mått, tidsriktning och nuläge', () => {
+    const game = makeGame([makeDeferred('d1', 'sponsorOffer')])
+    const html = renderToStaticMarkup(PortalQueueRail({ game }))
+    expect(html).toContain('Beslutsbörda · senaste omgångarna →')
+    expect(html).toContain('Nu: Lugn')
+  })
 })

@@ -123,8 +123,8 @@ export function PortalQueueRail({ game, demotedMarks = [] }: Props) {
       </div>
       <div className="portal-fatigue-bar">
         <div className="portal-fatigue-bar-head">
-          <span className="portal-fatigue-label">Tryck</span>
-          <span>{pressureLabel(pressure)}</span>
+          <span className="portal-fatigue-label">Beslutsbörda · senaste omgångarna →</span>
+          <span>Nu: {pressureLabel(pressure)}</span>
         </div>
         <Sparkline
           points={fatigueHistory}
