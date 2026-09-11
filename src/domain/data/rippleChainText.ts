@@ -49,7 +49,7 @@ const RIPPLE_STEP_TEXT: Partial<Record<string, RippleTextTiers>> = {
   Kassan_up: {
     knappt: 'Lite mer i kassan. Det räcker till bandagen.',
     tydligt: 'Kassan andas. Det går att planera igen.',
-    kraftigt: 'Kassan är full. Nu är det du som väljer.',
+    kraftigt: 'Kassan stärktes rejält. Nu finns det handlingsutrymme.',
   },
   Kassan_down: {
     knappt: 'Lite mindre i kassan. Ingen märker det än.',

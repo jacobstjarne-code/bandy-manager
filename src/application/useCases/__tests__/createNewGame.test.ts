@@ -71,6 +71,14 @@ describe('createNewGame', () => {
     expect(fixtureIds1).toEqual(fixtureIds2)
   })
 
+  it('ger inte grundpatronen samma namn som en startmecenat', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const game = createNewGame({ managerName: 'Jacob', clubId: 'club_gagnef', season: 2025, seed })
+      const mecenatNames = new Set((game.mecenater ?? []).map(mecenat => mecenat.name))
+      if (game.patron) expect(mecenatNames.has(game.patron.name)).toBe(false)
+    }
+  })
+
   // K4 (SLUTTEST-KÖN, 2026-08-17): beständiga fält, ingen konsument ännu —
   // testet verifierar bara att de faktiskt sparas, inte att något läser dem.
   it('worldSeed sparas som det faktiskt använda seedet (inte input.seed rakt av)', () => {

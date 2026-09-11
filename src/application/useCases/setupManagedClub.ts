@@ -62,9 +62,14 @@ export function generatePatron(
   managedPlayers: Player[],
   rand: () => number,
   season: number,
+  forbiddenNames: readonly string[] = [],
 ): Patron | undefined {
   if (clubReputation < 35 || rand() > 0.75) return undefined
-  const profile = pickRandom(PATRON_PROFILES, rand)
+  const blocked = new Set(forbiddenNames.map(name => name.trim().toLocaleLowerCase('sv-SE')))
+  const availableProfiles = PATRON_PROFILES.filter(profile =>
+    !blocked.has(`${profile.first} ${profile.last}`.toLocaleLowerCase('sv-SE')),
+  )
+  const profile = pickRandom(availableProfiles.length > 0 ? availableProfiles : PATRON_PROFILES, rand)
   const influence = 30 + Math.floor(rand() * 60)
   const contribution = Math.round(
     (influence * 500 + clubReputation * 300 + rand() * 30000) / 1000
@@ -293,7 +298,15 @@ export function generateManagedClubEntourage(input: ManagedClubEntourageInput): 
   const journalist = createJournalist(localPaperName, rand)
   const doctor = createDoctor(rand)
   const mecenater = rand() < 0.5 ? [generateMecenat(clubId, civicSeason, rand)] : []
-  const patron = generatePatron(managedClub.reputation, managedPlayers, rand, civicSeason)
+  // Patron och mecenat är två skilda roller. De får därför aldrig råka få
+  // samma namn och presenteras som om samma person erbjöds två gånger.
+  const patron = generatePatron(
+    managedClub.reputation,
+    managedPlayers,
+    rand,
+    civicSeason,
+    mecenater.map(mecenat => mecenat.name),
+  )
   const localPolitician = generatePolitician(rand, civicSeason)
   const board = generateBoardMembers(clubId, rand)
 
