@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { communityStandingDisplay, mergeYearbookTimelineItems, yearbookTimelineRoundBadge, type YearbookTimelineItem } from '../SeasonSummaryScreen'
+import { communityStandingDisplay, managerSeasonTypeLabel, mergeYearbookTimelineItems, yearbookTimelineRoundBadge, type YearbookTimelineItem } from '../SeasonSummaryScreen'
 
 function item(overrides: Partial<YearbookTimelineItem> = {}): YearbookTimelineItem {
   return {
@@ -71,5 +71,14 @@ describe('communityStandingDisplay', () => {
   it('visar skalan även vid det giltiga golvvärdet', () => {
     expect(communityStandingDisplay(0)).toBe('0 av 100')
     expect(communityStandingDisplay(50)).toBe('50 av 100')
+  })
+})
+
+describe('managerSeasonTypeLabel', () => {
+  it('skiljer belastning, val och återhämtning utan att skriva om dagboksraden', () => {
+    expect(managerSeasonTypeLabel('burnout_peak')).toBe('Belastning')
+    expect(managerSeasonTypeLabel('burnout_choice')).toBe('Ditt val')
+    expect(managerSeasonTypeLabel('burnout_relief')).toBe('Lättnad')
+    expect(managerSeasonTypeLabel('burnout_close')).toBe('Återhämtning')
   })
 })

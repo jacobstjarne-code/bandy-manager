@@ -25,6 +25,7 @@ import { IllustrationScene } from '../components/illustration/IllustrationScene'
 import { ledgerPostKey } from '../../domain/services/ledgerToldService'
 import { storedRoundLabel } from '../../domain/roundLabel'
 import { ScrollMoreCue } from '../components/ScrollMoreCue'
+import type { ManagerNarrativeEntry } from '../../domain/entities/ManagerProfile'
 
 export interface YearbookTimelineItem {
   round: number
@@ -53,6 +54,22 @@ export function yearbookTimelineRoundBadge(roundLabel: string | undefined, _matc
 
 export function communityStandingDisplay(value: number): string {
   return `${value} av 100`
+}
+
+const MANAGER_SEASON_TYPE_LABEL: Record<ManagerNarrativeEntry['type'], string> = {
+  arrival: 'Tillträdet',
+  burnout_peak: 'Belastning',
+  burnout_relief: 'Lättnad',
+  burnout_close: 'Återhämtning',
+  burnout_choice: 'Ditt val',
+  burnout_scar: 'Spår',
+  era_shift: 'Skifte',
+  rivalry: 'Rivalitet',
+  milestone: 'Milstolpe',
+}
+
+export function managerSeasonTypeLabel(type: ManagerNarrativeEntry['type']): string {
+  return MANAGER_SEASON_TYPE_LABEL[type]
 }
 
 function YearbookRoundBadge({ roundLabel, matchday }: { roundLabel?: string; matchday: number }) {
@@ -1088,18 +1105,22 @@ export function SeasonSummaryScreen() {
           <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
             <SectionLabel style={{ marginBottom: 6 }}>🧊 DIN SÄSONG SOM TRÄNARE</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 8 }}>
-              Tabellen är lagets. Det här var din.
+              Beslut, belastning och återhämtning under året.
             </p>
             {summary.managerSeason.map((entry, i) => (
-              <p
+              <div
                 key={i}
                 style={{
-                  fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4,
                   marginBottom: i < summary.managerSeason!.length - 1 ? 8 : 0,
                 }}
               >
-                {entry.text}
-              </p>
+                <p className="h-micro" style={{ color: 'var(--accent)', marginBottom: 2 }}>
+                  {managerSeasonTypeLabel(entry.type)}
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                  {entry.text}
+                </p>
+              </div>
             ))}
           </div>
         )}
