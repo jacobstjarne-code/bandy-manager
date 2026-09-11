@@ -231,7 +231,11 @@ export function processPatronCommunityEvents(
         id: evictionId,
         type: 'patronWithdrawal',
         title: `${updatedPatron.name ?? 'Patronen'} drar sig ur`,
-        body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
+        // Kortet kan ligga i den uppskjutna kön medan ortsstödet hinner
+        // återhämta sig. Beslutet fattades när tröskeln faktiskt korsades,
+        // så citatet beskriver den frusna orsaken i dåtid i stället för att
+        // påstå att dagens läktarläge fortfarande är svagt.
+        body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. När läktaren tunnades ut och samtalet tystnade bestämde jag mig. Det är inte längre min klubb att bära. Jag har dragit mig ur medan det ännu går att göra i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
         resolved: false,
       })
