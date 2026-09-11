@@ -103,7 +103,7 @@ import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
 
-type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
+type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-forsbacka' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
   // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: tre riktiga SeasonSummaryScreen-
   // utfall (mästare byggs redan av 'season-header') — bevisar kapitelindelningen
@@ -238,6 +238,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'season-a',     label: 'SeasonSummary A (mästare → gold)' },
   { id: 'season-b',     label: 'SeasonSummary B (topp 3 → win)' },
   { id: 'season-c',     label: 'SeasonSummary C (mittfält → subtle)' },
+  { id: 'miljoheader-forsbacka', label: 'MiljöHeader — Forsbacka (klubbmärkespilot 64/32)' },
   { id: 'miljoheader-karlsborg', label: 'MiljöHeader — Karlsborg (arctic_coast, mörkast)' },
   { id: 'miljoheader-rogle', label: 'MiljöHeader — Rögle (scanian_coast, mildast)' },
   { id: 'tabell',        label: 'Tabell (DB-8 header + managed-rad)' },
@@ -2163,13 +2164,15 @@ export function DevScenesScreen() {
           </div>
         )}
 
-        {(scene === 'miljoheader-karlsborg' || scene === 'miljoheader-rogle') && (() => {
+        {(scene === 'miljoheader-forsbacka' || scene === 'miljoheader-karlsborg' || scene === 'miljoheader-rogle') && (() => {
           // Levererad gemensam bruksortsbild med säsongston, klimateArchetype-tint och
           // ClubBadge-vattenstämpel. Samma datum (djup vinter) för båda gör att scenen
           // isolerar den per-klubb-tint som fortfarande skiljer dem åt.
-          const club = scene === 'miljoheader-karlsborg'
-            ? { id: 'club_karlsborg', name: 'Karlsborg' }
-            : { id: 'club_rogle', name: 'Rögle' }
+          const club = scene === 'miljoheader-forsbacka'
+            ? { id: 'club_forsbacka', name: 'Forsbacka' }
+            : scene === 'miljoheader-karlsborg'
+              ? { id: 'club_karlsborg', name: 'Karlsborg' }
+              : { id: 'club_rogle', name: 'Rögle' }
           return (
             <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 40px)' }}>
               <MiljoHeader date="2027-01-20" club={club} mode="portal" />

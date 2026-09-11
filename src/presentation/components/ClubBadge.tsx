@@ -17,6 +17,13 @@ const CLUB_BADGES: Record<string, { primary: string; secondary: string; symbol: 
   'club_heros':{ primary: '#990000', secondary: '#FFFFFF', symbol: 'bear' },
 }
 
+const CLUB_BADGE_ASSETS: Partial<Record<string, { compact: string; full: string }>> = {
+  club_forsbacka: {
+    compact: '/assets/clubs/forsbacka/badge-32.svg',
+    full: '/assets/clubs/forsbacka/badge-64.svg',
+  },
+}
+
 // Shield path for 64×64 viewBox
 const SHIELD_PATH = 'M32 2 L58 12 V32 C58 46 46 54 32 60 C18 54 6 46 6 32 V12 Z'
 
@@ -141,6 +148,20 @@ interface ClubBadgeProps {
 }
 
 export function ClubBadge({ clubId, name, size = 40, strokeColor }: ClubBadgeProps) {
+  const asset = CLUB_BADGE_ASSETS[clubId]
+  if (asset) {
+    return (
+      <img
+        src={size <= 40 ? asset.compact : asset.full}
+        alt={`${name} klubbmärke`}
+        width={size}
+        height={size}
+        draggable={false}
+        style={{ display: 'block', objectFit: 'contain' }}
+      />
+    )
+  }
+
   const badge = CLUB_BADGES[clubId]
   const gradId = `badge-grad-${clubId || name}`
   const stroke = strokeColor ?? 'color-mix(in srgb, var(--accent) 50%, transparent)'
