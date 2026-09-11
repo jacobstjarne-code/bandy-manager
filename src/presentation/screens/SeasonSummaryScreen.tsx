@@ -455,12 +455,12 @@ export function SeasonSummaryScreen() {
           {/* HEADER — utfallet och motivet är nu en sammanhållen hero. Den
               svaga plattan håller texten läsbar utan att gömma illustrationen. */}
           <div style={{
-            background: 'color-mix(in srgb, var(--bg) 86%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--bg) 65%, transparent)',
+            background: 'color-mix(in srgb, var(--bg) 68%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--bg) 42%, transparent)',
             borderRadius: 'var(--radius-lg)',
             boxShadow: '0 10px 30px rgba(12, 14, 20, 0.16)',
-            backdropFilter: 'blur(3px)',
-            WebkitBackdropFilter: 'blur(3px)',
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
             padding: '16px 14px 12px',
             textAlign: 'center',
             margin: '20px 16px',
