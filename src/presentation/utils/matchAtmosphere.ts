@@ -48,18 +48,21 @@ export function getMatchAtmosphere(fixture: Fixture): MatchAtmosphere {
       borderAccent: 'var(--danger)',
     }
   }
-  if (isPlayoff) {
-    return {
-      tint: 'playoff',
-      label: '🏆 SLUTSPEL',
-      borderAccent: 'var(--accent)',
-    }
-  }
+  // isCup kollas FÖRE isPlayoff: cupService.ts sätter isKnockout:true på alla
+  // cupmatcher (för straff/förlängning), så isPlayoff-villkoret matchade cup
+  // också och gjorde isCup-grenen onåbar — varje cupmatch märktes "SLUTSPEL".
   if (isCup) {
     return {
       tint: 'cup',
       label: '🏆 CUPEN',
       borderAccent: 'var(--ice)',
+    }
+  }
+  if (isPlayoff) {
+    return {
+      tint: 'playoff',
+      label: '🏆 SLUTSPEL',
+      borderAccent: 'var(--accent)',
     }
   }
   if (isAnnandagen) {

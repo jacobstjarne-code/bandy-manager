@@ -178,7 +178,12 @@ export function generateQuickSummary(
   // tidiga 60-minutersprototypen och kallade en stor del av andra halvlek
   // för "slutminuterna".
   const lateGoals = goals.filter(e => (e.minute ?? 0) >= 80)
+  // Ett mål i minut ≥80 som bara band matchen (inte avgjorde den) får inte
+  // kallas "avgörande i slutminuterna" om matchen egentligen avgjordes senare
+  // på straffar/förlängning — samma penalties/OT-flaggor som won/lost redan
+  // härleds från ovan.
   const lateDecider = lateGoals.length > 0 && Math.abs(margin) <= 1
+    && !wonByPenalties && !lostByPenalties && !wonByOT && !lostByOT
 
   const scorerCounts: Record<string, number> = {}
   const scorerNames: Record<string, string> = {}

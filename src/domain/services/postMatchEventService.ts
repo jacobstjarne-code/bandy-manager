@@ -63,6 +63,10 @@ export function generatePostMatchEvents(game: SaveGame, fixture: Fixture): GameE
           type: 'opponentQuote',
           title: isDerby ? `🛡 ${opponentClubName} efter derbyt` : `🛡 ${opponentClubName} efter matchen`,
           body: quote,
+          // ReaktionerKort.tsx läser aldrig event.title, bara sender+body — utan
+          // sender saknade citatet all attribution i den ytan (kunde läsas som
+          // egna tränarens röst). Samma sender-mönster som refereeMeeting.
+          sender: { name: opponentClub.opponentManager?.name ?? opponentClubName, role: opponentClubName },
           choices: [],
           resolved: false,
           priority: 'low',

@@ -168,13 +168,13 @@ export function generatePostMatchHeadline(
   // draw: only sensationalist and supportive publish headlines
   if (bucket === 'draw' && persona !== 'sensationalist' && persona !== 'supportive') return null
 
-  const headline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'inbox')
+  const headline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'inbox', fixture.isKnockout)
   if (!headline) return null
 
   // Fynd 3: samma matchhändelse, tre formuleringar — så rubriken inte läser identiskt
   // i portal, inkorg och granska. Samma bucket/persona → samma innebörd, olika ord.
-  const portalHeadline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'portal')
-  const granskaHeadline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'granska')
+  const portalHeadline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'portal', fixture.isKnockout)
+  const granskaHeadline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline, fixture.matchday, fixture.isCup, 'granska', fixture.isKnockout)
 
   return {
     id: `inbox_headline_md${fixture.matchday}_${season}`,

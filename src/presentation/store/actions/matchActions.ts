@@ -168,7 +168,7 @@ export function matchActions(get: Get, set: Set) {
       const score = `${managedScore}–${oppScore}`
       const coach = game.assistantCoach
       const coachBody = coach
-        ? generateCoachQuote(coach, { type: 'match-result', result: matchResult, score }, fixtureSeed(fixtureId))
+        ? generateCoachQuote(coach, { type: 'match-result', result: matchResult, score, isKnockout: fixture.isKnockout, isHome }, fixtureSeed(fixtureId))
         : `Du lämnade matchen innan den var klar. Assistenten tog över. Resultat: ${score}.`
 
       const inboxItem: InboxItem = {

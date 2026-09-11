@@ -44,7 +44,10 @@ export function MomentumBar({ step, homeShort, awayShort, history = [] }: Moment
       ? { variant: 'amber', icon: '⟳', text: BRYTPUNKT.kvittering.replace('{lag}', equalizerShort) }
       : (step.postBreakUrgency ?? 0) > 0 && chasing
         ? { variant: 'accent', icon: '▲', text: BRYTPUNKT.postPaus.replace('{lag}', chasing) }
-        : (step.lateFactor ?? 0) >= 0.34
+        // lateFactor är en ren minutfunktion (frikopplad från ställningen) — "matchen
+        // vill avgöras" kräver också att utfallet faktiskt är öppet, annars kan den
+        // fyras sent i en redan uppgjord match (t.ex. 6–1).
+        : (step.lateFactor ?? 0) >= 0.34 && Math.abs(step.homeScore - step.awayScore) <= 2
           ? { variant: 'steel', icon: '◇', text: BRYTPUNKT.sent }
           : null
 

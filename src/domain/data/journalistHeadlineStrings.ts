@@ -226,6 +226,7 @@ export function pickHeadline(
   matchday = 0,
   isCup = false,
   surface: 'inbox' | 'portal' | 'granska' = 'inbox',
+  isKnockout = false,
 ): string {
   const cell = HEADLINES[bucket][persona]
 
@@ -236,9 +237,12 @@ export function pickHeadline(
     pool = cell
   }
 
-  // Cup: inga poäng delas ut — filtrera bort poäng-språk (ligalogik hör inte hemma i cup).
+  // Cup OCH slutspel: inga ligapoäng delas ut — filtrera bort poäng-språk.
+  // Rot: playoffService sätter isKnockout men aldrig isCup för slutspelsmatcher,
+  // så isCup ensam missade slutspel. isKnockout täcker båda (cupService sätter
+  // alltid isKnockout:true tillsammans med isCup:true).
   // Defensiv guard: töm aldrig poolen (om en bucket vore helt poäng-baserad, behåll original).
-  if (isCup) {
+  if (isCup || isKnockout) {
     const filtered = pool.filter(h => !/poäng/i.test(h))
     if (filtered.length > 0) pool = filtered
   }

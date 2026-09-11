@@ -1769,7 +1769,11 @@ function* simulateMatchCore(
         const ppTeam     = awayActiveSuspensions > 0 ? homeTeamRef : awayTeamRef
         const ppOpponent = awayActiveSuspensions > 0 ? awayTeamRef : homeTeamRef
         templateVars = { ...templateVars, team: ppTeam, opponent: ppOpponent }
-        commentaryText = fillTemplate(pickCommentary(commentary.powerPlayGood, rand, commentaryHistory), templateVars)
+        // "söker avgörandet" påstår öppet utfall — filtreras bort vid redan
+        // avgjord marginal (>2 mål), annars kan den fyra på t.ex. 5–2.
+        const ppMargin = Math.abs(homeScore - awayScore)
+        const ppPool = ppMargin > 2 ? commentary.powerPlayGood.filter(l => !l.includes('söker avgörandet')) : commentary.powerPlayGood
+        commentaryText = fillTemplate(pickCommentary(ppPool, rand, commentaryHistory), templateVars)
       } else if (!input.hallInomhus && weather && (step === 15 || step === 30 || step === 45)) {
         commentaryText = pickWeatherCommentary(weather, rand, commentaryHistory) ?? fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
       } else if (seqType === 'tactical_shift') {

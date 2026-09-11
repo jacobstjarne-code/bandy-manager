@@ -72,7 +72,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
     { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'], requireTrailedAtHalf: true },
-    { text: 'Två poäng till. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
+    { text: 'Två poäng till. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5, requireLeaguePoints: true },
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'], requireMidfieldDominance: true },
     { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3, requireHome: true },
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },

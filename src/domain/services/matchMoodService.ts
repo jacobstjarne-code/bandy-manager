@@ -57,18 +57,21 @@ export function getMatchMood(
     return '📊 Toppdrabbning. Två lag som vill samma sak.'
   }
 
-  // Must-win (bottom, late season)
-  if (pos >= 10 && round >= 16) {
+  // Must-win (bottom, late season) — round fortsätter räknas rakt igenom
+  // slutspelet (playoffService.ts), så dessa ligatabell-baserade grenar
+  // måste undanta isKnockout: annars påstår de att laget fortfarande
+  // "jagar" poäng/slutspelsplats medan man redan spelar slutspel/cup.
+  if (!fixture.isKnockout && pos >= 10 && round >= 16) {
     return '⚠️ Varje poäng räknas nu. Laget vet vad som krävs.'
   }
 
   // Relegation battle
-  if (pos >= 11 && round >= 19) {
+  if (!fixture.isKnockout && pos >= 11 && round >= 19) {
     return '🔻 Desperation. Men desperata lag är farliga lag.'
   }
 
   // Playoff chase
-  if (pos >= 7 && pos <= 9 && round >= 18) {
+  if (!fixture.isKnockout && pos >= 7 && pos <= 9 && round >= 18) {
     return '📊 Slutspelsjakten. Ett par poäng skiljer.'
   }
 

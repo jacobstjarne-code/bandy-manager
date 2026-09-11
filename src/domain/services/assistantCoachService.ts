@@ -33,7 +33,7 @@ export function generateAssistantCoach(seed: string): AssistantCoach {
 // ── Quote generator ──────────────────────────────────────────
 
 export type QuoteContext =
-  | { type: 'match-result'; result: 'win' | 'draw' | 'loss'; score: string }
+  | { type: 'match-result'; result: 'win' | 'draw' | 'loss'; score: string; isKnockout?: boolean; isHome?: boolean }
   | { type: 'halftime'; leading: boolean; margin: number }
   | { type: 'tactic-change'; bold: boolean }
   | { type: 'weekly-decision'; topic: string }
@@ -426,11 +426,25 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
   let quotes: string[]
 
   switch (context.type) {
-    case 'match-result':
+    case 'match-result': {
       quotes = context.result === 'win' ? WIN_QUOTES[p]
         : context.result === 'draw' ? DRAW_QUOTES[p]
         : LOSS_QUOTES[p]
+      // Slutspel/cup delar inte ut ligapoäng — filtrera bort poäng-språk, samma
+      // rot och samma gejtning som pickHeadline (journalistHeadlineStrings.ts).
+      // Defensiv guard: töm aldrig poolen.
+      if (context.isKnockout) {
+        const filtered = quotes.filter(q => !/poäng/i.test(q))
+        if (filtered.length > 0) quotes = filtered
+      }
+      // "Oavgjort hemma" påstår hemmaplan oavsett verklig isHome — filtrera bort
+      // hemma-specifika rader när matchen var borta.
+      if (context.isHome === false) {
+        const filtered = quotes.filter(q => !/\bhemma\b/i.test(q))
+        if (filtered.length > 0) quotes = filtered
+      }
       break
+    }
     case 'halftime':
       quotes = context.leading ? HALFTIME_LEADING_QUOTES[p] : HALFTIME_TRAILING_QUOTES[p]
       break

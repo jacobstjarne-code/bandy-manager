@@ -702,10 +702,10 @@ export const commentary = {
   ],
 
   momentum_swing_away: [
-    '{opponent} har tagit över. {team} ser vilsna ut.',
-    'Det har vridits helt. {opponent} dikterar tempot nu.',
-    'Tyst på hemmaplan. {opponent} kontrollerar matchen.',
-    '{team} tappar tråden. {opponent} utnyttjar varje yta.',
+    '{team} har tagit över. {opponent} ser vilsna ut.',
+    'Det har vridits helt. {team} dikterar tempot nu.',
+    'Tyst på hemmaplan. {team} kontrollerar matchen.',
+    '{opponent} tappar tråden. {team} utnyttjar varje yta.',
   ],
 
   // ── Händelsevariation (Sprint D) ──────────────────────────────────────────

@@ -48,6 +48,8 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           type: 'match-result',
           result: won ? 'win' : lost ? 'loss' : 'draw',
           score: `${myScore}–${theirScore}`,
+          isKnockout: fixture?.isKnockout,
+          isHome,
         }) : null)
         if (!quote) return null
         return (
