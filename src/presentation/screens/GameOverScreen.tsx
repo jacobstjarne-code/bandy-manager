@@ -7,6 +7,7 @@ import { gameOverBoardStatement } from '../../domain/services/boardService'
 import { boardPatienceZoneFromScore } from '../../domain/services/portal/boardPatienceZone'
 import type { SeasonBoardTruth } from '../../domain/entities/SeasonSummary'
 import { IllustrationScene } from '../components/illustration/IllustrationScene'
+import { exportSaveAsJson } from '../../infrastructure/persistence/saveGameStorage'
 
 export function GameOverScreen() {
   const game = useGameStore(s => s.game)
@@ -110,6 +111,11 @@ export function GameOverScreen() {
   // live store; den id-nycklade saven ligger ändå kvar i multi-save-lagret.
   function handleViewHistory() {
     navigate('/game/game-over/historik', { state: { snapshot: game } })
+  }
+
+  function handleExportSave() {
+    if (!game) return
+    exportSaveAsJson(game)
   }
 
   function handleNewGame() {
@@ -264,6 +270,18 @@ export function GameOverScreen() {
             }}
           >
             SE KARRIÄREN
+          </button>
+          <button
+            className="btn"
+            onClick={handleExportSave}
+            style={{
+              width: '100%',
+              minHeight: 44,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+            }}
+          >
+            EXPORTERA SÄKERHETSKOPIA
           </button>
           {/* O13: den tredje vägen. Primär när den finns — domen gör
               fortsättningen till huvudspåret och "Ny karriär" till alternativet,

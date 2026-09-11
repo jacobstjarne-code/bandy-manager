@@ -115,7 +115,7 @@ Den detaljerade QA-kronologin, inklusive omgångar och kodverifierade sidofynd, 
 
 **Ögonblicket.** `Bussen hem genom mörker. Killarna höll låg ton.` landade efter kvartsfinalen. Avskedet landade också: `Vintern som gick höll måttet. Men för mycket hade redan gått förlorat innan den`. Platt: slutspelets hela intro visades två gånger i följd.
 
-**Marginalen.** Ett fortfarande synligt galakort flyttades till uppskjuten kö när ett tidigare kort löstes; klicket blev då en tyst no-op. Resolvern korrigerades och samma save verifierade kvittot. Game Over saknar den vanliga exportmenyn, så slut-saven kunde inte exporteras via spelets UI efter avskedet.
+**Marginalen.** Ett fortfarande synligt galakort flyttades till uppskjuten kö när ett tidigare kort löstes; klicket blev då en tyst no-op. Resolvern korrigerades och samma save verifierade kvittot. Game Over saknade först den vanliga exportmenyn; terminalytan återanvänder nu den kanoniska JSON-exporten direkt, så en slut-save går att ta ut även efter avskedet.
 
 ### Mellanår — 2035/36
 
