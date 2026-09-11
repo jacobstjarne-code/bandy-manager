@@ -11,6 +11,7 @@ import { generatePreMatchOpponentQuote } from '../../../domain/services/opponent
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { detectArcTriggers, progressArcs } from '../../../domain/services/arcService'
 import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
+import { swedishGenitive } from '../../../domain/utils/swedishGrammar'
 
 export interface NarrativeResult {
   fanMood: number
@@ -112,7 +113,7 @@ export function processNarrative(
         type: InboxItemType.MediaEvent,
         title: 'Klacken har en ny favorit',
         body: favResult.oldFavoriteName
-          ? `Klacken sjunger inte längre ${favResult.oldFavoriteName}s namn. ${favResult.newFavoriteName} har tagit över kören.`
+          ? `Klacken sjunger inte längre ${swedishGenitive(favResult.oldFavoriteName)} namn. ${favResult.newFavoriteName} har tagit över kören.`
           : `${favResult.newFavoriteName} har tagit över kören.`,
         date: game.currentDate,
         isRead: false,

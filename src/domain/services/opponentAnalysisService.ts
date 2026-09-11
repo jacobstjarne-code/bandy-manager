@@ -6,6 +6,7 @@ import { PlayerPosition, TacticMentality } from '../enums'
 import { safeStandingPosition } from './standingsService'
 import { deriveUtfall } from './matchTypeAxes'
 import { stringHashUnsigned } from '../utils/random'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 export interface OpponentAnalysis {
   opponentClubId: string
@@ -121,7 +122,7 @@ export function displayThreatReasonLine(threat: ThreatPlayer): string | undefine
   const pool = THREAT_REASON_LINES[threat.reasonKey]
   if (!pool || pool.length === 0) return undefined
   const hash = stringHashUnsigned(threat.playerId)
-  return pool[hash % pool.length].replaceAll('{Efternamn}', threat.lastName)
+  return fillSwedishTemplate(pool[hash % pool.length], { Efternamn: threat.lastName })
 }
 
 /**

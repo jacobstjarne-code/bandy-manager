@@ -7,6 +7,7 @@ import {
   DEMAND_YOUTH_FOCUS_LINES,
   DEMAND_VISIBLE_MONEY_LINES,
 } from '../data/patronData'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 /**
  * Gemensam kravmotor — Mecenat + Patron (2026-07-19).
@@ -60,9 +61,10 @@ interface DemandContext {
 export function generateDemandDescription(category: DemandCategory, ctx: DemandContext): string {
   if (category === 'playtime') {
     const template = PATRON_PLAYTIME_DEMANDS[Math.abs(ctx.seed) % PATRON_PLAYTIME_DEMANDS.length]
-    return template
-      .replace('{favorit}', ctx.favoritePlayerName ?? 'en av spelarna')
-      .replace('{relation}', ctx.favoriteRelation ?? 'bekant')
+    return fillSwedishTemplate(template, {
+      favorit: ctx.favoritePlayerName ?? 'en av spelarna',
+      relation: ctx.favoriteRelation ?? 'bekant',
+    })
   }
   const pool = category === 'league_position' ? DEMAND_LEAGUE_POSITION_LINES
     : category === 'youth_focus' ? DEMAND_YOUTH_FOCUS_LINES

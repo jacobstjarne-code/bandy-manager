@@ -140,6 +140,7 @@ export const CS_PRESS_MEMORY_TEMPLATES: Record<PressChoice, string> = {
  * Deterministisk seed så samma matchspel ger samma fråga vid återbesök.
  */
 import { fixtureSeed, seededPick } from '../utils/random'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 export function getSeverityFromRelationship(relationship: number): PressSeverity {
   if (relationship <= 33) return 'provocative'
@@ -200,7 +201,7 @@ export function pickCSPressQuestionSelection(
   const template = seededPick(pool, `${player.id}_${fixtureId}`)
   return {
     id: `cs_${severity}_${pool.indexOf(template) + 1}`,
-    text: template.replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`),
+    text: fillSwedishTemplate(template, { NAME: `${player.firstName} ${player.lastName}` }),
     referencesPreviousAnswer: false,
   }
 }
@@ -216,11 +217,12 @@ export function pickCSPressPublishedQuote(
     CS_PRESS_PUBLISHED_QUOTES[choice],
     `${choice}_${fixtureId}`,
   )
-  return variant
-    .replace(/\{COACH_LASTNAME\}/g, coach.lastName)
-    .replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
-    .replace(/\{JOURNALIST\}/g, `${journalist.firstName} ${journalist.lastName}`)
-    .replace(/\{OUTLET\}/g, journalist.outlet)
+  return fillSwedishTemplate(variant, {
+    COACH_LASTNAME: coach.lastName,
+    NAME: `${player.firstName} ${player.lastName}`,
+    JOURNALIST: `${journalist.firstName} ${journalist.lastName}`,
+    OUTLET: journalist.outlet,
+  })
 }
 
 export function buildCSPressMemoryEntry(
@@ -228,7 +230,8 @@ export function buildCSPressMemoryEntry(
   player: { firstName: string; lastName: string },
   opponent: { name: string },
 ): string {
-  return CS_PRESS_MEMORY_TEMPLATES[choice]
-    .replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
-    .replace(/\{OPPONENT\}/g, opponent.name)
+  return fillSwedishTemplate(CS_PRESS_MEMORY_TEMPLATES[choice], {
+    NAME: `${player.firstName} ${player.lastName}`,
+    OPPONENT: opponent.name,
+  })
 }

@@ -14,6 +14,7 @@ import {
 import { mulberry32 } from '../utils/random'
 import { FixtureStatus } from '../enums'
 import { deriveUtfall } from './matchTypeAxes'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 const BURNOUT_HISTORY_MAX = 22
 
@@ -217,12 +218,12 @@ export function resolveContractExtension(
   if (extended) {
     return {
       profile: { ...profile, contractUntilSeason: profile.contractUntilSeason + 2 },
-      inboxText: CONTRACT_OUTCOME.extended.replace('{manager}', managerName),
+      inboxText: fillSwedishTemplate(CONTRACT_OUTCOME.extended, { manager: managerName }),
     }
   }
   return {
     profile,
-    inboxText: CONTRACT_OUTCOME.not_extended.replace('{manager}', managerName),
+    inboxText: fillSwedishTemplate(CONTRACT_OUTCOME.not_extended, { manager: managerName }),
   }
 }
 

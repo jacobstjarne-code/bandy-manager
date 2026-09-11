@@ -11,6 +11,7 @@ import { toldMarksFor } from '../ledgerToldService'
 import { resolveSubjectName } from '../momentLedgerService'
 import { agendaForSurface, redaktoren } from '../redaktorenService'
 import { getStorylineTypeFromLedger } from '../storylineLedgerService'
+import { fillSwedishTemplate } from '../../utils/swedishGrammar'
 
 const JOURNALIST_EVENT_LABEL: Record<string, string> = {
   refused_press: 'Refuserade pressen',
@@ -72,7 +73,7 @@ function pickEcho(type: EfterklangType, seed: number): string {
 }
 
 function interpolate(text: string, vars: Record<string, string>): string {
-  return Object.entries(vars).reduce((t, [k, v]) => t.replace(new RegExp(`\\{${k}\\}`, 'g'), v), text)
+  return fillSwedishTemplate(text, vars)
 }
 
 /**

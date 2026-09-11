@@ -1104,7 +1104,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         date: game.currentDate,
         type: InboxItemType.ContractExpiring,
         title: `${player.firstName} ${player.lastName} lämnar klubben`,
-        body: `${player.firstName} ${player.lastName}s kontrakt har löpt ut. Han lämnar som fri agent.`,
+        body: `${swedishGenitive(`${player.firstName} ${player.lastName}`)} kontrakt har löpt ut. Han lämnar som fri agent.`,
         isRead: false,
       } as InboxItem)
       seasonTransitionEvents.push({ type: 'contractExpired', playerId: player.id, playerLastName: player.lastName })

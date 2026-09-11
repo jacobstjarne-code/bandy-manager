@@ -30,6 +30,7 @@ import { PROVNING_RESOLUTION } from '../data/hallProvningData'
 import { getSeasonLicenseConsequence } from './licenseService'
 import { formatSwedishCount } from '../utils/formatSwedishCount'
 import { loanReturnAttribution } from './academyLedgerPresentationService'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
  *  "Krönikan visar decision-poster med significance ≥ 70 som egna rader" —
@@ -413,7 +414,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       const template = FIRST_CALLUP_MEMORY_LINES[entry.season % FIRST_CALLUP_MEMORY_LINES.length]
       return {
         type: 'national_team_callup', season: entry.season, matchday: entry.matchday,
-        text: template.replace('{spelare}', playerName),
+        text: fillSwedishTemplate(template, { spelare: playerName }),
         emoji: '⭐', significance: entry.significance, subjectPlayerId: playerId,
       }
     }

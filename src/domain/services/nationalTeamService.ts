@@ -4,6 +4,7 @@ import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
 import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES, LOBBY_PRESS_FLAVOUR } from '../data/landslagText'
 import { buildNationalTeamCallupLedgerEntry } from './clubHistoryLedgerService'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 // Release-svepet 2026-07-21 (Block 2c): HANDOFF-C-K1-LANDSLAG-2026-05-23.md
 // Q3, låst av Jacob 2026-05-23 — "+5 tkr/uttagen, synligt narrativt". Fanns
@@ -75,9 +76,10 @@ export function applyCallupEffects(
 
   const noticeTemplates = playerIds.length === 1 ? CALLUP_NOTICE_LINES.single : CALLUP_NOTICE_LINES.multi
   const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
-  const noticeBody = noticeTemplate
-    .replace('{spelare}', nameStr)
-    .replace('{spelare_lista}', nameStr)
+  const noticeBody = fillSwedishTemplate(noticeTemplate, {
+    spelare: nameStr,
+    spelare_lista: nameStr,
+  })
 
   const inboxItems: InboxItem[] = []
   const callupInboxId = `inbox_vm_callup_${game.currentSeason}`
@@ -150,7 +152,7 @@ export function applyReturnEffects(
   // .standard wirat här; .gold väntar på en VM-turneringsmekanik — rapporterat
   // till Jacob, inte byggt i det här svepet.
   const returnTemplate = RETURN_SCENE_LINES.standard[game.currentSeason % RETURN_SCENE_LINES.standard.length]
-  const returnLine = returnTemplate.replace('{spelare}', nameStr)
+  const returnLine = fillSwedishTemplate(returnTemplate, { spelare: nameStr })
 
   const inboxItems: InboxItem[] = []
   const returnInboxId = `inbox_vm_return_${game.currentSeason}`
@@ -196,10 +198,11 @@ export function generateLobbyPressFlavourNotice(game: SaveGame, candidate: Playe
   const nameStr = `${candidate.firstName} ${candidate.lastName}`
 
   const template = LOBBY_PRESS_FLAVOUR[game.currentSeason % LOBBY_PRESS_FLAVOUR.length]
-  const body = template
-    .replace('{spelare}', nameStr)
-    .replace('{klubb}', club?.name ?? 'Klubben')
-    .replace('{paper}', paper)
+  const body = fillSwedishTemplate(template, {
+    spelare: nameStr,
+    klubb: club?.name ?? 'Klubben',
+    paper,
+  })
 
   return {
     id: inboxId,

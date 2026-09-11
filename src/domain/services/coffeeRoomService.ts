@@ -20,6 +20,7 @@ import { agendaForSurface, redaktoren } from './redaktorenService'
 import { recordLedgerPostToldByKey } from './ledgerToldService'
 import { isOnCooldown } from './narrativeLogService'
 import { shouldSurfaceVictoryEcho } from './postVictoryNarrativeService'
+import { fillSwedishTemplate } from '../utils/swedishGrammar'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -391,7 +392,7 @@ function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number
           : null
         const klubb = affectedClub?.name ?? 'grannklubben'
         const andraKlubb = secondaryClub?.name ?? 'grannklubben'
-        const sub = (s: string) => s.replace(/\{KLUBB\}/g, klubb).replace(/\{ANDRA_KLUBB\}/g, andraKlubb)
+        const sub = (s: string) => fillSwedishTemplate(s, { KLUBB: klubb, ANDRA_KLUBB: andraKlubb })
         return { exchange: [sub(ex[0]), sub(ex[1]), sub(ex[2]), sub(ex[3])] }
       }
       return { exchange: ex }
