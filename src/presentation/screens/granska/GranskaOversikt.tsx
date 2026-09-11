@@ -22,6 +22,7 @@ import { DecisionCard } from '../../components/DecisionCard'
 import { getEffectiveDecisionMode } from '../../../domain/services/decisionTierService'
 import { getEventContextLabel } from '../../../domain/services/eventContextService'
 import { Swords } from 'lucide-react'
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
 import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, STARTED_TIRED_OUTCOMES, CAPTAIN_OUTCOMES, LEADERSHIP_OUTCOMES, PEP_TALK_HOLD_KVITTO, PRATA_KVITTO } from '../../../domain/data/managerKvittoText'
@@ -1180,7 +1181,7 @@ export function GranskaOversikt({
             {rs.newInboxCount > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', cursor: 'pointer' }} onClick={() => navigate('/game/inbox')}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📬 Inkorg</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{rs.newInboxCount} nya</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{formatSwedishCount(rs.newInboxCount, 'ny', 'nya')}</span>
               </div>
             )}
           </div>

@@ -48,6 +48,16 @@ describe('B11 T7B — Calendar anchors', () => {
     }
   })
 
+  it('har exakt en match på annandagen och inga tidigare omgångar glider in på datumet', () => {
+    for (let season = 2025; season <= 2050; season++) {
+      const league = buildSeasonCalendar(season).filter(slot => slot.type === 'league')
+      const onBoxingDay = league.filter(slot => slot.date === `${season}-12-26`)
+      expect(onBoxingDay, `season ${season}: only the fixed R10 may use Dec 26`).toHaveLength(1)
+      expect(onBoxingDay[0].leagueRound).toBe(10)
+      expect(league.filter(slot => slot.isAnnandagen)).toHaveLength(1)
+    }
+  })
+
   it('liga starts in November (R1 in November)', () => {
     for (const season of [2026, 2027, 2028]) {
       const cal = buildSeasonCalendar(season)

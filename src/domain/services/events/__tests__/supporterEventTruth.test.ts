@@ -91,6 +91,7 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     const game = { ...makeGame(supporterGroup({ tifoDone: true })), currentMatchday: 9, fanMood: 50 }
     const event = generateSupporterEvents(game, 9, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_conflict_'))!
+    expect(event.semanticId).toBe('supporter_conflict')
     const resolved = resolveEvent({ ...game, pendingEvents: [event], deferredDecisions: [{ ...event }] }, event.id, 'both', undefined, true)
     const promoted = promoteFromQueue(resolved)
     expect(promoted.pendingEvents?.some(candidate => candidate.id === event.id)).toBe(false)
@@ -100,5 +101,28 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     expect(promoted.supporterGroup?.mood).toBe(65)
     expect(promoted.fanMood).toBe(53)
     expect(resolveEvent(promoted, event.id, 'both', undefined, true)).toBe(promoted)
+    const nextSeason = {
+      ...promoted,
+      currentSeason: game.currentSeason + 1,
+      currentMatchday: 9,
+      supporterGroup: { ...promoted.supporterGroup!, tifoDone: true },
+    }
+    const known = new Set([
+      ...(nextSeason.resolvedEventIds ?? []),
+      ...(nextSeason.resolvedChoices ?? []).flatMap(choice => [choice.eventId, choice.eventSemanticId ?? choice.eventId]),
+    ])
+    expect(generateSupporterEvents(nextSeason, 9, known, () => 0)
+      .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(false)
+  })
+
+  it('respekterar även ett äldre säsongs-id efter rollover', () => {
+    const game = {
+      ...makeGame(supporterGroup({ tifoDone: true, conflictSeason: 2025 })),
+      currentSeason: 2026,
+      currentMatchday: 9,
+    }
+    const known = new Set(['supporter_conflict_2025'])
+    expect(generateSupporterEvents(game, 9, known, () => 0)
+      .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(false)
   })
 })

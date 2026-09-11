@@ -59,12 +59,25 @@ export function generateSupporterEvents(
     }
   }
 
-  // ── Konflikt Sture/Elin — omg 9-11, efter tifo, om tifoDone ──────────────────
-  if (currentRound >= 9 && currentRound <= 11 && sg.tifoDone && sg.conflictSeason !== game.currentSeason) {
+  // ── Konflikt Sture/Elin — omg 9-11, efter tifo, högst en gång per karriär ────
+  // Säsongs-id:t behövs fortfarande som konkret kö-id och för gamla sparfiler,
+  // men berättelsen har EN semantisk identitet. Utan den lästes bara
+  // conflictSeason och exakt samma konflikt kunde börja om efter rollover.
+  const conflictSemanticId = 'supporter_conflict'
+  const legacyConflictSeen = [...alreadyQueued].some(id => id.startsWith('supporter_conflict_'))
+  if (
+    currentRound >= 9
+    && currentRound <= 11
+    && sg.tifoDone
+    && sg.conflictSeason !== game.currentSeason
+    && !alreadyQueued.has(conflictSemanticId)
+    && !legacyConflictSeen
+  ) {
     const eid = `supporter_conflict_${game.currentSeason}`
     if (!alreadyQueued.has(eid) && rand() < 0.5) {
       events.push({
         id: eid,
+        semanticId: conflictSemanticId,
         type: 'supporterEvent',
         title: `Konflikt i klacken`,
         body: `${sture} hör av sig. Han tycker att ${swedishGenitive(elin)} tifo var bra, men oroar sig för att klacken "tappat sitt ursprung". Han vill att det ska vara som det alltid har varit.\n\n${elin} hörde talas om det och är upprörd. De pratar inte längre.\n\n"Du behöver inte göra något", säger ${rolf}. "Men det hjälper om du visar att du bryr dig om båda."`,

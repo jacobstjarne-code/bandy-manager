@@ -45,7 +45,7 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
 const WIN_HEADLINES: Record<Persona, SimplePool> = {
   supportive: [
     'Seger efter god kamp',
-    'Arbetsseger som betalde sig',
+    'Arbetsseger som lönade sig',
     'Ortens lag tog hem segern',
     'Förtjänt seger, inget att orda om',
     'Gick i mål när det krävdes',
@@ -108,7 +108,7 @@ const LOSS_HEADLINES: Record<Persona, Cell> = {
   supportive: [
     'Tung förlust efter god kamp',
     'Kom till korta — men kämpade in i slutet',
-    'Försvann inte fast resultatet bet',
+    'Stod kvar trots att resultatet sved',
     'Marginalerna fanns inte i dag',
     'Förlust där allt nästan stämde',
   ],
@@ -161,7 +161,7 @@ const BIG_LOSS_HEADLINES: Record<Persona, Cell> = {
     'Tung dag — försök glömma',
     'Förlust som hela klubben känner',
     'Inget gick laget i händer i dag',
-    'Hela laget vill snabbt vidare till nästa',
+    'Hela laget vill snabbt vidare till nästa match',
     'En sån här match gör man inte om',
   ],
   sensationalist: {

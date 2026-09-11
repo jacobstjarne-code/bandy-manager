@@ -1372,7 +1372,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `inbox_kommunval_${nextSeason}`,
       date: game.currentDate,
       type: InboxItemType.KommunBidrag,
-      title: `Kommunval: ${newPol.name} ny kommunalråd`,
+      title: `Kommunval: ${newPol.name} nytt kommunalråd`,
       body: `${newPol.name} (${newPol.party}) är kommunens nya kommunalråd med agenda "${newPol.agenda}". Kommunbidraget beräknas om baserat på deras prioriteringar. Relation startar på 40/100.`,
       isRead: false,
     } as InboxItem)

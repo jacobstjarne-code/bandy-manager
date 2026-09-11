@@ -391,7 +391,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
         if (myConv > 0.4 && oppConv < 0.2) {
           insight = `Klinisk effektivitet — ni konverterade ${Math.round(myConv * 100)}% av skotten medan motståndaren bara lyckades med ${Math.round(oppConv * 100)}%.`
         } else if (myConv < 0.2 && oppConv > 0.3) {
-          insight = `Motståndaren var mer effektiva. Era ${totalShots} skott gav bara ${scoredCount} mål — nästa match handlar om att skapa lägen nära mål.`
+          insight = `Motståndarna var mer effektiva. Era ${totalShots} skott gav bara ${scoredCount} mål — nästa match handlar om att skapa lägen nära mål.`
         } else if (totalShots > oppShots + 5) {
           insight = `Ni dominerade skottstatistiken (${totalShots} mot ${oppShots}) men konverteringen avgör. Fortsätt pressa på.`
         } else if (oppShots > totalShots + 5) {
@@ -399,7 +399,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
         } else if (scoredCount >= 3 && myConv > 0.35) {
           insight = `Stark offensiv — ${scoredCount} mål på ${totalShots} skott är över ligasnittet. Håll den formen.`
         } else {
-          insight = `${totalShots} skott och ${scoredCount} mål. Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
+          insight = `${totalShots} skott och ${scoredCount} mål. Motståndarna sköt ${oppShots} gånger och gjorde ${oppGoals} mål.`
         }
         return (
           <div style={{ marginTop: 6, padding: '8px 10px', background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', borderRadius: 'var(--radius-md)' }}>

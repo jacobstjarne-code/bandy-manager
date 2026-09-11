@@ -27,6 +27,7 @@ import { ledgerPostKey } from '../../domain/services/ledgerToldService'
 import { storedRoundLabel } from '../../domain/roundLabel'
 import { ScrollMoreCue } from '../components/ScrollMoreCue'
 import type { ManagerNarrativeEntry } from '../../domain/entities/ManagerProfile'
+import { formatSwedishCount } from '../../domain/utils/formatSwedishCount'
 
 export interface YearbookTimelineItem {
   round: number
@@ -833,7 +834,7 @@ export function SeasonSummaryScreen() {
             {summary.topScorer && (
               /* "ass" → "assist": grannkortet fyra rader ned skrev redan
                  "assist"; "ass" fanns bara här i hela kodbasen (audit 2026-08-29) */
-              <AwardCard icon="🏒" title="Toppskyttar" name={summary.topScorer.name}
+              <AwardCard icon="🏒" title="Toppskytt" name={summary.topScorer.name}
                 value={`${summary.topScorer.goals} mål, ${summary.topScorer.assists} assist`} />
             )}
             {summary.topAssister && (
@@ -842,7 +843,7 @@ export function SeasonSummaryScreen() {
             )}
             {summary.topRated && (
               <AwardCard icon="⭐" title="Högst betyg" name={summary.topRated.name}
-                value={`${summary.topRated.avgRating} snitt (${summary.topRated.games} matcher)`} />
+                value={`${summary.topRated.avgRating} snitt (${formatSwedishCount(summary.topRated.games, 'match', 'matcher')})`} />
             )}
             {summary.mostImproved && (
               <AwardCard icon="📈" title="Mest förbättrad" name={summary.mostImproved.name}
@@ -927,8 +928,8 @@ export function SeasonSummaryScreen() {
         {/* STREAKS */}
         <div className="card-sharp card-stagger-5" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STREAKS OCH EXTREMER</SectionLabel>
-          <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} matcher`} color="var(--success)" />
-          <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} matcher`} color="var(--danger)" />
+          <StatRow label="Längsta vinstsvit" value={formatSwedishCount(summary.longestWinStreak, 'match', 'matcher')} color="var(--success)" />
+          <StatRow label="Längsta förlustsvit" value={formatSwedishCount(summary.longestLossStreak, 'match', 'matcher')} color="var(--danger)" />
           {summary.biggestWin && (
             <StatRow label="Största vinst" value={`${summary.biggestWin.score} mot ${summary.biggestWin.opponent} (${storedRoundLabel(summary.biggestWin.roundLabel, summary.biggestWin.round).toLowerCase()})`} color="var(--success)" />
           )}
@@ -989,7 +990,7 @@ export function SeasonSummaryScreen() {
               </p>
             )) : (
               <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
-                {summary.youthIntakeCount} nya spelare rekryterades
+                {formatSwedishCount(summary.youthIntakeCount, 'ny spelare', 'nya spelare')} rekryterades
               </p>
             )}
             {summary.academyEconomyLine && (

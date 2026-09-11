@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Club } from '../../../domain/entities/Club'
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
 
 interface MapNode {
   id: string
@@ -35,7 +36,9 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
   const mecenatValue = activeMecenater.length === 0
     ? 30
     : Math.round(activeMecenater.reduce((sum, m) => sum + m.happiness, 0) / activeMecenater.length)
-  const mecenatSub = activeMecenater.length === 0 ? 'Inga' : `${activeMecenater.length} aktiva`
+  const mecenatSub = activeMecenater.length === 0
+    ? 'Inga'
+    : formatSwedishCount(activeMecenater.length, 'aktiv', 'aktiva')
 
   const volunteerCount = game.volunteers?.length ?? 0
   const volunteerStrength = volunteerCount > 0

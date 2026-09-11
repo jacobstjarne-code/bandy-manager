@@ -7,6 +7,7 @@ import type { MatchWeather } from '../../../domain/entities/Weather'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { ChevronDown, ChevronUp, ClipboardList } from 'lucide-react'
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
 
 interface MatchDayProgramProps {
   fixture: Fixture
@@ -160,10 +161,12 @@ export function MatchDayProgram({ fixture, opponent, managedClub, game, myPlayer
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {injuredCount > 0 && (
-                <span style={{ fontSize: 11, color: 'var(--danger)' }}>🩹 {injuredCount} skadade</span>
+                /* adherence-semantic-key: skada använder etablerad danger-färg */
+                <span style={{ fontSize: 11, color: 'var(--danger)' }}>🩹 {formatSwedishCount(injuredCount, 'skadad', 'skadade')}</span>
               )}
               {suspendedCount > 0 && (
-                <span style={{ fontSize: 11, color: 'var(--warning)' }}>⚠️ {suspendedCount} avstängda</span>
+                /* adherence-semantic-key: avstängning använder etablerad warning-färg */
+                <span style={{ fontSize: 11, color: 'var(--warning)' }}>⚠️ {formatSwedishCount(suspendedCount, 'avstängd', 'avstängda')}</span>
               )}
               {injuredCount === 0 && suspendedCount === 0 && (
                 <span style={{ fontSize: 11, color: 'var(--success)' }}>✅ Alla tillgängliga</span>

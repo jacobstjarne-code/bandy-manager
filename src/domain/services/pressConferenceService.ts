@@ -363,6 +363,31 @@ export const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'tp_spe5', tag: 'topic_player', label: '"Han har gett klubben tolv år. Han får ta den tid han behöver."', moraleEffect: 7, mediaQuote: 'Tränaren: "Han har gett klubben tolv år. Han får ta den tid han behöver."' },
   { id: 'tp_spe6', tag: 'topic_player', label: '"Rykten kommer varje vinter. Han är kvar varje vår."', moraleEffect: 5, mediaQuote: 'Tränaren avfärdade: "Rykten kommer varje vinter. Han är kvar varje vår."' },
   { id: 'tp_spe7', tag: 'topic_player', label: '"Vi pratar om det när säsongen är slut. Inte nu."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi pratar om kontraktet när säsongen är slut. Inte nu."' },
+  // ── topic_ledger: svar som faktiskt besvarar Berättarens liggarfrågor ──
+  // De här frågorna ersätter en vanlig matchfråga sent i urvalet. De får därför
+  // aldrig ärva den ersatta frågans svar — då kan en fråga om klubbens ekonomi
+  // exempelvis besvaras med hur laget pressade i första halvlek.
+  { id: 'tl_ref1', tag: 'topic_ledger', label: '"Jag tänker inte göra domaren till huvudperson. Vi måste vara bättre än besluten."', moraleEffect: 3, mediaQuote: 'Tränaren: "Jag tänker inte göra domaren till huvudperson. Vi måste vara bättre än besluten."' },
+  { id: 'tl_ref2', tag: 'topic_ledger', label: '"Vi har bett förbundet titta på det. Mer säger jag inte."', moraleEffect: 1, mediaQuote: 'Tränaren: "Vi har bett förbundet titta på det. Mer säger jag inte."' },
+  { id: 'tl_ref3', tag: 'topic_ledger', label: '"Det är mitt ansvar att hålla tonen. Vi går vidare."', moraleEffect: 4, mediaQuote: 'Tränaren: "Det är mitt ansvar att hålla tonen. Vi går vidare."' },
+  { id: 'tl_withdraw1', tag: 'topic_ledger', label: '"Det blir ett hål i budgeten. Vi anpassar oss och står kvar."', moraleEffect: 3, mediaQuote: 'Tränaren: "Det blir ett hål i budgeten. Vi anpassar oss och står kvar."' },
+  { id: 'tl_withdraw2', tag: 'topic_ledger', label: '"En person får inte vara hela föreningen. Nu får fler bära."', moraleEffect: 5, mediaQuote: 'Tränaren: "En person får inte vara hela föreningen. Nu får fler bära."' },
+  { id: 'tl_withdraw3', tag: 'topic_ledger', label: '"Vi hade velat ha stödet kvar, men beslutet är fattat. Nu ser vi framåt."', moraleEffect: 2, mediaQuote: 'Tränaren: "Vi hade velat ha stödet kvar, men beslutet är fattat. Nu ser vi framåt."' },
+  { id: 'tl_emerge1', tag: 'topic_ledger', label: '"Stödet betyder mycket. Villkoren diskuterar vi mellan fyra ögon."', moraleEffect: 3, mediaQuote: 'Tränaren: "Stödet betyder mycket. Villkoren diskuterar vi mellan fyra ögon."' },
+  { id: 'tl_emerge2', tag: 'topic_ledger', label: '"Det är en lokal kraft som vill klubben väl. Vi tar inget för givet."', moraleEffect: 4, mediaQuote: 'Tränaren: "Det är en lokal kraft som vill klubben väl. Vi tar inget för givet."' },
+  { id: 'tl_emerge3', tag: 'topic_ledger', label: '"Pengarna hjälper, men laget måste fortfarande göra jobbet."', moraleEffect: 2, mediaQuote: 'Tränaren: "Pengarna hjälper, men laget måste fortfarande göra jobbet."' },
+  { id: 'tl_era1', tag: 'topic_ledger', label: '"Tabellen mäter resultaten. Epoken avgörs av vad vi bygger här."', moraleEffect: 5, mediaQuote: 'Tränaren: "Tabellen mäter resultaten. Epoken avgörs av vad vi bygger här."' },
+  { id: 'tl_era2', tag: 'topic_ledger', label: '"Det ordet är för stort än. Vi tar nästa match först."', moraleEffect: 3, mediaQuote: 'Tränaren: "Det ordet är för stort än. Vi tar nästa match först."' },
+  { id: 'tl_era3', tag: 'topic_ledger', label: '"Folk på orten känner förändringen före tabellen."', moraleEffect: 4, mediaQuote: 'Tränaren: "Folk på orten känner förändringen före tabellen."' },
+  { id: 'tl_injury1', tag: 'topic_ledger', label: '"Ingen ersätter honom ensam. Flera får ta ett steg."', moraleEffect: 4, mediaQuote: 'Tränaren: "Ingen ersätter honom ensam. Flera får ta ett steg."' },
+  { id: 'tl_injury2', tag: 'topic_ledger', label: '"Vi tänker inte skynda tillbaka honom."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi tänker inte skynda tillbaka honom."' },
+  { id: 'tl_injury3', tag: 'topic_ledger', label: '"Det är tungt, men truppen är större än en spelare."', moraleEffect: 5, mediaQuote: 'Tränaren: "Det är tungt, men truppen är större än en spelare."' },
+  { id: 'tl_sale1', tag: 'topic_ledger', label: '"Det var rätt beslut med det vi visste då."', moraleEffect: 2, mediaQuote: 'Tränaren: "Det var rätt beslut med det vi visste då."' },
+  { id: 'tl_sale2', tag: 'topic_ledger', label: '"Klart man ser målen. Men vi blickar framåt."', moraleEffect: 3, mediaQuote: 'Tränaren: "Klart man ser målen. Men vi blickar framåt."' },
+  { id: 'tl_sale3', tag: 'topic_ledger', label: '"Jag önskar honom väl, men han spelar inte för oss längre."', moraleEffect: 4, mediaQuote: 'Tränaren: "Jag önskar honom väl, men han spelar inte för oss längre."' },
+  { id: 'tl_scandal1', tag: 'topic_ledger', label: '"Vi går igenom det internt och återkommer när vi vet mer."', moraleEffect: 1, mediaQuote: 'Tränaren: "Vi går igenom det internt och återkommer när vi vet mer."' },
+  { id: 'tl_scandal2', tag: 'topic_ledger', label: '"Det som hände är inte acceptabelt. Klubben tar ansvar."', moraleEffect: 4, mediaQuote: 'Tränaren: "Det som hände är inte acceptabelt. Klubben tar ansvar."' },
+  { id: 'tl_scandal3', tag: 'topic_ledger', label: '"Jag tänker inte spekulera. Fakta först."', moraleEffect: 2, mediaQuote: 'Tränaren: "Jag tänker inte spekulera. Fakta först."' },
 ]
 
 // ── PressContext ───────────────────────────────────────────────────────────────
@@ -592,6 +617,7 @@ export const TAG_DEFS: Record<string, PressTagDef> = {
   topic_town:   timelessTag('prefer-only', 'none'),
   topic_doubt:  timelessTag('prefer-only', 'none'),
   topic_player: timelessTag('prefer-only', 'none'),
+  topic_ledger: timelessTag('prefer-only', 'none'),
 }
 
 // Exporterad enbart för tabelltestet (isGenericMatch.table.test.ts) — inte
@@ -916,33 +942,38 @@ function soldPlayerScoresEveryWeek(
   )
 }
 
+interface LedgerPressQuestion {
+  text: string
+  preferIds: string[]
+}
+
 function buildLedgerPressQuestion(
   game: SaveGame,
   item: AgendaItem,
   chronology: CurrentChronology,
-): string | null {
+): LedgerPressQuestion | null {
   const name = resolveSubjectName(game, item.post.subject, item.post.subjectSnapshot)
   switch (item.post.type) {
     case 'referee_feud':
       return name
-        ? `Det sägs att ni och ${name} inte kommer överens. Är det domaren eller er som är problemet?`
+        ? { text: `Det sägs att ni och ${name} inte kommer överens. Är det domaren eller ni som är problemet?`, preferIds: ['tl_ref1', 'tl_ref2', 'tl_ref3'] }
         : null
     case 'patron_withdrawal':
     case 'mecenat_withdrawal':
-      return name ? `${name} har dragit sig tillbaka. Hur klarar klubben sig utan de pengarna?` : null
+      return name ? { text: `${name} har dragit sig tillbaka. Hur klarar klubben sig utan de pengarna?`, preferIds: ['tl_withdraw1', 'tl_withdraw2', 'tl_withdraw3'] } : null
     case 'patron_emerge':
-      return name ? `Vem är ${name}, egentligen — och vad vill han ha tillbaka?` : null
+      return name ? { text: `Vad står bakom erbjudandet från ${name} — och vad vill den nya patronen ha tillbaka?`, preferIds: ['tl_emerge1', 'tl_emerge2', 'tl_emerge3'] } : null
     case 'era_shift':
-      return 'Det pratas om en ny epok i klubben. Är det ni eller tabellen som bestämmer det?'
+      return { text: 'Det pratas om en ny epok i klubben. Är det ni eller tabellen som bestämmer det?', preferIds: ['tl_era1', 'tl_era2', 'tl_era3'] }
     case 'star_injury':
-      return name ? `${name} är borta länge. Vem bär laget nu?` : null
+      return name ? { text: `${name} är borta länge. Vem bär laget nu?`, preferIds: ['tl_injury1', 'tl_injury2', 'tl_injury3'] } : null
     case 'transfer_sold':
       return name && soldPlayerScoresEveryWeek(game, item, chronology)
-        ? `${name} gör mål varje vecka — för någon annan. Ångrar ni försäljningen?`
+        ? { text: `${name} gör mål varje vecka — för någon annan. Ångrar ni försäljningen?`, preferIds: ['tl_sale1', 'tl_sale2', 'tl_sale3'] }
         : null
     case 'scandal': {
       const topic = getScandalPressTopic(game, item.post.semanticKey)
-      return topic ? `Vi måste fråga om ${topic}. Vad hände egentligen?` : null
+      return topic ? { text: `Vi måste fråga om ${topic}. Vad hände egentligen?`, preferIds: ['tl_scandal1', 'tl_scandal2', 'tl_scandal3'] } : null
     }
     default:
       return null
@@ -952,7 +983,7 @@ function buildLedgerPressQuestion(
 function selectLedgerPressQuestion(
   game: SaveGame,
   fixture: Fixture,
-): { text: string; postKey: string } | null {
+): LedgerPressQuestion & { postKey: string } | null {
   const chronology = currentChronology({
     ...game,
     currentMatchday: Math.max(game.currentMatchday, fixture.matchday),
@@ -964,8 +995,8 @@ function selectLedgerPressQuestion(
     if (item.post.season !== chronology.season || age < 0 || age > PRESS_LEDGER_MAX_AGE) continue
     if (item.scoresBySurface.press.total < PRESS_LEDGER_MIN_WEIGHT) continue
     if (item.toldBefore.some(mark => mark.surface === 'press')) continue
-    const text = buildLedgerPressQuestion(game, item, chronology)
-    if (text) return { text, postKey: item.postKey }
+    const question = buildLedgerPressQuestion(game, item, chronology)
+    if (question) return { ...question, postKey: item.postKey }
   }
 
   return null
@@ -1046,7 +1077,6 @@ export function generatePressConference(
   const finalQuestionPool = freshQuestionPool.length > 0 ? freshQuestionPool : questionPool
 
   let question = finalQuestionPool[Math.floor(rand() * finalQuestionPool.length)]
-  const baseQuestionPreferIds = question.preferIds
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
   // Arc-aware question override (40% chance if arc in peak phase)
@@ -1196,11 +1226,11 @@ export function generatePressConference(
 
   // SPEC_BERATTAREN steg 7: högst en kanonisk liggarfråga, vald efter alla
   // äldre ad hoc-överstyrningar så agendan verkligen är pressens redaktion.
-  // Svarspoolen behålls från den giltiga matchfrågan; svarsmekanik och
-  // journalistrelation ändras därför inte.
+  // Liggarfrågan bär sin egen svarspool. Att återanvända den ersatta
+  // matchfrågans preferIds gav grammatiskt korrekta men sakligt omöjliga svar.
   const ledgerQuestion = selectLedgerPressQuestion(game, fixture)
   if (ledgerQuestion) {
-    question = { text: ledgerQuestion.text, preferIds: baseQuestionPreferIds }
+    question = { text: ledgerQuestion.text, preferIds: ledgerQuestion.preferIds }
     storylinePressKey = undefined
     excludedResponseIds = []
   }

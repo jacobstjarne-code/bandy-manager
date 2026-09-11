@@ -1,3 +1,5 @@
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
+
 interface StatBarProps {
   label: string
   value: number
@@ -58,7 +60,7 @@ export function SquadStatusCard({
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="tag tag-green">{readyCount} redo</span>
-            {injuredCount > 0 && <span className="tag tag-red">{injuredCount} skadade</span>}
+            {injuredCount > 0 && <span className="tag tag-red">{formatSwedishCount(injuredCount, 'skadad', 'skadade')}</span>}
             {onNavigateToSquad && (
               <button onClick={(e) => { e.stopPropagation(); onNavigateToSquad() }} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: 'var(--shadow-rest)', cursor: 'pointer' }}>›</button>
             )}

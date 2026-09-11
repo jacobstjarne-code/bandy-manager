@@ -365,7 +365,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       if (!loan || !playerName || !destinationName) return null
       return {
         type: 'loan_started', season: entry.season, matchday: entry.matchday,
-        text: `${playerName} lånades ut till ${destinationName} i ${loan.occasions} omgångar.`,
+        text: `${playerName} lånades ut till ${destinationName} i ${formatSwedishCount(loan.occasions, 'omgång', 'omgångar')}.`,
         emoji: momentFamily('loan_started'), significance: entry.significance, subjectPlayerId: playerId,
       }
     }
@@ -381,7 +381,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       if (!entry.youthIntake) return null
       return {
         type: 'youth_intake', season: entry.season, matchday: entry.matchday,
-        text: `${entry.youthIntake.count} nya spelare rekryterades`,
+        text: `${formatSwedishCount(entry.youthIntake.count, 'ny spelare', 'nya spelare')} rekryterades`,
         emoji: momentFamily('youth_intake'), significance: entry.significance, subjectClubId: managedClubId,
       }
     }

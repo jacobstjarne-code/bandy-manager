@@ -5,6 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 import type { SaveGame } from '../../../entities/SaveGame'
 import { resolveEvent } from '../eventResolver'
+import { RISKY_SPONSOR_CONTRACT_ROUNDS, RISKY_SPONSOR_OFFERS } from '../../../data/eventProcessorStrings'
 
 function baseGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
@@ -39,6 +40,14 @@ const validSponsorData = JSON.stringify({
 })
 
 describe('riskySponsorOffer — deklarerad state-sanning', () => {
+  it('erbjudandecopy visar samma ersättning och löptid som kontraktet faktiskt får', () => {
+    for (const offer of RISKY_SPONSOR_OFFERS) {
+      expect(`${offer.title} ${offer.body} ${offer.acceptLabel}`).toContain(`${offer.weeklyIncome}`)
+      expect(offer.body).toContain(`${RISKY_SPONSOR_CONTRACT_ROUNDS} omgångar`)
+      expect(`${offer.title} ${offer.body} ${offer.acceptLabel}`).not.toMatch(/\/säsong|förskott/iu)
+    }
+  })
+
   it('accept lägger till sponsorn och samma sponsors mognadskontrakt', () => {
     const event = riskyEvent(validSponsorData)
     const before = { ...baseGame(), sponsors: [], pendingEvents: [event] }

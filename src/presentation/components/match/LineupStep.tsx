@@ -18,6 +18,7 @@ import { CoachFraming } from '../CoachFraming'
 import { FatigueFloorConfirm } from './FatigueFloorConfirm'
 import { getFitnessProjection } from '../../../domain/services/fitnessRecoveryService'
 import { AUTOFILL_MODE_LABELS, type AutoFillMode } from '../../utils/lineupNudge'
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
 
 interface GroupedPlayers {
   position: string
@@ -577,7 +578,7 @@ export function LineupStep({
               {p.isInjured
                 ? 'är skadad'
                 : p.suspensionGamesRemaining > 0
-                ? `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`
+                ? `är avstängd (${formatSwedishCount(p.suspensionGamesRemaining, 'match', 'matcher')} kvar)`
                 : 'vilar efter förra matchen'}
             </span>
           ))}

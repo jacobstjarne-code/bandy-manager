@@ -65,10 +65,36 @@ describe('generatePressConference — Berättaren steg 7', () => {
     const event = generatePressConference(makeFixture(game), game, () => 0)
 
     expect(event?.body).toBe(
-      `"Det sägs att ni och ${referee!.firstName} ${referee!.lastName} inte kommer överens. Är det domaren eller er som är problemet?"`,
+      `"Det sägs att ni och ${referee!.firstName} ${referee!.lastName} inte kommer överens. Är det domaren eller ni som är problemet?"`,
     )
     expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(feud))
-    expect(event?.choices).toHaveLength(4)
+    expect(event?.choices.map(choice => choice.id)).toEqual(['tl_ref1', 'tl_ref2', 'tl_ref3', 'refuse_press'])
+  })
+
+  it.each([
+    ['patron_withdrawal', ['tl_withdraw1', 'tl_withdraw2', 'tl_withdraw3']],
+    ['mecenat_withdrawal', ['tl_withdraw1', 'tl_withdraw2', 'tl_withdraw3']],
+    ['patron_emerge', ['tl_emerge1', 'tl_emerge2', 'tl_emerge3']],
+    ['era_shift', ['tl_era1', 'tl_era2', 'tl_era3']],
+    ['star_injury', ['tl_injury1', 'tl_injury2', 'tl_injury3']],
+  ] as const)('%s använder en egen sakligt relevant svarsfamilj', (type, expectedIds) => {
+    const game = makeGame()
+    const player = game.players.find(candidate => candidate.clubId === game.managedClubId)!
+    const subject = type === 'era_shift'
+      ? undefined
+      : type === 'star_injury'
+        ? { kind: 'player' as const, id: player.id }
+        : { kind: 'club' as const, id: game.managedClubId }
+    const entry = post(game, {
+      type,
+      semanticKey: `${type}:test`,
+      significance: 90,
+      subject,
+    })
+
+    const event = generatePressConference(makeFixture(game), { ...game, eventLedger: [entry] }, () => 0)
+
+    expect(event?.choices.slice(0, 3).map(choice => choice.id)).toEqual(expectedIds)
   })
 
   it('frågar inte om samma post igen och låter nästa agendapost ta plats', () => {
@@ -135,6 +161,7 @@ describe('generatePressConference — Berättaren steg 7', () => {
 
     expect(event?.body).toBe('"Vi måste fråga om Borgvik Bygg drar sig ur — söker ny sponsor. Vad hände egentligen?"')
     expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(scandalPost))
+    expect(event?.choices.slice(0, 3).map(choice => choice.id)).toEqual(['tl_scandal1', 'tl_scandal2', 'tl_scandal3'])
   })
 
   it('använder försäljningsfrågan bara när den sålda spelaren faktiskt gjort mål i båda senaste matcherna', () => {
@@ -181,6 +208,7 @@ describe('generatePressConference — Berättaren steg 7', () => {
       `"${soldPlayer.firstName} ${soldPlayer.lastName} gör mål varje vecka — för någon annan. Ångrar ni försäljningen?"`,
     )
     expect(event?.pressLedgerPostKey).toBe(ledgerPostKey(sale))
+    expect(event?.choices.slice(0, 3).map(choice => choice.id)).toEqual(['tl_sale1', 'tl_sale2', 'tl_sale3'])
     expect(withoutStreak?.pressLedgerPostKey).toBeUndefined()
   })
 

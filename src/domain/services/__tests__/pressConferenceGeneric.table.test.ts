@@ -78,6 +78,7 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   topic_town:              { won: false, lost: false, draw: false, none: false },
   topic_doubt:             { won: false, lost: false, draw: false, none: false },
   topic_player:            { won: false, lost: false, draw: false, none: false },
+  topic_ledger:            { won: false, lost: false, draw: false, none: false },
 }
 
 describe('isGenericMatch — table-driven klassificering per tagg', () => {
@@ -131,11 +132,11 @@ describe('TAG_DEFS — deklarerat genereringskontrakt', () => {
     rand: () => 0.5,
   }
 
-  it('låser den verkliga populationen: 24 state-predikat och 5 tidlösa routingtaggar', () => {
+  it('låser den verkliga populationen: 24 state-predikat och 6 tidlösa routingtaggar', () => {
     const definitions = Object.values(TAG_DEFS)
-    expect(definitions).toHaveLength(29)
+    expect(definitions).toHaveLength(30)
     expect(definitions.filter(definition => definition.proofSource.form === 'state-predicate')).toHaveLength(24)
-    expect(definitions.filter(definition => definition.proofSource.form === 'timeless')).toHaveLength(5)
+    expect(definitions.filter(definition => definition.proofSource.form === 'timeless')).toHaveLength(6)
   })
 
   it('varje state-predikat har en namngiven beviskälla som faktiskt utvärderas', () => {
@@ -165,7 +166,7 @@ describe('TAG_DEFS — deklarerat genereringskontrakt', () => {
 
   it('klassificerar bara any som alltid tillgänglig och topic-taggarna som prefer-only', () => {
     expect(TAG_DEFS.any.proofSource).toEqual({ form: 'timeless', availability: 'always' })
-    for (const tag of ['topic_person', 'topic_town', 'topic_doubt', 'topic_player']) {
+    for (const tag of ['topic_person', 'topic_town', 'topic_doubt', 'topic_player', 'topic_ledger']) {
       expect(TAG_DEFS[tag].proofSource).toEqual({ form: 'timeless', availability: 'prefer-only' })
       expect(evaluatePressTagProof(tag, baseContext)).toEqual({ form: 'timeless' })
     }

@@ -4,6 +4,7 @@ import { getManagedClubPlayoffStatus } from './playoffService'
 import { getPlayoffSeriesContext } from './portal/playoffSeriesContext'
 import { PlayoffRound } from '../enums'
 import type { Tavlingstyp } from './matchTypeAxes'
+import { formatSwedishCount } from '../utils/formatSwedishCount'
 
 /**
  * GRANSKA DEL 4 (2026-08-11), steg 5 — Turneringsläge. Live-lucka ordern
@@ -147,7 +148,7 @@ export function getAwaitingNextRoundInfo(game: SaveGame, tavlingstyp: Tavlingsty
   const whenClause = fixture?.date
     ? new Date(fixture.date).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
     : fixture
-      ? `om ${Math.max(1, fixture.matchday - game.currentMatchday)} omgångar`
+      ? `om ${formatSwedishCount(Math.max(1, fixture.matchday - game.currentMatchday), 'omgång', 'omgångar')}`
       : 'snart'
 
   return {

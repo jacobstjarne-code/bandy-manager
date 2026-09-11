@@ -85,7 +85,7 @@ export function academyYearbookLines(game: SaveGame, season = game.currentSeason
       significance: rankEntry.significance,
       matchday: rankEntry.matchday,
       semanticKey: rankEntry.semanticKey,
-      text: `${count} nya spelare rekryterades`,
+      text: `${formatSwedishCount(count, 'ny spelare', 'nya spelare')} rekryterades`,
     })
   }
 

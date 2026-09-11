@@ -86,7 +86,7 @@ describe('eventProcessor — patronens CS-skalerade säsongsrullning', () => {
 
   it('withdraws an introduced patron below the threshold and records the canonical event', () => {
     const base = establishedGame()
-    const patron = activePatron()
+    const patron = { ...activePatron(), communityStandingPeak: 65 }
     const game = { ...base, communityStanding: 40, patron }
     const result = processPatronCommunityEvents(game, patron, undefined, 8, 8, () => 0, [])
 

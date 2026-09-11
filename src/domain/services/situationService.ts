@@ -11,6 +11,7 @@ import {
   getDeadlineDayFragment,
 } from './situationFragments'
 import { playoffRoundNameUpper } from '../roundLabel'
+import { formatSwedishCount } from '../utils/formatSwedishCount'
 
 export interface Situation {
   label: string
@@ -210,7 +211,7 @@ export function getSituation(game: SaveGame): Situation {
     const playoffFrag = getPlayoffContextFragment(game)
     const oppFrag = getOpponentStandingFragment(game)
     const body = joinFragments([phaseFrag, playoffFrag, oppFrag])
-    return { label: 'AVGÖRANDE SLUTSPURT', body: body || `${roundsLeft} omgångar kvar.` }
+    return { label: 'AVGÖRANDE SLUTSPURT', body: body || `${formatSwedishCount(roundsLeft, 'omgång', 'omgångar')} kvar.` }
   }
 
   // ── Halvtid ──────────────────────────────────────────────────────

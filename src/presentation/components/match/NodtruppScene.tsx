@@ -6,6 +6,7 @@ import { positionShort, positionLong, formatSalary } from '../../utils/formatter
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
 import { isPlayerInMatchSquad } from '../../../domain/services/matchSquadService'
+import { formatSwedishCount } from '../../../domain/utils/formatSwedishCount'
 
 /**
  * CODE_ORDER_NODTRUPP — soft-lock-skydd: visas FÖRE lineup när managed klubb har
@@ -84,9 +85,9 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {[
-              injured > 0 ? `${injured} skadade` : null,
-              suspended > 0 ? `${suspended} avstängda` : null,
-              resting > 0 ? `${resting} vilande` : null,
+              injured > 0 ? formatSwedishCount(injured, 'skadad', 'skadade') : null,
+              suspended > 0 ? formatSwedishCount(suspended, 'avstängd', 'avstängda') : null,
+              resting > 0 ? formatSwedishCount(resting, 'vilande', 'vilande') : null,
             ].filter(Boolean).join(', ')}
             {(injured > 0 || suspended > 0 || resting > 0) ? '. ' : ''}
             Du behöver kalla in {need} till innan ni kan spela.

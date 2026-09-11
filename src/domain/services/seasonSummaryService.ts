@@ -7,6 +7,7 @@ import { summarizeSignature } from './seasonSignatureService'
 import { seededPick, fixtureSeed } from '../utils/random'
 import { ordinal } from '../utils/numberFormat'
 import { swedishGenitive } from '../utils/swedishGrammar'
+import { formatSwedishCount } from '../utils/formatSwedishCount'
 import { deriveFixtureOutcome, countGoalsByPlayer, findLateWinnerGoal, isComeback } from './matchUtils'
 import { formatRating } from '../format'
 import { getRoundLabel } from '../roundLabel'
@@ -44,7 +45,7 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
     triggers.push({
       type: 'academyStarBorn',
       headline: `Akademistjärna: ${academyStar.firstName} ${academyStar.lastName}`,
-      body: `${academyStar.firstName} ${academyStar.lastName} klev fram ur akademin och spelade ${academyStar.seasonStats.gamesPlayed} matcher med ett snittbetyg på ${formatRating(academyStar.seasonStats.averageRating)}.`,
+      body: `${academyStar.firstName} ${academyStar.lastName} klev fram ur akademin och spelade ${formatSwedishCount(academyStar.seasonStats.gamesPlayed, 'match', 'matcher')} med ett snittbetyg på ${formatRating(academyStar.seasonStats.averageRating)}.`,
       relatedPlayerId: academyStar.id,
     })
   }
@@ -79,7 +80,7 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
       triggers.push({
         type: 'comebackKing',
         headline: `Comebackkung: ${comebackKing.firstName} ${comebackKing.lastName}`,
-        body: `Trots skadebekymmer kämpade ${comebackKing.firstName} ${comebackKing.lastName} sig tillbaka och satte ${comebackKing.seasonStats.goals} mål på bara ${comebackKing.seasonStats.gamesPlayed} matcher.`,
+        body: `Trots skadebekymmer kämpade ${comebackKing.firstName} ${comebackKing.lastName} sig tillbaka och satte ${comebackKing.seasonStats.goals} mål på bara ${formatSwedishCount(comebackKing.seasonStats.gamesPlayed, 'match', 'matcher')}.`,
         relatedPlayerId: comebackKing.id,
       })
     }
