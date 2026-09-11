@@ -39,6 +39,44 @@ export interface YearbookTimelineItem {
   storylineCandidate?: boolean
 }
 
+/**
+ * Årsbokens frysta matchhändelser kan belägga en riktig tävlingsetikett.
+ * Storyline-projektioner bär däremot bara global matchdag; kalla aldrig den
+ * siffran ligaomgång. Äldre saves kan ha sparat den långa ligaformen.
+ */
+export function yearbookTimelineRoundBadge(roundLabel: string | undefined, matchday: number): string {
+  const leagueRound = roundLabel?.match(/^Omg(?:ång)?\s+(\d+)$/i)
+  if (leagueRound) return `Omg ${leagueRound[1]}`
+  return roundLabel ?? `Dag ${matchday}`
+}
+
+function YearbookRoundBadge({ roundLabel, matchday }: { roundLabel?: string; matchday: number }) {
+  const label = yearbookTimelineRoundBadge(roundLabel, matchday)
+  const fixedNumericWidth = /^(?:Omg|Dag) \d+$/.test(label)
+  return (
+    <div style={{
+      width: fixedNumericWidth ? 58 : undefined,
+      minWidth: 58,
+      height: 28,
+      borderRadius: 14,
+      padding: fixedNumericWidth ? 0 : '0 9px',
+      boxSizing: 'border-box',
+      flexShrink: 0,
+      background: 'var(--bg-dark)',
+      color: 'var(--text-light)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap',
+      fontSize: 10,
+      fontWeight: 700,
+      fontFamily: 'var(--font-body)',
+    }}>
+      {label}
+    </div>
+  )
+}
+
 function legacyStorylineSignature(item: YearbookTimelineItem): string {
   return `${item.round}:${item.headline.trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv-SE')}`
 }
@@ -702,14 +740,7 @@ export function SeasonSummaryScreen() {
                   {...(item.storylineId ? { 'data-entity-id': `storyline:${item.storylineId}`, 'data-entity-source': 'SeasonSummaryTimeline' } : {})}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <div style={{
-                      minWidth: 28, height: 28, borderRadius: 14, padding: '0 7px', flexShrink: 0,
-                      background: 'var(--bg-dark)', color: 'var(--text-light)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-body)',
-                    }}>
-                      {item.roundLabel ?? `O${item.round}`}
-                    </div>
+                    <YearbookRoundBadge roundLabel={item.roundLabel} matchday={item.round} />
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                         {item.icon} {item.headline}

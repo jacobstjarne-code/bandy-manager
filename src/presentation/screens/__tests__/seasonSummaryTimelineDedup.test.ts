@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeYearbookTimelineItems, type YearbookTimelineItem } from '../SeasonSummaryScreen'
+import { mergeYearbookTimelineItems, yearbookTimelineRoundBadge, type YearbookTimelineItem } from '../SeasonSummaryScreen'
 
 function item(overrides: Partial<YearbookTimelineItem> = {}): YearbookTimelineItem {
   return {
@@ -48,5 +48,21 @@ describe('SeasonSummaryScreen — storyline-identitet i årsbokstidslinjen', () 
     )
 
     expect(merged).toHaveLength(2)
+  })
+})
+
+describe('yearbookTimelineRoundBadge', () => {
+  it('normaliserar belagda ligaomgångar till samma kortform', () => {
+    expect(yearbookTimelineRoundBadge('Omg 2', 8)).toBe('Omg 2')
+    expect(yearbookTimelineRoundBadge('Omgång 14', 19)).toBe('Omg 14')
+  })
+
+  it('kallar aldrig en obelagd global matchdag för ligaomgång', () => {
+    expect(yearbookTimelineRoundBadge(undefined, 3)).toBe('Dag 3')
+  })
+
+  it('bevarar tävlingsnamn som redan är sanna', () => {
+    expect(yearbookTimelineRoundBadge('Cup · final', 4)).toBe('Cup · final')
+    expect(yearbookTimelineRoundBadge('Slutspel · semifinal', 29)).toBe('Slutspel · semifinal')
   })
 })
