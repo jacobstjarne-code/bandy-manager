@@ -57,7 +57,7 @@ Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av 
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| lokalhjalte-mal-hemmaplanscopy-borta | Lokaltraitets målkommentar kan säga ”Det kan inte bli bättre på hemmaplan” även när målet görs borta | rapporterad | Opus→Code | Textmönstersvep 2026-09-11 efter Jacobs två exakta textfixar | `getTraitGoalCommentary` väljer lokalpoolen utan fixtureplats, så raden är inte venue-gejtad. Opus levererar en venue-säker ersättningsrad; Code gör därefter ett rent strängbyte utan logikändring och lägger ett bortamatchstest. Övriga venue-träffar i samma svep var korrekt gejtade, framtidsformulerade eller inte levande konsumenter; inga fler brutna liknelser hittades. |
+| lokalhjalte-mal-hemmaplanscopy-borta | Lokaltraitets målkommentar kan säga ”Det kan inte bli bättre på hemmaplan” även när målet görs borta | in_progress | Codex | Textmönstersvep 2026-09-11 efter Jacobs två exakta textfixar | CLAIM 2026-09-11T20:27:00+02:00 — Codex. Verifierad mot `getTraitCommentary` och `matchCore`: lokalpoolen saknar venue som indata och kan därför väljas både hemma och borta. Opus venue-säkra ersättningsrad finns redan på disk. Behåll den rena textlösningen, lägg ett poolomfattande regressionstest och arkivera om riktade tester/build är gröna. |
 
 Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden ovan. Två av auditens tre criticals nu `klar` (attribution + pensionsgolv). Kvar: framgångskurve-domen (väg C:s −45 tkr mot 1,7 mkr) — Jacobs egen, kräver hans spelbevis-beslut innan Code kan bygga mot den.
 
