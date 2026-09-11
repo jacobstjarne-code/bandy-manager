@@ -928,7 +928,9 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 ## Bandyspecifika regler (VIKTIGT)
 
 ### Spelets värld
-12 fiktiva klubbar på riktiga bruksorter. Alla klubbnamn, arenanamn och klacknamn är PÅHITTADE — inga riktiga föreningar. Definerade i `CLUB_TEMPLATES` i `worldGenerator.ts`. Arena- och klacknamn är required fält.
+12 fiktiva klubbar på riktiga bruksorter. Klubbarna heter som sina ORTER (Forsbacka, Söderfors, Västanfors, Karlsborg, Målilla, Gagnef, Hälleforsnäs, Lesjöfors, Rögle, Slottsbron, Skutskär, Heros) — och flera av de namnen bärs även av VERKLIGA föreningar (Västanfors IF, Skutskärs IF, Lesjöfors IF, Slottsbrons IF — alla verifierade i `docs/KLUBBFAKTA.md`; Rögle är dessutom ett registrerat hockeyvarumärke). Det som är PÅHITTAT och ska FÖRBLI påhittat är allt runt namnet: arenor, klackar, klubbfärger, märken, styrelser, historia i spelet. **Regel:** låna aldrig in en verklig klubbs färger, märke, meriter eller personer "eftersom klubben ändå är påhittad" — det är den inte, bara dess värld. (Rättat 2026-09-11; formuleringen "inga riktiga föreningar" var fel och kunde leda en agent till precis det lånet.) Definerade i `CLUB_TEMPLATES` i `worldGenerator.ts`. Arena- och klacknamn är required fält.
+
+**Klubbmärken och kommunvapen:** svenska kommunvapen skyddas av lagen (1970:498) om skydd för vapen och vissa andra officiella beteckningar — kommersiell användning kräver kommunens tillstånd. Ett märke får vara INSPIRERAT av ortens karaktär (bruk, älv, fors, skog), aldrig en stiliserad eller förenklad version av kommunvapnets figur. Det gäller även `design-system/RESEARCH_KLUBBMARKEN_*` och märkeskontraktet.
 
 ### Matchmotor-kalibrering
 Kalibrerad mot 1124 Elitseriematcher (bandygrytan.se, 2019-26). Data i `docs/data/bandygrytan_detailed.json (1124 matcher, 6 säsonger)`. Nyckeltal:
