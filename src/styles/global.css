@@ -1482,6 +1482,21 @@ a {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
+/* Onboardingens rubriker ligger över klubbmotiv vars himmel varierar från
+   mörkblå till nästan vit. En fast ljus etikett klarade därför inte alla
+   klubbar eller mobilutsnitt. Den varma mörka tonen med ljus halo fungerar
+   på båda ändarna utan att skapa en tung topp-platta. */
+.arrival-scene .h-scene-genre,
+.tilltrade-step-label {
+  color: #4f382d;
+  opacity: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.58), 0 0 7px rgba(250, 244, 233, 0.84);
+}
+
+.tilltrade-step-header {
+  background: linear-gradient(180deg, rgba(250, 244, 233, 0.76), rgba(250, 244, 233, 0.34));
+}
+
 /* Scene title — Georgia 28px */
 .h-scene-title {
   font-family: Georgia, serif;

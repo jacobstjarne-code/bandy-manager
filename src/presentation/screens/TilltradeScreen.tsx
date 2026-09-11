@@ -257,14 +257,14 @@ export function TilltradeScreen() {
       <div className="arrival-lamp-overlay" />
 
       {/* Steg-header */}
-      <div style={{
+      <div className="tilltrade-step-header" style={{
         padding: '12px 18px 10px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         borderBottom: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
         flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="h-label h-label-light" style={{ margin: 0 }}>
+          <span className="h-label tilltrade-step-label" style={{ margin: 0 }}>
             Steg {step} av 4 · {STEP_TITLES[step - 1]}
           </span>
           {step === 3 && (
