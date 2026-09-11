@@ -25,7 +25,7 @@
 
 **MASTER-split genomförd 2026-09-08 (Code, reconcile-fönster).** Filen bar tidigare alla ~653 poster oavsett status — varje session-start drog in 517 stängda/stale rader i kontexten för att komma åt 136 aktiva. De 517 (336 `klar` + 181 `stale`) är flyttade till `docs/MASTER_ARKIV.md`, kollapsade till id + status + commit-hash + källpekare, ingen fulltext. Fulltexten finns kvar i git-historiken och i respektive DOM-/RAPPORT-/RECON-fil — arkivraden är bara ett register, inte en andra sanning.
 
-**17 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen. **Räkneregel:** räkna bara faktiska datarader (aldrig tabellhuvuden eller avdelningsrubriker), och uppdatera detta tal i samma commit som en post läggs till eller flyttas till arkivet. Historik förs i `MASTER_ARKIV.md`; senaste räknarändring: O12-återprovet stängde `o12-mecenatintro-dominant`, 18→17.
+**16 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen. **Räkneregel:** räkna bara faktiska datarader (aldrig tabellhuvuden eller avdelningsrubriker), och uppdatera detta tal i samma commit som en post läggs till eller flyttas till arkivet. Historik förs i `MASTER_ARKIV.md`; senaste räknarändring: Pass 0 (CODE_KORORDER_GENOMGANG_2026-09-12) stängde `genomgang-opus-edits-commit`, 17→16.
 
 **Räknaruppdatering 2026-09-11:** blockerarpasset i `593fa055` stängde fyra reproducerade Grind 2-rader; råkontrollerat 10→6 aktiva poster. Själva obrutna tvåsäsongsåterprovet ligger kvar öppet.
 
@@ -283,7 +283,6 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| genomgang-opus-edits-commit | Femton Opus-edits ocommittade i arbetsträdet (MatchLiveScreen, gameFlowActions, server.js, routes.js, saveGameStorage + test, vite.config, index.html, SectionLabel, transferActions + test, gameInvariants, matchEngine, seasonEndProcessor, render.yaml, app-ci/visual-baselines, CLAUDE.md, README) | in_progress | Code | CODE_INSTRUKTION_GENOMGANG_2026-09-11.md §0 | CLAIM 2026-09-12T00:20:00+0200 — Code. Full `npx vitest run` + `npm run build`, verifiera att sw.js inte precachar porträtt, committa med rotorsak per fil. Blir SectionLabel-testet rött: uppdatera testet (toHaveTextContent), inte komponenten. Räknar gameInvariants.test INVARIANT_NAMES-längd: uppdatera till 15. |
 | genomgang-code-splitting | Huvudchunk 2,79 MB, en fil, 7 % under workbox-taket; route-lazy saknas helt | rapporterad | Code | §1 | React.lazy på tunga routes + match-bundeln som egen chunk, mål < 1,5 MB, browserprov av pendingScreen-redirect. |
 | genomgang-illustrationer-webp | 23 JPG = 12 MB i `assets/illustrations/`; webp-varianterna på samma yta väger 55–115 kB | rapporterad | Code | §2 | sharp-konvertering q80/1170px, byt referenser + imageAssetIntegrity.test, mål < 3 MB. |
 | genomgang-docs-omflyttning | 352 filer i docs-roten; MASTER_OPPET:s räknarnarrativ oläsbart; SLUTTEST_KO/BACKLOG (620 kB dödmarkerat) kvar i roten | rapporterad | Code | §3 | Körs BARA i fönster utan `in_progress`-claims. git mv till dom/rapport/handover/spec, grep-uppdatera pekare, räknarstycket → en rad + ARKIV. |
