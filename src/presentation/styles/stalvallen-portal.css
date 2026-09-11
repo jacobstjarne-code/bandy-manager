@@ -756,3 +756,19 @@
   color: var(--text-muted);
   text-align: right;
 }
+
+/* I Ankomstens smala mobilkort kan ett långt mål och styrelseledamotens namn
+   annars pressas ihop till en enda svårläst rad. Lägg ägaren under målet just
+   där; portalens bredare, återkommande kort behåller sin kompakta rad. */
+@media (max-width: 420px) {
+  .arrival-board-objectives-card .obj-row-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    gap: 4px;
+  }
+
+  .arrival-board-objectives-card .obj-row-owner {
+    margin-left: 22px;
+  }
+}

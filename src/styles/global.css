@@ -1573,6 +1573,20 @@ a {
 .scene-replica.in { opacity: 1; transform: translateY(0); }
 .scene-replica.in.dimmed { opacity: 0.68; transform: translateY(0); }
 
+/* Ankomsten visar alla tidigare repliker samtidigt på slutsteget. Talarnamnens
+   egen 0,85-opacity multiplicerades då med 0,68 och blev nästan osynlig mot
+   ljusa klubbmotiv. Behåll hierarkin men inte på bekostnad av läsbarheten. */
+.arrival-scene .scene-setting.in.dimmed,
+.arrival-scene .scene-replica.in.dimmed {
+  opacity: 0.82;
+}
+
+.arrival-scene .h-scene-speaker {
+  color: #f2b36f;
+  opacity: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
 /* Speaker label — "MARGARETA · KASSÖR" */
 .h-scene-speaker {
   font-family: var(--font-body);
