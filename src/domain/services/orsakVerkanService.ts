@@ -1,6 +1,7 @@
 import type { SaveGame, RippleChain, RippleChainStep } from '../entities/SaveGame'
 import type { EventLedgerEntry, EventLedgerType, LedgerConsequence } from '../entities/Narrative'
 import { describeRippleChain } from './rippleEffectService'
+import { getRippleStepText } from '../data/rippleChainText'
 
 /**
  * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 — orsak/verkan som
@@ -172,14 +173,14 @@ const LABEL_BY_FIELD: Record<LedgerConsequence['field'], string> = Object.fromEn
   Object.entries(FIELD_BY_LABEL).map(([label, field]) => [field, label]),
 ) as Record<LedgerConsequence['field'], string>
 
-/**
- * Ordagrant Opus' egen exempelformulering ("Kassan tydligt ner, Klacken
- * knappt upp") — etiketterna (FIELD_BY_LABEL) och magnitud-orden (knappt/
- * tydligt/kraftigt, RippleChainStep's egen skala) är redan låst vokabulär,
- * ingen ny text uppfinns här, bara mekanisk återkombination.
- */
+/** Granska visar samma naturliga följdmeningar som den ordinarie ripple-ytan. */
 export function describeRippleChainForGranska(consequences: LedgerConsequence[]): string {
   return consequences
-    .map(c => `${LABEL_BY_FIELD[c.field]} ${c.magnitude} ${c.dir === 'up' ? 'upp' : 'ner'}`)
-    .join(', ')
+    .map(c => getRippleStepText({
+      label: LABEL_BY_FIELD[c.field],
+      dir: c.dir,
+      magnitude: c.magnitude,
+    }))
+    .filter((text): text is string => !!text)
+    .join(' ')
 }

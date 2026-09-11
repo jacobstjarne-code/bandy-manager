@@ -35,7 +35,6 @@ import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
 import { useGameStore } from '../../store/gameStore'
 import { canEventPassVoiceGate } from '../../../domain/services/voiceIntroductionService'
-import { chronologyPointLabel } from '../../../domain/services/currentChronology'
 import { NextOpponentHook } from './NextOpponentHook'
 
 const TRAINING_LABEL: Record<string, string> = {
@@ -1117,8 +1116,9 @@ export function GranskaOversikt({
           .sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0
         const decision = getDecisionConsequenceSinceLastMatch(game, fixture.season, previousMatchday, fixture.matchday)
         if (!decision?.consequences?.length) return null
-        const when = chronologyPointLabel(decision.season, decision.matchday)
-        const text = `Det du valde i ${when}: ${describeRippleChainForGranska(decision.consequences)}.`
+        const consequenceText = describeRippleChainForGranska(decision.consequences)
+        if (!consequenceText) return null
+        const text = `Sedan förra matchen: ${consequenceText}`
         return (
           <div className="card-sharp" style={{ margin: '0 0 3px', padding: '10px 12px', ...fadeIn(7.7) }}>
             <SectionLabel style={{ marginBottom: 6 }}>DET DU VALDE</SectionLabel>

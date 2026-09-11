@@ -43,13 +43,13 @@ function makePatron(overrides: Partial<Patron>): Patron {
 }
 
 describe('patron cs-driven avhopp — roundProcessor', () => {
-  it('communityStanding under PATRON_CS_EVICTION_THRESHOLD med aktiv patron: patronen lämnar, patronWithdrawnSeason sätts', () => {
+  it('communityStanding faller under tröskeln efter att ha varit över: patronen lämnar', () => {
     let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
     game = withAutoLineup(game)
     game = {
       ...game,
       communityStanding: 40,
-      patron: makePatron({ isActive: true, introducedSeason: game.currentSeason }),
+      patron: makePatron({ isActive: true, introducedSeason: game.currentSeason, communityStandingPeak: 70 }),
       resolvedEventIds: [`patron_intro_${game.currentSeason}`],
     }
 
@@ -67,6 +67,46 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
       subject: { kind: 'patron', id: 'patron_test_testsson' },
       significance: 95,
     })
+  })
+
+  it('låg-CS-rekrytering lämnar inte omedelbart utan en verklig nedgång över tröskeln', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
+    game = withAutoLineup(game)
+    game = {
+      ...game,
+      communityStanding: 40,
+      patron: makePatron({
+        isActive: true,
+        introducedSeason: game.currentSeason,
+        communityStandingPeak: 40,
+      }),
+      resolvedEventIds: [`patron_emerge_${game.currentSeason}`],
+    }
+
+    const result = advanceToNextEvent(game, 1)
+
+    expect(result.game.patron?.isActive).toBe(true)
+    expect(result.game.patron?.communityStandingPeak).toBe(40)
+    expect(result.pendingEvents.some(e => e.id.startsWith('patron_cs_eviction_'))).toBe(false)
+  })
+
+  it('sparar nytt högvattenmärke medan ortsstödet växer', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
+    game = withAutoLineup(game)
+    game = {
+      ...game,
+      communityStanding: 72,
+      patron: makePatron({
+        isActive: true,
+        introducedSeason: game.currentSeason,
+        communityStandingPeak: 55,
+      }),
+    }
+
+    const result = advanceToNextEvent(game, 1)
+
+    expect(result.game.patron?.isActive).toBe(true)
+    expect(result.game.patron?.communityStandingPeak).toBe(72)
   })
 
   it('en startpatron kan inte lämna innan spelaren ens har fått introduktionen', () => {

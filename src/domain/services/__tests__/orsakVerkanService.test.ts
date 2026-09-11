@@ -170,12 +170,12 @@ describe('liggare-k4-orsak-verkan-yta — getDecisionConsequenceSinceLastMatch +
     expect(getDecisionConsequenceSinceLastMatch(game, 2025, 10, 14)).toBeUndefined()
   })
 
-  it('describeRippleChainForGranska formaterar exakt Opus egen exempelmening', () => {
+  it('describeRippleChainForGranska använder naturliga följdmeningar i stället för interna etiketter', () => {
     const text = describeRippleChainForGranska([
       { field: 'finances', dir: 'down', magnitude: 'tydligt' },
       { field: 'supporterMood', dir: 'up', magnitude: 'knappt' },
     ])
-    expect(text).toBe('Kassan tydligt ner, Klacken knappt upp')
+    expect(text).toBe('Kassan tunnades ut. Det syns i nästa budget. Klacken höll i sig en vers till.')
   })
 })
 

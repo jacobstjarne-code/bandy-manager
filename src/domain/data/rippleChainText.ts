@@ -69,6 +69,6 @@ const RIPPLE_STEP_TEXT: Partial<Record<string, RippleTextTiers>> = {
 }
 
 /** Slår upp textraden för ett ripple-steg. undefined om fält×riktning saknar text ännu (ej reachable idag). */
-export function getRippleStepText(step: RippleChainStep): string | undefined {
+export function getRippleStepText(step: Pick<RippleChainStep, 'label' | 'dir' | 'magnitude'>): string | undefined {
   return RIPPLE_STEP_TEXT[`${step.label}_${step.dir}`]?.[step.magnitude]
 }

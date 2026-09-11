@@ -176,6 +176,15 @@ export function processPatronCommunityEvents(
   // each season. CS changes the chance continuously; the existing era and
   // two-season withdrawal cooldown remain eligibility gates.
   const communityStanding = game.communityStanding ?? 50
+  if (updatedPatron?.isActive) {
+    updatedPatron = {
+      ...updatedPatron,
+      communityStandingPeak: Math.max(
+        updatedPatron.communityStandingPeak ?? communityStanding,
+        communityStanding,
+      ),
+    }
+  }
   if (
     currentLeagueRound === 1 &&
     calculateClubEra(game) !== 'survival' &&
@@ -206,6 +215,7 @@ export function processPatronCommunityEvents(
   if (
     updatedPatron?.isActive &&
     updatedPatron.introducedSeason !== undefined &&
+    (updatedPatron.communityStandingPeak ?? communityStanding) >= PATRON_CS_EVICTION_THRESHOLD &&
     communityStanding < PATRON_CS_EVICTION_THRESHOLD
   ) {
     const evictionId = `patron_cs_eviction_${game.currentSeason}`

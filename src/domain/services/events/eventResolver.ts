@@ -1051,6 +1051,7 @@ export function resolveEvent(
             wantsStyle: p.wantsStyle ?? undefined,
             isActive: true,
             introducedSeason: updatedGame.currentSeason,
+            communityStandingPeak: updatedGame.communityStanding ?? 50,
             hasBeenWarned: false,
             backstory: p.backstory ?? undefined,
             goodwill: 80,

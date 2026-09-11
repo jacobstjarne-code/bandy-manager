@@ -78,6 +78,9 @@ export interface Patron {
   isActive: boolean
   /** Säsongen då relationen faktiskt presenterades och accepterades i UI. */
   introducedSeason?: number
+  /** Högsta observerade ortsstöd sedan relationen började. CS-avhopp kräver
+   *  en verklig nedgång över tröskeln, inte bara ett lågt startläge. */
+  communityStandingPeak?: number
   hasBeenWarned?: boolean
   personality?: PatronPersonality
   // 3.2 (SLUTTEST_KO.md, 2026-08-17): döpt om från `patience` — kolliderade
