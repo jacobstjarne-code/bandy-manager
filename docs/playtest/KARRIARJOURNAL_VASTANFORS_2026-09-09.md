@@ -175,7 +175,7 @@ Det som drar är den långa kontinuiteten: sålda spelare som återkommer, byggn
 - **Valet-UI:** sett. Byggalternativen och avstå-vägen gick att förstå utan extern förklaring.
 - **Peptalk i förberedelsefasen:** ej tillräckligt observerat för en frekvensdom.
 - **Bandyplay och Bandyskola:** sedda som skilda system/rader; Bandyskolan förnyades i karriären.
-- **Save-export:** `Exportera säkerhetskopia` kördes från den ordinarie inställningsmenyn efter årsboken för säsong 10. In-app-browsern bekräftade exporten men exponerade inte den hämtade filen till repots filsystem; JSON-underlaget är därför ännu inte incheckat under `docs/playtest/`.
+- **Save-export:** klart. Den intakta webbläsarkarriären exporterades efter årsboken för säsong 10 och ligger som `docs/playtest/karriar_vastanfors_10sasonger.json`. Filen öppnar säsong 11 med Skutskär och bär exakt tio `seasonSummaries`; JSON-syntax, identitet och säsongsantal är verifierade före incheckning.
 
 ## Slutdom från spelaren
 
