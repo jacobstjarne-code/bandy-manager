@@ -10,11 +10,11 @@ export const STAR_PERFORMANCE_VARIANTS: readonly string[] = [
 export const PLAYER_PRAISE_VARIANTS: readonly string[] = [
   `{A} till Bandypuls om {B}:\n\n"Han ser det innan jag ser det. Sen är bollen där."`,
   `{A} efter morgonträningen, om {B}:\n\n"Han gör mitt jobb hälften så svårt."`,
-  `{A} när någon frågade om kemin med {B}:\n\n"Vi spelade inte ihop som juniorer. Synd."`,
   `Sture i kafferummet:\n\n"{A} och {B} hittar varandra på planen. Konstigt nog."`,
-  `{A} i bussen hem, om {B}:\n\n"{LASTNAME_B} måste sluta. Han får mig att se bra ut."`,
   `{A} till lokaltidningen om {B}:\n\n"Han vinner brytningar jag inte ens visste fanns."`,
 ]
+
+export const PLAYER_PRAISE_AWAY_VARIANT = `{A} i bussen hem, om {B}:\n\n"{LASTNAME_B} måste sluta. Han får mig att se bra ut."`
 
 export const CAPTAIN_SPEECH_VARIANTS: readonly string[] = [
   `{CAPTAIN} knackar på dörren. Vattenflaska i handen.\n\n"Är det okej om jag säger något till killarna före matchen? Inget längre."\n\nFörlusterna har börjat stapla sig.`,
@@ -41,8 +41,14 @@ export function pickStarPerformanceText(
 export function pickPlayerPraiseText(
   praiser: { id: string; firstName: string; lastName: string },
   praised: { id: string; firstName: string; lastName: string },
+  isAwayMatch = false,
 ): string {
-  const variant = seededPick(PLAYER_PRAISE_VARIANTS, `${praiser.id}_${praised.id}`)
+  // Bussramen är bara sann efter bortamatch. Hemmamatcher väljer ur den
+  // platsneutrala poolen; ingen separat minnes- eller eventmekanik behövs.
+  const variants = isAwayMatch
+    ? [...PLAYER_PRAISE_VARIANTS, PLAYER_PRAISE_AWAY_VARIANT]
+    : PLAYER_PRAISE_VARIANTS
+  const variant = seededPick(variants, `${praiser.id}_${praised.id}`)
   return variant
     .replace(/\{A\}/g, `${praiser.firstName} ${praiser.lastName}`)
     .replace(/\{B\}/g, `${praised.firstName} ${praised.lastName}`)

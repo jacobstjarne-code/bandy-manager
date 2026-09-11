@@ -512,7 +512,8 @@ export function generatePostAdvanceEvents(
         const eid = `event_praise_${praiser.id}_${praised.id}_s${game.currentSeason}`
         const playerPraiseDue = playerPraiseWindow && praiser.morale > 75 && !alreadyQueued.has(eid)
         if (playerPraiseDue) {
-          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue), relatedFixtureId: justCompletedFixture.id, rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
+          const isAwayMatch = justCompletedFixture.awayClubId === game.managedClubId
+          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue, isAwayMatch), relatedFixtureId: justCompletedFixture.id, rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
         }
       }
     }

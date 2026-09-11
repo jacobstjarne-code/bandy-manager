@@ -16,6 +16,7 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
 import { findEmployerForJob } from '../../../data/localEmployers'
+import { pickPlayerPraiseText } from '../../../data/eventCardInlineStrings'
 
 function baseGame(): SaveGame {
   const template = CLUB_TEMPLATES[0]
@@ -42,6 +43,20 @@ describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +
     const updatedPraised = game.players.find(p => p.id === praised.id)!
     expect(updatedPraiser.morale).toBe(53)
     expect(updatedPraised.morale).toBe(53)
+  })
+
+  it('använder aldrig bortabussen efter en hemmamatch och motsäger inte rubriken', () => {
+    const game = baseGame()
+    const players = game.players.filter(p => p.clubId === game.managedClubId)
+
+    for (const praiser of players.slice(0, 8)) {
+      for (const praised of players.slice(0, 8)) {
+        if (praiser.id === praised.id) continue
+        const body = pickPlayerPraiseText(praiser, praised, false)
+        expect(body).not.toContain('bussen hem')
+        expect(body).not.toContain('Vi spelade inte ihop som juniorer')
+      }
+    }
   })
 })
 

@@ -235,7 +235,9 @@ export function pickWeatherCommentary(weather: Weather | undefined, rand: () => 
   } else if (weather.condition === WeatherCondition.Thaw || weather.temperature > 2) {
     pool = commentary.weatherMild
   } else if (weather.temperature < -5) {
-    pool = commentary.weatherCold
+    // Kall klaris är hård/snabb. Den äldre weatherCold-poolen innehåller en
+    // rad om att bollen går trögt och motsäger både ismodellen och förmatchen.
+    pool = commentary.weather_cold
   } else {
     pool = commentary.weatherGood
   }
@@ -518,4 +520,3 @@ export function isComeback(f: Fixture, managedClubId: string, margin: number): b
   const firstGoal = (f.events ?? []).find(e => e.type === MatchEventType.Goal)
   return !!firstGoal && firstGoal.clubId !== managedClubId
 }
-

@@ -363,6 +363,7 @@ export function generatePlayerPraiseEvent(
   praiser: Player,
   praised: Player,
   triggerProof: boolean,
+  isAwayMatch = false,
 ): GameEvent {
   const name1 = `${praiser.firstName} ${praiser.lastName}`
   const name2 = `${praised.firstName} ${praised.lastName}`
@@ -370,7 +371,7 @@ export function generatePlayerPraiseEvent(
     id: `event_praise_${praiser.id}_${praised.id}`,
     type: 'playerPraise',
     title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
-    body: pickPlayerPraiseText(praiser, praised),
+    body: pickPlayerPraiseText(praiser, praised, isAwayMatch),
     proofSource: {
       form: 'state-predicate',
       description: 'spelaren som berömmer har hög moral och den berömda lagkamraten gjorde mål i den just spelade matchen',

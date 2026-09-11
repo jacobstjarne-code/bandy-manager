@@ -98,7 +98,7 @@ export function getMidSeriesTurneringslageText(game: SaveGame, tavlingstyp: Tavl
   if (!series) return null
   const { wins, losses } = series
   if (wins === 2) return `Serien står ${wins}–${losses}. En vinst till, sedan är ni vidare.`
-  if (losses === 2) return `Serien står ${wins}–${losses}. Förlust ikväll och säsongen är slut.`
+  if (losses === 2) return `Serien står ${wins}–${losses}. En förlust till och säsongen är slut.`
   return `Serien står ${wins}–${losses}. Det avgörs inte ikväll, men det väger.`
 }
 

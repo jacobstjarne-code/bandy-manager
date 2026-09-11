@@ -42,7 +42,7 @@ describe('akademins liggarpresentation', () => {
     }
 
     expect(academyEconomyYearbookLine(game)).toBe(
-      'Akademin: 150 + 110 tkr. Gav 1 uppflyttade och 11 i utveckling.',
+      'Akademin: investering 150 tkr · drift 110 tkr. Gav 1 uppflyttade och 11 i utveckling.',
     )
   })
 

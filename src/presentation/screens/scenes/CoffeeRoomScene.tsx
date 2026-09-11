@@ -41,7 +41,8 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
 
   const question = scene.question
 
-  const footerLabel = question && selectedId ? 'Säg det →' : 'Tillbaka till klubben'
+  // SceneCTA lägger själv till pilen via .btn-scene-cta::after.
+  const footerLabel = question && selectedId ? 'Säg det' : 'Tillbaka till klubben'
   const footerAction = question && selectedId
     ? () => onComplete(`${question.questionId}:${selectedId}`)
     : () => onComplete()
