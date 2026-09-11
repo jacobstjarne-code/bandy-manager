@@ -76,6 +76,8 @@ export interface CoffeeScene {
 }
 
 const COFFEE_ROOM_LEDGER_MIN_WEIGHT = 60
+const COFFEE_RESULT_PREFIX = 'coffee_result_'
+const COFFEE_RESULT_COOLDOWN_SEASONS = 2
 
 function selectCoffeeRoomLedgerEcho(game: SaveGame): CoffeeScene['ledgerEcho'] {
   const chronology = currentChronology(game)
@@ -425,7 +427,10 @@ function pickCoffeeRoomEventReaction(game: SaveGame, round: number, seed: number
 }
 
 /** Ported från gamla getCoffeeRoomQuote — kommentar för resultat-grenen nedan. */
-function pickCoffeeRoomResultReaction(game: SaveGame, seed: number): { line: CoffeeNarratorLine } | null {
+function pickCoffeeRoomResultReaction(
+  game: SaveGame,
+  seed: number,
+): { line: CoffeeNarratorLine; semanticKey: string } | null {
   const lastFixture = game.fixtures
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     .sort((a, b) => b.matchday - a.matchday)[0]
@@ -434,8 +439,15 @@ function pickCoffeeRoomResultReaction(game: SaveGame, seed: number): { line: Cof
   const utfall = deriveUtfall(lastFixture, game.managedClubId)
   const result: 'win' | 'loss' | 'draw' = utfall === 'vunnet' ? 'win' : utfall === 'forlorat' ? 'loss' : 'draw'
   const pool = RESULT_EXCHANGES[result]
-  const [speaker, text] = pool[Math.abs(seed * 5) % pool.length]
-  return { line: { speaker, text } }
+  const firstIndex = Math.abs(seed * 5) % pool.length
+  for (let offset = 0; offset < pool.length; offset++) {
+    const index = (firstIndex + offset) % pool.length
+    const semanticKey = `${COFFEE_RESULT_PREFIX}${result}_${index}`
+    if (isOnCooldown(game, semanticKey, COFFEE_RESULT_COOLDOWN_SEASONS, game.currentSeason)) continue
+    const [speaker, text] = pool[index]
+    return { line: { speaker, text }, semanticKey }
+  }
+  return null
 }
 
 /**
@@ -794,6 +806,7 @@ function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     return {
       exchanges: [],
       pickedIndices: [],
+      narrativeKeys: [resultReaction.semanticKey],
       meta: { title: 'Kafferummet' },
       narratorLine: resultReaction.line,
     }

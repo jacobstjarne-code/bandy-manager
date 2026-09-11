@@ -239,4 +239,41 @@ describe('D4-regressionsfix — portade reaktioner i getCoffeeRoomScene', () => 
     expect(found).toBe(true)
   })
 
+  it('visar inte samma resultatkommentar igen under tvåsäsongscooldownen', () => {
+    const wonFixture = makeFixture({ roundNumber: 1, matchday: 1, homeScore: 3, awayScore: 1 })
+    let firstScene: ReturnType<typeof getCoffeeRoomScene> = null
+    for (let md = 1; md <= 40 && !firstScene; md++) {
+      const scene = getCoffeeRoomScene(makeGame({ fixtures: [wonFixture], currentSeason: 2026, currentMatchday: md }))
+      if (scene?.narrativeKeys?.[0]?.startsWith('coffee_result_win_')) firstScene = scene
+    }
+
+    expect(firstScene?.narratorLine?.text).toBeTruthy()
+    const semanticKey = firstScene!.narrativeKeys![0]
+    const shownText = firstScene!.narratorLine!.text
+    const narrativeBeatLog = [{ semanticKey, season: 2026, round: 12 }]
+
+    for (const currentSeason of [2026, 2027]) {
+      for (let md = 1; md <= 40; md++) {
+        const scene = getCoffeeRoomScene(makeGame({
+          fixtures: [wonFixture],
+          currentSeason,
+          currentMatchday: md,
+          narrativeBeatLog,
+        }))
+        expect(scene?.narratorLine?.text).not.toBe(shownText)
+      }
+    }
+
+    const returnsInThirdSeason = findAcrossMatchdays(
+      md => makeGame({
+        fixtures: [wonFixture],
+        currentSeason: 2028,
+        currentMatchday: md,
+        narrativeBeatLog,
+      }),
+      scene => scene?.narratorLine?.text === shownText,
+    )
+    expect(returnsInThirdSeason).toBe(true)
+  })
+
 })
