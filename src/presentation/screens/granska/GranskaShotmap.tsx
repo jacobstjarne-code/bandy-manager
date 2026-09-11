@@ -303,7 +303,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
             {[
               { color: row.goalColor, label: `${row.goal} mål` },
               { color: 'var(--accent)', label: `${row.save} räddade` },
-              { color: 'rgba(0,0,0,0.28)', label: `${row.miss} miss` },
+              { color: 'rgba(0,0,0,0.28)', label: `${row.miss} utanför` },
             ].map(l => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: l.color }} />

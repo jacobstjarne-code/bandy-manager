@@ -10,28 +10,38 @@
  * senare dom — specens ursprungstext för rad A är stale, denna är kanon.
  */
 
+import { formatSwedishCount } from '../utils/formatSwedishCount'
+
+function concededCount(count: number): string {
+  return formatSwedishCount(count, 'insläppt', 'insläppta')
+}
+
+function suspensionCount(count: number): string {
+  return formatSwedishCount(count, 'utvisning', 'utvisningar')
+}
+
 export function sambandTextA(n: number, m: number, k: number): string {
-  if (m > 0 && k > 0) return `5-2-3 gav ${n} omställningsmål — men kostade ${m} utvisningar, och ${k} av deras mål kom i ert undertal.`
+  if (m > 0 && k > 0) return `5-2-3 gav ${n} omställningsmål — men kostade ${suspensionCount(m)}, och ${k} av deras mål kom i ert undertal.`
   if (n > 0) return `5-2-3 gav ${n} omställningsmål. Bollvinsterna kom högt upp.`
-  return `5-2-3 utan utdelning: ${m} utvisningar, ${k} insläppta i undertal, inga omställningsmål.`
+  return `5-2-3 utan utdelning: ${suspensionCount(m)}, ${concededCount(k)} i undertal, inga omställningsmål.`
 }
 
 export function sambandTextB(n: number, m: number, k: number, h: number): string {
-  if (k > 0) return `Högt tempo gav ${n} skott mot deras ${m} — och ${k} insläppta efter 70:e. Tempot tog betalt i slutet.`
+  if (k > 0) return `Högt tempo gav ${n} skott mot deras ${m} — och ${concededCount(k)} efter 70:e. Tempot tog betalt i slutet.`
   if (n > m || h >= 8) return `Högt tempo: ${n} skott, ${h} hörnor. Ni ägde bollen där det gjorde skillnad.`
-  return `Högt tempo utan skott att visa: ${k} insläppta efter 70:e.`
+  return `Högt tempo utan skott att visa: ${concededCount(k)} efter 70:e.`
 }
 
 export function sambandTextC(n: number, m: number, k: number): string {
   if (n > 0 && k > 0) return `Aggressiva hörnor: ${n} av ${m} hörnor blev mål. Priset var ${k} utvisningar.`
   if (n > 0) return `Aggressiva hörnor: ${n} av ${m} blev mål. Där satt den.`
-  return `${m} hörnor, inget mål. Aggressiviteten gav bara utvisningarna.`
+  return `${m} hörnor, inget mål. Aggressiviteten gav bara ${suspensionCount(k)}.`
 }
 
 export function sambandTextD(n: number, m: number): string {
-  if (n > 0 && m > 0) return `Brett spel gav ${n} hörnor — och öppnade er: ${m} insläppta i öppet spel.`
+  if (n > 0 && m > 0) return `Brett spel gav ${n} hörnor — och öppnade er: ${concededCount(m)} i öppet spel.`
   if (n > 0) return `Brett spel drog isär dem: ${n} hörnor.`
-  return `Brett spel öppnade er mer än dem: ${m} insläppta i öppet spel, ${n} hörnor att visa.`
+  return `Brett spel öppnade er mer än dem: ${concededCount(m)} i öppet spel, ${n} hörnor att visa.`
 }
 
 export function sambandTextE(weather: 'snö' | 'dimma' | 'töväder' | null, n: number, m: number): string {
@@ -42,15 +52,15 @@ export function sambandTextE(weather: 'snö' | 'dimma' | 'töväder' | null, n: 
 }
 
 export function sambandTextF(goals: number, conceded: number): string {
-  if (goals >= 3 && conceded >= 3) return `Offensiv mentalitet: ${goals} mål, ${conceded} insläppta. Ni köpte målen med försvaret.`
-  if (goals >= 3) return `Offensiv mentalitet betalade sig: ${goals} mål, ${conceded} insläppta.`
-  return `Offensiv mentalitet utan mål: ${goals} gjorda, ${conceded} insläppta. Öppet åt fel håll.`
+  if (goals >= 3 && conceded >= 3) return `Offensiv mentalitet: ${goals} mål, ${concededCount(conceded)}. Ni köpte målen med försvaret.`
+  if (goals >= 3) return `Offensiv mentalitet betalade sig: ${goals} mål, ${concededCount(conceded)}.`
+  return `Offensiv mentalitet utan mål: ${goals} gjorda, ${concededCount(conceded)}. Öppet åt fel håll.`
 }
 
 export function sambandTextG(overNumberGoals: number, underNumberConceded: number): string {
   const parts: string[] = []
   if (overNumberGoals > 0) parts.push(`${overNumberGoals} av era mål kom i numerärt överläge`)
-  if (underNumberConceded > 0) parts.push(`${underNumberConceded} insläppta i undertal`)
+  if (underNumberConceded > 0) parts.push(`${concededCount(underNumberConceded)} i undertal`)
   return `${parts.join('; ')}.`
 }
 
@@ -68,7 +78,7 @@ export function sambandTextH(detail: string, firstHalfGoals: number, firstHalfCo
 }
 
 export function sambandTextISecondHalfChase(goals: number, conceded: number): string {
-  return `Ni jagade från paus — motorn öppnar upp då: ${goals} mål, ${conceded} insläppta i jakten.`
+  return `Ni jagade från paus — motorn öppnar upp då: ${goals} mål, ${concededCount(conceded)} i jakten.`
 }
 
 export const SAMBAND_TEXT_I_DERBY = 'Derbyt jämnade ut det — i derbyn drar motorn lagen mot varandra. Skillnaden i klass räknades mindre.'
