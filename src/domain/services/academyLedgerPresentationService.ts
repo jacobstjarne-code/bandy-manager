@@ -4,6 +4,7 @@ import { FACILITY_COMPLETED_BEATS } from '../data/facilityPortalBeats'
 import { readClubLedger } from './eventLedgerService'
 import { resolveSubjectName } from './momentLedgerService'
 import { academyOperatingCostPerRound } from './academyService'
+import { formatSwedishCount } from '../utils/formatSwedishCount'
 
 type LoanReturnedEntry = EventLedgerEntry & {
   loan: Extract<NonNullable<EventLedgerEntry['loan']>, { caAtReturn: number }>
@@ -130,7 +131,7 @@ export function academyYearbookLines(game: SaveGame, season = game.currentSeason
         significance: entry.significance,
         matchday: entry.matchday,
         semanticKey: entry.semanticKey,
-        text: `${name}, ${entry.youthAgedOut.stars} stjärnor, lämnade akademin vid tjugo.`,
+        text: `${name}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo.`,
       })
       continue
     }

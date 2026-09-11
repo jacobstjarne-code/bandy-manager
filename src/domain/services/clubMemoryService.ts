@@ -28,6 +28,7 @@ import { buildExpectationVerdictSentence } from './seasonSummaryService'
 import { seasonVerdictText, seasonVerdictZoneLine } from './boardService'
 import { PROVNING_RESOLUTION } from '../data/hallProvningData'
 import { getSeasonLicenseConsequence } from './licenseService'
+import { formatSwedishCount } from '../utils/formatSwedishCount'
 import { loanReturnAttribution } from './academyLedgerPresentationService'
 
 /** liggare-k7-beslutsminne (2026-09-03, konsumentkartan §9 #7, Opus dom):
@@ -332,7 +333,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       if (!playerName || !entry.youthAgedOut) return null
       return {
         type: 'youth_aged_out', season: entry.season, matchday: entry.matchday,
-        text: `${playerName}, ${entry.youthAgedOut.stars} stjärnor, lämnade akademin vid tjugo.`,
+        text: `${playerName}, ${formatSwedishCount(entry.youthAgedOut.stars, 'stjärna', 'stjärnor')}, lämnade akademin vid tjugo.`,
         emoji: '👤', significance: entry.significance, subjectPlayerId: playerId,
       }
     }

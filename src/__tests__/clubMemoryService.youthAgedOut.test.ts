@@ -33,7 +33,7 @@ describe('buildMemoryEventFromLedger — youth_aged_out (DOM_AKADEMI_LIGGARE §4
       subject: { kind: 'player', id: 'youth_1' },
       subjectSnapshot: { name: 'Gabriel Bengtsson', position: 'FWD' as any, age: 20 },
       significance: 60,
-      youthAgedOut: { outcome: 'released', stars: 3, caAtExit: 42 },
+      youthAgedOut: { outcome: 'released', stars: 1, caAtExit: 42 },
     }
 
     const memory = buildMemoryEventFromLedger(game, entry, MANAGED_CLUB_ID)
@@ -41,7 +41,7 @@ describe('buildMemoryEventFromLedger — youth_aged_out (DOM_AKADEMI_LIGGARE §4
       type: 'youth_aged_out',
       season: 1,
       matchday: 22,
-      text: 'Gabriel Bengtsson, 3 stjärnor, lämnade akademin vid tjugo.',
+      text: 'Gabriel Bengtsson, 1 stjärna, lämnade akademin vid tjugo.',
       emoji: '👤',
       significance: 60,
       subjectPlayerId: 'youth_1',

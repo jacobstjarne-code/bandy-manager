@@ -90,4 +90,20 @@ describe('akademins liggarpresentation', () => {
       'Senaste Spelaren tillbaka från Testklubben: 43→54. Lånet gav 5, träningen resten.',
     ])
   })
+
+  it('böjer en ensam akademistjärna i singular', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 2 })
+    const game = {
+      ...base,
+      eventLedger: [{
+        type: 'youth_aged_out', semanticKey: 'youth_aged_out_y1_s2025', season: 2025, matchday: 22,
+        clubId: base.managedClubId, subject: { kind: 'player', id: 'y1' }, subjectSnapshot: { name: 'Filip Dahlberg' },
+        significance: 60, youthAgedOut: { outcome: 'released', stars: 1, caAtExit: 29 },
+      } satisfies EventLedgerEntry],
+    }
+
+    expect(academyYearbookLines(game)).toEqual([
+      'Filip Dahlberg, 1 stjärna, lämnade akademin vid tjugo.',
+    ])
+  })
 })
