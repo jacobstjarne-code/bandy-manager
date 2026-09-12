@@ -20,6 +20,7 @@ import { createNewGame } from '../src/application/useCases/createNewGame'
 import { isPlayerInMatchSquad } from '../src/domain/services/matchSquadService'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../src/domain/services/economyService'
 import { getContractSalaryRange } from '../src/domain/services/contractNegotiationService'
+import { resolveFreeAgents } from '../src/domain/services/transferService'
 import { academyActions } from '../src/presentation/store/actions/academyActions'
 import { matchActions } from '../src/presentation/store/actions/matchActions'
 import { transferActions } from '../src/presentation/store/actions/transferActions'
@@ -175,7 +176,7 @@ function resolveEmergencySquad(game: SaveGame): {
   }
 
   while (availablePlayers(current) < 11) {
-    const agent = [...(current.transferState?.freeAgents ?? [])]
+    const agent = resolveFreeAgents(current)
       .filter(player => !player.isInjured && player.suspensionGamesRemaining === 0)
       .sort((left, right) => right.currentAbility - left.currentAbility || left.id.localeCompare(right.id))[0]
     const club = current.clubs.find(candidate => candidate.id === current.managedClubId)
