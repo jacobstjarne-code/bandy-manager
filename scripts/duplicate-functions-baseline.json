@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-09-07",
+  "reviewedAt": "2026-09-12",
   "pairs": [
     {
       "id": "src/domain/services/counterAttackInteractionService.ts#assistantPickCounter <> src/domain/services/freeKickInteractionService.ts#assistantPickFreeKick",
@@ -25,11 +25,6 @@
       "id": "src/domain/services/matchCore.ts#getPenaltyPeriodMod <> src/domain/services/playerDevelopmentService.ts#getAgeFactor",
       "disposition": "false-positive",
       "rationale": "Likformade numeriska trappor för helt olika domäner."
-    },
-    {
-      "id": "src/domain/data/csPressEventText.ts#pickCSPressPublishedQuote <> src/domain/data/eventCardInlineStrings.ts#pickPlayerPraiseText",
-      "disposition": "false-positive",
-      "rationale": "Samma mallvalsform men separata textdomäner och substitutionskontrakt."
     },
     {
       "id": "src/domain/services/portal/triggers/matchTriggers.ts#getNextManagedFixture <> src/domain/services/situationFragments.ts#nextManagedFixture",
@@ -70,6 +65,11 @@
       "id": "src/domain/services/clubHistoryLedgerService.ts#buildScandalLedgerEntry <> src/domain/services/clubMemoryEventBuilders.ts#buildEventFromStoryline",
       "disposition": "false-positive",
       "rationale": "Likformade objektbyggare men olika domänkontrakt: den ena skapar en prosa-fri skandalliggarpost, den andra projicerar en redan kanoniserad storyline till en textbärande MemoryEvent."
+    },
+    {
+      "id": "src/domain/services/events/eventFactories.ts#generatePlayerPraiseEvent <> src/domain/services/mecenatService.ts#generateMecenatAllianceEvent",
+      "disposition": "false-positive",
+      "rationale": "Likformade eventbyggare med multiEffect, men olika domänkontrakt och måltyper: spelarmoral för två spelare respektive mecenatnöjdhet för två mecenater."
     },
     {
       "id": "src/domain/data/seasonPhases.ts#getCurrentLeagueRound <> src/domain/services/currentChronology.ts#leagueRoundAtMatchday",
