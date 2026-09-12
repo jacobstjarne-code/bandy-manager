@@ -1,5 +1,4 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.2.3'
 
 // Global goal-rate modifier. Multipliceras in i ALLA fem målvägar (attack,
 // transition, corner, freekick, penalty) för att bevara kalibrering när

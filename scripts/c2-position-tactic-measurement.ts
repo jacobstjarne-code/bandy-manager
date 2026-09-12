@@ -51,7 +51,10 @@ interface Aggregate {
   goalsFor: number
   goalsAgainst: number
   lateGoalsAgainst: number
+  /** Hemmalagets utvisningar, behålls för C2-jämförelsens historiska output. */
   suspensions: number
+  /** Båda lagens utvisningar — rätt nämnare för ligans 3,77/match-target. */
+  totalSuspensions: number
   evaluationSamples: number
   offenseScore: number
   defenseScore: number
@@ -82,8 +85,20 @@ function readPositiveInteger(name: string, fallback: number): number {
   return value
 }
 
+function readOptionalPositiveNumber(name: string): number | undefined {
+  const prefix = `--${name}=`
+  const raw = process.argv.find(arg => arg.startsWith(prefix))?.slice(prefix.length)
+  if (raw === undefined) return undefined
+  const value = Number(raw)
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`${prefix}<tal> måste vara ett positivt tal`)
+  }
+  return value
+}
+
 const seedCount = readPositiveInteger('seeds', 10_000)
 const seedStart = readPositiveInteger('seed-start', 1)
+const totalSuspensionsMax = readOptionalPositiveNumber('assert-total-suspensions-max')
 const json = process.argv.includes('--json')
 
 let playerSequence = 0
@@ -268,6 +283,7 @@ function emptyAggregate(): Aggregate {
     goalsAgainst: 0,
     lateGoalsAgainst: 0,
     suspensions: 0,
+    totalSuspensions: 0,
     evaluationSamples: 0,
     offenseScore: 0,
     defenseScore: 0,
@@ -336,6 +352,8 @@ for (let index = 0; index < seedCount; index++) {
       seed,
       weather: weatherFor(weatherMode),
     }).fixture
+    const suspensionEvents = result.events.filter(event => event.type === MatchEventType.Suspension)
+    const homeSuspensions = suspensionEvents.filter(event => event.clubId === 'home').length
     const aggregateTargets = [totals.get(profile.id), context.get(profile.id)]
     for (const aggregate of aggregateTargets) {
       if (!aggregate) throw new Error(`Intern mätmiss: ${profile.id}/${key}`)
@@ -348,9 +366,8 @@ for (let index = 0; index < seedCount; index++) {
       aggregate.lateGoalsAgainst += result.events.filter(
         event => event.type === MatchEventType.Goal && event.clubId === 'away' && event.minute >= 70,
       ).length
-      aggregate.suspensions += result.events.filter(
-        event => event.type === MatchEventType.Suspension && event.clubId === 'home',
-      ).length
+      aggregate.suspensions += homeSuspensions
+      aggregate.totalSuspensions += suspensionEvents.length
       aggregate.evaluationSamples++
       aggregate.offenseScore += evaluation.offenseScore
       aggregate.defenseScore += evaluation.defenseScore
@@ -378,6 +395,7 @@ function summarize(aggregate: Aggregate) {
     goalsAgainstPerMatch: rounded(aggregate.goalsAgainst / n),
     lateGoalsAgainstPerMatch: rounded(aggregate.lateGoalsAgainst / n),
     suspensionsPerMatch: rounded(aggregate.suspensions / n),
+    totalSuspensionsPerMatch: rounded(aggregate.totalSuspensions / n),
     averageFieldFit: rounded(aggregate.averageFieldFit / e),
     squadEvaluation: {
       offense: rounded(aggregate.offenseScore / e, 1),
@@ -409,6 +427,17 @@ const output = {
       Object.fromEntries(PROFILES.map(profile => [profile.id, summarize(aggregates.get(profile.id)!)])),
     ]),
   ),
+  suspensionCalibration: (() => {
+    const aggregates = PROFILES.map(profile => totals.get(profile.id)!)
+    const matches = aggregates.reduce((sum, aggregate) => sum + aggregate.matches, 0)
+    const suspensions = aggregates.reduce((sum, aggregate) => sum + aggregate.totalSuspensions, 0)
+    return {
+      matches,
+      suspensions,
+      avgSuspensionsPerMatch: rounded(suspensions / matches),
+      assertedMaximum: totalSuspensionsMax ?? null,
+    }
+  })(),
 }
 
 if (json) {
@@ -421,9 +450,24 @@ if (json) {
       `${profile.label.padEnd(31)} fit ${summary.averageFieldFit.toFixed(3)} · `
       + `V/O/F ${(summary.winRate * 100).toFixed(1)}/${(summary.drawRate * 100).toFixed(1)}/${(summary.lossRate * 100).toFixed(1)} · `
       + `mål ${summary.goalsForPerMatch.toFixed(2)}–${summary.goalsAgainstPerMatch.toFixed(2)} · `
-      + `sent insläppta ${summary.lateGoalsAgainstPerMatch.toFixed(2)} · utv ${summary.suspensionsPerMatch.toFixed(2)} · `
+      + `sent insläppta ${summary.lateGoalsAgainstPerMatch.toFixed(2)} · egna utv ${summary.suspensionsPerMatch.toFixed(2)} · `
       + `eval A/F/H ${summary.squadEvaluation.offense}/${summary.squadEvaluation.defense}/${summary.squadEvaluation.corner}`,
     )
   }
+  console.log(
+    `\nUtvisningar, båda lag: ${output.suspensionCalibration.avgSuspensionsPerMatch.toFixed(3)}/match `
+    + `(${output.suspensionCalibration.suspensions} över ${output.suspensionCalibration.matches} matcher)`,
+  )
   console.log('\nDetaljer per motståndsnivå och väder: använd --json.')
+}
+
+if (
+  totalSuspensionsMax !== undefined
+  && output.suspensionCalibration.avgSuspensionsPerMatch > totalSuspensionsMax
+) {
+  console.error(
+    `Utvisningsgrinden föll: ${output.suspensionCalibration.avgSuspensionsPerMatch.toFixed(3)}/match `
+    + `är över max ${totalSuspensionsMax.toFixed(3)}.`,
+  )
+  process.exitCode = 1
 }
