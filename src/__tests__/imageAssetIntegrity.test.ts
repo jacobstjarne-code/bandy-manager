@@ -1,5 +1,6 @@
 import { existsSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
+import sharp from 'sharp'
 import { describe, expect, it } from 'vitest'
 import { CURATED_PORTRAIT_INDICES } from '../domain/services/portraitService'
 
@@ -32,10 +33,13 @@ describe('product image asset integrity', () => {
     }
   })
 
-  it('has every curated portrait that the selector can return', () => {
+  it('has every curated portrait that the selector can return in the shared transparent product format', async () => {
     for (const [tier, indices] of Object.entries(CURATED_PORTRAIT_INDICES)) {
       for (const index of indices) {
-        expectNonEmptyPublicAsset(`assets/portraits/portrait_${tier}_${index}.png`)
+        const relativePath = `assets/portraits/portrait_${tier}_${index}.png`
+        expectNonEmptyPublicAsset(relativePath)
+        const metadata = await sharp(resolve(process.cwd(), 'public', relativePath)).metadata()
+        expect(metadata, relativePath).toMatchObject({ format: 'png', width: 400, height: 400, hasAlpha: true })
       }
     }
   })

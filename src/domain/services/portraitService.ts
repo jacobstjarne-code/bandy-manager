@@ -1,5 +1,5 @@
 import { generatePlayerPortrait } from './svgPortraitService'
-import { stringHash } from '../utils/random'
+import { stableStringSeed } from '../utils/random'
 
 export function getPortraitSvg(playerId: string, age: number, position: string): string {
   return generatePlayerPortrait(playerId, age, position)
@@ -14,7 +14,11 @@ export type PortraitTier = 'young' | 'mid' | 'exp' | 'vet'
  * player identities cannot resolve to the same portrait.
  */
 export const CURATED_PORTRAIT_INDICES: Readonly<Record<PortraitTier, readonly number[]>> = {
-  young: [1, 2, 3, 4, 5, 6],
+  young: [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+  ],
   mid: [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -46,6 +50,8 @@ export function getPortraitImagePath(playerId: string, age: number): string | nu
   const indices = CURATED_PORTRAIT_INDICES[tier]
   if (indices.length === 0) return null
 
-  const idx = indices[Math.abs(stringHash(playerId)) % indices.length]
-  return `/assets/portraits/portrait_${tier}_${idx}.png?v=7`
+  // Spelar-id:n är strukturerade och skiljer sig ofta bara i ett sent tecken.
+  // FNV-fröet undviker 31-hashens synliga modulo-kluster (t.ex. p-h1/p-f3).
+  const idx = indices[stableStringSeed(playerId) % indices.length]
+  return `/assets/portraits/portrait_${tier}_${idx}.png?v=8`
 }

@@ -1,6 +1,6 @@
 # PORTRAIT_REGISTER — spelarporträtt, kurerat register
 
-**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix skärpt + separationsregel, 2026-09-09). Veteranfacket är infört sedan tidigare. Ung 1–6 och mid 1–10 är granskade, produktbehandlade och införda 2026-09-10. Erfaren är fortfarande tomt.
+**Författare:** Opus + Jacob · **Etablerad:** 2026-09-08 · **Status:** kontrakt låst + basprompt uppdaterad (krage-fix skärpt + separationsregel, 2026-09-09). Ung, mid och erfaren är kompletta 1–30. Veteranfacket använder det kurerade urvalet 1–5 och 7–16; #6 är utesluten som byte-identisk dubblett.
 
 Companion till `PORTRAIT_STYLE.md`. Den filen bär stilbeslutet; den HÄR filen bär registret — vem varje av de ~120 porträtten är, så inga två i en trupp blir för lika och luckorna fylls medvetet. Registret är den levande källan för den aktuella basprompten (PORTRAIT_STYLE:s arbetsprompt är den tidigare, nu förfinad nedan).
 
@@ -24,11 +24,12 @@ Löpnumret är identiteten i registret och får inte räknas om mellan original,
 
 | Inkommande original | Registerpost | Produktfil |
 |---|---|---|
-| `1.jpeg`–`16.jpeg` | veteran 1–16 | redan införda `portrait_vet_{n}.png`; #3 är fortsatt utesluten ur det kuraterade urvalet |
+| `1.jpeg`–`16.jpeg` | veteran 1–16 | redan införda `portrait_vet_{n}.png`; #6 är utesluten ur det kuraterade urvalet som byte-identisk dubblett |
 | `m1.jpeg`–`m10.jpeg` | mid 1–10 | `portrait_mid_{n}.png` |
 | `y1.jpeg`–`y6.jpeg` | ung 1–6 | `portrait_young_{n}.png` |
+| `y7.jpeg`–`y30.jpeg` | ung 7–30 | `portrait_young_{n}.png` |
 
-Produktmastrarna är kvadratiska 400×400 PNG. De nya originalen var redan centrerade med säker cirkelmarginal och behövde därför skalas, inte beskäras. Samtliga 32 högupplösta JPEG-original ligger bevarade med kanoniska namn i `docs/incoming/_arkiv-2026-09/portratt-original/`.
+Produktmastrarna är frilagda kvadratiska 400×400 RGBA-PNG. Den gemensamma porträttpipelinen beskär till säker cirkelmarginal, tar bort den sammanhängande genereringsbakgrunden och komprimerar; därmed försvinner också de tunna vita exportkanterna i ung 11, 16 och 26. Samtliga 106 högupplösta JPEG-original ligger bevarade med kanoniska namn i `docs/incoming/_arkiv-2026-09/portratt-original/`.
 
 **Separationsregel (låst 2026-09-09, bevisad i veteranfacket):** när två poster ligger nära i ålder OCH färg måste minst TVÅ av axlarna hårväxt / ansiktsform / byggnad skilja dem — annars konvergerar Gemini till kloner (klungan 1/7/9 bevisade det). En axel räcker inte: 16 renrakad mot 7 stubbad var för nära tills även käken och byggnaden knöffades isär.
 

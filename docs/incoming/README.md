@@ -30,7 +30,7 @@ Synkfilerna (`github-synk-*.md`) arkiveras direkt när deras leverans är behand
 
 **Arkiverat 2026-09-06:** originalbilderna för Heros, Hälleforsnäs, Lesjöfors, Skutskär och Västanfors flyttades till `_arkiv-2026-09/ortsbilder-original/` efter att de komprimerade produktversionerna skapats i `public/assets/illustrations/`.
 
-**Arkiverat 2026-09-10:** 32 spelarporträtt-original flyttades till `_arkiv-2026-09/portratt-original/` med kanoniska tiernamn. Veteran 1–16 är den äldre poolen; nya mid 1–10 och ung 1–6 har skalats till 400×400 PNG i `public/assets/portraits/` och wirats via `portraitService.ts`. Exakt filöversättning finns i `design-system/PORTRAIT_REGISTER.md`.
+**Arkiverat 2026-09-10–12:** 106 spelarporträtt-original flyttades till `_arkiv-2026-09/portratt-original/` med kanoniska tiernamn. Ung, mid och erfaren är kompletta 1–30 som 400×400 PNG i `public/assets/portraits/`; veteran använder det granskade urvalet 1–5 och 7–16. Exakt filöversättning finns i `design-system/PORTRAIT_REGISTER.md`.
 
 **Arkiverat 2026-09-10, andra midpasset:** `mid11.jpeg`–`mid30.jpeg` har bevarats som `portrait_mid_11.jpeg`–`portrait_mid_30.jpeg` i samma originalarkiv. Produktversionerna är frilagda och komprimerade 400×400 PNG-filer i `public/assets/portraits/`, och midpoolen väljer nu deterministiskt ur samtliga 30 godkända porträtt.
 
