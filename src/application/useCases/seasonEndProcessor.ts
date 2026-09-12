@@ -781,7 +781,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // Reset player season stats, recover fitness, age players
-  const allPlayers = [...game.players, ...youthPlayers]
+  // genomgang-motor-smafynd (§13): youthPlayers (AI-klubbarnas NYA intag,
+  // genererade ovan för NÄSTA säsong) fick tidigare gå igenom samma
+  // reset-mapp som existerande spelare — age+1, en caHistory- och en
+  // seasonHistory-post för en säsong de aldrig spelade. De slås ihop
+  // EFTER reset-mappen (activePlayers nedan) i stället.
+  const allPlayers = game.players
   const playersWithCaptainHistory = allPlayers.map(player =>
     recordCompletedCaptainSeason(player, game.captainPlayerId, game.managedClubId)
   )
@@ -1154,9 +1159,41 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     nextCaptainPlayerId = undefined
   }
 
-  const activePlayers = resetPlayers
-    .filter(p => !retiredPlayerIds.has(p.id))
-    .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
+  // genomgang-motor-smafynd (§13): freeAgentSince stämplas på SPELAR-
+  // POSTEN direkt (fältet finns redan på Player), inte på en separat kopia.
+  // En redan existerande fri agent (contractUntilSeason är per konstruktion
+  // "utgången" varje efterföljande säsong så länge ingen skriver om den)
+  // ska INTE få sitt ursprungliga freeAgentSince skrivet över — det avgör
+  // gallringen nedan. `previousFreeAgentIds` är listan INNAN denna körning.
+  const previousFreeAgentIds = new Set(game.transferState?.freeAgentIds ?? [])
+  const activePlayersPrePruning = [
+    ...resetPlayers
+      .filter(p => !retiredPlayerIds.has(p.id))
+      .map(p => {
+        if (!contractExpiredIds.has(p.id)) return p
+        const wasAlreadyFreeAgent = previousFreeAgentIds.has(p.id)
+        return {
+          ...p,
+          clubId: 'free_agent',
+          freeAgentSince: wasAlreadyFreeAgent ? p.freeAgentSince : game.currentSeason,
+        }
+      }),
+    // youthPlayers (AI-intaget för NÄSTA säsong) läggs till här, EFTER
+    // reset-mappen — de är redan korrekt initierade av generateYouthIntake
+    // (rätt ålder, tomma career/season-stats) och ska varken åldras,
+    // pensioneras eller kontraktsutgå för en säsong de aldrig spelade.
+    ...youthPlayers,
+  ]
+
+  // Gallring: en fri agent som är 37+ eller stått olottad i två säsonger
+  // plockas nu helt bort ur truppen — tidigare försvann de bara ur den
+  // separata (nu borttagna) freeAgents-kopian medan originalet i
+  // game.players blev kvar för alltid och växte spardata i onödan.
+  const activePlayers = activePlayersPrePruning.filter(p => {
+    if (p.clubId !== 'free_agent') return true
+    const seasonsUnsigned = game.currentSeason - (p.freeAgentSince ?? game.currentSeason)
+    return p.age < 37 && seasonsUnsigned < 2
+  })
 
   // ── A-H2b (DOM_AH2B_RETENTION_2026-08-28) — obemötta marknadskrav ────────
   // Beräknas HÄR, mot `game` (PRE-rollover — seasonStats är den avslutade
@@ -2295,15 +2332,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     managerProfile: updatedManagerProfile,
     transferState: {
       ...game.transferState,
-      freeAgents: [
-        ...(game.transferState?.freeAgents ?? []).filter(p =>
-          p.age < 37 &&
-          game.currentSeason - (p.freeAgentSince ?? game.currentSeason) < 2
-        ),
-        ...playersAfterLicense
-          .filter(p => contractExpiredIds.has(p.id))
-          .map(p => ({ ...p, freeAgentSince: game.currentSeason })),
-      ],
+      // genomgang-motor-smafynd (§13): id-lista, aldrig en andra kopia.
+      // freeAgentSince-stämpling och 37+/2-säsongers-gallringen har redan
+      // körts på SPELARPOSTEN ovan (activePlayers) — den som gallrades
+      // bort finns redan inte kvar i playersAfterLicense. Den här raden
+      // projicerar bara ut vilka som är kvar med clubId==='free_agent'.
+      freeAgentIds: playersAfterLicense.filter(p => p.clubId === 'free_agent').map(p => p.id),
     },
     youthIntakeHistory: youthRecords,
     // A-M5: skriv rollover-posterna till den löpande financeLog:en (samma

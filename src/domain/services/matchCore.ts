@@ -1983,7 +1983,10 @@ function* simulateMatchCore(
           lastMinutePressTriggered = true
           const stepsLeft        = 60 - step
           const managedStartersNow = managedIsHome ? homeStarters : awayStarters
-          const avgFatigue       = managedStartersNow.reduce((s, p) => s + (100 - p.morale), 0) / Math.max(1, managedStartersNow.length)
+          // genomgang-motor-smafynd (§13): fatigueLevel läste moral, inte
+          // kondition — "0-100 average team fatigue" (lastMinutePressService.ts)
+          // ska härledas ur fitness, inte spelarnas moral.
+          const avgFatigue       = managedStartersNow.reduce((s, p) => s + (100 - p.fitness), 0) / Math.max(1, managedStartersNow.length)
           lastMinutePressData    = { minute, scoreDiff: mg - og, stepsLeft, fatigueLevel: Math.round(avgFatigue) }
         }
       }

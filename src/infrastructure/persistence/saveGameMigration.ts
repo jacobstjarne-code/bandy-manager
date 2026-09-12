@@ -579,7 +579,33 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   }
   if (data.talentSearchResults === undefined) data.talentSearchResults = []
   if (data.youthIntakeHistory === undefined) data.youthIntakeHistory = []
-  if (data.transferState === undefined) data.transferState = { freeAgents: [], pendingOffers: [] }
+  if (data.transferState === undefined) data.transferState = { freeAgentIds: [], pendingOffers: [] }
+  // genomgang-motor-smafynd (§13): transferState.freeAgents var tidigare
+  // Player[] (fulla kopior) — nu freeAgentIds: string[] (projektion mot
+  // game.players). Äldre saves har det gamla fältnamnet/formen kvar.
+  // Idempotent: en redan migrerad save saknar `freeAgents` och matchar
+  // ingen av grenarna nedan.
+  {
+    const ts = data.transferState as Record<string, unknown>
+    if (Array.isArray(ts.freeAgents)) {
+      const oldFreeAgents = ts.freeAgents as Record<string, unknown>[]
+      const existingIds = new Set(
+        Array.isArray(data.players) ? (data.players as Record<string, unknown>[]).map(p => p.id as string) : [],
+      )
+      // Försvarslinje: en fri agent som ENDAST fanns i den gamla kopian
+      // (aldrig i game.players) får inte tappas bort — läggs tillbaka i
+      // players med clubId satt till free_agent.
+      const missingPlayers = oldFreeAgents.filter(p => !existingIds.has(p.id as string))
+      if (missingPlayers.length > 0 && Array.isArray(data.players)) {
+        data.players = [
+          ...(data.players as Record<string, unknown>[]),
+          ...missingPlayers.map(p => ({ ...p, clubId: 'free_agent' })),
+        ]
+      }
+      ts.freeAgentIds = oldFreeAgents.map(p => p.id as string)
+      delete ts.freeAgents
+    }
+  }
   if (data.academyLevel === undefined) data.academyLevel = 'basic'
 
   // M7 — Orten-feed

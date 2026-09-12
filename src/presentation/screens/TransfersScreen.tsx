@@ -7,7 +7,7 @@ import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import type { TransferBid } from '../../domain/entities/GameEvent'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
-import { getCounterOfferAmount, getTransferBudgetSummary } from '../../domain/services/transferService'
+import { getCounterOfferAmount, getTransferBudgetSummary, resolveFreeAgents } from '../../domain/services/transferService'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../domain/services/economyService'
 import { getContractSalaryRange, getAvailableContractTerms, resolveContractTermSponsors } from '../../domain/services/contractNegotiationService'
 import type { ContractTermOffer } from '../../domain/services/contractNegotiationService'
@@ -88,10 +88,11 @@ export function TransfersScreen() {
   const managedClubPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
-  // Äldre/hot-reloadade saves kan bära aktuell versionsstämpel men sakna
-  // fältet och passerar då Zustand utan att migrationsfunktionen körs.
-  // Ett tomt optional-fallback hindrar att hela Värvning kraschar.
-  const freeAgents = game.transferState?.freeAgents ?? []
+  // genomgang-motor-smafynd (§13): freeAgents är nu en projektion mot
+  // game.players (id-listan transferState.freeAgentIds), inte en lagrad
+  // kopia. resolveFreeAgents hanterar äldre/hot-reloadade saves som saknar
+  // fältet (tomt optional-fallback), samma robusthet som förut.
+  const freeAgents = resolveFreeAgents(game)
   const windowInfo = getTransferWindowStatus(game.currentDate)
   const windowOpen = windowInfo.status !== 'closed'
 
@@ -121,7 +122,7 @@ export function TransfersScreen() {
 
   function handleSignFreeAgent(agentId: string, _offerAmount: number, offeredSalary: number, contractYears: number, terms: ContractTermOffer) {
     if (!game) return
-    const agent = game.transferState.freeAgents.find(p => p.id === agentId)
+    const agent = freeAgents.find(p => p.id === agentId)
     const club = game.clubs.find(c => c.id === game.managedClubId)
     if (!agent || !club) return
 
@@ -551,7 +552,7 @@ export function TransfersScreen() {
       })()}
 
       {contractingFreeAgentId && managedClub && (() => {
-        const agent = game.transferState.freeAgents.find(p => p.id === contractingFreeAgentId)
+        const agent = freeAgents.find(p => p.id === contractingFreeAgentId)
         if (!agent) return null
         const minSalary = computeContractMinSalary(agent, managedClub, computeLeaguePositionAverages(game))
         const availableTerms = getAvailableContractTerms(game, managedClub, agent)

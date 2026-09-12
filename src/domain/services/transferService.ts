@@ -15,6 +15,19 @@ function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
 }
 
+/**
+ * genomgang-motor-smafynd (§13): transferState.freeAgentIds är en id-lista,
+ * aldrig en andra kopia av spelarna. Denna funktion är den enda platsen
+ * som slår upp de faktiska Player-objekten ur game.players — samma
+ * mönster som t.ex. squadPlayerIds → players.filter(...) någon annanstans.
+ */
+export function resolveFreeAgents(game: Pick<SaveGame, 'players' | 'transferState'>): Player[] {
+  const ids = game.transferState?.freeAgentIds ?? []
+  if (ids.length === 0) return []
+  const idSet = new Set(ids)
+  return game.players.filter(p => idSet.has(p.id))
+}
+
 export interface TransferBudgetSummary {
   total: number
   committed: number

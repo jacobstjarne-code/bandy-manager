@@ -285,7 +285,7 @@ describe('transferflödets rotfixar', () => {
 
   it('fria agenter förhandlar lön och kontraktslängd och blir ihågkomna', () => {
     const agent = makePlayer({ id: 'free', clubId: 'free_agent', salary: 9000 })
-    const game = makeGame({ transferState: { freeAgents: [agent], pendingOffers: [] }, eventLedger: [] })
+    const game = makeGame({ players: [agent], transferState: { freeAgentIds: [agent.id], pendingOffers: [] }, eventLedger: [] })
     const store = makeStore(game)
     const result = transferActions(store.get, store.set).signFreeAgent('free', 20000, 3)
 
@@ -304,7 +304,7 @@ describe('transferflödets rotfixar', () => {
     const agent = makePlayer({ id: 'free', clubId: 'free_agent', salary: 9000, contractUntilSeason: 2024 })
     const game = makeGame({
       players: [makePlayer(), agent],
-      transferState: { freeAgents: [agent], pendingOffers: [] },
+      transferState: { freeAgentIds: [agent.id], pendingOffers: [] },
       eventLedger: [],
     })
     const store = makeStore(game)
@@ -314,6 +314,6 @@ describe('transferflödets rotfixar', () => {
     const after = store.getGame()!
     expect(after.players.filter(p => p.id === 'free')).toHaveLength(1)
     expect(after.players.find(p => p.id === 'free')).toMatchObject({ clubId: 'c1', salary: 20000, contractUntilSeason: 2028 })
-    expect(after.transferState.freeAgents.some(p => p.id === 'free')).toBe(false)
+    expect(after.transferState.freeAgentIds.some(id => id === 'free')).toBe(false)
   })
 })

@@ -187,6 +187,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   // Saves: count Save events per club (defending club = club making the save)
   const savesHome = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.homeClubId).length
   const savesAway = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.awayClubId).length
+  // genomgang-motor-smafynd (§13): penaltiesHome/Away var hårdkodade 0 —
+  // straffar räknades aldrig i den simulerade rapporten (bara live-vägen
+  // fyllde dem). Samma mönster som savesHome ovan.
+  const penaltiesHome = allEvents.filter(e => e.type === MatchEventType.Penalty && e.clubId === fixture.homeClubId).length
+  const penaltiesAway = allEvents.filter(e => e.type === MatchEventType.Penalty && e.clubId === fixture.awayClubId).length
 
   // Re-derive matchProfile deterministically (same inputs → same result as matchCore)
   const isHeavyWeather = weather?.condition === WeatherCondition.HeavySnow || weather?.condition === WeatherCondition.Thaw
@@ -206,8 +211,8 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     savesAway,
     cornersHome,
     cornersAway,
-    penaltiesHome: 0,
-    penaltiesAway: 0,
+    penaltiesHome,
+    penaltiesAway,
     possessionHome,
     possessionAway,
     playerOfTheMatchId,

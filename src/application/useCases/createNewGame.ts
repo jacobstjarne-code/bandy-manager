@@ -151,7 +151,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     standings,
     inbox: [],
     transferState: {
-      freeAgents: [],
+      freeAgentIds: [],
       pendingOffers: [],
     },
     youthIntakeHistory: [],

@@ -918,7 +918,11 @@ export function MatchLiveScreen() {
 
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const rand = mulberry32(interactionSeed(fixture.id, currentStep, 'penalty'))
-    const keeperDive = resolveAIPenaltyKeeperDive('offensive', rand)
+    // genomgang-motor-smafynd (§13): keeperDive gissade alltid 'offensive'
+    // oavsett vem som faktiskt håller i målet — motståndarens (den som
+    // håller straffvakten) tactic.mentality avgör diket, inte en hårdkodning.
+    const opponentLineup = managedIsHome ? awayLineup : homeLineup
+    const keeperDive = resolveAIPenaltyKeeperDive(opponentLineup?.tactic.mentality ?? 'offensive', rand)
     const outcome = resolvePenalty(penData, dir, height, keeperDive, rand)
     setPenaltyOutcome(outcome)
 

@@ -1,6 +1,6 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
 import { processScoutAssignment, startScoutAssignment } from '../../../domain/services/scoutingService'
-import { createOutgoingBid, getCounterOfferAmount, getTransferBudgetSummary } from '../../../domain/services/transferService'
+import { createOutgoingBid, getCounterOfferAmount, getTransferBudgetSummary, resolveFreeAgents } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
@@ -301,7 +301,7 @@ export function transferActions(get: Get, set: Set) {
     signFreeAgent: (agentId: string, offeredSalary: number, contractYears: number, terms: ContractTermOffer = {}) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
-      const agent = game.transferState.freeAgents.find(p => p.id === agentId)
+      const agent = resolveFreeAgents(game).find(p => p.id === agentId)
       if (!agent) return { success: false, error: 'Spelaren hittades inte' }
       const club = game.clubs.find(c => c.id === game.managedClubId)
       if (!club) return { success: false, error: 'Ingen klubb hittad' }
@@ -339,19 +339,16 @@ export function transferActions(get: Get, set: Set) {
         salary: offeredSalary,
         contractUntilSeason: game.currentSeason + contractYears,
       }
-      // Dubbelidentitet (genomgång 2026-09-11): seasonEndProcessor låter en
-      // kontraktsutgången spelare LIGGA KVAR i game.players (clubId 'free_agent',
-      // se gameInvariants.ts:checkStaleContracts) OCH lägger en kopia i
-      // transferState.freeAgents. En ren append här gav då TVÅ poster med samma
-      // id i game.players — varje `players.find(id)` träffade den äldre
-      // 'free_agent'-kopian (utan nya kontraktet), och varje `players.map`-
-      // uppdatering (stats, åldrande) slog på båda. Ersätt på plats om spelaren
-      // redan finns; append bara när han inte gör det (äldre saves/tester).
+      // Dubbelidentitet (genomgång 2026-09-11, roten löst i genomgang-motor-
+      // smafynd 2026-09-12): transferState.freeAgentIds är nu en id-lista,
+      // aldrig en andra kopia av spelaren — agentWithClub ersätter alltid
+      // spelarens EGEN post i game.players (append kvar bara som skydd för
+      // äldre saves/tester där id:t av någon anledning saknas helt).
       const alreadyInPlayers = game.players.some(p => p.id === agentId)
       const updatedPlayers = alreadyInPlayers
         ? game.players.map(p => (p.id === agentId ? agentWithClub : p))
         : [...game.players, agentWithClub]
-      const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
+      const updatedFreeAgentIds = (game.transferState.freeAgentIds ?? []).filter(id => id !== agentId)
       const updatedClubs0 = game.clubs.map(c =>
         c.id === game.managedClubId
           ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
@@ -380,7 +377,7 @@ export function transferActions(get: Get, set: Set) {
           sponsors: termResult.sponsors,
           patron: termResult.patron,
           financeLog: financeLogAfterSignOn,
-          transferState: { ...game.transferState, freeAgents: updatedFreeAgents },
+          transferState: { ...game.transferState, freeAgentIds: updatedFreeAgentIds },
         }
       set({
         game: {

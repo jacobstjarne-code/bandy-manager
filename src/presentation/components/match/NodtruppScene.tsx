@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/gameStore'
 import { positionShort, positionLong, formatSalary } from '../../utils/formatters'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
+import { resolveFreeAgents } from '../../../domain/services/transferService'
 import { isPlayerInMatchSquad } from '../../../domain/services/matchSquadService'
 
 /**
@@ -52,7 +53,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
     const d = posDeficit(b.position) - posDeficit(a.position)
     return d !== 0 ? d : b.currentAbility - a.currentAbility
   })
-  const freeAgents = [...(game.transferState?.freeAgents ?? [])]
+  const freeAgents = resolveFreeAgents(game)
     .filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)   // bara spelklara — annars löser de inte nödläget
     .sort((a, b) => b.currentAbility - a.currentAbility)
     .slice(0, 6)
