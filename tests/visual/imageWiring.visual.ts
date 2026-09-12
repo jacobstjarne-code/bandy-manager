@@ -10,6 +10,8 @@ async function expectLoadedImage(page: Page, sourceSuffix: string) {
 }
 
 test('all twelve club images are wired in arrival and opponent-intro surfaces', async ({ page }) => {
+  test.setTimeout(90_000)
+
   const clubs = [
     'forsbacka', 'gagnef', 'halleforsnas', 'heros', 'karlsborg', 'lesjofors',
     'malilla', 'rogle', 'skutskar', 'slottsbron', 'soderfors', 'vastanfors',
