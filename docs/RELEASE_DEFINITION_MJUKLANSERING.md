@@ -12,6 +12,15 @@ Fyra saker. Inget mer.
 3. **Kärnloopen spelbar end-to-end utan krasch.** Förbered → spela → granska → årsbok, säsongsskifte, avsked → ny klubb. Build + testsvit gröna.
 4. **Hosting live med push AV.** Render Free grön, notiser släckta (behövs inte för två testare).
 
+## Mätbart lyckad soft-launch (Jacobs dom 2026-09-12)
+
+"Ingen krasch" är ett golv, inte ett mål. Två siffror avgör om soft-launchen med de två testarna lyckades, mätta inom två veckor ur det befintliga analytics-röret (`install`, `first_match`, `season_completed`, `session_end`):
+
+1. **Båda testarna når `season_completed ≥ 1`.** Beviset att en hel säsong är genomförbar i verklig hand, inte bara i Grind 2:s simulering. Faller den → ett flödesfel att jaga.
+2. **Median `session_end.durationSeconds > 15 min`.** Beviset att det finns en loop värd att stanna i, inte bara ett spel som går att slutföra. Faller den → ett engagemangsfel, en annan sorts fråga.
+
+Dessa är utvärderingskriterier EFTER launch, inte MÅSTE-krav före — de stoppar inte lanseringen, de dömer den.
+
 ## Stoppregeln för Grind 2 (så återprovet inte blir oändligt)
 
 Ett fynd i återprovet blockerar BARA om det (a) bryter ett kärnflöde, eller (b) får spelet att ljuga eller upprepa sig i en scen ett tvåsäsongsprov tillförlitligt når. Ett fel i en sällan-scen eller en kosmetisk kant → post-launch-rad, inte en nål. Baren är "förtroende i de flöden testaren faktiskt möter", inte noll buggar.
