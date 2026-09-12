@@ -32,12 +32,13 @@ function contrast(foreground: string, background: string) {
 }
 
 test.describe('mobil beslutshierarki @ 390×844', () => {
-  test('Game Over visar tre jämlika, tryckbara CTA:er inom safe area', async ({ page }) => {
+  test('Game Over visar fyra jämlika, tryckbara CTA:er inom safe area', async ({ page }) => {
     await openMobileScene(page, 'game-over')
-    await expect(page.locator('img[src="/assets/illustrations/avsked.jpg"]')).toBeVisible()
+    await expect(page.locator('img[src="/assets/illustrations/avsked.webp"]')).toBeVisible()
 
     const buttons = [
       page.getByRole('button', { name: 'SE KARRIÄREN', exact: true }),
+      page.getByRole('button', { name: 'EXPORTERA SÄKERHETSKOPIA', exact: true }),
       page.getByRole('button', { name: 'Se hur det går utan dig', exact: true }),
       page.getByRole('button', { name: 'NY KARRIÄR', exact: true }),
     ]
@@ -49,11 +50,12 @@ test.describe('mobil beslutshierarki @ 390×844', () => {
       boxes.push(box)
     }
 
-    expect(boxes.map(box => Math.round(box.height))).toEqual([44, 44, 44])
+    expect(boxes.map(box => Math.round(box.height))).toEqual([44, 44, 44, 44])
     expect(new Set(boxes.map(box => Math.round(box.width))).size).toBe(1)
-    expect(Math.round(boxes[1].y - (boxes[0].y + boxes[0].height))).toBe(12)
-    expect(Math.round(boxes[2].y - (boxes[1].y + boxes[1].height))).toBe(12)
-    expect(boxes[2].y + boxes[2].height).toBeLessThanOrEqual(844 - 24)
+    for (let index = 1; index < boxes.length; index++) {
+      expect(Math.round(boxes[index].y - (boxes[index - 1].y + boxes[index - 1].height))).toBe(12)
+    }
+    expect(boxes.at(-1)!.y + boxes.at(-1)!.height).toBeLessThanOrEqual(844 - 24)
 
     const sizeCheck = await findControlSizeViolations(page, '[data-scene-content]')
     expect(sizeCheck.violations.map(v => v.message)).toEqual([])

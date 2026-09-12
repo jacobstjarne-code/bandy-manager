@@ -12,7 +12,9 @@ test('Arrival-devscenen renderar Ankomsten och redirectar inte till dashboard', 
   await expect(page.getByText('DEV GALLERY')).toBeVisible()
   await expect(page.locator('[data-scene-content] .arrival-scene')).toBeVisible()
   await expect(page.getByText(/Ankomsten/).last()).toBeVisible()
-  await expect(page.getByText(/Bengt Ek/).first()).toBeVisible()
+  // Styrelsen genereras deterministiskt ur saven men personnamnet är inte ett
+  // scenkontrakt. Rollen är det: ankomsten måste faktiskt nå kassörens replik.
+  await expect(page.locator('.h-scene-speaker').filter({ hasText: /· Kassör/ })).toBeVisible()
   await expect(page).toHaveURL(/\/dev\/scenes\?scene=arrival/)
 })
 
@@ -155,23 +157,25 @@ test('Cupintrot visar första beatet och nästa CTA', async ({ page }) => {
   await page.goto('/dev/scenes?scene=cup-intro&width=390', { waitUntil: 'networkidle' })
   const scene = page.locator('[data-scene-content]')
 
-  await expect(scene.locator('img[src="/assets/illustrations/cup.jpg"]')).toBeVisible()
+  await expect(scene.locator('img[src="/assets/illustrations/cup.webp"]')).toBeVisible()
   await expect(scene.getByText('CUPEN')).toBeVisible()
   await expect(scene.getByText('Innan serien')).toBeVisible()
   await expect(scene.getByRole('button')).toBeVisible()
 })
 
-for (const [sceneId, eyebrow, asset] of [
-  ['opponent-intro', 'PREMIÄR', 'premiar'],
-  ['match-laddning-derby', 'DERBY', 'derby'],
-  ['match-laddning-cup', 'CUPEN', 'cup'],
+for (const [sceneId, eyebrow] of [
+  ['opponent-intro', 'PREMIÄR'],
+  ['match-laddning-derby', 'DERBY'],
+  ['match-laddning-cup', 'CUPEN'],
 ] as const) {
-  test(`${sceneId} använder rätt låsta momentbild`, async ({ page }) => {
+  test(`${sceneId} använder motståndarens klubbmiljö`, async ({ page }) => {
     await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
     const scene = page.locator('[data-scene-content]')
 
     await expect(scene.getByText(new RegExp(eyebrow))).toBeVisible()
-    await expect(scene.locator(`img[src="/assets/illustrations/${asset}.jpg"]`)).toBeVisible()
+    // Premiär/cup/derby använder motståndarens ort när en klubbild finns;
+    // tillfällesbilden är bara fallback. Det är den låsta produktregeln.
+    await expect(scene.locator('img[src*="/assets/illustrations/intro-"][src$=".webp"]')).toBeVisible()
   })
 }
 
@@ -180,7 +184,7 @@ test('cupguldet används på den simulerade segerns efterceremoni', async ({ pag
   const scene = page.locator('[data-scene-content]')
 
   await expect(scene.getByText(/Cupmästare/)).toBeVisible()
-  await expect(scene.locator('img[src="/assets/illustrations/cupguld.jpg"]')).toBeVisible()
+  await expect(scene.locator('img[src="/assets/illustrations/cupguld.webp"]')).toBeVisible()
 })
 
 test('Söndagsträningen visar plats, spelare och val', async ({ page }) => {
@@ -259,7 +263,7 @@ test('Granska nivå 3 visar det persisterade valet som belagt citat', async ({ p
 
   await chosen.scrollIntoViewIfNeeded()
   await expect(chosen).toBeVisible()
-  await expect(chosen.locator('xpath=preceding-sibling::span[1]')).toHaveText('✓')
+  await expect(chosen.locator('xpath=../preceding-sibling::span[1]')).toHaveText('✓')
 })
 
 test('Styrelsens minimalkort visar ultimatum, orsak och väg tillbaka', async ({ page }) => {
@@ -275,7 +279,7 @@ test('Klubbens sex flikar ryms och är nåbara i 390 px', async ({ page }) => {
   await page.goto('/dev/scenes?scene=club-established&width=390&inspect=1', { waitUntil: 'networkidle' })
   const scene = page.locator('[data-scene-content]')
 
-  for (const label of ['Träning', 'Ekonomi', 'Orten', 'Akademi', 'Minne', 'Tränare']) {
+  for (const label of ['Träning', 'Ekonomi', 'Orten', 'Bygget', 'Minne', 'Tränare']) {
     await expect(scene.getByRole('tab', { name: label, exact: true })).toBeVisible()
   }
 
@@ -325,7 +329,7 @@ for (const [sceneId, text] of [
     await page.goto(`/dev/scenes?scene=${sceneId}&width=390&inspect=1`, { waitUntil: 'networkidle' })
     await expect(page.getByText(text, { exact: true }).first()).toBeVisible()
     if (sceneId === 'ceremony-cup-final') {
-      await expect(page.locator('img[src="/assets/illustrations/cupguld.jpg"]')).toBeVisible()
+      await expect(page.locator('img[src="/assets/illustrations/cupguld.webp"]')).toBeVisible()
     }
   })
 }

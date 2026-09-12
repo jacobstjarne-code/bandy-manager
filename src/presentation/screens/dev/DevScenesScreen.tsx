@@ -747,10 +747,17 @@ const careerBreakGame = makeGame(makeLeagueFixtures(), {
 
 const inboxGame = makeGame(makeLeagueFixtures(), {
   inbox: [
+    { id: 'dev-inbox-bid', date: '2034-01-15', type: InboxItemType.TransferBidReceived, title: 'Bud på Mattias Holm', body: 'Västanfors vill ha svar innan nästa omgång.', isRead: false, createdMatchday: 16, createdRound: 14, relatedPlayerId: 'p-d1' },
     { id: 'dev-inbox-license', date: '2034-01-15', type: InboxItemType.LicenseReview, title: 'Licensen kräver en plan', body: 'Styrelsen vill se en åtgärd före nästa kontroll.', isRead: false, createdMatchday: 16, createdRound: 14, licenseZoneLabel: 'Riskzon' },
     { id: 'dev-inbox-media', date: '2034-01-14', type: InboxItemType.Media, title: 'Vinterns formkurva väcker frågor', body: 'Gefle Dagblad summerar de senaste matcherna.', isRead: false, createdMatchday: 15, createdRound: 13, outlet: 'Gefle Dagblad' },
     { id: 'dev-inbox-scout', date: '2034-01-13', type: InboxItemType.ScoutReport, title: 'Scoutrapport klar', body: 'Tre spelare har följts under månaden.', isRead: true, createdMatchday: 14, createdRound: 12 },
   ],
+  transferBids: [{
+    id: 'dev-bid-inbox', playerId: 'p-d1', buyingClubId: AWAY_ID,
+    sellingClubId: HOME_ID, offerAmount: 450, offeredSalary: 28,
+    contractYears: 2, direction: 'incoming', status: 'pending',
+    createdRound: 14, expiresRound: 15,
+  }],
 })
 
 const simSummaryFixtures = makeLeagueFixtures().slice(-3)

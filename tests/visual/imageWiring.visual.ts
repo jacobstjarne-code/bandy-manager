@@ -58,27 +58,33 @@ test('all club badge sizes load and every image-overlay implementation uses the 
 
 test('every product moment with a dedicated image renders a loaded asset', async ({ page }) => {
   const scenes: Array<[string, string]> = [
-    ['annandagen', 'annandagen.jpg'],
-    ['finalhelg', 'final.jpg'],
-    ['match-laddning-nyar', 'nyar.jpg'],
-    ['portal-facility-completed', 'facility-completed.jpg'],
-    ['press-conference', 'press.jpg'],
-    ['career-break', 'career-break.jpg'],
-    ['coffee-room', 'kafferummet.jpg'],
-    ['valet', 'valet.jpg'],
-    ['cup-intro', 'cup.jpg'],
-    ['mecenat-dinner', 'mecenat-dinner.jpg'],
-    ['ceremony-cup-final', 'cupguld.jpg'],
-    ['season-header', 'season-end.jpg'],
+    // Scen-id:t är historiskt; ytan visar numera januarianslaget och ska
+    // därför använda den generiska bruksortsbilden, inte annandagsfesten.
+    ['annandagen', 'bruksort-header.webp'],
+    ['finalhelg', 'final.webp'],
+    ['match-laddning-nyar', 'nyar.webp'],
+    ['portal-facility-completed', 'facility-completed.webp'],
+    ['press-conference', 'press.webp'],
+    ['career-break', 'career-break.webp'],
+    ['coffee-room', 'kafferummet.webp'],
+    ['valet', 'valet.webp'],
+    ['cup-intro', 'cup.webp'],
+    ['ceremony-cup-final', 'cupguld.webp'],
+    ['season-header', 'season-end.webp'],
   ]
 
   for (const [scene, asset] of scenes) {
     await page.goto(`/dev/scenes?scene=${scene}&width=390&inspect=1`)
     await expectLoadedImage(page, asset)
   }
+
+  // Middagens bild hör till den öppnade händelsen, inte portalens teaser.
+  await page.goto('/dev/scenes?scene=mecenat-dinner&width=390&inspect=1')
+  await page.getByRole('button', { name: 'Följ med' }).click()
+  await expectLoadedImage(page, 'mecenat-dinner.webp')
 })
 
-test('curated player portraits load while the unfinished experienced tier uses its safe fallback', async ({ page }) => {
+test('curated player portraits in the current senior fixture all load', async ({ page }) => {
   await page.goto('/dev/scenes?scene=squad-trupp&width=390&inspect=1')
   await page.getByRole('tab', { name: 'Trupp' }).click()
 
@@ -89,5 +95,8 @@ test('curated player portraits load while the unfinished experienced tier uses i
     expect(await curated.nth(index).evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   }
 
-  await expect(page.locator('[data-player-portrait-kind="fallback"]').first()).toBeVisible()
+  // Den gamla förväntningen krävde en fallback från det då ofärdiga
+  // erfaren-facket. Det facket är nu komplett; denna fixture ska inte kunna
+  // återinföra en SVG bland sina faktiskt valda seniorporträtt.
+  await expect(page.locator('[data-player-portrait-kind="fallback"]')).toHaveCount(0)
 })
