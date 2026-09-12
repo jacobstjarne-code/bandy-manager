@@ -68,6 +68,8 @@ describe('gameStore — multi-slot: skapa A, skapa B, byt tillbaka till A', () =
     const gameA = useGameStore.getState().game
     expect(gameA).not.toBeNull()
     const idA = gameA!.id
+    const midfielderA = gameA!.players.find(player => player.position === 'midfielder')
+    expect(midfielderA).toBeDefined()
     expect(gameA!.managerName).toBe('Manager A')
     expect(gameA!.managedClubId).toBe(clubA.id)
 
@@ -90,6 +92,7 @@ describe('gameStore — multi-slot: skapa A, skapa B, byt tillbaka till A', () =
     expect(restoredA!.id).toBe(idA)
     expect(restoredA!.managerName).toBe('Manager A')
     expect(restoredA!.managedClubId).toBe(clubA.id)
+    expect(restoredA!.players.find(player => player.id === midfielderA!.id)?.position).toBe('midfielder')
 
     // Byt till B igen — full rundtur i båda riktningarna, inte bara A→B→A.
     const switchedToB = await useGameStore.getState().switchToSave(idB)

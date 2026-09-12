@@ -6,7 +6,7 @@ import { CURRENT_SAVE_VERSION, type SaveGame, type RoundSummaryData, type Sponso
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
@@ -483,7 +483,6 @@ export const useGameStore = create<GameState>()(
         const loaded = await loadSaveGame(id)
         if (!loaded) return false
         // Migrate old club names — strip suffixes like BK, IF, GoIF, IK, FK
-        // Migrate Midfielder position → Half (merged positions)
         // Legacy matchday migration — fixtures from before matchday field was added (pre-B11)
         // NOTE: buildSeasonCalendar here is a ONE-TIME legacy migration, not on-demand use (B11 T3).
         // After B11, game.seasonCalendar is the single source of truth for all date lookups.
@@ -538,11 +537,10 @@ export const useGameStore = create<GameState>()(
               activeTactic: tactic,
             }
           }),
-          players: loaded.players.map((p: any) =>
-            (p.position as string) === 'midfielder'
-              ? { ...p, position: PlayerPosition.Half }
-              : p
-          ),
+          // Half och mittfältare är två skilda roller i Formation, matchmotor
+          // och trupp-UI. En äldre inline-migrering slog tidigare ihop dem vid
+          // varje loadGame och ändrade därmed en ny saves laguppställning.
+          players: loaded.players,
         }
         set({ game: migrated, lastAdvanceResult: null })
         return true

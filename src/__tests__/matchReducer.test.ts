@@ -151,7 +151,8 @@ describe('INTERACTIVE_GOAL — diff cap', () => {
   })
 })
 
-// Test 5: RESET_FROM_HALFTIME återställer scores men behåller playerGoals
+// Test 5: RESET_FROM_HALFTIME återställer halvleksläget utan att nolla
+// pågående matchstate som fortfarande gäller efter pausen.
 describe('RESET_FROM_HALFTIME', () => {
   it('återställer scores och statistik', () => {
     const s0 = {
@@ -176,15 +177,15 @@ describe('RESET_FROM_HALFTIME', () => {
         initialShotsAway: 5,
         initialCornersHome: 3,
         initialCornersAway: 1,
-        initialHomeSuspensions: 0,
+        initialHomeSuspensions: 1,
         initialAwaySuspensions: 0,
       },
     })
     // Scores kvar (halvtidsstatus)
     expect(s1.homeScore).toBe(3)
     expect(s1.awayScore).toBe(1)
-    // Utvisningar återställda
-    expect(s1.homeActiveSuspensions).toBe(0)
+    // Utvisningen står kvar över pausen; timern ägs av generatorn.
+    expect(s1.homeActiveSuspensions).toBe(1)
     // playerGoals bevarade
     expect(s1.playerGoals[PLAYER_ID]).toBe(2)
     expect(s1.playerGoals['player_002']).toBe(1)

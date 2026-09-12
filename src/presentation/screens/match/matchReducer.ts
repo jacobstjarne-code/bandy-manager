@@ -46,7 +46,6 @@ export type MatchAction =
   | { type: 'STEP_DELTA'; delta: Partial<MatchState> }
   | { type: 'INTERACTIVE_GOAL'; clubId: string; playerId: string; isPenalty: boolean; attackingHome: boolean }
   | { type: 'INTERACTIVE_SAVE'; playerId: string }
-  | { type: 'INTERACTIVE_CORNER'; clubId: string }
   | { type: 'RESET_FROM_HALFTIME'; state: SecondHalfInput }
 
 export const initialMatchState: MatchState = {
@@ -122,13 +121,6 @@ export function matchReducer(state: MatchState, action: MatchAction): MatchState
         ...state,
         playerSaves: { ...state.playerSaves, [playerId]: current + 1 },
       }
-    }
-
-    case 'INTERACTIVE_CORNER': {
-      // Just tracks corner count; actual scoring handled by INTERACTIVE_GOAL
-      const isHome = action.clubId !== undefined // placeholder — caller knows which side
-      void isHome // unused intentionally — corner tracking handled by STEP_DELTA
-      return state
     }
 
     case 'RESET_FROM_HALFTIME': {
