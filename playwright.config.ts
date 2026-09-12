@@ -13,6 +13,10 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/visual',
   testMatch: '**/*.visual.ts',
+  // Pixelbaselines är avsiktligt Linux-ägda. På macOS kör vi fortfarande
+  // hela den visuella sviten och alla strukturella grindar, men kräver inte
+  // Darwin-snapshots som varken ska skapas eller committas.
+  ignoreSnapshots: process.platform !== 'linux',
   snapshotPathTemplate: '{testDir}/__snapshots__/{arg}{-platform}{ext}',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
