@@ -56,7 +56,12 @@ export function getKnownDecisionIdentities(game: SaveGame): Set<string> {
   return known
 }
 
-/** Writes the terminal state once and preserves the exact event id as proof. */
+/**
+ * Writes the terminal state once and preserves both the concrete and semantic
+ * identity as durable proof. `resolvedEventIds` is intentionally capped, so
+ * the append-only ledger must also carry ordinary concrete ids; otherwise an
+ * old event can become "new" again after enough later resolutions.
+ */
 export function recordDecisionLifecycle(
   game: SaveGame,
   event: GameEvent,
@@ -71,12 +76,6 @@ export function recordDecisionLifecycle(
   const resolvedEventIds = (game.resolvedEventIds ?? []).includes(event.id)
     ? (game.resolvedEventIds ?? [])
     : [...(game.resolvedEventIds ?? []), event.id].slice(-200)
-  // Concrete ids already have durable resolvedEventIds/resolvedChoices
-  // receipts. The extra ledger row exists for semantic identities and for
-  // explicit expiry, where no choice receipt can be written.
-  if (resolution === 'resolved' && !event.semanticId) {
-    return { ...game, resolvedEventIds }
-  }
   if (exists) return { ...game, resolvedEventIds }
 
   return {

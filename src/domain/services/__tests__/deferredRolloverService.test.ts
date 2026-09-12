@@ -134,7 +134,7 @@ describe('resolveDeferredAtRollover — aldrig tyst', () => {
     expect(result.inboxItems).toHaveLength(1)
     expect(result.outcomes.map(o => o.kind)).toEqual(['resolved', 'expired', 'expired'])
     expect(result.inboxItems[0].sourceEventIds).toEqual(['d1', 'd2', 'd3'])
-    expect(result.game.eventLedger?.filter(entry => entry.type === 'decision_lifecycle')).toHaveLength(2)
+    expect(result.game.eventLedger?.filter(entry => entry.type === 'decision_lifecycle')).toHaveLength(3)
     expect(result.game.resolvedChoices?.some(receipt => receipt.eventId === 'd1')).toBe(true)
     expect(result.game.resolvedEventIds).toEqual(expect.arrayContaining(['d1', 'd2', 'd3']))
   })
