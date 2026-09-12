@@ -143,7 +143,7 @@ interface GameState {
   clearFiredGame: () => void
   // O13 (DOM_TRANARMARKNADEN_2026-08-26) — tränarmarknadens tre steg, i
   // domens ordning. Se careerBreakActions.ts.
-  startCareerBreak: () => SaveGame | null
+  startCareerBreak: () => Promise<SaveGame | null>
   revealCareerMarket: () => void
   acceptCareerOffer: (clubId: string) => boolean
   loadGame: (id: string) => Promise<boolean>

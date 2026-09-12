@@ -27,14 +27,11 @@ import { ArrivalScene } from '../screens/ArrivalScene'
 import { GameShell, GameGuard } from './GameShell'
 import { PortalScreen } from '../screens/PortalScreen'
 import { SceneScreen } from '../screens/scenes/SceneScreen'
-import { MatchScreen } from '../screens/MatchScreen'
-import { ClubScreen } from '../screens/ClubScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonContractDemandsScreen } from '../screens/SeasonContractDemandsScreen'
 import { SeasonTransitionScene } from '../screens/scenes/SeasonTransitionScene'
 
 import { CareerBreakScreen } from '../screens/CareerBreakScreen'
-import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 import FacilityScreen from '../screens/FacilityScreen'
 import HallProvningScreen from '../screens/HallProvningScreen'
@@ -49,9 +46,9 @@ import { getCurrentAttention } from '../../domain/services/attentionRouter'
 import { CoffeeRoomScene } from '../screens/scenes/CoffeeRoomScene'
 import { getPendingScreenRedirect } from './pendingScreenRedirect'
 
-// Pass 2 (CODE_KORORDER_GENOMGANG_2026-09-12 §1): route-lazy tunga skärmar +
-// matchbundeln (MatchLiveScreen + matchCore/matchEngine + components/match/*)
-// som en egen chunk — huvudchunken var 2,79 MB, en fil.
+// Pass 2 (CODE_KORORDER_GENOMGANG_2026-09-12 §1): route-lazy tunga skärmar.
+// Uppföljningen omfattar även Match, Klubb och Granska; de tre låg kvar i
+// startup-grafen efter första passet och bar domänkod som inte behövs där.
 const EmptyFallback = () => <div style={{ height: '100%', background: 'var(--bg)' }} />
 
 const SquadScreen = lazy(() => import('../screens/SquadScreen').then(m => ({ default: m.SquadScreen })))
@@ -63,6 +60,9 @@ const HistoryScreen = lazy(() => import('../screens/HistoryScreen').then(m => ({
 const GameOverScreen = lazy(() => import('../screens/GameOverScreen').then(m => ({ default: m.GameOverScreen })))
 const TilltradeScreen = lazy(() => import('../screens/TilltradeScreen').then(m => ({ default: m.TilltradeScreen })))
 const MatchLiveScreen = lazy(() => import('../screens/match/MatchLiveScreen').then(m => ({ default: m.MatchLiveScreen })))
+const MatchScreen = lazy(() => import('../screens/MatchScreen').then(m => ({ default: m.MatchScreen })))
+const ClubScreen = lazy(() => import('../screens/ClubScreen').then(m => ({ default: m.ClubScreen })))
+const GranskaScreen = lazy(() => import('../screens/granska/GranskaScreen').then(m => ({ default: m.GranskaScreen })))
 
 // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
 // visa historik för en avslutad (managerFired) karriär. GameShell redirectar
@@ -163,10 +163,10 @@ export function AppRouter() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardOrPortal />} />
           <Route path="squad" element={<Suspense fallback={<EmptyFallback />}><SquadScreen /></Suspense>} />
-          <Route path="match" element={<MatchScreen />} />
+          <Route path="match" element={<Suspense fallback={<EmptyFallback />}><MatchScreen /></Suspense>} />
           <Route path="match/live" element={<Suspense fallback={<EmptyFallback />}><MatchLiveScreen /></Suspense>} />
           <Route path="transfers" element={<Suspense fallback={<EmptyFallback />}><TransfersScreen /></Suspense>} />
-          <Route path="club" element={<ClubScreen />} />
+          <Route path="club" element={<Suspense fallback={<EmptyFallback />}><ClubScreen /></Suspense>} />
           <Route path="tabell" element={<Suspense fallback={<EmptyFallback />}><TabellScreen /></Suspense>} />
           <Route path="champion" element={<ChampionScreen />} />
           <Route path="season-summary" element={<Suspense fallback={<EmptyFallback />}><SeasonSummaryScreen /></Suspense>} />
@@ -181,7 +181,7 @@ export function AppRouter() {
           <Route path="qf-summary" element={<QFSummaryScreen />} />
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
-          <Route path="review" element={<GranskaScreen />} />
+          <Route path="review" element={<Suspense fallback={<EmptyFallback />}><GranskaScreen /></Suspense>} />
           {/* Klubb → Bygget är den kanoniska fliken. Båda rutterna nedan är
               push-/bakåtkompatibla djuplänkar och renderar därför tillbaka-pil. */}
           <Route path="bygget" element={<FacilityScreen />} />

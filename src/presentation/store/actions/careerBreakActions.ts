@@ -14,7 +14,6 @@
  */
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { simulateCareerBreak } from '../../../application/useCases/simulateCareerBreak'
 import { switchManagedClub } from '../../../application/useCases/switchManagedClub'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
@@ -26,26 +25,16 @@ type Set = (partial: Partial<{ game: SaveGame | null }>) => void
 export function careerBreakActions(get: Get, set: Set) {
   return {
     /**
-     * Kör uppehållet. Synkron och potentiellt tung (två säsonger headless) —
-     * anroparen ansvarar för att visa ett väntetillstånd. Returnerar det nya
-     * spelet så skärmen kan navigera vidare utan en extra store-läsning.
-     *
-     * genomgang-store-lazy-matchcore (2026-09-12): medvetet INTE dynamiskt
-     * importerad. simulateCareerBreak.ts:s Promise.all(import('./roundProcessor'),
-     * import('./processors/matchSimProcessor')) HÄNGDE (>120s, aldrig ens
-     * påbörjad testkörning) under vitest — roundProcessor.ts importerar redan
-     * matchSimProcessor.ts statiskt, och två samtidiga dynamiska importer mot
-     * överlappande moduler gav ett verkligt deadlock-mönster, inte bara
-     * transform-overhead. Samma mönster som gameFlowActions.ts:s advance()
-     * (EN dynamisk import, ingen Promise.all) fungerade felfritt — se
-     * MASTER_OPPET.md:s genomgang-store-lazy-matchcore-rad för detaljer.
-     * Career break är dessutom ett sällan-flöde bakom en redan lazy-laddad
-     * skärm (GameOverScreen), inte den heta Portal→Match-starten Jacobs order
-     * gällde — kvarstår statisk tills en säker enda-import-lösning finns.
+     * Kör uppehållet. Hela use-caset laddas med en enda dynamisk import först
+     * när spelaren väljer karriäruppehåll. Den tidigare, osäkra varianten
+     * gjorde två överlappande importer inne i use-caset; det är inte samma
+     * graf. En import här låter modulens egna statiska beroenden laddas i
+     * normal ordning och håller roundProcessor/matchCore borta från startup.
      */
-    startCareerBreak: (): SaveGame | null => {
+    startCareerBreak: async (): Promise<SaveGame | null> => {
       const { game } = get()
       if (!game || !game.managerFired || game.careerBreak) return null
+      const { simulateCareerBreak } = await import('../../../application/useCases/simulateCareerBreak')
       const { game: simulated } = simulateCareerBreak(game)
       set({ game: simulated })
       void saveSaveGame(simulated).then(r => {

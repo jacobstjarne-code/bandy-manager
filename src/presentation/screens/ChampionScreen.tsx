@@ -67,10 +67,14 @@ export function ChampionScreen() {
   const isChampion = bracket.champion === game.managedClubId
   const champion = game.clubs.find(c => c.id === bracket.champion)
 
-  const handleNextSeason = () => {
+  const handleNextSeason = async () => {
     setAdvancing(true)
-    advance()
-    navigate('/game/dashboard', { replace: true })
+    try {
+      await advance()
+      navigate('/game/dashboard', { replace: true })
+    } finally {
+      setAdvancing(false)
+    }
   }
 
   // Find managed club's playoff run

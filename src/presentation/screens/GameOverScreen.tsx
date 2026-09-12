@@ -127,17 +127,17 @@ export function GameOverScreen() {
   // ingenting om ett nytt jobb — den startar bara uppehållet. Att erbjudandet
   // (eller uteblivandet av det) visas FÖRST efter att säsongen spelats är
   // domens uttryckliga ordning, och det är därför den här knappen inte heter
-  // "sök nytt jobb". Simuleringen är synkron och tar ~1s; knappen låser sig
-  // så den inte kan startas två gånger.
+  // "sök nytt jobb". Modulen laddas asynkront, därefter kör simuleringen
+  // synkront; knappen låser sig så flödet inte kan startas två gånger.
   const careerBreakAvailable = canEnterCareerBreak(game)
 
   function handleCareerBreak() {
     if (simulating) return
     setSimulating(true)
-    // Ett tick så knappens låsta tillstånd hinner målas innan den synkrona
-    // tvåsäsongerssimuleringen blockerar tråden.
-    setTimeout(() => {
-      const result = startCareerBreak()
+    // Ett tick så knappens låsta tillstånd hinner målas innan modulladdningen
+    // och den efterföljande tvåsäsongerssimuleringen tar över.
+    setTimeout(async () => {
+      const result = await startCareerBreak()
       if (result) navigate('/game/career-break', { replace: true })
       else setSimulating(false)
     }, 0)

@@ -71,7 +71,7 @@ export function PortalScreen() {
            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (!hasManagedAtNextMd) {
-      advance()
+      void advance().catch(err => console.error('advance() failed:', err))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run once on mount — advance() navigates away, re-mount after return handles any remaining rounds
