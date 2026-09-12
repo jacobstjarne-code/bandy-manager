@@ -265,6 +265,81 @@ export function developPlayers(input: DevelopmentInput): DevelopmentResult {
   return { updatedPlayers, notableChanges }
 }
 
+// genomgang-motor-attribut-aldras-ej (Jacobs dom 2026-09-12): developPlayers
+// (ovan) körs bara på AI-klubbar — playerStateProcessor.ts filtrerar
+// `p.clubId !== game.managedClubId` innan anropet, var 2:a omgång
+// (`nextRound % 2 === 0`). applyRoundDevelopment (nedan, per omgång) rör
+// bara currentAbility, aldrig attributes. Den hanterade klubbens spelare
+// fick alltså ALDRIG attributnedgång med åldern: evaluateSquad läser
+// attributen, så en 35-åring behöll sina toppattribut för evigt medan
+// AI-veteraner sjönk enligt kurvan ovan.
+//
+// Denna funktion applicerar EXAKT developPlayers NEDGÅNGSGREN (samma
+// baseChange-formel, samma slumpmässiga extra-nedgångsattribut — se
+// decline-grenen i developPlayers ovan) på managed-klubbens 31+-åringar
+// vid säsongsslut. RÖR ALDRIG currentAbility — omgångssystemet
+// (applyRoundDevelopment) äger den, annars dubbelräknas nedgången.
+// Arketyp-multiplikatorn (getArchetypeMultiplier) används INTE här av
+// samma skäl den inte används i developPlayers egen nedgångsgren:
+// nedgång slår lika på alla attribut, bara ett slumpat attribut per
+// spelare får extra nedgång (developPlayers-mönstret, oförändrat).
+//
+// `applicationsThisSeason`: en engångskörning vid säsongsslut med samma
+// baseChange som AI:s per-omgångskörning gav bara 1/11 av AI:s nedgång
+// (uppmätt: 0,09 mot 1,01 attributpoäng-snitt över tre säsonger på en
+// identisk 34-åring — inte "jämförbar", nästan platt igen). Roten är
+// applikationsRÄKNINGEN, inte formeln — AI får en chans att sjunka var
+// 2:a omgång (~halva säsongens omgångar), managed fick bara en chans per
+// säsong. Loopen nedan kör SAMMA formel en gång per omgång klubben
+// faktiskt spelade i år, delat på två — exakt AI:s egen `% 2 === 0`-takt,
+// bara räknad i efterhand i stället för live under säsongen. Ingen ny
+// balanskonstant: `applicationsThisSeason` är caller-räknade, faktiskt
+// spelade omgångar, inte en gissning.
+export function applyVeteranAttributeDecline(
+  players: Player[],
+  managedClubId: string,
+  clubFacilities: Record<string, number>,
+  applicationsThisSeason: number,
+  seed: number,
+): Player[] {
+  const rng = makeRng(seed)
+
+  return players.map(player => {
+    if (player.clubId !== managedClubId) return player
+    if (player.age < 31) return player
+    if (player.isInjured) return player
+
+    const ageFactor = getAgeFactor(player.age)
+    // getAgeFactor(31) är redan −0.1 (negativ från 31), men skydda mot en
+    // framtida kurvändring som skulle göra 31 en tillväxtålder igen —
+    // den här funktionen ska ALDRIG applicera tillväxt.
+    if (ageFactor >= 0) return player
+
+    const developmentMod = (player.developmentRate / 100) * 0.6 + 0.4
+    const facilities = clubFacilities[player.clubId] ?? 50
+    const facilitiesMod = (facilities / 100) * 0.4 + 0.6
+    const formMod = (player.form / 100) * 0.3 + 0.7
+    const baseChange = ageFactor * developmentMod * facilitiesMod * formMod * 0.15
+
+    let newAttributes = { ...player.attributes }
+    const allKeys = Object.keys(newAttributes) as (keyof PlayerAttributes)[]
+
+    for (let i = 0; i < Math.max(1, applicationsThisSeason); i++) {
+      const randomDeclineAttr = allKeys[rng.int(0, allKeys.length - 1)]
+      const stepAttributes = { ...newAttributes }
+      for (const attr of allKeys) {
+        const oldVal = stepAttributes[attr]
+        const extraDecline = attr === randomDeclineAttr ? 1.5 : 1.0
+        const effectiveChange = baseChange * extraDecline + rng.float(-0.05, 0.05)
+        stepAttributes[attr] = clamp(oldVal + effectiveChange, 1, 99)
+      }
+      newAttributes = stepAttributes
+    }
+
+    return { ...player, attributes: newAttributes }
+  })
+}
+
 // ── Per-round development for managed club players ─────────────────────────
 
 interface RoundDevelopmentContext {

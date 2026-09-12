@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { developPlayers, applyRoundDevelopment } from '../playerDevelopmentService'
+import { developPlayers, applyRoundDevelopment, applyVeteranAttributeDecline } from '../playerDevelopmentService'
 import type { Player } from '../../entities/Player'
 import { PlayerPosition, PlayerArchetype } from '../../enums'
 
@@ -226,5 +226,78 @@ describe('developPlayers', () => {
     expect(youngCurrent[0].currentAbility).toBeLessThanOrEqual(95)
     expect(oldCurrent[0].currentAbility).toBeGreaterThanOrEqual(5)
     expect(oldCurrent[0].currentAbility).toBeLessThanOrEqual(95)
+  })
+})
+
+// genomgang-motor-attribut-aldras-ej (Jacobs dom 2026-09-12): developPlayers
+// nedgångsgren körs bara på AI-klubbar (playerStateProcessor.ts filtrerar
+// bort managedClubId) — den hanterade klubbens veteraner fick ALDRIG
+// attributnedgång. applyVeteranAttributeDecline ska ge en jämförbar
+// nedgång vid säsongsslut som AI får löpande under säsongen.
+describe('applyVeteranAttributeDecline', () => {
+  function avgAttr(p: Player): number {
+    const vals = Object.values(p.attributes)
+    return vals.reduce((a, b) => a + b, 0) / vals.length
+  }
+
+  it('rör aldrig currentAbility — bara attributes', () => {
+    const veteran = makePlayer({ id: 'v1', age: 34, currentAbility: 60 })
+    const result = applyVeteranAttributeDecline([veteran], 'club_test', { club_test: 60 }, 11, 4242)
+    expect(result[0].currentAbility).toBe(60)
+    expect(result[0].attributes).not.toEqual(veteran.attributes)
+  })
+
+  it('rör inte spelare under 31, skadade, eller andra klubbar', () => {
+    const young = makePlayer({ id: 'young', age: 28, clubId: 'club_test' })
+    const injured = makePlayer({ id: 'injured', age: 34, clubId: 'club_test', isInjured: true })
+    const aiClub = makePlayer({ id: 'ai', age: 34, clubId: 'club_other' })
+    const result = applyVeteranAttributeDecline([young, injured, aiClub], 'club_test', { club_test: 60, club_other: 60 }, 11, 4242)
+    expect(result[0].attributes).toEqual(young.attributes)
+    expect(result[1].attributes).toEqual(injured.attributes)
+    expect(result[2].attributes).toEqual(aiClub.attributes)
+  })
+
+  it('en 34-åring i managed och en identisk i AI har jämförbar attributnedgång efter tre säsonger (idag: managed platt, AI sjunker)', () => {
+    const facilities = { club_test: 60 }
+
+    // AI: developPlayers löper var 2:a omgång, 22 omgångar/säsong → 11
+    // tillfällen/säsong (playerStateProcessor.ts:s `nextRound % 2 === 0`).
+    let aiPlayer = makePlayer({ id: 'ai34', age: 34, clubId: 'club_test' })
+    let week = 0
+    for (let season = 1; season <= 3; season++) {
+      for (let round = 1; round <= 22; round++) {
+        week++
+        if (round % 2 === 0) {
+          aiPlayer = developPlayers({ players: [aiPlayer], clubFacilities: facilities, weekNumber: week, seed: week * 13 }).updatedPlayers[0]
+        }
+      }
+    }
+
+    // Managed: applyVeteranAttributeDecline en gång per säsongsslut, med
+    // samma 11 applikationer/säsong som AI:s egen takt (seasonEndProcessor.ts
+    // räknar detta ur faktiskt spelade omgångar, inte en gissad konstant).
+    let managedPlayer = makePlayer({ id: 'managed34', age: 34, clubId: 'club_test' })
+    for (let season = 1; season <= 3; season++) {
+      managedPlayer = applyVeteranAttributeDecline([managedPlayer], 'club_test', facilities, 11, season * 555111)[0]
+    }
+
+    const startAvg = avgAttr(makePlayer({ age: 34 }))
+    const aiDecline = startAvg - avgAttr(aiPlayer)
+    const managedDecline = startAvg - avgAttr(managedPlayer)
+
+    // Buggen: managed var platt (≈0). Fixet: managed sjunker påtagligt,
+    // i samma storleksordning som AI — inte inom decimalen, men inte
+    // heller 1/11 av AI:s nedgång (det ursprungliga, otillräckliga
+    // resultatet av en enda applicering per säsong).
+    expect(managedDecline).toBeGreaterThan(0.3)
+    expect(managedDecline).toBeGreaterThan(aiDecline * 0.5)
+    expect(managedDecline).toBeLessThan(aiDecline * 1.5)
+  })
+
+  it('deterministisk givet samma seed', () => {
+    const veteran = makePlayer({ id: 'det', age: 34 })
+    const a = applyVeteranAttributeDecline([veteran], 'club_test', { club_test: 60 }, 11, 999)
+    const b = applyVeteranAttributeDecline([veteran], 'club_test', { club_test: 60 }, 11, 999)
+    expect(a[0].attributes).toEqual(b[0].attributes)
   })
 })

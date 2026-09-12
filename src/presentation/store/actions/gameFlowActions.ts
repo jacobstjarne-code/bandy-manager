@@ -124,6 +124,10 @@ export function buildMultiWeekPeriod(
 // saveSaveGame() returnerar nu en riktig SaveWriteResult; set() propagerar
 // resultatet till store:t så GameHeader.tsx kan visa det.
 async function persistAutosave(game: SaveGame, context: string, set: Set): Promise<void> {
+  // genomgang-save-storlek-matrad (§5, CODE_INSTRUKTION_GENOMGANG_2026-09-11.md):
+  // TS-8/GAP-5 (SaveGame-tillväxt, eventLedger utan tak) är oro utan mått.
+  // Läs av efter en lång körning och skriv siffran i MASTER-raden.
+  if (import.meta.env.DEV) console.info('[save] bytes', JSON.stringify(game).length, 'ledger', game.eventLedger?.length ?? 0)
   const result = await saveSaveGame(game)
   if (result.success) {
     // M2: se motsvarande kommentar i gameStore.ts:persistGameSnapshot —

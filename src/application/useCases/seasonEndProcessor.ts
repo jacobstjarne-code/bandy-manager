@@ -23,7 +23,7 @@ import {
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
-import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/playerDevelopmentService'
+import { shouldRetire, updateActiveLegendFlags, applyVeteranAttributeDecline } from '../../domain/services/playerDevelopmentService'
 import { generateRetirementData, generateFarewellQuote, isRetiringClubLegendEligible, recordCompletedCaptainSeason } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam, starsForPotential } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
@@ -1117,6 +1117,28 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       seasonTransitionEvents.push({ type: 'contractExpired', playerId: player.id, playerLastName: player.lastName })
     }
   }
+
+  // genomgang-motor-attribut-aldras-ej (Jacobs dom 2026-09-12): managed-
+  // klubbens 31+-åringar får nu samma attributnedgång som AI-veteranerna
+  // redan får (developPlayers, playerStateProcessor.ts). Efter årets sista
+  // applyRoundDevelopment-körning (per-omgång, rör bara currentAbility),
+  // före legend-flaggan nedan. Rör aldrig currentAbility — bara attributes.
+  // applicationsThisSeason speglar AI:s egen `nextRound % 2 === 0`-takt
+  // (playerStateProcessor.ts) — hälften av faktiskt spelade omgångar i år,
+  // inte en gissad konstant (mätt: en enda applicering gav bara 1/11 av
+  // AI:s nedgång på identiska 34-åringar).
+  const clubFacilitiesForDecline = Object.fromEntries(game.clubs.map(c => [c.id, c.facilities]))
+  const managedRoundsThisSeason = game.fixtures.filter(f =>
+    f.season === game.currentSeason && f.status === FixtureStatus.Completed &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+  ).length
+  resetPlayers = applyVeteranAttributeDecline(
+    resetPlayers,
+    game.managedClubId,
+    clubFacilitiesForDecline,
+    Math.floor(managedRoundsThisSeason / 2),
+    baseSeed + 555111,
+  ) as typeof resetPlayers
 
   // Sprint 28-B: Update isClubLegend flag for active managed-club players.
   // AI-club legends are seeded once in worldGenerator — managed-club legends
