@@ -143,6 +143,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
       initialHomeSuspensionTimers: currentStepData.activeSuspensions.homeTimers,
       initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
+      matchProfile: currentStepData.matchProfile,
       managedIsHome,
       storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)

@@ -360,6 +360,8 @@ export interface StepByStepInput {
   isNyarsbandy?: boolean
   isCupFinalhelgen?: boolean
   hallInomhus?: boolean     // hemmamatch i byggd matchhall — byter atmosfärpool (Själ-priset)
+  /** Matchens frusna grundkaraktär vid halvtid/regenerering. */
+  matchProfile?: NonNullable<MatchStep['matchProfile']>
   // Second-half restart fields (optional — omit for full match from step 0)
   startStep?: number
   initialHomeScore?: number

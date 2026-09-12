@@ -809,6 +809,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
       initialHomeSuspensionTimers: currentStepData.activeSuspensions.homeTimers,
       initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
+      matchProfile: currentStepData.matchProfile,
       managedIsHome,
     }, fromStep, inSecondHalf)
 
@@ -1212,6 +1213,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
       initialHomeSuspensionTimers: halftimeStep?.activeSuspensions.homeTimers ?? [],
       initialAwaySuspensionTimers: halftimeStep?.activeSuspensions.awayTimers ?? [],
+      matchProfile: halftimeStep?.matchProfile,
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
       pauseLean: effectiveLean,
@@ -1294,6 +1296,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensions: currentMatchStep.activeSuspensions.awayCount,
       initialHomeSuspensionTimers: currentMatchStep.activeSuspensions.homeTimers,
       initialAwaySuspensionTimers: currentMatchStep.activeSuspensions.awayTimers,
+      matchProfile: currentMatchStep.matchProfile,
       managedIsHome,
     }, fromStep, inSecondHalf)
 

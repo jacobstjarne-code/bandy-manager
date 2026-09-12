@@ -431,7 +431,9 @@ function* simulateMatchCore(
   const rand = mulberry32(seed ?? fixtureSeed(fixture.id))
   const commentaryHistory = new Map<string[], string[]>()
 
-  // Match profile — same result for both halves sharing the same seed
+  // Match profile — rullas exakt en gång. Halvtid och interaktiva
+  // regenereringar kan använda andra RNG-seeds, men får inte skriva om
+  // vilken sorts match som redan pågår.
   const hasRivalry     = !!rivalry
   const isHeavyWeather = weather?.condition === WeatherCondition.HeavySnow
     || weather?.condition === WeatherCondition.Thaw
@@ -444,7 +446,8 @@ function* simulateMatchCore(
     awayLineup.tactic,
   )
   const largeCaDiff = Math.abs(homeEvalTemp.offenseScore - awayEvalTemp.offenseScore) >= 15
-  const profile = pickMatchProfileFromSeed(seed ?? 0, { isPlayoff, isFinal: !!fixture.isFinaldag, hasRivalry, isHeavyWeather, largeCaDiff })
+  const profile = input.matchProfile
+    ?? pickMatchProfileFromSeed(seed ?? 0, { isPlayoff, isFinal: !!fixture.isFinaldag, hasRivalry, isHeavyWeather, largeCaDiff })
   const profileGoalMod = PROFILE_GOAL_MODS[profile]
 
   // Ref style (full mode only)

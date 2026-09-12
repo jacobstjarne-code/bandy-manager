@@ -11,7 +11,7 @@
  * ingen ändring av matchutfall.
  */
 import { describe, it, expect } from 'vitest'
-import { simulateFromMidMatch, simulateSecondHalf } from '../matchCore'
+import { pickMatchProfileFromSeed, simulateFromMidMatch, simulateSecondHalf } from '../matchCore'
 import type { Player } from '../../entities/Player'
 import type { Fixture, TeamSelection } from '../../entities/Fixture'
 import {
@@ -181,5 +181,28 @@ describe('utvisningstid över halvtid och regenerering', () => {
     expect(steps.find(step => step.step === 62)?.activeSuspensions.homeTimers).toEqual([2])
     expect(steps.find(step => step.step === 63)?.activeSuspensions.homeTimers).toEqual([1])
     expect(steps.find(step => step.step === 64)?.activeSuspensions.homeTimers).toEqual([])
+  })
+})
+
+describe('matchprofil över halvtid och regenerering', () => {
+  it('behåller första halvlekens profil även när den nya RNG-seeden skulle välja en annan', () => {
+    const chaoticSeed = Array.from({ length: 10_000 }, (_, seed) => seed)
+      .find(seed => pickMatchProfileFromSeed(seed) === 'chaotic')
+    expect(chaoticSeed).toBeDefined()
+
+    const steps = [...simulateSecondHalf({
+      fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
+      seed: chaoticSeed!, mode: 'fast',
+      initialHomeScore: 0, initialAwayScore: 0,
+      initialShotsHome: 0, initialShotsAway: 0,
+      initialOnTargetHome: 0, initialOnTargetAway: 0,
+      initialCornersHome: 0, initialCornersAway: 0,
+      initialHomeSuspensions: 0, initialAwaySuspensions: 0,
+      matchProfile: 'defensive_battle',
+    })]
+
+    const playedSteps = steps.filter(step => step.step >= 31 && step.step < 60)
+    expect(playedSteps.length).toBeGreaterThan(0)
+    expect(new Set(playedSteps.map(step => step.matchProfile))).toEqual(new Set(['defensive_battle']))
   })
 })
