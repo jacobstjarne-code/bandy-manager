@@ -397,6 +397,11 @@ export function buildPromotedPlayerFromYouth(
     // tenure-falt-joinedclubseason (DOM 2026-09-03): akademiuppflyttning är
     // ett av domens tre skrivställen.
     joinedClubSeason: currentSeason,
+    // YouthPlayer tas bort ur youthTeam i samma uppflyttning. Bevara därför
+    // P19-inträdet på seniorspelaren i ett separat fält; joinedClubSeason
+    // fortsätter betyda A-lagsinträde. Äldre YouthPlayer-data utan
+    // joinedSeason får den säkra uppflyttningssäsongen som fallback.
+    academyJoinedSeason: youthPlayer.joinedSeason ?? currentSeason,
     academyClubId: managedClubId,
     isHomegrown: true,
     position: youthPlayer.position,

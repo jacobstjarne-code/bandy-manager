@@ -74,6 +74,14 @@ export interface Player {
   // saveGameMigration.ts). Konsumenter: "År i klubben" (PlayerCard.tsx) +
   // O18 personraden (seasonGoalService.ts).
   joinedClubSeason?: number
+  /**
+   * Säsongen spelaren kom in i den hanterade klubbens P19-verksamhet.
+   * Skild från joinedClubSeason: den senare börjar vid A-lagskontraktet,
+   * medan denna bevarar akademitiden efter att YouthPlayer-posten tagits
+   * bort vid uppflyttning. Optional för äldre saves; då används inga
+   * tidsbundna akademipåståenden.
+   */
+  academyJoinedSeason?: number
   academyClubId?: string
   isHomegrown: boolean
   position: PlayerPosition
