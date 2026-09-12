@@ -1,7 +1,7 @@
 # O18 FÄLT 2 — SÄSONGENS VIKTIGASTE BESLUT
 
 **Datum:** 2026-08-23 · **Av:** Opus
-**Underlag:** `DOM_ARSBOKEN_RYGGRAD_2026-08-17.md` fält 2, `DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md` (`O19`-märkningen)
+**Underlag:** `docs/dom/DOM_ARSBOKEN_RYGGRAD_2026-08-17.md` fält 2, `docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md` (`O19`-märkningen)
 
 ---
 

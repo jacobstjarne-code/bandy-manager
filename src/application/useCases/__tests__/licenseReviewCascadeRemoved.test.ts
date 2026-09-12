@@ -1,5 +1,5 @@
 /**
- * Jacobs dom 2026-08-26 (RAPPORT_ATERKOPPLINGSSLINGAN_HITTAD_2026-08-26.md):
+ * Jacobs dom 2026-08-26 (docs/rapport/RAPPORT_ATERKOPPLINGSSLINGAN_HITTAD_2026-08-26.md):
  * "Kaskaden ska bort, inte mjukas." Det gamla beteendet vid licenseReview
  * status='denied' (finances < -200 000 eller 3 varningar i rad) tog bort 3
  * SLUMPADE spelare utan spelarval, drog rykte med ett fast -15, och tog bort

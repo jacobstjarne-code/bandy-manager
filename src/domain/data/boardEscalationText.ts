@@ -1,4 +1,4 @@
-// DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
+// docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
 // Callback-principen (samma som BURNOUT_MARK_RELAPSE, managerKaraktarText.ts):
 // texten VET att det hänt förr, "andra året"/"tredje året", inte bara nuläget.
 //

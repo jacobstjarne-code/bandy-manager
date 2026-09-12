@@ -2,7 +2,7 @@
 
 **Datum:** 2026-05-23
 **Audit-typ:** Systematisk genomgång av befintliga UI-ytor mot score-systemet (LED / Block / Sparkline)
-**Pairas med:** `HANDOFF-SCORE-SYSTEM-2026-05-20.md`
+**Pairas med:** `docs/handover/HANDOFF-SCORE-SYSTEM-2026-05-20.md`
 
 ## Sammanfattning
 

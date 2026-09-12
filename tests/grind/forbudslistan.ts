@@ -444,7 +444,7 @@ export const FORBUDSLISTA: Rule[] = [
         }],
       },
       {
-        // SPEC_PASTAENDEGRIND_NIVA2_2026-09-06.md §R2: "Code verifierar före
+        // docs/spec/SPEC_PASTAENDEGRIND_NIVA2_2026-09-06.md §R2: "Code verifierar före
         // scoping" — kontrollerat 2026-09-06, GATED: post.season === fixture.season
         // && post.matchday === 0 (preseason-försäljning samma säsong som
         // matchen), en riktig säsongsverifiering, inte ambient text.
@@ -459,7 +459,7 @@ export const FORBUDSLISTA: Rule[] = [
   },
   {
     // sluttest-narrative-truth-grind R3 (SPEC 2026-09-04, Opus; RETARGETAD
-    // SPEC_PASTAENDEGRIND_NIVA2_2026-09-06.md §R3): ursprungsspecen namngav
+    // docs/spec/SPEC_PASTAENDEGRIND_NIVA2_2026-09-06.md §R3): ursprungsspecen namngav
     // seasonGoalService som källan för "uppfyllt/missat" — men den systemet
     // äger noll av de orden (dess enda text, deriveGoalOutcomeLine, säger
     // "Du gjorde det"/"Det blev inte så", aldrig "uppfyllt"). VARENDA levande

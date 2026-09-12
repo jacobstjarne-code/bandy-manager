@@ -13,7 +13,7 @@ och "åskådarekonomin" (påstådd obyggd här) visade sig redan levererad
 
 **Av:** Opus. Ersätter `INVENTERING_2026-08-25.md`, som skrevs ur konversationsminnet och missade minst en post (åskådarekonomin) som stod i en order jag själv skrivit.
 
-**Läst:** `KVAR.md` (dödmarkerad, ägs av `BACKLOG`), auditsviten `5c9a7a8` M1–M13 + L1–L4, `pastaende_sweep_2026-08-24/MASTER.md`, `BACKLOG.md`.
+**Läst:** `KVAR.md` (dödmarkerad, ägs av `BACKLOG`), auditsviten `5c9a7a8` M1–M13 + L1–L4, `pastaende_sweep_2026-08-24/MASTER.md`, `docs/archive/historiska-statuskallor/BACKLOG.md`.
 
 **Regel:** varje post har ägare och nästa steg. Ingen rad slutar i "senare".
 

@@ -7,7 +7,7 @@ import { getRivalry } from '../data/rivalries'
 import { computeTrailedAtHalf } from './matchTypeAxes'
 
 /**
- * O9 (DOMLOGG_2026-08-31.md): underdog_upset kräver en tröskel för "märkbart
+ * O9 (docs/dom/DOMLOGG_2026-08-31.md): underdog_upset kräver en tröskel för "märkbart
  * högre rykte" — ingen befintlig konstant i kodbasen täcker det (sökt,
  * `underdog_season`-storylinen har ingen egen generator/tröskel att ärva).
  * 15 poäng valt utifrån klubbarnas ryktespann (~45-95, CLUB_TEMPLATES) — en
@@ -89,7 +89,7 @@ export function selectMatchOfTheSeason(game: SaveGame): MatchHighlight | null {
     if (f.isCup && margin > 0 && (f.roundNumber ?? 0) >= 3) { score += 35; category = 'cup_drama' }
     if ((f.matchday ?? 0) > 26 && margin > 0) { score += 50; category = 'playoff_decisive' }
 
-    // O9 (DOMLOGG_2026-08-31.md, "MOMENT_MALL-mallarna finns men
+    // O9 (docs/dom/DOMLOGG_2026-08-31.md, "MOMENT_MALL-mallarna finns men
     // selectMatchOfTheSeason producerar aldrig kategorierna"): comeback och
     // underdog_upset saknade helt en trigger — mallarna (seasonShareImage.ts)
     // väntade på kategorier som aldrig tilldelades.

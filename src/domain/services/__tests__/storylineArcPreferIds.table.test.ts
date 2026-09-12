@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { PLAYER_RESPONSES, TAG_DEFS } from '../pressConferenceService'
 
-// 4.2 (SLUTTEST_KO.md, 2026-08-19): de kvarvarande storyline-/arc-/community-standing-
+// 4.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19): de kvarvarande storyline-/arc-/community-standing-
 // frågornas preferIds ärvde tidigare ordagrant `question.preferIds` från
 // FÖRRA frågan (buggen, se docs/DERBYREPLIKEN_STORYLINE_FRAGOR_2026-08-19.md).
 // Facit nedan är exakt de listor som wire:ats in i pressConferenceService.ts —

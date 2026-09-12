@@ -909,7 +909,7 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 - 2026-05-25: Opus specade score-primitiver, OpponentForm-migration och C-FT1 plats-3
   mot den staila 2026-05-23-score-auditen utan att läsa koden eller DESIGN-DECISIONS.md
   först. Alla tre visade sig REDAN byggda — tre no-op-pass i rad. Pekade dessutom Code
-  mot `HANDOFF-SCORE-SYSTEM-2026-05-20.md` som inte existerar (specen bodde i mockens
+  mot `docs/handover/HANDOFF-SCORE-SYSTEM-2026-05-20.md` som inte existerar (specen bodde i mockens
   notes-sektion). Jacob: "vi går igenom saker 2 eller 3 gånger för att du slararar med
   det som står i claude.md." Fix-bekräftelse: läs kodläget + DESIGN-DECISIONS INNAN
   spec. En audit daterad >2 dagar tillbaka är en andrahandskälla, inte sanning —
@@ -1077,11 +1077,11 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 ## 49. Statusfältet är minnet av en order, inte koden — verifiera mot koden innan du bygger runt en "EJ"-rad
 
-**Mönster (samma serie, 2026-08-23/24):** i EN sammanhängande sessionskedja påstod kön (`SLUTTEST_KO.md`/BACKLOG-artefakter) tre gånger att något var obyggt eller saknade konsument, när det redan var färdigt: (1) `MatchLiveScreen` saknade `/dev/scenes`-täckning enligt "Skydd eller illusion?"-auditen (2026-08-20) — registrerad i `sceneRegistry.ts` redan 2026-08-23, alltså stale samma dag den lästes. (2) `O4` (burnout) stod som väntande på D1:s viktning i kön — byggd och committad (`721be4d6`) dagen INNAN kön lästes. (3) `ARSBOKENS_TVASANNINGSMENING_2026-08-23.md` öppnade med "`objectiveOutcome` — datafältet är inte byggt" — fältet fanns redan i `seasonEndProcessor.ts` när raden skrevs.
+**Mönster (samma serie, 2026-08-23/24):** i EN sammanhängande sessionskedja påstod kön (`docs/archive/historiska-statuskallor/SLUTTEST_KO.md`/BACKLOG-artefakter) tre gånger att något var obyggt eller saknade konsument, när det redan var färdigt: (1) `MatchLiveScreen` saknade `/dev/scenes`-täckning enligt "Skydd eller illusion?"-auditen (2026-08-20) — registrerad i `sceneRegistry.ts` redan 2026-08-23, alltså stale samma dag den lästes. (2) `O4` (burnout) stod som väntande på D1:s viktning i kön — byggd och committad (`721be4d6`) dagen INNAN kön lästes. (3) `ARSBOKENS_TVASANNINGSMENING_2026-08-23.md` öppnade med "`objectiveOutcome` — datafältet är inte byggt" — fältet fanns redan i `seasonEndProcessor.ts` när raden skrevs.
 
 **Rotorsaken är alltid densamma:** en post skrivs vid ORDERTILLFÄLLET ("bygg X näst") och läses senare som STATUS ("X är obyggt"). Mellan de två tidpunkterna hinner X bli byggt av en annan sessionsgren, en parallell agent, eller samma session tidigare samma dag — men ingen går tillbaka och stänger raden. Kön blir därmed ett protokoll över VAD SOM BESTÄLLDES, inte ett register över VAD SOM FINNS, och de två divergerar tystast just när arbetet går snabbt (flera leveranser samma dag, som här).
 
-**Åtgärd, obligatorisk innan en "EJ byggd"/"väntar på"-rad tas som sanning:** grep:a efter den påstått saknade funktionen/fältet/registreringen i koden FÖRST (samma disciplin som PRE-SPEC CROSS-CHECK, princip 2 i CLAUDE.md, men riktad bakåt mot en påstådd lucka istf framåt mot en ny spec). En rad som säger "X finns inte" är en hypotes att verifiera, inte en fakta att bygga vidare på. Om grep:en hittar X — rapportera fyndet och rätta raden SAMMA session (som denna lärdom självt gör för alla tre instanser, se `SLUTTEST_KO.md` O17-posten och `BACKLOG.md`s clubMemory-rad), fortsätt inte bygga en fjärde implementation av något som redan finns.
+**Åtgärd, obligatorisk innan en "EJ byggd"/"väntar på"-rad tas som sanning:** grep:a efter den påstått saknade funktionen/fältet/registreringen i koden FÖRST (samma disciplin som PRE-SPEC CROSS-CHECK, princip 2 i CLAUDE.md, men riktad bakåt mot en påstådd lucka istf framåt mot en ny spec). En rad som säger "X finns inte" är en hypotes att verifiera, inte en fakta att bygga vidare på. Om grep:en hittar X — rapportera fyndet och rätta raden SAMMA session (som denna lärdom självt gör för alla tre instanser, se `docs/archive/historiska-statuskallor/SLUTTEST_KO.md` O17-posten och `docs/archive/historiska-statuskallor/BACKLOG.md`s clubMemory-rad), fortsätt inte bygga en fjärde implementation av något som redan finns.
 
 **Känn igen:** en instruktion eller köpost som ber dig bygga/fixa X, formulerad som att X saknas — särskilt om ordern är några dagar (eller till och med några timmar) gammal, eller om sessionen vet att flera parallella grenar/agenter arbetat i samma kodbas. Fråga innan du börjar: "har jag verifierat att X inte finns, eller litar jag på minnet av en order?"
 
@@ -1121,7 +1121,7 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Känn igen:** "jag för in det sen", "det bor i chatten", ett schema/dom en agent bygger mot som inte finns på disk. Jacob frågar "har du stämt av mot kartorna?" — frågan i sig är signalen att avstämningen släpade. Kontrollen är load-bearing (Jacob fångar) i stället för självbärande (systemet håller sig sant).
 
-**Historik (2026-08-31/09-01):** DOMLOGG drev stale mot Codes byggen tre gånger (motbud, ekonomi, board-tröghet); `EventLedgerEntry`-schemat levde bara i chatten medan Code byggde mot det; MASTER_OPPET släpade mot fyllda texter + de tre nya fundamentdokumenten. Varje gång fångade Jacob det, inte systemet. §6 i `DOMLOGG_2026-08-31.md` bär samma lärdom för STÄNGNINGSDOMAR specifikt; denna generaliserar den till all status och gör avstämningen till FÖRSTA handlingen, inte en påmind efterhandssyssla.
+**Historik (2026-08-31/09-01):** DOMLOGG drev stale mot Codes byggen tre gånger (motbud, ekonomi, board-tröghet); `EventLedgerEntry`-schemat levde bara i chatten medan Code byggde mot det; MASTER_OPPET släpade mot fyllda texter + de tre nya fundamentdokumenten. Varje gång fångade Jacob det, inte systemet. §6 i `docs/dom/DOMLOGG_2026-08-31.md` bär samma lärdom för STÄNGNINGSDOMAR specifikt; denna generaliserar den till all status och gör avstämningen till FÖRSTA handlingen, inte en påmind efterhandssyssla.
 
 **Fjärde instansen av #50 (2026-09-04):** `clubMemoryService.test.ts` handbygger en `fixtures`-array med flera säsonger i EN array. Spelet nollställer `game.fixtures` vid varje rollover (`seasonEndProcessor.ts:2003`), så tillståndet kan inte uppstå. Testet var grönt; Krönikans fem-säsongers matchminne hade ALDRIG fungerat i verklig spelning. Upptäckt först när konsumentkartan frågade "gallras fixtures?". Regel som följer: ett minnestest ska bygga sitt state via samma väg som spelet (rollover, liggare), inte via en array någon skrev för hand.
 
@@ -1151,7 +1151,7 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Känn igen:** "bågen är byggd" = poster skrivs. Fråga: var läses den upp, och när? En `EventLedgerType` som bara förekommer i unionsdefinitionen och i en `logEvent`. En funktion med suffix `getLatest…` som bara anropas från sitt test.
 
-**Historik (2026-09-03/04):** `RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md` + RAW: 34 typer, 9 aldrig producerade, 5 producerade men aldrig lästa (exakt veckans tre bågar), Portalen/boardService/kafferummet blinda, `getLatestDecisionConsequence` föräldralös. Elva köpunkter, nio byggda av Code på ett dygn — fixen var billig; det dyra var att ingen frågat.
+**Historik (2026-09-03/04):** `docs/rapport/RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md` + RAW: 34 typer, 9 aldrig producerade, 5 producerade men aldrig lästa (exakt veckans tre bågar), Portalen/boardService/kafferummet blinda, `getLatestDecisionConsequence` föräldralös. Elva köpunkter, nio byggda av Code på ett dygn — fixen var billig; det dyra var att ingen frågat.
 
 ---
 
@@ -1211,4 +1211,4 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 
 **Känn igen:** en ny liggartyp vars konsument returnerar `null`/tomt trots att en matchande post finns i `game.eventLedger`. Ett test som konstruerar `EventLedgerEntry` för hand och anropar konsumentfunktionen direkt (kringgår redaktören helt) i stället för att gå via `selectReviewCallback`/`agendaForSurface`. En PR-diff som lägger till en typ i `Narrative.ts`s union men inte rör `redaktorenService.ts` eller `clubMemoryService.ts`.
 
-**Historik (2026-09-08):** k12 (`DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08.md`, commit `c71b4d3e`) — Codex fångade grindfelet under granskning innan release, inte i produktion. Fixat genom att lägga `transfer_target_missed` i `REVIEW_TYPES` (redaktorenService.ts) samt `STATIC_MOMENT_KIND`/`MOMENT_FAMILY` (clubMemoryService.ts) i samma commit som producent/konsument.
+**Historik (2026-09-08):** k12 (`docs/dom/DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08.md`, commit `c71b4d3e`) — Codex fångade grindfelet under granskning innan release, inte i produktion. Fixat genom att lägga `transfer_target_missed` i `REVIEW_TYPES` (redaktorenService.ts) samt `STATIC_MOMENT_KIND`/`MOMENT_FAMILY` (clubMemoryService.ts) i samma commit som producent/konsument.

@@ -6,7 +6,7 @@ import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 /**
- * Grind 0 — "sanningen" (SLUTTEST_KO.md, GRINDAR-sektionen). Jacobs order,
+ * Grind 0 — "sanningen" (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, GRINDAR-sektionen). Jacobs order,
  * 2026-08-22: "Kör Grind 0 som en del av gate-sviten, inte som ett
  * engångsskript... allt som rör statistik ska passera den." Ersätter det
  * tidigare fristående skriptet `scripts/grind0-truth-sim.ts` (raderat i
@@ -48,7 +48,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
  * cupGames/cupGoals/cupAssists dit, läst från SAMMA `game`-parameter
  * handleSeasonEnd() faktiskt tar emot — som redan reflekterar en eventuell
  * tyst rekursion, eftersom rekursionen händer FÖRE handleSeasonEnd anropas,
- * inte efter). Se SLUTTEST_KO.md för fullständig spårning.
+ * inte efter). Se docs/archive/historiska-statuskallor/SLUTTEST_KO.md för fullständig spårning.
  */
 
 const SEASONS = 2

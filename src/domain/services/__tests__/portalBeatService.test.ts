@@ -7,7 +7,7 @@ import { getRivalry } from '../../data/rivalries'
 import type { SaveGame } from '../../entities/SaveGame'
 
 /**
- * U5 forts (SLUTTEST_KO.md, 2026-08-19/20) — isOnCooldown mot pivotal beats.
+ * U5 forts (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19/20) — isOnCooldown mot pivotal beats.
  * "Pivotal" saknar formell klassificering i kodbasen (väntar på O11/
  * contentContract.ts) — interimslistan (PIVOTAL_BEAT_IDS, portalBeats.ts)
  * är sju namngivna beats som läser som stora/sällsynta ögonblick. Detta

@@ -139,12 +139,12 @@ export function selectNextMatchPointerType(args: {
 }
 
 /**
- * O16 — GRANSKA SOM LÄRANDEYTA (DOM_GRANSKA_LARANDEYTA_2026-08-17.md).
+ * O16 — GRANSKA SOM LÄRANDEYTA (docs/dom/DOM_GRANSKA_LARANDEYTA_2026-08-17.md).
  * Kandidat 2 av fyra i domen — den enda med siffror i MatchResult redan idag
  * (cornerStrategy → matchCore.ts:462/675/1195, isCornerGoal på MatchEvent).
  * De andra tre (press→återvinningar, tempo→kondition sista tjugo,
  * formation→målens ursprung) kräver ny instrumentering och är INTE byggda —
- * se SLUTTEST_KO.md O16.
+ * se docs/archive/historiska-statuskallor/SLUTTEST_KO.md O16.
  *
  * Formen är låst (domen, "Texten"): vad du valde, vad som hände. Ingen
  * bindestreckad slutsats, aldrig beröm/tillrättavisning — bara vad som
@@ -1077,7 +1077,7 @@ export function GranskaOversikt({
       })()}
 
       {/* O16 — DITT VAL: cornerStrategy → hörnmål, den enda av fyra kandidater
-          matchmotorn har siffror för idag (se DOM_GRANSKA_LARANDEYTA_2026-08-17.md
+          matchmotorn har siffror för idag (se docs/dom/DOM_GRANSKA_LARANDEYTA_2026-08-17.md
           + dittValCornerText ovan). Skild från "DINA VAL · UTFALL" ovan (den
           sektionen läser managerChoiceLog, in-match-beslut — den här läser en
           förematch-taktikinställning mot ett efterhandsmätt utfall). */}

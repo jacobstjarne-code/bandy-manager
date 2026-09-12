@@ -1,7 +1,7 @@
 # Code-uppdrag — Score-system (tre primitiver) — granskning + implementationsplan
 
 **Av:** Opus, 2026-05-22. **Pairas med:** Design-Claudes handoff + mock
-(`HANDOFF-SCORE-SYSTEM-2026-05-20.md`, `2026-05-20_design_score_system.html`).
+(`docs/handover/HANDOFF-SCORE-SYSTEM-2026-05-20.md`, `2026-05-20_design_score_system.html`).
 **Status:** Redo för Code EFTER att §A-rättningarna är inlästa. Granskningen
 nedan ändrar handoffen på tre punkter — bygg INTE rakt mot handoffen utan att
 läsa §A först.

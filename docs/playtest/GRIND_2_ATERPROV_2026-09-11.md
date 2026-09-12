@@ -1,6 +1,6 @@
 # Grind 2 — hypotespass och kort återprov
 
-**Dom:** `docs/DOM_GRIND_2_3_2026-09-10.md`  
+**Dom:** `docs/dom/DOM_GRIND_2_3_2026-09-10.md`
 **Save:** `docs/playtest/karriar_vastanfors_10sasonger.json`  
 **Kodbas:** `main`, provet ska visa footer-hash för aktuell commit före första räknade spelsteget.
 

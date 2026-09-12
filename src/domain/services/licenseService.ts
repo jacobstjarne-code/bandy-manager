@@ -20,7 +20,7 @@ export interface LicenseAction {
 }
 
 /**
- * 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+ * 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
  * licenseRiskScore ersätter den binära, minneslösa räknaren — "kaskaden ska
  * bort" gällde licenseReview (System A, seasonEndProcessor.ts), det här är
  * den PARALLELLA domen för System B (det som faktiskt avskedar): "en positiv

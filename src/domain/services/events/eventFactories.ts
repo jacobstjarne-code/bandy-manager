@@ -154,7 +154,7 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame, triggerProof:
     relatedClubId: bid.buyingClubId,
     relatedBidId: bid.id,
     resolved: false,
-    systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+    systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }
 
@@ -203,7 +203,7 @@ export function contractRequestEvent(game: SaveGame, playerId: string, triggerPr
     choices,
     relatedPlayerId: playerId,
     resolved: false,
-    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns frist.
+    // HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns frist.
     // Kontraktet löper ut EFTER säsong `contractUntilSeason` och utgången
     // tillämpas vid rollovern (seasonEndProcessor.ts) — sista tillfället att
     // svara är därför regelsäsongens sista matchdag. Läst ur speletsegen
@@ -472,7 +472,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubId: string, seas
 }
 
 // ── Employer layoff (varsel) event ────────────────────────────────────────
-// 4.3 (SLUTTEST_KO.md, 2026-08-17): dedup-kollen i postAdvanceEvents.ts
+// 4.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): dedup-kollen i postAdvanceEvents.ts
 // använde `event_varsel_s${season}` medan detta event byggde sitt id ur
 // `event_varsel_${employerName}_${season}` — de matchade aldrig, så
 // "en gång per säsong"-spärren var verkningslös. Gemensam ID-funktion
@@ -752,7 +752,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
       },
     ],
     resolved: false,
-    systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+    systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }
 

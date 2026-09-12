@@ -20,7 +20,7 @@ Innan du svarar något: läs dessa filer i ordning från `/Users/jacobstjarne/De
 5. `docs/LESSONS.md` — buggmönster
 
 **Vid spec-arbete eller kod-frågor (om relevant):**
-6. `docs/SPEC_BESLUTSEKONOMI.md` + `_STEG_2.md` + `_STEG_3.md` — pågående arbete
+6. `docs/spec/SPEC_BESLUTSEKONOMI.md` + `_STEG_2.md` + `_STEG_3.md` — pågående arbete
 7. `docs/CODE_REVIEW_2026-04-30.md` — pågående buggfixar
 8. Aktuell sprint-fil i `docs/sprints/`
 9. `docs/THE_BOMB_V2_2026-04-27.md` — vision

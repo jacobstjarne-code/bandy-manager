@@ -148,7 +148,7 @@ async function main(): Promise<void> {
         game = autoSelectLineup(game)
         // E-STRESS1 (2026-08-23): utan detta byggde ingen headless körning
         // NÅGONSIN en anläggningsnod — O5 kraft 2 (drift) kunde bara
-        // verifieras analytiskt, aldrig i drift. Se BACKLOG.md.
+        // verifieras analytiskt, aldrig i drift. Se docs/archive/historiska-statuskallor/BACKLOG.md.
         game = autoBuildCheapestAffordableFacility(game)
 
         // Advance

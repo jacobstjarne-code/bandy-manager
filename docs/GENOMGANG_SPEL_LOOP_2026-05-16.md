@@ -39,7 +39,7 @@ Plus FIX-47/48/49/50 från idag-igår: scoreboard V1, slutskärm inline, pre-cho
 
 ### Vad är spec'at men obyggt
 
-- **SPEC_KLUBBUTVECKLING.md** — facility-träd, säsongsplanering, löneeskalering, kontextuella sponsorer, halvårsrapport, annandagsplanering, halldebatten som flersäsongsprocess. Helt skriven, inget byggt.
+- **docs/spec/SPEC_KLUBBUTVECKLING.md** — facility-träd, säsongsplanering, löneeskalering, kontextuella sponsorer, halvårsrapport, annandagsplanering, halldebatten som flersäsongsprocess. Helt skriven, inget byggt.
 - **THE_BOMB-rester** — 1.1 presskonferens-CS-villkoring, 2.1 klack-reaktion nästa omgång, 3.3 pensionsval-event.
 - **Cup-fasens tonala identitet** — aktivt skrivproblem (min memory, inte i KVAR).
 - **BATCH E press/media-separation** — parkerad, väntar beslut.

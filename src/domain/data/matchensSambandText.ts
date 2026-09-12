@@ -3,7 +3,7 @@
  * ordagrant. Code skriver aldrig egen svensk prosa (CLAUDE.md) — alla
  * strängar nedan är Opus text, bara interpolerade av kod.
  *
- * Katalograd A rättad mot DOM_FORMATIONER_V2_2026-09-04.md §"Ändras INTE":
+ * Katalograd A rättad mot docs/dom/DOM_FORMATIONER_V2_2026-09-04.md §"Ändras INTE":
  * "B12-specens katalog A ('Hög press') läser den nya etiketten [formation_523]"
  * + FORMATIONER_V2_TEXT_2026-09-04.md ("B12-katalogen, rad A (ersätter 'Hög
  * press')") — "5-2-3" ersätter "Hög press" i alla tre varianter. Samma dag,

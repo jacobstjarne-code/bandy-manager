@@ -90,7 +90,7 @@ function runSeasons(seed: number, seasons: number, tier: 'none' | 'upgraded'): S
 
 function main(): void {
   console.log(`\n=== Heros: marginalvärdet av upgraded+VIP-kiosk, EFTER mecenat/patron-ombygget (876ed4dd) ===`)
-  console.log(`Metod: samma seed körs två gånger (kiosk 'none' vs 'upgraded'+VIP), skillnaden i finances-utveckling ISOLERAR kioskbeslutets bidrag — samma metod-mål som RAPPORT_ASKADAREKONOMIN_HEROS_HOGCS_OCH_BYGGKORT_2026-08-27.md, men mot den RIKTIGA produktionsvägen (roundProcessor/economyService/mecenat/patron), inte en offline-återimplementerad formel.`)
+  console.log(`Metod: samma seed körs två gånger (kiosk 'none' vs 'upgraded'+VIP), skillnaden i finances-utveckling ISOLERAR kioskbeslutets bidrag — samma metod-mål som docs/rapport/RAPPORT_ASKADAREKONOMIN_HEROS_HOGCS_OCH_BYGGKORT_2026-08-27.md, men mot den RIKTIGA produktionsvägen (roundProcessor/economyService/mecenat/patron), inte en offline-återimplementerad formel.`)
   console.log(`Seeds: ${SEEDS}, säsonger/seed: ${SEASONS}\n`)
 
   const deltasBySeason: number[][] = Array.from({ length: SEASONS }, () => [])
@@ -122,7 +122,7 @@ function main(): void {
   })
   const overallAvg = allDeltas.length > 0 ? allDeltas.reduce((s, d) => s + d, 0) / allDeltas.length : NaN
   console.log(`\nSamtliga säsonger, snitt Δ: ${overallAvg >= 0 ? '+' : ''}${overallAvg.toFixed(0)} kr (n=${allDeltas.length})`)
-  console.log(`Jämförelse: RAPPORT_ASKADAREKONOMIN_HEROS_HOGCS_OCH_BYGGKORT_2026-08-27.md mätte −3299 kr/säsong (isolerad kioskformel, EN säsong, FÖRE mecenat/patron-ombygget).`)
+  console.log(`Jämförelse: docs/rapport/RAPPORT_ASKADAREKONOMIN_HEROS_HOGCS_OCH_BYGGKORT_2026-08-27.md mätte −3299 kr/säsong (isolerad kioskformel, EN säsong, FÖRE mecenat/patron-ombygget).`)
   console.log('=== SLUT ===\n')
 }
 

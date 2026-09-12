@@ -254,7 +254,7 @@ const RISKY_SPONSOR_CLAWBACK_SHARE = 0.5
 const RISKY_SPONSOR_COMMUNITY_STANDING_DELTA = -4
 
 /**
- * O1-uppföljning (SLUTTEST_KO.md, 2026-08-22) — riskySponsorOffers
+ * O1-uppföljning (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-22) — riskySponsorOffers
  * maturation-konsekvens, konsoliderad till EN funktion (check + alla tre
  * effekter). Låg tidigare uppdelad: checken/inbox-texten i roundProcessor.ts
  * långt före sponsors/clubs var färdigmonterade, med en kommentar som lovade

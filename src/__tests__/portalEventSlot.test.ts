@@ -102,7 +102,7 @@ function computeShouldShowOverlay(game: SaveGame, pathname: string): boolean {
 }
 
 // ─── Hjälp-funktion som replikerar PortalEventSlot-logiken ─────────────────
-// HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): repliken
+// HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): repliken
 // uppdaterad tillsammans med komponenten. Vilket beslut som får kortet avgörs
 // inte längre av köordningen utan av visningsregeln (översta måste, annars
 // översta månad); bakgrundsnivån får aldrig ett dashboardkort.

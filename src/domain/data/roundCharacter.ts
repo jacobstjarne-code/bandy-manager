@@ -63,7 +63,7 @@ export function getRoundCharacter(game: SaveGame): RoundCharacter {
  * Returns streak length + type (≥3 only) regardless of cup/derby precedence in getRoundCharacter.
  * Use this instead of relying on getRoundCharacter for band/broken-state detection.
  *
- * O1/SPÅR B B4 (Jacobs dom 2026-08-21, DOM_SPARB_TEXTNIVAER_2026-08-21.md, fix
+ * O1/SPÅR B B4 (Jacobs dom 2026-08-21, docs/dom/DOM_SPARB_TEXTNIVAER_2026-08-21.md, fix
  * 2026-08-23): läser game.trainerArc — SAMMA consecutiveWins/consecutiveLosses
  * som boardPatience-termen (boardService.ts's updateRunningBoardPatience) och
  * Grind 1 mäter, aldrig en egen räknare. Domen är bindande: "Kortet och

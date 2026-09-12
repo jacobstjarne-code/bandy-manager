@@ -48,7 +48,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   } as unknown as SaveGame
 }
 
-// DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD (2026-09-01):
+// docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD (2026-09-01):
 // communityMod var en olimiterad linjär 0-2-skalning mot CS — dämpad med
 // D031:s getCsDiminishingFactor, konsekvent med economyService.ts's kommunBidrag.
 describe('calculateKommunBidrag — CS-dämpning (getCsDiminishingFactor)', () => {

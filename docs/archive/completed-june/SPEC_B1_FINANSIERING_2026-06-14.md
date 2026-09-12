@@ -1,6 +1,6 @@
 # ⛔ ERSATT AV V2 — BYGG INTE PÅ DENNA
 
-> **Denna v1 är OBSOLET. Använd `SPEC_B1_FINANSIERING_V2_2026-06-15.md`.**
+> **Denna v1 är OBSOLET. Använd `docs/spec/SPEC_B1_FINANSIERING_V2_2026-06-15.md`.**
 > v1 byggde på fel antagande: att gamla modellen ska BEVARAS parallellt (§0-spärren nedan). Code:s utredning visade att den nya `FacilityNodeDef`-modellen är byggklar men ofinansierad, och den gamla är en parallell katalog som ska FASAS UT, inte bevaras. V2 vänder spärren och innehåller §5.2-domen (gym + strålkastare portas, resten släpps). Läs V2. Denna fil behålls bara för historik.
 
 ---

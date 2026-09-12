@@ -45,7 +45,7 @@ export function compactWeaknessLabel(value: string): string {
 }
 
 // Maps tactic value index (0=conservative, ..., last=aggressive) to intensity class.
-// total-aware (B2, SLUTTEST_KO.md 2026-08-19): press slog ihop low/medium till EN
+// total-aware (B2, docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-19): press slog ihop low/medium till EN
 // knapp (tacticData.ts) — en rad kan nu ha 2 alternativ, inte alltid 3. Med bara
 // idx===1→intensity-2 hade en tvåknapps-rads sista knapp (idx 1) fått medium-
 // intensitet istället för stark — samma bugklass om fler rader krymper senare.
@@ -181,7 +181,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
                     <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
                     <div className="tactic-segmented">
                       {options.map((opt, oi) => {
-                        // B2 (SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
+                        // B2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
                         // (t.ex. press: ['medium','low']) — se tacticData.ts.
                         const values = Array.isArray(opt.value) ? opt.value : [opt.value]
                         const isActive = values.includes(tacticState[key] as string)

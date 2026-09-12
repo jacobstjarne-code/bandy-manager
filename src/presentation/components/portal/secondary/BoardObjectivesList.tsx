@@ -163,7 +163,7 @@ export interface BoardObjectivesListProps {
   objectives: BoardObjective[]
   max?: number
   onNavigate?: () => void
-  /** 5.1 fynd 5 (SLUTTEST_KO.md, 2026-08-19): "Framsteg X/Y" mot en nyss
+  /** 5.1 fynd 5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19): "Framsteg X/Y" mot en nyss
    *  återställd/nysatt målsättning läser som en motsägelse på Sommaren-scenen
    *  ("STYRELSEN HAR SATT NYA MÅL" bredvid en redan fylld stapel). Döljer
    *  framstegsblocket, visar bara ikon/etikett/ägare. Default false — noll

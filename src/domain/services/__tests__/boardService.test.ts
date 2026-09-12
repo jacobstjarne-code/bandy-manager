@@ -101,7 +101,7 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
 
   it('varningszonen (plats 9-10): kontinuerlig, inte längre en fast -5', () => {
     expect(computeBoardPatienceUpdate(9, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 70, newConsecutiveFailures: 0, newMeritBuffer: 0 })   // pos == ankare → delta 0
-    // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 10 (1 under ankaret) är nu
+    // docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 10 (1 under ankaret) är nu
     // grace för AvoidBottom — nearMiss(2) i stället för below(4). Plats 11-12
     // (den faktiska nedflyttningszonen) förblir OKLIPPT grace, se testet ovan.
     expect(computeBoardPatienceUpdate(10, TOTAL, 70, 2, AB)).toEqual({ newBoardPatience: 68, newConsecutiveFailures: 0, newMeritBuffer: 0 })  // grace: nearMiss(2) × gap(-1)
@@ -135,14 +135,14 @@ describe('computeBoardPatienceUpdate — U1 andra halvan (Jacobs dom 2026-08-22,
 
   it('WinLeague: ankare 1, above=0 (går inte att slå), below=5', () => {
     expect(computeBoardPatienceUpdate(1, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(70)
-    // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 2-4 är grace för WinLeague
+    // docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: plats 2-4 är grace för WinLeague
     // (nästa tier, ChallengeTop, har ankare 4) — nearMiss(2) i stället för
     // below(5). gap = 1−2 = −1, delta = nearMiss(2) × −1 = −2.
     expect(computeBoardPatienceUpdate(2, TOTAL, 70, 0, ClubExpectation.WinLeague).newBoardPatience).toBe(68)
   })
 })
 
-describe('boardGraceState — DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ENDA definitionen av "nästan lyckad")', () => {
+describe('boardGraceState — docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ENDA definitionen av "nästan lyckad")', () => {
   it('WinLeague: grace exakt plats 2-4, inte plats 1 (möter) eller plats 5+ (kollaps)', () => {
     expect(boardGraceState(ClubExpectation.WinLeague, 1, TOTAL)).toBe(false)
     expect(boardGraceState(ClubExpectation.WinLeague, 2, TOTAL)).toBe(true)
@@ -172,7 +172,7 @@ describe('boardGraceState — DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md (ENDA defin
   })
 })
 
-// Fjärde koefficientrundan (Jacobs dom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+// Fjärde koefficientrundan (Jacobs dom 2026-08-23, docs/dom/DOM_MERITBUFFERT_2026-08-23.md,
 // O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades efter en
 // normal svacka två säsonger senare). MERIT_BUFFER_CAP=20 behölls formellt
 // när A-kedjan klarade avskedskalibreringens stoppvillkor 2026-09-07.
@@ -239,7 +239,7 @@ describe('generatePreSeasonMessage — femstegs-stegen, båda riktningar (H4 Her
 })
 
 /**
- * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md — H5-fällan: en klubb på WinLeague
+ * docs/dom/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md — H5-fällan: en klubb på WinLeague
  * som håller 3:e-9:e plats fastnar för alltid (botten-3 kräver plats>=10,
  * men WinLeague-verdicten är binär — bara plats 1 "möter" den). Testerna
  * trädar consecutiveExpectationMisses mellan anrop (till skillnad från
@@ -615,13 +615,13 @@ describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs d
   })
 
   /**
-   * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — löpande termen (klocka 4) läser
+   * docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — löpande termen (klocka 4) läser
    * nu boardGraceState via klubbens LIVE tabellplacering (game.standings),
    * inte finalPos (okänd mitt i säsongen). Detta var rotorsaken till H5-
    * scenariot D044 inte löste: en WinLeague-klubb på 2:a-4:e plats tömdes av
    * DENNA klocka innan tröghetens säsongsslut-demotering hann fyra.
    */
-  describe('grace-medveten (DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md)', () => {
+  describe('grace-medveten (docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md)', () => {
     function makeGraceGame(overrides: { homeScore: number; awayScore: number; expectation: ClubExpectation; position: number; played?: number }) {
       // totalTeams läses av updateRunningBoardPatience som game.clubs.length —
       // måste vara 12 (samma fasta ligastorlek som TOTAL överallt annars i
@@ -663,7 +663,7 @@ describe('updateRunningBoardPatience — U1 andra halvan, ändring 1+2 (Jacobs d
   })
 })
 
-describe('seasonReputationDelta — U6 (SLUTTEST_KO.md, 2026-08-17) / D028', () => {
+describe('seasonReputationDelta — U6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) / D028', () => {
   it('exakt formeln från D028', () => {
     expect(seasonReputationDelta(1)).toBe(-6)
     expect(seasonReputationDelta(2)).toBe(-3)
@@ -699,10 +699,10 @@ describe('isUnderdogSeason — canonical säsongsdom, låg startförväntan', ()
   })
 })
 
-// DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — ren läsning av
+// docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — ren läsning av
 // consecutiveExpectationMisses för en berättande yta, samma tröskel som
 // tröghet-domen (TROGHET_THRESHOLD=2), inte en ny beräkning.
-describe('getBoardEscalationLevel (DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3)', () => {
+describe('getBoardEscalationLevel (docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3)', () => {
   function makeGame(expectation: ClubExpectation, misses: number | undefined): SaveGame {
     return {
       managedClubId: 'club_managed',

@@ -99,7 +99,7 @@ export function TacticBoardCard({
           <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
           <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
             {options.map((opt, i) => {
-              // B2 (SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
+              // B2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
               // (t.ex. press: ['medium','low'] — matchCore behandlar dem identiskt).
               // isSelected/isRec matchar mot HELA blocket; klick normaliserar till [0].
               const values = Array.isArray(opt.value) ? opt.value : [opt.value]

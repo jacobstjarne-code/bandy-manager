@@ -1,5 +1,5 @@
 /**
- * O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23) — eventResolver.ts:s
+ * O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23) — eventResolver.ts:s
  * nya multiEffect-sub-typer, reduceBurnout och startTrainingSlowdown. Samma
  * felklass eventResolverEffectSchema.test.ts dokumenterar (2026-08-17):
  * multiEffect har sin EGEN switch, en ny sub-typ måste ha en egen gren eller

@@ -65,7 +65,7 @@ export function checkContextualSponsors(
   // enhet communityStanding (70→71) gav en diskret ~80k intäktsskillnad,
   // bekräftat generellt (kodverifierat: gäller alla 12 klubbar, alla säsonger,
   // ingen region-/tier-scoping) och en av flera bidragande orsaker till
-  // avskedsfrekvens-klippan mellan cs=70/71 (H4, docs/BACKLOG.md). Ersatt av
+  // avskedsfrekvens-klippan mellan cs=70/71 (H4, docs/archive/historiska-statuskallor/BACKLOG.md). Ersatt av
   // en kontinuerlig skala: beloppet växer jämnt med communityStanding
   // (0 kr vid/under 50, taket KOMMUNSTOD_AMOUNT vid cs>=90) istf ett
   // allt-eller-inget-hopp vid exakt 71. Golvet vid 50 (inte 0) speglar att

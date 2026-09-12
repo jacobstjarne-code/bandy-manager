@@ -298,7 +298,7 @@ export function FacilityTree({
       )}
 
       {/* O17 del 1 — fullt-träd-tillståndet. Texten är låst ordagrant
-          (DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md). Driftskostnad per
+          (docs/dom/DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md). Driftskostnad per
           säsong (O5) finns inte än — sammanställningen visar bara antal
           noder, inte drift. Trädet nedan visas oförändrat (varje nod visar
           redan sin "Byggd {säsong}"-tagg), banner:n lägger till tillståndet,

@@ -76,7 +76,7 @@ export const SNUB_SCENE_LINES: string[] = [
  * pressen noterar att spelaren är i uttagningssnacket. Ingen spelarförfrågan,
  * ingen manager-handling, inga `choices`. Full uttagningsmekanik (LobbyPress
  * påverkar faktisk uttagningschans) är POST_LAUNCH (Jacobs beslut) — se
- * docs/BACKLOG.md → BYGGT MEN OSYNLIGT för den gamla, nu superseterade, radens
+ * docs/archive/historiska-statuskallor/BACKLOG.md → BYGGT MEN OSYNLIGT för den gamla, nu superseterade, radens
  * historik. Tokens: {spelare}, {klubb}, {paper} (ur befintlig uppsättning,
  * pressConferenceService.ts:s JOURNALISTS/game.localPaperName).
  */

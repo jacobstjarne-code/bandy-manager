@@ -645,7 +645,7 @@ export function generateMecenatAllianceEvent(
 
 // ── SPEC_O1_MECENATENS_KRAV_2026-09-09: mecenatens krav ────────────────────
 /**
- * O1-kandidat 1/4 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, 5/5-mallen —
+ * O1-kandidat 1/4 (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, 5/5-mallen —
  * sponsorvarianten (O1_SPONSORN_FORST_2026-08-22) stannade på 4/5 eftersom
  * sponsorer är företag; mecenaten är en namngiven person spelaren redan
  * mött, och kravet bär in en ANDRA namngiven person). `systemhandelse:true`
@@ -777,6 +777,6 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
       },
     ],
     resolved: false,
-    systemhandelse: true,  // O19: offer_tribute-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+    systemhandelse: true,  // O19: offer_tribute-valet är 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
   }
 }

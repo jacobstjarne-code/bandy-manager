@@ -195,7 +195,7 @@ Forehandpassningar in i banan mot lyror med fel skruv; eller lättare att dra en
 
 ---
 
-## Rättelse till `DOM_ILLUSTRATIONERNA_2026-08-18.md`
+## Rättelse till `docs/dom/DOM_ILLUSTRATIONERNA_2026-08-18.md`
 
 Domen säger *"Ingen sarg — låga stakethinder"*. Fel. Sargen finns, den är låg och flyttbar. Artiklarna talar genomgående om den: liberon som *"ska ut till sargen"*, halven som *"slänger ut klubban ute vid sargen"*, Brodén som lärt av hockeyn *"hur spelarna kan agera nära sargerna"*.
 

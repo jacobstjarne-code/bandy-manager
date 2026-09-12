@@ -112,12 +112,12 @@ Implementeras efter konsekvens-mekaniken. Alla har egna handoffs i `design-syste
 |---|---|---|
 | Spectator-säsongen | `HANDOFF-SPECTATOR-SASONGEN-2026-05-20.md` | öppna designval |
 | Klubbminne + R5 anniversary | `HANDOFF-KLUBBMINNE-ANNIVERSARY-2026-05-20.md` | klar |
-| Score-system (ScoreBlock/Sparkline) | `HANDOFF-SCORE-SYSTEM-2026-05-20.md` | **bygg först** (DB-3/Q1 beror på det) |
+| Score-system (ScoreBlock/Sparkline) | `docs/handover/HANDOFF-SCORE-SYSTEM-2026-05-20.md` | **bygg först** (DB-3/Q1 beror på det) |
 | Decision-fatigue R1 | `HANDOFF-R1-DECISION-FATIGUE-2026-05-23.md` v3 | Q låsta |
 | Manager-karaktär | `HANDOFF-MANAGER-KARAKTAR-2026-05-23.md` v2 | Q låsta |
 | Skade-narrativ | `HANDOFF-SKADE-NARRATIV-2026-05-23.md` v2 | Q låsta |
 | Landslag (VM) | `HANDOFF-C-K1-LANDSLAG-2026-05-23.md` v2 | VM + lobby låst |
-| Säsongsslut-koreografi | `HANDOFF-C-SD1-KOREOGRAFI-2026-05-23.md` | klar |
+| Säsongsslut-koreografi | `docs/handover/HANDOFF-C-SD1-KOREOGRAFI-2026-05-23.md` | klar |
 | Portal-eskalering C-SD2 | `2026-06-01_design_sd2_portaleskalering.html` | klar |
 | Portal-kurering | `HANDOFF-PORTAL-KURERING-SVAR-2026-05-23.md` | klar |
 | Efterklang flöde | `2026-06-03_design_efterklang_flode.html` | premiss-fält till Opus |

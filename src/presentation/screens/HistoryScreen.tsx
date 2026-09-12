@@ -269,7 +269,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
 }
 
 /**
- * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — syskonkurva till
+ * docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — syskonkurva till
  * JourneyGraph ovan, INTE en ersättning (domens SKYDDAT: positionskurvan
  * rörs inte). Samma visuella språk (W/H/padding/linjebredd/typsnitt) medvetet
  * kopierat rakt av — det här är en dataväxling på ett bevisat mönster, inte
@@ -316,7 +316,7 @@ function BoardRelationshipGraph({ trend }: { trend: ReturnType<typeof getBoardRe
             {patience}
           </text>
         ))}
-        {/* adherence-exempt: Sparkline saknar axel-etiketter/rutnät helt (minimal per definition) — DOM_BOARDRELATION_BAGE_2026-09-02.md beställde JourneyGraph-ovans redan baselinade visuella språk, inte en Sparkline-ombyggnad som tappar årtalsetiketterna. */}
+        {/* adherence-exempt: Sparkline saknar axel-etiketter/rutnät helt (minimal per definition) — docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md beställde JourneyGraph-ovans redan baselinade visuella språk, inte en Sparkline-ombyggnad som tappar årtalsetiketterna. */}
         <polyline points={svgPoints} fill="none" stroke="color-mix(in srgb, var(--accent) 70%, transparent)" strokeWidth="1.8" strokeLinejoin="round" />
         {points.map((p, i) => {
           const cx = xOf(i)
@@ -343,7 +343,7 @@ type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos' | 'blodslinje'
 
 export interface HistoryScreenProps {
   /**
-   * 3.3 (SLUTTEST_KO.md, 2026-08-17) — Kontrakt A. En "avslutad karriär"-vy
+   * 3.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — Kontrakt A. En "avslutad karriär"-vy
    * får ett direkt snapshot av GameOverScreens "SE KARRIÄREN"-flöde. Den
    * vägen rensar inte live store eller den id-nycklade IndexedDB-saven. Om
    * en sidladdning tar bort route-state faller komponenten därför tillbaka
@@ -720,7 +720,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       {' '}(+{s.mostImproved.caGain})
                     </p>
                   )}
-                  {/* O18 fält 3-5 (DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — ett fält per säsong,
+                  {/* O18 fält 3-5 (docs/dom/DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — ett fält per säsong,
                       aldrig utfyllnad. Renderas bara när fältet faktiskt har innehåll — en
                       äldre save utan dessa fält (skapad innan denna kod fanns) visar helt
                       enkelt inga av raderna, ingen gissning bakåt. */}
@@ -746,7 +746,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                       🏛️ {deriveEraChangeLine(s.clubName, summaries[i + 1].clubEra!)}
                     </p>
                   )}
-                  {/* O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — målraden, sista raden före
+                  {/* O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md) — målraden, sista raden före
                       ekonomin. Renderas bara när ett mål faktiskt valdes den säsongen —
                       deriveGoalOutcomeLine() hanterar "inget mål" med en egen låst rad
                       ("Du lovade ingenting..."), men den skulle fabricerat en gammal säsong

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { BoardObjectivesList } from '../BoardObjectivesList'
 import type { BoardObjective } from '../../../../../domain/entities/Community'
 
-// 5.1 fynd 5 (SLUTTEST_KO.md, 2026-08-19): hideProgress-prop döljer
+// 5.1 fynd 5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19): hideProgress-prop döljer
 // framstegsblocket ("Framsteg X/Y" + stapel, eller ekonomiska balansraden)
 // utan att röra Portal/ArrivalScene:s befintliga bruk (default false).
 // @testing-library/react är inte installerat i projektet — renderToStaticMarkup

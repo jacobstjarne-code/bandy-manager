@@ -4,7 +4,7 @@ import { wasLoggedThisRound } from '../../../domain/services/narrativeLogService
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
 
 /**
- * HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md, punkt 3 och 4) — bågens
+ * HIGH 10 (docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md, punkt 3 och 4) — bågens
  * andra halva. BurnoutMark bär eskaleringen (danger); det här kortet bär
  * lättnaden och slutet, i success-ton.
  *

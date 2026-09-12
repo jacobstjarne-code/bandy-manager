@@ -1,8 +1,8 @@
 /**
- * O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, DOM_DELNINGSKORTET_2026-08-17.md)
+ * O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, docs/dom/DOM_DELNINGSKORTET_2026-08-17.md)
  * — låst text, Opus/Fable. Wirad mot 4.12:s regionsbaserade layout
  * (seasonShareImage.ts) 2026-08-24 — den var aldrig kopplad trots att
- * SLUTTEST_KO.md:s kö sa "Code wirar"; kortet visade fortfarande det äldre
+ * docs/archive/historiska-statuskallor/SLUTTEST_KO.md:s kö sa "Code wirar"; kortet visade fortfarande det äldre
  * "6., 21 poäng"-innehållet auditen kritiserade.
  */
 import { describe, it, expect } from 'vitest'

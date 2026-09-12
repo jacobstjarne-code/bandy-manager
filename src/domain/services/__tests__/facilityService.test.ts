@@ -369,7 +369,7 @@ describe('unseenCompletedFacilities — kö istället för enda-fält (Stickines
   })
 })
 
-// O17 del 1 — DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md
+// O17 del 1 — docs/dom/DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md
 describe('isFacilityTreeFull', () => {
   const ORDINARY_IDS = getOrdinaryFacilityNodeDefs().map(d => d.id)
 
@@ -398,7 +398,7 @@ describe('isFacilityTreeFull', () => {
   })
 })
 
-// O17 del 3 — DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3, Jacobs dom 2026-08-23
+// O17 del 3 — docs/dom/DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3, Jacobs dom 2026-08-23
 describe('canDecommission', () => {
   it('tillåter avveckling av en byggd, ordinarie nod', () => {
     const state: FacilityState = { builtNodeIds: ['kiosk'] }

@@ -3,7 +3,7 @@ import { getConsequenceLines } from '../domain/entities/GameEvent'
 import type { EventChoice } from '../domain/entities/GameEvent'
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
  *
  * Låst copy ur domen, testad ordagrant:
  *   Neutral: ingen markör.

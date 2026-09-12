@@ -1,6 +1,6 @@
 # Choice-label-svepet (2.5) — full rapport
 
-**Underlag för SLUTTEST_KO.md post 2.5.** Status står i SLUTTEST_KO.md, inte här.
+**Underlag för docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 2.5.** Status står i docs/archive/historiska-statuskallor/SLUTTEST_KO.md, inte här.
 
 **Metod:** tre parallella agenter läste hela `src/domain/services/events/` + `eventProcessor.ts` + `matchSimProcessor.ts` i sin helhet, extraherade varje `EventChoice` (inklusive `multiEffect`/`subEffects`), och jämförde `label`/`subtitle`-texten mot vad `eventResolver.ts` faktiskt gör för den effekten. Verdikt per val: MATCHES, PROMISES MORE (text lovar en konsekvens/risk/summa effekten inte ger), PROMISES LESS (effekten gör mer än texten säger, oftast en odeklarerad bieffekt), eller UNCLEAR.
 
@@ -88,7 +88,7 @@ De nio konkreta fynden nedan (utöver de fem redan lösta) är redan itemiserade
 - **`mecenatService.ts:408`** — `silentShout`-grenen → valet med subtitle "💰 mecenat bidrar". Effekten rör bara `mecenatHappiness`/`silentShout`-fält, aldrig ekonomin (`grep` bekräftar inget `finance`/`income`-fält i denna gren).
 - **`mecenatService.ts:548`** — `generateMecenatAllianceEvent`. Subtitle "💰 projekt finansieras · 🤝 +10 båda" — effekten sätter bara `mecenatHappiness`-fält för båda mecenaterna, ingen facilitets-/projektfinansieringseffekt existerar (samma mönster som `community_anlaggning`/`community_ismaskin` ovan, men i mecenat-filen).
 
-**Cross-referens (redan itemiserat ovan, inte ett nytt fynd):** `kommunens_villkor`s identiska-val-bugg (`hallProcessService.ts:342-360`) upptäcktes oberoende igen under O1-klassificeringssvepet (`docs/DOM_VARSLET_KLASSIFICERING_2026-08-17.md`) — samma fynd som redan står i "kommunens_villkor — rapport, inget byggt" ovan, ingen ny information.
+**Cross-referens (redan itemiserat ovan, inte ett nytt fynd):** `kommunens_villkor`s identiska-val-bugg (`hallProcessService.ts:342-360`) upptäcktes oberoende igen under O1-klassificeringssvepet (`docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md`) — samma fynd som redan står i "kommunens_villkor — rapport, inget byggt" ovan, ingen ny information.
 
 ### Sticker ut — passar inte (a)/(b)/(c), egen bedömning krävs
 

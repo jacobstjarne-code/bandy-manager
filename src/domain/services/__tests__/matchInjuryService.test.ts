@@ -88,7 +88,7 @@ describe('generateInjuryInboxItem — pool 1e (langtid-bågen)', () => {
   })
 })
 
-describe('A-H3 ben 1 — fatigueInjuryMult (DOM_AH3_TILLGANGLIGHET_2026-08-28.md)', () => {
+describe('A-H3 ben 1 — fatigueInjuryMult (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md)', () => {
   it('fitness >= 50 (rampens start) ger 1.0 — ingen straff eller bonus', () => {
     expect(fatigueInjuryMult(50)).toBe(1.0)
     expect(fatigueInjuryMult(75)).toBe(1.0)

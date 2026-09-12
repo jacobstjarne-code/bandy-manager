@@ -1,5 +1,5 @@
 /**
- * deferredRolloverText — HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md),
+ * deferredRolloverText — HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md),
  * §"Rollover — aldrig tyst".
  *
  * Domen: varje obesvarat beslut som ligger kvar i `deferredDecisions` vid

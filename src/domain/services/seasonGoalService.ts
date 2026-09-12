@@ -1,5 +1,5 @@
 /**
- * O3 — Spelarens eget säsongsmål (DOM_EGET_SASONGSMAL_2026-08-17.md).
+ * O3 — Spelarens eget säsongsmål (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md).
  * Ett mål, valt i Sommaren, återkallat vid halvtid (ambient rad) och i
  * årsboken (O18 fält 1). Sex faktiska måltyper härledda ur klubbens faktiska
  * läge plus ett explicit avstående — inget AI-genererat.
@@ -449,7 +449,7 @@ const HALFWAY_LEAGUE_ROUND = 11   // 22-omgångarsserie, se CLAUDE.md:s matchday
 const CARRY_HALFWAY_GAMES_TARGET = 7   // hälften av slutmålets 15, avrundat nedåt
 
 /**
- * Halvtidsraden (O3, DOM_EGET_SASONGSMAL_2026-08-17.md) — "Du sa slutspel.
+ * Halvtidsraden (O3, docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md) — "Du sa slutspel.
  * Ni ligger fyra." Domens EGNA exempel gäller bara slutspel/etablera
  * (positionsbaserat). De andra fem generaliseras HÄR (Code, 2026-08-19) i
  * samma register: en enda konkret siffra/fakta, aldrig ett omdöme — och

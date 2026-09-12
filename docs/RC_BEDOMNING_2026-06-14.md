@@ -1,6 +1,6 @@
-# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+# ⛔ HISTORISK — status i `docs/archive/historiska-statuskallor/BACKLOG.md`. BYGG INTE PÅ DENNA.
 
-**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** RC-moment-bedömning 2026-06-14. Nästan allt levererat: GAP-1/2/4 ✅, RC-blockerande 1–9 ✅, RC-polish (primitiver/HIDDEN_PATHS/svep/pensionsval/klack-8a) ✅, fanMood-8b ✅ (KF8), T1+T2 ✅. Tre latenta trådar som INTE var RC-blockerande migrerade till **BACKLOG D-RC** (GAP-5 save-bloat, T3 round-trip-test, kartfynd-14 ekonomi-passivitet-verifiering). Avbrottsbudgeten (post 17) lever som §D i KF-sektionen. **Statusfilen är `docs/BACKLOG.md`.** Lämnad som historik — värdefull som RC-strategins resonemang (DEL 0 dom, DEL 4 modellval), men inte status.
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** RC-moment-bedömning 2026-06-14. Nästan allt levererat: GAP-1/2/4 ✅, RC-blockerande 1–9 ✅, RC-polish (primitiver/HIDDEN_PATHS/svep/pensionsval/klack-8a) ✅, fanMood-8b ✅ (KF8), T1+T2 ✅. Tre latenta trådar som INTE var RC-blockerande migrerade till **BACKLOG D-RC** (GAP-5 save-bloat, T3 round-trip-test, kartfynd-14 ekonomi-passivitet-verifiering). Avbrottsbudgeten (post 17) lever som §D i KF-sektionen. **Statusfilen är `docs/archive/historiska-statuskallor/BACKLOG.md`.** Lämnad som historik — värdefull som RC-strategins resonemang (DEL 0 dom, DEL 4 modellval), men inte status.
 
 ---
 

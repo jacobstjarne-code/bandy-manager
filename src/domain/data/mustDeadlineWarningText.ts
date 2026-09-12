@@ -1,5 +1,5 @@
 /**
- * mustDeadlineWarningText — HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md)
+ * mustDeadlineWarningText — HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md)
  * + auditens MEDIUM 16.
  *
  * Domen: "Ett måste-event som skulle rinna ut med en oåterkallelig förlust ska

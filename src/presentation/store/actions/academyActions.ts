@@ -76,7 +76,7 @@ export function academyActions(get: Get, set: Set) {
         )
       }
 
-      // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en
+      // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en
       // nyaktiverad (eller uppgraderad) aktivitet är NY — starta/nollställ dess
       // staleness-klocka. En kioskuppgradering basic→upgraded räknas som ett
       // nytt grepp, precis som domen beskriver ("en uppgraderad variant").
@@ -208,7 +208,7 @@ export function academyActions(get: Get, set: Set) {
 
       const timing = getPromotionTiming(youthPlayer)
 
-      // Skaldiskrepans fixad (2026-08-25, se BACKLOG.md): roundNumber → matchday.
+      // Skaldiskrepans fixad (2026-08-25, se docs/archive/historiska-statuskallor/BACKLOG.md): roundNumber → matchday.
       // promotionRound skrivs vidare till clubMemoryService.ts:s MemoryEvent.matchday
       // och jämförs där direkt mot game.currentMatchday — måste vara samma skala.
       const currentRound = game.fixtures
@@ -249,7 +249,7 @@ export function academyActions(get: Get, set: Set) {
         isRead: false,
       }
 
-      // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): promotion kan hända när som
+      // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): promotion kan hända när som
       // helst under säsongen (spelarinitierad, till skillnad från retired/
       // aged/contractExpired som bara kan hända vid säsongsslut) — skriv
       // därför direkt hit, inte i seasonEndProcessor.ts. Sommaren läser och
@@ -301,7 +301,7 @@ export function academyActions(get: Get, set: Set) {
       if (alreadyMentored) return { success: false, error: 'Spelaren har redan en mentor' }
 
       // roundNumber-skala, MEDVETET INTE bytt till matchday (2026-08-25, se
-      // BACKLOG.md): startRound är enbart display ("sedan omg X" i PlayerCard.tsx/
+      // docs/archive/historiska-statuskallor/BACKLOG.md): startRound är enbart display ("sedan omg X" i PlayerCard.tsx/
       // AkademiTab.tsx), ingen läsare jämför den mot matchday. Att byta skala här
       // skulle tyst ändra det visade omgångsnumret utan att fixa en bugg.
       const currentRound = game.fixtures

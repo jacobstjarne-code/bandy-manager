@@ -1,5 +1,5 @@
 /**
- * SeasonTransitionScene — "Sommaren". 5.1 (SLUTTEST_KO.md, 2026-08-18).
+ * SeasonTransitionScene — "Sommaren". 5.1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18).
  * Underlag: CODE_INSTRUKTION_SOMMAREN_2026-08-17.md, variant 1e (låst),
  * mock: docs/incoming/Sommaren-sasongsovergangen-2026-08-17.dc.html.
  * Pixel-värden från mocken. Justera inte.
@@ -94,7 +94,7 @@ export function SeasonTransitionScene() {
   const visibleObjectiveCount = Math.min(objectives.filter(o => o.status !== 'met').length, 2)
   const hiddenObjectiveCount = objectives.filter(o => o.status !== 'met').length - visibleObjectiveCount
 
-  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
+  // O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
   // valt här och bara här ("enda gången i spelet spelaren har överblick och
   // inte är mitt i något"). Tre-läges state: undefined = ingen interaktion
   // ännu (inget visuellt förvalt), 'none' = spelaren valde explicit "Inget
@@ -185,7 +185,7 @@ export function SeasonTransitionScene() {
               ['--text-light' as string]: 'var(--text-primary)',
               ['--text-light-secondary' as string]: 'var(--text-secondary)',
             }}>
-              {/* 5.1 fynd 5 (SLUTTEST_KO.md, alt. a): "Framsteg X/Y" mot ett nyss
+              {/* 5.1 fynd 5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, alt. a): "Framsteg X/Y" mot ett nyss
                   återställt mål motsäger rubriken ovan ("nya mål") — döljs här. */}
               <BoardObjectivesList objectives={objectives} max={2} hideProgress />
             </div>

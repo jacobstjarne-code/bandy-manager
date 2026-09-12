@@ -153,7 +153,7 @@ describe('Fynd 11 — veckans beslut-effekter', () => {
   })
 })
 
-describe('Throw-guard (SLUTTEST_KO.md, 2026-08-17) — samma mönster som eventResolver.ts', () => {
+describe('Throw-guard (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — samma mönster som eventResolver.ts', () => {
   // Ingen spelare i managedClubId har cornerSkill > 60 eller form < 40 i denna
   // truppen — exakt tillståndet generateWeeklyDecision:s filter ska förhindra.
   const noQualifyingPlayers = {

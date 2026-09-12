@@ -142,7 +142,7 @@ describe('deriveMatchTypeAxes — GRANSKA DEL 4 steg 1 (2026-08-11)', () => {
   })
 })
 
-describe('deriveUtfall — U2 (SLUTTEST_KO.md, 2026-08-17), symptom 1', () => {
+describe('deriveUtfall — U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17), symptom 1', () => {
   it('rak vinst/förlust/oavgjort ur homeScore/awayScore', () => {
     expect(deriveUtfall(makeFixture({ homeScore: 3, awayScore: 1 }), HOME)).toBe('vunnet')
     expect(deriveUtfall(makeFixture({ homeScore: 1, awayScore: 3 }), HOME)).toBe('forlorat')

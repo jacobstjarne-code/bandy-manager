@@ -1,6 +1,6 @@
 /**
  * communityRenewalService — ANSPRÅK 4, spak 3 (nyhetstretmillen),
- * `docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md`.
+ * `docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md`.
  *
  * Den här filen äger fyra saker:
  *   1. Vilka aktiviteter som ÄR igång och hur länge de varit klubbens stående
@@ -154,7 +154,7 @@ export function getActivityStaleness(
 }
 
 /**
- * VÄG C (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, Jacobs beslut
+ * VÄG C (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, Jacobs beslut
  * 2026-08-31): klubbens samlade FÄRSKHET som den ticketköpande publiken
  * upplever den, ∈ [ORT_FRESHNESS_FLOOR, 1,0]. Multipliceras in i
  * `computeAttendanceRate` (economyService.ts) — det är HELA konsekvensen av

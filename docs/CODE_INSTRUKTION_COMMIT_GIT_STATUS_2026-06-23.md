@@ -13,13 +13,13 @@ Allt nedan ligger ocommittat efter Korrvända 3:s push (6 commits). Committa det
 **Skrivet av Opus föregående session (säkert ocommittat):**
 - `CLAUDE.md` — DESIGNPRINCIP #5 (mock = omdesign, aldrig radering) + OPUS-REGEL #6 (vem gör vad).
 - `docs/DIAGNOS-B1-B2-CUPAVANCEMANG-2026-06-23.md` — ny fil, cup-avancemang-patchen.
-- `docs/BACKLOG.md` — Korrvända-3-processning, B1+B2-diagnos, tabIntros-incident.
+- `docs/archive/historiska-statuskallor/BACKLOG.md` — Korrvända-3-processning, B1+B2-diagnos, tabIntros-incident.
 - `docs/CODE_INSTRUKTION_KORRVANDA3_2026-06-23.md` — om ej redan committad.
 - `docs/incoming/KORRVANDA-3B-IMPLEMENTATION-2026-06-23.md` + `docs/incoming/INSTRUKTION-CODE-OPUS-2026-06-23-KVALL.md` — Jacobs drops.
 
 **Tillagt av Opus denna session (2026-06-23 morgon — säkert ocommittat):**
 - `CLAUDE.md` — step 4-baslinjen nedskuren: `2026-06-11_design_b1_klubbutveckling.html` är inte längre incoming-baslinje.
-- `docs/BACKLOG.md` — incoming-genomgångsraden för samma fil stängd.
+- `docs/archive/historiska-statuskallor/BACKLOG.md` — incoming-genomgångsraden för samma fil stängd.
 - **Filflytt:** `docs/archive/2026-06-11_design_b1_klubbutveckling.html` → `docs/mockups/2026-06-11_design_b1_klubbutveckling.html` (konsumerad mock i fel hink; rättad). `git add -A` fångar både borttagning och tillägg; verifiera att git ser det som rename, inte delete+add av annat.
 - Denna fil.
 
@@ -47,7 +47,7 @@ Rapportera en rad: "tabIntros + facilityDescriptions: [committade i `<hash>`] / 
 ## Steg 3 — resten av körordern är OFÖRÄNDRAD
 
 Dupliceras inte här. Kör vidare enligt:
-- **HANDOVER §11** (`docs/HANDOVER_2026-06-23.md`) — full ordning.
+- **HANDOVER §11** (`docs/handover/HANDOVER_2026-06-23.md`) — full ordning.
 - **Marschordern** (`docs/incoming/INSTRUKTION-CODE-OPUS-2026-06-23-KVALL.md`) + fyndtabellen (`docs/incoming/KORRVANDA-3B-IMPLEMENTATION-2026-06-23.md`).
 
 Kort: **B1+B2** (cup-avancemang, `docs/DIAGNOS-B1-B2-CUPAVANCEMANG-2026-06-23.md`, verifiera hemma+borta) → **B4 → B3 → B6/B7 → B5 → B8** → **Korrvända-2-wiring** (TabIntro + FACILITY_DESC in i ClubScreen/SquadScreen/TransfersScreen, riv gamla intro-ytorna) + **G1·G3**-densiteten → **triagera `docs/incoming/`** (flytta KORRVANDA-3B + kväll-instruktionen till `docs/` när de är konsumerade; `README.md` stannar).

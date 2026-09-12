@@ -1,7 +1,7 @@
 # B1 — Klubbutveckling: sprintordning (lång-loopen)
 
 **Datum:** 2026-06-10 (rev. efter strävan-korrigering med Jacob)
-**Källa:** `SPEC_KLUBBUTVECKLING.md` + auditen + vår inomhus/utomhus-diskussion (okt 2025) + Opus creative pass, korrigerad av Jacob.
+**Källa:** `docs/spec/SPEC_KLUBBUTVECKLING.md` + auditen + vår inomhus/utomhus-diskussion (okt 2025) + Opus creative pass, korrigerad av Jacob.
 **Läs strävan först. Den är vänd rätt nu — utomhusvitalitet, inte betong. Min första version gjorde hallen till drömmen; det var bakvänt.**
 
 ## Strävan — vad sträcker man sig mot?

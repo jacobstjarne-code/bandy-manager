@@ -239,7 +239,7 @@ export function getManagerBio(profile: ManagerProfile, seed: number): { opener: 
 }
 
 /**
- * HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md, punkt 1): de tre
+ * HIGH 10 (docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md, punkt 1): de tre
  * press-komponenterna, härledda EN gång och lästa av både
  * updateManagerBurnout (som räknar) och deriveBurnoutCause (som pekar ut
  * den dominerande källan för spelaren). Två separata uträkningar av samma
@@ -321,7 +321,7 @@ export function updateManagerBurnout(game: SaveGame): ManagerProfile | undefined
 
   const press = computeBurnoutPress(game)
 
-  // HIGH 10 punkt "Fixa återhämtningen" (DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md).
+  // HIGH 10 punkt "Fixa återhämtningen" (docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md).
   // Den gamla gaten var `if (delta === 0) delta -= BURNOUT_NATURAL_DECAY` —
   // strukturellt död, eftersom en enda oläst inkorgspost (+0.3) eller vilken
   // fatigue som helst gjorde summan nollskild. Decayen fyrade alltså nästan

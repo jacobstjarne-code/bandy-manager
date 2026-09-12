@@ -5,7 +5,7 @@
  * "samma sanning implementerad flera gånger" på kodnivå?
  *
  * Metod, validerad mot det VERKLIGA fyndet innan detta skript skrevs klart
- * (RAPPORT_DUBBLETTGRIND_FEASIBILITY_2026-08-25.md): exakt AST-hash-matchning
+ * (docs/rapport/RAPPORT_DUBBLETTGRIND_FEASIBILITY_2026-08-25.md): exakt AST-hash-matchning
  * (första försöket) missade det motiverande exemplet — de två gamla
  * attendanceRate-formlerna (economyService.ts, före fixet samma dag) hade
  * olika konstant (0,90 mot 0,95) och en extra moodWeight-faktor i den ena,

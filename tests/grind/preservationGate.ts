@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { stripComments } from './forbudslistan'
 
 /**
- * GRIND 2 — BEVARANDETEXT-RADERINGSGRIND (SPEC_SANNINGSGRINDAR_2026-08-31.md).
+ * GRIND 2 — BEVARANDETEXT-RADERINGSGRIND (docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md).
  *
  * Rotorsak: `d0d4d923` raderade `hallDebateData.ts` och tog med sig fyra
  * bevarandelistade textpooler i samma svep — motiveringen gällde bara

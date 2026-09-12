@@ -55,6 +55,6 @@ useEffect(() => {
 ## BIFOGAT — B1 Sprint 1 status (på record, inte ny order)
 B1 Sprint 1 KLAR + pushad: OrtenTab "Anläggning & faciliteter" visar fyra FacilityRow-värden + aktiv build + "Visa trädet ›" → `/game/facility`; FacilityScreen renderar FacilityTree i betrakta-mode; all gammal inline-köp-UI borttagen ur OrtenTab.
 
-**OBSOLET — ersatt av V2-spec.** Texten nedan om "köp kan inte initieras / kommunstöd stryks om den inte behövs" är INAKTUELL. Aktuell plan: `SPEC_B1_FINANSIERING_V2_2026-06-15.md` — finansieringen (kommun/mecenat) ska INTE strykas, den flyttas IN i nya `FacilityNodeDef`-modellen, och gamla modellen fasas ut. §5.2-domen klar (gym + strålkastare portas). Läs V2 + `KORLISTA_CODE_RC.md` för status, inte detta block.
+**OBSOLET — ersatt av V2-spec.** Texten nedan om "köp kan inte initieras / kommunstöd stryks om den inte behövs" är INAKTUELL. Aktuell plan: `docs/spec/SPEC_B1_FINANSIERING_V2_2026-06-15.md` — finansieringen (kommun/mecenat) ska INTE strykas, den flyttas IN i nya `FacilityNodeDef`-modellen, och gamla modellen fasas ut. §5.2-domen klar (gym + strålkastare portas). Läs V2 + `KORLISTA_CODE_RC.md` för status, inte detta block.
 
 — Opus, 2026-06-14

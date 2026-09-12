@@ -130,7 +130,7 @@ interface GameState {
   // bara vilka tre klubberbjudanden som visades) blir samma som avsändarens.
   // Utelämnat: samma Math.random()-slump som förut, oförändrat normalt spel.
   newGame: (managerName: string, clubId: string, seed?: number) => void
-  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
+  // 3.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) Kontrakt A — nollställer store:t utan att
   // röra IndexedDB-posten. Gör att huvudmenyns hasSave blir korrekt false.
   // "SE KARRIÄREN" anropar INTE denna action: den sparkade saven ligger kvar
   // som live game, så en sidladdning på historikrouten rehydrerar samma
@@ -179,7 +179,7 @@ interface GameState {
   // HIGH 6 (Jacobs körorder 2026-08-31): madeByPlayer obligatorisk, ingen
   // default — se eventResolver.ts:s resolveEvent för rotorsak/regel.
   resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
-  // DOM_SPONSOR_MOTBUD_2026-08-31.md: enkelrunda motbud, utanför den
+  // docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md: enkelrunda motbud, utanför den
   // generiska choices/effect-dispatchen (Y är fri inmatning, inte ett
   // fördefinierat val). Delad i preview (rullar tärningen, ingen mutation)
   // + commit (applicerar utfallet) — se gameStore.ts:s implementation för
@@ -226,7 +226,7 @@ interface GameState {
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
   simulateRemainingStep: () => Promise<AdvanceResult | null>
   clearRoundSummary: () => void
-  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md): valfri goal-param, se
+  // O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md): valfri goal-param, se
   // gameFlowActions.ts:s implementation för semantik (undefined = "inget
   // särskilt i år", ett giltigt svar).
   passSeasonTransition: (goal?: { type: import('../../domain/entities/SeasonSummary').SeasonGoalType; referenceId?: string; trackedPlayerIds?: string[] }) => void
@@ -395,7 +395,7 @@ export const useGameStore = create<GameState>()(
       saveConflict: false,
 
       newGame: (managerName, clubId, seed) => {
-        // U7 (SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
+        // U7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): snapshot av den aktiva karriären
         // FÖRE bytet — samma skyddsnät som loadSaveGame:s pre_migration-
         // snapshot. Fire-and-forget (newGame är synkron); ett misslyckat
         // snapshot ska aldrig blockera flödet.
@@ -430,7 +430,7 @@ export const useGameStore = create<GameState>()(
         // exakt samma värld i en vecka, oavsiktligt. Analys-/stresstest-
         // skripten i scripts/ berörs INTE (de anropar createNewGame direkt
         // med egna varierande seeds, aldrig via gameStore) — se
-        // RAPPORT_SEED_BAKATVERIFIERING_2026-08-26.md. Fix: ett riktigt
+        // docs/rapport/RAPPORT_SEED_BAKATVERIFIERING_2026-08-26.md. Fix: ett riktigt
         // slumpat seed per ny, fristående karriär.
         // O10 seed-i-länk: ett explicit seed (från en delad länk) vinner över
         // slumpen — samma seed här ger samma värld som avsändarens karriär.
@@ -1185,7 +1185,7 @@ export const useGameStore = create<GameState>()(
         return { success: true }
       },
 
-      // O17 del 3 (DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3) — avveckla en
+      // O17 del 3 (docs/dom/DOM_ANLAGGNINGSTRADETS_SLUT_2026-08-17.md §3) — avveckla en
       // byggd nod. communityStanding faller (varsel-mallens punkt 4/5: två
       // system pekar isär) — det lokala priset för att stänga något folk märkt.
       decommissionFacilityNode: (nodeId: string) => {
@@ -1356,7 +1356,7 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, matchLaddningBandShown: data ?? undefined } })
       },
 
-      // U5 (SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeBeatLog-källa.
+      // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): medvetet INTE en narrativeBeatLog-källa.
       // Jacobs dom (2026-08-17): "en logg som bara hälften skriver till är
       // sämre än åtta ärliga mekanismer" gäller ofullständighet av
       // FÖRSUMMELSE — inte en källa som inte hör hemma. cardStaleTracking
@@ -1553,7 +1553,7 @@ export const useHasPendingLineup = () => {
   if (starters.length !== 11) return false
   const club = game.clubs.find(c => c.id === game.managedClubId)
   if (!club || starters.some(player => !isPlayerInMatchSquad(player!, club))) return false
-  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): restGamesRemaining läggs till
+  // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): restGamesRemaining läggs till
   // samma redundanta gate som isInjured/suspensionGamesRemaining redan har
   // här — setLineup.ts avvisar redan detta vid commit, denna check speglar
   // bara samma sanning för badge/advance-knappen.

@@ -325,7 +325,7 @@ describe('calcRoundIncome — facilityUpkeep (O5 kraft 2)', () => {
 })
 
 // ── Group 3a: calcRoundIncome — kommunBidrag CS-dämpning (DIAGNOS REVIDERAD,
-// DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, 2026-09-01) ──────────────────
+// docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, 2026-09-01) ──────────────────
 
 describe('calcRoundIncome — kommunBidrag dämpad vid högt CS (getCsDiminishingFactor)', () => {
   it('orört vid cs<=55 (SKYDDAT: låg-CS/Survive-klubbar opåverkade)', () => {
@@ -495,7 +495,7 @@ describe('calcRoundIncome — match revenue', () => {
 })
 
 // ── Group 5-VÄG A: calcRoundIncome — match_revenue dämpad vid högt rykte
-// (DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, VÄG A, 2026-09-01) ─────────
+// (docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, VÄG A, 2026-09-01) ─────────
 
 describe('calcRoundIncome — match_revenue rep-dämpning (getMatchRevenueRepDampFactor)', () => {
   it('orört vid rykte<=80 (SKYDDAT: elva av tolv klubbar, hela Survive-tiern, opåverkade)', () => {
@@ -576,7 +576,7 @@ describe('calcRoundIncome — formBonus, vidgat spann (knapp 2)', () => {
 })
 
 // ── Group 5b: computeAttendanceRate / communityStanding (2026-08-25) ─────────
-// Jacobs dom (RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md):
+// Jacobs dom (docs/rapport/RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md):
 // "en klubb som betyder något för orten fyller läktaren" — communityStanding
 // ska vara den DOMINERANDE termen (0,45), större än fanMood (0,25), eftersom
 // fanMood strukturellt inte kan rädda en förlorande Survive-klubb men
@@ -785,7 +785,7 @@ describe('calcRoundIncome — communityMatchIncome (per home match)', () => {
 })
 
 // ── Åskådarekonomin kandidat 2 (2026-08-27) — sqrt(publik) + kostnadsrelativt golv ──
-// RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md. Golvet (50% av driftskostnaden)
+// docs/rapport/RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md. Golvet (50% av driftskostnaden)
 // och sqrt-skalningen är de två delarna som skiljer denna formel från den kastade
 // kandidat 1 (linjär kr/huvud, exploderade 27-34x för starka klubbar).
 describe('calcRoundIncome — Åskådarekonomin kandidat 2 (sqrt + golv)', () => {
@@ -1130,7 +1130,7 @@ describe('computeLeaguePositionAverages', () => {
 
 // ── Group 5d: freshnessFactor — ANSPRÅK 4, spak 3 / VÄG C (2026-08-31) ───────
 //
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Nyhetstretmillens
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Nyhetstretmillens
 // konsekvens flyttade från communityStanding till PUBLIKEN. Testerna låser
 // tre saker: att default 1,0 är en exakt no-op (regressionsspärr för varje
 // äldre anropare), att faktorn appliceras EFTER ATTENDANCE_CAP (annars hade

@@ -838,7 +838,7 @@ describe('deriveBoardLeagueContext — Förutsättningsfasen steg 2', () => {
   })
 })
 
-// DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
+// docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
 // getClubPositionTrend ovan: ren läsning av seasonSummaries[].boardTruth,
 // ofönstrad (hela karriären, till skillnad från positionstrendens lastNSeasons).
 function boardTruthSummaryAt(
@@ -860,7 +860,7 @@ function boardTruthSummaryAt(
   } as unknown as SeasonSummary
 }
 
-describe('getBoardRelationshipTrend (DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2)', () => {
+describe('getBoardRelationshipTrend (docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2)', () => {
   it('returnerar en kronologisk kurva av boardPatienceAfter/zone/verdict, en punkt per säsong som bär boardTruth', () => {
     const game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2027, seed: 1 })
     const withHistory = {
@@ -930,7 +930,7 @@ describe('generateSeasonSummary — mostImproved.caGain matchar de visade start/
   })
 })
 
-// DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerSeason: managerProfile.
+// docs/dom/DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerSeason: managerProfile.
 // diary fryst till DENNA säsongs rader, samma motivering som retiredPlayers/topScorer.
 describe('generateSeasonSummary — managerSeason filtrerar dagboken till innevarande säsong', () => {
   it('bara entries med season === game.currentSeason tas med, andra säsongers rader utelämnas', () => {

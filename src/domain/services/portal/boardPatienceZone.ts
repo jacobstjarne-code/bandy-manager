@@ -2,7 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { BoardObjective } from '../../entities/Community'
 
 /**
- * 3.2 (SLUTTEST_KO.md, 2026-08-17) — kvalitativa zoner för boardPatience,
+ * 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — kvalitativa zoner för boardPatience,
  * inte råtal. Trösklarna (50/30) matchar redan kalibrerade gränser i
  * PORTAL_BEATS' board_failure-beat (portalBeats.ts) — inte nya siffror,
  * återanvänder en befintlig, redan sedd severity-gräns.
@@ -24,7 +24,7 @@ export function boardPatienceZoneFromScore(patience: number): BoardPatienceZone 
 
 export interface BoardPatienceZoneInfo {
   zone: BoardPatienceZone
-  /** Ordet Jacob gav i SLUTTEST_KO.md — inte Code-författad speltext. */
+  /** Ordet Jacob gav i docs/archive/historiska-statuskallor/SLUTTEST_KO.md — inte Code-författad speltext. */
   label: 'Stabilt' | 'Under press' | 'Ultimatum'
   /** 3.2 "med orsak"-kravet: rubrikraden, låst text 2026-08-17. */
   headline: string
@@ -51,7 +51,7 @@ const CAUSE_LINES: Record<ConcernCause, string> = {
 
 /**
  * "med orsak"-kravet: väljer den orsak som FAKTISKT driver tålamodet nedåt,
- * en åt gången, i Opus låsta prioritetsordning (SLUTTEST_KO.md, 2026-08-17):
+ * en åt gången, i Opus låsta prioritetsordning (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17):
  * 1. tabellplacering under kravet, 2. ekonomi, 3. upprepning (andra året i
  * rad), 4. klack/publik. Läser boardObjectives (redan byggd källa — samma
  * struktur som board_failure-beaten i portalBeats.ts använder), inte en ny

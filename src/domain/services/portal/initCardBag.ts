@@ -373,7 +373,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     Component: LandslagsFranvaroSecondary,
   },
 
-  // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — måste-nivåns
+  // HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — måste-nivåns
   // förvarning (auditens MEDIUM 16). Vikt 97: över burnout-bågen (95/96) och
   // under presskonferensen — en oåterkallelig frist är det tyngsta sekundära
   // budskapet portalen kan bära. Kortet renderar ingenting förrän Opus
@@ -411,7 +411,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     triggers: [alwaysTrue],
     Component: SquadStatusMinimal,
   },
-  // 3.2 (SLUTTEST_KO.md, 2026-08-17): alwaysTrue, inte "bara vid problem" —
+  // 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): alwaysTrue, inte "bara vid problem" —
   // en spelare måste kunna se Stabilt FÖRE Under press/Ultimatum för att
   // eskaleringen ska vara begriplig, inte bara en varning som dyker upp
   // ur tomma intet. Vikt mellan squad_status och form_status: viktigare än

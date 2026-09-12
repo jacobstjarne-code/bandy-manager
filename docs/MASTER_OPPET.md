@@ -1,6 +1,6 @@
 # MASTER_ÖPPET — den enda levande statuskällan för öppna poster
 
-**Etablerad:** 2026-08-31. Ersätter BACKLOG.md och SLUTTEST_KO.md som "enda sanning" om vad som är öppet — de degraderas till changelog + parkerad-idé-katalog och pekar hit (se deras nya filhuvuden). Ingen annan fil får längre påstå att den är den kanoniska statuslistan.
+**Etablerad:** 2026-08-31. Ersätter docs/archive/historiska-statuskallor/BACKLOG.md och docs/archive/historiska-statuskallor/SLUTTEST_KO.md som "enda sanning" om vad som är öppet — de degraderas till changelog + parkerad-idé-katalog och pekar hit (se deras nya filhuvuden). Ingen annan fil får längre påstå att den är den kanoniska statuslistan.
 
 ## Regler för den här filen
 
@@ -19,31 +19,11 @@
 
 **Ägarfält:** Opus (design/text/omdömesfråga) · Code (implementation/verifiering) · Jacob (ett beslut bara han kan fatta).
 
-**Detta är en RÅ SKÖRD, inte en färdig lista.** Extraherad ur `docs/INVENTERING_2026-08-31.md`, `docs/SLUTTEST_KO.md` och `docs/BACKLOG.md`:s öppna tabeller, var för sig, utan sinsemellan-deduplicering — tre källor beskriver ibland samma underliggande fakta (t.ex. `wageBudget`-buggen, H4-klippans rotorsak, flera `[Opus]`-textgap) som separata rader här. Att slå ihop dem kräver samma sannings-bedömning som verifieringspasset gör — att göra det nu, i skördepasset, hade varit precis den "ärvd verifierad"-genväg regel 8 förbjuder. Dubbletter är alltså EN FÖRVÄNTAD DEL av verifieringsarbetet, inte ett skördefel.
+**Detta är en RÅ SKÖRD, inte en färdig lista.** Extraherad ur `docs/INVENTERING_2026-08-31.md`, `docs/archive/historiska-statuskallor/SLUTTEST_KO.md` och `docs/archive/historiska-statuskallor/BACKLOG.md`:s öppna tabeller, var för sig, utan sinsemellan-deduplicering — tre källor beskriver ibland samma underliggande fakta (t.ex. `wageBudget`-buggen, H4-klippans rotorsak, flera `[Opus]`-textgap) som separata rader här. Att slå ihop dem kräver samma sannings-bedömning som verifieringspasset gör — att göra det nu, i skördepasset, hade varit precis den "ärvd verifierad"-genväg regel 8 förbjuder. Dubbletter är alltså EN FÖRVÄNTAD DEL av verifieringsarbetet, inte ett skördefel.
 
-## AKTUELL STATUS — 2026-09-08 (MASTER-split)
+## AKTUELL STATUS
 
-**MASTER-split genomförd 2026-09-08 (Code, reconcile-fönster).** Filen bar tidigare alla ~653 poster oavsett status — varje session-start drog in 517 stängda/stale rader i kontexten för att komma åt 136 aktiva. De 517 (336 `klar` + 181 `stale`) är flyttade till `docs/MASTER_ARKIV.md`, kollapsade till id + status + commit-hash + källpekare, ingen fulltext. Fulltexten finns kvar i git-historiken och i respektive DOM-/RAPPORT-/RECON-fil — arkivraden är bara ett register, inte en andra sanning.
-
-**2 poster kvar här, alla aktiva:** `rapporterad`/`verifierad`/`in_progress`. Ingen `klar`/`stale`-rad ska längre stå kvar i den här filen. **Räkneregel:** räkna bara faktiska datarader (aldrig tabellhuvuden eller avdelningsrubriker), och uppdatera detta tal i samma commit som en post läggs till eller flyttas till arkivet. Historik förs i `MASTER_ARKIV.md`; senaste räknarändringar: `genomgang-save-storlek-matrad` stängdes efter färsk tiiosäsongsmätning (5→4), `inv-5-fas5-portrattgenerator` stängdes när young-poolen blev komplett 1–30 (4→3), därefter stängdes `bild-slots-tre-scener` när de tre slutillustrationerna produktbehandlats och de två godkända scenerna wire:ats (3→2).
-
-**Räknaruppdatering 2026-09-11:** blockerarpasset i `593fa055` stängde fyra reproducerade Grind 2-rader; råkontrollerat 10→6 aktiva poster. Själva obrutna tvåsäsongsåterprovet ligger kvar öppet.
-
-**Brett återprov 2026-09-11:** två naturliga Gagnef-säsonger mot `27da71b3` bekräftade att köstoppet är borta men underkände tre långtidsinvarianter och fann två kodverifierade säsongssanningsfel. Fyra samlade följdposter registrerades: 6→10.
-
-**Klubbmärken 2026-09-11:** `inv-5-fas4-klubbmarken` stängdes efter komplett 12-klubbsproduktion, wiring, alfa-/assetgrind, build och browsergranskad kontaktkarta: 10→9 faktiska aktiva poster.
-
-**Säsongsrollover 2026-09-11:** `rc-sasongsrollover-akademi-skada` stängdes efter att P19 gjorts till den hanterade klubbens enda verkliga sommarintag och skadeperioder börjat konsumera den faktiska kalenderluckan till nästa försäsong: 9→8 faktiska aktiva poster.
-
-**Långtidsidentitet 2026-09-11:** `grind2-langtidsidentitet-tre-konsumenter` stängdes efter två verkliga kafferumsfixar och reconcile av de två felklassade säsongsåterfallen: 8→7 faktiska aktiva poster.
-
-**Kompletterande Grind 2-prov 2026-09-11:** `grind2-nykarriar-kompletterande-aterprov` avfördes efter att det senare tvåsäsongsprovet i `DOM_GRIND2_ATERPROV_3_2026-09-11.md` redan uppfyllt radens passvillkor: 7→6 faktiska aktiva poster.
-
-**Brett kontext- och språksvep 2026-09-11:** `rc-kontext-sprak-grafik-brett-svep` stängdes efter full reconcile mot aktuell kod, sex kvarvarande mekaniska rättningar och mobil browserkontroll: 5→4 faktiska aktiva poster.
-
-**Venue-säker lokalhjälte 2026-09-11:** `lokalhjalte-mal-hemmaplanscopy-borta` stängdes med Opus venue-neutrala ersättningsrad och ett poolomfattande motortest: 4→3 faktiska aktiva poster.
-
-**Helhetsgenomgång 2026-09-11 kväll (Opus):** femton nya `rapporterad`-rader ur `CODE_INSTRUKTION_GENOMGANG_2026-09-11.md` (sista KÄLLA-sektionen nederst): 3→18 faktiska aktiva poster. Två Opus-instanser skrev parallellt i samma träd (LESSONS #51); raderna är sammanslagna. Ingen är releaseblockerande; `genomgang-motor-attribut-aldras-ej` och `genomgang-motor-utvisning-halvlek` är de tyngsta fynden — båda påverkar kalibreringen, det första väntar Jacobs dom.
+**1 aktiv post återstår:** `stickiness-drift-backend`. Räkna endast faktiska datarader med status `rapporterad`, `verifierad` eller `in_progress`; historiska räknarändringar och stängda poster finns i `docs/MASTER_ARKIV.md`.
 
 **Stående regel (2026-09-08):** att stänga en rad = FLYTTA den till `MASTER_ARKIV.md`, aldrig bara stämpla om den `klar`/`stale` på plats. En rad som blir terminal och inte flyttas samma pass är en läckt regel, inte en genväg.
 
@@ -51,7 +31,7 @@
 
 ## HISTORISK RÅSKÖRD
 
-**474 ursprungligen skördade rader.** (58 ur INVENTERING_2026-08-31.md + 185 ur BACKLOG.md + 231 ur SLUTTEST_KO.md.) Antalet är den historiska råskördens utdata, inte dagens totala kö och inte ett mål — se Jacobs egen instruktion om varför.
+**474 ursprungligen skördade rader.** (58 ur INVENTERING_2026-08-31.md + 185 ur docs/archive/historiska-statuskallor/BACKLOG.md + 231 ur docs/archive/historiska-statuskallor/SLUTTEST_KO.md.) Antalet är den historiska råskördens utdata, inte dagens totala kö och inte ett mål — se Jacobs egen instruktion om varför.
 
 Redan kända, inte separat skördade här (löstes eller stängdes SAMMA DAG av Code, före detta skördepass, med commits): FormationView.tsx:s tredje golv-blinda "Fyll bästa elvan" (`ea63b02c`), fyra räddade textpooler i `hallProvningData.ts`, två DOM-supersede-markeringar, två BACKLOG-headerkorrigeringar (203-filer-risken, TEXT-AUDITEN). De är `klar`, inte `rapporterad` — de hör inte hemma i en öppen-lista.
 
@@ -79,9 +59,9 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 ---
 
-# KÄLLA: docs/BACKLOG.md (185 rader)
+# KÄLLA: docs/archive/historiska-statuskallor/BACKLOG.md (185 rader)
 
-*(Harvested av en dedikerad agent, 2026-08-31, mot BACKLOG.md:s sektioner A–E + "BYGGT MEN OSYNLIGT" + "TVÅ LÄSARE, EN SANNING" + "DATAFÄLT SOM SAKNAS" + relevanta playtest-/KF-rader. Sektion F, CHANGELOG, "PRÖVAT OCH AVFÄRDAT", och alla ~~genomstrukna~~/STÄNGD/KLAR-rader uteslutna som redan stängda.)*
+*(Harvested av en dedikerad agent, 2026-08-31, mot docs/archive/historiska-statuskallor/BACKLOG.md:s sektioner A–E + "BYGGT MEN OSYNLIGT" + "TVÅ LÄSARE, EN SANNING" + "DATAFÄLT SOM SAKNAS" + relevanta playtest-/KF-rader. Sektion F, CHANGELOG, "PRÖVAT OCH AVFÄRDAT", och alla ~~genomstrukna~~/STÄNGD/KLAR-rader uteslutna som redan stängda.)*
 
 ## Toppnoter
 
@@ -152,7 +132,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 ---
 
-# KÄLLA: docs/SLUTTEST_KO.md (231 rader)
+# KÄLLA: docs/archive/historiska-statuskallor/SLUTTEST_KO.md (231 rader)
 
 *(Harvested av en dedikerad agent, 2026-08-31, ur hela filen — 1272 rader, lästa i 30 sekventiella chunkar. Fyra rader nedan är interna statusmotsägelser i källdokumentet självt — samma sak påstås både klar och öppen på olika ställen; skördade som öppna eftersom ingen post ärver `verifierad` av att en rapport påstod det.)*
 
@@ -164,8 +144,8 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 ## Metodnoteringar för verifieringspasset
 
 - **Förväntade dubbletter mellan källorna** (icke uttömmande — verifieringspasset avgör och slår ihop): `wageBudget`-buggen (backlog: `wagebudget-aldrig-omraknad`, sluttest: `sluttest-wagebudget-omrakning`); `Club.fanExpectation` (backlog: `fanexpectation-dott-falt`, sluttest: `sluttest-fanexpectation-dott`); H4-klippans rotorsak (inv: `inv-2-9-aterkopplingsslingan`, backlog: `h4-klippan-rotorsak-okand`, sluttest: `sluttest-klippan-rotorsak`); `careerBreakText`/O13 (backlog: `careerbreak-text`, sluttest: `sluttest-am8-avsked-karriar` + `sluttest-o13-jobbmarknad`) — OBS denna sista är särskilt viktig: INVENTERING_2026-08-31.md:s egen stickprovsverifiering visade att `careerBreakText.ts` FAKTISKT ÄR FÄRDIGSKRIVEN nu (Jacobs egna edits landade under skördesessionen) — dessa rader är extremt sannolikt `stale` vid verifiering, inte `rapporterad`→`bygger`; B12:s konsumentlöshet (backlog: fyra `b12-*-utan-konsument`-rader, sluttest: `sluttest-b12-konsument-b5/b4/o16`, sluttest: `sluttest-b5-referat-vokabular`); O1-kandidaterna (sluttest: fyra `sluttest-o1-*`-rader, motsvarar delvis samma spår som redan känd "fyra kvar" i SLUTTEST_KO).
-- **Fyra interna statusmotsägelser** i SLUTTEST_KO.md självt (samma sak KLAR på ett ställe, EJ på ett annat): `sluttest-tio-scener-registrering`, `sluttest-a2-tacticboardcard`, `sluttest-64-statusmotsagelse`, `sluttest-am9-finaluppladdning`.
-- **De 32 `sluttest-onadd-*`-raderna** kommer ur SLUTTEST_KO.md:s "Skydd eller illusion?"-lista (55 granskade ytor, 35 helt onåbara i `/dev/scenes`). `MatchLiveScreen`, `FacilityScreen`, `GameOverScreen` uteslutna — dokumentet rättar dem själv som registrerade.
+- **Fyra interna statusmotsägelser** i docs/archive/historiska-statuskallor/SLUTTEST_KO.md självt (samma sak KLAR på ett ställe, EJ på ett annat): `sluttest-tio-scener-registrering`, `sluttest-a2-tacticboardcard`, `sluttest-64-statusmotsagelse`, `sluttest-am9-finaluppladdning`.
+- **De 32 `sluttest-onadd-*`-raderna** kommer ur docs/archive/historiska-statuskallor/SLUTTEST_KO.md:s "Skydd eller illusion?"-lista (55 granskade ytor, 35 helt onåbara i `/dev/scenes`). `MatchLiveScreen`, `FacilityScreen`, `GameOverScreen` uteslutna — dokumentet rättar dem själv som registrerade.
 
 ---
 
@@ -198,7 +178,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 ---
 
-# KÄLLA: `RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md` (Opus, tung körning 2026-09-03 — vilka liggartyper når spelaren, i vilket steg)
+# KÄLLA: `docs/rapport/RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md` (Opus, tung körning 2026-09-03 — vilka liggartyper når spelaren, i vilket steg)
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
@@ -229,13 +209,13 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| stickiness-drift-backend | Repots hosting är statisk (Vercel/Render publicerar SPA); de nya API-rutterna lever i `server.js` och körs bara lokalt. Ingen hållbar lagring (`InMemoryAttentionStore` tappar allt vid omstart), ingen scheduler, inga VAPID-secrets i drift | verifierad | Codex→Jacob | Implementation "Återstår" 1–3 | DELLEVERANS `aaccb764`: hållbar Postgres-adapter och asynkront store-kontrakt byggda men avsiktligt INTE produktionsaktiverade. Adaptern lagrar installation, subscription, minimal attention-snapshot, aktiva kandidater, skickad dedupe, leveranser, kvitton, preferenser och telemetri; installationstoken lagras bara som SHA-256. Omstarts-, första-förfallo-, dedupe- och avregistreringskontrakten verifierade i riktig SQL mot lokal Postgres-emulator; 24/24 backendfokustester, syntax och TypeScript gröna. CLAIM 2026-09-09T20:40:00+02:00 — Codex. JACOBS INFRABESLUT: Render Web Service + Postgres + timvis scheduler, hemligheter endast i Render; push förblir produktmässigt avstängd tills Etapp 1B ger sanna kandidater. Underlag: `BESLUTSUNDERLAG_BACKEND_PUSH_2026-09-06.md`. **DELLEVERANS 2026-09-10 (Codex):** `server.js` väljer nu Postgres via `DATABASE_URL` och vägrar produktionsfallback till minne; klienten har separat `VITE_ATTENTION_API_BASE`; `render.yaml` beskriver statisk app + Node-API + Postgres 18 + autentiserad timcron; VAPID/origins lämnas som Render-secrets och `ATTENTION_PUSH_ENABLED=false` håller UI och leverans avstängda även med giltiga nycklar. Test: full build grön, 549/549 testfiler och 4 983/4 983 tester gröna; lokal process gav health 200, släckt push 503 och osignerad cron 401. **DRIFTPROV GRÖN 2026-09-10 (Codex, `ab667ccd` byggfix + `2c724f14` rapport):** Blueprint-synk, secrets och HTTPS/CORS/scheduler-säkerhetsprov klara; V1-driften verifierad på Render Free, push fortsatt släckt (`ATTENTION_PUSH_ENABLED=false`). Bring-up-delen (Återstår 1–3) är därmed KLAR. Full redovisning: `RAPPORT_RENDER_BLUEPRINT_DRIFTPROV_2026-09-10.md`. **DATASKYDD KLART 2026-09-10 (Codex):** automatisk 90-dygnsgallring av hela inaktiva installationer körs nu i samma autentiserade timjobb; FK-cascade raderar snapshot, kandidater, dedupe, leveranser, kvitton, händelser och telemetri. **Kvar på raden (ägare Codex→Jacob):** gratis-Postgres upphör **2026-10-10 UTAN backup** — flytt/uppgradering måste planeras före dess; publikt repo stänger GH-workflowen efter 60 dagars inaktivitet (driftnotis). Raden öppen enbart på migreringsdeadlinen. |
+| stickiness-drift-backend | Repots hosting är statisk (Vercel/Render publicerar SPA); de nya API-rutterna lever i `server.js` och körs bara lokalt. Ingen hållbar lagring (`InMemoryAttentionStore` tappar allt vid omstart), ingen scheduler, inga VAPID-secrets i drift | verifierad | Codex→Jacob | Implementation "Återstår" 1–3 | DELLEVERANS `aaccb764`: hållbar Postgres-adapter och asynkront store-kontrakt byggda men avsiktligt INTE produktionsaktiverade. Adaptern lagrar installation, subscription, minimal attention-snapshot, aktiva kandidater, skickad dedupe, leveranser, kvitton, preferenser och telemetri; installationstoken lagras bara som SHA-256. Omstarts-, första-förfallo-, dedupe- och avregistreringskontrakten verifierade i riktig SQL mot lokal Postgres-emulator; 24/24 backendfokustester, syntax och TypeScript gröna. CLAIM 2026-09-09T20:40:00+02:00 — Codex. JACOBS INFRABESLUT: Render Web Service + Postgres + timvis scheduler, hemligheter endast i Render; push förblir produktmässigt avstängd tills Etapp 1B ger sanna kandidater. Underlag: `BESLUTSUNDERLAG_BACKEND_PUSH_2026-09-06.md`. **DELLEVERANS 2026-09-10 (Codex):** `server.js` väljer nu Postgres via `DATABASE_URL` och vägrar produktionsfallback till minne; klienten har separat `VITE_ATTENTION_API_BASE`; `render.yaml` beskriver statisk app + Node-API + Postgres 18 + autentiserad timcron; VAPID/origins lämnas som Render-secrets och `ATTENTION_PUSH_ENABLED=false` håller UI och leverans avstängda även med giltiga nycklar. Test: full build grön, 549/549 testfiler och 4 983/4 983 tester gröna; lokal process gav health 200, släckt push 503 och osignerad cron 401. **DRIFTPROV GRÖN 2026-09-10 (Codex, `ab667ccd` byggfix + `2c724f14` rapport):** Blueprint-synk, secrets och HTTPS/CORS/scheduler-säkerhetsprov klara; V1-driften verifierad på Render Free, push fortsatt släckt (`ATTENTION_PUSH_ENABLED=false`). Bring-up-delen (Återstår 1–3) är därmed KLAR. Full redovisning: `docs/rapport/RAPPORT_RENDER_BLUEPRINT_DRIFTPROV_2026-09-10.md`. **DATASKYDD KLART 2026-09-10 (Codex):** automatisk 90-dygnsgallring av hela inaktiva installationer körs nu i samma autentiserade timjobb; FK-cascade raderar snapshot, kandidater, dedupe, leveranser, kvitton, händelser och telemetri. **Kvar på raden (ägare Codex→Jacob):** gratis-Postgres upphör **2026-10-10 UTAN backup** — flytt/uppgradering måste planeras före dess; publikt repo stänger GH-workflowen efter 60 dagars inaktivitet (driftnotis). Raden öppen enbart på migreringsdeadlinen. |
 
 ---
 
 # KÄLLA: Speltest akademi och spelarutveckling, två säsonger (GPT, 2026-09-04 — Hälleforsnäs, build 9238404e) + `FIXRAPPORT_AKADEMI_2026-09-04.md` (Codex)
 
-**GPT:s dom:** "Akademin fungerar som simuleringssystem, men ännu inte som spelberättelse. […] Den är för dåligt attribuerad och för dåligt ihågkommen för att kännas som något jag byggt." Två reproducerbara lånefel + akademin skriver INGENTING till liggaren. **Codex fixade det funktionella samma dag** (ej committat — arbetskopian delas med design/illustrations/formationer). Resten är en dom: `DOM_AKADEMI_LIGGARE_2026-09-04.md`. Samma tes som konsumentkartan och slutprovet: skriv-utan-läs, nu i akademin.
+**GPT:s dom:** "Akademin fungerar som simuleringssystem, men ännu inte som spelberättelse. […] Den är för dåligt attribuerad och för dåligt ihågkommen för att kännas som något jag byggt." Två reproducerbara lånefel + akademin skriver INGENTING till liggaren. **Codex fixade det funktionella samma dag** (ej committat — arbetskopian delas med design/illustrations/formationer). Resten är en dom: `docs/dom/DOM_AKADEMI_LIGGARE_2026-09-04.md`. Samma tes som konsumentkartan och slutprovet: skriv-utan-läs, nu i akademin.
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
@@ -251,7 +231,7 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 ---
 
-# KÄLLA: `RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md` (Opus — systemen mot liggaren, v2 per båge)
+# KÄLLA: `docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md` (Opus — systemen mot liggaren, v2 per båge)
 
 **Resultat:** de system som skriver till liggaren är nu synliga (burnout, press, patron, domare, transfer, matcher, skador); de fem som ALDRIG skriver — styrelse, licens, orten/CS, hallprövning, brev (+ akademin, redan dömd) — är exakt där GPT:s tre rapporter hittade luckor. F-vägarna (egna projektioner/fickor) är där buggarna bor. Steg 2 (minns) är punktvis; redaktören har verktyget (`semanticKeyStem`) men producenterna använder det inte. Sex nya typer föreslagna, alla med konsumenter (§3). RAW-grep beställd (§5).
 
@@ -282,4 +262,3 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| genomgang-docs-omflyttning | 350 filer i docs-roten; MASTER_OPPET:s räknarnarrativ oläsbart; SLUTTEST_KO/BACKLOG (636 kB historisk status) kvar i roten | in_progress | Codex | §3 | CLAIM 2026-09-12T13:15:40+02:00 — Codex. Verifierat mot arbetsträdet och historiken: ingen annan aktiv `in_progress`-claim finns; roten har 350 filer, varav 89 DOM-, 52 RAPPORT-, 12 HANDOVER/HANDOFF- och 30 SPEC/CODE_SPEC-filer. `BACKLOG.md` + `SLUTTEST_KO.md` är 635 935 byte och deras filhuvuden säger redan att MASTER_OPPET är enda levande statuskälla. Flytta de fyra tydliga familjerna till `docs/dom`, `docs/rapport`, `docs/handover`, `docs/spec`, lägg de två historiska köerna i ett namngivet arkiv, uppdatera samtliga repo-pekare maskinellt, kontrollera länkarna och kollapsa MASTER-räknarhistoriken till en läsbar rad före arkivering. |

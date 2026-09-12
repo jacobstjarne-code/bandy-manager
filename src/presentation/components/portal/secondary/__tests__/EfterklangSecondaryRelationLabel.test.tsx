@@ -1,5 +1,5 @@
 /**
- * A-L1 (SLUTTEST_KO.md): "Relation Relation" i Efterklangs journalist-sparkline.
+ * A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): "Relation Relation" i Efterklangs journalist-sparkline.
  * Rotorsak: raden hade en synlig mono-etikett ("Relation") OCH skickade
  * label="Relation" vidare till <Sparkline>, som satte samma ord som SVG:ns
  * aria-label — allt som konkatenerar DOM-text (skärmläsare, ett design-audit-

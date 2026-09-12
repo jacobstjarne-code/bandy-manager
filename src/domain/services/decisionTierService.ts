@@ -1,5 +1,5 @@
 /**
- * decisionTierService — HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md).
+ * decisionTierService — HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md).
  *
  * "Tre nivåer i stället för en kö. Nivån är en TAGG på varje beslut/event,
  * satt vid generering." Den här filen äger de tre axlarna domen inför:
@@ -79,7 +79,7 @@ export const DECISION_TIER_BY_TYPE: Record<GameEventType, DecisionTier> = {
   gentjanst: 'month',
   academyEvent: 'month',
   academyDecision: 'month',
-  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+  // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
   // Domen skriver "'denna månad'-nivå för normalt, 'måste'-nivå bara om CS är
   // på väg under en uttågströskel" — den villkorade halvan är INTE byggd, och
   // ska inte byggas härifrån: måste-medlemskapet är stängt på TYP-nivå (se

@@ -7,7 +7,7 @@ import { streakWord } from '../../domain/data/preMatchContextStrings'
 const W = 1080
 const MIN_H = 1350
 const TOP_MARGIN = 120
-// 4.12 (SLUTTEST_KO.md, 2026-08-18): rotorsak för "kapas i produktion" — H var
+// 4.12 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): rotorsak för "kapas i produktion" — H var
 // fast 1350 och footern fast på H-60, men innehållshöjden är datadriven (playoff-
 // raden + upp till tre statsrader är alla villkorade). Fixat innehåll (spelare/
 // säsong utan de fyra villkorade blocken) rymdes inom 1350; värsta kombinationen
@@ -22,7 +22,7 @@ interface LayoutRow {
   draw: (ctx: CanvasRenderingContext2D, y: number) => void
 }
 
-// O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, DOM_DELNINGSKORTET_2026-08-17.md)
+// O9 (O9_TEXT_ARETS_BERATTELSE_2026-08-21.md, docs/dom/DOM_DELNINGSKORTET_2026-08-17.md)
 // — låst text, Opus/Fable. Rad 1-4 + tvåsanningsraden nedan ersätter det
 // äldre 4.12-innehållet (position/W-D-L/mål/tre statskort) som byggde
 // layoutmekaniken men aldrig fick O9:s text — exakt den "6., 21 poäng"-
@@ -289,7 +289,7 @@ export function computeSeasonShareImageHeight(summary: SeasonSummary): number {
 }
 
 /**
- * Hård assertion (SLUTTEST_KO.md 4.12): ingenting får ritas efter H - FOOTER_RESERVED.
+ * Hård assertion (docs/archive/historiska-statuskallor/SLUTTEST_KO.md 4.12): ingenting får ritas efter H - FOOTER_RESERVED.
  * Kastar hellre än att tyst klippa — en rads deklarerade `height` som inte matchar
  * vad dess `draw` faktiskt ritar (t.ex. ett internt y+offset som växer förbi radens
  * egen box) ska synas som ett fel i utveckling, inte som en beskuren bild i produktion.
@@ -362,7 +362,7 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
 }
 
 /**
- * 4.13 (SLUTTEST_KO.md, 2026-08-18). Tidigare: Promise<void>, svalde alla
+ * 4.13 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18). Tidigare: Promise<void>, svalde alla
  * fel tyst — anroparen kunde aldrig veta om delningen faktiskt lyckades,
  * laddades ner, avbröts av användaren, eller misslyckades helt.
  */
@@ -386,7 +386,7 @@ function downloadBlobAsPng(blob: Blob, fileName: string): void {
 }
 
 /**
- * H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): direkt nedladdning utan Web Share.
+ * H7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): direkt nedladdning utan Web Share.
  * Explicit fallback-väg för "Ladda ner PNG"-knappen — ingen OS-delningsyta
  * inblandad, så den kan aldrig fastna i väntan på ett share-anrop som inte
  * avslutas. Används både som knapp-handler vid `failed`-läge och internt av

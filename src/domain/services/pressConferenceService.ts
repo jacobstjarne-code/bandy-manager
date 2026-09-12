@@ -36,7 +36,7 @@ interface PressQuestion {
   requireLateEqualizer?: boolean  // (b) "kvitterade sent"
   requireDrawStreak3?: boolean    // (c) "oavgjort i tre raka"
   requireHome?: boolean           // (d) {arenaName} är alltid managed clubs egen arena
-  // U2 (SLUTTEST_KO.md, 2026-08-17): symptom 3 (hemmakryss → "poäng på
+  // U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): symptom 3 (hemmakryss → "poäng på
   // bortaplan") och symptom 2 (cupfinal → "två viktiga poäng") — plats/
   // ligapoäng-gates saknades helt, bara requireHome fanns.
   requireAway?: boolean
@@ -397,7 +397,7 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
   const isHome = fixture.homeClubId === game.managedClubId
   const myScore = isHome ? (fixture.homeScore ?? 0) : (fixture.awayScore ?? 0)
   const theirScore = isHome ? (fixture.awayScore ?? 0) : (fixture.homeScore ?? 0)
-  // U2 (SLUTTEST_KO.md, 2026-08-17): utfall via deriveUtfall (straff/förlängnings-
+  // U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): utfall via deriveUtfall (straff/förlängnings-
   // medveten), inte rå score — en straffseger har myScore===theirScore men är
   // avgjord. rawDraw (nedan, lateEqualizer) är MEDVETET kvar på råscore: den
   // frågar om ordinarie tids kvittering, inte matchens slutgiltiga utfall.
@@ -450,7 +450,7 @@ function buildPressContext(fixture: Fixture, game: SaveGame, rand: () => number)
   const evts = fixture.events ?? []
 
   // Trailed at half: check if opponent was winning at minute 45.
-  // O9-uppföljning (DOMLOGG_2026-08-31.md): extraherad till matchTypeAxes.ts
+  // O9-uppföljning (docs/dom/DOMLOGG_2026-08-31.md): extraherad till matchTypeAxes.ts
   // (computeTrailedAtHalf) — matchHighlightService.ts behöver samma fråga
   // för comeback-kategorin, en sanning i stället för två kopior.
   const trailedAtHalf = computeTrailedAtHalf(fixture, game.managedClubId)
@@ -558,7 +558,7 @@ export const TAG_DEFS: Record<string, PressTagDef> = {
   win_big:      stateTag('matchen vanns med minst tre måls marginal', ctx => ctx.won && ctx.margin >= 3, 'win'),
   win_streak:   stateTag('matchen vanns och segersviten är minst tre matcher', ctx => ctx.won && ctx.streak >= 3, 'win'),
   win_away:     stateTag('matchen vanns på bortaplan', ctx => ctx.won && !ctx.isHome, 'win'),
-  // U2 (SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg i sina
+  // U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg i sina
   // egna generic-buckets ('win'/'loss') — en icke-derbymatch som föll tillbaka
   // på generic-fallbacken kunde då få ett derby-svar. Samma disciplin som
   // playoff_loss_not_final (raden nedanför) redan tillämpar: generic:'none'.
@@ -1000,7 +1000,7 @@ export function generatePressConference(
   game: SaveGame,
   rand: () => number,
 ): GameEvent | null {
-  // U2 (SLUTTEST_KO.md, 2026-08-17): ctx byggs FÖRST och äger won/lost/draw/
+  // U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): ctx byggs FÖRST och äger won/lost/draw/
   // isDerby — tidigare räknade den här funktionen ut samma sak en gång till
   // ur rå homeScore/awayScore (tredje oberoende beräkningen i filen, efter
   // buildPressContext och TAG_DEFS), vilket bl.a. gav en straffseger som
@@ -1033,7 +1033,7 @@ export function generatePressConference(
   )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
-  // Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+  // Centralredaktören, punkt 2 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md):
   // frågetextens egen recency (startvärde 5 omgångar) — auditens "samma
   // frågor snabbt"/"gamla svar följer med" är bägge denna gate. Gäller
   // bara det GRUNDLÄGGANDE slumpvalet nedan — arc-/storyline-/CS-/
@@ -1287,7 +1287,7 @@ export function generatePressConference(
     // Callern (roundProcessor.ts) loggar dem som narrativeBeatLog-poster NÄR
     // EVENTET GENERERAS (frågan visas), samma skrivmönster som storylinePressKey.
     pressResponseKeys: responses.map(r => `${PRESS_RESPONSE_COOLDOWN_PREFIX}${r.id}`),
-    // A-L1 (SLUTTEST_KO.md): så eventResolver.ts:s 'pressResponse'-hantering kan
+    // A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): så eventResolver.ts:s 'pressResponse'-hantering kan
     // slå upp DEN HÄR matchens .matchday direkt istf att gissa fram "senaste
     // ligamatchen" ur game.fixtures i efterhand (den gissningen läste roundNumber,
     // fel fält per arkitekturregeln, och kunde falla till 0 — "omg 0" i Efterklang).

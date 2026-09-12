@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — årsboken över en klubbgräns (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — årsboken över en klubbgräns (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * Domens fråga 4 ("Vad händer med SeasonSummary-kedjan när managern byter klubb
  * mitt i en karriär?") och dess "Godkänd när" ("En spelare kan berätta om två

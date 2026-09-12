@@ -6,7 +6,7 @@ import { FixtureStatus } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 /**
- * 4.1 (SLUTTEST_KO.md, 2026-08-17) — "dashboard 5:e, bracket 6:a, årsbok 5:e,
+ * 4.1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — "dashboard 5:e, bracket 6:a, årsbok 5:e,
  * samma säsong och 21 poäng". Rotorsak: roundProcessor.ts skickar
  * game.pointDeductions till calculateStandings, men fem andra anropsställen
  * (playoffTransition.ts, seasonEndProcessor.ts, TabellScreen.tsx,

@@ -213,7 +213,7 @@ function buildIngress(
   }
 }
 
-// E-FS1 (BACKLOG.md): SM-final-uppspelet renderas i två komponenter (Förbered/
+// E-FS1 (docs/archive/historiska-statuskallor/BACKLOG.md): SM-final-uppspelet renderas i två komponenter (Förbered/
 // MatchLaddningScene, Spela/FinalIntroScreen) — statradens etiketter delades
 // tidigare mellan en hårdkodad JSX-sträng i MatchLaddningScene och detta
 // statLabels-fält, samma två ord från två separata källor. En konstant, båda

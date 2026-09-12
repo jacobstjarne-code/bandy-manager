@@ -1,6 +1,6 @@
-# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+# ⛔ HISTORISK — status i `docs/archive/historiska-statuskallor/BACKLOG.md`. BYGG INTE PÅ DENNA.
 
-**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** Status-bild från **27 april 2026** — två månader och hela RC-arc:en, B1, mentorskap, score-systemet (Våg 1–4), försoningssprinten och spelkänsle-sprinten före nuläget. Den beskriver spelet vid Sprint 22–28 och gör explicit anspråk på "enda sanning" — sant i april, inte nu. "AKTIVA DOCS"-tabellen längst ned listar gamla filer som "Aktuell"; lita inte på den. Kalibrerings-/kunskapsdata den refererar (bandygrytan, SCORELINE_REFERENCE, kunskapsbasen) lever i sina egna filer, inte här. **Statusfilen är `docs/BACKLOG.md`.** Lämnad som historik (snapshot av spelets form i april).
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** Status-bild från **27 april 2026** — två månader och hela RC-arc:en, B1, mentorskap, score-systemet (Våg 1–4), försoningssprinten och spelkänsle-sprinten före nuläget. Den beskriver spelet vid Sprint 22–28 och gör explicit anspråk på "enda sanning" — sant i april, inte nu. "AKTIVA DOCS"-tabellen längst ned listar gamla filer som "Aktuell"; lita inte på den. Kalibrerings-/kunskapsdata den refererar (bandygrytan, SCORELINE_REFERENCE, kunskapsbasen) lever i sina egna filer, inte här. **Statusfilen är `docs/archive/historiska-statuskallor/BACKLOG.md`.** Lämnad som historik (snapshot av spelets form i april).
 
 ---
 
@@ -196,7 +196,7 @@ Följande finns i koden men har inte bekräftats fungera genom playtest-runda 3:
 
 ## FRAMTIDSVISION (ej implementerat)
 
-Från THE_BOMB.md och SPEC_KLUBBUTVECKLING.md — idéer som INTE är i koden:
+Från THE_BOMB.md och docs/spec/SPEC_KLUBBUTVECKLING.md — idéer som INTE är i koden:
 
 - **Ortens kalender** — händelser mellan matchdagar
 - **Mecenatens middag** — interaktiv scen (jakt, bastu, whisky)
@@ -222,7 +222,7 @@ Från THE_BOMB.md och SPEC_KLUBBUTVECKLING.md — idéer som INTE är i koden:
 | `docs/HANDOVER_2026-04-27.md` | Senaste handover | Aktuell |
 | `docs/STATUS.md` | Denna fil | Aktuell |
 | `docs/THE_BOMB.md` | Narrativ vision | Referens |
-| `docs/SPEC_KLUBBUTVECKLING.md` | Ekonomisk progression | Referens |
+| `docs/spec/SPEC_KLUBBUTVECKLING.md` | Ekonomisk progression | Referens |
 | `docs/data/SCORELINE_REFERENCE.md` | Empirisk referens för motor-kalibrering | Aktuell |
 | `docs/data/ANALYS_MATCHMONSTER.md` | Bandygrytan-analys (hela matchen) | Referens |
 | `docs/data/ANALYS_SLUTSPEL.md` | Bandygrytan-analys (slutspel) | Referens |

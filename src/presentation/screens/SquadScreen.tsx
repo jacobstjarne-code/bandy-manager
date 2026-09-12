@@ -457,7 +457,7 @@ export function SquadScreen() {
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
     const rawAnalysis = game.opponentAnalyses?.[oppId]
-    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): samma gate/seed som
+    // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, 2026-08-23): samma gate/seed som
     // TaktikScreen.tsx — de två skärmarna får aldrig ge olika svar samma omgång.
     // DOM_BURNOUT_TAK_2026-09-02 (C): samma forceFullSuppression-avgörande
     // som TaktikScreen.tsx, ur samma game-objekt.

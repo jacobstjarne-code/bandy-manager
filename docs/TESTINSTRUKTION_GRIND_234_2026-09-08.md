@@ -1,6 +1,6 @@
 # TESTINSTRUKTION — grind 2/3/4 (GPT lång genomspelning)
 
-**Datum:** 2026-09-08 · **Av:** Opus · **Beställd av:** Jacob (beslut 3) · **Kör:** GPT · **Grund:** `sluttest-grind2/3/4` (SLUTTEST_KO.md), samma disciplin som `TESTINSTRUKTION_KARRIARJOURNAL_2026-09-03`. Grindarna är dömda att bevisas genom en lång genomspelning, inte av magkänsla. Kan köras inuti/bredvid karriärjournal-passet — det är samma långa karriär.
+**Datum:** 2026-09-08 · **Av:** Opus · **Beställd av:** Jacob (beslut 3) · **Kör:** GPT · **Grund:** `sluttest-grind2/3/4` (docs/archive/historiska-statuskallor/SLUTTEST_KO.md), samma disciplin som `TESTINSTRUKTION_KARRIARJOURNAL_2026-09-03`. Grindarna är dömda att bevisas genom en lång genomspelning, inte av magkänsla. Kan köras inuti/bredvid karriärjournal-passet — det är samma långa karriär.
 
 ## Disciplin (samma som journal-passet)
 

@@ -95,7 +95,7 @@ M17–M67a/M67c/M33/M31/M9 + BACKLOG-konsolideringen HELT AVKLARADE 2026-07-05
     → FAREWELL_MATCH_STRINGS med {player}/{members}/{leader} substituerat.
     FAREWELL_MATCH_ATMOSPHERE/FAREWELL_MATCH_KLACK (samma fil) förblir
     ONÅBARA — grepverifierat på Jacobs fråga 2026-07-05 (noll konsumenter,
-    bekräftat), ny egen rad i BACKLOG.md (tidigare bara en filkommentar).
+    bekräftat), ny egen rad i docs/archive/historiska-statuskallor/BACKLOG.md (tidigare bara en filkommentar).
     Ociterad narratörsröst passar inte samma citerade kafferumsslot;
     kvarstår som eget Opus/Jacob-beslut (egen matchdags-scen eller
     radering).
@@ -150,7 +150,7 @@ M17–M67a/M67c/M33/M31/M9 + BACKLOG-konsolideringen HELT AVKLARADE 2026-07-05
     (b) FIXAD — "Coach" → "Tränare" i alla 103 attributioner, 7 filer i
     media/library/quotes/. Upptäckt under arbetet: hela poolen saknar
     konsumenter i src/ (ingen import, ingen import.meta.glob) — samma
-    dödkod-mönster som M60/M61, radad i BACKLOG.md BYGGT MEN OSYNLIGT
+    dödkod-mönster som M60/M61, radad i docs/archive/historiska-statuskallor/BACKLOG.md BYGGT MEN OSYNLIGT
     (tabellen nu 6 rader, över eget ~5-tak, flaggat men ej konsoliderat).
     (c) VERIFIERAD, ingen bugg: `{resultat}` visar redan den sista FÄRDIGSPELADE
     matchens enskilda resultat (AnslagOverlay.tsx), vilket är rätt semantik
@@ -1309,7 +1309,7 @@ MISSTANKAR — döm i kontext, luta konservativt:
   faktiskt live, bekräftar Fables oberoende fynd i domän 3-svans-passet
   ovan) och M48 (hela mecenat-withdrawal-systemet dött, inte bara
   triggerräkningen oprecis — Mecenat.demands populeras aldrig). Båda
-  dödmarkerade i koden + loggade i BACKLOG.md:s "BYGGT MEN OSYNLIGT"-
+  dödmarkerade i koden + loggade i docs/archive/historiska-statuskallor/BACKLOG.md:s "BYGGT MEN OSYNLIGT"-
   tabell, som därmed är uppe i 6 aktiva rader — över den egna
   ~5-radersgränsen. Föreslår en konsolideringsomgång innan nästa fynd
   läggs till där.
@@ -1513,7 +1513,7 @@ MISSTANKAR — döm i kontext, luta konservativt:
   ärende.
 
   LÄGE: M17–M61 helt avklarade. Kvar i CODE GÖR: M9 (gammal) + M63–M66
-  (tillkom under domän 4-läsningen, INTE ännu körda). BACKLOG.md:s
+  (tillkom under domän 4-läsningen, INTE ännu körda). docs/archive/historiska-statuskallor/BACKLOG.md:s
   "BYGGT MEN OSYNLIGT"-tabell är fortfarande uppe i 6 aktiva rader (över
   ~5-gränsen sedan förra batchen) — nya dödkod-fynd (M60a, M61) loggades
   denna gång bara som kod-kommentarer, INTE som nya BACKLOG-rader, just

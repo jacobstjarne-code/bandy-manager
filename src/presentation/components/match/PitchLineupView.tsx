@@ -72,7 +72,7 @@ export function PitchLineupView({
     !placedPids.has(p.id) &&
     !p.isInjured &&
     p.suspensionGamesRemaining === 0 &&
-    // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande/överbelastad efter
+    // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande/överbelastad efter
     // förra matchens sannolikhetskast — skild från isInjured, men samma
     // konsekvens för valbarhet.
     (p.restGamesRemaining ?? 0) === 0

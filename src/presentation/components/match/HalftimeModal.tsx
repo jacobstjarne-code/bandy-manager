@@ -215,7 +215,7 @@ export function HalftimeModal({
         <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', marginBottom: 6, fontWeight: 600, textAlign: 'left' }}>{label}</p>
         <div style={{ display: 'flex', gap: 6 }}>
           {options.map(o => {
-            // B2 (SLUTTEST_KO.md 2026-08-19): o.val kan vara ett värdeblock (press:
+            // B2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-19): o.val kan vara ett värdeblock (press:
             // ['medium','low'] — matchCore behandlar dem identiskt, se tacticData.ts).
             const vals = Array.isArray(o.val) ? o.val : [o.val]
             const isSelected = vals.includes(current)

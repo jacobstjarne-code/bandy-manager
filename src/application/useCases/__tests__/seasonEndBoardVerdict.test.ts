@@ -4,7 +4,7 @@ import { handleSeasonEnd } from '../seasonEndProcessor'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 
 /**
- * liggare-ny-board-verdict (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * liggare-ny-board-verdict (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
  * styrelsens säsongsdom skrivs nu som en board_verdict-post vid varje
  * säsongsslut, med samma sanning som den frusna SeasonSummary.boardTruth —
  * en kanon, inte en parallell.

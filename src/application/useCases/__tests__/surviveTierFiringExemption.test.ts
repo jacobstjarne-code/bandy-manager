@@ -1,6 +1,6 @@
 /**
  * Survive-tierns eget avskedskontrakt (Jacobs dom 2026-08-25, efter fjärde
- * H4-mätningen — RAPPORT_SURVIVE_AVSKEDSMEKANIK_AVGRANSNING_2026-08-25.md):
+ * H4-mätningen — docs/rapport/RAPPORT_SURVIVE_AVSKEDSMEKANIK_AVGRANSNING_2026-08-25.md):
  * "Att förlora är förväntat — det är premissen." En Survive-klubb ska inte
  * kunna sparkas på ENBART boardPatience<=15 eller ENBART tre misslyckanden.
  * Den sportsliga grinden kräver båda samtidigt; licensnekan och konkurs är

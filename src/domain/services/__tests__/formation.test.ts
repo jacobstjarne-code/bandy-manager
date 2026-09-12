@@ -85,7 +85,7 @@ describe('Formation templates', () => {
     }
   })
 
-  // DOM_FORMATIONER_V2_2026-09-04.md: "femman bak konstant" — två backar,
+  // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: "femman bak konstant" — två backar,
   // libero, två ytterhalvor i alla sex (utom höga halvor, samma personer,
   // annan y). Verifierar antalet, inte y-positionen (som medvetet skiljer
   // sig i 532_hogahalvor).
@@ -171,7 +171,7 @@ describe('autoAssignFormation', () => {
   })
 })
 
-// DOM_FORMATIONER_V2_2026-09-04.md: "Formation tactic modifiers"-blocket
+// docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: "Formation tactic modifiers"-blocket
 // (2-3-2-3/4-3-3 offense/defense-switchen) borttaget — mekaniken själv är
 // borttagen ur getTacticModifiers (noll källstöd). Se tacticModifiers.test.ts
 // för regressionstestet som bevisar de gamla talen är BORTA.

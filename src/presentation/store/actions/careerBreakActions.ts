@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN, store-sidan (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN, store-sidan (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * Tre steg, i domens ordning och ingen annan:
  *   1. `startCareerBreak()` — säsongen spelas utan spelaren, `stage: 'season'`.

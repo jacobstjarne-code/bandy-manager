@@ -227,7 +227,7 @@ describe('evaluateSquad', () => {
   // Skutskär-auditens test 12 (52009671, 2026-08-20), High 2: "0 % är för
   // spelbart" — spelare på 0 % kunde fortfarande göra flera mål eller bli
   // bäst på plan. Skyddar getSelectionScore/playerModifier-fixet
-  // (BACKLOG.md "Spelklarhet vs playerModifier", 2026-08-22) mot regression:
+  // (docs/archive/historiska-statuskallor/BACKLOG.md "Spelklarhet vs playerModifier", 2026-08-22) mot regression:
   // en fixerad elva utvärderad vid fyra konditionsnivåer ska ge MONOTONT
   // fallande förväntad prestation, aldrig platt eller vändande. seasonForm
   // satt till 100 på varje nivå så effectiveFitness (playerModifier)

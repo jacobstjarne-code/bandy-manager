@@ -9,7 +9,7 @@
 
 ### Beslutsaddendum 2026-09-04 — Berättaren är redaktionen
 
-Efter rapporten låstes `SPEC_BERATTAREN_2026-09-04.md` och raderna `stickiness-attention-ar-en-yta` samt `stickiness-notification-history` i `MASTER_OPPET.md`. De besluten preciserar rapporten:
+Efter rapporten låstes `docs/spec/SPEC_BERATTAREN_2026-09-04.md` och raderna `stickiness-attention-ar-en-yta` samt `stickiness-notification-history` i `MASTER_OPPET.md`. De besluten preciserar rapporten:
 
 - Push är en **yta i Berättaren**, inte en fristående narrativ redaktion.
 - Matchförberedelse får härledas direkt som en ren state-open-loop.

@@ -1,6 +1,6 @@
 /**
  * HIGH 10 — BURNOUT SOM BÅGE. Mätning mot domens "GODKÄNT NÄR" 1–4.
- * DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md.
+ * docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md.
  *
  * Domens krav:
  *   1. En manager som SVARAR (vinner, vilar, använder relief-handlingar) ser

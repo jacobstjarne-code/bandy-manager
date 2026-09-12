@@ -1,6 +1,6 @@
 # A1 — Kafferummet blir en plats (designspec)
 
-**Från:** Design · **Datum:** 2026-07-19 · **Spår:** A (SPEC_SYNTES_PLATS_OCH_DRAMATURGI.md)
+**Från:** Design · **Datum:** 2026-07-19 · **Spår:** A (docs/spec/SPEC_SYNTES_PLATS_OCH_DRAMATURGI.md)
 **Format:** ytkarta, samma som sidfots-auditen · **Leverans till:** A2 (Code, nybygge) + A3 (Fable, text)
 
 Kafferummet ska bli en plats man går till, där en av stammisarna ställer en fråga till spelaren, och där svaret minns. Interaktiv version + mock: `A1 — Kafferummet blir en plats.dc.html`.

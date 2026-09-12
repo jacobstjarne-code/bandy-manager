@@ -1,6 +1,6 @@
 /**
  * A3 — KONDITIONSSPIRALEN, uthållighetstest B.
- * DOM_A3_KONDITIONSSPIRAL_2026-08-29.md, "GODKÄNT NÄR".
+ * docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md, "GODKÄNT NÄR".
  *
  * Domens mätorder, ordagrant:
  *   "Kör deterministiskt 5 säsonger med 18-, 20- och 24-mannatrupp,

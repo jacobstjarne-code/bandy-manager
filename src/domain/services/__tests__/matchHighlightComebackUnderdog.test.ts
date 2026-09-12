@@ -7,7 +7,7 @@ import type { Fixture } from '../../entities/Fixture'
 import type { SaveGame } from '../../entities/SaveGame'
 
 /**
- * O9 (DOMLOGG_2026-08-31.md): "MOMENT_MALL-mallarna finns men
+ * O9 (docs/dom/DOMLOGG_2026-08-31.md): "MOMENT_MALL-mallarna finns men
  * selectMatchOfTheSeason producerar aldrig kategorierna" — comeback och
  * underdog_upset saknade en trigger helt. Regressionstest på bägge.
  */

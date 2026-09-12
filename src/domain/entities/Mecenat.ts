@@ -47,7 +47,7 @@ export interface Mecenat {
   personality: MecenatPersonality
   influence: number
   happiness: number
-  // 3.2 (SLUTTEST_KO.md, 2026-08-17) — döpt om från `patience`: samma
+  // 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — döpt om från `patience`: samma
   // kollisionsrisk mot `boardPatience`/`patron.patience`→`goodwill` (165b280c)
   // som redan åtgärdats en gång. Fältet skrivs vid mecenat-generering men
   // läses ingenstans annars (grep bekräftat) — döpt om, inte borttaget,

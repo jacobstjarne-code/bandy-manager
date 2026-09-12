@@ -53,8 +53,8 @@ export interface WeeklyDecision {
    * väl valts är ledgern sanningskällan för att förändringen redan skett.
    */
   repeatPolicy?: 'season' | 'untilAccepted'
-  systemhandelse?: boolean  // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
-                              // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
+  systemhandelse?: boolean  // O19 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
+                              // (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
 }
 
@@ -139,7 +139,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `${leader} har hyrt en buss till ${awayOpponent}. ${veteran} har redan bokat sin plats. Bidra med 3 000 kr?`,
       optionA: { label: 'Bidra', preview: '−3 tkr · lyfter stämningen på läktaren', effectColor: 'success' },
       optionB: { label: 'Låt dem ordna', preview: `grumlar ${swedishGenitive(groupName)} stämning`, effectColor: 'danger' },
-      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+      systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'tifo_contribution',
@@ -147,7 +147,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `${youth} vill arrangera tifo till nästa hemmamatch. Bidra med 2 000 kr?`,
       optionA: { label: 'Bidra', preview: '−2 tkr · lyfter stämningen på läktaren', effectColor: 'success' },
       optionB: { label: 'Neka', preview: 'grumlar stämningen', effectColor: 'danger' },
-      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+      systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'supporter_conflict_mediate',
@@ -190,7 +190,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       // supporterGroup.founded mäter klackens ålder, inte HANS, och hade gett
       // falsk precision — farligare än en hårdkodad trea). "Många vintrar"
       // säger det som betyder något (han har gjort det länge, han är veteran)
-      // utan att påstå ett tal ingen data backar. Se BACKLOG.md för den
+      // utan att påstå ett tal ingen data backar. Se docs/archive/historiska-statuskallor/BACKLOG.md för den
       // saknade tjänstetidsräknaren (samma lucka som "år i klubben"/O18 fält 3).
       question: `Kommunen erbjuder en begagnad ismaskin för 15 000 kr. ${veteran} har spolat isen för hand i många vintrar och frågar varje vecka när maskinen kommer.`,
       optionA: { label: 'Köp den', preview: '−15 tkr · orten värmer', effectColor: 'success' },
@@ -214,7 +214,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
       optionA: { label: 'Acceptera', preview: '+20 tkr engång · −stolthet', effectColor: 'success' },
       optionB: { label: 'Behåll namnet', preview: `lyfter ${swedishGenitive(groupName)} stämning · tär på styrelsens tålamod`, effectColor: 'muted' },
-      systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+      systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
     },
     {
       id: 'legacy_youth_showcase',
@@ -276,7 +276,7 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
     p.clubId === game.managedClubId && p.position !== PlayerPosition.Goalkeeper && p.attributes.cornerSkill > 60,
   )
 
-  // Throw-guard (SLUTTEST_KO.md, 2026-08-17, samma mönster som eventResolver.ts:s
+  // Throw-guard (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17, samma mönster som eventResolver.ts:s
   // vakt): player_weekend_off kräver en wearyPlayer (form < 40) för att ge effekt
   // i BÅDA valen — denna filtreringen SAKNADES (till skillnad från corner-besluten
   // ovan, som redan var skyddade av PC-2). Utan den kunde beslutet visas och
@@ -439,7 +439,7 @@ export function resolveWeeklyDecision(
   const decisionId = decision.id
   switch (decision.id) {
     case 'corner_extra_training':
-      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): generateWeeklyDecision döljer
+      // Throw-guard (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): generateWeeklyDecision döljer
       // detta beslutet när ingen cornerCandidate finns (PC-2) — når koden hit
       // ändå är det ett brutet kontrakt, inte ett normalt no-op-läge. Samma
       // disciplin som eventResolver.ts:s vakt: gör det högt, inte tyst.
@@ -450,7 +450,7 @@ export function resolveWeeklyDecision(
       return [{ type: 'noop' }]
 
     case 'player_weekend_off':
-      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): samma disciplin — filtret
+      // Throw-guard (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): samma disciplin — filtret
       // (hasWearyPlayer ovan i generateWeeklyDecision) ska ha dolt beslutet.
       if (!wearyPlayer)
         throw new Error("weeklyDecision 'player_weekend_off' saknar wearyPlayer — generateWeeklyDecision:s hasWearyPlayer-filter borde ha dolt beslutet")
@@ -481,7 +481,7 @@ export function resolveWeeklyDecision(
       return [{ type: 'communityStanding', delta: -2 }]
 
     case 'training_corners_vs_matchprep':
-      // Throw-guard (SLUTTEST_KO.md, 2026-08-17): choice A delar samma
+      // Throw-guard (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): choice A delar samma
       // PC-2-filter (hasCornerCandidate) som corner_extra_training.
       if (choice === 'A' && !cornerCandidate)
         throw new Error("weeklyDecision 'training_corners_vs_matchprep' val A saknar cornerCandidate — generateWeeklyDecision:s PC-2-filter borde ha dolt beslutet")

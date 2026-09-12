@@ -128,7 +128,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const game = useGameStore(s => s.game)
   const players = game?.players
   const contextLabel = game ? getEventContextLabel(event, game) : undefined
-  // DOM_SPONSOR_MOTBUD_2026-08-31.md: choiceId==='counter' fångas HÄR, före
+  // docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md: choiceId==='counter' fångas HÄR, före
   // resolveEvent — Y är fri inmatning (SponsorCounterModal), inte ett
   // fördefinierat val. Detta är den enda platsen sponsorOffer faktiskt
   // renderas (PortalEventSlot → EventCardInline), se rotorsak i D-fact.

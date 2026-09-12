@@ -109,7 +109,7 @@ Skriptet (`scripts/calibrate.ts`) uppdaterades i slutet av sessionen att använd
 |-----|---------|----------|
 | `docs/SPRINT_ALLT_KVAR.md` | 14 KB | **HUVUDDOK** — 15 buggar + features + checklista |
 | `docs/THE_BOMB.md` | 8 KB | Vision: korsreferenser, milestones, atmosfär, retention |
-| `docs/SPEC_KLUBBUTVECKLING.md` | 10 KB | Ekonomisk progression, utbyggnadsträd, inomhushallen |
+| `docs/spec/SPEC_KLUBBUTVECKLING.md` | 10 KB | Ekonomisk progression, utbyggnadsträd, inomhushallen |
 | `docs/FIXSPEC_PARKERAT.md` | 43 KB | Fullspecade: presskonferens-scen, transferdödline, rykte |
 | `docs/FIXSPEC_KALIBRERING.md` | ~6 KB | Matchmotor-konstanter (redan implementerat) |
 | `docs/FIXSPEC_NYA_FEATURES.md` | 10 KB | Arenanamn, klacknamn, straffar, kapten, hörn-SVG |
@@ -121,7 +121,7 @@ Skriptet (`scripts/calibrate.ts`) uppdaterades i slutet av sessionen att använd
 ### Relation mellan visionsdokumenten
 
 ```
-THE_BOMB.md                    SPEC_KLUBBUTVECKLING.md
+THE_BOMB.md                    docs/spec/SPEC_KLUBBUTVECKLING.md
 (narrativ, atmosfär)           (ekonomi, byggen)
 ─────────────────              ─────────────────────
 Korsreferenser                 Utbyggnadsträd (3 grenar)

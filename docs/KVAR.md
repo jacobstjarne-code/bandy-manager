@@ -1,9 +1,9 @@
-# ⛔ HISTORISK — status & parkerat i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+# ⛔ HISTORISK — status & parkerat i `docs/archive/historiska-statuskallor/BACKLOG.md`. BYGG INTE PÅ DENNA.
 
-**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** KVAR var den andra levande statusfilen vid sidan av BACKLOG — båda fick uppdateringar in i juni (06-19/06-20-entries här dubblerar BACKLOG: Konsekvensraden, KF9b, D3, promise⇔consequence). Två filer som tyst sa olika om samma sak är precis driften genomgången rättar. **Statusen OCH det parkerade äger `docs/BACKLOG.md` nu** (sektion A = aktivt, D = parkerat).
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** KVAR var den andra levande statusfilen vid sidan av BACKLOG — båda fick uppdateringar in i juni (06-19/06-20-entries här dubblerar BACKLOG: Konsekvensraden, KF9b, D3, promise⇔consequence). Två filer som tyst sa olika om samma sak är precis driften genomgången rättar. **Statusen OCH det parkerade äger `docs/archive/historiska-statuskallor/BACKLOG.md` nu** (sektion A = aktivt, D = parkerat).
 
 **Vad som lever vidare — och var (inget tappat):**
-- **Tekn. skuld (TS-4…TS-10, TS-2/TS-3)** → `docs/SPEC_TEKNISK_SKULD.md` (full spec per åtgärd) + BACKLOG §E. TS-8 (SaveGame-tillväxt) = GAP-5, nu BACKLOG **D-RC**.
+- **Tekn. skuld (TS-4…TS-10, TS-2/TS-3)** → `docs/spec/SPEC_TEKNISK_SKULD.md` (full spec per åtgärd) + BACKLOG §E. TS-8 (SaveGame-tillväxt) = GAP-5, nu BACKLOG **D-RC**.
 - **Promise⇔consequence-rester** (player_weekend_off-bugg, corner-noop, scout-gate, legacy_youth_showcase-label, pass-2-trippeln) → `docs/AUDIT_PROMISE_CONSEQUENCE_2026-06-19.md` + `docs/CODE_ORDER_PROMISE_CONSEQUENCE_2026-06-19.md` (mentor-action där = sedan byggd, mentorskap-kanon).
 - **Långsiktigt/THE_BOMB** (ortens kalender, mecenat-middag, kommunval, taktikdjup) → `docs/THE_BOMB.md`.
 - **Nisch-datajobb** (allsvenskan-scraping shot/save/freestroke/offside, FREDAGSJOBB-sektionen) ligger kvar som referens här — sannolikt obsolet då motorn nu är kalibrerad <1%.
@@ -28,7 +28,7 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 - Ingen ny kod byggs förrän verifiering är gjord.
 
 ### Riktning 1 (NÄSTA) — Klubbutvecklingspaketet
-- Spec finns: `docs/SPEC_KLUBBUTVECKLING.md`.
+- Spec finns: `docs/spec/SPEC_KLUBBUTVECKLING.md`.
 - Facility-träd med dependencies, säsongsplanering vid PreSeason, löneeskalering, kontextuella sponsorer, halvårsrapport, annandagsplanering, halldebatten som flersäsongsprocess.
 - Stor sprint, ~2-3 veckor.
 
@@ -197,7 +197,7 @@ Full handover: `docs/HANDOVER_2026-06-18.md`. Order (1–15): `docs/CODE_DESIGN_
 
 **Nästa:**
 - Jacob playtest — verifiera 4 fixar i kontext
-- Code: Transfers Sprint 1 (A2 i BACKLOG.md)
+- Code: Transfers Sprint 1 (A2 i docs/archive/historiska-statuskallor/BACKLOG.md)
 
 ---
 
@@ -591,7 +591,7 @@ Lista alla träffar här innan HANDOFF #1 plockas. K1, K2, K3 redan adresserade.
 
 **SPEC_BESLUTSEKONOMI Steg 3:** ✅ Levererad (commits `2daed82` + `1029feb`). `eventActions.ts`, `EventCardInline.tsx`, `PortalEventSlot.tsx`. Overlay bara för `critical`, allt annat inline i Portal. Placeholder-texter — Opus skriver EventCardInline-strängar nästa session.
 
-**Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Spec-skissad i `SPEC_BESLUTSEKONOMI.md`. Skrivs när Steg 3 är playtestat.
+**Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Spec-skissad i `docs/spec/SPEC_BESLUTSEKONOMI.md`. Skrivs när Steg 3 är playtestat.
 
 **Kodgenomgång 2026-04-30:** ✅ Alla 6 fynd fixade (`e480f38`). B1 dubbel sortering, B2 currentMatchday required, B3 spec-dokumentation, B4 globalt kö-cap, B5 resolved events rensas, B6 useEffect-dependency.
 
@@ -650,7 +650,7 @@ Lista alla träffar här innan HANDOFF #1 plockas. K1, K2, K3 redan adresserade.
 
 ## TEKNISK SKULD — DOKUMENTERAD (från genomgång 2026-05-02)
 
-Se `docs/SPEC_TEKNISK_SKULD.md` för fullständig spec per åtgärd.
+Se `docs/spec/SPEC_TEKNISK_SKULD.md` för fullständig spec per åtgärd.
 
 ### TS-4: Dead code verifiering
 
@@ -1314,7 +1314,7 @@ Playtest-observerad siffra (13-14) var statistiskt brus på 10-match-urval. Spri
 
 ## LÅNGSIKTIGT (EJ AKTIVT)
 
-Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att inte glömma — inte nu.
+Från `docs/THE_BOMB.md` och `docs/spec/SPEC_KLUBBUTVECKLING.md`. Listade för att inte glömma — inte nu.
 
 - Ortens kalender (händelser mellan matchdagar)
 - Mecenatens middag (interaktiv scen)

@@ -4,7 +4,7 @@ import { isMustDecision } from './decisionTierService'
 
 /**
  * narrativeCoordinatorService — "Centralredaktören"
- * (DOM_CENTRALREDAKTOREN_2026-08-31.md, beställd av människoupplevelse-
+ * (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md, beställd av människoupplevelse-
  * auditen 2026-08-31: repetition i en framgångsrik säsong 2 — "samma
  * pressfrågor snabbt, gamla svar följer med, två presskanaler samtidigt").
  *

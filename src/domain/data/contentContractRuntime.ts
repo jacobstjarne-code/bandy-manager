@@ -140,7 +140,7 @@ export function getWhyNowEntry(source: ContractSource, id: string): ContentContr
 }
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 4 — "därför nu"-raden.
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 4 — "därför nu"-raden.
  * Fem former, denna funktion returnerar den FÖRSTA som matchar i domens
  * prioritetsordning, eller null om ingen är satt. Copy ordagrant låst i
  * domen, ingen ny text här.

@@ -1,5 +1,5 @@
 /**
- * DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, "DIAGNOS REVIDERAD" — mätning
+ * docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, "DIAGNOS REVIDERAD" — mätning
  * FÖRE bygge (samma disciplin som falsifierade kapacitets-premissen).
  *
  * Reviderad diagnos: matchintäkten är PLATT (arenaCapacity fryses vid

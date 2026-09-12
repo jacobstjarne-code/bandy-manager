@@ -1,7 +1,7 @@
 /**
  * MEASUREMENT-ONLY. A-H2b RETENTION — VILLKOR 2, DÖRR (c) TRÖSKEL (2026-08-29).
  *
- * Bakgrund (docs/SLUTTEST_KO.md A-H2b-raden "dörr (c)", scripts/anspark1-
+ * Bakgrund (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-raden "dörr (c)", scripts/anspark1-
  * villkor2-matning-2026-08-29.ts): dörr (c) — "förbättrat sin slutplacering
  * mot föregående säsong" — implementerades ordagrant ur doktrinen som
  * `finalPosition < previousPosition`, dvs. VILKEN förbättring som helst,

@@ -58,7 +58,7 @@ interface LineupStepProps {
   onSwapPlayers: (fromSlotId: string, toSlotId: string) => void
   onError: (err: string) => void
   onNext: () => void
-  /** A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 — golvbrottet i den
+  /** A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 — golvbrottet i den
    *  elva som står nu, oavsett hur den kom dit. */
   floorBreach: { belowFloorStarters: Player[]; shortfall: number; forced: boolean }
   /** A3 krav 1 — parkerad, ej applicerad, tvingad autofyllning. */
@@ -123,7 +123,7 @@ export function LineupStep({
   showFooter = true,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>(practice ? 'pitch' : 'list')
-  // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 (c): bekräftelsegrinden
+  // A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 (c): bekräftelsegrinden
   // sitter på BESLUTET — CTA:n som lämnar uppställningen — och inte bara på
   // autofyll-knappen. En manuellt ihopsatt elva under golvet är exakt samma
   // dolda straff, och hade annars gått rakt igenom.
@@ -419,7 +419,7 @@ export function LineupStep({
       {/* 7. List-mode additions — player list */}
       {viewMode === 'list' && (
         <div style={{ padding: '0 14px 8px' }}>
-          {/* A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 3 — teckenförklaring
+          {/* A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 3 — teckenförklaring
               för prognoskolumnen. SVENSK TEXT — CODE SKRIVER ALDRIG: '[Opus]'
               bär meningen "kondition nu → efter nästa match (ungefärlig), och
               för otillgängliga: omgångar tills han är valbar igen". */}
@@ -441,7 +441,7 @@ export function LineupStep({
                 const isStarting = startingIds.includes(player.id)
                 const isInjured = player.isInjured
                 const isSuspended = player.suspensionGamesRemaining > 0
-                // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: vilande/
+                // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: vilande/
                 // överbelastad efter förra matchens sannolikhetskast — skild
                 // orsak, skild etikett, aldrig kallad "skadad".
                 const isRestingOut = (player.restGamesRemaining ?? 0) > 0

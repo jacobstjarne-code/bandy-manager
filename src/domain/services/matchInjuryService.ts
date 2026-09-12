@@ -84,7 +84,7 @@ const INJURY_COMMENTARY: Record<MatchInjuryType, string[]> = {
 
 // ── A-H3 ben 1: förhöjd skaderisk vid start under fitness-tröskel ──────────
 //
-// DOM_AH3_TILLGANGLIGHET_2026-08-28.md: checkForMatchInjury() läste tidigare
+// docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md: checkForMatchInjury() läste tidigare
 // aldrig fitness — en spelare på 22% och en på 95% löpte exakt samma risk.
 // Kalibrerad med scripts/ah3-fatiguemult-kalibrering-2026-08-28.ts (2M
 // trials/nivå) mot tre kandidattak (1.5/2.0/2.5): tak=2.0 ger ungefär en

@@ -3,7 +3,7 @@ import type { Player } from './Player'
 import { getPositionFit } from '../utils/positionFit'
 
 /**
- * FORMATIONER V2 (DOM_FORMATIONER_V2_2026-09-04.md, dömt av Jacob 2026-09-04):
+ * FORMATIONER V2 (docs/dom/DOM_FORMATIONER_V2_2026-09-04.md, dömt av Jacob 2026-09-04):
  * sex uppställningar med femman bak KONSTANT (två backar, libero, två
  * ytterhalvor) i alla utom #4 (samma personer, halvornas y flyttas högre).
  * Formationen bär höjdläget (se heightMode i tacticModifiers.ts) — det enda

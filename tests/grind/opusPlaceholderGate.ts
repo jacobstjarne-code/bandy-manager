@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { stripComments } from './forbudslistan'
 
 /**
- * A-H4b (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN) — OPUS-PLATSHÅLLARGRINDEN.
+ * A-H4b (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SEXSÄSONGSAUDITEN) — OPUS-PLATSHÅLLARGRINDEN.
  *
  * "'[Opus]' syns för spelaren varje sommar." CLAUDE.md:s regel (SVENSK TEXT
  * — CODE SKRIVER ALDRIG) tillåter Code att skriva literalen `'[Opus]'` som
@@ -47,7 +47,7 @@ const EXCLUDE_DIR_PATTERNS = [
 ]
 
 /**
- * SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 (2026-09-01): grinden vände.
+ * docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 (2026-09-01): grinden vände.
  * Tidigare tillät `maxAllowed` en NÅBAR, blank platshållare att shippa för
  * evigt så länge räkningen inte steg — precis så sju blanka strängar nådde
  * FatigueFloorConfirm (en yta spelaren står på). Varje post är nu klassad:
@@ -136,7 +136,7 @@ export interface OpusPlaceholderViolation {
  * Sveper hela `src/` (exkl. tester och dev-only-skalet) efter kvarvarande
  * '[Opus]'-platshållare utanför kommentarer.
  *
- * SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 — ordningen en fil prövas mot:
+ * docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 — ordningen en fil prövas mot:
  *   1. Ingen allowlist-post → violation (unlisted, oförändrat — nytt läckage).
  *   2. `reachable: true` → violation OM count>0, ALLTID (cause 'reachable'),
  *      `maxAllowed` ignoreras helt. En nåbar blank platshållare får aldrig

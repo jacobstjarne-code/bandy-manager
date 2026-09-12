@@ -1,5 +1,5 @@
 /**
- * A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md) — "Rapportera innan bygge",
+ * A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md) — "Rapportera innan bygge",
  * fråga 2: skadefrekvens för start under 30% fitness vid kandidattak
  * fatigueMult 1.5 / 2.0 / 2.5. Mäter mot checkForMatchInjury() DIREKT
  * (samma multiplikatorkedja matchen faktiskt använder), inte en separat

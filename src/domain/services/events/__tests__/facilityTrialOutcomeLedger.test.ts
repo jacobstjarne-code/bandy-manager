@@ -1,5 +1,5 @@
 /**
- * liggare-ny-facility-trial-outcome (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md
+ * liggare-ny-facility-trial-outcome (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md
  * §3): samma fyra hallProcess-resolutionsvägar som hallProcessResolution.test.ts
  * redan täcker för inbox/eko (Block 3c), men verifierar nu istället att en
  * facility_trial_outcome-post skrivs till event-liggaren — inklusive den

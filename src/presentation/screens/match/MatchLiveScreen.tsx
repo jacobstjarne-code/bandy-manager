@@ -83,7 +83,7 @@ interface LocationState {
 }
 
 /**
- * PT-9/PT-10 (BACKLOG.md 2026-07-13): unik, stabil seed-bas per interaktionstyp+
+ * PT-9/PT-10 (docs/archive/historiska-statuskallor/BACKLOG.md 2026-07-13): unik, stabil seed-bas per interaktionstyp+
  * steg, så att (a) inga två interaktioner i samma match någonsin delar seed
  * (varje `kind` har ett eget 100 000-brett intervall, och `step` — currentStep,
  * dvs. indexet i steps[] — är unikt per interaktionstillfälle), och (b) ingen
@@ -360,7 +360,7 @@ export function MatchLiveScreen() {
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       ...liveMatchContext(),
-      // PT-7 (BACKLOG.md 2026-07-10): Date.now() gjorde live-matcher irreproducerbara
+      // PT-7 (docs/archive/historiska-statuskallor/BACKLOG.md 2026-07-10): Date.now() gjorde live-matcher irreproducerbara
       // — bröt projektets seed-disciplin och försvårade PT-3-sekvensutredningen.
       // fixtureSeed(fixture.id) matchar konventionen i matchActions.ts/matchEngine.ts.
       seed: fixtureSeed(fixture.id),
@@ -795,7 +795,7 @@ export function MatchLiveScreen() {
       homePlayers, awayPlayers,
       ...liveMatchContext(),
       // PT-7: fixtureSeed(fixture.id, atStep) — deterministisk per fixture+ingreppspunkt,
-      // istf Date.now() som gjorde regenereringen irreproducerbar (BACKLOG.md 2026-07-10).
+      // istf Date.now() som gjorde regenereringen irreproducerbar (docs/archive/historiska-statuskallor/BACKLOG.md 2026-07-10).
       seed: fixtureSeed(fixture.id, atStep),
       initialHomeScore: newHomeScore,
       initialAwayScore: newAwayScore,
@@ -1286,7 +1286,7 @@ export function MatchLiveScreen() {
       homePlayers, awayPlayers,
       ...liveMatchContext(),
       // PT-7: fixtureSeed(fixture.id, fromStep) — deterministisk per fixture+ingreppspunkt,
-      // istf Date.now() (BACKLOG.md 2026-07-10).
+      // istf Date.now() (docs/archive/historiska-statuskallor/BACKLOG.md 2026-07-10).
       seed: fixtureSeed(fixture.id, fromStep),
       initialHomeScore: currentMatchStep.homeScore,
       initialAwayScore: currentMatchStep.awayScore,
@@ -1655,7 +1655,7 @@ export function MatchLiveScreen() {
 
   const spelStamp = (() => {
     if (matchDone) return { label: 'TILL GRANSKNING →', onClick: () => navigate('/game/review', { replace: true }) }
-    // A-C1 (SLUTTEST_KO.md): 'PAUSSNACK →'-stampen med tom onClick togs bort —
+    // A-C1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): 'PAUSSNACK →'-stampen med tom onClick togs bort —
     // halvtidsmodalen täcker stampen ändå, och en tom onClick var död kod som
     // bara fanns "under antagandet att modalens lager alltid täcker den"
     // (BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md, C1). Under halvtid syns
@@ -1689,7 +1689,7 @@ export function MatchLiveScreen() {
       }}
       style={postIntroFade ? { animation: 'fadeIn 300ms ease-out both' } : undefined}
       dock={
-        // A-C1 (SLUTTEST_KO.md): BottomDock peek/block ligger på z-index 400/500
+        // A-C1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): BottomDock peek/block ligger på z-index 400/500
         // (--z-overlay/--z-interaction) — över halvtidsmodalens --z-modal (300).
         // Ingenting stängde dockarna när showHalftime blev sant, så deras
         // hit-yta (synlig eller ej) kunde fånga tap ovanför modalens CTA och

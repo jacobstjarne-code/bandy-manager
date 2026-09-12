@@ -1,6 +1,6 @@
 # 4.2 — Storyline- och arc-frågornas saknade topikanpassade svar
 
-**Efterfrågad tre gånger, aldrig levererad förrän nu.** SLUTTEST_KO.md post 4.2: "13 storyline-frågor saknar topikanpassade svar" + "4 arc-aware-frågor med samma bugg, inte medräknade i de 13". Jacobs order 2026-08-19: arc-frågorna ingår ("samma bugg är samma bugg"), listan läggs i `docs/`, Jacob skriver svaren samma dag den finns.
+**Efterfrågad tre gånger, aldrig levererad förrän nu.** docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 4.2: "13 storyline-frågor saknar topikanpassade svar" + "4 arc-aware-frågor med samma bugg, inte medräknade i de 13". Jacobs order 2026-08-19: arc-frågorna ingår ("samma bugg är samma bugg"), listan läggs i `docs/`, Jacob skriver svaren samma dag den finns.
 
 **Roten (samma för alla 17):** `pressConferenceService.ts`s override-block väljer en topikanpassad `text` men återanvänder ordagrant `preferIds` från frågan som gällde INNAN overriden — den ursprungliga, ämneslösa matchfrågan. Mönstret upprepas identiskt på alla 17 rader:
 

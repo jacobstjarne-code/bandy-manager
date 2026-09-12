@@ -5,7 +5,7 @@ branch: main
 date: 2026-08-25T09:00:00Z
 
 ### Förutsättningsfasen — styrelsen talar (2026-08-25)
-- "Forutsattningsfasen - styrelsen talar.dc.html" — ny sektion i Sommaren mellan årsbok och säsongsmål: styrelsen omsätter din säsong i en ny boardExpectation + varför den ändrats (idag frusen vid klubbgenerering). DOM_FORUTSATTNINGSFASEN_2026-08-24.md ej pushad → byggd mot brief + Sommarens temperaturkurva.
+- "Forutsattningsfasen - styrelsen talar.dc.html" — ny sektion i Sommaren mellan årsbok och säsongsmål: styrelsen omsätter din säsong i en ny boardExpectation + varför den ändrats (idag frusen vid klubbgenerering). docs/dom/DOM_FORUTSATTNINGSFASEN_2026-08-24.md ej pushad → byggd mot brief + Sommarens temperaturkurva.
 - Fråga 1 (tre delar ≠ tre rutor): Rek 1b = talad följd. Del 1–2 (vad de såg / vad de vet) = löpande Georgia-kursiv repliker i ordförandens röst, ingen kortram; bara del 3 (kravet) får kropp = läderband med ribban. 1a (tre lika rutor) avrådd — bryter kurvan.
 - Fråga 2 (höjd/sänkt/oförändrad): riktning via TEMPERATUR ej semantik. Höjd = koppar/varm + ↗; sänkt = ice/sval + ↘; ALDRIG --success/--danger (reserverade för rätt/fel, en ribba är ingetdera). Oförändrad = ett namn, ingen pil, INGEN skälsrad (inget att förklara).
 - Skälsraden strukturell: ligger INUTI kravbandet under ribban, ny ribba kan ej renderas utan sin rad → stänger H1 (Skutskär-auditen: portalen sa "Stabilt" medan uppdrag låg i fara). [Opus] äger skälsrad + de fem nivåetiketterna (Survive/Undvik botten/Mitten/Slutspel/WinLeague). Villkor: SceneHeader + Sommarens block bär det, fem nivåer, båda riktningar.
@@ -76,7 +76,7 @@ commit: 5a955a8 (tree hash from github_get_tree; not a verified commit sha; repo
 ## Screen map
 | Skärm/artefakt | Byggd från (repo-filer) |
 |---|---|
-| Djupgranskning Bandy Manager.dc.html | CLAUDE.md, docs/match-engine-refactor/00-architecture.md, design-system/README.md, src/domain/entities/{SeasonSummary,SeasonSignature,Player}.ts, src/domain/services/{clubEraService,clubMemoryService,academyService,boardObjectiveService}.ts, src/presentation/screens/{ArrivalScene,ClubSelectionScreen}.tsx, src/application/useCases/*, docs/BACKLOG.md |
+| Djupgranskning Bandy Manager.dc.html | CLAUDE.md, docs/match-engine-refactor/00-architecture.md, design-system/README.md, src/domain/entities/{SeasonSummary,SeasonSignature,Player}.ts, src/domain/services/{clubEraService,clubMemoryService,academyService,boardObjectiveService}.ts, src/presentation/screens/{ArrivalScene,ClubSelectionScreen}.tsx, src/application/useCases/*, docs/archive/historiska-statuskallor/BACKLOG.md |
 | Systemgranskning Bandy Manager.dc.html | src/application/useCases/roundProcessor.ts + processors/* (17), seasonEndProcessor.ts, src/domain/services/{economyService,demandEngine,narrativeProcessor(proc),playerDevelopmentService,aiTransferService,academyService,clubMemoryService,boardObjectiveService}.ts, _ds tokens (colors_and_type.css) |
 | Orten och Ekonomi — djupdykning.dc.html | src/application/useCases/processors/communityProcessor.ts, src/domain/services/{politicianService,volunteerService,scoutingService,chemistryService,insandareService,contextualSponsorService,economyService}.ts, src/domain/entities/Community.ts |
 

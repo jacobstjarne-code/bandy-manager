@@ -322,7 +322,7 @@ export function updatePlayerMatchStats(
         ...benchPlayer,
         seasonStats: isCupFixture ? benchPlayer.seasonStats : benchUpdated,
         seasonCupStats: isCupFixture ? benchUpdated : benchPlayer.seasonCupStats,
-        // Grind 0 (SLUTTEST_KO.md, 2026-08-21): denna grenen ökade seasonStats/
+        // Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21): denna grenen ökade seasonStats/
         // seasonCupStats.gamesPlayed men glömde careerStats.totalGames — allStarters-
         // grenen ovan (rad ~204-224) håller alltid de två i lockstep, denna gjorde
         // det inte. Samma klass av bugg som K1 (två ställen som ska hålla samma

@@ -2,7 +2,7 @@ import type { CardRenderProps } from '../portalTypes'
 import { selectDashboardDecisions } from '../../../../domain/services/decisionTierService'
 
 /**
- * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — det batchade
+ * HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — det batchade
  * sekundärkortet. Domen §Visning: "Högst ETT primärt kort ... + ETT batchat
  * sekundärt (resten av månad, räknat)" och §2: "Batchas till ETT sekundärt
  * kort med räkning ('3 väntar'), inte tre likvärdiga kort."

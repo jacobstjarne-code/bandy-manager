@@ -59,7 +59,7 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
     expect(result.game.patronWithdrawnSeason).toBe(game.currentSeason)
     const evictionEvent = result.pendingEvents.find(e => e.id.startsWith('patron_cs_eviction_'))
     expect(evictionEvent).toBeDefined()
-    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, CS-uttågsvägen.
+    // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, CS-uttågsvägen.
     const ledgerEntry = result.game.eventLedger?.find(e => e.type === 'patron_withdrawal')
     expect(ledgerEntry).toMatchObject({
       type: 'patron_withdrawal',

@@ -1,5 +1,5 @@
 /**
- * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — de två store-skrivvägarna som
+ * 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — de två store-skrivvägarna som
  * inte täcks av seasonEndProcessor.ts:s egna tester: academyActions.ts:s
  * promotedFromAcademy-append (kan hända när som helst under säsongen, inte
  * bara vid övergången) och passSeasonTransition (återinträdesguarden).
@@ -83,7 +83,7 @@ describe('passSeasonTransition (5.1 Sommaren — återinträdesguard)', () => {
     expect(() => useGameStore.getState().passSeasonTransition()).not.toThrow()
   })
 
-  // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19)
+  // O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19)
   it('med ett valt mål — skriver activeSeasonGoal med chosenSeason', () => {
     const game = makeGame()
     useGameStore.setState({ game })

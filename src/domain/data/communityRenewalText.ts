@@ -1,6 +1,6 @@
 /**
  * communityRenewalText — ANSPRÅK 4, spak 3 (nyhetstretmillen),
- * `docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md`.
+ * `docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md`.
  *
  * Domen, §Mekanik: "Spelaren SER 'supportrarna tröttnar på X — förnya för Y kr?'
  * och VÄLJER. Aldrig en tyst post från kassan."

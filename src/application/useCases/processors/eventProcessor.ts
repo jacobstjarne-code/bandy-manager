@@ -436,7 +436,7 @@ export function processGameEvents(
     if (dinnerEvent) gameEvents.push(dinnerEvent)
   }
 
-  // O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23): burnout-relief —
+  // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23): burnout-relief —
   // source cooldown; KF3 queues actionable overflow after all producers.
   // Aldrig i 'frisk'-zonen (ingen effekt att lätta på), aldrig oftare än
   // var 6:e omgång (SOURCE_COOLDOWN_ROUNDS.burnout) så länge zonen håller i sig.
@@ -487,7 +487,7 @@ export function processGameEvents(
     ))
   }
 
-  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
+  // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
   // nyhetstretmillen. Samma mönster som burnout-relief och mecenatens middag —
   // source cooldown ('orten', 6 omgångar); KF3 owns the shared budget. Domens "synligt val,
   // inte dränering": kostnaden är ALDRIG en automatisk avdragspost, alltid ett
@@ -897,7 +897,7 @@ export function applyMecenatSpawn(
 /**
  * "Takmodellen", andra halvan (Jacobs dom 2026-08-26): relationen var
  * enkelriktad — communityStanding avgjorde bara ANKOMST, aldrig AVHOPP
- * (bekräftat kodläst, RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md punkt 4). Om
+ * (bekräftat kodläst, docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md punkt 4). Om
  * taket sjunker under antalet aktiva mecenater (orten har svikit klubben)
  * ska en lämna — annars är orten en spärr man passerar en gång, inte en
  * spak i båda riktningarna. Den MINST NÖJDA (lägst happiness) lämnar

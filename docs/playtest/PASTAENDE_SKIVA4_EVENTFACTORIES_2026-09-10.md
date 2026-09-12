@@ -2,7 +2,7 @@
 
 **Datum:** 2026-09-10
 
-**Dom:** `DOM_PASTAENDE_SKIVA4_EVENTFACTORIES_2026-09-10.md`
+**Dom:** `docs/dom/DOM_PASTAENDE_SKIVA4_EVENTFACTORIES_2026-09-10.md`
 
 **Resultat:** GRÖN. STOPP före `eventResolver.ts`.
 

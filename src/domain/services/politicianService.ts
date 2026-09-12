@@ -13,7 +13,7 @@ export function calculateKommunBidrag(
 ): number {
   const base = 30000
   const generosityMod = (politician.generosity ?? 60) / 100
-  // DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
+  // docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
   // (2026-09-01): communityMod var en OLIMITERAD linjär 0-2-skalning mot CS —
   // en av de två verkliga framgång→rikedom-länkarna (mätt ~2,7× tillväxt
   // över en 3-säsongskarriär, se scripts/framgangsekonomin-kommunbidrag-

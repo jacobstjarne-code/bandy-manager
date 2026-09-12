@@ -1,5 +1,5 @@
 /**
- * SLUTTEST_KO.md 4.12 (2026-08-18) — "Delningsbilden kapas i produktion".
+ * docs/archive/historiska-statuskallor/SLUTTEST_KO.md 4.12 (2026-08-18) — "Delningsbilden kapas i produktion".
  * Rotorsak: fast canvas-höjd (1350) + fast footer-position (H-60), men
  * innehållet är datadrivet — värsta kombinationen rymdes inte inom 1350,
  * och footern ritades ändå på samma fasta position, mitt i innehållet.
@@ -148,7 +148,7 @@ describe('generateSeasonShareImage — hård footer-assertion (mockad ctx)', () 
 })
 
 /**
- * SLUTTEST_KO.md 4.13 (2026-08-18) — shareSeasonImage returnerade Promise<void>
+ * docs/archive/historiska-statuskallor/SLUTTEST_KO.md 4.13 (2026-08-18) — shareSeasonImage returnerade Promise<void>
  * och svalde alla fel. Anroparen kunde aldrig veta om delningen lyckades,
  * laddades ner, avbröts, eller misslyckades. Fyra utfall, ett test per.
  */
@@ -265,7 +265,7 @@ describe('shareSeasonImage — returvärde (4.13)', () => {
   })
 
   /**
-   * H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): rotorsaken för "fastnar i
+   * H7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): rotorsaken för "fastnar i
    * 'Genererar bild…' för evigt" var att `navigator.canShare(...)` (och
    * `new File(...)`) låg UTANFÖR try-blocket i shareSeasonImage — ett kast
    * här propagerade okatchat rakt igenom, förbi anroparens try/finality-lösa

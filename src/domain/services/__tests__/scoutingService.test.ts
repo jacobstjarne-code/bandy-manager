@@ -154,7 +154,7 @@ describe('generateScoutNotes', () => {
     }
   })
 
-  // B8-residual (SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21)
+  // B8-residual (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21)
   describe('åkhalv/lyrhalv (position === Half, |skating − passing| >= 15)', () => {
     it('skating-övertag på en halv ger åkhalv-raden', () => {
       const p = makePlayer({

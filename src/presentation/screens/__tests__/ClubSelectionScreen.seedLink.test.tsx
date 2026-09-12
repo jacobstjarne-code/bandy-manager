@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore'
 import { ClubSelectionScreen } from '../ClubSelectionScreen'
 
 /**
- * O10 seed-i-länk (GO 2026-09-08, BACKLOG.md:55): en delad länks ?seed=
+ * O10 seed-i-länk (GO 2026-09-08, docs/archive/historiska-statuskallor/BACKLOG.md:55): en delad länks ?seed=
  * query-param ska (1) styra vilka tre klubberbjudanden som visas
  * (selectThreeOffers(seed), deterministiskt) och (2) vidarebefordras till
  * newGame() så mottagarens VÄRLD blir samma som avsändarens — inte bara

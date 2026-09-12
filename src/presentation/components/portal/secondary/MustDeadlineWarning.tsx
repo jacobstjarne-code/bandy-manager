@@ -3,7 +3,7 @@ import { getUpcomingMustDeadlines } from '../../../../domain/services/decisionTi
 import { getMustDeadlineWarningLine } from '../../../../domain/data/mustDeadlineWarningText'
 
 /**
- * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) + auditens MEDIUM 16 —
+ * HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) + auditens MEDIUM 16 —
  * måste-nivåns förvarning: "Ett måste-event som skulle rinna ut med en
  * oåterkallelig förlust ska dessutom få en förvarning FÖRE fristen."
  *

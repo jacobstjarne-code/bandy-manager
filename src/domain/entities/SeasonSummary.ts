@@ -4,7 +4,7 @@ import type { FinanceReason } from '../services/economyService'
 import type { BoardPatienceZone } from '../services/portal/boardPatienceZone'
 import type { ManagerNarrativeEntry } from './ManagerProfile'
 
-// O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
+// O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål, valt i
 // Sommaren. Sex faktiska måltyper plus ett explicit avstående, interpolerade
 // namn, ingen AI-generering. `none` skiljer ett aktivt val från äldre saves
 // där säsongsmål helt saknas.
@@ -223,7 +223,7 @@ export interface SeasonSummary {
     isLegend: boolean
   }>
 
-  // ── O18 (DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — årsbokens fem fält ────────
+  // ── O18 (docs/dom/DOM_ARSBOKEN_RYGGRAD_2026-08-17.md) — årsbokens fem fält ────────
   // Ett fält per säsong, aldrig en lista. En händelselös säsong bär FÄRRE
   // fält (odefinierat), inte utfyllnad. Fält 2 (säsongens viktigaste beslut)
   // byggs inte än — kräver O19-märkning som inte finns.
@@ -330,7 +330,7 @@ export interface SeasonSummary {
    *  garanterar att alla ytor läser SAMMA två fakta. */
   boardTruth?: SeasonBoardTruth
 
-  /** DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som tränare".
+  /** docs/dom/DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som tränare".
    *  managerProfile.diary filtrerad till denna säsong, fryst här av samma
    *  skäl som retiredPlayers/topScorer ovan: game.managerProfile.diary
    *  fortsätter växa efter att denna summary sparats, så en live-läsning år

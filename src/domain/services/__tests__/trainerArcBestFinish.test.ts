@@ -3,7 +3,7 @@
  * tidigare den alfabetiska tie-break-positionen (alla klubbar på 0 poäng)
  * vid säsongens allra första `updateTrainerArc()`-anrop, innan en match
  * spelats — och eftersom fältet bara minskar blev det permanent. Se
- * RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md.
+ * docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md.
  */
 import { describe, it, expect } from 'vitest'
 import { updateTrainerArc, createTrainerArc } from '../trainerArcService'

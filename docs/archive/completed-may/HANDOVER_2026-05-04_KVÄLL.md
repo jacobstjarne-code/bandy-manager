@@ -70,7 +70,7 @@ Sen kan du börja arbeta.
 - **mediaReaction-placering** — utred om "📰 MEDIA / Helena Wikström / Mats Friberg-citat" ligger SEPARAT från ReaktionerKort eller INOM. Beslut beroende på utfall.
 
 ### Sen pausat (på förslag, inte påbörjat)
-- **SPEC_BESLUTSEKONOMI_STEG_4** — fas-scener + scen-konsekvens. Specen ligger i `docs/SPEC_BESLUTSEKONOMI_STEG_4.md`. Mock i `docs/mockups/scen_konsekvens_mockup.html`. **Påbörjas INTE** förrän Granska-omarbetningen är fullt verifierad och vi haft en samtal med Jacob om vart fokus ska härnäst (se sektion 6 om varför fokus kan behöva ändras).
+- **SPEC_BESLUTSEKONOMI_STEG_4** — fas-scener + scen-konsekvens. Specen ligger i `docs/spec/SPEC_BESLUTSEKONOMI_STEG_4.md`. Mock i `docs/mockups/scen_konsekvens_mockup.html`. **Påbörjas INTE** förrän Granska-omarbetningen är fullt verifierad och vi haft en samtal med Jacob om vart fokus ska härnäst (se sektion 6 om varför fokus kan behöva ändras).
 
 ### Jacob's sinnesläge just nu
 Trött, frustrerad, men inte uppgiven. Sa ikväll: "ganska nära att ge upp på hela projektet känner jag" och "fan hopplöst". Senare: "ok. den här kontexten tar alldeles för mycket plats. men alla tidigare handoffs har misslyckats. lägg tid och energi på att skapa en handover som verkligen fungerar."
@@ -367,7 +367,7 @@ Ursprungligen "diagnos + scenario-fix". Visade sig vara full implementation frå
 - **Fas 2: SPEC_GRANSKA_OMARBETNING** — kärna pushad, mindre fixar kvar
 - **Fas 3: SPEC_BESLUTSEKONOMI Steg 1-3 audit** — inte påbörjad
 
-### docs/SPEC_BESLUTSEKONOMI_STEG_4.md
+### docs/spec/SPEC_BESLUTSEKONOMI_STEG_4.md
 **Status:** Spec-klar, INTE påbörjad. Stort jobb (14-15 dagar). Specar fas-scener (säsong + match), konsekvens-scener, CTA-konsekvens-tabell, cooldown-regler, klassificering A/B/C/D/E.
 
 **OBS:** Min flödesanalys (sektion 6) föreslår att fokus kanske INTE ska vara Steg 4 härnäst, utan handlings-balans i befintliga ytor. Diskutera med Jacob innan du påbörjar Steg 4. Det är inte spillda timmar — fas-scener kommer behövas — men prioritetsordningen kan förändras.

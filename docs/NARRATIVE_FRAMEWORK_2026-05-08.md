@@ -3,7 +3,7 @@
 **Datum:** 2026-05-08
 **Författare:** Opus
 **Status:** STRATEGI — inte spec. Vägledning för var vi lägger anslag, scener och episoder.
-**Beroende:** `docs/SPEC_CUP_ANSLAG_2026-05-08.md` (cup-anslagen)
+**Beroende:** `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md` (cup-anslagen)
 
 ---
 
@@ -67,7 +67,7 @@ Vi har tre olika narrative lager redan i koden eller specifierade. Detta dokumen
 - Diverse one-off events i `eventQueueService`
 
 ### Anslag (Lager 1)
-**Inga implementerade än.** Cup-anslagen specade i `docs/SPEC_CUP_ANSLAG_2026-05-08.md`.
+**Inga implementerade än.** Cup-anslagen specade i `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md`.
 
 ---
 

@@ -6,7 +6,7 @@ import { CLUB_TEMPLATES } from '../worldGenerator'
 import type { GameEvent } from '../../entities/GameEvent'
 
 /**
- * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: en delad logg, en skrivväg,
+ * U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: en delad logg, en skrivväg,
  * två läsvägar. Se narrativeLogService.ts för hela resonemanget.
  */
 function makeGame() {
@@ -121,7 +121,7 @@ describe('systemhandelseBudgetOk — O19 säsongsbudget', () => {
   })
 })
 
-// U5 forts (SLUTTEST_KO.md, 2026-08-20) — den faktiska gatingen, applicerad
+// U5 forts (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20) — den faktiska gatingen, applicerad
 // på en batch (roundProcessor.ts:s allNewEvents-motsvarighet).
 describe('filterSystemhandelseBudget — U5 forts gating', () => {
   it('icke-systemhändelser släpps alltid igenom, oavsett budget', () => {
@@ -226,7 +226,7 @@ describe('pickPoolIndexAvoidingCooldown', () => {
 })
 
 /**
- * HIGH 10-följdfix (2026-08-30, DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md).
+ * HIGH 10-följdfix (2026-08-30, docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md).
  * Tredje läsvägen — hittad nödvändig när burnoutens "har vi redan narrerat
  * det här" (lastShownBurnoutZone, stämplat i SAMMA steg som beslutet fattas)
  * gjorde att en render-komponent som återkör samma predikat alltid fick nej.

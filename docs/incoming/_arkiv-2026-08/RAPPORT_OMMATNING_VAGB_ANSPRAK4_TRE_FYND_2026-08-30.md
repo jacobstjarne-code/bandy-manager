@@ -4,7 +4,7 @@
 
 Bakgrund: Jacobs prioriterade order 2026-08-30 krävde två saker innan något annat räknas pålitligt — (1) socialMedia-ryktesinflationen frikopplad från resultat, (2) mätharnessen som aldrig besvarade `pendingEvents` (patronen aktiv 0/20 säsonger trots CS 92). Båda fixade (`3914a5e6`, `06b86b29`), sedan ommättes väg B (D033/D036) och anspråk 4 (D037) mot rätt rykte + aktiv patron.
 
-Full mätredovisning: `docs/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md` (tillägg 2026-08-30) och `docs/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md` (tillägg 2026-08-30). D-facts: D033, D037 (value-block orörda, notes uppdaterade).
+Full mätredovisning: `docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md` (tillägg 2026-08-30) och `docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md` (tillägg 2026-08-30). D-facts: D033, D037 (value-block orörda, notes uppdaterade).
 
 ## Huvudfyndet: 765fdcb7, inte de två nyss fixade buggarna
 
@@ -32,7 +32,7 @@ Ny bugg, hittad under ommätningen, i redan levererad kod (`06b86b29`). `autoRes
 
 ## Vad som är upplåst
 
-Beslutet är fångat i `docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md` — tredje spaken: aktivitet är färskvara, blir "stale" ju längre den körts, ett topplags supportrar tröttnar snabbare. Det som kostar är förnyelsen (ett synligt dashboard-beslut: "supportrarna tröttnar på X — förnya för Y?"), aldrig en tyst avdragspost. Nu svider bägge sidor av anspråk 4:s kriterium 1: betala för nyhet, eller låt orten tröttna och tappa publik + mecenat.
+Beslutet är fångat i `docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md` — tredje spaken: aktivitet är färskvara, blir "stale" ju längre den körts, ett topplags supportrar tröttnar snabbare. Det som kostar är förnyelsen (ett synligt dashboard-beslut: "supportrarna tröttnar på X — förnya för Y?"), aldrig en tyst avdragspost. Nu svider bägge sidor av anspråk 4:s kriterium 1: betala för nyhet, eller låt orten tröttna och tappa publik + mecenat.
 
 Detta låser upp ekonomitråden. Byggs som ETT konsoliderat pass, inte fler punktfixar: nyhetstretmillen + omhärledningen av `WEEKLY_BASE_FLAT` + mittenlag-break-even, allt mätt mot de fixade ingångarna (rätt rykte, aktiv patron) → mät kriterium 1–4 → D-fact → commit. Tas när Code når den ordningsmässigt (efter HIGH 10/HIGH 11 + svansen, per kön i `docs/TRIAGE_AUDIT_2026-08-29.md`).
 

@@ -5,7 +5,7 @@ import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 
 /**
- * 3.2 (SLUTTEST_KO.md, 2026-08-17) — bekräftar att board_patience_minimal
+ * 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — bekräftar att board_patience_minimal
  * faktiskt är registrerat och når spelaren via den RIKTIGA kortregistret
  * (initCardBag.ts), inte bara att komponenten/zon-funktionen existerar i
  * isolering. "Ingen produktionsyta läste boardPatience" var precis det här

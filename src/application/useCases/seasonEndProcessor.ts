@@ -413,7 +413,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const allFixtures = game.fixtures
   const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout)
-  // 4.1 (SLUTTEST_KO.md, 2026-08-17): samma saknade pointDeductions-argument
+  // 4.1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): samma saknade pointDeductions-argument
   // som playoffTransition.ts — styrelsens säsongsutlåtande (genereras från
   // managedClubStanding.position nedan) kunde annars beskriva fel placering
   // för en klubb med poängavdrag.
@@ -423,7 +423,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Board verdict at season end
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId)
-  // U6 (SLUTTEST_KO.md, 2026-08-17): renommé kunde inte FALLA vid misslyckande
+  // U6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): renommé kunde inte FALLA vid misslyckande
   // — bara skandal/nekad licens sänkte det, se D028 för magnitud/proportions-
   // resonemanget mot skandal (-5/-8). Ratingen härifrån drev tidigare ENDAST
   // den hanterade klubbens renommédelta; sedan H4 Heros-uppföljningen
@@ -468,7 +468,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const youthRecords = [...game.youthIntakeHistory]
   let updatedClubs = game.clubs.map(club => ({ ...club }))
 
-  // U6 (SLUTTEST_KO.md, 2026-08-17) / D028: säsongsvist renommédelta ur
+  // U6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) / D028: säsongsvist renommédelta ur
   // placering mot förväntan.
   //
   // H4 Heros-uppföljning (Jacobs dom 2026-08-25): körde tidigare BARA den
@@ -798,7 +798,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let resetPlayers = playersWithCaptainHistory.map(player => ({
     ...player,
     age: player.age + 1,
-    // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 — "sommaren måste ge
+    // A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 — "sommaren måste ge
     // en begriplig återställning till rimlig matchberedskap". `+15` var ett
     // symboliskt påslag: mätningen 2026-08-29 visade en trupp som gick in i
     // säsong 2 på ~40 % trots hela sommaren. Nu ett MÅL (78–92 efter
@@ -863,7 +863,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       averageRating: 0,
       minutesPlayed: 0,
     },
-    // Grind 0 (SLUTTEST_KO.md, 2026-08-21) — seasonCupStats saknade denna
+    // Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21) — seasonCupStats saknade denna
     // nollställning. seasonStats (liga) återställdes ovan, men seasonCupStats
     // ärvdes oförändrad via `...player`-spreaden ovan i mappningen och
     // ackumulerade tyst över ALLA säsonger (2 cupmatcher säsong 1 → 5 efter
@@ -887,7 +887,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Retirement check — delegated to shouldRetire() in playerDevelopmentService
   const retiredManagedPlayers: ReturnType<typeof generateRetirementData>[] = []
-  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): "Medan du var borta" — bara
+  // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): "Medan du var borta" — bara
   // retired/contractExpired kan avgöras här (aged/promoted härleds separat
   // nedan resp. skrivs redan av academyActions.ts). Bara managed club.
   const seasonTransitionEvents: SeasonTransitionEvent[] = []
@@ -1212,7 +1212,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       .filter(p => !retiredPlayerIds.has(p.id) && !contractExpiredIds.has(p.id))
       .map(p => p.id),
   )
-  // Villkor 2 (SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28): finalPosition måste
+  // Villkor 2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28): finalPosition måste
   // komma från den färskt beräknade `managedClubStanding` (rad ~90), inte
   // `game.standings` — det fältet är den alfabetiska dummytabellen tills
   // nästa säsongs matcher spelats. `?? 12` matchar samma fallback som
@@ -1336,7 +1336,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ?? game.clubs.find(c => c.id === game.managedClubId)?.boardExpectation
     ?? ClubExpectation.MidTable
 
-  // U1 (SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
+  // U1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): "nedflyttningsstrid" gav tidigare ingen
   // verklig tålamodsförlust förrän i botten-tre av en totalTeams/3-gissning
   // — kärnan i fyndet var att en klubb kunde tankas en hel säsong och
   // styrelsen blev ändå NÖJDARE. U1 andra halvan (Jacobs dom 2026-08-22,
@@ -1389,7 +1389,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     s => !s.expiresSeason || s.expiresSeason >= nextSeason,
   )
 
-  // 2026-08-26 (Jacobs dom, RAPPORT_ATERKOPPLINGSSLINGAN_HITTAD_2026-08-26.md):
+  // 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_ATERKOPPLINGSSLINGAN_HITTAD_2026-08-26.md):
   // "Kaskaden ska bort, inte mjukas. Ett diskret straff med tre samtidiga
   // effekter vid en godtycklig kassagräns kan inte balanseras — bara flyttas."
   // Gamla beteendet (borttaget): 3 SLUMPADE spelare bort utan spelarval, fast
@@ -1567,7 +1567,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         }] : []),
       ],
       resolved: false,
-      // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns
+      // HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): måste-nivåns
       // frist. Eventet skapas VID rollovern och landar i den KOMMANDE
       // säsongens pendingEvents — handlingsplanen ska vara på plats innan
       // licensnämnden prövar igen, och checkLicenseStatus() körs vid nästa
@@ -2018,7 +2018,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // som patience-kostnaden). Bara data, ingen text — Jacob/Opus skriver
     // meningen när fältet finns.
     objectiveOutcome,
-    // O18 fält 2, uppdaterad A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md).
+    // O18 fält 2, uppdaterad A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md).
     // MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — läser
     // game.eventLedger (samtliga tre kandidatkällor dual-writer dit). Samma
     // femstegsvektor, samma fallback-text (Jacobs ord, ordagrant) vid noll
@@ -2451,7 +2451,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // samma typ av wholesale-clear vid rollover; deferredDecisions är samma
     // sorts i-flight beslutskö och ska rensas på samma sätt, inte selektivt.
     //
-    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): kön
+    // HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): kön
     // töms fortfarande här — läckage-garantin ovan är oförändrad — men
     // besluten försvinner inte längre TYST. Passet nedan (efter det här
     // objektet, resolveDeferredAtRollover) kör resolve-or-expire över både
@@ -2609,7 +2609,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── HIGH 11: rollover — aldrig tyst ────────────────────────────────────
-  // Domen (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): den tidigare engros-
+  // Domen (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): den tidigare engros-
   // nollställningen av deferredDecisions är förbjuden. Kön töms fortfarande i
   // objektet ovan (samma läckage-garanti som 2026-08-17-fixen, skyddad av
   // seasonRolloverStaleEvents.test.ts), men varje post får först sitt utfall:

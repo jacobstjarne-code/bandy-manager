@@ -6,7 +6,7 @@
 
 **Av:** Opus. Regel för den här filen: **varje post har en ägare och ett nästa steg.** Ingen rad får sluta i "senare".
 
-`KVAR.md` är dödmarkerad sedan 2026-06-21 och ägs av `BACKLOG.md`. Fyra källor gäller: `SLUTTEST_KO.md`, `BACKLOG.md`, auditsviten `5c9a7a8`, och påståendesvepet.
+`KVAR.md` är dödmarkerad sedan 2026-06-21 och ägs av `docs/archive/historiska-statuskallor/BACKLOG.md`. Fyra källor gäller: `docs/archive/historiska-statuskallor/SLUTTEST_KO.md`, `docs/archive/historiska-statuskallor/BACKLOG.md`, auditsviten `5c9a7a8`, och påståendesvepet.
 
 ---
 

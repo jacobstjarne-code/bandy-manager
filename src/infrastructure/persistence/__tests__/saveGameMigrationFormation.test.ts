@@ -4,10 +4,10 @@ import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md §Migrering — "Regressionstest per rad i
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md §Migrering — "Regressionstest per rad i
  * tabellen." En it() per rad, ordagrant samma par som domens tabell.
  */
-describe('migrateFormationAndPress — en rad per tabellrad (DOM_FORMATIONER_V2_2026-09-04.md)', () => {
+describe('migrateFormationAndPress — en rad per tabellrad (docs/dom/DOM_FORMATIONER_V2_2026-09-04.md)', () => {
   it('Low press (valfri gammal formation) → 541_hem', () => {
     expect(migrateFormationAndPress('5-3-2', 'low')).toBe('541_hem')
     expect(migrateFormationAndPress('4-3-3', 'low')).toBe('541_hem')

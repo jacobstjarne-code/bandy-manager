@@ -213,7 +213,7 @@ export function getTacticConsequence(
     if (isOffensive && hasStrongAttack) {
       return 'Öppet mot deras anfall blir en målrik kväll åt båda håll. Säkert? Nej. Kul? Ja.'
     }
-    // DOM_FORMATIONER_V2_2026-09-04.md: formationBias (attack/defense per
+    // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: formationBias (attack/defense per
     // formationstyp) borttagen — ingen av de sex nya formationerna bär en
     // sådan bias (V2, inte nu: "att låta formerna väga i motorn via
     // rollerna" väntar B12-mätning).

@@ -61,7 +61,7 @@ commit: 5a955a8 (tree hash from github_get_tree; not a verified commit sha; repo
 ## Screen map
 | Skärm/artefakt | Byggd från (repo-filer) |
 |---|---|
-| Djupgranskning Bandy Manager.dc.html | CLAUDE.md, docs/match-engine-refactor/00-architecture.md, design-system/README.md, src/domain/entities/{SeasonSummary,SeasonSignature,Player}.ts, src/domain/services/{clubEraService,clubMemoryService,academyService,boardObjectiveService}.ts, src/presentation/screens/{ArrivalScene,ClubSelectionScreen}.tsx, src/application/useCases/*, docs/BACKLOG.md |
+| Djupgranskning Bandy Manager.dc.html | CLAUDE.md, docs/match-engine-refactor/00-architecture.md, design-system/README.md, src/domain/entities/{SeasonSummary,SeasonSignature,Player}.ts, src/domain/services/{clubEraService,clubMemoryService,academyService,boardObjectiveService}.ts, src/presentation/screens/{ArrivalScene,ClubSelectionScreen}.tsx, src/application/useCases/*, docs/archive/historiska-statuskallor/BACKLOG.md |
 | Systemgranskning Bandy Manager.dc.html | src/application/useCases/roundProcessor.ts + processors/* (17), seasonEndProcessor.ts, src/domain/services/{economyService,demandEngine,narrativeProcessor(proc),playerDevelopmentService,aiTransferService,academyService,clubMemoryService,boardObjectiveService}.ts, _ds tokens (colors_and_type.css) |
 | Orten och Ekonomi — djupdykning.dc.html | src/application/useCases/processors/communityProcessor.ts, src/domain/services/{politicianService,volunteerService,scoutingService,chemistryService,insandareService,contextualSponsorService,economyService}.ts, src/domain/entities/Community.ts |
 

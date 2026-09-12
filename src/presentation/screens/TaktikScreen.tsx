@@ -24,7 +24,7 @@ export function TaktikScreen() {
     const oppId = nf.homeClubId === game.managedClubId ? nf.awayClubId : nf.homeClubId
     const opp = game.clubs.find(c => c.id === oppId)
     const rawAnalysis = game.opponentAnalyses?.[oppId]
-    // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): "assistentens taktik-
+    // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, 2026-08-23): "assistentens taktik-
     // rekommendation uteblir ibland/oftare" — deterministisk per omgång,
     // samma seed som SquadScreen.tsx:s TacticBoardCard-montering.
     // DOM_BURNOUT_TAK_2026-09-02 (C): under "Kliv tillbaka"s återhämtnings-

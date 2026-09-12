@@ -43,7 +43,7 @@ const DECISION_MEMORY_THRESHOLD = 70
  * liggare-k1 (2026-09-03): MemoryEventType speglade tidigare bara EventLedgerType's
  * FÖRSTA sexton medlemmar för hand — de 18 som tillkommit sedan (elva Moment-
  * typer, fem tysta, decision, manager_burnout) hade fått läggas till manuellt
- * här också, och gjorde inte det (RAPPORT_LIGGARE_KONSUMENTKARTA_RAW_2026-09-03.md
+ * här också, och gjorde inte det (docs/rapport/RAPPORT_LIGGARE_KONSUMENTKARTA_RAW_2026-09-03.md
  * Tabell 1). En sanning, ett ställe (CLAUDE.md OPUS-REGLER #4): alias mot
  * EventLedgerType i stället för en parallell union som kan glida isär igen.
  */

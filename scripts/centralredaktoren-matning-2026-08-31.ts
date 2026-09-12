@@ -1,6 +1,6 @@
 /**
  * CENTRALREDAKTÖREN — mätning mot domens "GODKÄNT NÄR" 1–4.
- * DOM_CENTRALREDAKTOREN_2026-08-31.md.
+ * docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md.
  *
  * Domens krav:
  *   1. Aldrig två kanaler samma omgång (kanal-exklusivitet håller).

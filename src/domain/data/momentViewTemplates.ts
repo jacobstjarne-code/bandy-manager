@@ -125,7 +125,7 @@ const MOMENT_VIEW_TEMPLATES: Record<MomentSource, MomentTemplate> = {
 
 /**
  * liggare-k3-vymallar-tysta (TEXT LÅST, Opus 2026-09-03,
- * RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md §10). Fem EventLedgerType-
+ * docs/rapport/RAPPORT_LIGGARE_KONSUMENTKARTA_2026-09-03.md §10). Fem EventLedgerType-
  * medlemmar som fryses (steg 1) men aldrig talas (steg 3) — se
  * clubMemoryService.ts's LEDGER_CLUB_MEMORY_TYPES/buildMemoryEventFromLedger
  * för konsumenten. Egen tabell, inte en utvidgning av MOMENT_VIEW_TEMPLATES:

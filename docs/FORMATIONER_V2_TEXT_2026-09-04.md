@@ -1,6 +1,6 @@
 # FORMATIONER V2 — TEXT (LÅST)
 
-**Datum:** 2026-09-04 · **Av:** Opus · **Gäller:** `DOM_FORMATIONER_V2_2026-09-04.md` · **Ersätter:** `TEXT_REVIEW_formations_2026-04-20.md` (arkiveras med pekare hit)
+**Datum:** 2026-09-04 · **Av:** Opus · **Gäller:** `docs/dom/DOM_FORMATIONER_V2_2026-09-04.md` · **Ersätter:** `TEXT_REVIEW_formations_2026-04-20.md` (arkiveras med pekare hit)
 Code kopierar ordagrant, översätter aldrig, lägger inte till egna adjektiv. Rubriken på taktikskärmens val heter **Uppställning**, inte Formation — det är bandyns ord.
 
 ## De sex

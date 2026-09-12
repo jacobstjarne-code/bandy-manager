@@ -7,11 +7,11 @@
  *   - getEventRenderTarget(event) === 'overlay' (kritiska icke-ambienta events,
  *     dessa hanteras av EventOverlay)
  *
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — ambienta events (utan val)
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — ambienta events (utan val)
  * fångas HÄR oavsett priority, som AmbientEventRow — de får aldrig ett kort.
  * Medium och atmosfäriska events (med val) visas som EventCardInline.
  *
- * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): VILKET
+ * HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md, 2026-08-31): VILKET
  * beslut som får kortet avgörs inte längre av köordningen (getNextEvent →
  * attentionRouter) utan av visningsregeln — översta måste, annars översta
  * månad (selectDashboardDecisions, decisionTierService.ts). Bakgrundsnivån

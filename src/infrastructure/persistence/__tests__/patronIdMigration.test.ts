@@ -3,7 +3,7 @@ import { createNewGame } from '../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { migrateSaveGame } from '../saveGameMigration'
 
-// DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron.id är nytt;
+// docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron.id är nytt;
 // äldre saves saknar det och behöver ett stabilt, deterministiskt id
 // backfyllt vid inläsning (namnbaserat, ingen säsong sparad för en
 // befintlig patron).

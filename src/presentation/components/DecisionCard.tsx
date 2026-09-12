@@ -49,7 +49,7 @@ interface DecisionCardProps {
   shape?: 'sharp' | 'round' | 'none'
   theme?: 'light' | 'dark'
   accent?: boolean
-  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — den semantiska
+  /** HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — den semantiska
    *  nivån: "Tre lägen i samma system, inte sex komponenter: lågmäld notis ·
    *  verkligt dilemma · dramatisk brytpunkt." Bara VISUELL VIKT inom det
    *  befintliga skalet, bara tokens. Default 'dilemma' = exakt dagens

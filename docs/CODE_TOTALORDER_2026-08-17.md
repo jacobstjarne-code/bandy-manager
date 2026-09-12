@@ -8,7 +8,7 @@ Detta är hela kön i en fil, i körordning. Har du redan gjort något — säg 
 **Underlagsdokument, alla i repot:**
 - `CODE_INSTRUKTION_LANGSPEL_10SASONGER_2026-08-17.md`
 - `CODE_INSTRUKTION_SOMMAREN_2026-08-17.md`
-- `DOM_FRAMGANGSEKONOMIN_2026-08-17.md` (**pausad**, se ETAPP 6)
+- `docs/dom/DOM_FRAMGANGSEKONOMIN_2026-08-17.md` (**pausad**, se ETAPP 6)
 - Skutskär-auditen och långspelsauditen (uppladdade, ej i repo)
 
 **Två regler genom hela ordern.** Rapportera-först betyder rapportera-först: bygg inget i de punkterna. Och GPT kör en visuell audit plus två nya tiosäsongstest efter det här arbetet — varje ombyggnad ska därför kunna pekas ut i efterhand, alltså separata commits med rotorsak, inte ett svep.
@@ -125,7 +125,7 @@ Rapportera: hur många oberoende cooldown-/dedupmekanismer finns? Hur många dis
 
 # ETAPP 8 — pausat, bygg inte
 
-**Framgångsekonomin** (`DOM_FRAMGANGSEKONOMIN_2026-08-17.md`) är **pausad**, och skälet är Skutskär-auditen. Domen antog att nedsidan fanns och behövde kalibreras mot. Den finns inte — en svag klubb kan inte misslyckas. Löneinflation och driftskostnad mot ett sådant spel blir dekoration i den övre halvan och godtyckliga i den nedre. Nedsidan (7.1) byggs först.
+**Framgångsekonomin** (`docs/dom/DOM_FRAMGANGSEKONOMIN_2026-08-17.md`) är **pausad**, och skälet är Skutskär-auditen. Domen antog att nedsidan fanns och behövde kalibreras mot. Den finns inte — en svag klubb kan inte misslyckas. Löneinflation och driftskostnad mot ett sådant spel blir dekoration i den övre halvan och godtyckliga i den nedre. Nedsidan (7.1) byggs först.
 
 **Dynasty state, burnoutkonsekvens och eventköns viktning** ligger hos mig. Eventköns viktning går till Design i dag.
 

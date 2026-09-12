@@ -21,7 +21,7 @@ import { calculateLineupChemistry } from '../../../domain/services/chemistryServ
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 import { pickBestEleven } from '../../../domain/services/squadEvaluator'
 
-// DOM_FORMATIONER_V2_2026-09-04.md: samma stil→formation-mappning som
+// docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: samma stil→formation-mappning som
 // worldGenerator.ts's buildTactic, för konsekvens (bevarar heightMode-hinken
 // per stil: Defensive→low, Balanced/Attacking/Technical→mid, Physical→high).
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
@@ -87,7 +87,7 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
       club.squadPlayerIds.includes(p.id) &&
       !p.isInjured &&
       p.suspensionGamesRemaining <= 0 &&
-      // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): symmetri med den
+      // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): symmetri med den
       // hanterade klubben (samma princip som C-FT1 — "AI tröttnar också").
       // En AI-spelare som förlorat sannolikhetskastet om vila är lika
       // otillgänglig som en skadad, för alla klubbar.

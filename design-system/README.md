@@ -292,7 +292,7 @@ All eases are subtle, short, copper-themed. `fadeIn` (220 ms), `fadeInUpScale` (
 ### Layout rules
 
 - **Root**: `max-width: 430px`, centered, `display: flex; flex-direction: column; overflow: hidden`.
-- **Bottom nav** — fixed 60 px + safe-area, six fixed tabs (Hem, Trupp, Match, Tabell, **Bygget**, Klubb) + a seventh, conditional tab (**Värvning**, `ArrowLeftRight`) elevated only while the transfer window is open (`transferWindowOpen` in `BottomNav.tsx`) — up to seven visible at once. Doc drift fixed 2026-08-20 (Å12, SLUTTEST_KO.md): this line previously listed "Transfers" as one of six fixed tabs and omitted Bygget entirely. Hidden on ceremonial screens (`HIDDEN_PATHS` in `BottomNav.tsx`).
+- **Bottom nav** — fixed 60 px + safe-area, six fixed tabs (Hem, Trupp, Match, Tabell, **Bygget**, Klubb) + a seventh, conditional tab (**Värvning**, `ArrowLeftRight`) elevated only while the transfer window is open (`transferWindowOpen` in `BottomNav.tsx`) — up to seven visible at once. Doc drift fixed 2026-08-20 (Å12, docs/archive/historiska-statuskallor/SLUTTEST_KO.md): this line previously listed "Transfers" as one of six fixed tabs and omitted Bygget entirely. Hidden on ceremonial screens (`HIDDEN_PATHS` in `BottomNav.tsx`).
 - **GameHeader** — 44 px tall, leather dark, copper underline, three-column layout (logo | club+season | bell+settings).
 - **PhaseIndicator** — three dots + labels (Förbered → Spela → Granska) under the header on gameplay screens.
 - **Scroll padding bottom: 120 px** — always account for the fixed CTA and bottom nav.

@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN, uppehållet (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN, uppehållet (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * "Säsongen spelas utan dig. Efter avskedet simuleras resten av säsongen och
  * den påföljande, och du ser vad som hände."

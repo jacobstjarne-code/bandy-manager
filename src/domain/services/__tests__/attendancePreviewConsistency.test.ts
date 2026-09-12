@@ -2,7 +2,7 @@
  * PÅSTÅENDEKARTAN, preview-mönstret (2026-08-26): två bekräftade instanser
  * där en förhandsvisning (MatchScreen, EkonomiTab/EkonomiSecondary) tidigare
  * använde andra indata än den auktoritativa simuleringen. Se
- * RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md. Dessa tester låser att de delade
+ * docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md. Dessa tester låser att de delade
  * byggfunktionerna faktiskt läser samma sanning matchSimProcessor/
  * economyProcessor läser — inte en tredje, egen gissning.
  */

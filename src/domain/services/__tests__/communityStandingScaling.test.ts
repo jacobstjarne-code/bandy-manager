@@ -79,7 +79,7 @@ describe('getCsDetOmojligaValetProbability — #11, tidigare cs>60 en absolut v�
   })
 })
 
-// ── ANSPRÅK 4 (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, D037) ──────────────
+// ── ANSPRÅK 4 (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, D037) ──────────────
 
 describe('csUpkeepFactor — knapp 1, ortsunderhållets storleksskalning', () => {
   it('full effekt (1,0) för en liten klubb — H4/Survive-golvet', () => {

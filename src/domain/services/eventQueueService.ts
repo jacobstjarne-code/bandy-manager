@@ -27,7 +27,7 @@ export interface QueueStats {
 }
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln.
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln.
  * "Att ett event utan val inte får ett kort är en mekanisk regel, inte en
  * estetisk — den går inte att tolka fel och den kan testas."
  *
@@ -39,7 +39,7 @@ export function isAmbientEvent(event: GameEvent): boolean {
 }
 
 /**
- * D1 punkt 4 (DOM_D1_EVENTVIKTNING_2026-08-19.md) — självkontrollen. "Kan
+ * D1 punkt 4 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) — självkontrollen. "Kan
  * ingen av de fyra raderna sättas, ska vikten sänkas till normal." Ett
  * `critical`-event utan en "därför nu"-rad är enligt domen inte verkligt
  * pivotal och tappar sin overlay-behandling.

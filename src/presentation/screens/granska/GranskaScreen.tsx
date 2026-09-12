@@ -160,7 +160,7 @@ export function GranskaScreen() {
     mergeResolvedChoices(game.resolvedChoices ?? [], resolvedEventIds, chosenLabels)
 
   // M10 (audit 5c9a7a8, 2026-08-24) — rotorsak rapporterad separat
-  // (RAPPORT_M10_ROTORSAK_2026-08-26.md) innan denna fix: domänmutationen
+  // (docs/rapport/RAPPORT_M10_ROTORSAK_2026-08-26.md) innan denna fix: domänmutationen
   // (resolveEvent) sköts tidigare upp 600ms bakom animationen, utan
   // clearTimeout vid unmount. Ett snabbt "KLAR"-tryck + navigering hann då
   // ske INNAN den riktiga skrivningen, medan händelsen fortfarande låg kvar

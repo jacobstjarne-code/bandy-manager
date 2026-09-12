@@ -1,5 +1,5 @@
 /**
- * deferredRolloverService — HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md),
+ * deferredRolloverService — HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md),
  * §"Rollover — aldrig tyst".
  *
  * ROTORSAK till att filen finns: `deferredDecisions: []` i seasonEndProcessor.ts

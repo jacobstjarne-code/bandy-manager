@@ -1,6 +1,6 @@
 fact_id: D033
 category: design_principles
-claim: "DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md, väg B: intäktssidan svarar snabbare på resultat/form via två befintliga positionslänkade knappar i economyService.ts. Knapp 1 (computeAttendanceRate): den gamla binära topp-3-bonusen (+0,08, annars 0) ersatt med en kontinuerlig, linjär funktion av tabellplaceringen över hela 12-lagsligan — etta ger TOP_POSITION_BONUS_MAX (0,25), tolva ger 0. Knapp 2 (calcRoundIncome, matchintäktens formBonus): spannet vidgat från 1.15/1.05/0.88/1.0 (samma tre trösklar: topp-3/topp-6/botten-3/mitten) till 1.35/1.15/0.72/1.0."
+claim: "docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md, väg B: intäktssidan svarar snabbare på resultat/form via två befintliga positionslänkade knappar i economyService.ts. Knapp 1 (computeAttendanceRate): den gamla binära topp-3-bonusen (+0,08, annars 0) ersatt med en kontinuerlig, linjär funktion av tabellplaceringen över hela 12-lagsligan — etta ger TOP_POSITION_BONUS_MAX (0,25), tolva ger 0. Knapp 2 (calcRoundIncome, matchintäktens formBonus): spannet vidgat från 1.15/1.05/0.88/1.0 (samma tre trösklar: topp-3/topp-6/botten-3/mitten) till 1.35/1.15/0.72/1.0."
 value:
   TOP_POSITION_BONUS_MAX: 0.25
   FORM_BONUS_TOP3: 1.35
@@ -10,7 +10,7 @@ value:
 unit: mixed (attendance-andel / intäktsmultiplikator / antal klubbar — se respektive fält)
 source:
   type: measurement
-  doc: "docs/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md; scripts/ah2-basekonomi-intakt-matning-2026-08-28.ts; src/domain/services/economyService.ts:computeAttendanceRate,calcRoundIncome"
+  doc: "docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md; scripts/ah2-basekonomi-intakt-matning-2026-08-28.ts; src/domain/services/economyService.ts:computeAttendanceRate,calcRoundIncome"
   decided_by: code
 verified_at: 2026-08-28
 verified_by: code
@@ -35,7 +35,7 @@ notes: |
     - DOMINANT: club_vastanfors, +10 CA (huvudseed 100 + pool 10 seeds × 3
       säsonger, 999 rundor totalt).
     - HEROS: club_heros, dyraste anläggningstiern (kiosk 'upgraded' +
-      vipTent, samma tier RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md
+      vipTent, samma tier docs/rapport/RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md
       mätte "5472→2173" på), kanonisk styrka, ingen tvingad
       communityStanding (huvudseed 91000 + pool 5 seeds × 1 säsong, 137
       rundor totalt).
@@ -73,7 +73,7 @@ notes: |
   4. Heros-golvet intakt: -11413 kr/omgång, back. OK, ej rört.
 
   KARRIÄRBANA-SOLVENSMÄTNING (2026-08-29, uppföljning av interim-beslutet i
-  DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md): kontrollklubben (samma
+  docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md): kontrollklubben (samma
   konstruktion, huvudseed 2 + pool [3..12]) simulerad 12 säsonger istf 3,
   club.finances läst varje omgång (scripts/ah2-karriarbana-solvens-matning-
   2026-08-29.ts). Svar: -4988/omg är INTE en jämn nivå cuppengar/transfers
@@ -114,7 +114,7 @@ notes: |
   SKYDDADE communityStanding-vikten 0,45) för att pressa kontrollen till
   noll — det bedömdes IMPLAUSIBELT (skulle göra tabellplacering ensam
   viktigare för läktarfyllnad än vad orten/lojaliteten är, tvärtemot
-  RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md:s uttryckliga
+  docs/rapport/RAPPORT_MATCHINTAKT_VIKT_OCH_COMMUNITYSTANDING_2026-08-25.md:s uttryckliga
   hierarki) och restes ALDRIG mot den skyddade konstanten. Rotorsaken till
   residualen är sannolikt lönesidan (obegränsad skalning med currentAbility
   × auto-möt-alla-krav-policyn, DOM_AH2B_RETENTION_2026-08-28) — uttryckligt

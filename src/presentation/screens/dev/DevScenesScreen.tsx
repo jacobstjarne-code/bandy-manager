@@ -157,7 +157,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // för rotorsak). Detta ÄR SÄTT LAGET-fyndet (MatchLaddningBand, streak≥3).
   | 'navgate-laddning-band'
   // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen hade NOLL
-  // dev-scene-täckning ("Skydd eller illusion?", SLUTTEST_KO.md rad 112) —
+  // dev-scene-täckning ("Skydd eller illusion?", docs/archive/historiska-statuskallor/SLUTTEST_KO.md rad 112) —
   // spelets mest komplexa skärm, onåbar för tapTargetGate.visual.ts. Skiljer
   // sig från alla andra scener ovan: MatchLiveScreen läser sin data via
   // react-router `location.state`, inte via useGameStore/props. Ett första
@@ -169,7 +169,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // en useEffect (se render-blocket) — inget nästlat Router-träd.
   | 'match-live'
   | 'opponent-intro'
-  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_
+  // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_
   // 2026-08-17.md:s fyra baseline-scener, via fabriken (samma mönster som
   // season-a/b/c, inte en egen scen per override).
   | 'sommaren-s2' | 'sommaren-titelforsvarare' | 'sommaren-tomt' | 'sommaren-siffra'
@@ -179,7 +179,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Människoupplevelse-auditen (7024f8a, 2026-08-24), H1: Bygget/FacilityScreen
   // hade NOLL dev-scene-täckning — inte bara utanför tests/visual/sceneRegistry.ts,
   // aldrig ens importerad här. Samma lucka-klass som "Skydd eller illusion?"
-  // (SLUTTEST_KO.md rad 112-117): en yta ingen grind sveper är en yta där nästa
+  // (docs/archive/historiska-statuskallor/SLUTTEST_KO.md rad 112-117): en yta ingen grind sveper är en yta där nästa
   // fel är osynligt — H1:s nav-overlap (avvecklingsknappen) och den tidigare
   // Annika-finansieringsbuggen var båda symptom av EXAKT den luckan.
   // 'bygget' = trädet stängt (allmän occlusion/raw-token/screenshot-täckning).
@@ -199,7 +199,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Mobilhierarki-regressioner (2026-08-31): riktiga, deterministiska lägen
   // för månadskön och DecisionCards tre visuella vikter.
   | 'portal-month-decisions' | 'portal-interruption-budget' | 'decision-modes' | 'event-overlay-breakpoint'
-  // DOM_SPONSOR_MOTBUD_2026-08-31.md: verifiering av motbudsflödet (egen
+  // docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md: verifiering av motbudsflödet (egen
   // scen, rör inte portal-month-decisions befintliga baseline).
   | 'sponsor-motbud'
   // Dev-scen-integritet 2026-09-01: tre tidigare byggda men helt osynliga
@@ -605,7 +605,7 @@ const efterklangCrisisVariants: Array<{ label: string; game: SaveGame }> = [
 
 // KF4 (2026-06-21): EN styrelsemodell — full BoardMember[] på game.board (find-by-role).
 // Flyttad hit (var tidigare bara deklarerad vid board-a/b/c, rad ~1135) — arrival-scenen
-// (DOMLOGG_2026-08-31.md §4) redirectar till dashboard utan game.board (ArrivalScene.tsx:204-207),
+// (docs/dom/DOMLOGG_2026-08-31.md §4) redirectar till dashboard utan game.board (ArrivalScene.tsx:204-207),
 // så grinden fotograferade en tom omdirigering. squadGame behöver den nu också.
 const board = [
   { id: 'ordforande-0', firstName: 'Margareta', lastName: 'Sahlin', age: 61, gender: 'f' as const, role: 'ordförande' as const, personality: 'traditionalist' as const },
@@ -1244,7 +1244,7 @@ const portalInterruptionBudgetGame = applyDecisionBudget({
   deferredDecisions: [],
 } as unknown as SaveGame, factoryMidSeasonGame.currentMatchday ?? 1)
 
-// DOM_SPONSOR_MOTBUD_2026-08-31.md — verifiering. Realistisk sponsorData
+// docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md — verifiering. Realistisk sponsorData
 // (personality satt, matchar generateSponsorOffer:s form) så motbudsknappen
 // och SponsorCounterModal går att klicka igenom med riktig kod, inte en
 // förenklad dev-approximation (mobileDecisionEvents ovan saknar sponsorData
@@ -1599,7 +1599,7 @@ const ekonomiCrisisGame = makeGame(makeLeagueFixtures(), {
   // LICENSVARNING_RENDERING_2026-08-26.md) behövdes — licenseStatus
   // (System B, det avskedande) satt till point_deduction så scenen
   // faktiskt bevisar att statusraden nu läser rätt system och visar
-  // ackumulatorns låsta zon-text (RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md).
+  // ackumulatorns låsta zon-text (docs/rapport/RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md).
   licenseStatus: 'point_deduction',
   licenseRiskScore: 65,
 })
@@ -1698,7 +1698,7 @@ const seasonGameA = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSum
 const seasonGameB = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumTopThree] })
 const seasonGameC = makeGame(makeLeagueFixtures(), { seasonSummaries: [seasonSumMidtable] })
 
-// 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_2026-08-17.
+// 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — CODE_INSTRUKTION_SOMMAREN_2026-08-17.
 // md:s fyra baseline-scener, via fabriken (behövs en override är det en override,
 // inte en egen scen — samma princip som season-a/b/c ovan).
 const SOMMAREN_CLUBS = [...devClubs, ...Array.from({ length: 10 }, (_, i) => ({ ...devClubs[1], id: `club-filler-${i}`, name: `Fyllnadsklubb ${i}` }))]

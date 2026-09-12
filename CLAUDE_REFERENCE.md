@@ -135,14 +135,14 @@ Måste returnera 0 resultat.
 - `docs/LESSONS.md` — 33 återkommande buggmönster (med kategoriserad TOC)
 - `docs/DECISIONS.md` — arkitekturbeslut kronologiskt
 - `design-system/` — auktoritativt designsystem. Ingång: `CODE-OPUS-INSTRUCTION.md`, sedan `README.md` + `DESIGN-DECISIONS.md`. `docs/archive/DESIGN_SYSTEM.md` är arkiverad.
-- `docs/BACKLOG.md` — enda sanning för specat men ej byggt
+- `docs/archive/historiska-statuskallor/BACKLOG.md` — enda sanning för specat men ej byggt
 - `docs/KVAR.md` — kronologisk leveranslogg
 - `docs/STATUS.md` — enda sanning om vad som är byggt
-- Senaste `docs/HANDOVER_YYYY-MM-DD.md`
+- Senaste `docs/handover/HANDOVER_YYYY-MM-DD.md`
 
 ### Visionsdokument (långsiktig roadmap)
 - `docs/THE_BOMB.md` — narrativ vision: korsreferenser mellan system, milestone-moments, atmosfär, share-images
-- `docs/SPEC_KLUBBUTVECKLING.md` — ekonomisk progression: utbyggnadsträd, sponsortillväxt, löneeskalering, inomhushallen
+- `docs/spec/SPEC_KLUBBUTVECKLING.md` — ekonomisk progression: utbyggnadsträd, sponsortillväxt, löneeskalering, inomhushallen
 
 ### Kalibreringsdata
 - `docs/data/bandygrytan_detailed.json` — 1242 elitseriematcher (2019-26, inkl slutspel)

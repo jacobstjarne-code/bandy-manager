@@ -51,7 +51,7 @@ export type GameEventType =
   | 'playThroughInjury'
   | 'seasonGoalHalfway'
   | 'burnoutRelief'
-  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
+  // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md):
   // nyhetstretmillen. "Supportrarna tröttnar på X — förnya för Y kr?"
   | 'communityActivityRenewal'
   // DOM_BURNOUT_TAK_2026-09-02 (A) — tak-triggern. Fyrar när burnoutScore
@@ -67,7 +67,7 @@ export type GameEventType =
   | 'jobbet_forsvann'
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — konsekvensmarkören.
  * Domen namnger fyra nivåer (neutral/positiv/kostsam/irreversibel), men
  * 'irreversibel' modelleras HÄR som en egen boolean (choice.irreversible)
  * i stället för ett fjärde enum-värde — domen säger uttryckligen att ett
@@ -250,7 +250,7 @@ export interface EventEffect {
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'
 
 /**
- * HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — NÄR/VAR ett beslut
+ * HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — NÄR/VAR ett beslut
  * surfar. HELT SKILD AXEL FRÅN EventPriority ovan: priority styr sorteringen
  * inom kön och overlay-vs-inline-routningen (eventQueueService.ts), tier styr
  * om beslutet över huvud taget får en dashboard-yta och om det är undantaget
@@ -297,7 +297,7 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'academyEvent':
     case 'academyDecision':
     case 'playoffEvent':
-    // O4 (DOM_BURNOUT_2026-08-17.md): "Aldrig pivotal" — burnoutRelief är en
+    // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md): "Aldrig pivotal" — burnoutRelief är en
     // återkommande, sjukdomsartad situation, inte ett unikt ödesögonblick.
     case 'burnoutRelief':
     // ANSPRÅK 4, spak 3: en verklig utgift ur kassan, men aldrig en frist och
@@ -367,7 +367,7 @@ export interface GameEvent {
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
   priority?: EventPriority   // defaults to getEventPriority(type) if not set
   deferredAt?: number        // matchday när eventet hamnade i kön (R1 age tracking)
-  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — per-instans
+  /** HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md) — per-instans
    *  åsidosättande av typ-nivåns läge (getDecisionMode, decisionTierService.ts).
    *  Domen: "En måste kan vara ett dilemma (kontrakt: betala/sälj) eller en
    *  brytpunkt (licens nekad)" — samma GameEventType, olika dramatisk vikt
@@ -380,10 +380,10 @@ export interface GameEvent {
    *  kvar. Samma valfria-fält-konvention som deferredAt ovan. undefined =
    *  ingen känd frist (alla icke-måste-event idag). */
   deadlineRound?: number
-  systemhandelse?: boolean   // O19 (SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
-                              // (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
+  systemhandelse?: boolean   // O19 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): uppfyller varsel-mallens fem kriterier
+                              // (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md). Ren datamärkning —
                               // ingen räknare/cooldown/säsongsbudget läser fältet ännu.
-  /** O1 (SLUTTEST_KO.md, varsel-mallen, "sponsorn med ett problem"): satt bara
+  /** O1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, varsel-mallen, "sponsorn med ett problem"): satt bara
    *  på sponsorOffer-events där en ny sponsor konkurrerar med en redan
    *  aktiv sponsor i samma kategori. Id:t på den rivaliserande sponsorn vars
    *  contractRounds nollställs (avslutas) om spelaren accepterar den nya. */
@@ -405,7 +405,7 @@ export interface GameEvent {
    *  tillåter högst två poster per storyline-id och säsong (en huvudfråga,
    *  en uppföljning). undefined för icke-storyline-frågor. */
   storylinePressKey?: string
-  /** Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+  /** Centralredaktören, punkt 2 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md):
    *  frågetextens EGEN recency, skild från storylinePressKey (som bara
    *  gäller storyline-override-frågor). Satt av generatePressConference()
    *  till `press_q_${question.text}` för DEN FAKTISKA frågan som till slut
@@ -471,7 +471,7 @@ export interface GameEvent {
    *  (postAdvanceEvents.ts): högst en gång per säsong totalt, och inte samma
    *  spelare igen förrän hela den aktuella truppen rullat ett varv. */
   journalistExclusiveKey?: string
-  /** Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md, punkt 3:
+  /** Centralredaktören (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md, punkt 3:
    *  subjekts-rotation). Samma skrivmönster som journalistExclusiveKey/
    *  mecenatSocialKey — satt av generatorn till `${prefix}${subjectId}`
    *  när ett personal-beat (starPerformance/playerPraise/

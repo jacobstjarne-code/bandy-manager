@@ -118,7 +118,7 @@ describe('computeSeasonEndContractDemands', () => {
     expect(demands.length).toBe(0)
   })
 
-  // ── Villkor 2 (SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28) ──────────────────
+  // ── Villkor 2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28) ──────────────────
   it('produces zero demands when the club fails all three success doors, even with a qualifying individual demand', () => {
     const player = makePlayer({ salary: 5000 })
     const club = makeClub()

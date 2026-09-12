@@ -13,7 +13,7 @@ import {
   getStorylineTypeFromLedger,
 } from './storylineLedgerService'
 
-// 4.6 (SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
+// 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): alla newStorylines.push(...)-anrop nedan
 // sätter matchday: getCurrentLeagueRound(game), INTE den lokala
 // currentMatchday-variabeln (som är GLOBAL — justCompletedFixture?.matchday,
 // kan bli 27+ under slutspel). SeasonSummaryScreen.tsx renderar
@@ -248,8 +248,8 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
   // 'veteran', inte captainPlayerId) och räknade in cupmatcher i strecket.
   // captainSpeech är kanon — give_words boardPatience-kostnad och
   // take_charges moralkostnad flyttades in i generateCaptainSpeechEvent()
-  // (eventFactories.ts) i samma commit. Se BACKLOG.md "Två läsare, en
-  // sanning" och SLUTTEST_KO.md post 53 för full historik. Migration för
+  // (eventFactories.ts) i samma commit. Se docs/archive/historiska-statuskallor/BACKLOG.md "Två läsare, en
+  // sanning" och docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 53 för full historik. Migration för
   // saves med en ledare_crisis-arc mid-flight: saveGameMigration.ts.
 
   // ── lokal_hero ── (mål i just spelat derby)
@@ -852,7 +852,7 @@ export function progressArcs(
           // — homegrown skriver ut {år} (careerStats.seasonsPlayed är sant
           // för en spelare som aldrig värvats), värvad gör det inte (ingen
           // pålitlig klubb-tenure-data finns för värvade spelare, se
-          // BACKLOG.md "Datafält som saknas — år i klubben"). Ingen
+          // docs/archive/historiska-statuskallor/BACKLOG.md "Datafält som saknas — år i klubben"). Ingen
           // {ersättare} — "den som väntar" räcker, mallen kräver den inte.
           const annualSalaryTkr = Math.round((p.salary * 12) / 1000)
           const seasonsInClub = p.careerStats?.seasonsPlayed ?? 0
@@ -909,7 +909,7 @@ export function progressArcs(
             sender: { name: 'Journalist', role: 'Media' },
             relatedPlayerId: p.id,
             resolved: false,
-            // O1 kandidat 2 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md,
+            // O1 kandidat 2 (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md,
             // Jacobs dom 2026-08-24): mallens fem punkter — klacken (namngiven
             // institution, agerar via mood-konsekvensen), veteranen (redan
             // mött, satt i elvan), lönen/kontraktsåren (ett tal mot en känd

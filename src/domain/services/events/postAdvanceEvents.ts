@@ -34,7 +34,7 @@ import { getKnownDecisionIdentities } from '../decisionLifecycleService'
 // Se GameEvent.journalistExclusiveKey för hela rotorsaksförklaringen.
 const JOURNALIST_EXCLUSIVE_PREFIX = 'journalist_exclusive_player_'
 
-// ── Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md) ───────
+// ── Centralredaktören, punkt 3 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md) ───────
 // Generiska personal-beats' subjekts-rotation. Se GameEvent.rotationKey.
 const STAR_PERFORMANCE_PREFIX = 'star_performance_'
 const PLAYER_MEDIA_PREFIX = 'player_media_'
@@ -52,7 +52,7 @@ export function journalistExclusiveFiredThisSeason(game: SaveGame, currentSeason
  * nuvarande truppspelare redan figurerat har poolen rullat ett fullt varv —
  * spärren släpper och hela truppen blir valbar igen.
  *
- * Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md): pekad om till
+ * Centralredaktören (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md): pekad om till
  * den delade rotateSubject (narrativeCoordinatorService.ts) — domens ord,
  * "rör inte, det är mallen". excludeCount=Infinity reproducerar EXAKT det
  * gamla beteendet (utesluter ALLA distinkta ever-featured id ur hela
@@ -238,7 +238,7 @@ export function generatePostAdvanceEvents(
 
   // 4. Star performance (8.5+ rating, auto-resolve with morale boost — add as resolved=false with single choice)
   //
-  // Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md): när
+  // Centralredaktören, punkt 3 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md): när
   // FLERA spelare hade 8.5+ i samma match väljer rotateSubject bland de
   // kvalificerade, inte alltid rakt av högst rating — så samma spelares
   // stjärnprestation inte trycker undan en annan lagkamrats i flera raka
@@ -830,7 +830,7 @@ export function generatePostAdvanceEvents(
             },
           ],
           resolved: false,
-          systemhandelse: true,  // O19: 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+          systemhandelse: true,  // O19: 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
         })
       }
     }
@@ -882,7 +882,7 @@ export function generatePostAdvanceEvents(
 
 // ── buildSponsorOfferEvent (O1) ─────────────────────────────────────────────
 /**
- * O1 (varsel-mallen, DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, "sponsorn med
+ * O1 (varsel-mallen, docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, "sponsorn med
  * ett problem" — högst prioriterade kandidaten: vanligast och tommast, accept
  * var en ren kvitteringsknapp).
  *
@@ -1009,7 +1009,7 @@ export function buildSponsorOfferEvent(
         subtitle: rivalSponsor ? 'Ni behåller det ni har.' : 'Inga effekter',
         effect: { type: 'noOp' },
       },
-      // DOM_SPONSOR_MOTBUD_2026-08-31.md: motbudet är INTE ett vanligt val
+      // docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md: motbudet är INTE ett vanligt val
       // som resolveEvent kör direkt — EventCardInline fångar choiceId==='counter'
       // FÖRE resolveEvent och öppnar SponsorCounterModal i stället (fri
       // Y-inmatning, samma "konfigurera-sen-bekräfta"-mönster som BidModal).

@@ -1,5 +1,5 @@
 /**
- * Grind 1-verifiering (SLUTTEST_KO.md): kan en svår klubb, spelad normalt
+ * Grind 1-verifiering (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): kan en svår klubb, spelad normalt
  * (bästa tillgängliga elva varje omgång, inga tankade beslut), falla mot
  * avskedströskeln (boardPatience <= 15 eller consecutiveFailures >= 3)
  * inom tre säsonger — och hur ofta?

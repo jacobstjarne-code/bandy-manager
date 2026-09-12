@@ -153,7 +153,7 @@ describe('setLineup', () => {
     expect(result.success).toBe(true)
   })
 
-  it('A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande spelare (restGamesRemaining) i lineup returnerar fel, SKILT från isInjured', () => {
+  it('A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): vilande spelare (restGamesRemaining) i lineup returnerar fel, SKILT från isInjured', () => {
     const game = makeGame()
     const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 

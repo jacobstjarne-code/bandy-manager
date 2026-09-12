@@ -7,7 +7,7 @@ import type { FormationType } from '../domain/entities/Formation'
 import type { OpponentAnalysis } from '../domain/services/opponentAnalysisService'
 import type { Player } from '../domain/entities/Player'
 
-// DOM_FORMATIONER_V2_2026-09-04.md: press borttaget — heightMode härleds nu
+// docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press borttaget — heightMode härleds nu
 // ur formation. '523_hog' = high (gamla TacticPress.High), default '532_tvatoppar' = mid.
 function makeTactic(mentality: TacticMentality, formation: FormationType = '532_tvatoppar'): Tactic {
   return { mentality, formation, lineupSlots: {} } as unknown as Tactic

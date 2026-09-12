@@ -12,7 +12,7 @@ interface IncomingBidCardProps {
   choices: EventChoice[]
   onChoose: (choiceId: string) => void
   /**
-   * Å4 (SLUTTEST_KO.md, 2026-08-18): primaryChoiceId="accept" var tidigare
+   * Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): primaryChoiceId="accept" var tidigare
    * ovillkorligt — tre inkommande bud gav tre samtidiga .btn-primary.
    * Bara kortet med mest brådskande svarsfrist ska vara primär; övriga
    * visar samma val men utan primär-styling (TransfersScreen sorterar och

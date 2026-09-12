@@ -3,7 +3,7 @@
  * mot EKONOMI — ersätter wageBudget-nämnaren i
  * scripts/anspark1-budgettryck-matning-2026-08-28.ts (den filen mätte
  * `room = wageBudget - squadSalary`). Se
- * docs/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md, sektion
+ * docs/dom/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md, sektion
  * "STEG 1-DOM (2026-08-28)" — den sektionen SUPERSEDERAR filens egen
  * steg-1-instruktion (som fortfarande frågade "vilket är rätt utrymme,
  * wageBudget eller finances"). Domen svarade: wageBudget är rådgivande

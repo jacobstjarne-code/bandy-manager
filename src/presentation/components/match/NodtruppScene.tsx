@@ -37,7 +37,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
     : []
   const injured = squad.filter(p => p.isInjured).length
   const suspended = squad.filter(p => p.suspensionGamesRemaining > 0).length
-  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): en tredje, skild orsak till
+  // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): en tredje, skild orsak till
   // otillgänglighet — inte skadad, inte avstängd, bara vilande/överbelastad.
   const resting = squad.filter(p => (p.restGamesRemaining ?? 0) > 0).length
   const need = Math.max(0, MIN_PLAYABLE - availableCount)

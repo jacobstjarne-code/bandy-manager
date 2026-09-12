@@ -49,7 +49,7 @@ jobs:
       # antal pass och rapporterade tyst noll istf att fela. tsconfig.json
       # kan inte bara utökas (rootDir:'src' för den riktiga dist-emitten) —
       # egen config, ratchet-exkluderad för 15 filer med redan existerande
-      # fel (se tsconfig.scripts.json:s egen kommentar + BACKLOG.md).
+      # fel (se tsconfig.scripts.json:s egen kommentar + docs/archive/historiska-statuskallor/BACKLOG.md).
       - name: Type-check (tsc, scripts/)
         run: npx tsc -p tsconfig.scripts.json
       - name: Duplicate-function ratchet

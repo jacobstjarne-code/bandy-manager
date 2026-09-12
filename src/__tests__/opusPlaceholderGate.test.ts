@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { scanOpusPlaceholders, STALENESS_DAYS } from '../../tests/grind/opusPlaceholderGate'
 
 /**
- * A-H4b (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN) — OPUS-PLATSHÅLLARGRINDEN.
- * SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 (2026-09-01): grinden vände —
+ * A-H4b (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SEXSÄSONGSAUDITEN) — OPUS-PLATSHÅLLARGRINDEN.
+ * docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md GRIND 1 (2026-09-01): grinden vände —
  * se tests/grind/opusPlaceholderGate.ts för rotorsak och den nya
  * reachable/staleness-logiken. En `reachable:true`-post är ALLTID en
  * violation vid count>0 (maxAllowed ignoreras); en `reachable:false`-post

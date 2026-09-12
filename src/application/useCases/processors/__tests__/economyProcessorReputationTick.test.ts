@@ -7,7 +7,7 @@ import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import type { StandingRow } from '../../../../domain/entities/Standing'
 
 /**
- * Fix for sidofynd B (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, tillägg
+ * Fix for sidofynd B (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, tillägg
  * 2026-08-30): socialMedia's +1 rykte var 5:e matchday (economyProcessor.ts)
  * körde helt frikopplat från placering — en mittenklubb (club_malilla,
  * placering 5/8/6) nådde rykte 100 på tre säsonger av bara denna tick.
@@ -131,7 +131,7 @@ describe('REGRESSION — mittenklubb ska inte längre rusa mot rykte 100 enbart 
 
     // Regression: innan fixen nådde samma konstruktion (mittenklubb, placering
     // 5/8/6, socialMedia konstant på) rykte 100 inom tre säsonger — se
-    // DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md tillägg B. Efter fixen ska
+    // docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md tillägg B. Efter fixen ska
     // rykte hållas väl under taket eftersom klubben aldrig ligger i topp 3.
     for (const rep of repBySeason) {
       expect(rep, `rykte ${rep} nådde/närmade sig 100 trots att klubben är ett mittenlag — tick:en är fortfarande frikopplad från placering`).toBeLessThan(95)

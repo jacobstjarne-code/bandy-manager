@@ -40,7 +40,7 @@ export interface PlayerStateResult {
   /** Pool 1c: spelare vars spela-på-gambling avgjordes (eller kansellerades
    *  utan risk om de aldrig faktiskt startade matchen) denna runda. */
   playThroughResolutions: Array<{ player: Player; relapsed: boolean; aftermathLine: string }>
-  /** A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: spelare som förlorade
+  /** A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: spelare som förlorade
    *  sannolikhetskastet om vila/överbelastning denna runda (startade under
    *  FATIGUE_AVAILABILITY_FLOOR). restGamesRemaining redan satt på player. */
   newlyRested: Array<{ player: Player }>
@@ -90,7 +90,7 @@ export function applyPlayerStateUpdates(
   const currentMatchday = game.currentMatchday
   const localRand = mulberry32(baseSeed + 9999)
 
-  // B9 (SLUTTEST_KO.md, Jacobs dom 2026-08-19): mittfältare kan inte välja bort
+  // B9 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, Jacobs dom 2026-08-19): mittfältare kan inte välja bort
   // ett anfall som en ytterhalv kan (Liw), men fatigueRate idag är lagvis —
   // samma förlust oavsett position. matchCore.ts läser aldrig .fitness (grep
   // gav 0 träffar) så det här rör lagvalskalibrering (squadEvaluator), inte
@@ -175,7 +175,7 @@ export function applyPlayerStateUpdates(
         weatherTacticFatigue = 1.0 + twi.extraFatigue
       }
       const byggExtraCost = isManaged && effectiveMode === 'bygg' ? BYGG_EXTRA_FITNESS_COST : 0
-      // DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditions-
+      // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditions-
       // kostnad, utöver fatigueRate (som redan höjs +10% av heightMode:'high').
       // Magnituden är C2-kalibrerad över 10 000 parade säsonger — se
       // FORMATION_523_EXTRA_FITNESS_COST.
@@ -184,7 +184,7 @@ export function applyPlayerStateUpdates(
         : 0
       const positionFatigueMult = positionFatigueNormMult.get(player.id) ?? 1.0
       const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue * positionFatigueMult) + byggExtraCost + formation523ExtraCost
-      // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), rotorsak 2: matchkostnaden
+      // A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), rotorsak 2: matchkostnaden
       // är oförändrad — men veckan MELLAN matcherna ger nu tillbaka något även
       // åt den som spelade. Tidigare var en startares omgång rent −15..−25,
       // vilket gjorde trupploopen strukturellt negativ oavsett truppstorlek.
@@ -432,7 +432,7 @@ export function applyPlayerStateUpdates(
     }
   }
 
-  // ── A-H3 ben 2 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): sannolikhetskast om
+  // ── A-H3 ben 2 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): sannolikhetskast om
   // vila/överbelastning för spelare som startade UNDER FATIGUE_AVAILABILITY_FLOOR.
   // Läser PRE-match-fitness (playersById — spelaren SOM HAN VAR VID MATCHSTART),
   // inte post-match-förlusten — det är trötthet HAN STARTADE MED som är risken,

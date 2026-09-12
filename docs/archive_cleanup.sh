@@ -8,7 +8,7 @@ mkdir -p "$DEST"
 for f in docs/*.md; do
   base=$(basename "$f")
   case "$base" in
-    STATUS.md|DESIGN_SYSTEM.md|THE_BOMB.md|SPEC_KLUBBUTVECKLING.md|GENOMGANG_OCH_VISION_20260406.md|ROADMAP.md|PLAYTEST_CHECKLISTA.md|CODE_NEXT_SESSION.md)
+    STATUS.md|DESIGN_SYSTEM.md|THE_BOMB.md|docs/spec/SPEC_KLUBBUTVECKLING.md|GENOMGANG_OCH_VISION_20260406.md|ROADMAP.md|PLAYTEST_CHECKLISTA.md|CODE_NEXT_SESSION.md)
       echo "BEHÅLLER: $base"
       ;;
     *)

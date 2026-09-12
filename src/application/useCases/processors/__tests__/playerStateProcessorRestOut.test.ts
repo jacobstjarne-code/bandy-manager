@@ -12,7 +12,7 @@ import {
 import type { Tactic } from '../../../../domain/entities/Club'
 
 /**
- * A-H3 ben 2 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md) — sannolikhetskastet om
+ * A-H3 ben 2 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md) — sannolikhetskastet om
  * vila/överbelastning för spelare som startade under FATIGUE_AVAILABILITY_FLOOR.
  * Samma test-harness som playerStateProcessorFatigue.test.ts (B9).
  */

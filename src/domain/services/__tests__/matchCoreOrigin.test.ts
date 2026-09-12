@@ -9,7 +9,7 @@ import {
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
 
-// B12 steg 2, fält 4/4 (DOM_B12_STEG2_2026-08-19.md) — origin: omskrivning av
+// B12 steg 2, fält 4/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — origin: omskrivning av
 // den redan avgjorda seqType till tre värden (OPEN_PLAY/CORNER/PENALTY),
 // INTE fyra ('FREE_HIT' skrivs av MatchLiveScreen, inte matchCore). Sätts
 // bara på skott-/målutfall — Suspension/Substitution har inget "ursprung"

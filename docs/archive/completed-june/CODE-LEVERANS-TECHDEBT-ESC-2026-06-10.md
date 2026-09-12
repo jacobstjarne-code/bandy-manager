@@ -1,7 +1,7 @@
 # CODE-LEVERANS — Teknisk skuld E-SC (seededPick + recompute + trendStroke)
 
 **Datum:** 2026-06-10
-**Källa:** BACKLOG.md §E (teknisk skuld, små). Opportunistisk städbunt efter att Klubb/Transfers-auditen stängts.
+**Källa:** docs/archive/historiska-statuskallor/BACKLOG.md §E (teknisk skuld, små). Opportunistisk städbunt efter att Klubb/Transfers-auditen stängts.
 **Karaktär:** Ingen Opus-text, ingen design, inget Jacob-beslut. **Allt beteendebevarande — ingen av dessa ändrar användarsynlig utdata eller urvalsutfall.** De tre är oberoende; committa var för sig.
 
 ## E-SC1 — Delad seedad picker (huvudpunkt)

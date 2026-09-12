@@ -56,7 +56,7 @@ function nextOpponentClubId(game: SaveGame, fixture: SaveGame['fixtures'][number
  * `clubMemoryEventBuilders.ts`s `buildTacticalPatternSuspension523LedgerEntry`).
  *
  * "Återkomst till gamla klubben" — WIRAD 2026-09-08 (Code),
- * DOM_MANAGER_ATERKOMST_2026-09-08.md. Byggdes FÖRST som ett state-undantag
+ * docs/dom/DOM_MANAGER_ATERKOMST_2026-09-08.md. Byggdes FÖRST som ett state-undantag
  * i `calendar_anchor` (läste `clubSpells` direkt i pushadaptern) — Opus
  * dömde det fel: händelsen ÄR en händelse (skedde vid signeringen), hör
  * ontologiskt i liggaren som license_event/board_verdict, och ett

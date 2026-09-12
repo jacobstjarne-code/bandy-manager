@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { scanPreservationDeletions, readPreservedNames } from '../../tests/grind/preservationGate'
 
 /**
- * GRIND 2 (SPEC_SANNINGSGRINDAR_2026-08-31.md) — bevarandetext-raderingsgrinden.
+ * GRIND 2 (docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md) — bevarandetext-raderingsgrinden.
  * Se tests/grind/preservationGate.ts för rotorsak och metod: `d0d4d923`
  * raderade fyra bevarandelistade textpooler osynligt när filen de bodde i
  * togs bort av en annan anledning. Denna grind hade stoppat den raderingen

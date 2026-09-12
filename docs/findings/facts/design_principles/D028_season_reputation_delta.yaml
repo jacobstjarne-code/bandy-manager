@@ -22,7 +22,7 @@ invariants:
   - "value.RATING_5 <= 20"
 related_facts: []
 notes: |
-  U6 (SLUTTEST_KO.md, 2026-08-17): en testklubb (Skutskär) tankade en hel
+  U6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): en testklubb (Skutskär) tankade en hel
   säsong avsiktligt men renommét STEG 52→56 ändå. Koden kunde sänka renommé
   via skandal (scandalService.ts: -5 till -8, tillfälligt, återställs när
   skandalen löper ut) och nekad licens (-15, permanent, engångs), men ingen

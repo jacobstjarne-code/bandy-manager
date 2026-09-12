@@ -195,7 +195,7 @@ export function generateScoutNotes(player: Player, rand?: () => number): string 
 
   const note = templates[Math.floor(localRand() * templates.length)]
 
-  // B8-residual (SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21):
+  // B8-residual (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, BANDYSPRÅKET — låst text [Opus], 2026-08-21):
   // åkhalv/lyrhalv kräver en deterministisk härledning som inte fanns —
   // skating-övertag = åkhalv (offensiv i öppen bana), passing-övertag =
   // lyrhalv (spelbyggare via lyra/långpassning). Bygger inte om B12-

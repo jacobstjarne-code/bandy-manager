@@ -72,8 +72,8 @@ lastCoffeeSceneRound = updatedGame.currentMatchday ?? 0  // → alltid 0 om fäl
 Code fattade rätt beslut att inte bryta befintlig typning. Men:
 
 - Kommentarer i `eventQueueService.ts` använder `low` korrekt
-- Spec i `SPEC_BESLUTSEKONOMI_STEG_2.md` säger `atmospheric`
-- Spec i `SPEC_BESLUTSEKONOMI_STEG_3.md` säger `medium` och `atmospheric`
+- Spec i `docs/spec/SPEC_BESLUTSEKONOMI_STEG_2.md` säger `atmospheric`
+- Spec i `docs/spec/SPEC_BESLUTSEKONOMI_STEG_3.md` säger `medium` och `atmospheric`
 - `roundProcessor.ts:cap`-logiken cappar `'low'`, inte `'atmospheric'`
 
 **Konsekvens:** Framtida läsare av spec vs kod blir förvirrade. Steg 3-implementationen kommer behöva mappa: spec `medium` → kod `high|normal`, spec `atmospheric` → kod `low`.

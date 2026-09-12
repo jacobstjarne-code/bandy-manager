@@ -21,7 +21,7 @@ export interface CommunityActivities {
 }
 
 /**
- * ANSPRÅK 4, spak 3 — nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+ * ANSPRÅK 4, spak 3 — nyhetstretmillen (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
  * De NIO aktiviteter som bär en csBoost i communityProcessor.ts, och därmed de
  * enda vars färskhet kan falla. `julmarknad` och `vipTent` ingår INTE: de har
  * ingen csBoost alls (julmarknad är säsongsfönstrad och nollställs varje
@@ -60,7 +60,7 @@ export type CommunityActivitiesSince = Partial<Record<StaleableActivityKey, numb
 export type PatronPersonality = 'selfless' | 'controlling' | 'strategic' | 'nostalgic'
 
 export interface Patron {
-  /** DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — stabil identitet,
+  /** docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — stabil identitet,
    *  samma mönster som Mecenat.id (mecenat_${namn}_${säsong}). Krävs för att
    *  EventLedgerEntry.subject ({ kind: 'patron', id }) ska kunna slå upp
    *  namnet ur game.patron i stället för att bära namnet direkt i subject
@@ -80,7 +80,7 @@ export interface Patron {
   introducedSeason?: number
   hasBeenWarned?: boolean
   personality?: PatronPersonality
-  // 3.2 (SLUTTEST_KO.md, 2026-08-17): döpt om från `patience` — kolliderade
+  // 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): döpt om från `patience` — kolliderade
   // namnmässigt med SaveGame.boardPatience (styrelsens tålamod med managern),
   // ett helt annat begrepp. goodwill = patronens tålamod med KLUBBEN.
   goodwill?: number           // 0-100, decreases when ignored

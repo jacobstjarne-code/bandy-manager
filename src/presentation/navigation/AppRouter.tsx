@@ -64,7 +64,7 @@ const MatchScreen = lazy(() => import('../screens/MatchScreen').then(m => ({ def
 const ClubScreen = lazy(() => import('../screens/ClubScreen').then(m => ({ default: m.ClubScreen })))
 const GranskaScreen = lazy(() => import('../screens/granska/GranskaScreen').then(m => ({ default: m.GranskaScreen })))
 
-// 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
+// 3.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) Kontrakt A — "SE KARRIÄREN" måste kunna
 // visa historik för en avslutad (managerFired) karriär. GameShell redirectar
 // bort managerFired-spel innan /game/history hinner rendera, så denna rutten
 // hänger under samma GameGuard som game-over (bara kollar !game, inte

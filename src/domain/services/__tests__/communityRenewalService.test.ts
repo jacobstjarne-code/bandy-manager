@@ -1,6 +1,6 @@
 /**
  * ANSPRÅK 4, spak 3 — nyhetstretmillen
- * (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, D038).
+ * (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md, D038).
  *
  * Fyra saker testas här, i domens egen ordning:
  *   1. Avtrappningskurvan (kontinuerlig, golv > 0, exakt 1,0 för små klubbar).
@@ -298,7 +298,7 @@ describe('renewCommunityActivity (effekten)', () => {
 
 // ── 4. VÄG C: aggregeringen till ortFreshnessFactor ────────────────────────
 //
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Multiplikatorn som
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Multiplikatorn som
 // biter på PUBLIKEN, inte på CS. Testar aggregeringens tre egenskaper:
 // ändpunkterna (färsk → 1,0, helt sliten → golvet), viktningen (skolbesök
 // väger 4× sociala medier), och nollfallet (inga aktiviteter → 1,0).

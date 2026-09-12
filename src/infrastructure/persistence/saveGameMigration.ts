@@ -17,7 +17,7 @@ import { buildLegacyIntroducedVoices } from '../../domain/services/voiceIntroduc
 import { migrateLoanDestinationId } from '../../domain/services/loanDestinationService'
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
  * `press` → ny formation, så spelaren behåller EFFEKTEN hen faktiskt hade
  * (press var effekten, formationen kosmetik). Exporterad för regressionstest
  * per rad i domens tabell.
@@ -232,7 +232,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   }
 
   // ── communityActivitiesSince: staleness-klockan (ANSPRÅK 4, spak 3) ────
-  // DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md. BACKFYLLNING, INTE
+  // docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md. BACKFYLLNING, INTE
   // BAKÅTDATERING: en save där kiosken varit igång sedan säsong 1 får
   // startsäsong = INNEVARANDE säsong, inte 1. Ingen spelare ska vakna upp till
   // en ort som redan tröttnat på allt hen byggt under det gamla systemet.
@@ -388,7 +388,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.financeLog === undefined) data.financeLog = []
   if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
   if (data.mecenater === undefined) data.mecenater = []
-  // DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron.id är nytt;
+  // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron.id är nytt;
   // äldre saves saknar det. Ingen säsong/ankomsttid sparad för en befintlig
   // patron, så ett namnbaserat id (samma "stabilt, inte namnet i sig"-krav
   // som Mecenat.id, men utan säsongen mecenat-mönstret annars använder) —
@@ -665,7 +665,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
-  // ── DOM_FORMATIONER_V2_2026-09-04.md — formation+press → ny formation ────
+  // ── docs/dom/DOM_FORMATIONER_V2_2026-09-04.md — formation+press → ny formation ────
   // Körs på VARJE klubbs activeTactic (även AI-klubbar — de spelar också
   // matcher, och deras tacticModifiers-effekt ska bevaras likadant) och på
   // varje pågående fixtures homeLineup/awayLineup.tactic (sparad lineup för
@@ -793,7 +793,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     }
   }
 
-  // ── K2 — karriärstatistikens dubblering, retroaktiv rättning (SLUTTEST_KO.md,
+  // ── K2 — karriärstatistikens dubblering, retroaktiv rättning (docs/archive/historiska-statuskallor/SLUTTEST_KO.md,
   //    2026-08-19). Roten (K1, redan fixad `b4ad8279`): seasonEndProcessor.ts
   //    ADDERADE seasonStats till careerStats vid rollover, TROTS att
   //    statsProcessor.ts redan ackumulerar careerStats matchvis hela säsongen.
@@ -885,7 +885,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   }
 
   // ── PÅSTÅENDEKARTAN (2026-08-24): narrativeLog döpt om på tre olika register
-  // (namnkollision, inte samma register — se SLUTTEST_KO.md post 58). Flyttar
+  // (namnkollision, inte samma register — se docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 58). Flyttar
   // BEFINTLIG DATA till de nya fältnamnen, rör inte bara `undefined` — en save
   // med en manager som redan har burnout/era-shift-poster eller en spelare med
   // en fylld karriärdagbok får annars den historiken tyst amputerad vid nästa

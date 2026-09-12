@@ -15,7 +15,7 @@ Beroende på playtest-resultat:
 4. Erik: textgranskning av nya svenska strängar
 
 ### Framtid (ej tidssatt)
-Se `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md` för långsiktig vision:
+Se `docs/THE_BOMB.md` och `docs/spec/SPEC_KLUBBUTVECKLING.md` för långsiktig vision:
 - Ortens kalender
 - Mecenatens middag (interaktiv scen)
 - Kommunval

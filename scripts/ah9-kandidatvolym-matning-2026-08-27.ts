@@ -1,5 +1,5 @@
 /**
- * A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md) — "Rapportera innan bygge",
+ * A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md) — "Rapportera innan bygge",
  * fråga 1: hur många beslut per säsong kvalificerar med den nya regeln
  * (minst 2 av kriterierna namngiven person / irreversibelt / spänning),
  * i en typisk och en händelsefattig säsong? Om svaret är tjugo är

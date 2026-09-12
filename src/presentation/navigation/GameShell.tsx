@@ -106,7 +106,7 @@ export function GameShell() {
   // en redirect — så att den begärda routen ligger kvar när den blir klar.
   if (!hasHydrated) return null
   if (!game) return <Navigate to="/" replace />
-  // 3.1 (SLUTTEST_KO.md, 2026-08-17): GameShell täckte bara "inget game"-fallet.
+  // 3.1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): GameShell täckte bara "inget game"-fallet.
   // En sparkad manager kunde nå tillbaka till dashboard/squad/etc via bakåtknapp
   // eller en stale route-återinträde (t.ex. app-reload mellan avsked och
   // SeasonSummaryScreen.handleNextSeason:s engångsredirect till game-over) —

@@ -1,6 +1,6 @@
 /**
  * MÄTNING — socialMedia-ryktetickens koppling till placering (fix för
- * sidofynd B, DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, economyProcessor.ts:177-184).
+ * sidofynd B, docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, economyProcessor.ts:177-184).
  *
  * Bugg: +1 rykte var 5:e matchday när socialMedia är på, helt frikopplat
  * från placering. Mätt konsekvens (rapporterad i domen): club_malilla

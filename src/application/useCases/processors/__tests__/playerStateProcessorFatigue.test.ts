@@ -12,7 +12,7 @@ import {
 } from '../../../../domain/enums'
 import type { Tactic } from '../../../../domain/entities/Club'
 
-// B9 (SLUTTEST_KO.md, Jacobs dom 2026-08-19): positionsviktad fitnessförlust,
+// B9 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, Jacobs dom 2026-08-19): positionsviktad fitnessförlust,
 // normaliserad mot den FAKTISKA startelvans snitt per lag och match. Testar
 // domens hårda krav: laget totala/genomsnittliga fitnessförlust ska vara
 // OFÖRÄNDRAD, bara omfördelad — och att mittfältare (tyngre) faktiskt

@@ -124,7 +124,7 @@ function findSeedReachingFinal(maxSeeds: number): FinalRunResult {
 }
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: den generella `findSeedReachingFinal`
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: den generella `findSeedReachingFinal`
  * returnerar alltid FÖRSTA säsongen som når SM-final, oavsett om den råkar
  * ha något i deferredDecisions vid rollovern — ett rent "reaches final"-
  * villkor. Formationsomskrivningen (AI-klubbars activeTactic/heightMode
@@ -198,7 +198,7 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
     // OFÖRÄNDRAD garanti efter HIGH 11 — kön töms fortfarande helt.
     expect(game.deferredDecisions ?? []).toEqual([])
 
-    // HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md), §"Rollover — aldrig
+    // HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md), §"Rollover — aldrig
     // tyst": tomningen får inte längre vara TYST. Varje post som låg i kön
     // ska bära ett resolutionskvitto, medan inkorgen får högst EN samlad
     // rapport — aldrig en notis per gammalt beslut.

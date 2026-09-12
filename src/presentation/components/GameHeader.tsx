@@ -169,7 +169,7 @@ export function GameHeader() {
     showToast(true, '✓ Återställningsrapport exporterad')
   }
 
-  // U7 (SLUTTEST_KO.md, 2026-08-17): import skriver över den aktiva karriären
+  // U7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): import skriver över den aktiva karriären
   // — window.confirm som varning FÖRE, Jacobs beslut. Ingen ny modal-yta för
   // en operation som redan är sällsynt och destruktiv.
   async function handleImportSave() {

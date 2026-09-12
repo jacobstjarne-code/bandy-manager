@@ -1,5 +1,5 @@
 /**
- * fitnessRecoveryService.test.ts — A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md).
+ * fitnessRecoveryService.test.ts — A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md).
  *
  * Låser de tre egenskaper som gjorde att den GAMLA modellen spiralerade, så
  * att en återgång blir ett rött test och inte ett playtest-fynd om ett halvår:

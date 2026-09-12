@@ -172,7 +172,7 @@ function renderSteps(c: RippleChain | undefined): { text: string; dir: 'up' | 'd
   })
 }
 
-// U5 forts (SLUTTEST_KO.md, 2026-08-19/20): isOnCooldown mot "pivotal beats".
+// U5 forts (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19/20): isOnCooldown mot "pivotal beats".
 // "Pivotal" saknar en formell klassificering i kodbasen ännu (bara ett
 // storleksuppskattnings-omnämnande: "15-20 pivotal, 70-80 ambient" av
 // ~90-100 narrativa former — den riktiga taxonomin väntar på O11/

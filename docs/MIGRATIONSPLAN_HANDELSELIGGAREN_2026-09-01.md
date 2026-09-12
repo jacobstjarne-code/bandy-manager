@@ -1,6 +1,6 @@
 # MIGRATIONSPLAN — HÄNDELSELIGGAREN (strangler, stegvis)
 
-**Datum:** 2026-09-01 · **Av:** Opus · **Grund:** `DOM_HANDELSELIGGAREN_2026-09-01.md` (Jacob valde strangler) · **Typ:** exekverbar sekvens för lanes (Codex/Code), inte en dom. Varje fas är en lane-enhet.
+**Datum:** 2026-09-01 · **Av:** Opus · **Grund:** `docs/dom/DOM_HANDELSELIGGAREN_2026-09-01.md` (Jacob valde strangler) · **Typ:** exekverbar sekvens för lanes (Codex/Code), inte en dom. Varje fas är en lane-enhet.
 
 ## Invarianten (bryts aldrig)
 1. **Dual-write före läsflytt.** En källa skriver BÅDE sitt gamla minne OCH en liggarpost innan någon konsument flyttas.

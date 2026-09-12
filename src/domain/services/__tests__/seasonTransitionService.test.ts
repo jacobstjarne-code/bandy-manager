@@ -1,5 +1,5 @@
 /**
- * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18). Ren-funktions-täckning för hela
+ * 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18). Ren-funktions-täckning för hela
  * härledningskedjan — text är kopierad bokstavligt ur CODE_INSTRUKTION_
  * SOMMAREN_2026-08-17.md och Jacobs DOM samma dag.
  */

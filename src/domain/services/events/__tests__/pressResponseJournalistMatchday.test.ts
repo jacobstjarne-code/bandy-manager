@@ -1,5 +1,5 @@
 /**
- * A-L1 (SLUTTEST_KO.md): Efterklang visade "omg 0" för journalist-premissen.
+ * A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): Efterklang visade "omg 0" för journalist-premissen.
  *
  * Rotorsak: eventResolver.ts:s 'pressResponse'-hantering härledde "matchen
  * presskonferensen gäller" genom att skanna HELA game.fixtures (alla

@@ -41,7 +41,7 @@ export interface LineupEditor {
   /** true när elvan applicerades; false när konditionsgrinden tog över. */
   handleAutoFill: (mode?: AutoFillMode) => boolean
   /**
-   * A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: nuvarande elvas
+   * A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: nuvarande elvas
    * golvbrott. `forced` = truppen HADE inte elva spelklara över golvet;
    * `belowFloorStarters` = de som faktiskt står i elvan under det. Läses av
    * bekräftelsegrinden, som sitter på BESLUTET (elvan är satt), inte bara på
@@ -203,7 +203,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): namnet är historiskt (från
+  // A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): namnet är historiskt (från
   // innan suspension delade denna lista) — bär nu tre skilda otillgänglighets-
   // orsaker: skadad, avstängd, vilande/överbelastad efter förra matchens
   // sannolikhetskast. LineupStep.tsx grenar på vilken av de tre det är.
@@ -211,7 +211,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     .map(id => squadPlayers.find(p => p.id === id))
     .filter((p): p is Player => !!p && (p.isInjured || p.suspensionGamesRemaining > 0 || (p.restGamesRemaining ?? 0) > 0))
 
-  // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: golvbrottet i den elva
+  // A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: golvbrottet i den elva
   // som FAKTISKT står nu — oavsett om den kom från autofyll, nudge-förfyllningen
   // eller managerns egna tryck. Grinden sitter på beslutet, inte på en knapp.
   const floorBreach = useMemo(() => {
@@ -288,7 +288,7 @@ export function useLineupEditor(game: SaveGame | null | undefined, managedClub: 
     // samma urvalslogik med en annan (CA-dominant) formel.
     const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0)
     const { starters, rest, belowFloorStarters, shortfall, forced } = pickBestEleven(available, mode)
-    // A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: "Autofyll får aldrig
+    // A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1: "Autofyll får aldrig
     // TYST starta under golvet." Den tvingade fyllningen APPLICERAS INTE — den
     // parkeras tills managern bekräftat. Att lägga grinden här (före) istället
     // för som en ångra-knapp (efter) är det enda som gör valet till hans:

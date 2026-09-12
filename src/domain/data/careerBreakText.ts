@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN, textpool (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN, textpool (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * SVENSK TEXT LEVERERAD AV OPUS 2026-08-29. Tonen är bandysvensk
  * understatement — konkret bild framför sammanfattning, ingen tröst och ingen
@@ -114,7 +114,7 @@ export const CAREER_BREAK_ACCEPT_CTA = 'Ta stolen'
 // ── Steg 2b: ingen ringde (skärpning 3) ────────────────────────────────────
 
 /**
- * ORDAGRANT UR DOMEN (DOM_TRANARMARKNADEN_2026-08-26.md rad 46) — Jacobs
+ * ORDAGRANT UR DOMEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md rad 46) — Jacobs
  * egen text, inte en platshållare. Ändras inte utan ny dom.
  */
 export const CAREER_BREAK_NO_CALL_TITLE = 'Ingen ringde den här gången.'

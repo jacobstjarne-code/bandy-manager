@@ -183,7 +183,7 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     // på good/bad/refused). {N} = första (äldsta) entryns matchday.
     const firstMem = sortedMemories[0]
     const ev = firstMem?.event ?? ''
-    // A-L1 (SLUTTEST_KO.md) — nollvärdesvakt: matchday 0 är alltid en
+    // A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md) — nollvärdesvakt: matchday 0 är alltid en
     // föregångare-sentinel (preseason/uninitialiserat, currentMatchday startar
     // på 0 i createNewGame.ts), aldrig en riktig omgång att visa. `?? round`
     // fångar bara null/undefined — 0 är varken, så det slank igenom och

@@ -300,7 +300,7 @@ function applyPatronHappiness(game: SaveGame, amount: number): SaveGame {
     pendingEvents: newEvents.length > 0
       ? [...(game.pendingEvents ?? []), ...newEvents]
       : game.pendingEvents,
-    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, uttågshalvan.
+    // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, uttågshalvan.
     eventLedger: transition.ledgerEntry ? logEvent(game, transition.ledgerEntry) : game.eventLedger,
   }
 }
@@ -962,7 +962,7 @@ export function resolveEvent(
       // Update journalist memory
       if (updatedGame.journalist) {
         // B1 — premiss-anchor: matchen presskonferensen faktiskt gäller.
-        // A-L1 (SLUTTEST_KO.md, rotorsak): tidigare gissades "senaste ligamatchen"
+        // A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, rotorsak): tidigare gissades "senaste ligamatchen"
         // fram genom att skanna HELA game.fixtures (alla säsonger) efter högst
         // .roundNumber — fel fält (roundNumber nollställs varje säsong, är inte
         // den globala spelordningen — se CLAUDE.md: använd ALDRIG roundNumber för
@@ -1084,7 +1084,7 @@ export function resolveEvent(
       break
     }
     case 'renewCommunityActivity': {
-      // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+      // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
       // Samma 2.5-vaktsdisciplin som setCommunity ovan: utan communityKey vet
       // resolvern inte VILKEN klocka som ska nollställas, och en tyst no-op
       // hade tagit betalt utan att ge något.
@@ -1120,7 +1120,7 @@ export function resolveEvent(
       try {
         const p = JSON.parse(rawPatron)
         if (!p.name || !p.business) throw new Error("effect 'spawnPatron': parsad data saknar obligatoriskt fält name/business")
-        // DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som
+        // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som
         // Mecenat/setupManagedClub.ts:s generatePatron (namn+säsong).
         const patronId = `patron_${String(p.name).split(' ')[0].toLowerCase()}_${updatedGame.currentSeason}`
         updatedGame = {
@@ -1142,7 +1142,7 @@ export function resolveEvent(
             demands: [],
           },
         }
-        // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, Fas 4+-
+        // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, Fas 4+-
         // mönstret (samma som recentMoments/ripple-kedjorna). Skrivs bara vid
         // en genuin anskaffning (madeByPlayer, dvs 'welcome'/'cautious' — den
         // enda vägen hit; 'decline' använder effekten 'noOp' och når aldrig
@@ -1396,7 +1396,7 @@ export function resolveEvent(
               }
               updatedGame = { ...updatedGame, captainPlayerId: sub.targetPlayerId }
             } else if (sub.type === 'reduceBurnout') {
-              // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): burnoutRelief-eventets
+              // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, 2026-08-23): burnoutRelief-eventets
               // tre handlingar. amount är alltid negativt (sänker), samma
               // clamp 0-100 som updateManagerBurnout (managerProfileService.ts).
               if (updatedGame.managerProfile) {
@@ -2616,7 +2616,7 @@ export function resolveEvent(
   }
 
   // Mark event resolved and remove from pendingEvents
-  // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 1/9. semanticKey =
+  // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 1/9. semanticKey =
   // event.type — grovkornigt (skiljer inte t.ex. varsel mot olika
   // arbetsgivare), avsiktligt: DOM:en säger uttryckligen att finkorniga
   // semanticKey-beslut tas EFTER att loggen finns, inte som förarbete här.
@@ -2693,7 +2693,7 @@ export function resolveEvent(
   }
 
   // ── Post-resolution storyline generation ────────────────────────────────
-  // 4.6 (SLUTTEST_KO.md, 2026-08-17): getCurrentLeagueRound, inte en
+  // 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): getCurrentLeagueRound, inte en
   // inline-reimplementation — se kommentaren vid importen/rad ~398 för varför.
   const currentMatchday = getCurrentLeagueRound(updatedGame)
 
@@ -2809,7 +2809,7 @@ export function resolveEvent(
             matchday: currentMatchday,
             playerId: captain.id,
             clubId: updatedGame.managedClubId,
-            // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
+            // 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
             // kommentaren vid went_fulltime_pro-storylinen ovan för rotorsak.
             description: 'Kaptenen samlade laget efter en svår period',
             displayText: 'Kaptenen samlade laget efter en svår period',
@@ -2876,7 +2876,7 @@ export function resolveEvent(
             matchday: currentMatchday,
             playerId,
             clubId: game.managedClubId,
-            // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
+            // 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — se
             // kommentaren vid went_fulltime_pro-storylinen (eventResolver.ts
             // rad ~405) för rotorsak.
             description: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
@@ -2904,7 +2904,7 @@ export function resolveEvent(
   // defensivt skydd, inte den förväntade vägen.
   //
   // updatedGame.currentMatchday (GLOBAL), INTE den lokala `currentMatchday`
-  // ovan (4.6, SLUTTEST_KO.md — den är medvetet getCurrentLeagueRound för
+  // ovan (4.6, docs/archive/historiska-statuskallor/SLUTTEST_KO.md — den är medvetet getCurrentLeagueRound för
   // storyline-generering). managerProfile.diary:s ANDRA poster (burnout_peak/
   // era_shift, roundProcessor.ts) skrivs redan på GLOBAL skala — att blanda
   // in en ligarond-stämplad post i samma array hade återskapat exakt den
@@ -3121,7 +3121,7 @@ export function resolveEvent(
       updatedGame.sourceCooldowns ?? {},
       eventSource as SourceKey,
     )
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 6/9. Egen
+    // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 6/9. Egen
     // semanticKey (source_{eventSource}) — grovare gruppering än event.type
     // (skriv väg 1), flera event-typer kan dela samma källa.
     // Fas 3 (2026-09-02): global matchday, samma skalstandardisering som

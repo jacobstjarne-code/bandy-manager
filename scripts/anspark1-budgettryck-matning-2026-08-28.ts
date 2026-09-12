@@ -1,6 +1,6 @@
 /**
  * MEASUREMENT-ONLY. Anspråk 1 (DOM_FRAMGANGSKURVAN_2026-08-27), BUDGETTRYCK —
- * ersätter marginalmåttet. Se DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md
+ * ersätter marginalmåttet. Se docs/dom/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md
  * (auktoritativ körorder). De tre tidigare passen
  * (anspark1-condition2-boardexpectation-, anspark1-condition2-absolut-,
  * anspark1-villkor-omdesign-matning-2026-08-28.ts) mätte en sällsynt

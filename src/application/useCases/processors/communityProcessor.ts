@@ -285,7 +285,7 @@ export function processCommunity(
     upkeepBoost += getActiveVolunteerBonus(activeVolunteers, roster).csBoostPerRound
   }
 
-  // ANSPRÅK 4, knapp 1 (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): samma insats
+  // ANSPRÅK 4, knapp 1 (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): samma insats
   // håller mindre när klubben vuxit. Skalas HÄR, alltså före den CS-baserade
   // dämpningen längre ned — en stor klubb vid hög CS träffas medvetet av BÅDA
   // (rep-faktor × cs-faktor), och att kombinationen lämnar holdbarheten intakt

@@ -94,7 +94,7 @@ export const REACTION_TYPES = new Set<GameEventType>([
  * - Otherwise → 'inbox-only'
  *
  * Ambient-regeln (A-H10, SEXSÄSONGSAUDITEN 2026-08-26 + D1
- * DOM_D1_EVENTVIKTNING_2026-08-19.md): ett event utan val (choices.length === 0)
+ * docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md): ett event utan val (choices.length === 0)
  * får ALDRIG räknas som ett blockerande 'critical'-event — Granskas
  * unresolvedCritical-räknare (GranskaScreen.tsx) stänger av "Fortsätt" så länge
  * räknaren är > 0, men DecisionCard har inga knappar att rendera för ett event

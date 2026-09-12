@@ -1,5 +1,5 @@
 /**
- * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — integrationstest för
+ * 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — integrationstest för
  * seasonEndProcessor.ts:s nya skrivväg till game.pendingSeasonTransitionEvents
  * (retired/contractExpired/aged) och utbrändhetens övergångsåterhämtning.
  * Ren-funktionslogiken (formattering, prioritering) är redan täckt av

@@ -10,7 +10,7 @@ import { Icon } from '../primitives/Icon'
 import { Overlay } from '../primitives/Overlay'
 
 /**
- * FatigueFloorConfirm — A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1.
+ * FatigueFloorConfirm — A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1.
  *
  * "Autofyll får aldrig TYST starta under golvet. När den tvingas ska den
  *  (a) varna synligt, (b) föreslå konkret utväg — akademikallelse eller

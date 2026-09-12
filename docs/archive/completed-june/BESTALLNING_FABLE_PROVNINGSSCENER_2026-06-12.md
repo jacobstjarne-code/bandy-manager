@@ -1,7 +1,7 @@
 # BESTÄLLNING → FABLE — Prövningens processteg (B1 fortsättning)
 
 **Datum:** 2026-06-12 · **Av:** Opus
-**Status uppströms:** B1-mocken SLUTGODKÄND (se SLUTSTATUS i `docs/REVIEW-B1-MOCK-OPUS-2026-06-12.md` — K1/K2 verifierade åtgärdade). Din §6 "Öppet till Opus" är besvarad i samma dokument: **"Själ" behålls** med datadefinition (Själ = klack-relation + identitetsvärde; Publik = antal + intäkt), och gaffelns röster är **två i ingången, röstprogression per processteg** därefter. Mekaniken är låst i `docs/SPEC_MATCHHALL_PROVNING_2026-06-12.md`. All copy är färdigskriven i `docs/TEXTPOOLER_PROVNING_2026-06-12.md` — **använd den ordagrant, ingen placeholdertext.**
+**Status uppströms:** B1-mocken SLUTGODKÄND (se SLUTSTATUS i `docs/REVIEW-B1-MOCK-OPUS-2026-06-12.md` — K1/K2 verifierade åtgärdade). Din §6 "Öppet till Opus" är besvarad i samma dokument: **"Själ" behålls** med datadefinition (Själ = klack-relation + identitetsvärde; Publik = antal + intäkt), och gaffelns röster är **två i ingången, röstprogression per processteg** därefter. Mekaniken är låst i `docs/spec/SPEC_MATCHHALL_PROVNING_2026-06-12.md`. All copy är färdigskriven i `docs/TEXTPOOLER_PROVNING_2026-06-12.md` — **använd den ordagrant, ingen placeholdertext.**
 
 ## Beställningen: gaffel-ytan som process-hub, två stadier + ett decision-kort
 

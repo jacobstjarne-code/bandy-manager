@@ -3,7 +3,7 @@
 **Datum:** 2026-05-08
 **Författare:** Opus
 **Status:** SPEC v2 — variants-arkitektur + uppdaterade texter + korrigerade trigging-villkor
-**Beroende:** `docs/SPEC_CUP_ANSLAG_2026-05-08.md` (datastruktur + pickAnslagVariant). Cup-anslag är redan implementerat (commit `5921d95`).
+**Beroende:** `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md` (datastruktur + pickAnslagVariant). Cup-anslag är redan implementerat (commit `5921d95`).
 
 ---
 

@@ -102,7 +102,7 @@ export function GameOverScreen() {
     return gameOverBoardStatement(legacyTruth, managedClub?.name)
   }
 
-  // 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. Route-
+  // 3.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) Kontrakt A — två vägar, inte en. Route-
   // state ger historiken sitt snapshot direkt, men "Se karriären" lämnar
   // också den canonical sparfilen orörd i store/IndexedDB. Vid sidladdning
   // försvinner route-state; HistoryScreen faller då tillbaka till den

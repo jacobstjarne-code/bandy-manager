@@ -4,7 +4,7 @@ import { getBoardPatienceZone } from '../../../../domain/services/portal/boardPa
 /**
  * Minimal-kort: styrelsens tålamod, som kvalitativ zon.
  *
- * 3.2 (SLUTTEST_KO.md, 2026-08-17): ingen produktionsyta läste boardPatience
+ * 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): ingen produktionsyta läste boardPatience
  * före GameOverScreen — ett avsked kunde komma utan att spelaren någonsin
  * sett en varning. Detta kort gör zonen ALLTID synlig (samma alwaysTrue-
  * mönster som SquadStatusMinimal/FormStatusMinimal/EconomyMinimal), så

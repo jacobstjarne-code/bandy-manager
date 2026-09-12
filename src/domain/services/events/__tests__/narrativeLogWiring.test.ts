@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 
 /**
- * U5 (SLUTTEST_KO.md, 2026-08-17) — narrativeBeatLog-skrivväg 1/9 (resolvedEventIds)
+ * U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — narrativeBeatLog-skrivväg 1/9 (resolvedEventIds)
  * och 6/9 (sourceCooldowns), båda i eventResolver.ts:s resolveEvent().
  */
 function makeGame() {

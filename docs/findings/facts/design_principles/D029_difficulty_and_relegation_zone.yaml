@@ -27,7 +27,7 @@ invariants:
   - "value.RELEGATION_ZONE_SIZE <= 4"
 related_facts: [D028]
 notes: |
-  U1 (SLUTTEST_KO.md, 2026-08-17) — "det största fyndet i hela testserien":
+  U1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — "det största fyndet i hela testserien":
   offerSelectionService.ts satte difficulty ENBART från reputation (hard
   <55). Skutskär (rep 52, AvoidBottom-krav — det lägsta som finns, sund
   ekonomi 4.2x lönebudget) klassades "hard" trots att jobbet objektivt var

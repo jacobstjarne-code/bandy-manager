@@ -1,4 +1,4 @@
-// E-STRESS1 (2026-08-23, BACKLOG.md): ingen headless körning byggde någonsin
+// E-STRESS1 (2026-08-23, docs/archive/historiska-statuskallor/BACKLOG.md): ingen headless körning byggde någonsin
 // en anläggningsnod — O5 kraft 2 kunde bara verifieras analytiskt. Denna
 // minimala byggpolicy låter stress-infrastrukturen faktiskt bygga.
 import { describe, it, expect } from 'vitest'

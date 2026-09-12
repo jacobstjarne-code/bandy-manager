@@ -84,7 +84,7 @@ export function TilltradeScreen() {
     return { data, attackers, defenders }
   }, [game])
 
-  // Mobilflöde-verifiering (SLUTTEST_KO.md, Grind 0-resten, 2026-08-22):
+  // Mobilflöde-verifiering (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, Grind 0-resten, 2026-08-22):
   // navigate() anropades tidigare direkt i render-kroppen som tre villkorade
   // early returns — React varnade "Cannot update a component while rendering
   // a different component" (upptäckt vid en riktig genomklickning av

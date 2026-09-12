@@ -182,7 +182,7 @@ function getSignatureEmojiFromRubric(rubric: string): string {
  * inte markerat en innehållsövergång. Ingen omflyttning av innehåll.
  */
 /**
- * Å11-residual (SLUTTEST_KO.md, 6.4 post 21, 2026-08-20) — DS-regel 12 en
+ * Å11-residual (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 6.4 post 21, 2026-08-20) — DS-regel 12 en
  * nivå upp: "Truppen"-kapitlet ska inte rendera en rubrik ovanför tomrum
  * när BÅDA korten under den (Säsongens bästa + Svenska Cupen) gatas bort.
  */
@@ -360,7 +360,7 @@ export function SeasonSummaryScreen() {
     )
   }
 
-  // H7 (SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): "Delningsknappen fastnar i
+  // H7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SEXSÄSONGSAUDITEN): "Delningsknappen fastnar i
   // 'Genererar bild…', återgår aldrig". Rotorsak: handleShare hade varken
   // try/finally (ett okatchat kast i shareSeasonImage — se seasonShareImage.ts
   // — lämnade `sharing` på true för evigt) eller en bortre gräns för hur
@@ -436,7 +436,7 @@ export function SeasonSummaryScreen() {
     if (game.managerFired) {
       navigate('/game/game-over', { replace: true })
     } else {
-      // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): efter årsbokens "Starta
+      // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): efter årsbokens "Starta
       // säsong"-knapp, före portalen. handleNextSeason nås bara efter att en
       // säsong redan avslutats (seasonEndProcessor har redan höjt
       // currentSeason), så "från säsong 2 och framåt" gäller strukturellt
@@ -813,7 +813,7 @@ export function SeasonSummaryScreen() {
           )
         })()}
 
-        {/* Å11-residual (SLUTTEST_KO.md, 6.4 post 21, 2026-08-20): kapitelrubriken
+        {/* Å11-residual (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 6.4 post 21, 2026-08-20): kapitelrubriken
             var ovillkorlig även när BÅDA korten under den (Säsongens bästa +
             Svenska Cupen) gatas bort av DS-regel 12 — samma klass av fel en
             nivå upp, en rubrik ovanför tomrum. */}
@@ -821,7 +821,7 @@ export function SeasonSummaryScreen() {
         <ChapterDivider label="Truppen" />
         )}
 
-        {/* SEASON'S BEST — Å11 (SLUTTEST_KO.md, 2026-08-18, DS-regel 12): kortet
+        {/* SEASON'S BEST — Å11 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18, DS-regel 12): kortet
             renderade tidigare ovillkorligt även när alla fem award-fälten var
             null (för få matcher/data för säsongen) — en rubrik ovanför ett
             tomt grid. "✕ betyder att sektionen inte renderas. Inte ett tomt
@@ -1082,7 +1082,7 @@ export function SeasonSummaryScreen() {
           </div>
         )}
 
-        {/* O18 fält 2, uppdaterad A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
+        {/* O18 fält 2, uppdaterad A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md):
             säsongens viktigaste beslut — en färdig mening, ingen mall.
             Raden ska ALLTID synas nu, aldrig tiga — seasonEndProcessor.ts
             sätter en låst fallback-text ("Inget beslut stack ut i
@@ -1126,7 +1126,7 @@ export function SeasonSummaryScreen() {
           )
         })()}
 
-        {/* DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som
+        {/* docs/dom/DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — "Din säsong som
             tränare". managerProfile.diary för säsongen. Rubrik + inramnings-
             mening väntar på Opus (samma disciplin som resten av kortet);
             dagboksradernas EGEN text är redan skriven vid entry-tillfället,

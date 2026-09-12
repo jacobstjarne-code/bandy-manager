@@ -1,6 +1,6 @@
 fact_id: D037
 category: design_principles
-claim: "Anspråk 4 / ortsunderhållet (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): när klubben vuxit har orten stigit i sina förväntningar. Managerns ortsinsats (aktivitets- + volontär-csBoost) skalas med en KONTINUERLIG rykte-ramp (csUpkeepFactor), och en rykte-skalad baslinjedrag (csExpectationDrag) biter oavsett matchresultat. Båda ramperna delar golv/tak — EN storleksaxel, aldrig en diskret era-/ryktetröskel (D031:s felklass, flyttad från cs-axeln till rykte-axeln). Bara positiva boostar skalas; negativ csBoost (förlust, skandal) är orörd."
+claim: "Anspråk 4 / ortsunderhållet (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md): när klubben vuxit har orten stigit i sina förväntningar. Managerns ortsinsats (aktivitets- + volontär-csBoost) skalas med en KONTINUERLIG rykte-ramp (csUpkeepFactor), och en rykte-skalad baslinjedrag (csExpectationDrag) biter oavsett matchresultat. Båda ramperna delar golv/tak — EN storleksaxel, aldrig en diskret era-/ryktetröskel (D031:s felklass, flyttad från cs-axeln till rykte-axeln). Bara positiva boostar skalas; negativ csBoost (förlust, skandal) är orörd."
 value:
   CS_UPKEEP_REP_FLOOR: 80
   CS_UPKEEP_REP_CEIL: 100
@@ -9,7 +9,7 @@ value:
 unit: "rykte (0-100) för golv/tak; faktor (andel) för FACTOR_CEIL; communityStanding-poäng per omgång för DRAG_CEIL"
 source:
   type: measurement
-  doc: "docs/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md; scripts/ansprak4-ortsunderhall-matning-2026-08-30.ts; src/domain/services/communityStandingScaling.ts"
+  doc: "docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md; scripts/ansprak4-ortsunderhall-matning-2026-08-30.ts; src/domain/services/communityStandingScaling.ts"
   decided_by: code
 verified_at: 2026-08-30
 verified_by: code
@@ -199,7 +199,7 @@ notes: |
   value-blocket ovan är OFÖRÄNDRAT — alla fyra magnituder står. Det som ändrats
   är att ommätningens slutsats ("GODKÄNT NÄR 1 fortsatt DELVIS UPPFYLLT av
   oförändrat skäl — aktivitetsblocket är intäktspositivt") nu har fått sin
-  åtgärd: DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md (Jacobs mandat, väg A) och
+  åtgärd: docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md (Jacobs mandat, väg A) och
   D038, nyhetstretmillen. En tredje spak lägger en VERKLIG kostnad på att hålla
   orten fräsch och krymper överskjutningen med 77 %.
   Två saker att veta när du läser den här filens tal:

@@ -300,7 +300,7 @@ export function selectMatchensSamband(input: MatchensSambandInput): string[] | n
     }
   }
 
-  // ── L. Liberon som syndabock (B7, SLUTTEST_KO.md, SAMMANSLAGEN MED B12
+  // ── L. Liberon som syndabock (B7, docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SAMMANSLAGEN MED B12
   //     2026-08-19) — se evaluateLiberoSyndabockCandidate nedan för varför
   //     detta nu är byggbart (DOM_FORMATIONER_V2). Oberoende av taktikval
   //     (som G) — libero är obligatorisk i alla sex formationer, ingen
@@ -364,7 +364,7 @@ export function selectMatchensSamband(input: MatchensSambandInput): string[] | n
 }
 
 /**
- * B7 "liberon som syndabock" (SLUTTEST_KO.md, SAMMANSLAGEN MED B12
+ * B7 "liberon som syndabock" (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, SAMMANSLAGEN MED B12
  * 2026-08-19) — ursprungligen blockerad på två hål: (1) libero fanns bara
  * som slot i EN formation (5-3-2), (2) slot-tilldelningen sparades aldrig
  * per match. DOM_FORMATIONER_V2 (18ff34e3) löste båda: alla sex

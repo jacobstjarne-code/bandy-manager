@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md), sömmen.
+ * O13 / M11 — TRÄNARMARKNADEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md), sömmen.
  *
  * Domens enda verkliga nybyggnad: "att byta `managedClubId` utan att generera
  * en ny värld". Den var omöjlig eftersom allt klubbspecifikt (styrelse,
@@ -79,7 +79,7 @@ export function generatePatron(
     : undefined
 
   return {
-    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som Mecenat
+    // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — samma id-mönster som Mecenat
     // (mecenat_${namn}_${säsong}).
     id: `patron_${profile.first.toLowerCase()}_${season}`,
     name: `${profile.first} ${profile.last}`,

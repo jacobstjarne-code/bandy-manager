@@ -25,7 +25,7 @@ export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSele
   const [view, setView] = useState<'offers' | 'all'>('offers')
   const [isStarting, setIsStarting] = useState(false)
 
-  // O10 seed-i-länk (GO 2026-09-08, BACKLOG.md:55): en delad länk bär
+  // O10 seed-i-länk (GO 2026-09-08, docs/archive/historiska-statuskallor/BACKLOG.md:55): en delad länk bär
   // ?seed=<tal> i stället för Jacobs egen slump. Samma seed ger samma tre
   // klubberbjudanden (selectThreeOffers nedan) OCH — vidarebefordrat till
   // newGame() i handleSelect — samma värld när mottagaren väljer en klubb.

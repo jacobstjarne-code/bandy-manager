@@ -1,4 +1,4 @@
-// O1/SPÅR B B4-fixet (2026-08-23, DOM_SPARB_TEXTNIVAER_2026-08-21.md): getStreakState
+// O1/SPÅR B B4-fixet (2026-08-23, docs/dom/DOM_SPARB_TEXTNIVAER_2026-08-21.md): getStreakState
 // ska läsa game.trainerArc — SAMMA consecutiveWins/consecutiveLosses som boardPatience
 // mäter — aldrig en egen omräkning ur fixtures. Ingen testfil fanns tidigare för denna
 // fil; täcker bara getStreakState, inte hela roundCharacter.ts.

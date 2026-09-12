@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 
 /**
- * DOMLOGG_2026-08-31.md §3-A (D-2026-08-31-A) — communityActivitiesEvents.ts's
+ * docs/dom/DOMLOGG_2026-08-31.md §3-A (D-2026-08-31-A) — communityActivitiesEvents.ts's
  * "Anläggningsrenovering" lovade i undertexten "-25 tkr · 🏗️ +15 faciliteter"
  * (renovate) och "faciliteter försämras" (wait), men gav bara reputation +5
  * respektive noOp. Undertexten ÄR speccen — regressionstest på faktisk effekt.

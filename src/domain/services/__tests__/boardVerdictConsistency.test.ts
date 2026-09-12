@@ -1,7 +1,7 @@
 /**
  * Skutskär-auditens test 2 (P0 sanningskontrakt): "för varje placering/
  * förväntan/objective-kombination ska portalzon, årsboksdom och avskedsrisk
- * ge en gemensamt förklarbar utsaga." Matchar BACKLOG.md:s öppna rad i
+ * ge en gemensamt förklarbar utsaga." Matchar docs/archive/historiska-statuskallor/BACKLOG.md:s öppna rad i
  * "Två läsare, en sanning" — tre formler (computeBoardPatienceUpdate,
  * computeSeasonVerdictRating, evaluateBoard) om samma fråga ("är styrelsen
  * nöjd?"), historiskt med olika indata. Skutskär 8:a av 12 (verklig
@@ -18,7 +18,7 @@
  * läser nu SAMMA boardPatience-värde som getBoardPatienceZone (se
  * boardService.ts:s kommentar på funktionen). `it.fails()` borttaget: alla
  * kombinationer är nu mekaniskt garanterade att inte säga emot varandra,
- * inte bara verifierade för den gamla kalibreringen. BACKLOG.md:s "Två
+ * inte bara verifierade för den gamla kalibreringen. docs/archive/historiska-statuskallor/BACKLOG.md:s "Två
  * läsare, en sanning"-rad (styrelsens nöjdhet) stängd i samma commit.
  */
 import { describe, it, expect } from 'vitest'

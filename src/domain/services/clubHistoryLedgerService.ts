@@ -304,7 +304,7 @@ export function buildYouthAgedOutLedgerEntry(input: {
 }
 
 /**
- * liggare-ny-board-verdict (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * liggare-ny-board-verdict (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
  * styrelsens säsongsdom, satt vid säsongsslut ur samma redan beräknade
  * `boardTruth`/`objectiveOutcome` seasonEndProcessor.ts fryser till
  * `SeasonSummary`. En post, inte en ny modell.
@@ -336,7 +336,7 @@ export function buildBoardVerdictLedgerEntry(input: {
 }
 
 /**
- * liggare-ny-license-event (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * liggare-ny-license-event (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
  * significance 50/75/95 per MASTER_OPPET-radens skiss. 'cleared' delar
  * 'first_warning'-tröskeln (50) — båda är "zonen ändrades, måttligt
  * anmärkningsvärt", inte de eskalerande brotten 'point_deduction'/
@@ -372,7 +372,7 @@ export function buildLicenseEventLedgerEntry(input: {
 }
 
 /**
- * liggare-ny-facility-trial-outcome (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md
+ * liggare-ny-facility-trial-outcome (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md
  * §3): significance 50/65 per MASTER_OPPET-radens skiss — "50 (65 vid
  * nej/nedlagd)". Ett rent röstningsbordläggning ('bordlagd'-outcome) är den
  * enda som stannar på 50; alla nej-svar och alla nedlagd-utfall (oavsett

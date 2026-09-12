@@ -1,6 +1,6 @@
 # ILLUSTRATIONER — KATALOG OCH PROMPTAR (komplett, 2026-09-04)
 
-**Av:** Opus · **Regler:** `DOM_ILLUSTRATIONERNA_2026-08-18.md` + tillägg 2026-09-04 · **Ledger:** MASTER `fable-scen-konst` · **Generering:** Jacob, Gemini/Nano Banana, **samma seed genom hela serien**.
+**Av:** Opus · **Regler:** `docs/dom/DOM_ILLUSTRATIONERNA_2026-08-18.md` + tillägg 2026-09-04 · **Ledger:** MASTER `fable-scen-konst` · **Generering:** Jacob, Gemini/Nano Banana, **samma seed genom hela serien**.
 Det här är det enda stället promptarna bor. Alla 28 är fullständiga och körbara som de står. Det som redan är genererat har ✅ — prompten står kvar för omtag.
 
 ---

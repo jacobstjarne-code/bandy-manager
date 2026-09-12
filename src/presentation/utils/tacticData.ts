@@ -5,7 +5,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 export interface TacticRow {
   label: string
   key: keyof Tactic
-  /** DOM_FORMATIONER_V2_2026-09-04.md: värdeblocket (string[]) var bara för
+  /** docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: värdeblocket (string[]) var bara för
    *  'press', nu borttaget som eget fält (heightMode härleds ur formationen
    *  i stället). Ingen kvarvarande rad använder array-formen — typen står
    *  kvar bakåtkompatibel, inte aktivt använd. */

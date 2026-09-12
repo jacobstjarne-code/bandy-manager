@@ -1,7 +1,7 @@
 # AUDIT — Introflödets sidfot: en enda gå-vidare-mall
 
 **Från:** Design-Claude · **Datum:** 2026-07-10 · **Format:** coded findings (som Valet-scen-auditen)
-**Koder:** Jacobs, ur `docs/BACKLOG.md` (PLAYTEST-RUNDA 2026-07-10). Mappning nedan.
+**Koder:** Jacobs, ur `docs/archive/historiska-statuskallor/BACKLOG.md` (PLAYTEST-RUNDA 2026-07-10). Mappning nedan.
 **Scope:** ramen, inte innehållet. Scenen (ArrivalScene), taktiktavlan (LineupStep) och hörnövningen (CornerInteraction) är diegetiska och rätt — de rörs inte. Granskad yta = **gå-vidare-knappen** genom hela introt, plus två närliggande ram-frågor (match-live-toppen, LedgerFrame-stämpeln).
 
 Interaktiv version: `Sidfots-konformans — introflödet.dc.html`.
@@ -89,7 +89,7 @@ Uppgifts-topparna varierar (HÖRNA · FRISLAG · STRAFF · KONTRING · SLUTMINUT
 ### TG-1 · Ledger-stämpeln (= PT-4) — **LANDAD 2026-07-13**
 - **Fynd:** ledger-stämpeln är fasens enda framåt-handling — samma jobb som "Sätt igång →" och "Första omgången →", alltså en sidfot. Den renderades i mono (samma familj som `.interaction-cta-copper` och `.report-cta`) och läste som matchdata. En ram-som-lånat-innehållets-typsnitt-miss.
 - **Status:** Code stängde **PT-4 2026-07-13**: `.lf-stamp` bytte `font-family` från `--font-mono` till `--font-body` (matchar `.btn-cta`). Box-modellen orörd, bara typografin. Konflikten mot LEDGERFRAME-handoffen avgjordes **till flödets fördel**.
-- **Grundning:** `docs/BACKLOG.md` PT-4 (stängd) · `ledger.css .lf-stamp`.
+- **Grundning:** `docs/archive/historiska-statuskallor/BACKLOG.md` PT-4 (stängd) · `ledger.css .lf-stamp`.
 - **Residual (Jacobs dom):** `HANDOFF-LEDGERFRAME §1` säger fortfarande "stämpel = mono" och ljuger nu mot koden — uppdatera §1 så mono inte återinförs vid nästa ledger-arbete. Konsekvens: att stämpeln lämnade mono *för att den avancerar* stärker SF-3-domen (hörnans commit bör bli mallen i introt av samma skäl).
 
 ---

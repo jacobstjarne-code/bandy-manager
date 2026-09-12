@@ -29,7 +29,7 @@ export type FinanceReason =
   | 'patron'
   | 'mecenat'
   | 'kommunbidrag'             // säsongsstart, economyService.ts (rykte+CS)
-  | 'kommunbidrag_politiker'   // säsongsslut, politicianService.ts (CS+ungdom+agenda+relation) — DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md: två avsiktliga källor, skilda etiketter så en framtida reason-aggregering inte konflaterar dem
+  | 'kommunbidrag_politiker'   // säsongsslut, politicianService.ts (CS+ungdom+agenda+relation) — docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md: två avsiktliga källor, skilda etiketter så en framtida reason-aggregering inte konflaterar dem
   | 'kommunstod'               // engångsbidrag, contextualSponsorService.ts (kontinuerlig CS-skala, tak 80k, en gång/säsong) — TREDJE oberoende kommun-mekanismen, hittad via financelog-gap-diagnos-2026-09-01.ts, tidigare helt olöggad
   | 'board_objective'          // förtroendepott, boardObjectiveService.ts (62 500 kr vid två raka flagship-mål) — hittad via financelog-gap-diagnos-2026-09-01.ts, tidigare helt olöggad
   | 'facility_upkeep'
@@ -125,7 +125,7 @@ export function deriveKassaHistory(log: FinanceEntry[], currentBalance: number):
  * Publikandelen (0-1), delad av calcRoundIncome (intäkt) och calcAttendance
  * (den siffra spelaren faktiskt ser) — var tidigare duplicerad, oberoende,
  * identisk formel på två ställen (samma klass av risk som "två licenssystem",
- * RAPPORT_LICENSNEKAN_MEKANIK_OCH_RADDNINGSBARHET_2026-08-25.md).
+ * docs/rapport/RAPPORT_LICENSNEKAN_MEKANIK_OCH_RADDNINGSBARHET_2026-08-25.md).
  *
  * communityStanding-termen (Jacobs dom 2026-08-25, RAPPORT_MATCHINTAKT_VIKT_
  * OCH_COMMUNITYSTANDING_2026-08-25.md): "en klubb som betyder något för orten
@@ -159,7 +159,7 @@ const TOP_POSITION_BONUS_MAX = 0.25
 
 /**
  * ANSPRÅK 4, spak 3 — VÄG C (Jacobs beslut 2026-08-31,
- * DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C"). `freshnessFactor` är
+ * docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C"). `freshnessFactor` är
  * klubbens `getOrtFreshnessFactor` (communityRenewalService.ts): hur färskt
  * ortsprogrammet är, ∈ [ORT_FRESHNESS_FLOOR, 1]. Default 1 = ingen påverkan,
  * vilket gäller varje anropare som inte är den hanterade klubben (AI-klubbar
@@ -278,7 +278,7 @@ export interface CalcRoundIncomeParams {
 }
 
 // O5 kraft 1 — löneinflation med rykte (Jacobs dom 2026-08-17,
-// DOM_FRAMGANGSEKONOMIN_2026-08-17.md, byggd 2026-08-23 efter Grind 1
+// docs/dom/DOM_FRAMGANGSEKONOMIN_2026-08-17.md, byggd 2026-08-23 efter Grind 1
 // passerade). Samma kurva som kommunbidragets repFactor nedan
 // (0.5–1.5 över rykte 0-100) — en sanning, ett ställe, återanvänd här
 // istf en andra oberoende gissning. rep 50 (ligans mitt) ≈ 1.0x
@@ -288,7 +288,7 @@ export function reputationSalaryMultiplier(reputation: number): number {
 }
 
 // ── O5 kraft 1, prestationsfaktor på lönekravet (Jacobs dom 2026-08-27,
-// DOM_FRAMGANGSKURVAN_2026-08-27.md, anspråk 1 — "Truppen vill ha det den
+// docs/dom/DOM_FRAMGANGSKURVAN_2026-08-27.md, anspråk 1 — "Truppen vill ha det den
 // är värd"). Rykte skalade redan lönekravet (ovan); denna faktor lägger
 // SÄSONGSPRESTATION ovanpå — en skyttekung ska kosta mer än en reserv med
 // samma currentAbility. Formeln (och trösklarna) var duplicerad på tre
@@ -428,7 +428,7 @@ export interface RoundIncomeParamsForNextFixture {
 
 /**
  * Preview-mönstret, "samma funktion, samma indata" (2026-08-26,
- * RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, andra bekräftade instansen).
+ * docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, andra bekräftade instansen).
  * `EkonomiTab.tsx` och `EkonomiSecondary.tsx` anropade `calcRoundIncome()`
  * med `isHomeMatch: true` HÅRDKODAT — oavsett om klubbens nästa faktiska
  * match är hemma eller borta — och utelämnade communityStanding/väder/
@@ -533,7 +533,7 @@ const FORM_BONUS_TOP3 = 1.35
 const FORM_BONUS_TOP6 = 1.15
 const FORM_BONUS_BOTTOM3 = 0.72
 
-// KARRIÄRBANA-SOLVENSMÄTNING 2026-08-29 (D033 uppföljning, docs/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md
+// KARRIÄRBANA-SOLVENSMÄTNING 2026-08-29 (D033 uppföljning, docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md
 // öppen fråga): D033s -4988 kr/omgång kontroll-residual visade sig, mätt över
 // 10-12 säsonger istf 3, vara en STEADY-STATE-siffra som döljer ett bimodalt
 // utfall — de flesta kontrollklubbar återhämtar sig (rykte växer, blir plus),
@@ -548,7 +548,7 @@ const FORM_BONUS_BOTTOM3 = 0.72
 // scripts/ah2-karriarbana-solvens-matning-2026-08-29.ts + D033 har full mätning.
 //
 // ── OMHÄRLEDD 2026-08-31 (den konsoliderade baskonomi-omhärledningen,
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"Ägarskap & timing"). ─────────
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"Ägarskap & timing"). ─────────
 // Lyftet 3000 → 8000 vilade HELT på ryktekollaps-fyndet i stycket ovan
 // (3/11 seeds till finansiellt game-over). Det fyndet reproducerar inte längre:
 // D033:s ommätning 2026-08-30 spårade hela skiftet till 765fdcb7 (konditions-
@@ -683,8 +683,8 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     //
     // Åskådarekonomin, kandidat 2 (2026-08-27, Jacobs dom): kandidat 1
     // (linjär kr/huvud) kastades — exploderade 27-34x för starka klubbar
-    // (RAPPORT_ASKADAREKONOMIN_MATNING_2026-08-26.md). Kandidat 2 mättes och
-    // godkändes som den är (RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md):
+    // (docs/rapport/RAPPORT_ASKADAREKONOMIN_MATNING_2026-08-26.md). Kandidat 2 mättes och
+    // godkändes som den är (docs/rapport/RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md):
     // kiosk/VIP skalar med sqrt(publik) istf linjärt, golvet är en ANDEL av
     // driftskostnaden (50%) istf ett fritt kronbelopp. Heros går fortsatt
     // sämre på dyraste tiern (5472→2173) — det är MEDVETET, inte en bugg:
@@ -770,7 +770,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     // Sprint 26: kvadratisk csFactor — belönar hög puls, straffar låg (var linjär 0.7–1.3)
     const csNormalized = 0.3 + ((communityStanding ?? 50) / 100) * 0.7  // 0.3–1.0
     const csFactor = csNormalized * csNormalized                         // 0.09–1.0
-    // DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
+    // docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD
     // (2026-09-01): Sprint 26:s kvadratiska csFactor är KONVEX — den
     // ACCELERERAR vid högt CS istf att avta, vilket kombinerat med rep-
     // skalningen gjorde kommunbidraget till en av de två verkliga
@@ -838,7 +838,7 @@ export type AttendanceParams = Parameters<typeof calcAttendance>[0]
 
 /**
  * PÅSTÅENDEKARTAN, preview-mönstret (2026-08-26, RAPPORT_ASKADAREKONOMIN_
- * MATNING_2026-08-26.md + RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, "Fixa —
+ * MATNING_2026-08-26.md + docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md, "Fixa —
  * samma funktion, samma indata"). Innan denna fanns TVÅ separata
  * härledningar av calcAttendance-parametrar: matchSimProcessor.ts:s
  * auktoritativa (facit, satt på `fixture.attendance` efter simulering) och

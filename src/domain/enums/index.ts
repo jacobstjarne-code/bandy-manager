@@ -113,7 +113,7 @@ export enum InboxItemType {
   SchoolAssignment = 'schoolAssignment',
   EconomicCrisis = 'economicCrisis',
   Scandal = 'scandal',
-  /** HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): utfallsraden för ett
+  /** HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md): utfallsraden för ett
    *  beslut som låg obesvarat i avbrottskön när säsongen tog slut — antingen
    *  ett tillämpat default-utfall eller en uttrycklig utrinning. Egen typ, inte
    *  BoardFeedback: "aldrig tyst" ska gå att hitta och räkna som sin egen sort. */
@@ -156,7 +156,7 @@ export enum TacticTempo {
 }
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: `press` togs bort som fält på `Tactic`
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: `press` togs bort som fält på `Tactic`
  * — höjdläget bärs nu av formationen (getHeightMode, Formation.ts). Enumen
  * lämnas kvar oanvänd (superseterad, inte borttagen) eftersom dussintals
  * äldre testfixturer fortfarande konstruerar `TacticPress.X` som RUNTIME-

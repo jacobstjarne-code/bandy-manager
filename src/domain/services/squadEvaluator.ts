@@ -58,7 +58,7 @@ export function getSelectionScore(player: Player): number {
 }
 
 /**
- * A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), "Tröskeln — dela tal med
+ * A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md), "Tröskeln — dela tal med
  * HIGH2, inför inte ett tredje": samma golv som HIGH2s
  * `SPELKLARHET_FITNESS_FLOOR` (lineupNudge.ts, Jacobs dom 2026-08-22, redan
  * byggt) — flyttad hit (domain-lager) eftersom A-H3s konsumenter

@@ -2,7 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { NarrativeLogEntry } from '../entities/Narrative'
 
 /**
- * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: "EN mekanism, ny liten logg".
+ * U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN: "EN mekanism, ny liten logg".
  *
  * En delad, tidsstämplad logg (SaveGame.narrativeBeatLog) med EN skrivväg
  * (logNarrativeBeat) och TVÅ läsvägar:
@@ -98,7 +98,7 @@ export function pickPoolIndexAvoidingCooldown(
  * Säsongsbudget: får ännu en systemhändelse trigga denna omgång? Nej om
  * budgeten (maxPerSeason) redan är nådd för säsongen, och nej om den
  * senaste systemhändelsen låg för nära (minRoundsBetween) — "aldrig två i
- * samma omgång" ur varsel-mallen (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md).
+ * samma omgång" ur varsel-mallen (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md).
  */
 export function systemhandelseBudgetOk(
   game: SaveGame,
@@ -116,7 +116,7 @@ export function systemhandelseBudgetOk(
 }
 
 /**
- * U5 forts (SLUTTEST_KO.md, 2026-08-20) — systemhandelseBudgetOk:s faktiska
+ * U5 forts (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20) — systemhandelseBudgetOk:s faktiska
  * gating, applicerad på en BATCH nygenererade items (t.ex. en omgångs
  * `allNewEvents`) i ordning. `game.narrativeBeatLog` uppdateras bara vid
  * RESOLUTION (spelaren svarar), inte vid generering — utan den provisoriska,

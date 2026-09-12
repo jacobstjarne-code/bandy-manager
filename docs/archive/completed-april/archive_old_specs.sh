@@ -15,7 +15,7 @@ mv docs/SPRINT_*.md "$DEST/" 2>/dev/null
 # Alla SPEC-filer (utom SPEC_KLUBBUTVECKLING som är vision)
 for f in docs/SPEC*.md; do
   base=$(basename "$f")
-  if [ "$base" != "SPEC_KLUBBUTVECKLING.md" ]; then
+  if [ "$base" != "docs/spec/SPEC_KLUBBUTVECKLING.md" ]; then
     mv "$f" "$DEST/" 2>/dev/null
   fi
 done

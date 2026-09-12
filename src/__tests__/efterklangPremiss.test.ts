@@ -120,7 +120,7 @@ describe('pickEfterklang — B4 premiss-komposition', () => {
   })
 
   it('journalist: ett odaterat gammalt minne får vila i stället för att dateras om till idag', () => {
-    // A-L1 (SLUTTEST_KO.md): matchday 0 är alltid en föregångare-sentinel
+    // A-L1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md): matchday 0 är alltid en föregångare-sentinel
     // (createNewGame.ts sätter currentMatchday:0 innan omgång 1), aldrig en
     // riktig omgång att referera i text. Testar display-vakten i
     // pickEfterklang.ts oberoende av var 0:an ursprungligen kom ifrån.

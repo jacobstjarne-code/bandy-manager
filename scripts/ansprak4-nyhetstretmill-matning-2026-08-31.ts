@@ -1,6 +1,6 @@
 /**
  * ANSPRÅK 4, SPAK 3 — NYHETSTRETMILLEN, mätning
- * (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+ * (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
  *
  * Frågan domen ställer: knapp 1+2 gjorde ortsunderhållet storleksberoende, men
  * D037:s ommätning visade att det aldrig KOSTAR — en dominant klubb tjänar

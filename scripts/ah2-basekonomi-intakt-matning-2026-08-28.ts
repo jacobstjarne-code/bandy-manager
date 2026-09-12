@@ -1,5 +1,5 @@
 /**
- * AH2 basekonomi-intäkt, VÄG B — mätning (DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md).
+ * AH2 basekonomi-intäkt, VÄG B — mätning (docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md).
  *
  * Mäter DEN FAKTISKA per-omgång-förändringen i `club.finances` (inte en
  * ombyggd kopia av calcRoundIncome — den riktiga produktionsvägen:
@@ -15,7 +15,7 @@
  *     ny gissning) — kriterium 2 (uppgångsfönster, säsong-för-säsong-trend
  *     på huvudseeden) och kriterium 3 (≤~3× kontrollens netto).
  *   - HEROS: club_heros, dyraste anläggningstiern (kiosk 'upgraded' +
- *     vipTent, samma tier som RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md
+ *     vipTent, samma tier som docs/rapport/RAPPORT_ASKADAREKONOMIN_V2_MATNING_2026-08-27.md
  *     mätte "5472→2173" på) — kanonisk Heros-styrka, ingen tvingad
  *     communityStanding (H4-domen: förlorar >75% av matcherna, botten av
  *     tabellen) — kriterium 4 (Survive-golvet, ska fortsatt gå back).

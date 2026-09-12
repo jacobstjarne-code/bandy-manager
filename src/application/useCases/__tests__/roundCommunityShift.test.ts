@@ -1,5 +1,5 @@
 /**
- * liggare-ny-community-shift (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * liggare-ny-community-shift (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
  * en communityStanding-tröskelkorsning (30/50/70) skriver nu en
  * community_shift-post samma omgång den händer — mätt genom den riktiga
  * rundprocessorn (samma sanning spelaren faktiskt ser), inte en isolerad

@@ -208,7 +208,7 @@ export function processEconomy(
   }
 
   // Social media reputation boost (+1 every 5th matchday) — TIDIGARE helt
-  // frikopplat från placering (sidofynd B, DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md):
+  // frikopplat från placering (sidofynd B, docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md):
   // club_malilla (mittenklubb, placering 5/8/6 tre säsonger i rad) nådde
   // rykte 100 på tre säsonger av bara denna tick, oavsett sportslig
   // prestation — ca +6 rykte/säsong ovanpå D028:s säsongsdelta (boardService.ts

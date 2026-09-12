@@ -25,7 +25,7 @@ interface FormationViewProps {
   lineupConfirmedThisRound?: boolean
 }
 
-// DOM_FORMATIONER_V2_2026-09-04.md: dömd ordning, #1 (532_tvatoppar) default.
+// docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: dömd ordning, #1 (532_tvatoppar) default.
 const FORMATION_OPTIONS: FormationType[] = ['532_tvatoppar', '532_triangel', '532_ytterben', '532_hogahalvor', '523_hog', '541_hem']
 
 export function FormationView({ tactic, players, onChange, chemistryStats = {}, lineupConfirmedThisRound = false }: FormationViewProps) {
@@ -272,7 +272,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
         </p>
       )}
 
-      {/* DOM_FORMATIONER_V2_2026-09-04.md / FORMATIONER_V2_TEXT_2026-09-04.md:
+      {/* docs/dom/DOM_FORMATIONER_V2_2026-09-04.md / FORMATIONER_V2_TEXT_2026-09-04.md:
           "Uppställning" — bandyns ord, inte "Formation". Text kopierad ordagrant. */}
       <p className="h-label" style={{ marginBottom: 4, fontSize: 12 }}>Uppställning</p>
       <p className="h-micro" style={{ color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.4, fontSize: 12 }}>

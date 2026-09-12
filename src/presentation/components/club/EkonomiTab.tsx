@@ -127,7 +127,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const politician = game.localPolitician ?? null
   const kommunBidrag = politician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
-  // 2026-08-26 (Jacobs dom, RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md):
+  // 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md):
   // läste tidigare game.licenseReview — ett PARALLELLT system som inte
   // avskedar managern. Den enda permanenta statusytan i spelet kunde visa
   // "Godkänd" grönt medan spelaren satt på sitt tredje raka förlustår och
@@ -141,7 +141,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const licenseColor = licenseStatus === 'clear' ? 'var(--success)'
     : licenseStatus === 'first_warning' ? 'var(--warning)'
     : 'var(--danger)'
-  // 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+  // 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
   // "Raka förlustår: X av 4" ersatt av LICENSE_ZONE_TEXT — ingen siffra,
   // "en spelare som ser 63 lär sig optimera talet i stället för klubben."
   const licenseZoneText = LICENSE_ZONE_TEXT[licenseStatus]

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { getTreasurerLine } from '../arrivalDialogue'
 
-describe('getTreasurerLine — 2.6 (SLUTTEST_KO.md, 2026-08-19)', () => {
+describe('getTreasurerLine — 2.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19)', () => {
   it('noll kontrakt', () => {
     expect(getTreasurerLine(0)).toBe('"Kontrakten är trygga ett år till. Det är mer än vi brukar kunna säga."')
   })

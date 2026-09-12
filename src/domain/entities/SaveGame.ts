@@ -156,7 +156,7 @@ export interface YouthIntakeRecord {
 }
 
 /**
- * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — "Medan du var borta"-radernas
+ * 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — "Medan du var borta"-radernas
  * källa. Fyra typer, ingen till: 'contractExpired' (kontraktet gick ut,
  * spelaren blev fri agent), 'retired' (la av), 'aged' (den äldsta spelaren
  * i truppen efter årets åldersuppdatering — inte varje spelares födelsedag),
@@ -472,7 +472,7 @@ export interface SaveGame {
    * ringde. `undefined` = ingen pågående tränarmarknad.
    */
   careerBreak?: import('../services/careerBreakService').CareerBreakState
-  /** Meritbuffert (Jacobs koefficientdom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+  /** Meritbuffert (Jacobs koefficientdom 2026-08-23, docs/dom/DOM_MERITBUFFERT_2026-08-23.md,
    *  O5-acceptanstestets fynd: en klubb med tre raka SM-guld sparkades två
    *  säsonger senare efter en normal svacka, eftersom boardPatience-formeln
    *  inte hade något minne av tidigare framgång). Byggs upp av
@@ -519,7 +519,7 @@ export interface SaveGame {
   revision?: number
 
   communityActivities?: CommunityActivities
-  /** ANSPRÅK 4, spak 3 — nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+  /** ANSPRÅK 4, spak 3 — nyhetstretmillen (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
    *  Säsongen varje CS-bärande ortsaktivitet senast var NY (aktiverad eller
    *  förnyad). Läses av communityProcessor.ts (staleness-avtrappningen) och
    *  communityRenewalService.ts (förnyelsebeslutet). Saknat fält/saknad nyckel
@@ -584,7 +584,7 @@ export interface SaveGame {
   communityStandingDelta?: number  // delta since last round (positive = up, negative = down)
   journalistRelationship?: number  // 0-100, starts 50
   sponsorNetworkMood?: number    // 0-100, collective mood
-  /** O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23): satt av burnoutRelief-eventets
+  /** O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, 2026-08-23): satt av burnoutRelief-eventets
    *  "Sänk tempot på träningen"-val. Priset för handlingen — inte en ny mätare,
    *  bara en tillfällig override av den redan existerande trainingIntensity-
    *  effekten (roundProcessor.ts tvingar 'light' fram till denna omgång,
@@ -626,17 +626,17 @@ export interface SaveGame {
   storylines?: StorylineEntry[]
   clubLegends?: ClubLegend[]
 
-  // U5 (SLUTTEST_KO.md, 2026-08-17) — narrativLoggen, se Narrative.ts:s
+  // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — narrativLoggen, se Narrative.ts:s
   // NarrativeLogEntry-kommentar och narrativeLogService.ts.
   // PÅSTÅENDEKARTAN (2026-08-24): döpt om från `narrativeLog` — samma namn
   // fanns tidigare på tre olika register (SaveGame/Player/ManagerProfile),
   // en namnkollision, inte en strukturell duplicering (se registerfyndet i
-  // SLUTTEST_KO.md post 58). Detta är gating-loggen (semanticKey/säsong/
+  // docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 58). Detta är gating-loggen (semanticKey/säsong/
   // omgång, ingen text) — Player/ManagerProfile:s textdagböcker heter nu
   // `diary`.
   narrativeBeatLog?: NarrativeLogEntry[]
 
-  // DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
+  // docs/dom/DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
   // 2026-09-01.md, Fas 0 — kanonisk, intern, append-only händelseliggare.
   // Spelaren ser den ALDRIG. Skrivvägar: eventLedgerService.logEvent
   // (orsak/verkan Fas 1, säsongens beslut Fas 2) + Fas 4:s
@@ -873,7 +873,7 @@ export interface SaveGame {
   pendingPointDeductions?: Record<string, number>
 
   // Sprint 25h — Lager 3: Licensnämnden
-  // 2026-08-26 (Jacobs dom, RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
+  // 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_ACKUMULATOR_FORSLAG_2026-08-26.md):
   // consecutiveLossSeasons (binär räknare, minneslös — en positiv säsong
   // nollställde ALLT) ersatt av licenseRiskScore, en ackumulator (0-100,
   // samma princip som meritBuffer). licenseStatus lever kvar som den ZON
@@ -1002,7 +1002,7 @@ export interface SaveGame {
   seasonGoalChosenForSeason?: number
 
   /**
-   * O3 (DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
+   * O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md) — spelarens eget säsongsmål,
    * valt i Sommaren, för INNEVARANDE säsong. Arbetsfält: konsumeras och
    * skrivs till SeasonSummary.personalGoal vid säsongsslut
    * (seasonEndProcessor.ts), och nollställs där — nästa Sommaren skriver

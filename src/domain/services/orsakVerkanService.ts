@@ -4,7 +4,7 @@ import { describeRippleChain } from './rippleEffectService'
 
 /**
  * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 1 — orsak/verkan som
- * FÖRSTA rena liggarkonsumenten (DOM_ORSAK_VERKAN_SCOPING_2026-09-01.md
+ * FÖRSTA rena liggarkonsumenten (docs/dom/DOM_ORSAK_VERKAN_SCOPING_2026-09-01.md
  * skrivs om av migreringsplanen: orsak/verkan ÄR liggarens första fönster,
  * inte en fristående feature). Ripple-motorn forkas INTE — samma
  * describeRippleChain (rippleEffectService.ts) som redan diffar de tre

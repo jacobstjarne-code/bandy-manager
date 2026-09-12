@@ -2,7 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { EventLedgerEntry } from '../entities/Narrative'
 
 /**
- * DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
+ * docs/dom/DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_
  * 2026-09-01.md — Fas 0. Fundamentet: en kanonisk, intern, append-only
  * händelseliggare (`game.eventLedger`). Spelaren ser den ALDRIG.
  *

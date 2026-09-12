@@ -1,7 +1,7 @@
 /**
  * KARRIÄRBANA-SOLVENSMÄTNING — D033 öppen fråga, uppföljning 2026-08-29.
  *
- * DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md (väg B) mätte kontrollklubbens
+ * docs/dom/DOM_AH2_BASEKONOMI_INTAKT_2026-08-28.md (väg B) mätte kontrollklubbens
  * (club_malilla, ingen boost) steady-state netto/omgång som -4988 kr,
  * en SÄSONGS-genomsnitt, inte en flerårig bana. Uppgiften här: avgör om
  * -4988/omgång faktiskt spiraliserar mot insolvens över en REALISTISK

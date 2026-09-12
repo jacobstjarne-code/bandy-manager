@@ -7,7 +7,7 @@ import type { Sponsor } from '../../../entities/SaveGame'
 import type { SaveGame } from '../../../entities/SaveGame'
 
 /**
- * O1 (SLUTTEST_KO.md, DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) —
+ * O1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) —
  * "sponsorn med ett problem". Den vanliga sponsorOffer-händelsen (accept =
  * ren vinst, reject = noOp) blir en konfliktvariant när den nya sponsorn
  * konkurrerar med en redan aktiv sponsor i samma kategori: accept lägger

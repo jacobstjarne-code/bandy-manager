@@ -1,11 +1,11 @@
 /**
  * MEASUREMENT-ONLY. A-H2b RETENTION — VILLKOR 2 GATING (2026-08-29).
  *
- * Bakgrund (SLUTTEST_KO.md A-H2b-fyndet, dokumenterat 2026-08-28): den
- * shippade retention-domen (DOM_AH2B_RETENTION_2026-08-28.md, commit
+ * Bakgrund (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-fyndet, dokumenterat 2026-08-28): den
+ * shippade retention-domen (docs/dom/DOM_AH2B_RETENTION_2026-08-28.md, commit
  * a55d4139) implementerade bara villkor 1 (individuellt obemött
  * marknadskrav, salary < computeContractMinSalary). Villkor 2 — domens EGET
- * ord, ordagrant citerat i SLUTTEST_KO.md: "klubben ska ha gjort minst ETT
+ * ord, ordagrant citerat i docs/archive/historiska-statuskallor/SLUTTEST_KO.md: "klubben ska ha gjort minst ETT
  * av tre — slutat topp tre, vunnit serien eller cupen, eller förbättrat sin
  * placering mot föregående säsong" — fanns bara i doktrintexten, aldrig i
  * contractDemandService.ts. Ett mittenlag såg därför 6-7 krav/säsong (varje
@@ -102,7 +102,7 @@
  *   - Mittenlag, möt inga: ~0.95–1.00, möt alla: ~0.48 (mittenlaget rör
  *     mekaniken sällan jämfört med dominant möt-inga — JA)
  * Alla tre domslut håller EFTER villkor 2 lades till, identiskt med domens
- * egna kriterier i DOM_AH2B_RETENTION_2026-08-28.md.
+ * egna kriterier i docs/dom/DOM_AH2B_RETENTION_2026-08-28.md.
  *
  * Kör detta script för att se metodiktexten ovan igen (ingen egen
  * simulering körs härifrån — se anspark1-retention-matning-2026-08-28.ts

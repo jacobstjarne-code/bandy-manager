@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { shouldShowTruppenChapter } from '../SeasonSummaryScreen'
 
 /**
- * Å11-residual (SLUTTEST_KO.md, 6.4 post 21, 2026-08-20) — DS-regel 12:
+ * Å11-residual (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 6.4 post 21, 2026-08-20) — DS-regel 12:
  * "Truppen"-kapitlets rubrik ska inte rendera ovanför tomrum när BÅDA
  * korten under den (Säsongens bästa + Svenska Cupen) gatas bort.
  */

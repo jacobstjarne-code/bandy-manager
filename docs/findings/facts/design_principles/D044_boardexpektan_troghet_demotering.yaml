@@ -1,12 +1,12 @@
 fact_id: D044
 category: design_principles
-claim: "DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md (Jacobs mandat: trög demotering). generatePreSeasonMessage/deriveBoardAssessment delade tidigare identisk ≤2/≥10-ladderlogik (dubblett) och saknade en väg ner för en klubb som fastnar 'för bra för nedgradering (botten-3), inte bra nog för sin nuvarande höga förväntan' (t.ex. WinLeague, binärt — bara plats 1 'möter' den). Ny ENDA-källa recalibrateExpectationLadder (boardService.ts) lägger till en TREDJE väg ner: ny Club.consecutiveExpectationMisses-räknare (+1 vid verdict='failed', nollställs av met/exceeded), demoterar ETT steg när räknaren når TROGHET_THRESHOLD=2 — men BARA när positionsratcharna (upp-vid-topp2/ner-vid-botten3) inte redan ändrat idx samma säsong (ingen dubbel-demotering, botten-3-kollaps hanteras redan av sin egen omedelbara väg)."
+claim: "docs/dom/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md (Jacobs mandat: trög demotering). generatePreSeasonMessage/deriveBoardAssessment delade tidigare identisk ≤2/≥10-ladderlogik (dubblett) och saknade en väg ner för en klubb som fastnar 'för bra för nedgradering (botten-3), inte bra nog för sin nuvarande höga förväntan' (t.ex. WinLeague, binärt — bara plats 1 'möter' den). Ny ENDA-källa recalibrateExpectationLadder (boardService.ts) lägger till en TREDJE väg ner: ny Club.consecutiveExpectationMisses-räknare (+1 vid verdict='failed', nollställs av met/exceeded), demoterar ETT steg när räknaren når TROGHET_THRESHOLD=2 — men BARA när positionsratcharna (upp-vid-topp2/ner-vid-botten3) inte redan ändrat idx samma säsong (ingen dubbel-demotering, botten-3-kollaps hanteras redan av sin egen omedelbara väg)."
 value:
   TROGHET_THRESHOLD: 2
 unit: "säsonger i rad (heltal)"
 source:
   type: measurement
-  doc: "docs/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md; src/domain/services/boardService.ts (recalibrateExpectationLadder); src/domain/entities/Club.ts (consecutiveExpectationMisses); src/domain/services/__tests__/boardService.test.ts"
+  doc: "docs/dom/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md; src/domain/services/boardService.ts (recalibrateExpectationLadder); src/domain/entities/Club.ts (consecutiveExpectationMisses); src/domain/services/__tests__/boardService.test.ts"
   decided_by: jacob
 verified_at: 2026-09-01
 verified_by: code
@@ -76,7 +76,7 @@ notes: |
 
   ── UPPFÖLJNING 2026-09-01, D045 ────────────────────────────────────────
   Integrationsluckan ovan (avsked säsong 2, INNAN tröghetens andra chans)
-  är löst av DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md/D045 — en delad
+  är löst av `docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md` och D045 — en delad
   boardGraceState mjukar (1) säsongsslutets positionsterm och (4) löpande
   omgångstermen när klubben är "nästan lyckad" (missar anchoren men
   stannar inom en tier därunder), så de inte längre dränerar patiensen

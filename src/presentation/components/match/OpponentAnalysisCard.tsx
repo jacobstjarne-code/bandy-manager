@@ -29,7 +29,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
   const opponentStanding = game.standings.find(s => s.clubId === opponent.id)
 
-  // O4 (DOM_BURNOUT_2026-08-17.md): en utbränd manager hinner inte förbereda
+  // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md): en utbränd manager hinner inte förbereda
   // den skarpa analysen — ersätter DETALJRADEN (inte hela kortet) med en
   // degraderad läsning, managerns eget erkännande att förberedelsen uteblev.
   const burnoutZone = getBurnoutZone(game.managerProfile?.burnoutScore ?? 0)

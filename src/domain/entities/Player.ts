@@ -144,7 +144,7 @@ export interface Player {
   suspensionGamesRemaining: number
   recentlyInjuredUntil?: number  // matchday — "Ramp först" warn om Bygg/Toppa sätts före detta
   suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }
-  /** A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: satt när en spelare
+  /** A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md), ben 2: satt när en spelare
    *  som startade matchen under FATIGUE_AVAILABILITY_FLOOR (squadEvaluator.ts
    *  — samma golv som HIGH2s SPELKLARHET_FITNESS_FLOOR) förlorade
    *  sannolikhetskastet om vila/överbelastning (playerStateProcessor.ts,
@@ -185,7 +185,7 @@ export interface Player {
   // K1-kontroll mot en tidigare mekanism (preRolloverSeason) som kunde bli
   // stale av en tyst extra-runda (roundProcessor.ts:1928:s "auto-advance
   // playoff rounds when managed club is eliminated"-rekursion — se
-  // SLUTTEST_KO.md för full spårning).
+  // docs/archive/historiska-statuskallor/SLUTTEST_KO.md för full spårning).
   seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string; cupGames?: number; cupGoals?: number; cupAssists?: number }>
   // Rot-diagnos (Jacobs körorder 2026-09-11): seasonGoalService.ts:s
   // breakthrough/establishedStarter-idempotens läste ENBART seasonHistory
@@ -207,7 +207,7 @@ export interface Player {
   // V1.4 — Player narrative diary (auto-generated)
   // PÅSTÅENDEKARTAN (2026-08-24): döpt om från `narrativeLog` — namnkollision
   // med SaveGame.narrativeBeatLog (gating-logg, ingen text) och
-  // ManagerProfile.diary. Se registerfyndet i SLUTTEST_KO.md post 58.
+  // ManagerProfile.diary. Se registerfyndet i docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 58.
   diary?: Array<{
     season: number
     matchday: number

@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * EN skärm, TVÅ steg, i domens ordning: `stage: 'season'` visar vad som hände
  * medan du satt hemma, `stage: 'market'` ställer frågan. Att de bor i samma

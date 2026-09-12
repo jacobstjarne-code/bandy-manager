@@ -1,5 +1,5 @@
 /**
- * K2 — karriärstatistikens dubblering, retroaktiv rättning (SLUTTEST_KO.md,
+ * K2 — karriärstatistikens dubblering, retroaktiv rättning (docs/archive/historiska-statuskallor/SLUTTEST_KO.md,
  * 2026-08-19). Jacobs dom, alternativ (a): totalGames/totalGoals/totalAssists
  * räknas om ur seasonHistory (redan avslutade säsonger) + seasonStats
  * (innevarande säsong). Cupdelen och allt bortom tio säsonger är förlorat

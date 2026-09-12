@@ -1,5 +1,5 @@
 /**
- * ANSPRÅK 4 — ORTSUNDERHÅLL, mätning (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md).
+ * ANSPRÅK 4 — ORTSUNDERHÅLL, mätning (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md).
  *
  * Frågan: när klubben vuxit har orten stigit i sina förväntningar — samma
  * insats ska hålla MINDRE CS för en stor klubb än för en liten. Mekaniken är

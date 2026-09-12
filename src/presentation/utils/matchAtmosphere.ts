@@ -7,7 +7,7 @@ export type CardTintType =
   | 'derby' | 'playoff' | 'annandagen' | 'cup'
   | 'community' | 'alert' | 'negative'
 
-// E-MA1 (BACKLOG.md): rå rgba-kluster bytta mot token-baserad color-mix.
+// E-MA1 (docs/archive/historiska-statuskallor/BACKLOG.md): rå rgba-kluster bytta mot token-baserad color-mix.
 // Varje klusters RGB var en handskriven kopia av en redan namngiven tokens hex
 // (derby/playoff/annandagen bekräftat mot NextMatchCards migrering, PR-B/C2;
 // cup/negative/community/alert verifierade här via exakt hex-match — --ice

@@ -9,7 +9,7 @@ import {
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
 
-// B12 steg 2a (DOM_B12_STEG2_2026-08-19.md) — manpowerState: ren avläsning
+// B12 steg 2a (docs/dom/DOM_B12_STEG2_2026-08-19.md) — manpowerState: ren avläsning
 // av redan beräknad state, ingen ny sannolikhet. Godkännandekriteriet
 // (byte-identiskt npm run stress) verifierat separat, manuellt, i samma
 // leverans — det här testet verifierar FÄLTETS EGEN korrekthet: att det

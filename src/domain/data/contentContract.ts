@@ -1,5 +1,5 @@
 /**
- * INNEHÅLLSKONTRAKTET (O11, SLUTTEST_KO.md) — `docs/DOM_INNEHALLSKONTRAKTET_2026-08-17.md`.
+ * INNEHÅLLSKONTRAKTET (O11, docs/archive/historiska-statuskallor/SLUTTEST_KO.md) — `docs/dom/DOM_INNEHALLSKONTRAKTET_2026-08-17.md`.
  *
  * Rapportera-först besvarad, 2026-08-20: NEJ, inget enat register finns.
  * Fyra separata källor, ingen av dem en tabell: `GameEventType` (51 värden,
@@ -7,7 +7,7 @@
  * 2026-08-23 samma pass som täckningsgrinden nedan byggdes), `StorylineType`
  * (17, Narrative.ts), `ArcType` (6, Narrative.ts — 8 vid O11:s leverans,
  * 'ledare_crisis' borttagen 2026-08-24 och 'veteran_final_season' borttagen
- * 2026-09-02, se BACKLOG.md
+ * 2026-09-02, se docs/archive/historiska-statuskallor/BACKLOG.md
  * "Två läsare, en sanning"), `PORTAL_BEATS` (18 id:n, portalBeats.ts — den
  * enda som redan ÄR en array, inte bara en typ).
  * 51+17+6+17 = 91 distinkta narrativa former.
@@ -124,11 +124,11 @@ export const GAME_EVENT_TYPE_IDS = [
   'playoffEvent', 'bandyLetter', 'criticalEconomy', 'schoolAssignment', 'mecenatDinner',
   'refereeMeeting', 'riskySponsorOffer', 'mecenatWithdrawal', 'patronWithdrawal',
   'fanLetter', 'opponentQuote', 'csPress', 'playThroughInjury', 'seasonGoalHalfway',
-  // O4 (DOM_BURNOUT_2026-08-17.md, 2026-08-23) — tillagd i samma pass som
+  // O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, 2026-08-23) — tillagd i samma pass som
   // O11:s täckningsgrind byggdes. Den grinden hade fångat DENNA rad som
   // saknad om den funnits ett par timmar tidigare samma session.
   'burnoutRelief',
-  // ANSPRÅK 4, spak 3 (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md), 2026-08-31.
+  // ANSPRÅK 4, spak 3 (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md), 2026-08-31.
   // Raden nedan är ifylld direkt (FILLED) — en ny typ som läggs till ofylld
   // hade höjt TODO-antalet och failat content-contract-guard.
   'communityActivityRenewal',
@@ -597,7 +597,7 @@ const FILLED: Partial<Record<string, Omit<ContentContractEntry, 'id' | 'source' 
     systems: ['ekonomi', 'communityStanding (bara konfliktvarianten)'],
     lifespan: 'engångs',
     recallSurface: 'ingen',
-    notes: 'O1 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) — sponsorn med ett problem, högst prioriterade kandidaten, byggd 2026-08-22. 4/5 av mallen: punkt 2 (spelare/funktionär redan mött) ouppfylld, sponsorer är företag. Därför INTE systemhandelse:true. Text (title/body/subtitles på konfliktvarianten) väntar Opus — placeholder \'[Opus]\' i koden.',
+    notes: 'O1 (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md) — sponsorn med ett problem, högst prioriterade kandidaten, byggd 2026-08-22. 4/5 av mallen: punkt 2 (spelare/funktionär redan mött) ouppfylld, sponsorer är företag. Därför INTE systemhandelse:true. Text (title/body/subtitles på konfliktvarianten) väntar Opus — placeholder \'[Opus]\' i koden.',
   },
 
   // ── De fyra kritiska typerna (Jacobs order, 2026-08-22, dömda 2026-08-24)

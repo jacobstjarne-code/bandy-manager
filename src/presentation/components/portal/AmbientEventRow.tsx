@@ -8,7 +8,7 @@ interface Props {
 }
 
 /**
- * AmbientEventRow — D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2.
+ * AmbientEventRow — D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2.
  *
  * Visar ett event UTAN val (choices.length === 0, se eventQueueService.ts:s
  * isAmbientEvent) som en ambient rad — samma visuella register som

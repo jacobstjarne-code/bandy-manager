@@ -138,7 +138,7 @@ export interface StorylineEntry extends BaseArc {
 }
 
 /**
- * U5 (SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN. En delad logg, en skrivväg,
+ * U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — DOM GIVEN. En delad logg, en skrivväg,
  * två läsvägar: narrativ cooldown per båge (isOnCooldown, U5) och
  * systemhändelsebudget per säsong (systemhandelseBudgetOk, O19). Ersätter
  * INTE de åtta befintliga cooldown-/dedupmekanismerna (resolvedEventIds,
@@ -155,7 +155,7 @@ export interface NarrativeLogEntry {
 }
 
 /**
- * DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
+ * docs/dom/DOM_HANDELSELIGGAREN_2026-09-01.md / MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md
  * (Opus schema, låst 2026-09-01) — Fas 0. En kanonisk, intern, append-only
  * händelseliggare. Spelaren ser den ALDRIG. "Rå sanning i botten, all mening
  * i ytorna": inget fält bär ton — ingen `text`/`emoji`/`sentence`/`kind`/
@@ -187,7 +187,7 @@ export type EventLedgerType =
   // inte avhopp) — ingen befintlig medlem täckte "en mecenat lämnade",
   // därav ny medlem.
   | 'mecenat_withdrawal'
-  // DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron→liggaren.
+  // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) — patron→liggaren.
   // `patron_change` (RETIRERAD DOM 2026-09-03, liggare-k9: TA BORT ur
   // unionen — ersatt av emerge/withdrawal, konsumentkartans §11) fanns
   // redan men konstruerades ALDRIG någonstans (varken i det gamla
@@ -226,28 +226,28 @@ export type EventLedgerType =
   | 'mentorship_started' | 'mentorship_ended'
   | 'youth_intake'
   | 'loan_started' | 'loan_returned'
-  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
+  // docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-board-verdict):
   // styrelsens säsongsdom fanns bara som `SeasonSummary.boardTruth` (en
   // frusen F-projektion) — Krönikan/Berättaren kunde aldrig minnas att
   // styrelsen tappade tålamodet ett visst år. subject = managed club.
   | 'board_verdict'
-  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-license-event):
+  // docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-license-event):
   // licensnämndens dom (varning/poängavdrag/nekad/cleared) fanns bara som
   // ett Inbox-brev + en frusen zon på game.licenseStatus — Krönikan/
   // årsboken kunde aldrig peka tillbaka på "det året licensen var hotad".
   // subject = managed club.
   | 'license_event'
-  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-facility-trial-
+  // docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-facility-trial-
   // outcome): ett bordlagt/nedlagt/kommun-nekat hallbygge glömdes — bara
   // `facility_built` skrevs, och bara VID lyckat bygge. subject = managed
   // club (hallProcessService.ts's trial är enkel-klubbsdata).
   | 'facility_trial_outcome'
-  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-community-shift):
+  // docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 (liggare-ny-community-shift):
   // när orten korsar 30/50/70 finns ingen post — "orten vände i februari"
   // kunde inte minnas. Spegel av repMilestone-mönstret (reputationMilestone-
   // Service.ts), fast på communityStanding-axeln. subject = managed club.
   | 'community_shift'
-  // RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 + SPEC_BERATTAREN §5
+  // docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 + SPEC_BERATTAREN §5
   // (liggare-ny-letter): brevet skrivs idag BARA till `game.bandyLetters`
   // (en ficka) — Efterklangs followUp läser fickan direkt, Berättaren ser
   // den aldrig. subject = managed club (avsändaren är namngiven i
@@ -354,11 +354,11 @@ export interface EventLedgerEntry {
   // vilken entitet som helst utan att schemat växer per typ. `kind` sluten
   // union, växer medvetet, aldrig en fri sträng — samma disciplin som `type`.
   // pickSeasonDecisions `namedPerson ? 1 : 0` blir `subject !== undefined`.
-  // 'patron' tillagd DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) —
+  // 'patron' tillagd docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md (Jacobs dom) —
   // samma polymorfa union, en fjärde entitetstyp. Patron.id är fältet
   // subject.id pekar på (aldrig patron.name — id är en identitet, namnet
   // slås upp via id:t vid vy-tillfället, samma mönster som player/club/mecenat).
-  // 'referee' tillagd DOM_DOMARRELATION_2026-09-02.md (Jacobs dom) — samma
+  // 'referee' tillagd docs/dom/DOM_DOMARRELATION_2026-09-02.md (Jacobs dom) — samma
   // polymorfa union, en femte entitetstyp. Referee.id (redan ett stabilt
   // id-fält, ingen patron-liknande migrering behövs).
   subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee' | 'voice'; id: string }
@@ -661,7 +661,7 @@ export type ArcType =
   // 'ledare_crisis' BORTTAGEN (H1-uppföljning, 2026-08-24, Jacobs dom) —
   // dubblerade postAdvanceEvents.ts:s captainSpeech (samma trigger, "3
   // förluster i rad"), som är kanon. Se saveGameMigration.ts för migrering
-  // av saves med en ledare_crisis-arc mid-flight, och BACKLOG.md "Två
+  // av saves med en ledare_crisis-arc mid-flight, och docs/archive/historiska-statuskallor/BACKLOG.md "Två
   // läsare, en sanning" för full historik. Återanvänd inte strängen.
   | 'lokal_hero'              // Lokalhjälte som gör något stort
   | 'contract_drama'          // Spelare med utgående kontrakt som fått ett bud

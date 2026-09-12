@@ -1,5 +1,5 @@
 /**
- * SLUTTEST_KO.md 4.8 (andra halvan, 2026-08-18) — "Assistenten satte laget".
+ * docs/archive/historiska-statuskallor/SLUTTEST_KO.md 4.8 (andra halvan, 2026-08-18) — "Assistenten satte laget".
  * TeamSelection.autoSelected sätts av simulateRemainingStep()'s auto-uttagning
  * (gameFlowActions.ts) och ska synas som ManagerChoiceEntry.autoSelected på
  * started_tired-poster i managerChoiceLog — men bara när laget kom från

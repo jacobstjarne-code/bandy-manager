@@ -503,7 +503,7 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 
 ## 2026-07-13 — Sim-efter-live-känslan (PT-3), sekvenstest: ingen mätbar effekt, motorn oskyldig
 
-**Problem:** Jacob rapporterade för andra gången att en simmad match direkt efter en live-match nästan alltid förloras (PT-3, BACKLOG.md). B10 (2026-05-21) hade stängt samma känsla, men det testet (`matchEngineParity`, N=1000) mätte ISOLERADE matcher oberoende av varandra — aldrig SEKVENSEN live→sim med samma spelares tillstånd buret vidare. Fick inte avfärdas som "känt" en andra gång utan ett test som faktiskt mäter sekvensen.
+**Problem:** Jacob rapporterade för andra gången att en simmad match direkt efter en live-match nästan alltid förloras (PT-3, docs/archive/historiska-statuskallor/BACKLOG.md). B10 (2026-05-21) hade stängt samma känsla, men det testet (`matchEngineParity`, N=1000) mätte ISOLERADE matcher oberoende av varandra — aldrig SEKVENSEN live→sim med samma spelares tillstånd buret vidare. Fick inte avfärdas som "känt" en andra gång utan ett test som faktiskt mäter sekvensen.
 
 **Kodspårning innan testet skrevs:** `saveLiveMatchResult` (matchActions.ts) skriver inga spelarfält alls (fitness/sharpness/form/moral/skada). Den faktiska mutationen sker i `applyPlayerStateUpdates` (playerStateProcessor.ts), anropad från `roundProcessor` för BÅDA live och sim via samma `advanceToNextEvent`-väg — identisk formel, identisk lineup (matchens pre-match-uppställning, inte per-minut-spårad). Halvtidsjusteringens moral/sharpness-boost i `MatchLiveScreen` (`handleApplyTactic`) appliceras bara på lokala kopior som föder den simulerade andra halvlekens händelser — aldrig dispatchad till storen, alltså aldrig persisterad. Slutsats innan siffrorna ens kördes: domänlagret har ingen mekanism som skulle kunna bära en live→sim-specifik effekt. (Bifynd, inte åtgärdat här: `MatchLiveScreen.tsx` seedar sin motor med `Date.now()` — bryter projektets seed-disciplin, men påverkar inte denna slutsats eftersom state-skrivningen är oberoende av var seedet kom ifrån.)
 
@@ -511,7 +511,7 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 
 **Resultat:** Match 2 (n=976): snittpoäng 0.954, snitt-målskillnad +0.006. Match 3–4 (n=1952): snittpoäng 0.993, snitt-målskillnad −0.053. Welchs t-test: poäng t=−1.090, p=0.28; målskillnad t=0.583, p=0.56. Motståndarstyrka jämförbar mellan positionerna (snitt-reputation 61.2 vs 60.9 — "jämförbara motståndare" höll). De två måtten pekar dessutom åt OLIKA håll (poäng svagt mot "match 2 sämre", målskillnad svagt mot "match 2 bättre") — signaturen för brus, inte en riktad effekt.
 
-**Beslut:** Ingen motorändring. PT-3 stängs i BACKLOG.md. Känslan är sann som UPPLEVELSE (halvtidsinteraktionens reella fördel, se B10) men existerar inte som en mätbar sekvensbugg i domänlagret.
+**Beslut:** Ingen motorändring. PT-3 stängs i docs/archive/historiska-statuskallor/BACKLOG.md. Känslan är sann som UPPLEVELSE (halvtidsinteraktionens reella fördel, se B10) men existerar inte som en mätbar sekvensbugg i domänlagret.
 
 **Alternativ övervägt:** Avfärda direkt som "redan stängt i B10". Avvisat — Jacob hade explicit rätt i att B10:s test mätte fel sak (isolerat, inte sekvens); en andra avfärdning utan nytt bevis hade upprepat samma metodfel.
 
@@ -559,7 +559,7 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 
 **Problem:** Attention-backenden behövde hållbar drift (Postgres, scheduler, secrets) inför mjukreleasen med Jacob + Erik, utan att dra kostnad eller konto-registrering i detta läge.
 
-**Beslut:** Render Free — Node-API + Postgres 18 (frankfurt). Byggkontraktet lästes till `npm ci --include=dev` (`ab667ccd`); annars föll `NODE_ENV=production` igenom till en inkompatibel global tsc och bygget dog. Timschemat körs via GitHub Actions (`cron "17 * * * *"`, gejtad på `ATTENTION_SCHEDULER_ENABLED`), inte Render Cron. Push släckt (`ATTENTION_PUSH_ENABLED=false`) tills Etapp 1B ger sanna kandidater. Verifierat i `RAPPORT_RENDER_BLUEPRINT_DRIFTPROV_2026-09-10.md`.
+**Beslut:** Render Free — Node-API + Postgres 18 (frankfurt). Byggkontraktet lästes till `npm ci --include=dev` (`ab667ccd`); annars föll `NODE_ENV=production` igenom till en inkompatibel global tsc och bygget dog. Timschemat körs via GitHub Actions (`cron "17 * * * *"`, gejtad på `ATTENTION_SCHEDULER_ENABLED`), inte Render Cron. Push släckt (`ATTENTION_PUSH_ENABLED=false`) tills Etapp 1B ger sanna kandidater. Verifierat i `docs/rapport/RAPPORT_RENDER_BLUEPRINT_DRIFTPROV_2026-09-10.md`.
 
 **Alternativ övervägt:** Render Cron — avvisat, saknar gratisplan (stoppades av "Payment Information Required"). Betald nivå — inte motiverat för två testare.
 

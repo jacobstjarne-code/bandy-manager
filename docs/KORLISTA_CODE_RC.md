@@ -1,8 +1,8 @@
-# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+# ⛔ HISTORISK — status i `docs/archive/historiska-statuskallor/BACKLOG.md`. BYGG INTE PÅ DENNA.
 
 **Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** Detta var RC-vägens körlista 2026-06-14 → 06-16. Allt i NU / NU 2 / GENOMSPELNINGS-GRINDEN / SEN är levererat (hashar står i raderna). Filen motsäger sig själv (NU 2-tabellen säger "C EJ GJORD", grinden nedan säger "G-C ✅ 743eca9") — den frystes vid RC-grinden och underhölls aldrig efter. B1-finansieringens KVAR-punkter migrerade till BACKLOG SESSIONSFYND (§5 + PreSeason-Valet KLARA 06-20, kalibrering öppen). VÅG 2 / RC-polish-fulllistorna lever i `RC_BEDOMNING_2026-06-14.md`.
 
-**Den enda statusfilen är `docs/BACKLOG.md`** — den underhålls. Öppna inte denna för "vad körs härnäst"; den ljuger numera. Lämnad som historik (CHANGELOG i BACKLOG bär överlämningen).
+**Den enda statusfilen är `docs/archive/historiska-statuskallor/BACKLOG.md`** — den underhålls. Öppna inte denna för "vad körs härnäst"; den ljuger numera. Lämnad som historik (CHANGELOG i BACKLOG bär överlämningen).
 
 ---
 
@@ -74,7 +74,7 @@ Målet med nästa genomspelning är KÄNSLA. Då måste både ytan vara ren OCH 
 **✅ SEN-BLOCKET KLART (2026-06-16): 8 GAP-1 `25deef2` · 9 GAP-2 `266cb7c` · 11 C1 `3ff48bc` · 12 T1/T2 `d7e0fca`. T2-harness ren (stress 2×2, 0 violations). → Kritisk RC-väg är fri: intern genomspelning → extern testare. Inget Code-arbete blockerar nu.**
 
 ## REDO ATT BYGGA (Opus-spec klar — ej brådskande, RC-polish/våg 2-tier)
-- **B1 Sprint 1 del 2** — anläggningsfinansiering. Spec: `SPEC_B1_FINANSIERING_V2_2026-06-15.md`.
+- **B1 Sprint 1 del 2** — anläggningsfinansiering. Spec: `docs/spec/SPEC_B1_FINANSIERING_V2_2026-06-15.md`.
   - ✅ **Steg 1–3 BYGGT `56a1c2af`** (2026-06-16): financing-fält (NodeFinancing) på alla noder + gym/strålkastare portade (§8); `getFinancingOptions` + `startFacilityBuildNode` som drar kostnad; FacilityScreen "Bygg ut"-välj-mode med finansierings-sheet + dynamisk konsekvensrad (löpande). 4 tester. Löser kartfynd 14.
   - ☐ **KVAR (i tur):** (a) ✅ **§6 textpooler KLART** (Opus 2026-06-17): `facilityFinancingStrings.ts` — tre röstpooler (KOMMUN_OFFER/KOMMUN_HOLD/MECENAT_OFFER) + `financingFlavor()` seedad via `seededPick`; wirad i FacilityScreen-sheet:en som italic förhandlingsrad under varje vals konsekvensrad. Pronomenneutrala mecenat-rader (gender kan vara female). Konsekvensraden i §6 var redan satt av §4 (`optionSub`) — ej dubblerad. **EJ build-verifierad här (Opus saknar repo i container) → Code/Jacob kör typecheck.** (b) **§5 utfasning** — ta bort gamla `getAvailableProjects`/`startFacilityProject`/`FacilityProject` + migration av gamla `facilityProjects`→`builtNodeIds`; Code. **SPÄRREN UPPLÖST (§6 klar) → §5 redo på Jacobs go.** (c) **PreSeason Valet-ingången** — andra ingången till samma träd i välj-läge (BACKLOG: "TVÅ ingångar, ETT träd"); `getPreSeasonChoices` finns men ingen scen wirar den; bara löpande FacilityScreen-välj-mode finns nu. (d) **Kalibrering** — financing-belopp/trösklar är spec-värden, ej balansverifierade mot ekonomimodellen (spec bad Code flagga). (e) **§4 partiellt** — dynamisk konsekvensrad finns i bygg-sheeten; nodernas `consequences`-array har kvar statisk "Kassa −X tkr" som visas i trädet.
 - ~~**Klack-matchreaktion (8a)**~~ — ✅ BYGGD `e560c97` (klack-delta i communityProcessor, egen profil; verifierad 4 seeds — moodet rör sig med resultaten, ej parkerat på 60).

@@ -36,7 +36,7 @@ Ovanpå detta lägger `seasonEndProcessor.ts:942-944` en platt objektiv-term: `n
 
 ### U1:s ursprungliga order — första halvan byggd, andra inte
 
-`docs/SLUTTEST_KO.md:568-588` (etapp 7). U1 ställde **två separata frågor** (rad 573): dels hur difficulty härleds ur truppstyrka, dels **"vad krävs för att en klubb i nedflyttningsstrid faktiskt tappar boardPatience?"**
+`docs/archive/historiska-statuskallor/SLUTTEST_KO.md:568-588` (etapp 7). U1 ställde **två separata frågor** (rad 573): dels hur difficulty härleds ur truppstyrka, dels **"vad krävs för att en klubb i nedflyttningsstrid faktiskt tappar boardPatience?"**
 
 Commit `4be59ff9` (18 aug) svarade fullt på den första (`computeDifficultyScore()`) och bara delvis på den andra. Ordens egen rekommendation (`:583`): *"gör AvoidBottom-tröskeln proportionell mot faktisk nedflyttningszon... och lägg till en svag negativ lutning för plats 8-10... så press känns innan klubben faktiskt är nere."* Det som byggdes (D029, `:60-62`): en varningszon med bredd `RELEGATION_ZONE_SIZE=2` direkt ovanför nedflyttningszonen — för 12 lag är det **bara position 9-10** (−5 patience), och 11-12 (−20, +1 failure). **Position 4-8 ger noll patience-effekt, oavsett resultat.** Ingen förlustsvit-term byggdes någonsin — det är den obyggda andra halvan.
 
@@ -62,7 +62,7 @@ else return 1
 - **`boardExpectation` — inte en indata till `computeBoardPatienceUpdate` alls**, trots att domen och den levande nöjdheten båda använder den. Patience-formeln och "vad styrelsen säger"-texten kan därför divergera eftersom de inte delar indata.
 - **Objektiv-flattningen (`active`/`at_risk` → `failed`) vid `seasonEndProcessor.ts:923`** — förlorar exakt den distinktion ("hotat" vs "misslyckat") Skutskärs säsong faktiskt hade.
 
-**Filer:** `src/domain/services/boardService.ts`, `src/application/useCases/seasonEndProcessor.ts`, `src/domain/services/portal/boardPatienceZone.ts`, `src/domain/services/boardObjectiveService.ts`, `docs/SLUTTEST_KO.md:568-588`, `docs/findings/facts/design_principles/D029_difficulty_and_relegation_zone.yaml`.
+**Filer:** `src/domain/services/boardService.ts`, `src/application/useCases/seasonEndProcessor.ts`, `src/domain/services/portal/boardPatienceZone.ts`, `src/domain/services/boardObjectiveService.ts`, `docs/archive/historiska-statuskallor/SLUTTEST_KO.md:568-588`, `docs/findings/facts/design_principles/D029_difficulty_and_relegation_zone.yaml`.
 
 ---
 

@@ -10,7 +10,7 @@ Ingen rad här är en uppgift. Det är ett lager.
 
 ---
 
-## MASKINLÄSBAR — grind 2 (`SPEC_SANNINGSGRINDAR_2026-08-31.md`) läser detta block
+## MASKINLÄSBAR — grind 2 (`docs/spec/SPEC_SANNINGSGRINDAR_2026-08-31.md`) läser detta block
 
 Skyddade textpool-exporter. `tests/grind/preservationGate.ts` greppar `src/`
 för varje namn — noll förekomster = bygget failar (bevarad text raderad, som

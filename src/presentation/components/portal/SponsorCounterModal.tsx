@@ -9,7 +9,7 @@ import { Overlay } from '../primitives/Overlay'
 const PERF_DOTS = Array.from({ length: 8 })
 
 /**
- * SponsorCounterModal — DOM_SPONSOR_MOTBUD_2026-08-31.md. Rider BidModal-
+ * SponsorCounterModal — docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md. Rider BidModal-
  * mönstret (domens ord): "konfigurera-sen-bekräfta" med fri Y-inmatning,
  * inte ett fördefinierat val. Öppnas av EventCardInline när choiceId==='counter'
  * fångas FÖRE resolveEvent.

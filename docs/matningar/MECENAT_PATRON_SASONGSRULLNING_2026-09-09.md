@@ -1,7 +1,7 @@
 # Mecenat/patron — ommätning av seedad säsongsrullning
 
 **Datum:** 2026-09-09
-**Dom:** `DOM_MECENAT_PATRON_MODELLFORM_2026-09-08.md`
+**Dom:** `docs/dom/DOM_MECENAT_PATRON_MODELLFORM_2026-09-08.md`
 **Körning:** `scripts/mecenat-patron-sasongsrullning-matning-2026-09-09.ts`
 **Omfattning:** 2 000 deterministiska saves per CS-nivå, tio säsonger per save.
 

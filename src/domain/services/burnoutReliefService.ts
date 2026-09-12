@@ -184,7 +184,7 @@ export function pickBurnoutRelapseHelperIndex(game: Pick<SaveGame, 'currentSeaso
 }
 
 /**
- * O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23 — D1 var blockeraren,
+ * O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23 — D1 var blockeraren,
  * nu klar i sin helhet). Burnoutkortet visades varje säsong men hade ingen
  * gameplay-effekt — mätaren blev bakgrundsbrus. Domen: EN effekt
  * (informationskvalitet, inte prestation) + TRE handlingar med verkliga

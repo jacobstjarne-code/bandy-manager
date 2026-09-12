@@ -35,7 +35,7 @@ export const EMPTY_SLOTS = 3
  * välja NÅGON — poolen under golvet finns kvar som fallback, den kastas
  * aldrig, bara nedprioriteras.
  *
- * A-H3 (DOM_AH3_TILLGANGLIGHET_2026-08-28.md): re-export av
+ * A-H3 (docs/dom/DOM_AH3_TILLGANGLIGHET_2026-08-28.md): re-export av
  * `FATIGUE_AVAILABILITY_FLOOR` (squadEvaluator.ts) — flyttad dit så
  * application-lagret (setLineup.ts, playerStateProcessor.ts) kan dela EXAKT
  * samma konstant utan att importera från presentation. Namnet här behålls

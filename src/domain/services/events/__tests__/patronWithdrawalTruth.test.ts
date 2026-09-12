@@ -31,7 +31,7 @@ describe('patronWithdrawal — en kanonisk nollpunktsövergång', () => {
       type: 'patronWithdrawal',
       choices: [{ id: 'acknowledge', effect: { type: 'patronWithdrawn' } }],
     })
-    // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren.
+    // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren.
     expect(result.ledgerEntry).toMatchObject({
       type: 'patron_withdrawal',
       semanticKey: `patron_withdrawal_${game.currentSeason}`,

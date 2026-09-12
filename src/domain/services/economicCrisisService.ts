@@ -215,7 +215,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
         choices,
         resolved: false,
         priority: 'critical',
-        systemhandelse: true,  // O19: sell_star-valet är 5/5 i DOM_VARSLET_KLASSIFICERING_2026-08-17.md
+        systemhandelse: true,  // O19: sell_star-valet är 5/5 i docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md
         // Medium 4 (Skutskär-auditen, 2026-08-22): den STARKASTE kandidaten av
         // de fyra kritiska typerna (contentContract.ts's egen analys, rad
         // ~212) — namngiven avsändare som konkret väntar på ett beslut, ett

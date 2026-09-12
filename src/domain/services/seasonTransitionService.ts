@@ -5,7 +5,7 @@ import { getBurnoutZone } from './managerProfileService'
 import { swedishGenitive } from '../data/matchCommentary'
 
 /**
- * 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18, DOM given samma dag).
+ * 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18, DOM given samma dag).
  * Underlag: CODE_INSTRUKTION_SOMMAREN_2026-08-17.md + Sommaren-sasongsovergangen
  * -2026-08-17.dc.html (variant 1e, låst). All text i denna fil är kopierad
  * bokstavligt ur ordern — inga nya rader, inga nya varianter.

@@ -6,7 +6,7 @@ import type { Sponsor, SaveGame } from '../../../../domain/entities/SaveGame'
 import { InboxItemType } from '../../../../domain/enums'
 
 /**
- * O1-uppföljning (SLUTTEST_KO.md, 2026-08-22) — riskySponsorOffers
+ * O1-uppföljning (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-22) — riskySponsorOffers
  * maturation-konsekvens. Text lovade tre effekter (sponsorn tas bort,
  * claw-back, anseendekostnad), koden gav noll. Konsoliderad till en ren
  * funktion så RNG kan styras deterministiskt istället för att fejka hela

@@ -1,5 +1,5 @@
 /**
- * Å4 (SLUTTEST_KO.md, 2026-08-18) — "tre Acceptera-primärer". Tre inkommande
+ * Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — "tre Acceptera-primärer". Tre inkommande
  * bud renderades tidigare med primaryChoiceId="accept" ovillkorligt på varje
  * IncomingBidCard, så alla tre fick .btn-primary samtidigt. sortBidsByUrgency
  * avgör vilket bud som är mest brådskande — TransfersScreen sätter isPrimary

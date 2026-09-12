@@ -4,7 +4,7 @@ import { handleSeasonEnd } from '../seasonEndProcessor'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 
 /**
- * liggare-ny-license-event (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
+ * liggare-ny-license-event (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3):
  * licensnämndens dom skrivs nu som en license_event-post, men BARA vid en
  * faktisk zonövergång (samma villkor som inbox-brevet checkLicenseStatus
  * redan styr — ingen ny tröskel).

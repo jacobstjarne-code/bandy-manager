@@ -46,7 +46,7 @@ function makeRng(seed: number) {
 
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, formationen bär nu
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, formationen bär nu
  * höjdläget. Varje stils gamla press-nivå bevaras som samma heightMode-hink
  * via formationsvalet (Low→541_hem, Medium→en av de fyra 532_*, High→
  * 523_hog) — samma princip som save-migreringstabellen ("behåll EFFEKTEN"),
@@ -439,7 +439,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     youthDevelopment: 42,
     facilities: 45,
     hasArtificialIce: false,
-    // H4 Heros (Jacobs dom 2026-08-25, DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md
+    // H4 Heros (Jacobs dom 2026-08-25, docs/dom/DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md
     // A2-alternativet, nu byggt): Heros vinner canoniskt under 25% av matcherna
     // (14-23%, GRIND1_STRESSTEST_RESULTAT_2026-08-23.md) — den enda klubb där
     // "det går inte att lyckas, bara att hålla ut" är sann. W012 (kanon: svagast
@@ -836,7 +836,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     injuryDaysRemaining: 0,
     suspensionGamesRemaining: 0,
     seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
-    // Grind 0 (SLUTTEST_KO.md, 2026-08-21): seasonsPlayed var hårdkodad till 1
+    // Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21): seasonsPlayed var hårdkodad till 1
     // trots att seasonHistory (och alla andra spelares emptyCareer, rad 765-770)
     // börjar från 0 — en permanent off-by-one mot seasonHistory.length för just
     // den här spelaren. Inget annat fält (totalGames/totalGoals/totalAssists,

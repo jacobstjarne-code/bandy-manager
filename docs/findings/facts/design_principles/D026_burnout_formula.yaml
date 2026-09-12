@@ -13,14 +13,14 @@ value:
 unit: points
 source:
   type: design_decision
-  doc: "src/domain/services/managerProfileService.ts; docs/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md; scripts/high10-burnout-arc-matning-2026-08-30.ts"
+  doc: "src/domain/services/managerProfileService.ts; docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md; scripts/high10-burnout-arc-matning-2026-08-30.ts"
   decided_by: code
 verified_at: 2026-08-30
 verified_by: code
 status: active
 revisions:
   - date: 2026-08-30
-    change: "BURNOUT_NATURAL_DECAY 3 → 14, och decayen dras nu VARJE omgång i stället för bara vid `delta === 0`. Root: gaten var strukturellt död — en enda oläst inkorgspost (+0.3) gjorde summan nollskild, så återhämtningen fyrade aldrig och burnout kunde bara gå uppåt inom en säsong (HIGH 10, DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md). Magnituden 3 var därmed aldrig prövad mot något; 14 är satt av mätning (se notes). Samtidigt: press-fixturefiltret bytt från `homeScore !== undefined` till `status === Completed`."
+    change: "BURNOUT_NATURAL_DECAY 3 → 14, och decayen dras nu VARJE omgång i stället för bara vid `delta === 0`. Root: gaten var strukturellt död — en enda oläst inkorgspost (+0.3) gjorde summan nollskild, så återhämtningen fyrade aldrig och burnout kunde bara gå uppåt inom en säsong (HIGH 10, docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md). Magnituden 3 var därmed aldrig prövad mot något; 14 är satt av mätning (se notes). Samtidigt: press-fixturefiltret bytt från `homeScore !== undefined` till `status === Completed`."
   - date: 2026-05-25
     change: "BURNOUT_INBOX_WEIGHT sänkt 2→0.3, BURNOUT_INBOX_MAX_DELTA=6 tillagd. Root: 40 olästa inkorgstitems gav +80/omgång → burnout permanent pinnad på 100. Inbox ska vara en svag signal, inte dominerande driver."
 invariants:

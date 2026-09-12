@@ -7,7 +7,7 @@ export interface PatronHappinessTransition {
   patron: SaveGame['patron']
   patronWithdrawnSeason: number | undefined
   withdrawalEvent?: GameEvent
-  /** DOM_PATRON_MECENAT_LAST_2026-09-02.md — satt bara vid en genuin
+  /** docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — satt bara vid en genuin
    *  nollpunktsövergång (samma villkor som withdrawalEvent). Ingen
    *  madeByPlayer-spärr: avhoppet är en systemkonsekvens av ackumulerad
    *  happiness, inte ett enskilt spelarval — samma princip som de
@@ -63,7 +63,7 @@ export function applyPatronHappinessTransition(
         }],
         resolved: false,
       }
-  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren. significance 95,
+  // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren. significance 95,
   // högre än allt i MOMENT_LEDGER_SIGNIFICANCE (topp 85) och högre än
   // mecenat_withdrawal (dynamisk, ripple-buren) — "fundamentet knakar" är
   // medvetet den tyngsta händelseklassen liggaren bär. Skriven vid samma

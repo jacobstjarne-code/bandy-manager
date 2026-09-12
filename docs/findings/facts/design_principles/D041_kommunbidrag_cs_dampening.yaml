@@ -1,6 +1,6 @@
 fact_id: D041
 category: design_principles
-claim: "DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD (2026-09-01): den ursprungliga kapacitets-diagnosen var falsifierad (arenaCapacity fryses vid world-gen, matchintäkten är PLATT — inte kvadratisk i levande rykte). De två faktiska framgång→rikedom-länkarna var kommunbidragets TVÅ oberoende mekanismer, bägge med en olimiterad/accelererande CS-skalning: economyService.ts's kommunBidrag (60000×repFactor×csFactor, csFactor KVADRATISK och därför konvex/accelererande vid högt CS) och politicianService.calculateKommunBidrag (30000×generosityMod×communityMod, communityMod=CS/50 helt olimiterad linjär 0-2). Bägge dämpade med D031:s redan ratificerade getCsDiminishingFactor (1,0 vid/under cs55, fallande till 0,25 vid cs100) — samma primitiv, konsekvent applicerad på båda mekanismerna, ingen ny kurva uppfunnen. repFactor (delad med lönernas reputationSalaryMultiplier) rördes INTE. lokStöd/agendaBonus/relBonus (ej CS-drivna) rördes INTE. De två mekanismernas reason-taggar delades upp ('kommunbidrag' säsongsstart vs 'kommunbidrag_politiker' säsongsslut) — bekräftat två avsiktliga källor, inte en dubbelbetalning."
+claim: "docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, DIAGNOS REVIDERAD (2026-09-01): den ursprungliga kapacitets-diagnosen var falsifierad (arenaCapacity fryses vid world-gen, matchintäkten är PLATT — inte kvadratisk i levande rykte). De två faktiska framgång→rikedom-länkarna var kommunbidragets TVÅ oberoende mekanismer, bägge med en olimiterad/accelererande CS-skalning: economyService.ts's kommunBidrag (60000×repFactor×csFactor, csFactor KVADRATISK och därför konvex/accelererande vid högt CS) och politicianService.calculateKommunBidrag (30000×generosityMod×communityMod, communityMod=CS/50 helt olimiterad linjär 0-2). Bägge dämpade med D031:s redan ratificerade getCsDiminishingFactor (1,0 vid/under cs55, fallande till 0,25 vid cs100) — samma primitiv, konsekvent applicerad på båda mekanismerna, ingen ny kurva uppfunnen. repFactor (delad med lönernas reputationSalaryMultiplier) rördes INTE. lokStöd/agendaBonus/relBonus (ej CS-drivna) rördes INTE. De två mekanismernas reason-taggar delades upp ('kommunbidrag' säsongsstart vs 'kommunbidrag_politiker' säsongsslut) — bekräftat två avsiktliga källor, inte en dubbelbetalning."
 value:
   KOMMUNBIDRAG_CS_DAMPING_FACTOR_FN: "getCsDiminishingFactor (communityStandingScaling.ts, D031)"
   KOMMUNBIDRAG_START_UNDAMPED_S1_TO_S3: [34222, 69408, 33234]
@@ -13,7 +13,7 @@ value:
 unit: "kr (belopp), kvot (tillväxtfaktor kommunbidrag säsong1→säsong2: 2,03× → 0,95× för säsongsstart-mekanismen)"
 source:
   type: measurement
-  doc: "docs/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md (DIAGNOS REVIDERAD); scripts/framgangsekonomin-kommunbidrag-matning-2026-09-01.ts; src/domain/services/economyService.ts; src/domain/services/politicianService.ts; src/domain/services/communityStandingScaling.ts (D031)"
+  doc: "docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md (DIAGNOS REVIDERAD); scripts/framgangsekonomin-kommunbidrag-matning-2026-09-01.ts; src/domain/services/economyService.ts; src/domain/services/politicianService.ts; src/domain/services/communityStandingScaling.ts (D031)"
   decided_by: code
 verified_at: 2026-09-01
 verified_by: code

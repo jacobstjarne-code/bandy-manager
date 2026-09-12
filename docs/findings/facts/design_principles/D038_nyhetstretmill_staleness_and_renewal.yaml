@@ -1,6 +1,6 @@
 fact_id: D038
 category: design_principles
-claim: "Anspråk 4, spak 3 / nyhetstretmillen (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en ortsaktivitet är färskvara. Varje CS-bärande aktivitets flata csBoost multipliceras med en egen staleness-multiplikator som faller geometriskt med antal säsonger aktiviteten varit klubbens stående erbjudande, mot ett golv > 0. Avtrappningstakten skalar med klubbstorlek via SAMMA rykte-ramp som knapp 1 och 2 (csLinearRamp 80→100) — en klubb på/under rykte 80 har retention exakt 1,0 och ligger därmed helt utanför mekaniken. Färskheten återställs bara av en NYHETSINVESTERING i riktiga kronor, erbjuden som ett synligt dashboardbeslut (GameEventType communityActivityRenewal, tier month, mode dilemma) med två val: förnya (betala) eller avböj (noOp). Förnyelsen rör aldrig communityStanding direkt och aldrig aktiviteternas intäktssida."
+claim: "Anspråk 4, spak 3 / nyhetstretmillen (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md): en ortsaktivitet är färskvara. Varje CS-bärande aktivitets flata csBoost multipliceras med en egen staleness-multiplikator som faller geometriskt med antal säsonger aktiviteten varit klubbens stående erbjudande, mot ett golv > 0. Avtrappningstakten skalar med klubbstorlek via SAMMA rykte-ramp som knapp 1 och 2 (csLinearRamp 80→100) — en klubb på/under rykte 80 har retention exakt 1,0 och ligger därmed helt utanför mekaniken. Färskheten återställs bara av en NYHETSINVESTERING i riktiga kronor, erbjuden som ett synligt dashboardbeslut (GameEventType communityActivityRenewal, tier month, mode dilemma) med två val: förnya (betala) eller avböj (noOp). Förnyelsen rör aldrig communityStanding direkt och aldrig aktiviteternas intäktssida."
 value:
   ACTIVITY_STALENESS_RETENTION_CEIL: 0.75
   ACTIVITY_STALENESS_FLOOR: 0.25
@@ -12,7 +12,7 @@ value:
 unit: "andel (retention/golv/tröskel/freshness-golv); kronor (BASE_COST); multiplikator (COST_REP_MULT_CEIL); omgångar (cooldown)"
 source:
   type: measurement
-  doc: "docs/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md; scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts; src/domain/services/communityStandingScaling.ts; src/domain/services/communityRenewalService.ts; src/domain/services/economyService.ts:computeAttendanceRate"
+  doc: "docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md; scripts/ansprak4-nyhetstretmill-matning-2026-08-31.ts; src/domain/services/communityStandingScaling.ts; src/domain/services/communityRenewalService.ts; src/domain/services/economyService.ts:computeAttendanceRate"
   decided_by: code
 verified_at: 2026-08-31
 verified_by: code
@@ -24,7 +24,7 @@ related_facts:
 revisions:
   - date: 2026-08-31
     change: >-
-      VÄG C (Jacobs beslut, DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C").
+      VÄG C (Jacobs beslut, docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C").
       Staleness KONSUMERAS INTE LÄNGRE AV communityStanding. De nio flata
       csBoost-konstanterna i communityProcessor.ts är återställda till oskalade
       (väg A:s `* stale(key)` borttagen); i stället aggregerar

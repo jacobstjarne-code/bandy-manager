@@ -15,7 +15,7 @@ vi.mock('idb-keyval', () => ({
 const { useGameStore } = await import('../../store/gameStore')
 
 /**
- * 3.3 (SLUTTEST_KO.md, 2026-08-17) Kontrakt A.
+ * 3.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) Kontrakt A.
  *
  * Projektet saknar @testing-library/react (bekräftat: inte i node_modules,
  * andra .test.tsx-filer testar bara typer/exports, aldrig faktisk rendering)

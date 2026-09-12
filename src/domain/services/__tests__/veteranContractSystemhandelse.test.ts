@@ -1,5 +1,5 @@
 /**
- * O1 kandidat 2 (DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, Jacobs dom
+ * O1 kandidat 2 (docs/dom/DOM_VARSLET_SOM_SYSTEMMALL_2026-08-17.md, Jacobs dom
  * 2026-08-24) — "kontraktet med en veteran" som systemhandelse.
  *
  * Bygger ovanpå den redan existerande veteran_farewell-bågens peak-event

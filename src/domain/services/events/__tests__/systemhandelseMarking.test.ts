@@ -11,8 +11,8 @@ const SYSTEMHANDELSE_IDS = new Set(['away_trip_bus', 'tifo_contribution', 'legac
 const KNOWN_NON_SYSTEMHANDELSE_IDS = new Set(['corner_extra_training', 'player_weekend_off', 'reporter_klacken'])
 
 /**
- * O19 (SLUTTEST_KO.md, 2026-08-17) — märk de nio 5/5-systemhändelserna
- * (DOM_VARSLET_KLASSIFICERING_2026-08-17.md) i data. Ren datamärkning,
+ * O19 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — märk de nio 5/5-systemhändelserna
+ * (docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md) i data. Ren datamärkning,
  * ingen räknare/cooldown läser fältet ännu — det här testet bevisar bara
  * att märkningen faktiskt sitter på rätt konstruktionsställen.
  */

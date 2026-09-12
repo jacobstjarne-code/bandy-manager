@@ -188,7 +188,7 @@ describe('lineupNudge (B10 T2)', () => {
     expect(starters.length).toBe(11)
   })
 
-  // ── A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 ──────────────────────
+  // ── A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 1 ──────────────────────
   // "Autofyll får aldrig TYST starta under golvet." Fallbacken under golvet
   // fanns redan (HIGH2) — det som saknades var att den RAPPORTERADE sig.
   // Testerna nedan låser att den gör det: tyst fyllning är en regression.

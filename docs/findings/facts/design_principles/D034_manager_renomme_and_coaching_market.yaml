@@ -32,7 +32,7 @@ invariants:
   - "value.MAX_FIRINGS >= 1"
 related_facts: [D029]
 notes: |
-  O13/M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md), byggd
+  O13/M11 — TRÄNARMARKNADEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md), byggd
   2026-08-29.
 
   MAGNITUDERNA ÄR FÖRESLAGNA, INTE DÖMDA. (Validatorn tillåter bara

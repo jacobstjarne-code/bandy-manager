@@ -41,7 +41,7 @@ type ArcKey =
   | 'contract_drama'
 
 // ledare_crisis borttagen (H1-uppföljning, 2026-08-24, Jacobs dom) —
-// captainSpeech (postAdvanceEvents.ts) är kanon, se BACKLOG.md "Två läsare,
+// captainSpeech (postAdvanceEvents.ts) är kanon, se docs/archive/historiska-statuskallor/BACKLOG.md "Två läsare,
 // en sanning". captainSpeech har ingen egen eligibility-fråga att simulera
 // här: den triggar direkt på matchday-sorterade ligaresultat, redan
 // verifierad av postAdvanceEventsCaptainSpeech.test.ts.

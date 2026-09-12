@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * Fyra saker som måste hålla, och som ingen befintlig grind täcker:
  *   1. Uppehållet spelar FAKTISKT klart säsongerna utan spelaren.

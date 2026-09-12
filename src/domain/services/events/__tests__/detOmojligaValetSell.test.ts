@@ -121,7 +121,7 @@ describe('detOmojligaValet/sell — spelaren tas faktiskt bort ur klubben (H3)',
     })
   })
 
-  // A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): "keep" har en namngiven
+  // A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): "keep" har en namngiven
   // person men varken irreversibilitet eller spänning (inget uttalat pris
   // för att avstå) — score 1 av 3, kvalificerar inte längre som säsongens
   // beslut-kandidat. Byggarens "Du lät det vara..."-mening finns kvar

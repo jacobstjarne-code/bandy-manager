@@ -2,8 +2,8 @@
 
 **Datum:** 2026-06-19
 **Från:** Opus
-**Ersätter:** `CODE_UPPDRAG_KOMMUNFORMEL_2026-06-19.md` (MOOT — se §X nedan) + min `SPEC_HALLPROVNING_2026-06-19.md` (ÖVERSPELAD).
-**Gällande design:** `SPEC_MATCHHALL_PROVNING_2026-06-12.md` (mekanik) + `TEXTPOOLER_PROVNING_2026-06-12.md` (text, integrera ordagrant) + mock `docs/incoming/2026-06-12_design_provning_processteg (1).html` (UI).
+**Ersätter:** `CODE_UPPDRAG_KOMMUNFORMEL_2026-06-19.md` (MOOT — se §X nedan) + min `docs/spec/SPEC_HALLPROVNING_2026-06-19.md` (ÖVERSPELAD).
+**Gällande design:** `docs/spec/SPEC_MATCHHALL_PROVNING_2026-06-12.md` (mekanik) + `TEXTPOOLER_PROVNING_2026-06-12.md` (text, integrera ordagrant) + mock `docs/incoming/2026-06-12_design_provning_processteg (1).html` (UI).
 
 ---
 

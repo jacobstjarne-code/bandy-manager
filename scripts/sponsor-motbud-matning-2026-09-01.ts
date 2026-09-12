@@ -1,6 +1,6 @@
 /**
  * SPONSOR-MOTBUD — mätning mot domens "GODKÄNT NÄR" 1–4.
- * DOM_SPONSOR_MOTBUD_2026-08-31.md.
+ * docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md.
  *
  * Ren funktionsanalys (inget behov av en full karriärsim — mekaniken är
  * self-contained i sponsorCounterService.ts, oberoende av matchsimulering).

@@ -110,7 +110,7 @@ Värt att fortsätta i samma anda:
 3. **DECISIONS.md** — arkitekturbeslut
 4. **KVAR.md** — vad som är öppet just nu
 5. **HANDOVER_2026-04-30b.md** (denna fil) — sessionens kontext
-6. **SPEC_BESLUTSEKONOMI.md** + Steg 2 + Steg 3 — pågående arbete
+6. **docs/spec/SPEC_BESLUTSEKONOMI.md** + Steg 2 + Steg 3 — pågående arbete
 7. **CODE_REVIEW_2026-04-30.md** — pågående buggfixar
 8. **Diagnos-rapport** i `docs/diagnos/2026-04-30_beslutsekonomi.md` — kontext för Steg 2
 

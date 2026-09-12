@@ -48,7 +48,7 @@ describe('getTacticModifiers', () => {
     expect(high.tempoModifier).toBeGreaterThan(low.tempoModifier)
   })
 
-  // DOM_FORMATIONER_V2_2026-09-04.md: press borttaget som eget fält —
+  // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press borttaget som eget fält —
   // heightMode härleds nu ur formationen. 523_hog = high, 541_hem = low.
   // "EXAKT dagens tal" (domens eget krav) — regressionstesterna nedan
   // bevisar det, inte bara riktningen.
@@ -99,7 +99,7 @@ describe('getTacticModifiers', () => {
     }
   })
 
-  // DOM_FORMATIONER_V2_2026-09-04.md §"Tas bort": formations-switchen
+  // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md §"Tas bort": formations-switchen
   // (2-3-2-3 offense+0.05/defense-0.08, 4-3-3/4-2-4 offense-0.03/defense+0.05)
   // ska vara helt borta — noll skillnad i offense/defense mellan formationer
   // utöver heightMode-effekten (som inte rör offense/defense alls).

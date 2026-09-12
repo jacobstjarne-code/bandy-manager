@@ -20,7 +20,7 @@ export interface BoardMember {
 }
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: `press` borttaget som eget fält — sju
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: `press` borttaget som eget fält — sju
  * axlar kvar. Höjdläget (tidigare press-effekten) bärs nu av formationen
  * (se getHeightMode i Formation.ts), härlett vid behov, aldrig lagrat här.
  */
@@ -68,7 +68,7 @@ export interface Club {
 
   boardExpectation: ClubExpectation
   /**
-   * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: räknar SÄSONGER I RAD där
+   * docs/dom/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: räknar SÄSONGER I RAD där
    * expectationVerdictFromRating gav 'failed' mot boardExpectation — skild
    * från consecutiveFailures (som räknar botten-2, den separata avskeds-
    * vägen). "Under förväntan" är inte samma sak som "i nedflyttningszon".

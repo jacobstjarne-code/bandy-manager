@@ -2,9 +2,9 @@
 
 **Av:** Code (Sonnet 5). Ersätter `INVENTERING_2026-08-25.md` och `INVENTERING_2026-08-26.md` (båda dödmarkerade, pekar hit).
 
-**Metod:** Jacob bad om en grundlig genomgång av vad som är byggt och inte byggt i alla köer, ordrar och diskussioner. Sex bakgrundsagenter läste ~880 dokument parallellt: en re-verifierade varje rad i de två gamla INVENTERING-filerna mot dagens kod, fyra delade upp `docs/`-roten (232 filer), `docs/sprints/` (135), `design-system/`+`docs/mockups/` (261) och `docs/data/`+`docs/incoming/` (50). Allt kors­verifierat mot `docs/BACKLOG.md`, `docs/KVAR.md`, `docs/SLUTTEST_KO.md`, `git log` och direkt kodgrep — inte mot vad dokumenten själva påstår. `docs/findings/` (364 D-fact-filer) och `docs/kunskapsbas/` uteslöts medvetet: de är referens/kalibrering, inte köer.
+**Metod:** Jacob bad om en grundlig genomgång av vad som är byggt och inte byggt i alla köer, ordrar och diskussioner. Sex bakgrundsagenter läste ~880 dokument parallellt: en re-verifierade varje rad i de två gamla INVENTERING-filerna mot dagens kod, fyra delade upp `docs/`-roten (232 filer), `docs/sprints/` (135), `design-system/`+`docs/mockups/` (261) och `docs/data/`+`docs/incoming/` (50). Allt kors­verifierat mot `docs/archive/historiska-statuskallor/BACKLOG.md`, `docs/KVAR.md`, `docs/archive/historiska-statuskallor/SLUTTEST_KO.md`, `git log` och direkt kodgrep — inte mot vad dokumenten själva påstår. `docs/findings/` (364 D-fact-filer) och `docs/kunskapsbas/` uteslöts medvetet: de är referens/kalibrering, inte köer.
 
-**Huvudfynd, i en mening:** projektets egna "enda sanning"-filer (BACKLOG.md, design-system/HANDOFF.md+SYNC.md, flera enskilda DOM-filer) har på flera ställen själva blivit den föråldrade informationen — vilket är precis den risk hela den här övningen fanns till för att fånga.
+**Huvudfynd, i en mening:** projektets egna "enda sanning"-filer (docs/archive/historiska-statuskallor/BACKLOG.md, design-system/HANDOFF.md+SYNC.md, flera enskilda DOM-filer) har på flera ställen själva blivit den föråldrade informationen — vilket är precis den risk hela den här övningen fanns till för att fånga.
 
 **En andra, obekväm slutsats om själva metoden:** jag stickprovsprövade sju av agenternas "genuint öppna"-fynd mot faktisk kod innan jag skrev in dem här. Fyra höll INTE — tre för att sanningen redan hade hunnit ändras (två av dem VÄLDIGT nyligen: Jacobs egna parallella textredigeringar under själva svepet), en för att agenten missade en fix från tre veckor tillbaka. Var och en är rättad och märkt "prövad och friad" nedan istället för att tystas bort — men punkterna som INTE hann stickprovas (merparten av §2) är alltså rapporterade, inte dubbelkontrollerade. Läs dem som en stark ledtråd att verifiera, inte som ett kvitto.
 
@@ -24,11 +24,11 @@ Commit `d0d4d923` (2026-08-17, "radera hallDebateEvents.ts — död kod") tog bo
 
 | Fil | Vad den påstod | Verkligheten | Status |
 |---|---|---|---|
-| `BACKLOG.md` rad 7 | "RISK — 203 filer okommitterat, HEAD fastfruset på `5c9a7a8b`" | Löst 2026-08-27, samma dag det upptäcktes (SLUTTEST A-COMMIT: 18 logiska block, `5c9a7a8b..594be0f7`). Stod kvar stale i fyra dygn, överst i filen — det första en ny session läser. | **Korrigerad idag** |
-| `BACKLOG.md` §A | "TEXT-AUDITEN — AKTIV, domän 2-4 kvar, Code-kö: M9-grep + M17-M25" | `TEXT-AUDIT-PROTOKOLL.md`s egen ÖPPNA ÄRENDEN-tabell: "HELA TEXTAUDITEN + HELA ÄRENDEKÖN KOMPLETT 2026-07-05 … Kön är tom." Nästan två månader fel. | **Korrigerad idag** |
-| `DOM_FRAMGANGSEKONOMIN_2026-08-17.md` | (ingen supersede-markering) | Ersatt av `DOM_FRAMGANGSKURVAN_2026-08-27.md` — nästa läsare bygger mot fel ramverk annars. | **⛔-markering tillagd idag** |
-| `DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md` | (ingen supersede-markering) | `DOM_AH2B_RETENTION_2026-08-28.md` (samma dag!) säger ordagrant "den körordern är därmed avslutad" om detta dokument. | **⛔-markering tillagd idag** |
-| `SLUTTEST_KO.md:97` | "A-M8 (avsked avslutar karriären) … EJ" | Byggt `e765efd5` (tränarmarknaden, `CareerBreakScreen.tsx` existerar). | **Ej korrigerad — ägare: nästa session** |
+| `docs/archive/historiska-statuskallor/BACKLOG.md` rad 7 | "RISK — 203 filer okommitterat, HEAD fastfruset på `5c9a7a8b`" | Löst 2026-08-27, samma dag det upptäcktes (SLUTTEST A-COMMIT: 18 logiska block, `5c9a7a8b..594be0f7`). Stod kvar stale i fyra dygn, överst i filen — det första en ny session läser. | **Korrigerad idag** |
+| `docs/archive/historiska-statuskallor/BACKLOG.md` §A | "TEXT-AUDITEN — AKTIV, domän 2-4 kvar, Code-kö: M9-grep + M17-M25" | `TEXT-AUDIT-PROTOKOLL.md`s egen ÖPPNA ÄRENDEN-tabell: "HELA TEXTAUDITEN + HELA ÄRENDEKÖN KOMPLETT 2026-07-05 … Kön är tom." Nästan två månader fel. | **Korrigerad idag** |
+| `docs/dom/DOM_FRAMGANGSEKONOMIN_2026-08-17.md` | (ingen supersede-markering) | Ersatt av `docs/dom/DOM_FRAMGANGSKURVAN_2026-08-27.md` — nästa läsare bygger mot fel ramverk annars. | **⛔-markering tillagd idag** |
+| `docs/dom/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md` | (ingen supersede-markering) | `docs/dom/DOM_AH2B_RETENTION_2026-08-28.md` (samma dag!) säger ordagrant "den körordern är därmed avslutad" om detta dokument. | **⛔-markering tillagd idag** |
+| `docs/archive/historiska-statuskallor/SLUTTEST_KO.md:97` | "A-M8 (avsked avslutar karriären) … EJ" | Byggt `e765efd5` (tränarmarknaden, `CareerBreakScreen.tsx` existerar). | **Ej korrigerad — ägare: nästa session** |
 | `design-system/HANDOFF.md` (senast ändrad 2026-05-17) | `[ ]`/`⚠` på GameHeader-redesign, PhaseIndicator, Tag-regel, BottomNav-ikoner, emoji-kategorisystem | Alla byggda (Lucide-migrering, severity-dots, handritad SVG-glyf i `GameHeader.tsx`). Den verkliga aktuella kön är `design-system/briefs/DESIGN-KO-2026-07-02.md`, som `HANDOFF.md` aldrig pekar till. | **Ej korrigerad — ägare: Design/Opus** |
 | `docs/BANDY_BRAIN_LOSENORDSGRIND.md` | "Config-flippen INTE committad, [Opus]-platshållare" | Motsatt riktning stale: `astro.config.mjs` har redan `site:'https://bandybrain.se'`, svensk text skriven. Enda kvarvarande osäkerhet: Vercel-cutover + miljövariabler, ej verifierbart (Vercel-MCP oautentiserad denna session). | **Ej korrigerad — ägare: nästa session med MCP-åtkomst** |
 | `docs/incoming/README.md` (senast ändrad 2026-08-30) | Listar 7 poster i mappen | Mappen har 13+ faktiska poster (utöver `_arkiv`). Sex saknas helt ur tabellen. | **Ej korrigerad — se §6** |
@@ -40,7 +40,7 @@ Commit `d0d4d923` (2026-08-17, "radera hallDebateEvents.ts — död kod") tog bo
 
 ## §2 — Genuint öppna trådar, otrackade i BACKLOG (de viktigaste fynden)
 
-Dessa har ingen rad i BACKLOG.md eller SLUTTEST_KO.md trots att flera av dem är substantiella, verifierade via grep/kod idag.
+Dessa har ingen rad i docs/archive/historiska-statuskallor/BACKLOG.md eller docs/archive/historiska-statuskallor/SLUTTEST_KO.md trots att flera av dem är substantiella, verifierade via grep/kod idag.
 
 ### Spelbara buggar
 
@@ -73,7 +73,7 @@ Dessa har ingen rad i BACKLOG.md eller SLUTTEST_KO.md trots att flera av dem är
 19. **`DOM_D1_EVENTVIKTNING` — batch-av-tre medvetet vilande**, ingen källa taggar `triggerGroupId` ännu.
 20. **KORRVANDA2, tre öppna punkter utan BACKLOG-rad:** ClubScreen har sex flikar som bryter horisontellt på 390px (ingen overflow-hantering); en intro-overlay-opacitetsbugg aldrig lokaliserad; en "Visa introduktionen igen"-funktion (mock-D1) som aldrig byggdes alls (0 träffar i kod).
 21. **`pilotTransferBidRippleChain` och `getArcMoodText`** — båda skrivna, testade, noll konsumenter (Överlämning 2 steg 0, väntar designplacering sedan 2026-08-22).
-22. **`DOM_SPONSOR_MOTBUD_2026-08-31.md`** — skriven samma dag som denna inventering, redan orphan. Beställer ett tre-utfalls motbud på sponsorerbjudanden (accept/reject/motkrav). Verifierat: mekaniken finns bara för transferbud, aldrig sponsorer. Ingen rad i BACKLOG.
+22. **`docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md`** — skriven samma dag som denna inventering, redan orphan. Beställer ett tre-utfalls motbud på sponsorerbjudanden (accept/reject/motkrav). Verifierat: mekaniken finns bara för transferbud, aldrig sponsorer. Ingen rad i BACKLOG.
 23. **Presskonferensens sista residual:** `pressConferenceService.ts:1004` byter ut kaptensfrågans TEXT mot en generisk variant men behåller de gamla `preferIds` — sista instansen av den bugklass DERBYREPLIKEN-passet stängde på 17 andra ställen.
 24. **Sprint 25F (HT-lead comeback) slutade på ❌, ingen audit skrevs.** Löstes indirekt senare (targetet i sig var fel, 46.6→78.1), men den ursprungliga sprinttråden stängdes aldrig formellt.
 25. **Scoreboard-hex:** `Scoreboard.tsx:145` har `#A89878` med kommentaren "möjlig LED-tavla-kontrast, verifiera live" — aldrig avgjort.
@@ -143,6 +143,6 @@ Mappens egen regel (README) säger att en fil ska flyttas till `_arkiv-<år>-<m�
 
 ## Vad som INTE står här
 
-Allt i `docs/findings/` (D-facts, kalibreringsfakta) och `docs/kunskapsbas/` (bandyregler, dataschema) — det är referens, inte köer, och uteslöts medvetet. HIGH 5-12/MEDIUM 13-16 från 2026-08-29-auditen täcks redan uttömmande av `docs/BACKLOG.md`s egen rad om den audit-triagen (skriven samma vecka som detta dokument) — upprepas inte här. `docs/mockups/` och `design-system/preview/` är komponentkanon/arkiv, inte ordrar — sammanfattade i §5, inte radade fil för fil.
+Allt i `docs/findings/` (D-facts, kalibreringsfakta) och `docs/kunskapsbas/` (bandyregler, dataschema) — det är referens, inte köer, och uteslöts medvetet. HIGH 5-12/MEDIUM 13-16 från 2026-08-29-auditen täcks redan uttömmande av `docs/archive/historiska-statuskallor/BACKLOG.md`s egen rad om den audit-triagen (skriven samma vecka som detta dokument) — upprepas inte här. `docs/mockups/` och `design-system/preview/` är komponentkanon/arkiv, inte ordrar — sammanfattade i §5, inte radade fil för fil.
 
 **Om något saknas här är det för att det är stängt, eller för att sex agenter och en synteser missade det. Det senare är statistiskt garanterat vid den här skalan — nästa session bör inte ta den här filen som ofelbar, bara som den mest genomlästa nulägesbilden som finns.**

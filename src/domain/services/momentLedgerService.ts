@@ -180,13 +180,13 @@ export function resolveSubjectName(
     case 'mecenat':
       return (game.mecenater ?? []).find(m => m.id === subject.id)?.name
     case 'patron':
-      // DOM_PATRON_MECENAT_LAST_2026-09-02.md — game.patron är EN entitet,
+      // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — game.patron är EN entitet,
       // inte en array (till skillnad från mecenater). id-matchning ändå,
       // aldrig bara "returnera game.patron.name": en avgången patron kan ha
       // ersatts av en ny med annat id innan en gammal liggarpost renderas.
       return game.patron?.id === subject.id ? game.patron.name : undefined
     case 'referee': {
-      // DOM_DOMARRELATION_2026-09-02.md — samma mönster som player/club.
+      // docs/dom/DOM_DOMARRELATION_2026-09-02.md — samma mönster som player/club.
       const ref = (game.referees ?? []).find(r => r.id === subject.id)
       return ref ? `${ref.firstName} ${ref.lastName}` : undefined
     }

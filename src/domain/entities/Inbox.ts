@@ -52,7 +52,7 @@ export interface InboxItem {
   // body.split('⚠️').length — samma mönster som Inbox-nemesis hade (A2).
   // Satt bara på InboxItemType.Training-poster.
   injuredPlayerCount?: number
-  // 2026-08-26 (RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md, uppdaterad
+  // 2026-08-26 (docs/rapport/RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md, uppdaterad
   // efter ackumulator-domen): kravet synligt och mätbart utan att förlita
   // sig på att prosan råkar nämna det. Bär licenseService.ts:s LÅSTA
   // zon-text (LICENSE_ZONE_TEXT) — ingen siffra, per Jacobs dom "en spelare

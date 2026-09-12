@@ -1081,7 +1081,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
     // C-B2 — klack echo
     klackEcho: updatedKlackEcho,
-    // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 7/9 — bara vid
+    // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 7/9 — bara vid
     // en FAKTISKT ny eko (inte ren decay av en befintlig).
     narrativeBeatLog: newKlackEchoType
       ? logNarrativeBeat(game, `klack_echo_${newKlackEchoType}`, game.currentSeason, nextMatchday)
@@ -1109,7 +1109,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (updatedGame.pendingPressConference?.pressQuestionKey) {
     updatedGame = {
       ...updatedGame,
-      // Centralredaktören, punkt 2 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+      // Centralredaktören, punkt 2 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md):
       // frågetextens egen recency, skrivs NÄR FRÅGAN VISAS — samma
       // mönster som storylinePressKey nedan. Se GameEvent.pressQuestionKey.
       narrativeBeatLog: logNarrativeBeat(
@@ -1179,7 +1179,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Centralredaktören, punkt 3 (DOM_CENTRALREDAKTOREN_2026-08-31.md):
+  // Centralredaktören, punkt 3 (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md):
   // generiska personal-beats' subjekts-rotation (starPerformance/
   // playerPraise/playerMediaComment). Samma skrivmönster som
   // journalistExclusiveKey ovan — loggas NÄR EVENTET GENERERAS. Se
@@ -1193,7 +1193,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Centralredaktören (DOM_CENTRALREDAKTOREN_2026-08-31.md): kanal-
+  // Centralredaktören (docs/dom/DOM_CENTRALREDAKTOREN_2026-08-31.md): kanal-
   // exklusivitet + innehålls-recency, EN gemensam gate som event-blocket
   // (allNewEvents) OCH pressen (pendingPressConference) konsulterar — se
   // narrativeCoordinatorService.ts. Placerad EFTER key-write-looparna ovan
@@ -1390,7 +1390,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     skipSideEffects: isSecondPassForManagedMatch,
   })
 
-  // U5 forts (SLUTTEST_KO.md, 2026-08-20): systemhandelseBudgetOk:s faktiska
+  // U5 forts (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20): systemhandelseBudgetOk:s faktiska
   // gating (se filterSystemhandelseBudget, narrativeLogService.ts, för
   // rotorsaken till den provisoriska räkningen). Släppta events tappas för
   // denna omgång — samma konservativa avvägning som canAddDecision ovan.

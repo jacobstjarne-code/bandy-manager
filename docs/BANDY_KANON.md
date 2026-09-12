@@ -62,7 +62,7 @@ Roller värda att ha rätt, för scouttext, matchreferat och narrativ:
 
 ## 3. Formationerna
 
-**BYGGD 2026-09-04 (`DOM_FORMATIONER_V2_2026-09-04.md`, Jacob dömde, Code byggde — commit 18ff34e3): sex uppställningar på bandyns egen axel, femman bak i alla.** Ersatte de sex med varierande försvarslinje (5-3-2, 3-3-4, 4-3-3, 3-4-3, 2-3-2-3, 4-2-4). Save-migrering flyttar gamla formationer + press till nya enligt domens tabell, idempotent.
+**BYGGD 2026-09-04 (`docs/dom/DOM_FORMATIONER_V2_2026-09-04.md`, Jacob dömde, Code byggde — commit 18ff34e3): sex uppställningar på bandyns egen axel, femman bak i alla.** Ersatte de sex med varierande försvarslinje (5-3-2, 3-3-4, 4-3-3, 3-4-3, 2-3-2-3, 4-2-4). Save-migrering flyttar gamla formationer + press till nya enligt domens tabell, idempotent.
 
 De sex: **5-3-2 två toppar** (default, styrspel), **5-3-2 triangel** (en spets, två höga mittfältare), **5-3-2 ytterben** (en defensiv mittfältare, två offensiva — Hammarbys SM-form), **5-3-2 höga halvor** (ytterhalvorna med i anfallet, bortre halven extra libero), **5-2-3 hög** (forechecking, kraftödande, kortvarig), **5-4-1 hem** (ta hem, tjocka). Namn och tags är anatomi, aldrig effekt. Text: `FORMATIONER_V2_TEXT_2026-09-04.md`.
 
@@ -119,7 +119,7 @@ Det här är den förväxling som utlöste kanon. Först de tre begreppen som de
 - **bandyskola för barn = ungdomsverksamhet.** Nybörjarverksamhet för barn. Bör mata akademin och höja communityStanding. Verklig modell: BandyKul (Uppsala) — klubbarnas gemensamma skridsko-/bandyskola för barn 5–9 år, buss-baserad (hämtar barn på ~27 skolor), sponsorfinansierad, en uttalad integrations-/samhällsinsats som föder framtida spelare.
 - **akademin = elit-pipeline.** Klubbens egen fostran mot A-lag (`akademiuppflyttning` finns som liggartyp).
 
-Så ser koden ut efter bygget (verifierat mot disk 2026-09-03; `SPEC_BANDYPLAY_STREAMING_OCH_BANDYSKOLA_2026-09-03.md` BYGGD):
+Så ser koden ut efter bygget (verifierat mot disk 2026-09-03; `docs/spec/SPEC_BANDYPLAY_STREAMING_OCH_BANDYSKOLA_2026-09-03.md` BYGGD):
 
 - **`bandySchoolBasic`** = barn-skolan (⛸️ "Bandyskola för barn", gratis att starta). Deltagaravgifter per hemmamatch + drift per omgång — den kostar medvetet ("bygden får sin bandyskola, klubben bär kostnaden"). BandyKul-modellen inbyggd (§4b): en aktiv sponsor bär 25 % av driften (22-omgångsnettot −17 875 → −9 625 kr, aldrig positivt — det är poängen); +1 i ungdomsintag (10 000 seeds: 3 000 → 3 099 spelare); 0,12 CS/omg — mest av alla skolaktiviteter, så valet blir "kostar pengar, bygger orten".
 - **`bandySchool`** = avancerad bandyskola (🏫), platt +1000/omgång, 5 tkr att starta. +2 i ungdomsintag (3 200), 0,08 CS/omg — elitnärmare, mindre ort.
@@ -143,7 +143,7 @@ Det kanon inte ska släta över:
 
 2. **`CLAUDE_REFERENCE.md`:s stale kort-rad — RÄTTAD 2026-09-03.** Raden påstod "Inga gula kort"; nu omskriven mot `REGLER.md` §3 (bandy har gult/rött i verkligheten, spelet väljer bara att inte visa dem). Kvar som logg, inte öppen åtgärd.
 
-3. **bandyplay/bandyskola — BYGGD 2026-09-03 av Codex**, inklusive §4b, med körd balansmätning (`SPEC_BANDYPLAY_STREAMING_OCH_BANDYSKOLA_2026-09-03.md`, MASTER `sluttest-bandyplay-nettoforlust`). Ingen öppen åtgärd. Kvar som logg: §4b dömdes i Codex-passet, inte i specen — specens §4b-text står kvar som rekommendation för spårbarhet.
+3. **bandyplay/bandyskola — BYGGD 2026-09-03 av Codex**, inklusive §4b, med körd balansmätning (`docs/spec/SPEC_BANDYPLAY_STREAMING_OCH_BANDYSKOLA_2026-09-03.md`, MASTER `sluttest-bandyplay-nettoforlust`). Ingen öppen åtgärd. Kvar som logg: §4b dömdes i Codex-passet, inte i specen — specens §4b-text står kvar som rekommendation för spårbarhet.
 
 4. **Djupare communityStanding-trösklar** — §7 fångar CS:s roll i publik och kommunbidrag på formelnivå; de exakta trösklarna och övriga CS-drivare ligger i RAPPORT_COMMUNITYSTANDING-serien och är inte härkopierade. Pekare, inte innehåll.
 
@@ -151,7 +151,7 @@ Det kanon inte ska släta över:
 
 ## Källor
 
-`docs/kunskapsbas/REGLER.md` (auktoritativ regelkälla), `docs/kunskapsbas/DATA.md`, `docs/textgranskning/TEXT_REVIEW_formations_2026-04-20.md`, `docs/BANDYSPRAK_KALLASNING_2026-08-19.md`, `docs/BANDYTAKTIK_KALLASNING_2026-09-04.md` (SvBF spelarutvecklingsplan 2020 §2.4 + §6 kompletterande källor), `docs/kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md` (GPT:s källindex: GIH 2023, Persson m.fl. 2020, Johansson m.fl. 2021, Andersson m.fl. 2022, van den Tillaar m.fl. 2023, Bykov & Kurikov 2025, FIB-regler), `docs/kallor/` (arkiverade PDF:er: SvenskaFans sju delar, SvBF 2020), `CLAUDE_REFERENCE.md`, `DOM_FORMATIONER_BANDY_KANON_2026-09-02.md`, matchmotor-kalibreringen (`bandygrytan_detailed.json`), Bandy-Brain (`docs/findings/`).
+`docs/kunskapsbas/REGLER.md` (auktoritativ regelkälla), `docs/kunskapsbas/DATA.md`, `docs/textgranskning/TEXT_REVIEW_formations_2026-04-20.md`, `docs/BANDYSPRAK_KALLASNING_2026-08-19.md`, `docs/BANDYTAKTIK_KALLASNING_2026-09-04.md` (SvBF spelarutvecklingsplan 2020 §2.4 + §6 kompletterande källor), `docs/kallor/BANDY_TAKTIK_WEBBKALLOR_2026-09-04.md` (GPT:s källindex: GIH 2023, Persson m.fl. 2020, Johansson m.fl. 2021, Andersson m.fl. 2022, van den Tillaar m.fl. 2023, Bykov & Kurikov 2025, FIB-regler), `docs/kallor/` (arkiverade PDF:er: SvenskaFans sju delar, SvBF 2020), `CLAUDE_REFERENCE.md`, `docs/dom/DOM_FORMATIONER_BANDY_KANON_2026-09-02.md`, matchmotor-kalibreringen (`bandygrytan_detailed.json`), Bandy-Brain (`docs/findings/`).
 
 ---
 

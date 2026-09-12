@@ -97,7 +97,7 @@ export function ScoreboardStalvallen({
   const maxMinutes = isOT ? 105 : 90
 
   return (
-    // data-minute: testkrok (A-C1, SLUTTEST_KO.md) — 7-segmentsklockan renderas
+    // data-minute: testkrok (A-C1, docs/archive/historiska-statuskallor/SLUTTEST_KO.md) — 7-segmentsklockan renderas
     // som SVG-segment utan textnod, så Playwright kan inte läsa minuten av
     // DOM-texten. Rent attribut, påverkar inget visuellt.
     <div className="scoreboard-root" data-minute={minute}>

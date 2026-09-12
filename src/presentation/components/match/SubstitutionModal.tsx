@@ -38,7 +38,7 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
   const availableBench = bench.filter(p => !p.isInjured && (p.suspensionGamesRemaining ?? 0) <= 0)
 
   return (
-    // Å10 (SLUTTEST_KO.md, 2026-08-18): matchdockan (.match-modal-dock) är
+    // Å10 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): matchdockan (.match-modal-dock) är
     // för modaler som besvaras UNDER pågående spel (TacticChangeModal —
     // en taktikändring medan spelet rullar, glanceable längst ner). Ett
     // byte görs i en pausad situation (samma mönster som HalftimeModal) —

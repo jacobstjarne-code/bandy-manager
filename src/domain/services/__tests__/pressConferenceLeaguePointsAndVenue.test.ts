@@ -6,7 +6,7 @@ import { FixtureStatus } from '../../enums'
 import type { Fixture } from '../../entities/Fixture'
 
 /**
- * U2 (SLUTTEST_KO.md, 2026-08-17) — symptom 2 och 3.
+ * U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — symptom 2 och 3.
  *
  * Symptom 2: en cupfinalseger kunde få frågan "Två viktiga poäng" trots att
  * cupmatcher inte ger ligapoäng. Symptom 3: en hemmamatch som slutade

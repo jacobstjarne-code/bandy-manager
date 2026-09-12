@@ -1,5 +1,5 @@
 /**
- * liggare-ny-letter (RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 + SPEC_BERATTAREN
+ * liggare-ny-letter (docs/rapport/RAPPORT_OMSPARNING_SYSTEM_2026-09-04.md §3 + SPEC_BERATTAREN
  * §5): saveBandyLetter dual-writar nu en `letter`-liggarpost bredvid den
  * orörda `bandyLetters`-fickan (Brevarkivet läser fortsatt fickan direkt).
  */

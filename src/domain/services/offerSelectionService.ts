@@ -14,7 +14,7 @@ interface DifficultyInput {
   boardExpectation: ClubExpectation
 }
 
-// U1 (SLUTTEST_KO.md, 2026-08-17) — det största fyndet i sluttestserien:
+// U1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — det största fyndet i sluttestserien:
 // difficulty satt ENBART från reputation gjorde en AvoidBottom-klubb med
 // sund ekonomi (Skutskär, rep 52) till "hard" trots att styrelsekravet var
 // det lägsta som finns och tålamodsstraffet bara träffade botten tre. En
@@ -51,7 +51,7 @@ function expectationSeverity(exp: ClubExpectation): 0 | 1 | 2 | 3 {
  * dominerande orsak för rep <55-klubbar sedan Survive-fixet stängde av den
  * sportsliga vägen för Heros). Marginalen är inte längre en sidojustering —
  * den är den bäst belagda kvarvarande signalen för avskedsrisk, se
- * RAPPORT_SURVIVE_VERIFIERAD_OCH_ROGLE_TIERFRAGAN_2026-08-25.md.
+ * docs/rapport/RAPPORT_SURVIVE_VERIFIERAD_OCH_ROGLE_TIERFRAGAN_2026-08-25.md.
  *
  * Löser INTE hela etikett-avskedsrisk-gapet: MidTable-klubbar drivs delvis
  * av styrelsemodellens boardPatience-formel. Den formella 10 000-

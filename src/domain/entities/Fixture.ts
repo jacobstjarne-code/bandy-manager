@@ -7,7 +7,7 @@ export interface TeamSelection {
   captainPlayerId?: string
   tactic: Tactic
   /**
-   * SLUTTEST_KO.md 4.8 (andra halvan, 2026-08-18): true när laget valdes av
+   * docs/archive/historiska-statuskallor/SLUTTEST_KO.md 4.8 (andra halvan, 2026-08-18): true när laget valdes av
    * simulateRemainingStep()'s auto-pick (bästa 11 på currentAbility, kondition
    * ignorerad) istället för av spelaren. Läses av started_tired-loggningen i
    * roundProcessor.ts/matchActions.ts för att sätta attributionstexten.
@@ -26,7 +26,7 @@ export interface MatchEvent {
   isPenaltyGoal?: boolean
   /** Utvisningens längd (5 eller 10 min) — sätts bara på MatchEventType.Suspension. */
   durationMinutes?: 5 | 10
-  /** B12 steg 2a (DOM_B12_STEG2_2026-08-19.md): numerärt läge vid eventets
+  /** B12 steg 2a (docs/dom/DOM_B12_STEG2_2026-08-19.md): numerärt läge vid eventets
    *  ögonblick, ur clubId:s eget perspektiv. Ren avläsning av redan beräknad
    *  state (homeActiveSuspensions/awayActiveSuspensions) — ingen ny
    *  sannolikhetsberäkning, ingen RNG-konsumtion. */

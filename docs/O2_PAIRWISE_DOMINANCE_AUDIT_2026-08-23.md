@@ -1,6 +1,6 @@
 # O2 — Pairwise-dominansanalysen (steg 2)
 
-**Datum:** 2026-08-23 · **Underlag:** `DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, steg 2 av Jacobs order ("noOp-grep först — klart, 13 bekräftade — sedan den fulla pairwise-analysen").
+**Datum:** 2026-08-23 · **Underlag:** `docs/dom/DOM_DOMINANS_OCH_FORHANDSDELTAN_2026-08-17.md`, steg 2 av Jacobs order ("noOp-grep först — klart, 13 bekräftade — sedan den fulla pairwise-analysen").
 
 **Metod:** fyra parallella agenter läste var sin klunga av event-konstruktionsfiler i sin helhet, extraherade FULLA effektvektorer per val (inte bara `effect.type`), korsade varje kandidat mot `eventResolver.ts`s faktiska resolution (inklusive id-baserad specialcasing och `multiEffect`/`subEffects`-undertypsswitchen — den fälla steg 1 redan fångade en gång). Två oklarheter som uppstod under körningen verifierades direkt mot `eventResolver.ts` efteråt (se "Verifierat i efterhand" nedan) innan denna fil skrevs.
 

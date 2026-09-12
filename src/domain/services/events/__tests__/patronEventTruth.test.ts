@@ -157,7 +157,7 @@ describe('patronEvent — text, state och livscykel håller ihop', () => {
     expect(result.patron?.happiness).toBe(95)
   })
 
-  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, anskaffnings-
+  // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron→liggaren, anskaffnings-
   // halvan. 'decline' använder 'noOp' och når aldrig spawnPatron — ingen
   // ledgerpost för ett avböjt erbjudande, bara en genuin anskaffning.
   it('en accepterad anskaffning (welcome) skriver en patron_emerge-liggarpost, ett avböjt (decline) gör det inte', () => {

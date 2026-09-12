@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN, klubbytet (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN, klubbytet (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * "Inte en ny värld. Ligan, klubbarna, spelarna och din historik står kvar.
  * Det är hela värdet."

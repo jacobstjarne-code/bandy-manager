@@ -622,7 +622,7 @@ function* simulateMatchCore(
     }
   }
 
-  // B12 steg 2a (DOM_B12_STEG2_2026-08-19.md) — manpowerState: 'A', ren
+  // B12 steg 2a (docs/dom/DOM_B12_STEG2_2026-08-19.md) — manpowerState: 'A', ren
   // avläsning av homeActiveSuspensions/awayActiveSuspensions (redan lästa för
   // powerplayBoost ovan) vid exakt det ögonblick ett event skapas. Skriver
   // INGET nytt tal, ändrar ingen sannolikhet — bara namnger vad motorn redan
@@ -632,7 +632,7 @@ function* simulateMatchCore(
       ? { ownSuspended: homeActiveSuspensions, opponentSuspended: awayActiveSuspensions }
       : { ownSuspended: awayActiveSuspensions, opponentSuspended: homeActiveSuspensions }
 
-  // B12 steg 2, fält 2/4 (DOM_B12_STEG2_2026-08-19.md) — tacticalFactors: 'B',
+  // B12 steg 2, fält 2/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — tacticalFactors: 'B',
   // etikettering av redan känd taktikkonfiguration. EXAKT samma sex villkor
   // buildSequenceWeights (nedan) redan förgrenar på — ren omskrivning till
   // strängetiketter, ingen ny beräkning, ingen RNG. isHome = eventets EGET
@@ -642,7 +642,7 @@ function* simulateMatchCore(
     const factors: string[] = []
     if (tactic.tempo === 'high') factors.push('tempo_high')
     else if (tactic.tempo === 'low') factors.push('tempo_low')
-    // DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523, ny formation_541.
+    // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523, ny formation_541.
     if (tactic.formation === '523_hog') factors.push('formation_523')
     if (tactic.formation === '541_hem') factors.push('formation_541')
     if (tactic.width === 'wide') factors.push('width_wide')
@@ -1091,7 +1091,7 @@ function* simulateMatchCore(
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
     const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost
 
-    // B12 steg 2, fält 3/4 (DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
+    // B12 steg 2, fält 3/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
     // 'B', lista över redan beräknade modifierare skilda från 1.0/0. Definierad
     // HÄR (inuti steg-loopen, inte som currentManpowerState/currentTacticalFactors
     // utanför) eftersom homeHotMult/awayHotMult/homeModeAttackMult/

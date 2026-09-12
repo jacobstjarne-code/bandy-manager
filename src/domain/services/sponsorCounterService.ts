@@ -2,7 +2,7 @@ import { csLinearRamp } from './communityStandingScaling'
 import type { Sponsor } from '../entities/Sponsor'
 
 /**
- * sponsorCounterService — DOM_SPONSOR_MOTBUD_2026-08-31.md.
+ * sponsorCounterService — docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md.
  *
  * "Motbudet är ett SPEL, inte en förhandling." Ett sponsorerbjudande har
  * fasta villkor (X kr/omg). Motbudet lägger till: kräv bättre villkor (Y >

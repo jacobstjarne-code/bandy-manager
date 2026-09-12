@@ -1,5 +1,5 @@
 /**
- * MEASUREMENT-ONLY. A-H2b RETENTION (DOM_AH2B_RETENTION_2026-08-28.md).
+ * MEASUREMENT-ONLY. A-H2b RETENTION (docs/dom/DOM_AH2B_RETENTION_2026-08-28.md).
  *
  * De fem tidigare kronmåtten kraschade på samma sten (en dominant klubbs
  * intäkter växer långt fortare än dess lönekrav, så "har du råd" svarar

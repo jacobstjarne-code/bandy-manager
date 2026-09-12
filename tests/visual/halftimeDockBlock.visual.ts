@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * A-C1 (SLUTTEST_KO.md, BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md §C1):
+ * A-C1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, BANDY_MANAGER_AUDIT_6_SASONGER_2026-08-26.md §C1):
  * BottomDock (SiffrorDrawer peek → z-index 400/--z-overlay, InteraktionsDock
  * block → z-index 500/--z-interaction) låg alltid över halvtidsmodalens
  * --z-modal (300), och ingenting stängde eller avaktiverade dockslotens

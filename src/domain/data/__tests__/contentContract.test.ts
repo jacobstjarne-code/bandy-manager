@@ -4,7 +4,7 @@ import { WHYNOW_ENTRIES } from '../contentContractRuntime'
 import { PORTAL_BEATS } from '../portalBeats'
 
 /**
- * O11 (SLUTTEST_KO.md, 2026-08-20) — INNEHÅLLSKONTRAKTET. Detta testet låser
+ * O11 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20) — INNEHÅLLSKONTRAKTET. Detta testet låser
  * registrets STRUKTUR (fullständighet + intern konsistens), inte innehållets
  * korrekthet — att sextiofältet är rätt ifyllt kan bara verifieras genom att
  * läsa källkoden, inte genom en assertion. Se contentContract.ts:s
@@ -116,7 +116,7 @@ describe('WHYNOW_ENTRIES matchar CONTENT_CONTRACT', () => {
 })
 
 /**
- * D1 punkt 4 (DOM_D1_EVENTVIKTNING_2026-08-19.md) — "därför nu"-raden.
+ * D1 punkt 4 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) — "därför nu"-raden.
  * Jacobs dom 2026-08-21: getWhyNowLine läser contentContract-raden, inte
  * event-instansen. Copy ordagrant låst i domen, testet låser bara
  * prioritetsordningen och null-fallet.

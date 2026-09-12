@@ -1,6 +1,6 @@
 /**
  * PÅSTÅENDEKARTAN (2026-08-24) — narrativeLog döpt om på tre register
- * (namnkollision, se SLUTTEST_KO.md post 58): SaveGame.narrativeLog →
+ * (namnkollision, se docs/archive/historiska-statuskallor/SLUTTEST_KO.md post 58): SaveGame.narrativeLog →
  * narrativeBeatLog, Player.narrativeLog → diary, ManagerProfile.narrativeLog
  * → diary. Ett naivt fältbyte utan migration hade tyst amputerat all
  * befintlig data för spelare som redan har en save — en managers

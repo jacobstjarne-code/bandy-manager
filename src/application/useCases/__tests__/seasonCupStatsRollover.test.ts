@@ -6,7 +6,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { autoSelectLineup, autoResolvePendingScreen } from '../../../../scripts/stress/fixtures'
 
 /**
- * Grind 0 (SLUTTEST_KO.md, 2026-08-21) — "sanningen", första verkliga fyndet.
+ * Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21) — "sanningen", första verkliga fyndet.
  * `player.seasonCupStats` saknade sin nollställning i seasonEndProcessor.ts:s
  * rollover-mappning (seasonStats/liga återställdes, seasonCupStats ärvdes
  * oförändrad via spreaden) — cupstatistik ackumulerade tyst över alla

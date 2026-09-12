@@ -3,7 +3,7 @@
 **Datum:** 2026-06-11
 **Till:** Design (Fable)
 **Från:** Opus
-**Parar med:** `docs/B1-SPRINTORDNING-KLUBBUTVECKLING-2026-06-10.md` (strävan + sprintar, läs den först), `docs/SPEC_KLUBBUTVECKLING.md` (mekaniken), facility-trädets domänmodell-relay (Code, parallellt). **Bygg inom** försoningssprintens ratificerade system (`design-system/DESIGN-DECISIONS.md` systempatch 2026-06-11) — inga nya mönster, använd kanon.
+**Parar med:** `docs/B1-SPRINTORDNING-KLUBBUTVECKLING-2026-06-10.md` (strävan + sprintar, läs den först), `docs/spec/SPEC_KLUBBUTVECKLING.md` (mekaniken), facility-trädets domänmodell-relay (Code, parallellt). **Bygg inom** försoningssprintens ratificerade system (`design-system/DESIGN-DECISIONS.md` systempatch 2026-06-11) — inga nya mönster, använd kanon.
 
 Försoningssprinten städar *befintliga* ytor. Den här briefen gäller de ytor B1 *inför* och som ännu inte finns. Mockas när systemet satt sig efter försoningen — men strävan är låst, så specen kan ligga klar nu.
 

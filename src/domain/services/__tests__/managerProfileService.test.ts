@@ -20,7 +20,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { ManagerProfile } from '../../entities/ManagerProfile'
 import type { Fixture } from '../../entities/Fixture'
 
-// HIGH 10 (DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md). Fram till 2026-08-30 fanns
+// HIGH 10 (docs/dom/DOM_HIGH10_BURNOUT_BAGE_2026-08-29.md). Fram till 2026-08-30 fanns
 // ingen enhetstest-fil för managerProfileService — updateManagerBurnout,
 // getBurnoutZone och shouldShowBurnoutMark täcktes bara indirekt via
 // roundProcessor-integrationstester, som aldrig kunde isolera decay-gaten.

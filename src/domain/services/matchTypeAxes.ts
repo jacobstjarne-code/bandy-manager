@@ -27,7 +27,7 @@ export interface MatchTypeAxes {
   skede?: Skede
   plats: Plats
   /**
-   * U2 (SLUTTEST_KO.md, 2026-08-17) — faktiskt utfall för den hanterade
+   * U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — faktiskt utfall för den hanterade
    * klubben, EFTER förlängning/straffar om matchen gick dit. Ersätter fyra
    * separata rå-score-tolkningar i pressConferenceService.ts/
    * csPressEventService.ts som gav en straffseger som "oavgjort".
@@ -81,7 +81,7 @@ export function deriveUtfall(fixture: Fixture, managedClubId: string): Utfall {
 }
 
 /**
- * O9 (DOMLOGG_2026-08-31.md, Code-actionable-listan): extraherad ur
+ * O9 (docs/dom/DOMLOGG_2026-08-31.md, Code-actionable-listan): extraherad ur
  * pressConferenceService.ts:s buildPressContext (var tidigare en lokal,
  * oexporterad beräkning där) — matchHighlightService.ts behöver samma
  * "låg vi under vid paus?"-fråga för comeback-kategorin. En sanning, ett

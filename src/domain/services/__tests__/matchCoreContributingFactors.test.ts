@@ -11,7 +11,7 @@ import {
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
 
-// B12 steg 2, fält 3/4 (DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
+// B12 steg 2, fält 3/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
 // etiketterar de motorförhållanden som faktiskt påverkade målchansen (inte
 // bara "vad var läget", som tacticalFactors/manpowerState). Känd, avsiktlig
 // begränsning testad explicit nedan: OT-loopen (steg 62-75) saknar

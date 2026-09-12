@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
 
 /**
- * 4.3 (SLUTTEST_KO.md, 2026-08-17) — varsel-eventets "en gång per säsong"-
+ * 4.3 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — varsel-eventets "en gång per säsong"-
  * spärr kollade `event_varsel_s{season}` men det faktiska eventet byggde
  * sitt id ur `event_varsel_{employer}_{season}` — de matchade aldrig,
  * så spärren var verkningslös. Gemensam ID-funktion (varselEventId) löser

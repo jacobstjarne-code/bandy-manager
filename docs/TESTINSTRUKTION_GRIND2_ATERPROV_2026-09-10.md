@@ -1,7 +1,7 @@
 # TESTINSTRUKTION — Grind 2 återprov (2 säsonger, logik och spelupplevelse)
 
 **Datum:** 2026-09-10
-**Grund:** villkoret i `DOM_GRIND_2_3_2026-09-10.md`. Grind 3 är passerad. Det här provet stänger Grind 2.
+**Grund:** villkoret i `docs/dom/DOM_GRIND_2_3_2026-09-10.md`. Grind 3 är passerad. Det här provet stänger Grind 2.
 **Kör med:** en stark logisk modell. Jacobs tillägg 2026-09-11: två spår i samma genomspelning — invariantkoll i bakgrunden och läst, upplevd spelrytm i förgrunden. Rapportera dem separat.
 
 ## Förutsättning (blockerande)

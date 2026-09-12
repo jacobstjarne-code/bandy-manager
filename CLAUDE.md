@@ -10,7 +10,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
-3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/MASTER_OPPET.md` (INTE `docs/BACKLOG.md` — degraderat 2026-08-31, nu bara changelog + parkerad-idé-katalog) och läs (a) sektionen "BYGGT MEN OSYNLIGT / ONÅBART" och (b) sektion A (aktiva sprintar + sessionsfynd). Filen bär sedan 2026-09-08 (MASTER-splitten) BARA aktiva rader (`rapporterad`/`verifierad`/`in_progress`) — hela filen är läsbar på under en minut. Detta är obligatoriskt, inte orientering-vid-behov. **Claim före arbete:** välj bara en `verifierad` rad; sätt `status = in_progress`, rätt `ägare` och `CLAIM <ISO-8601-timestamp> — <agent>.` först i nästa-åtgärd, committa och pusha claimen som en EGEN commit innan implementation eller verifieringskörning. Hoppa alltid över andra agenters `in_progress`; en claim utan aktivitet äldre än ett arbets-pass får övertas genom en ny pushad claim-commit. Vid klar/stale flyttas raden samma pass till `docs/MASTER_ARKIV.md`. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i MASTER_OPPET.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; MASTER_OPPET visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i MASTER_OPPET.md är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst MASTER_OPPET.md, inte istället för. **Läs ALDRIG `docs/MASTER_ARKIV.md` rutinmässigt** — det är de ~517 stängda/stale raderna, kollapsade till pekare, och hör bara hemma i kontexten när du EXPLICIT letar historik ("var det här redan löst?").
+3. **BYGGT-MEN-OSYNLIGT — läs FÖRE du spårar kod.** Öppna `docs/MASTER_OPPET.md` (INTE `docs/archive/historiska-statuskallor/BACKLOG.md` — degraderat 2026-08-31, nu bara changelog + parkerad-idé-katalog) och läs (a) sektionen "BYGGT MEN OSYNLIGT / ONÅBART" och (b) sektion A (aktiva sprintar + sessionsfynd). Filen bär sedan 2026-09-08 (MASTER-splitten) BARA aktiva rader (`rapporterad`/`verifierad`/`in_progress`) — hela filen är läsbar på under en minut. Detta är obligatoriskt, inte orientering-vid-behov. **Claim före arbete:** välj bara en `verifierad` rad; sätt `status = in_progress`, rätt `ägare` och `CLAIM <ISO-8601-timestamp> — <agent>.` först i nästa-åtgärd, committa och pusha claimen som en EGEN commit innan implementation eller verifieringskörning. Hoppa alltid över andra agenters `in_progress`; en claim utan aktivitet äldre än ett arbets-pass får övertas genom en ny pushad claim-commit. Vid klar/stale flyttas raden samma pass till `docs/MASTER_ARKIV.md`. **Hård regel:** om Jacob frågar om något kan vara byggt-men-osynligt, parkerat, halvfärdigt, eller "finns det redan?" — sök svaret i MASTER_OPPET.md FÖRST, innan du grep:ar koden. Koden visar vad som finns; MASTER_OPPET visar vad vi *vet* om vad som finns och varför det ser ut som det gör. Att spåra fram ett svar ur koden som redan står i MASTER_OPPET.md är det dyraste felet i det här projektet — det får Jacob att tro att en sak är bortglömd när den är loggad, och tvärtom. Verifiera mot koden EFTER att du läst MASTER_OPPET.md, inte istället för. **Läs ALDRIG `docs/MASTER_ARKIV.md` rutinmässigt** — det är de ~517 stängda/stale raderna, kollapsade till pekare, och hör bara hemma i kontexten när du EXPLICIT letar historik ("var det här redan löst?").
 
 4. **Incoming-koll.** `docs/incoming/` är drop-zon, inte arkiv. Lista den. Baslinje = `README.md` (mappens manual). (`2026-06-11_design_b1_klubbutveckling.html` var tidigare baslinje-referens men är konsumerad — alla tre ytor byggda — och flyttad till `docs/mockups/` 2026-06-23; den är inte längre en incoming-baslinje.) Allt ANNAT triageras SAMMA session till sitt hem: mock → `docs/mockups/`, design-brief/handoff → `design-system/briefs/`, analys/flödesgenomgång → `docs/`, dubblett/äldre snapshot → `docs/incoming/_RADERAS/` (Opus saknar delete; Jacob kör `git rm` på _RADERAS). **Batcha aldrig.** En hög på 27 filer kostade en vecka i verifiera-mot-källan-arkeologi (2026-06-20); vid drop-tillfället är samma bedömning 30 sekunder för att kontexten är färsk. Nya drops filas vid drop-tillfället, inte "senare". Avgör mot KÄLLAN (är det byggt/stale/konsumerat?), inte mot minnet.
 
@@ -51,7 +51,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
   matchtext utan att ha läst termlistan + lärdom #4 (anropskod före pool).
 - `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` — tonregler, max 10 citat per block (Lärdom #7)
 - `docs/STRINGS_POOL_INVENTORY.md` — vilka pools finns redan, återanvänd struktur
-- `docs/SPEC_CUP_ANSLAG_2026-05-08.md` om cup-relaterat
+- `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md` om cup-relaterat
 - Två-tre befintliga textpool-filer för mönsterläsning
 - Inte plocka strängar — läs helhet
 
@@ -63,7 +63,7 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 
 **E. THE_BOMB-FRÅGOR:**
 - `docs/THE_BOMB.md` (vision)
-- `docs/archive/completed-april/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt, april 2026 — flyttad till arkiv, läs BACKLOG.md/MASTER_OPPET.md för aktuellt läge)
+- `docs/archive/completed-april/THE_BOMB_STATUS_2026-04-26.md` (kodverifierad status per subprojekt, april 2026 — flyttad till arkiv; läs `docs/MASTER_OPPET.md` för aktuellt läge)
 
 **F. ARKITEKTUR / KEY FILES / BANDY-REGLER (slå-upp-vid-behov):**
 - `CLAUDE_REFERENCE.md` — läsbar referensfil med arkitektur-overview, bandy-specifika regler, key files, kalibreringsdata, Bandy-Brain-kunskapsbasen. För dessa: läs `CLAUDE_REFERENCE.md` istället för att grep:a `CLAUDE.md`.
@@ -79,9 +79,9 @@ Innan du resonerar om bandyns regler, tolkar matchhändelser, eller drar slutsat
 
 ### Backlog & historik — orientering:
 
-- `docs/BACKLOG.md` — ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec" (etablerad 2026-05-17). Läses vid sessionsstart (steg 3 ovan), inte bara vid behov. När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. **När något byggs som domän-utan-yta (logik finns, ingen scen/route/vy läser den) eller medvetet skjuts upp — skriv en rad i "BYGGT MEN OSYNLIGT/ONÅBART"-listan överst i BACKLOG samma session, med vad/varför/stäng-villkor/ägare.** En parkering utan rad i den listan finns inte — den är bara bortglömd, och då springer Jacob på den av en slump månader senare. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
+- `docs/archive/historiska-statuskallor/BACKLOG.md` — ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec" (etablerad 2026-05-17). Läses vid sessionsstart (steg 3 ovan), inte bara vid behov. När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. **När något byggs som domän-utan-yta (logik finns, ingen scen/route/vy läser den) eller medvetet skjuts upp — skriv en rad i "BYGGT MEN OSYNLIGT/ONÅBART"-listan överst i BACKLOG samma session, med vad/varför/stäng-villkor/ägare.** En parkering utan rad i den listan finns inte — den är bara bortglömd, och då springer Jacob på den av en slump månader senare. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
 - `docs/KVAR.md` — historisk logg av leveranser (kronologisk). KVAR är vad SOM HÄNT, BACKLOG är vad som ska göras. Inte samma sak.
-- Senaste `docs/HANDOVER_YYYY-MM-DD.md` — dagsläge från föregående session.
+- Senaste `docs/handover/HANDOVER_YYYY-MM-DD.md` — dagsläge från föregående session.
 - Aktuell sprintfil i `docs/sprints/`.
 
 ### Vid första missen i sessionen — STANNA OCH LÄS
@@ -107,7 +107,7 @@ All svensk spelartext (anslag, kafferum, klack, pressfrågor, signature-facts, e
 
 ## VID SESSIONSSLUT
 
-Skriv eller uppdatera `docs/HANDOVER_YYYY-MM-DD.md` med:
+Skriv eller uppdatera `docs/handover/HANDOVER_YYYY-MM-DD.md` med:
 - Vad som levererades och vilka commits
 - Aktiva jobb som pågår
 - Nyckelbeslut fattade idag
@@ -800,10 +800,10 @@ Missen sker ALLTID i exakt två ögonblick. När du är i ettdera — stanna och
 2. Greppa repo efter den gamla filens namn (`grep -rn "GAMMAL_FIL" docs/`) och uppdatera VARJE referens till att peka på den nya. En stale pekare i körlistan är lika illa som den gamla filen själv.
 
 **B. När du markerar något KLART eller en grind PASSERAD:**
-1. Uppdatera statusen i `docs/BACKLOG.md` (den utpekade statusfilen) — ALDRIG i en sidofil.
+1. Uppdatera statusen i `docs/archive/historiska-statuskallor/BACKLOG.md` (den utpekade statusfilen) — ALDRIG i en sidofil.
 2. Om en order-/spec-fil har grind-språk ("Jacob spelar inte förrän...", "PRIO 1–4 är grinden") som nu är inaktuellt → toppa den med `✅ HISTORISK — status i körlistan`. Lämna inte två filer som säger olika om vad som är gjort.
 
-**Den bärande regeln (båda fallen):** det finns EN statusfil (`docs/BACKLOG.md` — KORLISTA_CODE_RC.md dödmarkerad 2026-06-21, den var en RC-moment-frysning). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
+**Den bärande regeln (båda fallen):** det finns EN statusfil (`docs/archive/historiska-statuskallor/BACKLOG.md` — KORLISTA_CODE_RC.md dödmarkerad 2026-06-21, den var en RC-moment-frysning). Allt annat är antingen (a) en order/spec som pekar PÅ statusfilen, eller (b) historik som SÄGER att den är historik. En fil får aldrig tyst motsäga statusfilen — den måste antingen peka dit eller dödmarkera sig själv. Om du inte hinner göra följdhandlingen samma tur: gör den ändå. "Vid tillfälle" är hur drift uppstår.
 
 **Självkontroll innan du avslutar en tur där du skrev en ny sanning:** "Skapade jag just en version 2 eller markerade något klart? Finns det en gammal fil eller en referens som nu ljuger? Döda den nu."
 
@@ -857,7 +857,7 @@ skalar Code-kostnaden bättre. Fördela arbete utifrån två frågor:
 - Refactors > 5 filer, ny service/entity/större komponent
 - Process-fil-uppdateringar EFTER sprint-leverans:
   - `docs/sprints/SPRINT_XX_AUDIT.md` — Code har sett implementationen
-  - `docs/HANDOVER_YYYY-MM-DD.md` — Code vet vad som faktiskt levererades
+  - `docs/handover/HANDOVER_YYYY-MM-DD.md` — Code vet vad som faktiskt levererades
   - `KVAR.md` ✅-markeringar för det Code precis avslutade
   - `LESSONS.md` historik-tillägg när Code stötte på ett mönster
 

@@ -1,5 +1,5 @@
 /**
- * O4 (DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23) — burnoutkortet
+ * O4 (docs/dom/DOM_BURNOUT_2026-08-17.md, Jacobs dom 2026-08-23) — burnoutkortet
  * hade ingen gameplay-effekt. Två delar testade här: informationskvaliteten
  * (taktikrekommendationens uteblivande, deterministisk) och burnoutRelief-
  * eventets tre handlingar (text/effekt-struktur).

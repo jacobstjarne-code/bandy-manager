@@ -1,7 +1,7 @@
 /**
  * content-contract-guard.ts — O11:s grind (ratchet, samma mönster som ds-guard.mjs).
  *
- * DOM_INNEHALLSKONTRAKTET_2026-08-17.md, "Godkänd när": "En ny berättelsetext
+ * docs/dom/DOM_INNEHALLSKONTRAKTET_2026-08-17.md, "Godkänd när": "En ny berättelsetext
  * kan inte nå produktion utan att de sex fälten är ifyllda... Kontraktet är
  * inte ett dokument någon ska minnas. Det är en fil som failar bygget."
  *
@@ -44,7 +44,7 @@ if (todoCount > baseTodo) {
   for (const id of newTodoIds) console.log(`        ${id}`)
   console.log('')
   console.log('        Fyll raden (alla sex fält, eller ett medvetet "ingen"-svar för fält 2/6)')
-  console.log('        innan merge — det var hela poängen med kontraktet. Se DOM_INNEHALLSKONTRAKTET_2026-08-17.md.')
+  console.log('        innan merge — det var hela poängen med kontraktet. Se docs/dom/DOM_INNEHALLSKONTRAKTET_2026-08-17.md.')
   process.exit(1)
 } else if (todoCount < baseTodo) {
   console.log(`[info]  TODO sjönk till ${todoCount} — baslinjen kan skärpas (uppdatera content-contract-guard-baseline.json).`)

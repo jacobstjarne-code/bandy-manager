@@ -1,7 +1,7 @@
 /**
  * O5 acceptanstest (Jacobs order 2026-08-23, före O1): åtta säsonger med en
  * framgångsrik klubb (Västanfors, ChallengeTop, rykte 78 — samma referens som
- * DOM_FRAMGANGSEKONOMIN_2026-08-17.md:s ursprungsaudit: "Kassa 420 tkr →
+ * docs/dom/DOM_FRAMGANGSEKONOMIN_2026-08-17.md:s ursprungsaudit: "Kassa 420 tkr →
  * 11,0 mkr") med alla tre O5-krafterna aktiva. Domens kriterium: år åtta ska
  * det finnas minst ETT ekonomiskt val där båda alternativen svider.
  *
@@ -9,7 +9,7 @@
  * 1) Kassans kurva år 1-8, monoton eller inte.
  * 2) Går kassan NÅGONSIN under det billigaste tillgängliga (icke-byggda,
  *    icke-låsta) anläggningsnodens kostnad — samma mekaniska mätmetod
- *    RAPPORTERA-svaret (DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md) föreslog.
+ *    RAPPORTERA-svaret (docs/dom/DOM_FRAMGANGSEKONOMIN_HEROS_2026-08-23.md) föreslog.
  * 3) Anläggningsdrift som andel av bruttosäsongsintäkt, år 3 mot år 8
  *    (ackumulerat live ur financeLog-deltat varje omgång — INTE
  *    rekonstruerat i efterhand, loggen är kapad vid 50 poster och skulle

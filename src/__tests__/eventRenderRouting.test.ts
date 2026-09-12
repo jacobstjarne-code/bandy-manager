@@ -3,7 +3,7 @@ import { isAmbientEvent, getEventRenderTarget } from '../domain/services/eventQu
 import type { GameEvent } from '../domain/entities/GameEvent'
 
 /**
- * D1 (DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln, och
+ * D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 2 — Ambient-regeln, och
  * punkt 4 — self-kontrollen (getEffectivePriority läser contentContract.ts,
  * Jacobs dom 2026-08-21). Testar den mekaniska routing-BESLUTET som ren
  * logik, samma mönster som matchLive_integration.test.tsx:s ARKITEKTONISKA

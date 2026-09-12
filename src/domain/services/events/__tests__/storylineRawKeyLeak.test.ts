@@ -5,7 +5,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { GameEvent } from '../../../entities/GameEvent'
 
 /**
- * 4.6 (SLUTTEST_KO.md, 2026-08-17) — "rå nyckel captain_rallied_team".
+ * 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — "rå nyckel captain_rallied_team".
  * Tre storylines i eventResolver.ts satte description till den råa
  * typnyckeln (t.ex. 'captain_rallied_team') istället för en mening.
  * seasonSummaryService.ts:s arcMoments använder .description som

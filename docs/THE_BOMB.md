@@ -231,7 +231,7 @@ Dessa är fullspecade och redo att implementeras.
 
 ## PRIORITERING
 
-Se också `docs/SPEC_KLUBBUTVECKLING.md` för ekonomisk progression, utbyggnadsträd, och säsongsrytm. Dessa två dokument är komplementära:
+Se också `docs/spec/SPEC_KLUBBUTVECKLING.md` för ekonomisk progression, utbyggnadsträd, och säsongsrytm. Dessa två dokument är komplementära:
 - **THE_BOMB** = narrativ, atmosfär, känslomässiga beröringspunkter
 - **SPEC_KLUBBUTVECKLING** = ekonomi, byggen, strukturell progression
 

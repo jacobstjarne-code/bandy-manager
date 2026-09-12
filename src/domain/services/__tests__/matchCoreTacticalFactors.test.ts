@@ -9,10 +9,10 @@ import {
 } from '../../enums'
 import type { Tactic } from '../../entities/Club'
 
-// B12 steg 2, fält 2/4 (DOM_B12_STEG2_2026-08-19.md) — tacticalFactors: ren
+// B12 steg 2, fält 2/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — tacticalFactors: ren
 // etikettering av EXAKT de sex (nu sex, oförändrat antal — press_high bytt
 // mot formation_523) villkor buildSequenceWeights redan förgrenar på
-// (matchCore.ts). DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523.
+// (matchCore.ts). docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press_high → formation_523.
 // Testar att egna labels dyker upp för det lag som satt dem, och ALDRIG för
 // motståndaren som kör standardtaktik.
 

@@ -11,7 +11,7 @@ export interface WeatherAdviceItem {
 }
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, heightMode härleds ur
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press borttaget, heightMode härleds ur
  * formation. Ingen produktionsanropare hittad (0 träffar) — orört sedan
  * innan, uppdaterad ändå för att inte vara en landmina om den återupplivas.
  */

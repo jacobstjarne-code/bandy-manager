@@ -25,7 +25,7 @@ function makePlayer(id: string): Player {
 }
 
 /**
- * Grind 0 (SLUTTEST_KO.md, 2026-08-21) — "flygande byten"-grenen (bänkspelare
+ * Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21) — "flygande byten"-grenen (bänkspelare
  * som INTE byttes in) ökade seasonStats.gamesPlayed men glömde
  * careerStats.totalGames, till skillnad från allStarters-grenen som alltid
  * håller de två i lockstep. Upptäckt genom en riktig flersäsongskörning

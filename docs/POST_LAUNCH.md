@@ -13,7 +13,7 @@ Regeln: en rad här har vad / varför-uppskjuten / underlag. Inget "senare utan 
 ## Transfers
 
 ### scout-shortlist-transferfonster
-**Vad:** när transferfönstret stänger kan en shortlist-markerad spelare som fortfarande är tillgänglig ge en kort, världssann notis. **Varför uppskjuten:** shortlisten är medvetet tyst i nuvarande produkt, och källraden säger uttryckligen att notisen ska byggas först när transferytorna ändå rörs — ingen sådan ytrörelse pågår i releasearbetet. **Underlag:** `BACKLOG.md` L3/`scout-shortlist-transferfonster`. **När:** i nästa samlade transfer-ytepass; använd den befintliga shortlistmarkeringen, inte ett parallellt bevakningssystem.
+**Vad:** när transferfönstret stänger kan en shortlist-markerad spelare som fortfarande är tillgänglig ge en kort, världssann notis. **Varför uppskjuten:** shortlisten är medvetet tyst i nuvarande produkt, och källraden säger uttryckligen att notisen ska byggas först när transferytorna ändå rörs — ingen sådan ytrörelse pågår i releasearbetet. **Underlag:** `docs/archive/historiska-statuskallor/BACKLOG.md` L3/`scout-shortlist-transferfonster`. **När:** i nästa samlade transfer-ytepass; använd den befintliga shortlistmarkeringen, inte ett parallellt bevakningssystem.
 
 ## Världens liv (AI-klubbarna över tid)
 
@@ -62,7 +62,7 @@ djupet prioriteras. Ny spec behövs som definierar uttagningsmekaniken.
 **Vad:** skilj entitetens stabila id från dess rollmedlemskap, så en kontextuell
 sponsor kan vara både sponsor och antagonist utan att låtsas vara en klubb eller
 få en parallell identitet. **Underlag:**
-`DOM_C_O1SP1_SPONSOR_NAMNRYMD_2026-09-08.md`. **Varför uppskjuten:** den riktiga
+`docs/dom/DOM_C_O1SP1_SPONSOR_NAMNRYMD_2026-09-08.md`. **Varför uppskjuten:** den riktiga
 lösningen korsar sponsor-, rival- och liggarsubjektens namnrymder och har bred blast
 radius; O1 behöver inte refaktorn före release. En eventuell framtida O1-genväg får
 bara vara en riktad läsning av sponsorns befintliga stabila id, inte en ny
@@ -132,7 +132,7 @@ fem oberoende karriärer/spelare. Ett alternativ över 80 procent flaggar
 mallen för kvalitativ kodläsning; procentsatsen ensam auktoriserar ingen
 balansändring. **Särskild bevakning:** `burnoutRelief`,
 `communityActivityRenewal` och `burnoutCeiling`. **Underlag:**
-`RAPPORT_O12_NATURLIGT_PROV_2026-09-11.md`. **När:** under soft launch, ihop
+`docs/rapport/RAPPORT_O12_NATURLIGT_PROV_2026-09-11.md`. **När:** under soft launch, ihop
 med den övriga kvalitativa spelaruppföljningen.
 
 ### sluttest-kvalitativ-uppfoljning

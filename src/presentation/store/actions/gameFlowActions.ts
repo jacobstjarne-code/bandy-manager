@@ -513,13 +513,13 @@ export function gameFlowActions(get: Get, set: Set) {
 
     clearRoundSummary: () => set({ roundSummary: null }),
 
-    // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18): Jacobs DOM — återinträdesguard
+    // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): Jacobs DOM — återinträdesguard
     // hänger på seasonGoalChosenForSeason (O3 tar över samma fält, se
     // kommentaren på SaveGame.seasonGoalChosenForSeason). Töm den ackumulerade
     // eventlistan här — inte i seasonEndProcessor.ts — för nästa säsongs
     // "medan du var borta" ska börja tomt, inte ärva den här säsongens.
     //
-    // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19): valfri goal-param
+    // O3 (docs/dom/DOM_EGET_SASONGSMAL_2026-08-17.md, 2026-08-19): valfri goal-param
     // för bakåtkompatibla/anrop utan picker. Spelarens synliga "Inget särskilt
     // i år" skickas som den explicita typen `none`, så activeSeasonGoal kan
     // frysas i årsboken utan att fabricera samma val för äldre saves.
@@ -571,7 +571,7 @@ export function gameFlowActions(get: Get, set: Set) {
       )
       const resolvedRound = isFinite(resolvedMatchday) ? resolvedMatchday : (game.weeklyDecisionLastRound ?? 1)
 
-      // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 2/9. decision.id
+      // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 2/9. decision.id
       // är redan season-strippad (t.ex. 'away_trip_bus'), inget att härleda.
       let updatedGame: SaveGame = {
         ...game,
@@ -716,7 +716,7 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!game) return
       const shown = game.shownBeats ?? []
       if (!shown.includes(beatKey)) {
-        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 3/9. Loggar
+        // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 3/9. Loggar
         // den råa beatKey:en oskalad (flera keyFn:s bakar redan in `_s{season}`
         // — finkornig strippning är ett senare, medvetet steg per DOM:en).
         let log = logNarrativeBeat(game, beatKey, game.currentSeason, getCurrentLeagueRound(game))
@@ -817,7 +817,7 @@ export function gameFlowActions(get: Get, set: Set) {
         const coffeeScene = getCoffeeRoomScene(updatedGame)
         if (coffeeScene) {
           updatedGame.lastCoffeeSceneIndices = [...(updatedGame.lastCoffeeSceneIndices ?? []), ...coffeeScene.pickedIndices].slice(-12)
-          // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 8/9 — en
+          // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 8/9 — en
           // post per visat poolindex, matchar mekanismens egna syfte
           // (undvik samma kafferumsrad igen).
           for (const idx of coffeeScene.pickedIndices) {
@@ -917,7 +917,7 @@ export function gameFlowActions(get: Get, set: Set) {
           }
         }
       } else {
-        // U5 (SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 4/9.
+        // U5 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): narrativeBeatLog-skrivväg 4/9.
         updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
         updatedGame.narrativeBeatLog = logNarrativeBeat(updatedGame, sceneId, updatedGame.currentSeason, getCurrentLeagueRound(updatedGame))
       }

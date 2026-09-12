@@ -78,7 +78,7 @@ export function getStureLine(clubId: string): string {
   return STURE_VARIANTS[idx]
 }
 
-// 2.6 (SLUTTEST_KO.md, 2026-08-19): Margareta (kassör) var den enda av de
+// 2.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-19): Margareta (kassör) var den enda av de
 // tre styrelsereplikerna kvar utan data-drivet innehåll — treasurerLine i
 // ArrivalScene.tsx:74 hävdade "Tre kontrakt löper ut" oavsett vad saven
 // faktiskt innehöll. Text låst av Jacob, tre buckets: noll/exakt ett/två

@@ -453,7 +453,7 @@ describe('captureSystemDecision — utanför den slutna listan', () => {
   })
 })
 
-// A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): ny rangordning — namngiven
+// A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): ny rangordning — namngiven
 // person → irreversibelt → spänning → antal system (sist, bara skiljedomare)
 // → kronor (allra sist). Ersätter den gamla ordningen (flest system vann
 // oavsett övrigt) — domens ord: "en räknare är inte ett minne."

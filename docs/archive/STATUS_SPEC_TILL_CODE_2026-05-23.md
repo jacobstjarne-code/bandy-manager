@@ -1,6 +1,6 @@
-# ⛔ HISTORISK — status i `docs/BACKLOG.md`. BYGG INTE PÅ DENNA.
+# ⛔ HISTORISK — status i `docs/archive/historiska-statuskallor/BACKLOG.md`. BYGG INTE PÅ DENNA.
 
-**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** 05-23 status-snapshot ("är allt specat och redo?"). Allt namngivet är sedan levererat: score-systemet steg 1–4 (Våg 1–4), C-SD1 koreografi, Efterklang, Manager-kvitto, FT1-synlighet, C-N1 NU-fliken (`d608cee`). Guld-"blockeraren" var en feldiagnos (avförd redan i filen). Designunderlaget för ev. obyggda spår (C-K1 landslag) lever i sina HANDOFF-filer, inte i denna tracker. Dubblett-varningen (`HANDOFF-MANAGER-KARAKTAR (kopia).md` m.fl. i mockups) hör till hink 1/mockups-städningen. **Statusfilen är `docs/BACKLOG.md`.** Lämnad som historik.
+**Dödmarkerad 2026-06-21 (Opus, process-fil-genomgången).** 05-23 status-snapshot ("är allt specat och redo?"). Allt namngivet är sedan levererat: score-systemet steg 1–4 (Våg 1–4), C-SD1 koreografi, Efterklang, Manager-kvitto, FT1-synlighet, C-N1 NU-fliken (`d608cee`). Guld-"blockeraren" var en feldiagnos (avförd redan i filen). Designunderlaget för ev. obyggda spår (C-K1 landslag) lever i sina HANDOFF-filer, inte i denna tracker. Dubblett-varningen (`HANDOFF-MANAGER-KARAKTAR (kopia).md` m.fl. i mockups) hör till hink 1/mockups-städningen. **Statusfilen är `docs/archive/historiska-statuskallor/BACKLOG.md`.** Lämnad som historik.
 
 ---
 

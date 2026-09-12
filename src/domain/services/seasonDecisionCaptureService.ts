@@ -4,7 +4,7 @@
  * fraser nedan är klistrade ordagrant från Jacob — Code bygger bara
  * datainhämtningen och sätter in redan kända namn/belopp i hans meningar.
  *
- * A-H9 (DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md, RAPPORT_AH9_KANDIDATVOLYM_
+ * A-H9 (docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md, RAPPORT_AH9_KANDIDATVOLYM_
  * 2026-08-27.md): rangordningen var mekanisk (flest berörda system vann)
  * och kandidatmängden var för smal (bara O19-märkta systemhandelser, 9
  * händelser i hela spelet — en säsong utan någon av dem fick ingen rad
@@ -629,7 +629,7 @@ export function buildDecisionLedgerEntry(
  * (FacilityNodeDef.upkeepCost) som följer klubben resten av spelet.
  * `tension: true`: kapitalet som går in i anläggningen är kapital som inte går
  * till truppen — samma "konkurrerar med truppen"-ram som resten av doktrinen
- * använder (DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
+ * använder (docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md).
  *
  * `systemsAffectedCount` räknas ur nodens EGEN konsekvenstabell
  * (FacilityNodeDef.consequences) — antalet distinkta dimensioner som faktiskt
@@ -678,7 +678,7 @@ export function captureFacilityBuildDecision(
 /**
  * MIGRATIONSPLAN_HANDELSELIGGAREN_2026-09-01.md Fas 2 — RETIRE-STEGET.
  * Samma rangordningsprincip som den superseterade pickSeasonDecision hade
- * (A-H9, DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): (1) namngiven person
+ * (A-H9, docs/dom/DOM_AH9_ARSBOKENS_BESLUT_2026-08-27.md): (1) namngiven person
  * (subject !== undefined), (2) irreversibilitet, (3) spänning, (4) antal
  * berörda system (EGET fält, INTE consequences.length — se
  * EventLedgerEntry:s docstring för varför), (5) kronor. Vid full likhet:

@@ -1,7 +1,7 @@
 # O9 — ÅRETS BERÄTTELSE: LÅST TEXT (delningskortet)
 
-**Datum:** 2026-08-21 · **Av:** Opus/Fable · **Post:** 27 i `SLUTTEST_KO.md`
-**Underlag:** `DOM_DELNINGSKORTET_2026-08-17.md`. Alla värden nedan läses ur
+**Datum:** 2026-08-21 · **Av:** Opus/Fable · **Post:** 27 i `docs/archive/historiska-statuskallor/SLUTTEST_KO.md`
+**Underlag:** `docs/dom/DOM_DELNINGSKORTET_2026-08-17.md`. Alla värden nedan läses ur
 `SeasonSummary` — kortet får aldrig läsa annan state, och ingen rad genereras
 fritt. Saknas radens data utelämnas raden och kortet krymper (samma regel som
 O18: färre fält, inte utfyllnad).

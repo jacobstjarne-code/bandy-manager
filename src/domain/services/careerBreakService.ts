@@ -1,5 +1,5 @@
 /**
- * O13 / M11 — TRÄNARMARKNADEN (DOM_TRANARMARKNADEN_2026-08-26.md).
+ * O13 / M11 — TRÄNARMARKNADEN (docs/dom/DOM_TRANARMARKNADEN_2026-08-26.md).
  *
  * Rena funktioner: managerns renommé, hur många samtal det ger, och vilka
  * klubbar som ringer. Ingen simulering här (den ligger i

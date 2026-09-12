@@ -389,7 +389,7 @@ describe('saveGameStorage', () => {
   })
 })
 
-describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (SLUTTEST_KO.md, 2026-08-17)', () => {
+describe('snapshotSave / listSaveSnapshots / loadSaveSnapshot — U7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17)', () => {
   it('en snapshot går att lista och läsa tillbaka', async () => {
     const game = makeGame('save_snap1', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
     await snapshotSave('pre_newgame', game)

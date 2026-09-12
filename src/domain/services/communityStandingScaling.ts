@@ -43,7 +43,7 @@
  * - `postAdvanceEvents.ts` — `getCsDetOmojligaValetProbability`, "det omöjliga valet" (golv cs0, tak cs100)
  *
  * Kända KVARSTÅENDE binära trösklar (#7-#8, #12-#13 i sveptrapporten,
- * Jacobs omprioritering 2026-08-26) — INTE fixade, se BACKLOG.md.
+ * Jacobs omprioritering 2026-08-26) — INTE fixade, se docs/archive/historiska-statuskallor/BACKLOG.md.
  */
 export function csLinearRamp(cs: number, floorCs: number, ceilCs: number, floorValue: number, ceilValue: number): number {
   const t = Math.max(0, Math.min(1, (cs - floorCs) / (ceilCs - floorCs)))
@@ -76,7 +76,7 @@ export function getCsPoliticianGrantBonus(cs: number): number {
 
 /** #11 (postAdvanceEvents.ts): "det omöjliga valet". Var `cs>60` — en klubb
  *  under 60 kunde ALDRIG se en av spelets nio 5/5-systemhändelser
- *  (DOM_VARSLET_KLASSIFICERING_2026-08-17.md), oavsett hur länge den satt i
+ *  (docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md), oavsett hur länge den satt i
  *  finanskris med en älskad akademispelare — exakt den klubbprofil
  *  händelsen handlar om. Ersatt av en sannolikhet som prövas VARJE
  *  kvalificerande omgång (samma idiom som filens övriga rand()-villkor,
@@ -87,7 +87,7 @@ export function getCsDetOmojligaValetProbability(cs: number): number {
   return csLinearRamp(cs, 0, 100, 0.03, 0.15)
 }
 
-// ── ANSPRÅK 4: ortsunderhållet (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) ────
+// ── ANSPRÅK 4: ortsunderhållet (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) ────
 //
 // De två funktionerna nedan kör på csLinearRamp men matar in KLUBBENS RYKTE,
 // inte communityStanding. Det är avsiktligt och är samma disciplin, inte ett
@@ -158,7 +158,7 @@ export function csExpectationDrag(reputation: number): number {
 }
 
 // ── ANSPRÅK 4, SPAK 3: nyhetstretmillen ───────────────────────────────────
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md. Knapp 1+2 gjorde ortsunderhållet
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md. Knapp 1+2 gjorde ortsunderhållet
 // storleksberoende men KOSTAR aldrig pengar — mätningen (D037, ommätning
 // 2026-08-30) visade att en dominant klubb tjänar ~291 tkr/säsong på att
 // finansiera orten jämfört med att släppa den, eftersom ingen av de nio
@@ -274,7 +274,7 @@ export function getActivityRenewalCost(reputation: number): number {
 export const ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER = 0.95
 
 // ── VÄG C (Jacobs beslut 2026-08-31): konsekvensen flyttar CS → PUBLIK ─────
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". D038:s mätning visade
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". D038:s mätning visade
 // att staleness-på-CS var tandlös: att förnya köpte +0,3 CS för 318 tkr/säsong,
 // eftersom staleness per konstruktion bara kan röra aktiviteternas 0,67 CS/omg
 // medan volontärbonusen (upp till 1,5) bär hela ortsspaken. Jacobs egen ram —
@@ -301,7 +301,7 @@ export const ACTIVITY_RENEWAL_TRIGGER_MULTIPLIER = 0.95
 export const ORT_FRESHNESS_FLOOR = 0.65
 
 // ── VÄG A (Jacobs beslut 2026-09-01): sänk match_revenue-baslinjen ─────────
-// DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, D041/D042. Kommunbidragens
+// docs/dom/DOM_FRAMGANGSEKONOMIN_UPPSIDAN_2026-08-31.md, D041/D042. Kommunbidragens
 // CS-dämpning (D041) flackade rätt spak men rörde bara ~5-9% av en dominant
 // klubbs säsongsöverskott — match_revenue (arenaCapacity fryst vid world-gen,
 // men ABSOLUT storlek 8-17× större än bägge kommunbidragen tillsammans) är

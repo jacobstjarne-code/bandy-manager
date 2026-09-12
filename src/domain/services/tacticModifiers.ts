@@ -12,7 +12,7 @@ import {
 } from '../enums'
 
 /**
- * DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditionskostnad
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: 5-2-3 högs källbelagda konditionskostnad
  * ("kraftödande ... kortare perioder", SvBF §2.4.2.2) — en per-omgångs-
  * kostnad UTÖVER fatigueRate, för managerade startspelare när matchens
  * formation är `523_hog`. Magnitud 10 är det minsta heltalsvärde som klarade
@@ -75,7 +75,7 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
       break
   }
 
-  // heightMode (DOM_FORMATIONER_V2_2026-09-04.md) — härlett ur formationen,
+  // heightMode (docs/dom/DOM_FORMATIONER_V2_2026-09-04.md) — härlett ur formationen,
   // ersätter det gamla press-fältet. EXAKT samma tal som förr: low motsvarar
   // gamla TacticPress.Low, mid gamla Medium, high gamla High. Inga nya
   // magnituder uppfinns här.
@@ -168,7 +168,7 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
       break
   }
 
-  // DOM_FORMATIONER_V2_2026-09-04.md: formations-switchen (offense/defense
+  // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: formations-switchen (offense/defense
   // per formationstyp) borttagen — noll källstöd, fotbollsriktning. De fyra
   // 5-3-2-formerna verkar bara genom slot-kartan (positionspassning, kemi)
   // och truppkraven, ingen egen multiplikator.

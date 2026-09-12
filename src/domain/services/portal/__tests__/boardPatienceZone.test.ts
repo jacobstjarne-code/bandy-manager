@@ -6,7 +6,7 @@ import type { BoardObjective } from '../../../entities/Community'
 import type { SaveGame } from '../../../entities/SaveGame'
 
 /**
- * 3.2 (SLUTTEST_KO.md, 2026-08-17) — kvalitativa zoner för boardPatience.
+ * 3.2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — kvalitativa zoner för boardPatience.
  * Trösklarna (30/50) matchar portalBeats.ts's board_failure-beat exakt —
  * regressionstest om någon av filerna kalibreras om utan den andra.
  */

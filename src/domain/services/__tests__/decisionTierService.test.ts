@@ -1,5 +1,5 @@
 /**
- * decisionTierService — HIGH 11 (DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md).
+ * decisionTierService — HIGH 11 (docs/dom/DOM_HIGH11_DASHBOARD_NIVAER_2026-08-29.md).
  *
  * Tabelldrivet: varje GameEventType enumereras explicit här, mot den
  * dokumenterade klassificeringen. Poängen med dubbleringen är att en

@@ -427,7 +427,7 @@ export type { SeasonSummary }
  * per-match-händelse-motsvarighet i clubFixtures, en riktig fix kräver en
  * ny lagrad säsongsstarts-trupp-snapshot (vilka spelare var i klubben vid
  * säsongsstart, inte bara vid säsongsslut). Större scope, inte byggt här,
- * se BACKLOG.md.
+ * se docs/archive/historiska-statuskallor/BACKLOG.md.
  */
 /**
  * @cites Fixture.events
@@ -532,7 +532,7 @@ export function buildExpectationVerdictSentence(
  * mostImproved beräknas fortfarande över managedPlayers (klubb-filtrerad
  * VID SÄSONGSSLUT) och missar en spelare som förbättrades men SÅLDES under
  * säsongen — känt, INTE fixat, kräver en ny säsongsstarts-trupp-snapshot
- * (BACKLOG.md). Citera inte mostImproved som om den vore källkorrekt.
+ * (docs/archive/historiska-statuskallor/BACKLOG.md). Citera inte mostImproved som om den vore källkorrekt.
  *
  * @cites StandingRow.finalPosition, StandingRow.points, StandingRow.wins, StandingRow.draws, StandingRow.losses, StandingRow.goalsFor, StandingRow.goalsAgainst, StandingRow.goalDifference, SaveGame.standings, SaveGame.playoffBracket, SeasonSummary.championClubId, SeasonSummary.eliminatedByClubId, SaveGame.seasonStartBoardExpectation, Club.boardExpectation, Fixture.roundNumber, Club.finances, ManagerProfile.diary
  */
@@ -1009,7 +1009,7 @@ export function generateSeasonSummary(
     .sort((a, b) => a.round - b.round)
   const keyMoments = allMoments.slice(0, 9)
 
-  // DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerProfile.diary fryst
+  // docs/dom/DOM_ARSBOKEN_MANAGERSEKTION_2026-09-02.md — managerProfile.diary fryst
   // till denna säsongs rader, se SeasonSummary.managerSeason för fullmotiveringen.
   const burnoutMemory = getBurnoutSeasonMemory(game.eventLedger, game.currentSeason)
   const hasLedgerBurnout = burnoutMemory.length > 0
@@ -1385,7 +1385,7 @@ export interface BoardRelationshipTrend {
 }
 
 /**
- * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
+ * docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 2 — parallell till
  * getClubPositionTrend ovan, men OFÖNSTRAD (Jacobs dom: "hela karriärens
  * board-kurva", samma oavgränsade räckvidd JourneyGraph redan använder för
  * finalPosition — inget lastNSeasons-fönster här).

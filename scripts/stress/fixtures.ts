@@ -183,7 +183,7 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
  * on generatePatronEmergenceEvent, patronEvents.ts:248): with nobody ever
  * answering "welcome", `game.patron` never spawns, no matter how high
  * communityStanding climbs. Confirmed empirically: anspråk 4's own baseline
- * (docs/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) measured patron active in
+ * (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md) measured patron active in
  * 0/20 simulated seasons despite communityStanding averaging 92 — nine
  * points above PATRON_EMERGE_CS (60).
  *
@@ -281,7 +281,7 @@ function pickEventResolutionPolicy(event: GameEvent): string {
  * Rotorsak till varför detta behövdes: innan detta fanns INGEN headless-
  * körning (varken npm run stress eller enskilda script) som någonsin
  * byggde en nod — O5 kraft 2 (anläggningsdrift) kunde alltså aldrig
- * verifieras empiriskt, bara analytiskt. Se BACKLOG.md E-STRESS1,
+ * verifieras empiriskt, bara analytiskt. Se docs/archive/historiska-statuskallor/BACKLOG.md E-STRESS1,
  * O5_ACCEPTANSTEST_8SASONGER_2026-08-23.md.
  */
 const FACILITY_BUILD_SAFETY_MARGIN = 300_000

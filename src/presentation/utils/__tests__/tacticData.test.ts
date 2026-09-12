@@ -4,7 +4,7 @@
  * ordagranna leveranser, inte Code-prosa — ett test som failar på en
  * ordalydelseändring är avsiktligt strikt.
  *
- * DOM_FORMATIONER_V2_2026-09-04.md: press borttaget som eget Tactic-fält —
+ * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: press borttaget som eget Tactic-fält —
  * sju dimensioner kvar (inte åtta), och press-blockets särskilda
  * "Medium"-sammanslagning (optionLabel) är borta med det.
  */

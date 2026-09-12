@@ -282,7 +282,7 @@ describe('momentLedgerService — Fas 4 durabilitet', () => {
     expect(resolveSubjectName(game, undefined)).toBeUndefined()
   })
 
-  // DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron är EN entitet (game.patron,
+  // docs/dom/DOM_PATRON_MECENAT_LAST_2026-09-02.md — patron är EN entitet (game.patron,
   // inte en array), id-matchning ändå (en avgången patron kan ha ersatts av
   // en ny med annat id innan en gammal liggarpost renderas).
   it('resolveSubjectName slår upp patronen ur game.patron via id, mismatch/frånvaro ger undefined', () => {

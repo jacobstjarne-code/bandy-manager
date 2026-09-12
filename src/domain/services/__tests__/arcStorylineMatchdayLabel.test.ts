@@ -6,7 +6,7 @@ import { CLUB_TEMPLATES } from '../worldGenerator'
 import { FixtureStatus } from '../../enums'
 
 /**
- * 4.6 (SLUTTEST_KO.md, 2026-08-17) — arc/event-storylines satte tidigare
+ * 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — arc/event-storylines satte tidigare
  * matchday: currentMatchday (den GLOBALA matchday-parametern, kan bli 27+
  * under slutspel). SeasonSummaryScreen.tsx renderar storyline.matchday som
  * "O{round}" och antar en ligaomgång (1-22).

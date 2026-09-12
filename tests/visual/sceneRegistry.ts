@@ -54,7 +54,7 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // som event-overlay och press-conference nedan. Fånga därför viewporten och
   // undanta scenen från den vanliga innehålls-occlusiongrinden.
   ['annandagen', undefined, undefined, true],
-  // 5.1 Sommaren (SLUTTEST_KO.md, 2026-08-18) — fyra baseline-scener, CODE_
+  // 5.1 Sommaren (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18) — fyra baseline-scener, CODE_
   // INSTRUKTION_SOMMAREN_2026-08-17.md:s matris. Saknade baseline fram till
   // denna rad — osynade av hela svepet tills nu, samma lucka-klass som
   // AUDIT DEL 4:s Taktiktavlan/EventOverlay-fynd ovan.
@@ -82,7 +82,7 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // lät FÖRESLÅS-badgen vara osynlig en månad.
   ['primary-smfinal-vs-deadline', undefined, undefined, undefined, EXTRA_HEIGHT],
   ['primary-event-vs-farewell', undefined, undefined, undefined, EXTRA_HEIGHT],
-  // "Skydd eller illusion?"-fyndet (SLUTTEST_KO.md, 2026-08-20): tio scener
+  // "Skydd eller illusion?"-fyndet (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20): tio scener
   // fanns redan i DevScenesScreen.tsx:s galleri men var osvepta av alla fem
   // grindar — samma lucka-klass som halftime-summary ovan (V1-uppföljning),
   // bara aldrig stängd. lineup-filled (withLongestSurnames) är dessutom
@@ -98,7 +98,7 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['match-live'],
   // Människoupplevelse-auditen (7024f8a, 2026-08-24), H1: Bygget hade NOLL
   // dev-scene-täckning — inte importerad i DevScenesScreen.tsx alls, samma
-  // lucka-klass som "Skydd eller illusion?" (SLUTTEST_KO.md rad 112-117).
+  // lucka-klass som "Skydd eller illusion?" (docs/archive/historiska-statuskallor/SLUTTEST_KO.md rad 112-117).
   // Bara trädet (stängt) registreras här för allmän occlusion/raw-token/
   // screenshot-svep. 'bygget-avveckling' (H1:s nav-kollisionsfynd) är EN
   // egen scen i DevScenesScreen.tsx men INTE i denna lista — den kräver två

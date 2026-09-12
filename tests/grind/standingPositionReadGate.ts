@@ -56,7 +56,7 @@ const CANONICAL_FILE = 'src/domain/services/standingsService.ts'
 /**
  * Sluten undantagslista (2026-08-26-svepet). Varje rad = en fil där
  * mönstret verifierats säkert av EN ANNAN mekanism än `played>0` — inte en
- * gissning. Se `RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md` för
+ * gissning. Se `docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md` för
  * verifieringen bakom varje post.
  */
 const ALLOWLIST: { file: string; reason: string }[] = [
@@ -69,7 +69,7 @@ const ALLOWLIST: { file: string; reason: string }[] = [
   { file: 'src/domain/services/boardObjectiveService.ts', reason: 'checkInObjectives anropas bara vid [7,14,22].includes(leagueRound)' },
   { file: 'src/domain/services/reputationMilestoneService.ts', reason: 'gated currentLeagueRound>=8 vid enda anropsstället (mediaProcessor.ts)' },
   { file: 'src/domain/services/seasonGoalService.ts', reason: 'anropas med säsongsslutets redan-reella standings (före nästa säsongs överskrivning)' },
-  { file: 'src/domain/services/situationFragments.ts', reason: 'de två position-läsande fragmenten är gated completedLeague>=3/>=5 — den tredje, ogatade grenen (situationService.ts) är EN EGEN, redan flaggad öppen fråga (RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md), inte gated via detta mönster' },
+  { file: 'src/domain/services/situationFragments.ts', reason: 'de två position-läsande fragmenten är gated completedLeague>=3/>=5 — den tredje, ogatade grenen (situationService.ts) är EN EGEN, redan flaggad öppen fråga (docs/rapport/RAPPORT_FYRA_UTREDNINGAR_2026-08-26.md), inte gated via detta mönster' },
   { file: 'src/domain/services/functionaryQuoteService.ts', reason: 'matar getFunctionaryPhase, som bevisligen ignorerar tablePosition-argumentet för omgång<=11' },
   { file: 'src/domain/services/portal/atmosphereResolver.ts', reason: 'samma getFunctionaryPhase-inertness som ovan' },
   { file: 'src/domain/services/portal/portalBuilder.ts', reason: 'samma getFunctionaryPhase-inertness som ovan' },
@@ -86,7 +86,7 @@ const ALLOWLIST: { file: string; reason: string }[] = [
   { file: 'src/domain/services/seasonSummaryService.ts', reason: 'läser standingsSnapshot — en fryst kopia av game.standings tagen VID SÄSONGSSLUT (generateSeasonSummary), aldrig en pågående säsongs tabell' },
   {
     file: 'src/application/useCases/processors/cupProcessor.ts',
-    reason: 'KÄND, ICKE FIXAD BUGG — inte verifierad säker. "Baserat på er ranking (X:a)" i cupbye-texten beräknas under försäsongens cupfönster (matchday 1-4), innan någon ligamatch spelats — bekräftat en av de tre ursprungliga instanserna. Jacobs order (BACKLOG.md): rätt källa är SeasonSummary.finalPosition, men "bygg inget här utan ett separat beslut". Kvar på listan tills det beslutet finns — TA INTE bort utan att antingen fixa eller få ett uttryckligt Jacob-beslut att lämna den.',
+    reason: 'KÄND, ICKE FIXAD BUGG — inte verifierad säker. "Baserat på er ranking (X:a)" i cupbye-texten beräknas under försäsongens cupfönster (matchday 1-4), innan någon ligamatch spelats — bekräftat en av de tre ursprungliga instanserna. Jacobs order (docs/archive/historiska-statuskallor/BACKLOG.md): rätt källa är SeasonSummary.finalPosition, men "bygg inget här utan ett separat beslut". Kvar på listan tills det beslutet finns — TA INTE bort utan att antingen fixa eller få ett uttryckligt Jacob-beslut att lämna den.',
   },
 ]
 

@@ -7,7 +7,7 @@ import { getBoardPatienceZone } from '../../domain/services/portal/boardPatience
 import { pickTopActiveArcs, getArcHeadline } from '../../domain/data/activeArcStrings'
 import { recordRestoreResult, recordSnapshotResult } from './saveRecoveryMetrics'
 
-// U7 (SLUTTEST_KO.md, 2026-08-17) — export/import fanns redan men var inte
+// U7 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — export/import fanns redan men var inte
 // nåbara från UI. Automatisk lokal återställningspunkt: rotation på två
 // snapshots (Jacobs beslut), tagen före de två destruktiva/riskabla
 // momenten som redan identifierats: newGame():s ovillkorade delete-all

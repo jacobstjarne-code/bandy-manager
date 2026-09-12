@@ -121,7 +121,7 @@ describe('generateWorld', () => {
   })
 
   /**
-   * Grind 0 (SLUTTEST_KO.md, 2026-08-21) — Erik Ström-easter egget hade
+   * Grind 0 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-21) — Erik Ström-easter egget hade
    * careerStats.seasonsPlayed hårdkodad till 1 medan seasonHistory (och
    * totalGames/totalGoals/totalAssists) började från 0 som alla andra
    * spelare — en permanent off-by-one mot K3s "seasonHistory.length ==

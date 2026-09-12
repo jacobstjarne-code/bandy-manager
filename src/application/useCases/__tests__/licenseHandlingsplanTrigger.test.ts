@@ -1,5 +1,5 @@
 /**
- * 2026-08-26 (RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md, Jacobs dom):
+ * 2026-08-26 (docs/rapport/RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md, Jacobs dom):
  * licenseHandlingsplan-händelsen triggades tidigare av licenseReview (System
  * A, det system som INTE avskedar) — kunde dyka upp eller utebli helt
  * oberoende av var klubben faktiskt stod i den räknare som avgör avsked.

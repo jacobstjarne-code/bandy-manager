@@ -1,5 +1,5 @@
 /**
- * ANSPRÅK 4 — ortsunderhållet (DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, D037).
+ * ANSPRÅK 4 — ortsunderhållet (docs/dom/DOM_ANSPAK4_ORTSUNDERHALL_2026-08-29.md, D037).
  *
  * Testar WIRINGEN i processCommunity, inte rampernas form (den ligger i
  * domain/services/__tests__/communityStandingScaling.test.ts):
@@ -166,7 +166,7 @@ describe('processCommunity — anspråk 4 sänker inte CS för en liten klubb al
 
 // ── VÄG C (2026-08-31): staleness rör INTE längre csBoost ──────────────────
 //
-// DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Spak 3 byggdes först
+// docs/dom/DOM_ANSPAK4_TREDJE_SPAK_NYHET_2026-08-29.md §"VÄG C". Spak 3 byggdes först
 // som en multiplikator på var och en av de då nio aktivitetskonstanterna (väg A,
 // commit 12c58609). D038 mätte den som tandlös — att förnya köpte +0,3 CS för
 // 318 tkr/säsong — och Jacob flyttade konsekvensen till publiken. Testerna

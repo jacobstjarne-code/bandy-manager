@@ -6,7 +6,7 @@ import { SCENES } from './sceneRegistry'
 /**
  * META-GRINDEN (människoupplevelse-audit 7024f8a, 2026-08-24, H1-uppföljning).
  *
- * "Skydd eller illusion?" (SLUTTEST_KO.md, 2026-08-20) mätte täckningen EN
+ * "Skydd eller illusion?" (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-20) mätte täckningen EN
  * gång, för hand, och fann 35 av 55 visuella ytor onåbara via /dev/scenes.
  * Ingen av de fem grindarna svepte dem, för de svepte bara SCENES-listan —
  * en lista ingen jämförde mot vad appen FAKTISKT routar till. Bygget (H1:s
@@ -77,7 +77,7 @@ export const ROUTE_SCENE_MAP: Record<string, string[]> = {
   taktik: ['taktik'],
   // Jacobs order (2026-08-24): lyft ur ratchet-skulden, inte kvar som TODO.
   // 'sommaren-*' renderar redan <SeasonTransitionScene /> (DevScenesScreen.tsx,
-  // byggt i samband med 5.1 Sommaren, SLUTTEST_KO.md 2026-08-18) — samma
+  // byggt i samband med 5.1 Sommaren, docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-18) — samma
   // komponent som /game/season-transition routar till. Ren kartläggningsfix,
   // ingen ny dev-scen behövdes.
   'season-transition': ['sommaren-s2', 'sommaren-titelforsvarare', 'sommaren-tomt', 'sommaren-siffra'],

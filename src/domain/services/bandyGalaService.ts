@@ -238,7 +238,7 @@ export function generateGalaInbox(
         matchday: currentLeagueRound,
         playerId: nom.playerId,
         clubId: game.managedClubId,
-        // 4.6 (SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — samma
+        // 4.6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): var den råa typnyckeln — samma
         // felklass som eventResolver.ts:s tre storylines, se kommentaren där.
         description: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,
         displayText: `${nom.playerName} vann ${AWARD_LABELS[nom.award]} på Bandygalan ${seasonChampionYear(game.currentSeason)}`,

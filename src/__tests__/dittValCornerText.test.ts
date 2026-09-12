@@ -1,5 +1,5 @@
 /**
- * O16 — GRANSKA SOM LÄRANDEYTA (DOM_GRANSKA_LARANDEYTA_2026-08-17.md).
+ * O16 — GRANSKA SOM LÄRANDEYTA (docs/dom/DOM_GRANSKA_LARANDEYTA_2026-08-17.md).
  * dittValCornerText: kandidat 2 (cornerStrategy → hörnmål), den enda av fyra
  * kandidater matchmotorn har siffror för idag. Formen är låst i domen:
  * "vad du valde, vad som hände" — ingen bindestreckad slutsats, aldrig

@@ -28,7 +28,7 @@ import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
 
 /**
- * Å4 (SLUTTEST_KO.md, 2026-08-18): sorterar inkommande bud efter svarsfrist
+ * Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): sorterar inkommande bud efter svarsfrist
  * (lägst expiresRound = mest brådskande, ohanterat "expiresRound saknas"
  * räknas som mest brådskande, 0). Renderns .map() sätter isPrimary på
  * index 0 av resultatet — så det alltid är det mest brådskande kortet,
@@ -396,7 +396,7 @@ export function TransfersScreen() {
 
         return (
           <div className="transfers-section">
-            {/* Å4 (SLUTTEST_KO.md, 2026-08-18): "Marknaden är tom" visades tidigare
+            {/* Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): "Marknaden är tom" visades tidigare
                 även med tre aktiva inkommande bud synliga precis ovanför — olika
                 datakällor (köpbara spelare vs. bud på egna spelare) men samma skärm,
                 läste som självmotsägande. Gaten mot incomingBids.length istället för

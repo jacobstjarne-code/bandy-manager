@@ -1,6 +1,6 @@
 /**
  * contractDemandService — A-H2b RETENTION, INTE BUDGET
- * (DOM_AH2B_RETENTION_2026-08-28.md, femte omtaget).
+ * (docs/dom/DOM_AH2B_RETENTION_2026-08-28.md, femte omtaget).
  *
  * Fem tidigare mätpass (kronmått: tier-verdict, topp3/titel, marginal mot
  * tvåan, wageBudget, cashGrowth) kraschade på samma sten: en dominant klubb
@@ -23,7 +23,7 @@
  *     computeMoraleAcceptanceBonus i playerAcceptsTransfer) — se den filen,
  *     inte denna.
  *
- * VILLKOR 2 (SLUTTEST_KO.md A-H2b-fyndet, byggt 2026-08-29): leg 1 ovan
+ * VILLKOR 2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-fyndet, byggt 2026-08-29): leg 1 ovan
  * beskrev ursprungligen bara det individuella marknadskravet (villkor 1).
  * Den ABSOLUTA klubbframgångsgrinden domen alltid krävt utöver detta —
  * "klubben ska ha gjort minst ETT av tre: topp tre, vunnit serien/cupen,
@@ -56,15 +56,15 @@ export interface ContractDemand {
 }
 
 /**
- * Villkor 2 (SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28 — se
- * DOM_AH2B_RETENTION_2026-08-28.md, som ärver definitionen ordagrant från
- * dess föregångare DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md): den
+ * Villkor 2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b-fyndet, 2026-08-28 — se
+ * docs/dom/DOM_AH2B_RETENTION_2026-08-28.md, som ärver definitionen ordagrant från
+ * dess föregångare docs/dom/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md): den
  * ursprungliga retention-domen implementerade bara villkor 1 (individuellt
  * obemött marknadskrav) — ingen klubb-nivå-grind fanns, så ett mittenlag
  * såg 6-7 krav/säsong trots att domen kräver att klubben SJÄLV lyckats.
  *
  * ABSOLUT, inte tier-relativt (en tidigare tier-relativ variant fyrade
- * bakvänt — se DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md: en dominant
+ * bakvänt — se docs/dom/DOM_AH2B_BUDGETTRYCK_KORORDER_2026-08-28.md: en dominant
  * klubb som klättrar till WinLeague-tier fick en STRÄNGARE grind, inte en
  * lösare). Klubben kvalificerar om den gjort MINST ETT av tre denna säsong:
  *   (a) slutat topp tre i serien
@@ -91,7 +91,7 @@ export interface ContractDemand {
  * (`finalPosition < previousPosition`, VILKEN förbättring som helst) fyrade
  * i 37.8 % av ett mittenlags säsonger (17/45 uppmätta säsong-till-säsong-
  * övergångar) — nästan alltid ren tabellbrus, inte ett genuint
- * framgångstecken (SLUTTEST_KO.md A-H2b, "dörr (c)"). Den uppmätta
+ * framgångstecken (docs/archive/historiska-statuskallor/SLUTTEST_KO.md A-H2b, "dörr (c)"). Den uppmätta
  * standardavvikelsen för ett mittenlags säsong-till-säsong-placerings-
  * FÖRÄNDRING (inte bara riktning) var ~4.6 placeringar — dvs. en klubb utan
  * dominans studsar nästan lika mycket år för år som om placeringen vore

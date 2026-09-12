@@ -7,7 +7,7 @@
 
 ## Vad detta dokument är
 
-Ett program, inte en kölista. `SLUTTEST_KO.md` äger lanseringen; den här filen äger vad som kommer efter.
+Ett program, inte en kölista. `docs/archive/historiska-statuskallor/SLUTTEST_KO.md` äger lanseringen; den här filen äger vad som kommer efter.
 
 **Regeln som skiljer dem:** en post hör hemma här om den ändrar hur matchen simuleras, hur en spelare beskrivs, eller vad ett taktiskt val betyder. Allt annat hör hemma i sluttestkön.
 
@@ -134,7 +134,7 @@ De sex, med källa:
 
 # VAD SOM SKYDDAS
 
-`BEVARA`-listan i `SLUTTEST_KO.md` gäller genom hela V2. Särskilt tre poster:
+`BEVARA`-listan i `docs/archive/historiska-statuskallor/SLUTTEST_KO.md` gäller genom hela V2. Särskilt tre poster:
 
 **Matchmotorns statistiska trovärdighet.** Den nya motorn ska producera minst lika trovärdiga aggregat som den gamla — målsnitt, hemmavinstandel, oavgjortandel, comebackdynamik. Gör den inte det är den inte bättre, oavsett hur mycket rikare eventen är.
 

@@ -1,5 +1,5 @@
 /**
- * fitnessRecoveryService.ts — A3 (DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 + 3.
+ * fitnessRecoveryService.ts — A3 (docs/dom/DOM_A3_KONDITIONSSPIRAL_2026-08-29.md), krav 2 + 3.
  *
  * NY FIL — motivering (CLAUDE.md "KOD-GRANSKNING FÖR NYA FILER"):
  * grep på `fitness`-mutationer gav exakt två ägare, båda i APPLICATION-lagret

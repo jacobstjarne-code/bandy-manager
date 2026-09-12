@@ -29,7 +29,7 @@ describe('mapRecommendationToMentality', () => {
   })
 })
 
-// DOM_FORMATIONER_V2_2026-09-04.md: mapRecommendationToPress borttagen —
+// docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: mapRecommendationToPress borttagen —
 // press finns inte längre som ett settbart fält att föreslå ett värde för.
 
 // Yta 3 textleverans (Fable, 2026-07-07): varför-raden. {coach} interpolerar mot

@@ -42,7 +42,7 @@ export interface BoardEvaluation {
   message: string
 }
 
-// U1 (SLUTTEST_KO.md, 2026-08-17): den faktiska nedflyttningszonen — en
+// U1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): den faktiska nedflyttningszonen — en
 // konstant, inte en totalTeams/3-härledd gissning. Delad mellan
 // evaluateBoard (AvoidBottom-tröskeln nedan) och seasonEndProcessor.ts:s
 // boardPatience-formel, så de beskriver samma zon.
@@ -254,7 +254,7 @@ export function computeSeasonVerdictRating(
   }
 }
 
-// U6 (SLUTTEST_KO.md, 2026-08-17) / D028: renommé kunde inte falla vid
+// U6 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) / D028: renommé kunde inte falla vid
 // misslyckande — bara skandal/nekad licens sänkte det. Under skandalnivå
 // (−5/−8, tillfälligt, scandalService.ts) eftersom ett säsongsmisslyckande
 // återkommer varje säsong medan skandal är enstaka.
@@ -283,7 +283,7 @@ const BOARD_PATIENCE_SLOPE: Record<ClubExpectation, { above: number; below: numb
 }
 
 /**
- * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — svaret på "fem klockor, alla
+ * docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md — svaret på "fem klockor, alla
  * kalibrerade var för sig, ingen mot de andra": en klubb som missar sin
  * anchor men stannar inom EN tier därunder (samma stege som
  * EXPECTATION_LADDER/recalibrateExpectationLadder redan delar) är i GRACE
@@ -323,7 +323,7 @@ export function boardGraceState(
 }
 
 /**
- * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "nearMiss-slope ~2"
+ * docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "nearMiss-slope ~2"
  * — PROPOSAL, magnitud via mätning (samma döm-siffrorna-mönster som
  * MERIT_BUFFER_CAP ovan). Ersätter BOARD_PATIENCE_SLOPE.below i
  * computeBoardPatienceUpdate NÄR klubben är i grace — en 3:e-plats under
@@ -335,7 +335,7 @@ export function boardGraceState(
 export const NEAR_MISS_SLOPE = 2
 
 /**
- * DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "grace-multiplikator
+ * docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md, GODKÄNT NÄR: "grace-multiplikator
  * ~0,5" — PROPOSAL, magnitud via mätning. Skalar ner den löpande omgångs-
  * termens (updateRunningBoardPatience) förlustmultiplikator OCH
  * losingStreakSurcharge när klubben är i grace — en nästan-lyckad klubb
@@ -345,7 +345,7 @@ export const NEAR_MISS_SLOPE = 2
 export const GRACE_MULTIPLIER = 0.5
 
 /**
- * U1 (SLUTTEST_KO.md, 2026-08-17) — säsongsslutets boardPatience-uppdatering,
+ * U1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17) — säsongsslutets boardPatience-uppdatering,
  * utbruten ur seasonEndProcessor.ts som en ren funktion (samma disciplin som
  * seasonReputationDelta ovan) för att gå att regressionstesta utan en full
  * säsongssimulering.
@@ -364,7 +364,7 @@ export const GRACE_MULTIPLIER = 0.5
  * är den andra, separata avskedsvägen (>=3 raka säsonger i faktisk
  * nedflyttningszon) och rördes inte av Jacobs fem ändringar.
  */
-// Meritbuffert (Jacobs koefficientdom 2026-08-23, DOM_MERITBUFFERT_2026-08-23.md,
+// Meritbuffert (Jacobs koefficientdom 2026-08-23, docs/dom/DOM_MERITBUFFERT_2026-08-23.md,
 // fjärde koefficientrundan — O5-acceptanstestets fynd: en klubb med tre raka
 // SM-guld sparkades två säsonger senare efter en normal svacka, för att
 // säsongsslutstermen inte hade något minne av vad klubben gjort innan.
@@ -418,7 +418,7 @@ export function computeBoardPatienceUpdate(
   const anchor = BOARD_EXPECTATION_ANCHOR_POSITION[expectation]
   const slope = BOARD_PATIENCE_SLOPE[expectation]
   const gap = anchor - finalPos // positivt = bättre än ankaret
-  // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: en nästan-lyckad säsong (grace)
+  // docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: en nästan-lyckad säsong (grace)
   // straffas med NEAR_MISS_SLOPE i stället för den branta slope.below — en
   // genuin kollaps (utanför grace) är oförändrad.
   const inGrace = gap < 0 && boardGraceState(expectation, finalPos, totalTeams)
@@ -462,7 +462,7 @@ const RUNNING_PATIENCE_DELTA = { win: 1.0, draw: 0.5, loss: -1.5 } as const
  * bevara ortogonaliteten mot förlustsviten nedan. Rätt för Skutskär (AvoidBottom,
  * sund ekonomi, borde inte straffas extra för enskilda förluster), FEL för
  * Heros (Survive, canoniskt 14-23% vinstandel — samma flata -1,5 per förlust
- * som en WinLeague-klubb gav 100% avskedsfrekvens, se BACKLOG.md). Multiplicerar
+ * som en WinLeague-klubb gav 100% avskedsfrekvens, se docs/archive/historiska-statuskallor/BACKLOG.md). Multiplicerar
  * BARA basförlusten (RUNNING_PATIENCE_DELTA.loss) — losingStreakSurcharge
  * förblir OSKALAD, sviten är fortfarande ortogonal: fem raka är kollaps
  * oavsett tier. Siffror Jacobs egna, döm-själv-klausul inte utnyttjad —
@@ -526,7 +526,7 @@ export function updateRunningBoardPatience(
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const expectation = managedClub?.boardExpectation ?? ClubExpectation.MidTable
 
-  // DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: löpande termen känner bara till
+  // docs/dom/DOM_BOARD_TALAMOD_SYSTEM_2026-09-01.md: löpande termen känner bara till
   // klubbens LIVE tabellplacering, inte säsongsslutets finalPos — samma
   // boardGraceState läses ändå, med den löpande standingen som proxy för
   // "om säsongen slutade nu". Golvet `played > 0` (samma mönster som
@@ -596,7 +596,7 @@ export function isUnderdogSeason(
  * lät som ett omdöme om ställningen hos styrelsen — kunde motsäga portalens
  * löpande boardPatience-zon (som har minne, meritkredit från tidigare
  * framgångar) i samma stund en spelare såg båda. De två axlarna är MEDVETET
- * separata (se BACKLOG.md): denna text dömer bara SÄSONGEN, aldrig
+ * separata (se docs/archive/historiska-statuskallor/BACKLOG.md): denna text dömer bara SÄSONGEN, aldrig
  * relationen. Låst text, en mening per rating — ingen av dem säger något om
  * spelaren/managern, bara om vintern som var.
  */
@@ -687,7 +687,7 @@ const EXPECTATION_LADDER: ClubExpectation[] = [
 ]
 
 /**
- * DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: en klubb som håller sig på 3:e-9:e
+ * docs/dom/DOM_BOARDEXPEKTAN_TROGHET_2026-08-31.md: en klubb som håller sig på 3:e-9:e
  * plats kan fastna för alltid vid WinLeague (bara 1:a-plats "möter" den,
  * botten-3 är den enda vägen ner) — sparkas i gapet innan den kollapsar dit.
  * Antal säsonger i rad med 'failed'-verdict innan en tröghets-demotering
@@ -744,7 +744,7 @@ export interface BoardEscalationState {
 }
 
 /**
- * DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
+ * docs/dom/DOM_BOARDRELATION_BAGE_2026-09-02.md, steg 3 — den TALADE eskaleringen.
  * Samma tröskel som tröghet (TROGHET_THRESHOLD=2) — 'second' vid EXAKT 2,
  * 'thirdPlus' därutöver. null under tröskeln: en klubb som möter förväntan
  * får ingen eskaleringsrad (domens SKYDDAT — ingen påhittad oro).

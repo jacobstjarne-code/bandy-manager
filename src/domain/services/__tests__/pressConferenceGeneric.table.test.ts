@@ -62,7 +62,7 @@ const EXPECTED: Record<string, Record<Outcome, boolean>> = {
   // M54(g): playoff_loss_not_final — cl25 ska inte slinka in som filler
   // när matchen var finalen. Medvetet uteslutet, inte ett prefix-missfall.
   playoff_loss_not_final: { won: false, lost: false, draw: false, none: false },
-  // U2 (SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg
+  // U2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17), symptom 5: win_derby/loss_derby låg
   // tidigare i 'win'/'loss'-bucketen — en icke-derbymatch som föll tillbaka
   // på generic-fallbacken kunde få ett derby-svar. Flyttade hit medvetet,
   // samma disciplin som playoff_loss_not_final ovan.

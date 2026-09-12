@@ -8,7 +8,7 @@
 4. **Lägger in obligatoriska tester** mot tidigare smärtpunkter (matchstepper, kalender, spelar-spår)
 
 **Specer (auktoritativa):**
-- `docs/SPEC_CUP_ANSLAG_2026-05-08.md` — variants-arkitektur + cup-texter
+- `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md` — variants-arkitektur + cup-texter
 - `docs/SPEC_LEAGUE_ANSLAG_2026-05-08.md` — liga-texter + trigging
 
 **Krockanalys redan gjord:** anslag och `specialDateService` (annandagsbandy/nyårsbandy/finaldag/cupfinal) lever på olika lager. Anslag är säsongs-narrativ på Portal. specialDateService är match-narrativ på match-skärm. Inga krockar.
@@ -113,7 +113,7 @@ function hashString(s: string): number {
 
 **Fil:** `src/domain/data/anslag/cupAnslag.ts`
 
-Ersätt nuvarande struktur med variants-array enligt `SPEC_CUP_ANSLAG_2026-05-08.md`. Kopiera texter direkt från specen — alla 15 cup-texter (5 anslag × 3 varianter, plus `cup_done_winner` är separat AnslagKey).
+Ersätt nuvarande struktur med variants-array enligt `docs/spec/SPEC_CUP_ANSLAG_2026-05-08.md`. Kopiera texter direkt från specen — alla 15 cup-texter (5 anslag × 3 varianter, plus `cup_done_winner` är separat AnslagKey).
 
 **OBS** — Snålvinden-texten i nuvarande implementation har "hallarna i östra Sverige". Det måste rättas till "bandyplanerna i östra Sverige" (Variant A). Bandyspelet är utomhusbaserat — hallar finns inte i fiktionen.
 

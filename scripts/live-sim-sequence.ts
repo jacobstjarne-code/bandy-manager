@@ -1,5 +1,5 @@
 /**
- * live-sim-sequence.ts — testar PT-3-hypotesen (BACKLOG.md): "matchar man direkt
+ * live-sim-sequence.ts — testar PT-3-hypotesen (docs/archive/historiska-statuskallor/BACKLOG.md): "matchar man direkt
  * efter en LIVE-vunnen match förlorar man oftare" som en SEKVENS-effekt, inte
  * isolerat. B10 (DECISIONS.md 2026-05-21) testade bara ISOLERADE matcher
  * (matchEngineParity.test.ts, N=1000, sim vs live oberoende av varandra) och

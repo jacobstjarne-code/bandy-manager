@@ -70,7 +70,7 @@ export function generateSponsorOffer(
 }
 
 /**
- * DOM_SPONSOR_MOTBUD_2026-08-31.md: personality var deklarerad på Sponsor
+ * docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md: personality var deklarerad på Sponsor
  * (typen) men aldrig satt av någon generator (verifierat — noll skrivställen
  * innan denna rad). Motbudsmekaniken kräver ett verkligt värde att läsa
  * reservationsnivån ur. Fördelning: mest lokala (småstadsbandyns verklighet

@@ -37,7 +37,7 @@ notes: |
     SANNOLIKHETEN att det prövas, aldrig till exakt 0% för en hel
     klubbklass. Exempel: "det omöjliga valet" (postAdvanceEvents.ts).
     Mecenat-/patron-trösklarna löses med samma probability-princip men i en
-    egen runda (RAPPORT_MECENATGENERERING_2026-08-26.md) eftersom de redan
+    egen runda (docs/rapport/RAPPORT_MECENATGENERERING_2026-08-26.md) eftersom de redan
     har en existerande genereringspipeline att foga in i.
 
   Kända konsumenter (2026-08-26): contextualSponsorService.ts (kommunstöd,
@@ -48,7 +48,7 @@ notes: |
   cs0/tak cs100).
 
   Kända KVARSTÅENDE binära trösklar, INTE fixade ännu (Jacobs omprioritering
-  2026-08-26, se BACKLOG.md för fullständig lista): #7-#8
+  2026-08-26, se docs/archive/historiska-statuskallor/BACKLOG.md för fullständig lista): #7-#8
   (reputationMilestoneService, engångsbonusar, lägst prioritet), #9-#10
   (clubEraService — era-upplåsningar, egen runda ihop med mecenat/patron
   eftersom en diskret upplåsning här kan vara AVSIKTLIG, bara måste bli
@@ -56,7 +56,7 @@ notes: |
   VILKEN fråga som ställs, harmlöst, lämnas).
 
   Mönsterfynd (2026-08-26, Jacobs fråga besvarad): av spelets nio 5/5-
-  systemhändelser (DOM_VARSLET_KLASSIFICERING_2026-08-17.md) var TVÅ
+  systemhändelser (docs/dom/DOM_VARSLET_KLASSIFICERING_2026-08-17.md) var TVÅ
   strukturellt gated bakom en diskret communityStanding-tröskel — "det
   omöjliga valet" (cs>60 direkt) och legacy_naming_arena (indirekt, via
   clubEraService.era==='legacy' som kräver cs>=70). De sju övriga

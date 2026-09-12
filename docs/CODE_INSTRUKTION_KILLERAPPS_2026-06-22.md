@@ -1,7 +1,7 @@
 # CODE-INSTRUKTION — killer-apps #2 + #4 + #1-städning
 
 **Datum:** 2026-06-22 · **Av:** Opus · **Till:** Code
-**Syfte:** Körordning för resten av killer-app-serien. #1 Callback och #3 Legibel konsekvens är levererade. Detta sekvenserar #2, #4 och en utestående #1-fix. Bygg i ordning. Detaljspec per feature i `SPEC_TRANARENS_BERATTELSE_2026-06-22.md` och `SPEC_GENERATIONSLOOPEN_2026-06-22.md` — den här filen löser ordningen + korsberoenden, specarna bär detaljerna.
+**Syfte:** Körordning för resten av killer-app-serien. #1 Callback och #3 Legibel konsekvens är levererade. Detta sekvenserar #2, #4 och en utestående #1-fix. Bygg i ordning. Detaljspec per feature i `docs/spec/SPEC_TRANARENS_BERATTELSE_2026-06-22.md` och `docs/spec/SPEC_GENERATIONSLOOPEN_2026-06-22.md` — den här filen löser ordningen + korsberoenden, specarna bär detaljerna.
 
 ---
 
@@ -18,7 +18,7 @@ Matchday nollställs per säsong → utan säsong i sorten kan fel derby visas s
 ---
 
 ## STEG 1 — #2 Tränarens berättelse (bygg FÖRE #4)
-Full spec: `SPEC_TRANARENS_BERATTELSE_2026-06-22.md`. Bygg i denna ordning:
+Full spec: `docs/spec/SPEC_TRANARENS_BERATTELSE_2026-06-22.md`. Bygg i denna ordning:
 
 1. **`managerNarrativeLog`** på `ManagerProfile.ts` (typ i specen). Skriv en post vid de fem befintliga ögonblicken: arrival (ny save), burnout_peak (burnoutScore passerar zon-gräns uppåt — samma trösklar som burnout-citaten), era_shift (parallellt med `era_shift`-Momentet i roundProcessor), rivalry (när nemesis etableras), milestone (karriärrekord). **Texterna lämnas TOMMA/placeholder — Opus skriver dem.** Lägg en `// OPUS_COPY`-markör där texten ska in.
 
@@ -37,7 +37,7 @@ Full spec: `SPEC_TRANARENS_BERATTELSE_2026-06-22.md`. Bygg i denna ordning:
 ---
 
 ## STEG 2 — #4 Generationsloopen
-Full spec: `SPEC_GENERATIONSLOOPEN_2026-06-22.md`. **Dataspärren FÖRST — utan den finns ingen tråd:**
+Full spec: `docs/spec/SPEC_GENERATIONSLOOPEN_2026-06-22.md`. **Dataspärren FÖRST — utan den finns ingen tråd:**
 
 1. **`mentorshipHistory` / `MentorshipRecord`** (typ i specen) på SaveGame. Skriv en post när ett mentorskap STARTAR (i youthProcessor/mentorship-skapandet), stäng den (`endSeason`/`outcome`) när det avslutas. Idag filtreras mentorships på `isActive` → historiken tappas. Denna logg sluts aldrig, växer bara. **Bygg detta före blodslinje-vyn.**
 
