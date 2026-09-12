@@ -681,7 +681,7 @@ export function generateSeasonSummary(
   } : null
 
   const topRatedEntry = Object.entries(seasonRatings)
-    .filter(([, r]) => r.games >= 5)
+    .filter(([, r]) => r.games >= Math.max(5, clubFixtures.length / 2))
     .sort((a, b) => (b[1].sum / b[1].games) - (a[1].sum / a[1].games))[0]
   const topRated = topRatedEntry ? {
     playerId: topRatedEntry[0],

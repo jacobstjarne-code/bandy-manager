@@ -629,6 +629,54 @@ describe('generateSeasonSummary — topScorer/topAssister/topRated krediterar en
     expect(summary.topScorer!.name).not.toBe('Okänd')
     expect(summary.topScorer!.goals).toBeGreaterThanOrEqual(50)
   }, 60000)
+
+  it('kräver betyg i minst halva ligasäsongen — nio perfekta matcher slår inte 22 stabila', () => {
+    const base = makeFullSeasonGame()
+    const [shortSample, fullSeason] = base.players.filter(p => p.clubId === base.managedClubId).slice(0, 2)
+    let managedFixtureIndex = 0
+    const game = {
+      ...base,
+      fixtures: base.fixtures.map(fixture => {
+        const isManagedLeagueFixture = fixture.season === base.currentSeason
+          && !fixture.isCup
+          && !fixture.isKnockout
+          && fixture.roundNumber <= 22
+          && (fixture.homeClubId === base.managedClubId || fixture.awayClubId === base.managedClubId)
+        if (!isManagedLeagueFixture) return fixture
+
+        const includeShortSample = managedFixtureIndex < 9
+        managedFixtureIndex += 1
+        const lineup = {
+          startingPlayerIds: includeShortSample ? [shortSample.id, fullSeason.id] : [fullSeason.id],
+          benchPlayerIds: [],
+        }
+        return {
+          ...fixture,
+          status: FixtureStatus.Completed,
+          homeScore: fixture.homeScore ?? 0,
+          awayScore: fixture.awayScore ?? 0,
+          homeLineup: fixture.homeClubId === base.managedClubId ? lineup : fixture.homeLineup,
+          awayLineup: fixture.awayClubId === base.managedClubId ? lineup : fixture.awayLineup,
+          report: {
+            ...fixture.report!,
+            playerRatings: {
+              [fullSeason.id]: 7,
+              ...(includeShortSample ? { [shortSample.id]: 10 } : {}),
+            },
+          },
+        }
+      }),
+    }
+
+    const summary = generateSeasonSummary(game)
+
+    expect(managedFixtureIndex).toBe(22)
+    expect(summary.topRated).toMatchObject({
+      playerId: fullSeason.id,
+      games: 22,
+      avgRating: 7,
+    })
+  }, 60000)
 })
 
 function summaryAt(season: number, positions: Record<string, number>): SeasonSummary {
