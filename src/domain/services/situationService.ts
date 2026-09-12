@@ -244,7 +244,7 @@ export function getSituation(game: SaveGame): Situation {
       ])
       return {
         label: points >= eightPoints ? 'PÅ STRECKET' : 'STRAX UNDER STRECKET',
-        body: body || 'Det är jämnt om playoff-platsen.',
+        body: body || 'Det är jämnt om slutspelsplatsen.',
       }
     }
   }

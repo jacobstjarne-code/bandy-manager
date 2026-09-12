@@ -1,4 +1,5 @@
 import { PlayerPosition, MatchEventType } from '../../domain/enums'
+import { formatDecimalComma } from '../../domain/format'
 
 // Kanoniska positionsetiketter + pengar bor i domain/format (delas med domänlagret,
 // som inte får importera presentation). Re-exporteras här så befintliga import-ställen
@@ -23,22 +24,22 @@ export function ordinal(n: number): string {
   return `${n}:e`
 }
 
-// mkr/tkr format with sign, e.g. "+1.2 mkr" or "-450 tkr"
+// mkr/tkr format with sign, e.g. "+1,2 mkr" or "-450 tkr"
 export function formatFinance(n: number): string {
   const abs = Math.abs(n)
   const sign = n > 0 ? '+' : n < 0 ? '-' : ''
-  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
+  if (abs >= 1_000_000) return `${sign}${formatDecimalComma(abs / 1_000_000)} mkr`
   return `${sign}${Math.round(abs / 1_000)} tkr`
 }
 
-// mkr/tkr/kr format without sign, e.g. "1.2 mkr", "450 tkr" or "600 kr".
+// mkr/tkr/kr format without sign, e.g. "1,2 mkr", "450 tkr" or "600 kr".
 // AUDIT DEL 2 B3, avkallad (2026-08-11): tidigare saknades kr-grenen (allt
 // under 1000 visades som "0 tkr") — samma bugg fanns inte i HistoryScreen.tsx:s
 // egen, separata formatFinances, som denna nu ersätter (en formatterare,
 // inte två som kan glida isär).
 export function formatFinanceAbs(n: number): string {
   const abs = Math.abs(n)
-  if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
+  if (abs >= 1_000_000) return `${formatDecimalComma(n / 1_000_000)} mkr`
   if (abs >= 1_000) return `${Math.round(n / 1_000)} tkr`
   return `${n} kr`
 }

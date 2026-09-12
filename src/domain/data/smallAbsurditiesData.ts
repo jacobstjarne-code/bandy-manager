@@ -34,7 +34,7 @@ export const SMALL_ABSURDITIES: SmallAbsurdity[] = [
   },
   {
     id: 'pizza_soderhamn',
-    newspaperHeadline: 'Söderfors fick ingen mat på borta-resan — beställd till fel adress',
+    newspaperHeadline: 'Söderfors fick ingen mat på bortaresan — beställd till fel adress',
     coffeeRoomExchange: [
       { speaker: 'Kioskvakten', line: 'Pizzan kom till Söderhamn.' },
       { speaker: 'Materialaren', line: 'Och dom var i Gagnef?' },

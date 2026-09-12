@@ -62,7 +62,7 @@ describe('communityEvent — text och deklarerad state-effekt håller ihop', () 
   it('fikakvällen visar exakt pris och kvalitativ stämningsriktning, sedan appliceras +8 fanMood', () => {
     const base = { ...makeGame(), fanMood: 50 }
     const event = generateCommunityActivitiesEvents(base, 9, new Set(), () => 0)
-      .find(candidate => candidate.id === 'community_fikakväll')!
+      .find(candidate => candidate.id === `community_fikakväll_s${base.currentSeason}`)!
     const before = base.clubs.find(club => club.id === base.managedClubId)!.finances
 
     const result = resolveEvent({ ...base, pendingEvents: [event] }, event.id, 'fika', undefined, true)

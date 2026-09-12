@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
-import { ordinal, formatFinanceAbs, formatFinance, playoffResultLabel, cupResultLabel } from '../utils/formatters'
+import { ordinal, formatFinanceAbs, formatFinance, playoffResultLabel, cupResultLabel, formatRating } from '../utils/formatters'
 import { seasonSpanLabel, seasonStartYear, seasonChampionYear } from '../../domain/utils/seasonYear'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -710,7 +710,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                       ⭐ Bästa betyg:{' '}
                       <PlayerLink playerId={s.topRated.playerId} name={s.topRated.name} />
-                      {' '}({s.topRated.avgRating.toFixed(1)})
+                      {' '}({formatRating(s.topRated.avgRating)})
                     </p>
                   )}
                   {s.mostImproved && (
@@ -906,7 +906,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
             <RecordRow label="Flest assist en säsong" value={`${game.allTimeRecords.mostAssistsSeason.assists} assist`} sub={`${game.allTimeRecords.mostAssistsSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.mostAssistsSeason.season)}`} />
           )}
           {game.allTimeRecords.highestRatingSeason && (
-            <RecordRow label="Högst snittbetyg en säsong" value={`${game.allTimeRecords.highestRatingSeason.rating.toFixed(1)}`} sub={`${game.allTimeRecords.highestRatingSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.highestRatingSeason.season)}`} />
+            <RecordRow label="Högst snittbetyg en säsong" value={formatRating(game.allTimeRecords.highestRatingSeason.rating)} sub={`${game.allTimeRecords.highestRatingSeason.playerName} · ${seasonSpanLabel(game.allTimeRecords.highestRatingSeason.season)}`} />
           )}
           {game.allTimeRecords.biggestWin && (
             <RecordRow label="Största seger" value={game.allTimeRecords.biggestWin.score} sub={`vs ${game.allTimeRecords.biggestWin.opponent} · ${seasonSpanLabel(game.allTimeRecords.biggestWin.season)}`} />
@@ -982,7 +982,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < topByRating.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 16 }}>{i + 1}.</span>
                 <PlayerLink playerId={p.id} name={`${p.firstName} ${p.lastName}`} style={{ fontSize: 13 }} />
-                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>{avg.toFixed(1)}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>{formatRating(avg)}</span>
               </div>
             ))}
           </div>

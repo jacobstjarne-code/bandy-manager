@@ -208,8 +208,10 @@ export function pickGoalCommentary(
   const isNowTied = scoringTeamScore === otherTeamScore
   const isLate = minute > 75
 
-  // Late-goal variant with 35% probability when after minute 75
-  if (isLate && rand() < 0.35) {
+  // Behåll samma RNG-drag och frekvens, men använd inte en dramatisk
+  // "matchen lever"-rad när laget redan leder och bara utökar.
+  const useLateVariant = isLate && rand() < 0.35
+  if (useLateVariant && (wasLosing || wasTied)) {
     return pickCommentary(commentary.goalLate, rand, history)
   }
 

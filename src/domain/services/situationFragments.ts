@@ -171,7 +171,7 @@ export function getPlayoffContextFragment(game: SaveGame): string | null {
   const oppClub = game.clubs.find(c => c.id === eighth.clubId)
   const eighthName = oppClub?.shortName ?? oppClub?.name.split(' ')[0] ?? 'åttan'
   if (ptsBehind <= 4) return `${ptsBehind}p upp till ${eighthName} — kan tas igen.`
-  return `${ptsBehind}p upp till playoff. Långt — men inte omöjligt.`
+  return `${ptsBehind} p upp till slutspel. Långt — men inte omöjligt.`
 }
 
 // ── Fragment: cup-stake (vad vinst innebär) ──────────────────────────────────

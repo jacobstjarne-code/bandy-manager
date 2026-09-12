@@ -5,7 +5,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { PlayerPortrait } from '../../components/PlayerPortrait'
-import { positionShort } from '../../../domain/format'
+import { positionShort, formatRating } from '../../../domain/format'
 import { ratingColor } from './helpers'
 import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { DecisionCard } from '../../components/DecisionCard'
@@ -116,7 +116,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                 </p>
               </div>
               <span className="h-num" style={{ color: ratingColor(r), flexShrink: 0 }}>
-                {r > 0 ? r.toFixed(1) : '–'}
+                {r > 0 ? formatRating(r) : '–'}
               </span>
             </div>
           )
@@ -136,7 +136,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
                   <PlayerPortrait playerId={p.id} age={p.age} position={p.position} />
                 </div>
                 <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
-                <span className="h-num-sm" style={{ color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
+                <span className="h-num-sm" style={{ color: 'var(--text-muted)' }}>{r > 0 ? formatRating(r) : '–'}</span>
               </div>
             )
           })}

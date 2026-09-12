@@ -51,8 +51,12 @@ export interface CoffeeNarratorLine {
   text: string
 }
 
+export type CoffeeTurn = [speaker: string, text: string]
+type LegacyCoffeeExchange = [string, string, string, string]
+
 export interface CoffeeScene {
-  exchanges: Array<[string, string, string, string]>
+  /** Ett utbyte kan ha två eller fler riktiga talarturer. */
+  exchanges: CoffeeTurn[][]
   /** B9 T1B — index i pool som valdes; sparas i SaveGame.lastCoffeeSceneIndices */
   pickedIndices: number[]
   /** Kanoniska visningsidentiteter som skrivs till narrativeBeatLog när scenen stängs. */
@@ -73,6 +77,34 @@ export interface CoffeeScene {
   retiredVictoryEcho?: boolean
   /** SPEC_BERATTAREN steg 8 — liten, sista rad från den kanoniska agendan. */
   ledgerEcho?: { text: string; postKey: string }
+}
+
+type LegacyCoffeeScene = Omit<CoffeeScene, 'exchanges'> & {
+  exchanges: LegacyCoffeeExchange[]
+}
+
+/**
+ * Det gamla fyrfältet kunde bara uttrycka två repliker. Innehåll med en
+ * tredje talare klistrade därför in `Namn: "...` i föregående replik. Den
+ * här enda adaptergränsen lyfter alla sådana övergångar till riktiga turer;
+ * presentationslagret behöver aldrig tolka citattecken eller talarnamn.
+ */
+export function normalizeCoffeeExchange(exchange: LegacyCoffeeExchange): CoffeeTurn[] {
+  const [speakerA, textA, speakerB, rawTextB] = exchange
+  const turns: CoffeeTurn[] = [[speakerA, textA]]
+  let speaker = speakerB
+  let text = rawTextB
+  const embeddedTurn = /^(.*?)"\s+([^":]+):\s+"([\s\S]+)$/
+
+  for (;;) {
+    const match = text.match(embeddedTurn)
+    if (!match) break
+    turns.push([speaker, match[1]])
+    speaker = match[2].trim()
+    text = match[3]
+  }
+  turns.push([speaker, text])
+  return turns
 }
 
 const COFFEE_ROOM_LEDGER_MIN_WEIGHT = 60
@@ -222,7 +254,7 @@ const SCANDAL_DASHBOARD_OWN: Partial<Record<ScandalType, Array<[string, string, 
   ],
   treasurer_resigned: [
     ['Vaktmästaren', 'Är det någon som öppnat kontoret?', 'Kioskvakten', 'Inte sen i tisdags." Vaktmästaren: "Då." Kioskvakten: "Då.'],
-    ['Materialaren', 'Jag försökte få fram papperna till skatteverket.', 'Ordföranden', 'Och?" Materialaren: "Pärmen är där hon lämnade den.'],
+    ['Materialaren', 'Jag försökte få fram papperen till Skatteverket.', 'Ordföranden', 'Och?" Materialaren: "Pärmen är där hon lämnade den.'],
     ['Kioskvakten', 'Hon kom in på matchen i lördags.', 'Kassören', 'Sa hon något?" Kioskvakten: "Hon köpte korv.'],
   ],
   phantom_salaries: [
@@ -273,7 +305,7 @@ const SCANDAL_DASHBOARD_OTHER: Partial<Record<ScandalType, Array<[string, string
     ['Kioskvakten', 'Hörde att kassören sitter på båda klubbarnas kontor.', 'Vaktmästaren', 'Då blev det som det blev.'],
   ],
   fundraiser_vanished: [
-    ['Kassören', '{KLUBB}s korv-pengar är borta.', 'Vaktmästaren', '300 spänn?" Kassören: "300 tusen.'],
+    ['Kassören', '{KLUBB}s korvpengar är borta.', 'Vaktmästaren', '300 spänn?" Kassören: "300 tusen.'],
     ['Kioskvakten', 'Klacken i {KLUBB} står utanför kansliet.', 'Materialaren', 'Och?" Kioskvakten: "Ingen kommer ut.'],
     ['Ordföranden', 'Det är en sån grej man lär sig av.', 'Kassören', 'Att räkna oftare." Ordföranden: "Mhm.'],
   ],
@@ -491,7 +523,7 @@ function pickCoffeeRoomLegendReaction(game: SaveGame, seed: number): { exchange:
     ['Kioskvakten', `${legend.name} är borta hela helgen. Tre matcher på tre orter.`, 'Kassören', 'Det är så dom är.'],
     ['Kassören', `${legend.name} ringde i tisdags. Sa bara "inte han".`, 'Ordföranden', 'Då sparade vi pengar.'],
     ['Vaktmästaren', `${legend.name} hittade en kille i Norrland. Hade kollat honom tre gånger.`, 'Materialaren', 'Tre?" Vaktmästaren: "Han litar inte på första intrycket.'],
-    ['Kioskvakten', `${legend.name} kom hem från bortamatchen på kvällen. Klockan var över elva.`, 'Vaktmästaren', 'Han kunde åkt på morgonen." Kioskvakten: "Han kunde det. Men det gör han inte.'],
+    ['Kioskvakten', `${legend.name} kom hem från bortamatchen på kvällen. Klockan var över elva.`, 'Vaktmästaren', 'Han kunde ha åkt på morgonen." Kioskvakten: "Han kunde det. Men det gör han inte.'],
     ['Materialaren', `${legend.name} sa nej till en agent som ringde.`, 'Kassören', 'Vad sa han?" Materialaren: "Att han hittar killar själv.'],
   ]
   const pool = legend.role === 'youth_coach' ? youthCoachPool
@@ -621,7 +653,7 @@ function pickFatigueExchange(
  * som GENERIC_EXCHANGES internt. Texten levereras *utan* citationstecken;
  * komponenten lägger på dem vid render.
  */
-function buildCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
+function buildCoffeeRoomScene(game: SaveGame): LegacyCoffeeScene | null {
   // D4-regressionsfix (2026-07-21, andra omgången) — victory-echo. Samma
   // topprioritet som ursprungligen (checkad allra först, före rundkontrollen
   // — game.pendingVictoryEcho beror inte på round). Verifierat innan porten:
@@ -948,6 +980,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     !shouldSurfaceVictoryEcho(game, game.pendingVictoryEcho)
   return {
     ...scene,
+    exchanges: scene.exchanges.map(normalizeCoffeeExchange),
     ...(ledgerEcho && { ledgerEcho }),
     ...(retiredVictoryEcho && { retiredVictoryEcho: true }),
   }

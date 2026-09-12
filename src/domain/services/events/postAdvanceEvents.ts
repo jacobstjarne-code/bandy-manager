@@ -255,7 +255,7 @@ export function generatePostAdvanceEvents(
         if (rating < 8.5) return false
         const player = game.players.find(p => p.id === pid)
         if (!player || player.clubId !== game.managedClubId) return false
-        return !alreadyQueued.has(`event_star_${pid}_${roundPlayed}`)
+        return !alreadyQueued.has(`event_star_${pid}_s${game.currentSeason}_r${roundPlayed}`)
       })
       .map(([pid, rating]) => ({ id: pid, pid, rating, player: game.players.find(p => p.id === pid)! }))
 
@@ -271,7 +271,7 @@ export function generatePostAdvanceEvents(
       if (picked) {
         const starPerformanceDue = starPerformanceWindow && eligibleStars.length > 0 && events.length < 2
         events.push({
-          id: `event_star_${picked.pid}_${roundPlayed}`,
+          id: `event_star_${picked.pid}_s${game.currentSeason}_r${roundPlayed}`,
           type: 'starPerformance',
           title: `⭐ Stjärnprestation — ${picked.player.firstName} ${picked.player.lastName}`,
           body: pickStarPerformanceText(picked.player, picked.rating, roundPlayed),
@@ -513,7 +513,7 @@ export function generatePostAdvanceEvents(
         const playerPraiseDue = playerPraiseWindow && praiser.morale > 75 && !alreadyQueued.has(eid)
         if (playerPraiseDue) {
           const isAwayMatch = justCompletedFixture.awayClubId === game.managedClubId
-          events.push({ ...generatePlayerPraiseEvent(praiser, praised, playerPraiseDue, isAwayMatch), relatedFixtureId: justCompletedFixture.id, rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
+          events.push({ ...generatePlayerPraiseEvent(praiser, praised, game.currentSeason, playerPraiseDue, isAwayMatch), relatedFixtureId: justCompletedFixture.id, rotationKey: `${PLAYER_PRAISE_PREFIX}${praised.id}` })
         }
       }
     }

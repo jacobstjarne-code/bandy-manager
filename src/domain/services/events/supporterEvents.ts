@@ -21,6 +21,7 @@ export function generateSupporterEvents(
   const tommy  = getCharacterName(game, 'family')
   const rolf   = getCharacterName(game, 'veteran')
   const leaderVoiceId = klackLeaderVoiceId(game.managedClubId, sg.leader.name)
+  const conflictSemanticId = `supporter_conflict:${game.managedClubId}`
 
   // ── Tifo-eventet — Elin vill organisera tifo (omg 5-7, max en gång per säsong) ──
   if (currentRound >= 5 && currentRound <= 7 && !sg.tifoDone) {
@@ -60,11 +61,17 @@ export function generateSupporterEvents(
   }
 
   // ── Konflikt Sture/Elin — omg 9-11, efter tifo, om tifoDone ──────────────────
-  if (currentRound >= 9 && currentRound <= 11 && sg.tifoDone && sg.conflictSeason !== game.currentSeason) {
+  if (
+    currentRound >= 9 && currentRound <= 11 &&
+    sg.tifoDone &&
+    sg.conflictSeason !== game.currentSeason &&
+    !alreadyQueued.has(conflictSemanticId)
+  ) {
     const eid = `supporter_conflict_${game.currentSeason}`
     if (!alreadyQueued.has(eid) && rand() < 0.5) {
       events.push({
         id: eid,
+        semanticId: conflictSemanticId,
         type: 'supporterEvent',
         title: `Konflikt i klacken`,
         body: `${sture} hör av sig. Han tycker att ${swedishGenitive(elin)} tifo var bra, men oroar sig för att klacken "tappat sitt ursprung". Han vill att det ska vara som det alltid har varit.\n\n${elin} hörde talas om det och är upprörd. De pratar inte längre.\n\n"Du behöver inte göra något", säger ${rolf}. "Men det hjälper om du visar att du bryr dig om båda."`,

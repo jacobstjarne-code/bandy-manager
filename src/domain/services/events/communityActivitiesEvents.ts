@@ -124,7 +124,7 @@ export function generateCommunityActivitiesEvents(
 
   // Julmarknad — round 7, one-time
   if (currentRound === 7 && !ca?.julmarknad) {
-    const eid = 'community_julmarknad'
+    const eid = `community_julmarknad_s${game.currentSeason}`
     if (!alreadyQueued.has(eid)) {
       events.push({
         id: eid,
@@ -275,7 +275,7 @@ export function generateCommunityActivitiesEvents(
 
   // Fikakväll — round 9, 50% chance, one-time
   if (currentRound === 9 && rand() < 0.5) {
-    const eid = 'community_fikakväll'
+    const eid = `community_fikakväll_s${game.currentSeason}`
     if (!alreadyQueued.has(eid)) {
       events.push({
         id: eid,

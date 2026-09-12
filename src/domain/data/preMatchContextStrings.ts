@@ -101,7 +101,7 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
   opp_cold: [
     '{opp} har förlorat mer än de vunnit på sistone.',
     '{opp} är skakade.',
-    '{opp} kommer hit slitna.',
+    '{opp} kommer in i matchen slitna.',
     '{opp} har gått sönder någonstans i höst.',
   ],
 }

@@ -1,4 +1,5 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { formatDecimalComma } from '../../../domain/format'
 
 interface Props {
   game: SaveGame
@@ -60,7 +61,7 @@ export function SeasonBarometer({ game }: Props) {
 
   const formatTkr = (n: number) => {
     const sign = n >= 0 ? '+' : ''
-    if (Math.abs(n) >= 1_000_000) return `${sign}${(n / 1_000_000).toFixed(1)} mkr`
+    if (Math.abs(n) >= 1_000_000) return `${sign}${formatDecimalComma(Math.abs(n) / 1_000_000)} mkr`
     return `${sign}${Math.round(n / 1_000)} tkr`
   }
 

@@ -7,6 +7,7 @@ import { SectionLabel } from '../../components/SectionLabel'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { selectMatchensSamband } from '../../../domain/services/matchensSambandService'
+import { formatRating } from '../../../domain/format'
 
 interface GranskaAnalysProps {
   game: SaveGame
@@ -160,7 +161,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               return (
                 <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
-                  <span className="h-num-sm" style={{ color: r >= 7 ? 'var(--success)' : 'var(--text-primary)' }}>{r.toFixed(1)}</span>
+                  <span className="h-num-sm" style={{ color: r >= 7 ? 'var(--success)' : 'var(--text-primary)' }}>{formatRating(r)}</span>
                 </div>
               )
             })}
@@ -170,7 +171,7 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
               return (
                 <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Svagaste länken: {p.firstName[0]}. {p.lastName}</span>
-                  <span className="h-num-sm" style={{ color: 'var(--danger)' }}>{r.toFixed(1)}</span>
+                  <span className="h-num-sm" style={{ color: 'var(--danger)' }}>{formatRating(r)}</span>
                 </div>
               )
             })}

@@ -8,7 +8,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { MatchEventType, InboxItemType, TrainingType, WeatherCondition, CornerStrategy } from '../../../domain/enums'
 import type { Weather } from '../../../domain/entities/Weather'
 import { formatArenaName } from '../../../domain/utils/arenaName'
-import { csColor, formatFinance } from '../../utils/formatters'
+import { csColor, formatFinance, formatRating } from '../../utils/formatters'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 import { getFormResults } from '../../utils/formUtils'
@@ -355,7 +355,7 @@ export function GranskaOversikt({
 
           <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
             {potm && potmRating != null && (
-              <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>⭐ {potm.firstName} {potm.lastName} · {potmRating.toFixed(1)}</p>
+              <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>⭐ {potm.firstName} {potm.lastName} · {formatRating(potmRating)}</p>
             )}
             {fixture.attendance != null && (
               <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>

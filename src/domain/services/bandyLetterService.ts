@@ -68,7 +68,7 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
       ],
     },
     {
-      text: `Jag jobbade på bruket i ${origin} i tjugosex år. Jag satt alltid på östra sidan — platsen där vinden tog minst.\n\nJag minns när det hände ett frislags-mål från nära 40 meter i semifinalen ${memYear}. Hela planen blev tyst i fem sekunder innan det exploderade.\n\nJag är ${age} nu och har svårt att gå dit längre. Men jag lyssnar på radio. Hälsa grabbarna.`,
+      text: `Jag jobbade på bruket i ${origin} i tjugosex år. Jag satt alltid på östra sidan — platsen där vinden tog minst.\n\nJag minns när det hände ett frislagsmål från nära 40 meter i semifinalen ${memYear}. Hela planen blev tyst i fem sekunder innan det exploderade.\n\nJag är ${age} nu och har svårt att gå dit längre. Men jag lyssnar på radio. Hälsa grabbarna.`,
       replyOptions: [
         { id: 'reply_radio', label: 'Svara — berätta att vi lyssnar tillbaka', replyText: `Hej ${firstName},\n\nVi hörde vad du sa. Alla som sitter med radion och följer oss hemifrån är en del av det här laget. Östra sidan är alltid din.\n\n— ${game.managerName}` },
         { id: 'archive_no_reply', label: 'Lägg i arkivet (inget svar)', replyText: undefined },

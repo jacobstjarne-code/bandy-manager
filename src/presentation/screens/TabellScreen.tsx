@@ -9,6 +9,7 @@ import { getFormResults } from '../utils/formUtils'
 import { Target } from 'lucide-react'
 import { TabBar } from '../components/shared/TabBar'
 import { getRoundLabel } from '../../domain/roundLabel'
+import { formatRating } from '../../domain/format'
 
 /**
  * PÅSTÅENDEKARTAN nivå 1 (2026-08-25): två roundNumber-sorteringar hittade
@@ -179,7 +180,7 @@ export function TabellScreen() {
             <StatTable title="🥅 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
             <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" defaultOpen={false} />
             <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" defaultOpen={false} />
-            <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} defaultOpen={false} />
+            <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => formatRating(p.seasonStats.averageRating)} defaultOpen={false} />
             <StatTable title="⏱️ Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" defaultOpen={false} />
           </div>
         )

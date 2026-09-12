@@ -430,6 +430,11 @@ export function PortalScreen() {
           // befintliga flex-gap ger 6 px; 39 px till ger heltalssäkert minst
           // 44 px även när subpixelavrundning annars landar på 43,99.
           bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${weeklyDecisionPending ? 0 : Math.round(ctaHeight) + 39}px)`,
+          left: '50%',
+          right: 'auto',
+          width: '100%',
+          maxWidth: 430,
+          transform: 'translateX(-50%)',
         }}
       />
 
@@ -446,8 +451,11 @@ export function PortalScreen() {
       {!weeklyDecisionPending && !seamActive && <div ref={ctaRef} data-fixed-bottom-bar style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
-        left: 14,
-        right: 14,
+        left: '50%',
+        right: 'auto',
+        width: 'calc(100% - 28px)',
+        maxWidth: 402,
+        transform: 'translateX(-50%)',
         zIndex: 'var(--z-header)',  // persistent botten-chrome (ej modal) — var 200 = oförändrat
         display: 'flex',
         flexDirection: 'column',

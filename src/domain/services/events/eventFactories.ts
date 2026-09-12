@@ -362,13 +362,14 @@ export function generatePlayerMediaEvent(
 export function generatePlayerPraiseEvent(
   praiser: Player,
   praised: Player,
+  season: number,
   triggerProof: boolean,
   isAwayMatch = false,
 ): GameEvent {
   const name1 = `${praiser.firstName} ${praiser.lastName}`
   const name2 = `${praised.firstName} ${praised.lastName}`
   return {
-    id: `event_praise_${praiser.id}_${praised.id}`,
+    id: `event_praise_${praiser.id}_${praised.id}_s${season}`,
     type: 'playerPraise',
     title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
     body: pickPlayerPraiseText(praiser, praised, isAwayMatch),
@@ -740,7 +741,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, season: number, r
       },
       {
         id: 'invite_generic',
-        label: 'Bjud in på match nästa hemmagång',
+        label: 'Bjud in till nästa hemmamatch',
         subtitle: 'Gratis · gläder mecenaten',
         effect: { type: 'mecenatHappiness', targetMecenatId: mec.id, amount: happinessBonusWrong, value: 0 },
       },

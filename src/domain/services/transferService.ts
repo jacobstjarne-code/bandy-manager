@@ -170,7 +170,7 @@ function buildTransferStory(
 ): string {
   const parts: string[] = []
   if (flags.isCaptain) {
-    parts.push(`Kaptenen är borta. ${player.firstName} ${player.lastName} tog bindeln sist och gav laget en hållhake hela säsongen.`)
+    parts.push(`Kaptenen är borta. ${player.firstName} ${player.lastName} bar bindeln och gav laget stadga hela säsongen.`)
   }
   if (flags.isFanFavorite) {
     parts.push('Klacken är tyst. "Vi förlåter inte det här i första taget" skriver en insändare.')

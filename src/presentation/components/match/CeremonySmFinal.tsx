@@ -1,7 +1,7 @@
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
-import { truncate, positionLong } from '../../utils/formatters'
+import { truncate, positionLong, formatRating } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { didManagedWinFinal } from '../../utils/finalResult'
 import { GoldConfetti } from './GoldConfetti'
@@ -154,7 +154,7 @@ export function CeremonySmFinal({
           </p>
         )}
         <p style={{ fontSize: 32, fontWeight: 800, color: 'var(--accent)', marginBottom: 32, fontFamily: 'var(--font-display)' }}>
-          {typeof mvpRating === 'number' ? mvpRating.toFixed(1) : '–'}
+          {typeof mvpRating === 'number' ? formatRating(mvpRating) : '–'}
         </p>
         <button
           onClick={onNavigate}

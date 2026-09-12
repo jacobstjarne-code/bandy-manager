@@ -52,12 +52,20 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     const event = generateSupporterEvents(game, 9, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_conflict_'))!
     expect(event.voiceId).toBe(klackLeaderVoiceId(game.managedClubId, 'Sture'))
+    expect(event.semanticId).toBe(`supporter_conflict:${game.managedClubId}`)
     expect(event.choices.find(choice => choice.id === 'both')?.subtitle)
       .toBe('lyfter stämningen på läktaren')
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'both', undefined, true)
     expect(result.supporterGroup).toMatchObject({ mood: 65, conflictSeason: game.currentSeason, conflictMatchday: 9 })
     expect(result.fanMood).toBe(53)
     expect(getKlackDisplay(result, 9)?.body).not.toContain('tystare')
+  })
+
+  it('startar inte om konflikten en senare säsong när dess semantiska id redan är löst', () => {
+    const game = { ...makeGame(supporterGroup({ tifoDone: true, conflictSeason: 2026 })), currentSeason: 2028, currentMatchday: 9 }
+    const identities = new Set([`supporter_conflict:${game.managedClubId}`])
+    expect(generateSupporterEvents(game, 9, identities, () => 0)
+      .some(candidate => candidate.id.startsWith('supporter_conflict_'))).toBe(false)
   })
 
   it('bortaresan söker kommande fixture.matchday och beskrivs som planerad, inte genomförd', () => {

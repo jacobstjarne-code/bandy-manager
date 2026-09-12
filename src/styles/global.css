@@ -2075,3 +2075,34 @@ a {
   color: var(--danger-text);
   margin-left: 8px;
 }
+
+/* Taktikens kontroller får en egen responsiv radmodell. Den fasta 78 px-
+   kolumnen gjorde att långa etiketter och tre val kolliderade på telefon. */
+.tactic-control-row {
+  display: grid;
+  grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.tactic-control-label {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.tactic-control-options {
+  min-width: 0;
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+@media (max-width: 375px) {
+  .tactic-control-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .tactic-control-label {
+    padding-left: 1px;
+  }
+}

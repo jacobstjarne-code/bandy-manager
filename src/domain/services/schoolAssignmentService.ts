@@ -10,8 +10,8 @@ import { seasonSpanLabel } from '../utils/seasonYear'
  * @cites SeasonSummary.playoffResult, SeasonSummary.finalPosition, SeasonSummary.season
  */
 function summarizeSeason(s: SeasonSummary): string {
-  if (s.playoffResult === 'champion') return 'säsongen vi blev SM'
-  if (s.playoffResult === 'finalist') return 'SM-final-säsongen'
+  if (s.playoffResult === 'champion') return 'säsongen vi tog SM-guld'
+  if (s.playoffResult === 'finalist') return 'säsongen vi nådde SM-finalen'
   if (s.finalPosition <= 3) return `säsongen vi slutade ${s.finalPosition}:a`
   return `säsong ${seasonSpanLabel(s.season)}`
 }
@@ -55,7 +55,7 @@ export function generateSchoolAssignmentEvent(game: SaveGame, nextMatchday: numb
       label: `Berätta om ${seasonSpanLabel(notableSeason.season)} — ${summarizeSeason(notableSeason)}`,
       effect: {
         type: 'saveSchoolAssignment' as const,
-        replyText: `Det var ${seasonSpanLabel(notableSeason.season)}. Vi slutade ${notableSeason.finalPosition}:a i serien${notableSeason.playoffResult === 'champion' ? ' och vann SM.' : '.'}`,
+        replyText: `Det var ${seasonSpanLabel(notableSeason.season)}. Vi slutade ${notableSeason.finalPosition}:a i serien${notableSeason.playoffResult === 'champion' ? ' och vann SM.' : notableSeason.playoffResult === 'finalist' ? ' och nådde SM-finalen.' : '.'}`,
       },
     })
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getCoffeeRoomScene } from '../coffeeRoomService'
+import { getCoffeeRoomScene, normalizeCoffeeExchange } from '../coffeeRoomService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Fixture } from '../../entities/Fixture'
 import { FixtureStatus } from '../../enums'
@@ -43,6 +43,20 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     ...overrides,
   } as SaveGame
 }
+
+describe('kafferummets strukturerade talarturer', () => {
+  it('lyfter en inklistrad tredje och fjärde talare till egna turer', () => {
+    expect(normalizeCoffeeExchange([
+      'Kioskvakten', 'Har du hört?',
+      'Vaktmästaren', 'Inte än." Kassören: "Jag vet." Kioskvakten: "Säg inget.',
+    ])).toEqual([
+      ['Kioskvakten', 'Har du hört?'],
+      ['Vaktmästaren', 'Inte än.'],
+      ['Kassören', 'Jag vet.'],
+      ['Kioskvakten', 'Säg inget.'],
+    ])
+  })
+})
 
 function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
   return {

@@ -12,7 +12,7 @@ import type { RecentMatchRating } from './playerCardUtils'
 import { CareerJourney } from './player/CareerJourney'
 import { ScoreBlock, type ScoreBlockVariant } from './primitives/ScoreBlock'
 import { Icon } from './primitives/Icon'
-import { formatSalary, positionShort, formatContractUntil, formatWeeks } from '../utils/formatters'
+import { formatSalary, positionShort, formatContractUntil, formatWeeks, formatDecimalComma, formatRating } from '../utils/formatters'
 import { MENTOR_FORM_THRESHOLD } from '../../domain/services/mentorshipConstants'
 import { mentorshipBondAdeptInForm, mentorshipBondAdeptResting } from '../../domain/data/mentorshipStrings'
 import { pickRehabStageLine } from '../../domain/data/injuryDoctorText'
@@ -101,7 +101,7 @@ function barColor(value: number): string {
 }
 
 function formatMarketValue(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
+  if (v >= 1_000_000) return `${formatDecimalComma(v / 1_000_000)} mkr`
   if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
   return `${v} kr`
 }
@@ -227,7 +227,7 @@ function MatchSparkline({ ratings }: { ratings: RecentMatchRating[] }) {
               />
               {/* Rating label above dot */}
               <text x={c.x} y={c.y - 6} textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--text-primary)">
-                {r.rating.toFixed(1)}
+                {formatRating(r.rating)}
               </text>
               {/* Opponent short name */}
               <text x={c.x} y={H + 12} textAnchor="middle" fontSize="8" fill="var(--text-muted)">
@@ -480,7 +480,7 @@ export function PlayerCard({
             {[
               { label: 'MÅL', value: String(player.seasonStats.goals) },
               { label: 'AST', value: String(player.seasonStats.assists) },
-              { label: 'BGT', value: player.seasonStats.averageRating > 0 ? player.seasonStats.averageRating.toFixed(1) : '–' },
+              { label: 'BGT', value: player.seasonStats.averageRating > 0 ? formatRating(player.seasonStats.averageRating) : '–' },
             ].map(c => (
               <span key={c.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 11, background: 'transparent' }}>
                 <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{c.value}</span>
@@ -607,7 +607,7 @@ export function PlayerCard({
             const variant: ScoreBlockVariant = latest.rating >= 6.5 ? 'win' : latest.rating <= 5.5 ? 'loss' : 'subtle'
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <ScoreBlock score={latest.rating.toFixed(1)} variant={variant} label={`vs ${latest.opponentShortName}`} />
+                <ScoreBlock score={formatRating(latest.rating)} variant={variant} label={`vs ${latest.opponentShortName}`} />
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>
                   Senaste matchbetyg
                 </span>
@@ -738,7 +738,7 @@ export function PlayerCard({
                 {player.seasonStats.averageRating > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
                     <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-display)', color: player.seasonStats.averageRating >= 7 ? 'var(--success)' : player.seasonStats.averageRating >= 6 ? 'var(--warning)' : 'var(--danger)' }}>
-                      {player.seasonStats.averageRating.toFixed(1)}
+                      {formatRating(player.seasonStats.averageRating)}
                     </span>
                     <span className="h-micro" style={{ color: 'var(--text-muted)', letterSpacing: '0.5px' }}>BETYG</span>
                   </div>
@@ -901,7 +901,7 @@ export function PlayerCard({
               <span style={{ color: 'var(--text-muted)', minWidth: 40 }}>{s.season}</span>
               <span style={{ flex: 1, color: 'var(--text-secondary)' }}>{s.games} m · {s.goals} mål · {s.assists} ast</span>
               <span style={{ fontWeight: 600, color: s.rating >= 7 ? 'var(--success)' : s.rating >= 6 ? 'var(--text-primary)' : 'var(--danger)' }}>
-                {s.rating > 0 ? s.rating.toFixed(1) : '–'}
+                {s.rating > 0 ? formatRating(s.rating) : '–'}
               </span>
             </div>
           ))}

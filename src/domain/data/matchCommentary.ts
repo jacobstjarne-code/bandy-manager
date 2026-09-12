@@ -99,7 +99,7 @@ export const commentary = {
     "SENT MÅL! {player} slår till i slutminuterna! {score}!",
     "DRAMA! {player} gör {score} sent i matchen!",
     "I SISTA STUND! {player} ser till att det inte slutar här! {score}!",
-    "Klockan tickar men {player} bryr sig inte! Ett sent mål ger oss {score}!",
+    "Klockan tickar men {player} bryr sig inte! Ett sent mål ger ställningen {score}!",
     "RAFFLANDE AVSLUTNING! {player} bjuder på en läckerbit! {score}!",
   ],
   goalExtend: [
@@ -140,7 +140,7 @@ export const commentary = {
   miss: [
     "OOOOUUH! Bollen går över ribban. En bra chans, ändå.",
     "Skott strax utanför stolpen. Nära nu för {team}.",
-    "Avslut som går precis utanför. Vi är centimetrar från ett mål.",
+    "Avslut som går precis utanför. Det fattas bara centimeter.",
     "I STOLPEN! Bollen studsar ut. Så nära det kan bli.",
     "Inte riktigt nära med det avslutet. Målvakten får börja om.",
     "I RIBBAN! Frustrerat nu i {team}.",
@@ -293,7 +293,7 @@ export const commentary = {
     "Bollen fastnade i en vattenpöl — avslutet dog innan det nådde mål.",
     "Slushig is äter farten. Halvchansen rann ut i intet.",
     "Teknisk miss — men det är svårt att skylla spelaren på den här isen.",
-    "Bollen tappar fart i väten precis när det gick undan. Bortkastat läge.",
+    "Bollen tappar fart i vattnet precis när det gick undan. Bortkastat läge.",
     "Slasket tog avslutet. Det var ett mål på vanlig is.",
   ],
   weather_miss_fog: [
@@ -413,7 +413,7 @@ export const commentary = {
     "Slutsignal. {team} tar hem pokalen. {score}.",
     "Det är klart. {team} vinner cupen. Inte den främsta pokalen — men en pokal.",
     "Domaren blåser. {team} är cupmästare. {score}.",
-    "Slutspelat. Pokalen är vår. Lite blank. Lite lätt.",
+    "Slutspelat. {team} tar pokalen. Lite blank. Lite lätt.",
   ],
 
   cup_final_fullTime_loss: [
@@ -976,7 +976,7 @@ export function getTraitCommentary(
       `${name} med en tackling man inte trodde var hans. {minuter} minuter på bänken.`,
     ],
     lokal: [
-      `Hemmapubliken tystnar. ${name} åker ut och laget spelar numerärt underlägset.`,
+      `Läktaren reagerar. ${name} åker ut och laget spelar numerärt underlägset.`,
       `${name} låter känslorna ta överhanden. Totalt onödigt.`,
       `Det var inte så lokalhjälten ville skriva in sig i kväll. ${name} ut.`,
     ],

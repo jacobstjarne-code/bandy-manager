@@ -1002,7 +1002,7 @@ export const useGameStore = create<GameState>()(
               date: game.currentDate,
               type: InboxItemType.ContractExpiring,
               title: `${player.firstName} ${player.lastName} vill ha besked`,
-              body: `${player.firstName} ${player.lastName} har uttryckt oro kring sin framtid i klubben. Kontraktet löper ut om kort.`,
+              body: `${player.firstName} ${player.lastName} har uttryckt oro kring sin framtid i klubben. Kontraktet löper ut inom kort.`,
               relatedPlayerId: playerId,
               isRead: false,
             },

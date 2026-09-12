@@ -33,7 +33,7 @@ describe('generatePlayerPraiseEvent — "great"-valet ger exakt +3 moral, inte +
         p.id === praiser.id || p.id === praised.id ? { ...p, morale: 50 } : p
       ),
     }
-    const event = generatePlayerPraiseEvent(praiser, praised)
+    const event = generatePlayerPraiseEvent(praiser, praised, game.currentSeason, true)
     expect(event.choices[0].subtitle).toBe('lyfter båda spelarna')
     game = { ...game, pendingEvents: [event] }
 

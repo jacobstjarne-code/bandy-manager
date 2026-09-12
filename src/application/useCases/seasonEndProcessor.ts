@@ -60,6 +60,7 @@ import { getCurrentLeagueRound } from '../../domain/data/seasonPhases'
 import { appendNewlyResolvedStorylines, getResolvedStorylineProjections } from '../../domain/services/storylineLedgerService'
 import { closeActiveMentorshipForYouth } from '../../domain/services/academyMentorshipService'
 import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
+import { applyDecisionBudget } from '../../domain/services/decisionBudgetService'
 
 /** Flytta ett värde på den avslutade säsongens matchday-axel till nästa säsongs nollpunkt. */
 export function rebaseMatchdayAnchor(
@@ -2606,6 +2607,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     pendingAnnandagsGratisentreVal: false,
     pendingAnnandagsMediaRubrik: undefined,
     pendingAnnandagsKlack: undefined,
+    // Veckobeslut hör till den avslutade säsongens rytm. Att låta det leva
+    // vidare bakom årsboken gav en fjärde aktiv handling på säsongens första
+    // portal. Pensionera instansen uttryckligt i samma receipt-lista som den
+    // vanliga resolvern använder; inget svar eller mekaniskt utfall gissas.
+    pendingWeeklyDecision: undefined,
+    resolvedWeeklyDecisions: game.pendingWeeklyDecision
+      ? [
+          ...(game.resolvedWeeklyDecisions ?? []),
+          `${game.pendingWeeklyDecision.id}_${game.currentSeason}`,
+        ]
+      : (game.resolvedWeeklyDecisions ?? []),
   }
 
   // ── HIGH 11: rollover — aldrig tyst ────────────────────────────────────
@@ -2661,10 +2673,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     game.currentMatchday,
   )
 
+  // Säsongsskiftet är den sista producenten i omgången. Kör därför samma
+  // kanoniska partition här som efter vanliga matchdagar: filtrera redan
+  // lösta concrete/semantic-id:n och låt högst tre aktiva event ligga öppna.
+  // Årsboken är en informationsbarriär, inte ett fjärde spelarbeslut.
+  const gameAfterFinalDecisionPartition = applyDecisionBudget(
+    gameWithStorylineLedger,
+    gameWithStorylineLedger.currentMatchday,
+  )
+
   return {
     game: {
-      ...gameWithStorylineLedger,
-      allTimeRecords: updateAllTimeRecords(gameWithStorylineLedger, seasonSummary),
+      ...gameAfterFinalDecisionPartition,
+      allTimeRecords: updateAllTimeRecords(gameAfterFinalDecisionPartition, seasonSummary),
     },
     roundPlayed: null,
     seasonEnded: true,

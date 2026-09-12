@@ -10,6 +10,7 @@ import type { PlayerPosition } from '../../../domain/enums'
 import { getBurnoutZone } from '../../../domain/services/managerProfileService'
 import { BURNOUT_OPPONENT_READ, pickBurnoutOpponentReadIndex } from '../../../domain/services/burnoutReliefService'
 import { CLUB_EXTENDED_INFO } from '../../../domain/data/clubExtendedInfo'
+import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 // ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
@@ -111,7 +112,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
       {displayAnalysis.level === 'detailed' && displayAnalysis.formation && (
         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
-          Formation: {displayAnalysis.formation}
+          Formation: {FORMATIONS[displayAnalysis.formation as FormationType]?.label ?? displayAnalysis.formation}
         </p>
       )}
 

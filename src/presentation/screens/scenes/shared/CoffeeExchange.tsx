@@ -11,6 +11,7 @@
 // keyframet och blev liggande på opacity: 0.
 
 import { wrapQuote } from '../../../../domain/utils/quoteWrap'
+import type { CoffeeTurn } from '../../../../domain/services/coffeeRoomService'
 
 interface SpeakerRowProps {
   initial: string
@@ -79,15 +80,11 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
 }
 
 interface Props {
-  exchange: [string, string, string, string]
+  exchange: CoffeeTurn[]
   delay: number
 }
 
 export function CoffeeExchange({ exchange, delay }: Props) {
-  const [speakerA, textA, speakerB, textB] = exchange
-  const initialA = speakerA.charAt(0).toUpperCase()
-  const initialB = speakerB.charAt(0).toUpperCase()
-
   return (
     <div
       style={{
@@ -99,8 +96,15 @@ export function CoffeeExchange({ exchange, delay }: Props) {
         animationDelay: `${delay}ms`,
       }}
     >
-      <SpeakerRow initial={initialA} speakerName={speakerA} text={textA} align="left" />
-      <SpeakerRow initial={initialB} speakerName={speakerB} text={textB} align="right" />
+      {exchange.map(([speaker, text], index) => (
+        <SpeakerRow
+          key={`${index}-${speaker}`}
+          initial={speaker.charAt(0).toUpperCase()}
+          speakerName={speaker}
+          text={text}
+          align={index % 2 === 0 ? 'left' : 'right'}
+        />
+      ))}
     </div>
   )
 }

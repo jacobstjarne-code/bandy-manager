@@ -7,6 +7,7 @@ import { tacticRows, TACTIC_GROUPS, type TacticRow } from '../../utils/tacticDat
 import { FormationView } from './FormationView'
 import { NotesView } from './NotesView'
 import { SlidersHorizontal } from 'lucide-react'
+import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 
 interface TacticBoardCardProps {
   club: Club
@@ -95,9 +96,9 @@ export function TacticBoardCard({
     const current = tactic[key] as string
     return (
       <div key={key} style={{ marginBottom: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
-          <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+        <div className="tactic-control-row">
+          <span className="tactic-control-label">{label}</span>
+          <div className="tactic-control-options">
             {options.map((opt, i) => {
               // B2 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md 2026-08-19): opt.value kan vara ett värdeblock
               // (t.ex. press: ['medium','low'] — matchCore behandlar dem identiskt).
@@ -278,7 +279,7 @@ export function TacticBoardCard({
       {/* Planen + kemi-lager (alltid synligt) */}
       <div style={{ padding: '4px 12px 0' }}>
         <p className="h-label" style={{ marginBottom: 6, fontSize: 12 }}>
-          📋 Planen · {club.activeTactic.formation ?? '3-3-4'}
+          📋 Planen · {FORMATIONS[(club.activeTactic.formation ?? '532_tvatoppar') as FormationType]?.label ?? '5-3-2 två toppar'}
         </p>
       </div>
 

@@ -233,7 +233,10 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   const scoutTexts: Record<string, string> = {}
 
   for (let i = 0; i < count; i++) {
-    const age = 15 + Math.floor(rng.next() * 5)  // 15–19
+    // Den här generatorn materialiserar direkt en senior Player och lägger
+    // honom i AI-klubbens A-trupp. P19:s separata YouthPlayer-kontrakt är
+    // fortsatt 15–19; seniorobjektets domäninvariant börjar vid 16.
+    const age = 16 + Math.floor(rng.next() * 4)  // 16–19
     const position = pickPosition(rng, [...existingPlayers, ...newPlayers])
     const archetype = pickArchetype(rng, position)
 

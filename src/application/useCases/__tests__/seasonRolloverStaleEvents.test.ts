@@ -5,6 +5,7 @@ import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { PlayoffStatus, PendingScreen, InboxItemType } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { AdvanceResult } from '../advanceTypes'
+import { getActiveDecisionCount, MAX_ACTIVE_DECISIONS } from '../../../domain/services/decisionBudgetService'
 import {
   autoSelectLineup,
   autoResolvePendingScreen,
@@ -192,6 +193,8 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
     expect(game.currentSeason).toBe(oldSeason + 1)
     // "Årsbok" — the season summary screen is the ceremony's landing screen.
     expect(game.pendingScreen).toBe(PendingScreen.SeasonSummary)
+    expect(game.pendingWeeklyDecision).toBeUndefined()
+    expect(getActiveDecisionCount(game)).toBeLessThanOrEqual(MAX_ACTIVE_DECISIONS)
 
     // Core regression assertion: deferredDecisions is the field that leaked.
     // It must be wholesale-cleared at rollover, exactly like pendingEvents.

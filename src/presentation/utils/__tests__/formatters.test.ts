@@ -41,7 +41,7 @@ describe('cupResultLabel', () => {
 
 describe('formatFinanceAbs', () => {
   it('mkr för belopp >= 1 000 000', () => {
-    expect(formatFinanceAbs(1_200_000)).toBe('1.2 mkr')
+    expect(formatFinanceAbs(1_200_000)).toBe('1,2 mkr')
   })
 
   it('tkr för belopp >= 1 000', () => {

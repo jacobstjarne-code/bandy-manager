@@ -159,7 +159,7 @@ describe('generatePostAdvanceEvents', () => {
     const event = events.find(e => e.type === 'starPerformance')
 
     expect(event).toMatchObject({
-      id: 'event_star_p1_6',
+      id: 'event_star_p1_s2025_r6',
       relatedPlayerId: 'p1',
       rotationKey: 'star_performance_p1',
       proofSource: { form: 'state-predicate', evaluatedTrue: true },

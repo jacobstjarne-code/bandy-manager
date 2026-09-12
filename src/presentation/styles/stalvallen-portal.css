@@ -445,6 +445,13 @@
 
 .portal-phasemark.danger .portal-phasemark-eyebrow {
   color: var(--danger);
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+
+.portal-phasemark.danger .portal-phasemark-helper {
+  font-size: 12px;
+  opacity: 0.9;
 }
 
 .burnout-illustration-copy {

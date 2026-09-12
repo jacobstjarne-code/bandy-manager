@@ -10,7 +10,7 @@ import type { Tactic } from '../../domain/entities/Club'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
-import { positionShort, POSITION_ORDER } from '../utils/formatters'
+import { positionShort, POSITION_ORDER, formatRating } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
 import { PlayerPortrait } from '../components/PlayerPortrait'
@@ -371,7 +371,7 @@ export function PlayerRow({ player, onClick, currentSeason, captainPlayerId, ann
           </span>
           <span>{player.seasonStats.assists}A</span>
           <span style={{ color: ratingColor(player.seasonStats.averageRating) }}>
-            {player.seasonStats.averageRating.toFixed(1)}★
+            {formatRating(player.seasonStats.averageRating)}★
           </span>
           {player.seasonStats.redCards > 0 && (
             <span style={{ color: 'var(--danger)' }}>{player.seasonStats.redCards}utv</span>
@@ -867,7 +867,7 @@ export function SquadScreen() {
             {[
               { emoji: '🏒', label: 'Toppskytt', player: topScorer, value: topScorer?.seasonStats.goals },
               { emoji: '🅰️', label: 'Flest assist', player: topAssist, value: topAssist?.seasonStats.assists },
-              { emoji: '⭐', label: 'Bäst betyg', player: topRating, value: topRating ? topRating.seasonStats.averageRating.toFixed(1) : undefined },
+              { emoji: '⭐', label: 'Bäst betyg', player: topRating, value: topRating ? formatRating(topRating.seasonStats.averageRating) : undefined },
               { emoji: '🏒', label: 'Utvisningar', player: topSuspensions, value: topSuspensions?.seasonStats.redCards },
             ].map(({ emoji, label, player: p, value }) => (
               <div
@@ -946,7 +946,7 @@ export function SquadScreen() {
                     <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{deal.destinationClubName} · {deal.matchesPlayed ?? 0}/{deal.totalMatches ?? '?'} matcher</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>Betyg: {deal.averageRating > 0 ? deal.averageRating.toFixed(1) : '—'}</p>
+                    <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>Betyg: {deal.averageRating > 0 ? formatRating(deal.averageRating) : '—'}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{Math.max(0, roundsLeft)} omg. kvar</p>
                   </div>
                 </div>

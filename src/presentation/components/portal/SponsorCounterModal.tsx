@@ -7,6 +7,11 @@ import '../../styles/transfers.css'
 import { Overlay } from '../primitives/Overlay'
 
 const PERF_DOTS = Array.from({ length: 8 })
+const SPONSOR_PERSONALITY_LABEL: Record<string, string> = {
+  local: 'lokal',
+  regional: 'regional',
+  foundation: 'stiftelse',
+}
 
 /**
  * SponsorCounterModal — docs/dom/DOM_SPONSOR_MOTBUD_2026-08-31.md. Rider BidModal-
@@ -73,7 +78,7 @@ export function SponsorCounterModal({ sponsor, onClose, onPreview, onCommit }: S
             ) : (
               <>
                 <div className="transfers-info-box">
-                  Ursprungserbjudande: {sponsor.weeklyIncome.toLocaleString('sv-SE')} kr/vecka · {sponsor.personality ?? 'local'}
+                  Ursprungserbjudande: {sponsor.weeklyIncome.toLocaleString('sv-SE')} kr/vecka · {SPONSOR_PERSONALITY_LABEL[sponsor.personality ?? 'local'] ?? sponsor.personality}
                 </div>
                 <div className="transfers-form-group">
                   <label className="transfers-label">Kräv (kr/vecka)</label>

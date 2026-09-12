@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { BoardObjective } from '../../../../domain/entities/Community'
+import { formatDecimalComma } from '../../../../domain/format'
 
 export const STATUS_ICON: Record<BoardObjective['status'], string> = {
   active:  '📌',
@@ -24,7 +25,7 @@ export function formatOwnerInitial(ownerId: string): string {
 }
 
 export function formatMoney(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(1)} mkr`
+  if (Math.abs(value) >= 1_000_000) return `${formatDecimalComma(value / 1_000_000)} mkr`
   if (Math.abs(value) >= 1000) return `${Math.round(value / 1000)} tkr`
   return `${value} kr`
 }
@@ -36,7 +37,7 @@ export function formatMoney(value: number): string {
 // båda sidorna — samma enhet på båda sidor av snedstrecket.
 export function formatMoneyPair(current: number, target: number): [string, string] {
   const scale = Math.max(Math.abs(current), Math.abs(target))
-  if (scale >= 1_000_000) return [`${(current / 1_000_000).toFixed(1)} mkr`, `${(target / 1_000_000).toFixed(1)} mkr`]
+  if (scale >= 1_000_000) return [`${formatDecimalComma(current / 1_000_000)} mkr`, `${formatDecimalComma(target / 1_000_000)} mkr`]
   if (scale >= 1000) return [`${Math.round(current / 1000)} tkr`, `${Math.round(target / 1000)} tkr`]
   return [`${current} kr`, `${target} kr`]
 }

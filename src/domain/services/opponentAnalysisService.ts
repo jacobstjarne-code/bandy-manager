@@ -64,7 +64,7 @@ export function selectThreatPlayer(players: Player[]): ThreatPlayer | undefined 
 
   const candidates: { key: ThreatReasonKey; value: number }[] = [
     { key: 'evasive', value: (a.skating + a.dribbling) / 2 },     // "riktigt hal"
-    { key: 'clinical', value: (a.positioning + a.shooting) / 2 }, // "dyker upp varsomhelst och gör mål på allt"
+    { key: 'clinical', value: (a.positioning + a.shooting) / 2 }, // "dyker upp var som helst och gör mål på allt"
     { key: 'relentless', value: (a.workRate + a.acceleration) / 2 }, // "åker mycket och fiskar bollar"
     { key: 'creative', value: (a.vision + a.passing) / 2 },       // spelvändare
   ]
@@ -92,7 +92,7 @@ export const THREAT_REASON_LINES: Record<ThreatReasonKey, string[]> = {
     'Jaga inte {Efternamn}. Håll zonen tät och låt honom få bollen där han inte gör skada.',
   ],
   clinical: [
-    '{Efternamn} dyker upp varsomhelst och gör mål på allt.',
+    '{Efternamn} dyker upp var som helst och gör mål på allt.',
     'Ger ni {Efternamn} ett halvt läge så ligger den inne.',
     '{Efternamn} rör sig inte mycket. Han står bara alltid rätt.',
     'Ha alltid någon i {Efternamn}s zon i straffområdet. Att stå rätt där är hela hans jobb.',

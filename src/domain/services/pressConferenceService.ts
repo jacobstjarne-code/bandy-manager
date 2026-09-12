@@ -256,7 +256,7 @@ export const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'dr_h4', tag: 'draw_any', label: '"Avsluten. Vi skapar chanser men omsätter dem inte."', moraleEffect: 3, mediaQuote: 'Tränaren pekade ut: "Vi skapar chanser men omsätter dem inte. Det jobbar vi på."' },
   { id: 'dr_c4', tag: 'draw_any', label: '"Ingenting dramatiskt. Vi är nära."', moraleEffect: 3, mediaQuote: 'Tränaren: "Ingenting dramatiskt. Vi är nära det vi vill nå."' },
   { id: 'dr_h5', tag: 'draw_any', label: '"Vi hade en tung vecka bakom oss. Det syntes."', moraleEffect: 2, mediaQuote: 'Tränaren: "Det var en tung vecka bakom oss. Det syntes på spelet."' },
-  { id: 'dr_c6', tag: 'draw_any', label: '"Tre oavgjorda är inte idealt men vi är solida. Det vänder."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi är solida. Tre oavgjorda är inte idealt men vi är på rätt väg."' },
+  { id: 'dr_c6', tag: 'draw_any', label: '"Ett kryss är inte idealiskt, men vi är solida. Det vänder."', moraleEffect: 3, mediaQuote: 'Tränaren: "Ett kryss är inte idealiskt, men vi är solida. Det vänder."' },
   { id: 'dr_h6', tag: 'draw_any', label: '"Vi måste bli mer kliniska. Det är tydligt."', moraleEffect: 2, mediaQuote: 'Tränaren: "Vi måste bli mer kliniska. Det är den tydliga lärdomen."' },
 
   // ── Befintliga svar: derbyWin ──

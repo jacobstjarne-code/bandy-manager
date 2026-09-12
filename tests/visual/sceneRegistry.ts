@@ -74,6 +74,8 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   ['taktik', undefined, undefined, undefined, EXTRA_HEIGHT],
   ['event-overlay', undefined, undefined, true],
   ['press-conference', undefined, undefined, true],
+  ['burnout-illustration'], ['klack-tifo-illustration'], ['klack-conflict-illustration'],
+  ['gala', undefined, undefined, true],
   // AUDIT DEL 4 (2026-08-12) — täckningslucka: Primary-rangordningen
   // (initCardBag.ts) hade aldrig fotograferats i konkurrens. De fyra
   // takregel-scenerna (baseline.visual.ts) varierar bara atmosfärslagret —
@@ -133,6 +135,7 @@ export const SCENES: [string, string?, string?, boolean?, number?][] = [
   // styrelsens förvarningszon och båda specialmatchernas portal-kontrast.
   ['granska-level3'], ['board-patience-minimal'],
   ['next-match-derby'], ['next-match-annandagen'],
+  ['match-laddning-annandagen', undefined, undefined, true],
   // Matchens sista nio ogrindade produktkomponenter. Interaktionerna ligger
   // i matchdockens normala flöde; fas/modaler/ceremonier täcker viewporten.
   ['corner-interaction'], ['penalty-interaction'], ['counter-interaction'], ['free-kick-interaction'],

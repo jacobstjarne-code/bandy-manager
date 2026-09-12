@@ -147,7 +147,10 @@ describe('Kafferummet — A2 återkomst (D3)', () => {
     // Vid tröskeln — rätt återkomstväxel för valt svar (A)
     const gDue = makeGame({ fixtures: [COMPLETED], currentMatchday: firstDueMatchday!, coffeeRoomPendingReturns: pending })
     const scene = getCoffeeRoomScene(gDue)
-    expect(scene?.exchanges).toEqual([q.returns.A])
+    expect(scene?.exchanges).toEqual([[
+      [q.returns.A[0], q.returns.A[1]],
+      [q.returns.A[2], q.returns.A[3]],
+    ]])
   })
 
   it('återkomsten går före hotStreak (samma prioritet som victory-echo/farewell)', () => {
@@ -172,7 +175,10 @@ describe('Kafferummet — A2 återkomst (D3)', () => {
     })
     const scene = getCoffeeRoomScene(g)
     expect(scene?.consumedReturnQuestionId).toBe(q.id)
-    expect(scene?.exchanges).toEqual([q.returns.B])
+    expect(scene?.exchanges).toEqual([[
+      [q.returns.B[0], q.returns.B[1]],
+      [q.returns.B[2], q.returns.B[3]],
+    ]])
   })
 
   it('utan pending returns fungerar rummet som vanligt (ingen konsumerad-flagga)', () => {

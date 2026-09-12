@@ -5,7 +5,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
-import { csColor } from '../../utils/formatters'
+import { csColor, formatDecimalComma } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 import { readClubLedger } from '../../../domain/services/eventLedgerService'
 import { buildMemoryEventFromLedger } from '../../../domain/services/clubMemoryService'
@@ -206,7 +206,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
                     <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
                       {(COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[nextLevel.id] ?? 0) === 0
                         ? 'Gratis'
-                        : `${((COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[nextLevel.id] ?? 0) / 1000).toFixed(1)} tkr`}
+                        : `${formatDecimalComma((COMMUNITY_ACTIVITY_ACTIVATION_COSTS[key]?.[nextLevel.id] ?? 0) / 1000)} tkr`}
                       {' · '}+{ACTIVITY_CS_BOOST[key].toFixed(2)} puls/omg · avtar över säsonger
                     </p>
                   )}
@@ -308,7 +308,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--success)' }}>{activeVolunteers.length}</span>
               <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>frivilliga</span>
               <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>
-                +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr · +{volunteerBonus.csBoostPerRound.toFixed(1)} puls/omg
+                +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr · +{formatDecimalComma(volunteerBonus.csBoostPerRound)} puls/omg
               </span>
             </div>
             {/* Rot till audit-fyndet "Orten-volontärer går horisontellt sönder"
@@ -342,7 +342,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               <div>
                 <p style={{ fontSize: 12, fontWeight: 600 }}>{v.name}</p>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                  {v.role} · +{(v.csBoost / 10).toFixed(1)} puls/omg{v.weeklyContrib > 0 ? ` · +${(v.weeklyContrib / 1000).toFixed(1)} tkr` : ''}
+                  {v.role} · +{formatDecimalComma(v.csBoost / 10)} puls/omg{v.weeklyContrib > 0 ? ` · +${formatDecimalComma(v.weeklyContrib / 1000)} tkr` : ''}
                 </p>
               </div>
               <button

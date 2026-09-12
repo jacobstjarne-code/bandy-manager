@@ -1,5 +1,6 @@
 import type { AllTimeRecords } from '../../../domain/entities/Narrative'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
+import { formatRating } from '../../../domain/format'
 
 interface Props {
   records: AllTimeRecords
@@ -45,7 +46,7 @@ function buildCards(records: AllTimeRecords): RecordCard[] {
   if (records.highestRatingSeason) {
     cards.push({
       label: 'Högsta betyg',
-      value: `${records.highestRatingSeason.rating.toFixed(1)}`,
+      value: formatRating(records.highestRatingSeason.rating),
       sub: `${records.highestRatingSeason.playerName}, ${seasonSpanLabel(records.highestRatingSeason.season)}`,
     })
   }

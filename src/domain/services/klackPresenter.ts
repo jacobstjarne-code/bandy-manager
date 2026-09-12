@@ -82,7 +82,7 @@ function pickQuote(
       : happy
       ? [
           'Det är därför vi åker dit match efter match. Just för det här.',
-          'Jag har tyg kvar hemma sen förra fanan. Det kan bli en ny tifo till derbyt.',
+          'Jag har tyg kvar hemma sen förra fanan. Det kan bli ett nytt tifo till derbyt.',
         ]
       : [
           'Vi är inte nöjda, men vi är inte heller klara. Inte på långa vägar.',
@@ -98,7 +98,7 @@ function pickQuote(
       : lose
       ? [
           'Min kompis slutade komma. Jag förstår honom inte. Det här är ju det bästa.',
-          'Det här är min första kris som supportar. Gunvor säger att man inte glömmer den.',
+          'Det här är min första kris som supporter. Gunvor säger att man inte glömmer den.',
         ]
       : [
           'Jag målar banderollerna. Gunvor tycker färgen suger men hon lär mig.',

@@ -3,7 +3,7 @@
 
 import type { Club } from '../../domain/entities/Club'
 import type { Player } from '../../domain/entities/Player'
-import { positionShort } from '../../domain/format'
+import { positionShort, formatRating } from '../../domain/format'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
 
 function escape(s: string): string {
@@ -32,7 +32,7 @@ export function generateTeamPhotoSvg(
     row.map((p, ci) => {
       const x = COL_X[ci]
       const y = ROW_Y[ri]
-      const rating = p.seasonStats.averageRating > 0 ? p.seasonStats.averageRating.toFixed(1) : ''
+      const rating = p.seasonStats.averageRating > 0 ? formatRating(p.seasonStats.averageRating) : ''
       const name = escape(`${p.firstName.slice(0, 1)}. ${p.lastName}`)
       const pos = positionShort(p.position)
       return `

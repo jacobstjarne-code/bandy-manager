@@ -61,6 +61,7 @@ import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
 import { EventCardInline } from '../../components/portal/EventCardInline'
 import { BurnoutMark } from '../../components/portal/BurnoutMark'
+import { GalaScene } from '../../components/GalaScene'
 import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import { ClubSelectionScreen } from '../ClubSelectionScreen'
@@ -109,6 +110,7 @@ import { applyDecisionBudget } from '../../../domain/services/decisionBudgetServ
 import { buildRefereeMeetingChoices } from '../../../application/useCases/processors/matchSimProcessor'
 import { BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
 import { generateSupporterEvents } from '../../../domain/services/events/supporterEvents'
+import { generateGalaEvent, generateNominations } from '../../../domain/services/bandyGalaService'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-forsbacka' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -213,12 +215,12 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
   | 'coffee-room' | 'valet' | 'journalist-relationship' | 'cup-intro' | 'sunday-training' | 'season-signature-reveal'
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
-  | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar' | 'match-laddning-final' | 'final-intro-lagpresentation'
+  | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar' | 'match-laddning-annandagen' | 'match-laddning-final' | 'final-intro-lagpresentation'
   | 'granska-level3' | 'granska-referee-meeting' | 'board-patience-minimal' | 'club-badge-contact-sheet' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
-  | 'burnout-illustration' | 'klack-tifo-illustration' | 'klack-conflict-illustration'
+  | 'burnout-illustration' | 'klack-tifo-illustration' | 'klack-conflict-illustration' | 'gala'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -264,6 +266,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'match-laddning-derby', label: 'Matchladdning — derby' },
   { id: 'match-laddning-cup', label: 'Matchladdning — cup' },
   { id: 'match-laddning-nyar', label: 'Matchladdning — nyår' },
+  { id: 'match-laddning-annandagen', label: 'Matchladdning — annandagen, riktig scenbild' },
   { id: 'match-laddning-final', label: 'Matchladdning — SM-finalens lagpresentation' },
   { id: 'final-intro-lagpresentation', label: 'FinalIntro — SM-finalens lagpresentation' },
   { id: 'squad-trupp',   label: 'SquadScreen — TRUPP-flik' },
@@ -293,6 +296,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'burnout-illustration', label: 'Burnout — scenbild i phasemark' },
   { id: 'klack-tifo-illustration', label: 'Klacken — tifo i inline-kort' },
   { id: 'klack-conflict-illustration', label: 'Klacken — konflikt i inline-kort' },
+  { id: 'gala', label: 'Bandygalan — dedikerad beslutsscen' },
   { id: 'primary-smfinal-vs-deadline', label: 'Primary — SM-final(100) mot deadline(90)' },
   { id: 'primary-event-vs-farewell',   label: 'Primary — overlay-event lämnar plats åt avsked' },
   { id: 'sommaren-s2',              label: 'Sommaren — säsong 2, utvilad, tre händelser, slutspel rimligt' },
@@ -2002,6 +2006,8 @@ const klackConflictGame = {
 } as SaveGame
 const klackConflictIllustrationEvent = generateSupporterEvents(klackConflictGame, 10, new Set(), () => 0)
   .find(event => event.id.startsWith('supporter_conflict_'))!
+const galaGame = squadGame
+const galaEvent = generateGalaEvent(galaGame, generateNominations(galaGame))
 
 export function DevScenesScreen() {
   const devScrollRef = useRef<HTMLDivElement>(null)
@@ -2074,6 +2080,7 @@ export function DevScenesScreen() {
       : scene === 'burnout-illustration' ? burnoutIllustrationGame
       : scene === 'klack-tifo-illustration' ? klackTifoGame
       : scene === 'klack-conflict-illustration' ? klackConflictGame
+      : scene === 'gala' ? galaGame
       : scene === 'granska' ? granskaGame
       : scene === 'granska-level3' ? granskaLevel3Game
       : scene === 'granska-referee-meeting' ? granskaRefereeMeetingGame
@@ -2100,7 +2107,7 @@ export function DevScenesScreen() {
       : scene === 'transfers-multibids' ? transfersMultiBidsGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' ? makeBaseGame({ seed: 31, clubId: arrivalClubId })
-      : scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar'
+      : scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar' || scene === 'match-laddning-annandagen'
         ? makeBaseGame({ seed: 31, clubId: matchLaddningManagedClubId })
       : scene === 'squad-trupp' || scene === 'annandagen' ? squadGame
       : scene === 'trupp-blandat' ? truppBlandatGame
@@ -2646,7 +2653,7 @@ export function DevScenesScreen() {
             />
           </div>
         )}
-        {(scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar') && storeGame && (() => {
+        {(scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar' || scene === 'match-laddning-annandagen') && storeGame && (() => {
           const opponent = storeGame.clubs.find(club => club.id === arrivalClubId)
           const nextFixture = storeGame.fixtures.find(fixture =>
             fixture.status === 'scheduled'
@@ -2659,7 +2666,9 @@ export function DevScenesScreen() {
               ? 'cup'
               : scene === 'match-laddning-nyar'
                 ? 'nyar'
-              : 'premiar'
+                : scene === 'match-laddning-annandagen'
+                  ? 'annandagen'
+                  : 'premiar'
           return opponent && nextFixture ? (
             <div style={{ height: '812px', overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
               <MatchLaddningScene
@@ -2931,6 +2940,12 @@ export function DevScenesScreen() {
         {scene === 'klack-conflict-illustration' && (
           <div style={{ minHeight: 812, background: 'var(--bg-portal)', padding: '24px 14px' }}>
             <EventCardInline event={klackConflictIllustrationEvent} currentMatchday={klackConflictGame.currentMatchday} />
+          </div>
+        )}
+
+        {scene === 'gala' && (
+          <div style={{ minHeight: 812, background: 'var(--bg-deepdark)', position: 'relative' }}>
+            <GalaScene event={galaEvent} game={galaGame} onChoose={() => {}} />
           </div>
         )}
 

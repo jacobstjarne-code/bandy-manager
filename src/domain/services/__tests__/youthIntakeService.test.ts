@@ -119,6 +119,16 @@ describe('generateYouthIntake', () => {
     }
   })
 
+  it('materialiserar bara seniora Player inom domänens 16–42-årsintervall', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed })
+      for (const player of result.newPlayers) {
+        expect(player.age).toBeGreaterThanOrEqual(16)
+        expect(player.age).toBeLessThanOrEqual(19)
+      }
+    }
+  })
+
   it('BandyKul ger ett svagt säsongsintagslyft och är svagare än avancerade skolans +2', () => {
     const baseClub = makeClub({ youthRecruitment: 60 })
     const advancedClub = makeClub({ youthRecruitment: 62 })
