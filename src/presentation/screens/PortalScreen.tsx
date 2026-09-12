@@ -491,7 +491,11 @@ export function PortalScreen() {
         fadeColor="var(--bg-portal)"
         accentColor="var(--accent-portal)"
         style={{
-          bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${weeklyDecisionPending ? 0 : Math.round(ctaHeight)}px)`,
+          // Själva Visa mer-knappen är också en träffyta. När den följer den
+          // fixerade CTA-stacken behöver den 44 px till närmaste knapp; barens
+          // befintliga flex-gap ger 6 px; 39 px till ger heltalssäkert minst
+          // 44 px även när subpixelavrundning annars landar på 43,99.
+          bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${weeklyDecisionPending ? 0 : Math.round(ctaHeight) + 39}px)`,
         }}
       />
 

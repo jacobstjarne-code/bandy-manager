@@ -175,7 +175,10 @@ export function GameOverScreen() {
             alt=""
             fadeTo="var(--bg)"
             objectPosition="center 58%"
-            style={{ height: 160, margin: '-32px -24px 24px' }}
+            // Fyra jämlika avslutsvägar ska rymmas utan att den sista trycks
+            // under mobilens safe area. Bilden behåller sin scenfunktion men
+            // delar nu höjdbudgeten med den tillkomna exportknappen.
+            style={{ height: 131, margin: '-32px -24px 16px' }}
           />
         ) : (
           <IllustrationScene
@@ -184,7 +187,7 @@ export function GameOverScreen() {
             alt="En övergiven bandyplan efter klubbens administrativa sammanbrott"
             fadeTo="var(--bg)"
             objectPosition="center 58%"
-            style={{ height: 160, margin: '-32px -24px 24px' }}
+            style={{ height: 131, margin: '-32px -24px 16px' }}
           />
         )}
 
@@ -231,7 +234,7 @@ export function GameOverScreen() {
         {/* Final stats */}
         <div className="card-sharp" style={{
           padding: '10px 14px',
-          marginBottom: 24,
+          marginBottom: 16,
         }}>
           <p className="h-label" style={{ marginBottom: 12, fontSize: 12 }}>
             Din karriär
