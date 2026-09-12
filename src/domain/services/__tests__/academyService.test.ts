@@ -115,6 +115,8 @@ describe('buildPromotedPlayerFromYouth — delad konstruktion (EN SANNING, ETT S
     expect(promoted.currentAbility).toBe(youth.currentAbility)
     expect(promoted.potentialAbility).toBe(youth.potentialAbility)
     expect(promoted.clubId).toBe(club.id)
+    expect(promoted.joinedClubSeason).toBe(2025)
+    expect(promoted.academyJoinedSeason).toBe(youth.joinedSeason)
     expect(promoted.academyClubId).toBe(club.id)
     expect(promoted.isHomegrown).toBe(true)
     expect(promoted.promotedFromAcademy).toBe(true)
@@ -131,5 +133,18 @@ describe('buildPromotedPlayerFromYouth — delad konstruktion (EN SANNING, ETT S
 
     expect(a.salary).toBe(b.salary)
     expect(a.attributes).toEqual(b.attributes)
+  })
+
+  it('skiljer P19-inträde från A-lagsinträde och faller säkert för legacydata', () => {
+    const base = generateYouthTeam(club, 'elite', 2022, 3)
+    const youth = { ...base.players[0], joinedSeason: 2022 }
+
+    const promoted = buildPromotedPlayerFromYouth(youth, club.id, 2025, 12)
+    expect(promoted.academyJoinedSeason).toBe(2022)
+    expect(promoted.joinedClubSeason).toBe(2025)
+
+    const legacy = buildPromotedPlayerFromYouth({ ...youth, joinedSeason: undefined }, club.id, 2025, 12)
+    expect(legacy.academyJoinedSeason).toBe(2025)
+    expect(legacy.joinedClubSeason).toBe(2025)
   })
 })

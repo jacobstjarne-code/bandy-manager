@@ -8,6 +8,7 @@ import { classifyEventNature } from '../../../../domain/services/granskaEventCla
 import { getEventRenderTarget } from '../../../../domain/services/eventQueueService'
 import { getDefaultRolloverChoice } from '../../../../domain/services/deferredRolloverService'
 import { resolveEvent } from '../../../../domain/services/events/eventResolver'
+import { academyBreakthroughQuote } from '../../../../domain/data/academyBreakthroughText'
 
 /**
  * HIGH 8 (audit 2026-08-29) — akademidebuten återanvändes tills den slutade betyda något.
@@ -86,6 +87,25 @@ describe('processYouth — akademigenombrott (HIGH 8)', () => {
     expect(events[0].relatedPlayerId).toBe(player.id)
     expect(classifyEventNature(events[0])).toBe('player')
     expect(getEventRenderTarget(events[0])).toBe('inline')
+  })
+
+  it('läser akademitiden från seniorspelarens bevarade P19-inträde', () => {
+    const currentSeason = 2026
+    const playerId = Array.from({ length: 200 }, (_, i) => `p-tenure-${i}`)
+      .find(id => academyBreakthroughQuote(id, 4) !== academyBreakthroughQuote(id))!
+    const player = makePlayer(playerId, { academyJoinedSeason: 2022 })
+    const game = makeGame([player], [makeFixture('fx-tenure', 4, playerId)], { currentSeason })
+
+    const [event] = breakthroughEvents(game, 5)
+    expect(event.body).toContain(academyBreakthroughQuote(playerId, 4))
+  })
+
+  it('använder bara tidsneutral text för äldre seniorspelare utan akademikälla', () => {
+    const player = makePlayer('p-legacy', { academyJoinedSeason: undefined })
+    const game = makeGame([player], [makeFixture('fx-legacy', 4, player.id)], { currentSeason: 2026 })
+
+    const [event] = breakthroughEvents(game, 5)
+    expect(event.body).toContain(academyBreakthroughQuote(player.id))
   })
 
   it('kvitteringen är ett ärligt noOp och rollover väljer samma neutrala val', () => {
