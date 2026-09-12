@@ -192,8 +192,9 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
     // A-H9-kandidat (Fas 2-dual-write, skriven först i eventResolver.ts) OCH
     // producerar en ripple (Fas 1:s generiska infångare, skriven senare) —
     // olika frågor (var det säsongens beslut? / vad skalvade?), samma resolution.
-    expect(after.eventLedger).toHaveLength(2)
-    const [decisionEntry, rippleEntry] = after.eventLedger ?? []
+    const consequenceEntries = (after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')
+    expect(consequenceEntries).toHaveLength(2)
+    const [decisionEntry, rippleEntry] = consequenceEntries
     expect(decisionEntry.type).toBe('decision')
     // Fas 2 (RETIRE-STEGET): semanticKey = `${event.type}:${choiceId}` för
     // A-H9-dual-writet — finkornigare än Fas 1:s rena event.type nedan.
@@ -218,8 +219,9 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
 
     const after = resolveEvent(gameWithEvent, event.id, 'reject', undefined, true)
 
-    expect(after.eventLedger).toHaveLength(1)
-    expect(after.eventLedger?.[0].consequences).toEqual([{ field: 'playerMorale', dir: 'down', magnitude: 'knappt' }])
+    const consequenceEntries = (after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')
+    expect(consequenceEntries).toHaveLength(1)
+    expect(consequenceEntries[0].consequences).toEqual([{ field: 'playerMorale', dir: 'down', magnitude: 'knappt' }])
   })
 
   // DOM_CHOICE_SELL_STAR_OCH_TRANSFERAVSLAG (2026-09-08): reject-valet visade
@@ -241,7 +243,7 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
 
     const after = resolveEvent(gameWithEvent, event.id, 'counter', undefined, true)
 
-    expect(after.eventLedger ?? []).toHaveLength(0)
+    expect((after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')).toHaveLength(0)
   })
 
   it('madeByPlayer=false: skriver INGEN liggarpost även om kedjan skulle ha innehåll (HIGH 6-grinden)', () => {
@@ -252,7 +254,7 @@ describe('eventResolver — Fas 1 write-hook (samma tre transferbudsutfall som t
 
     const after = resolveEvent(gameWithEvent, event.id, 'accept', undefined, false)
 
-    expect(after.eventLedger ?? []).toHaveLength(0)
+    expect((after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')).toHaveLength(0)
   })
 
 })

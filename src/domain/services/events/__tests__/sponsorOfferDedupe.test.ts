@@ -164,9 +164,11 @@ describe('resolveEvent — sponsorbesluten använder gemensam finalisering', () 
         expect(after.resolvedEventIds ?? []).toContain(event.id)
         expect((after.pendingEvents ?? []).some(e => e.id === event.id)).toBe(false)
         // Sponsorlistan/riskkontraktet är inte i sig ett ripple-bärande fält,
-        // och sponsorvalen har ingen deklarerad säsongsbeslutsbyggare. Att de
-        // går genom liggarvägen får därför inte fabricera en kanonpost.
-        expect(after.eventLedger ?? []).toHaveLength(0)
+        // och sponsorvalen har ingen deklarerad säsongsbeslutsbyggare. Den
+        // tekniska livscykelposten ska finnas, men ingen konsekvenspost får
+        // fabriceras.
+        expect((after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')).toHaveLength(0)
+        expect((after.eventLedger ?? []).filter(entry => entry.type === 'decision_lifecycle')).toHaveLength(1)
       })
     }
   }
@@ -220,6 +222,7 @@ describe('resolveEvent — sponsorbesluten använder gemensam finalisering', () 
     const after = resolveEvent(game, event.id, 'accept', () => 0.99, false)
 
     expect(after.communityStanding).toBe(42)
-    expect(after.eventLedger ?? []).toHaveLength(0)
+    expect((after.eventLedger ?? []).filter(entry => entry.type !== 'decision_lifecycle')).toHaveLength(0)
+    expect((after.eventLedger ?? []).filter(entry => entry.type === 'decision_lifecycle')).toHaveLength(1)
   })
 })

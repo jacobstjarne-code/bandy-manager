@@ -105,7 +105,7 @@ describe('refereeMeeting — O11:s text/state-kontrakt', () => {
       { resource: 'supporterMood', delta: -2 },
       { resource: 'refereeRelationship', delta: 1, subjectName: 'Rut Rask' },
     ])
-    expect(resolved.eventLedger?.at(-1)?.consequences).toEqual([
+    expect(resolved.eventLedger?.findLast(entry => entry.type !== 'decision_lifecycle')?.consequences).toEqual([
       { field: 'supporterMood', dir: 'down', magnitude: 'knappt' },
       { field: 'refereeRelationship', dir: 'up', magnitude: 'knappt' },
     ])
