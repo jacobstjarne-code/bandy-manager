@@ -27,15 +27,11 @@ import { getEscalationSubState } from '../../application/services/portalEscalati
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
 import { CallupModal } from '../components/portal/CallupModal'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
-import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
-import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
-import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { PortalObjectiveAlert } from '../components/portal/PortalObjectiveAlert'
-import { getNextActionCue } from '../utils/nextActionCue'
+import { getNextActionCue, getPortalAdvanceButtonText } from '../utils/nextActionCue'
 import { ScrollMoreCue } from '../components/ScrollMoreCue'
 import { useGameScrollContainer } from '../navigation/GameScrollContext'
 import { selectAtmosphereMarks, type AtmosphereMarkKind } from '../../domain/services/portal/atmosphereResolver'
-import { playoffRoundName } from '../../domain/roundLabel'
 import { ClubNotificationPrompt } from '../components/ClubNotificationPrompt'
 import { selectPortalMemory } from '../../domain/services/portal/portalMemoryService'
 import { pickEfterklang } from '../../domain/services/portal/pickEfterklang'
@@ -56,6 +52,7 @@ export function PortalScreen() {
   // (~260ms), sen navigerar onComplete. Wira bara smfinal nu (hållpunkten);
   // andra CTA:er kör handleAdvance rakt av som förut.
   const [seamActive, setSeamActive] = useState(false)
+  const didAutoAdvance = useRef(false)
 
   // Auto-skip rounds where managed team has no fixture (e.g. cup R1 for bye-teams,
   // or cup rounds after elimination). The advance() auto-loop handles chaining,
@@ -71,6 +68,8 @@ export function PortalScreen() {
            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (!hasManagedAtNextMd) {
+      if (didAutoAdvance.current) return
+      didAutoAdvance.current = true
       void advance().catch(err => console.error('advance() failed:', err))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,13 +120,11 @@ export function PortalScreen() {
     document.documentElement.style.setProperty('--bg-portal-surface', tone.bgSurface)
     document.documentElement.style.setProperty('--bg-portal-elevated', tone.bgElevated)
     document.documentElement.style.setProperty('--accent-portal', tone.accentTone)
-    document.body.style.background = tone.bgPrimary
     return () => {
       document.documentElement.style.removeProperty('--bg-portal')
       document.documentElement.style.removeProperty('--bg-portal-surface')
       document.documentElement.style.removeProperty('--bg-portal-elevated')
       document.documentElement.style.removeProperty('--accent-portal')
-      document.body.style.background = ''
     }
   }, [game?.currentDate])
 
@@ -145,73 +142,10 @@ export function PortalScreen() {
   )
 
   // ── CTA logic ────────────────────────────────────────────────────
-  const bracket = game.playoffBracket
-  const eliminated = bracket
-    ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])].some(s => s.loserId === game.managedClubId)
-    : false
-
   const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
   const primaryIsSmFinal = layout.primary.id === 'next_match_smfinal'
-
-  const isSpectator = isManagedClubSpectator(game)
-
-  const phase = getSeasonEndPhase(game)
-  const advanceButtonText = (() => {
-    const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
-    if (scheduled.length === 0) {
-      if (phase === 'season_done') return 'Avsluta säsongen →'
-      if (phase === 'playoff_spectator') return 'Säsong över →'
-      if (phase === 'regular_done') {
-        const s = game.standings.find(s => s.clubId === game.managedClubId)
-        return s && s.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'
-      }
-      return 'Fortsätt slutspel →'
-    }
-
-    if (isSpectator) {
-      const nextPlayoffMatch = scheduled
-        .filter(f => !f.isCup && f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId)
-        .sort((a, b) => a.matchday - b.matchday)[0]
-      if (nextPlayoffMatch) {
-        const dateStr = nextPlayoffMatch.date || getRoundDate(game.currentSeason, nextPlayoffMatch.roundNumber)
-        const d = new Date(dateStr)
-        const days = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
-        return `Fortsätt — ${days[d.getDay()]} →`
-      }
-      return 'Fortsätt →'
-    }
-
-    const nextManaged = scheduled.filter(f => {
-      if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
-      if (eliminated && f.matchday > 26 && !f.isCup) return false
-      return true
-    }).sort((a, b) => a.matchday - b.matchday)[0]
-    if (nextManaged) {
-      if (primaryIsSmFinal) return 'Redo — spela SM-final →'
-      if (nextManaged.isCup) {
-        const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
-        const cupRound = cupMatch?.round ?? 1
-        const cupLabel = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
-        return `Spela Cup-${cupLabel} →`
-      }
-      if (game.playoffBracket) {
-        const allSeries = [
-          ...game.playoffBracket.quarterFinals,
-          ...game.playoffBracket.semiFinals,
-          ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
-        ]
-        const thisSeries = allSeries.find(s => s.fixtures.includes(nextManaged.id))
-        if (thisSeries) {
-          const label = playoffRoundName(thisSeries.round)
-          return `Redo — spela ${label} →`
-        }
-        return 'Fortsätt slutspel →'
-      }
-      return `Redo — spela omgång ${nextManaged.roundNumber} →`
-    }
-    return 'Fortsätt →'
-  })()
+  const advanceButtonText = getPortalAdvanceButtonText(game, primaryIsSmFinal)
 
   const handleAdvance = useCallback(() => {
     if (isAdvancing) return
@@ -400,7 +334,7 @@ export function PortalScreen() {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  })
+  }, [weeklyDecisionPending, seamActive])
 
   return (
     <>

@@ -154,7 +154,12 @@ export function GameShell() {
   const showFeedbackDock = shouldShowFeedbackDock(hideBottomNav, location.pathname)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      background: location.pathname === '/game/dashboard' ? 'var(--bg-portal)' : 'var(--bg)',
+    }}>
       {!isLedgerOwnedChrome && <GameHeader />}
       {!isLedgerOwnedChrome && <PhaseIndicatorAuto />}
       <div ref={scrollRef} style={{

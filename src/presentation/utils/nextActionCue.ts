@@ -1,6 +1,8 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
+import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
+import { playoffRoundName } from '../../domain/roundLabel'
 
 export interface NextActionCue {
   text: string
@@ -84,4 +86,69 @@ export function getNextActionCue(game: SaveGame): NextActionCue {
   const dateStr = managedMatchInNextRound.date || getRoundDate(game.currentSeason, managedMatchInNextRound.roundNumber)
   const day = DAYS[new Date(dateStr).getDay()]
   return { text: `Näst på tur: matchen mot ${oppName}, ${day}.`, tone: 'default' }
+}
+
+/**
+ * Portalens primära CTA beskriver nästa verkliga avancemang. Håll hela
+ * tävlingsdomen här tillsammans med "Vad nu?"-raden så vyn bara renderar
+ * resultatet och de två texterna inte utvecklar parallella beslutsträd.
+ */
+export function getPortalAdvanceButtonText(game: SaveGame, primaryIsSmFinal: boolean): string {
+  const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
+  const phase = getSeasonEndPhase(game)
+
+  if (scheduled.length === 0) {
+    if (phase === 'season_done') return 'Avsluta säsongen →'
+    if (phase === 'playoff_spectator') return 'Säsong över →'
+    if (phase === 'regular_done') {
+      const standing = game.standings.find(row => row.clubId === game.managedClubId)
+      return standing && standing.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'
+    }
+    return 'Fortsätt slutspel →'
+  }
+
+  if (isManagedClubSpectator(game)) {
+    const nextPlayoffMatch = scheduled
+      .filter(f => !f.isCup && f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId)
+      .sort((a, b) => a.matchday - b.matchday)[0]
+    if (nextPlayoffMatch) {
+      const dateStr = nextPlayoffMatch.date || getRoundDate(game.currentSeason, nextPlayoffMatch.roundNumber)
+      const days = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
+      return `Fortsätt — ${days[new Date(dateStr).getDay()]} →`
+    }
+    return 'Fortsätt →'
+  }
+
+  const eliminated = game.playoffBracket
+    ? [
+        ...game.playoffBracket.quarterFinals,
+        ...game.playoffBracket.semiFinals,
+        ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+      ].some(series => series.loserId === game.managedClubId)
+    : false
+  const nextManaged = scheduled
+    .filter(fixture => {
+      if (fixture.homeClubId !== game.managedClubId && fixture.awayClubId !== game.managedClubId) return false
+      if (eliminated && fixture.matchday > 26 && !fixture.isCup) return false
+      return true
+    })
+    .sort((a, b) => a.matchday - b.matchday)[0]
+
+  if (!nextManaged) return 'Fortsätt →'
+  if (primaryIsSmFinal) return 'Redo — spela SM-final →'
+  if (nextManaged.isCup) {
+    const cupRound = game.cupBracket?.matches.find(match => match.fixtureId === nextManaged.id)?.round ?? 1
+    const cupLabel = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
+    return `Spela Cup-${cupLabel} →`
+  }
+  if (game.playoffBracket) {
+    const allSeries = [
+      ...game.playoffBracket.quarterFinals,
+      ...game.playoffBracket.semiFinals,
+      ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+    ]
+    const series = allSeries.find(candidate => candidate.fixtures.includes(nextManaged.id))
+    return series ? `Redo — spela ${playoffRoundName(series.round)} →` : 'Fortsätt slutspel →'
+  }
+  return `Redo — spela omgång ${nextManaged.roundNumber} →`
 }

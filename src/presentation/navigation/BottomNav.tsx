@@ -102,7 +102,7 @@ export function BottomNav() {
           {lockReason}
         </div>
       )}
-      <nav data-bottom-nav style={{
+      <nav data-bottom-nav className="texture-wood" style={{
         position: 'fixed',
         bottom: 0,
         left: '50%',
@@ -111,8 +111,7 @@ export function BottomNav() {
         maxWidth: '430px',
         height: `calc(var(--bottom-nav-height) + var(--safe-bottom))`,
         paddingBottom: 'var(--safe-bottom)',
-        background: 'var(--bg-surface)',
-        backgroundImage: 'repeating-linear-gradient(92deg, rgba(160,130,90,0.04) 0px, rgba(160,130,90,0.02) 2px, transparent 2px, transparent 8px)',
+        backgroundColor: 'var(--bg-surface)',
         borderTop: '1.5px solid var(--border)',
         display: 'flex',
         alignItems: 'stretch',

@@ -4,7 +4,7 @@
  * > annars. Alltid svarbar — en tom text är en bugg, inte ett tillstånd.
  */
 import { describe, it, expect } from 'vitest'
-import { getNextActionCue } from '../nextActionCue'
+import { getNextActionCue, getPortalAdvanceButtonText } from '../nextActionCue'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Club } from '../../../domain/entities/Club'
@@ -158,5 +158,26 @@ describe('getNextActionCue', () => {
     for (const game of cases) {
       expect(getNextActionCue(game).text.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('getPortalAdvanceButtonText', () => {
+  it('namnger nästa ligaomgång', () => {
+    const game = makeGame({ fixtures: [makeFixture({ roundNumber: 7 })] })
+    expect(getPortalAdvanceButtonText(game, false)).toBe('Redo — spela omgång 7 →')
+  })
+
+  it('namnger cuprundan från den kanoniska cupmatchen', () => {
+    const fixture = makeFixture({ id: 'cup-quarter', isCup: true })
+    const game = makeGame({
+      fixtures: [fixture],
+      cupBracket: { matches: [{ fixtureId: fixture.id, round: 2 }] } as never,
+    })
+    expect(getPortalAdvanceButtonText(game, false)).toBe('Spela Cup-Kvartsfinal →')
+  })
+
+  it('låter portalens primärkort avgöra SM-finalens ceremoniella etikett', () => {
+    const game = makeGame({ fixtures: [makeFixture({ roundNumber: 30, isPlayoff: true })] })
+    expect(getPortalAdvanceButtonText(game, true)).toBe('Redo — spela SM-final →')
   })
 })
