@@ -5,6 +5,11 @@
 **Produktion:** `bandy-manager.vercel.app`, aktiv build `4202986`  
 **Dom:** **RÖTT** — O12:s 80-procentsgrind är inte passerad.
 
+**Uppdaterad status 2026-09-12:** den tekniska O12-delen är passerad. De två
+kodverifierade dominansfelen och mätningens mallidentitet är åtgärdade och
+regressionstestade. Den återstående 80-procentsgrinden är flyttad till
+soft-launch-population; den blockerar inte fortsatt utveckling eller release.
+
 ## Underlag
 
 Det äldre, medvetet balanserade tre-save-provet uteslöts. Det naturliga
@@ -132,5 +137,8 @@ produktionsbygget inklusive TypeScript och samtliga grindar var grönt.
 
 Det här stänger den verifierade mecenatbuggen, inte populationsgrinden. Ett
 naturligt val av en beslutsfattare är inte ett statistiskt omprov av
-80-procentskravet; den domen väntar fortfarande oberoende spelare eller
-telemetri från aktuell version.
+80-procentskravet. Den återstående mätningen ligger i `POST_LAUNCH.md`: minst
+20 naturliga val per mall från minst fem oberoende karriärer. Först därefter
+får `burnoutRelief`, `communityActivityRenewal` eller `burnoutCeiling` öppna
+en ny kodpunkt, och då endast efter att koden bekräftat en verklig mekanisk
+dominans eller att spelarnas motivering visar en falsk avvägning.

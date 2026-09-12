@@ -120,5 +120,20 @@ delningsbilden, eller tidigare endast om Jacob uttryckligen beställer Code-prov
 
 ## Kvalitativ spelaruppföljning
 
+### o12-softlaunch-population
+**Vad:** slutmät O12:s valvariation per stabil `decisionTemplateKey` på aktuell
+version. Den tekniska delen är passerad: domarmötet och mecenatintroduktionen
+har verkliga avvägningar, kvittona bär mallidentitet och gamla köade intro
+migreras. **Varför uppskjuten:** det enda återstående kravet är population,
+inte produktkod. Det tidigare långspelet gav 158 val men från en enda
+beslutsfattare och kan därför inte skilja personlig spelstil från systemisk
+dominans. **Urval:** minst 20 naturliga val per återkommande mall från minst
+fem oberoende karriärer/spelare. Ett alternativ över 80 procent flaggar
+mallen för kvalitativ kodläsning; procentsatsen ensam auktoriserar ingen
+balansändring. **Särskild bevakning:** `burnoutRelief`,
+`communityActivityRenewal` och `burnoutCeiling`. **Underlag:**
+`RAPPORT_O12_NATURLIGT_PROV_2026-09-11.md`. **När:** under soft launch, ihop
+med den övriga kvalitativa spelaruppföljningen.
+
 ### sluttest-kvalitativ-uppfoljning
 **Vad:** sex till åtta riktiga spelare pausas efter omgång 3, 11 och 22 och får fem frågor om vem de bryr sig om, vad de försöker uppnå, vad de riskerar, vilket beslut som ändrade något och vad de vill se nästa säsong. Minst två spelar samma svåra klubb med olika filosofi och markerar när rollspel övergår i mekaniskt val. **Varför uppskjuten:** `SPELTESTKALENDER_2026-09-10.md` skiljer Jacobs enda pre-release-nyspelarkörning från den fulla 6–8-spelarrundan och klassar den senare som post-launch. Den kräver rekryterade externa spelare, inte mer produktkod. **När:** efter mjuk release; bevara svaren per kontrollpunkt och jämför om de blir mer specifika över tid.
