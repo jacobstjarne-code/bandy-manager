@@ -220,7 +220,7 @@ export function PortalScreen() {
     if (scheduledFixtures.length === 0) {
       setIsAdvancing(true)
       requestAnimationFrame(() => {
-        try { advance() } catch (err) { console.error('advance() failed:', err) }
+        advance().catch(err => console.error('advance() failed:', err))
         setIsAdvancing(false)
       })
       return
@@ -238,7 +238,7 @@ export function PortalScreen() {
     if (hasPendingManagedWithoutLineup) { navigate('/game/match'); return }
     setIsAdvancing(true)
     requestAnimationFrame(() => {
-      try { advance() } catch (err) { console.error('advance() failed:', err) }
+      advance().catch(err => console.error('advance() failed:', err))
       setIsAdvancing(false)
     })
   }, [isAdvancing, game, advance, navigate])
@@ -277,7 +277,7 @@ export function PortalScreen() {
         PendingScreen.QFSummary,
       ]
       for (let step = 0; step < 120; step++) {
-        const result = simulateRemainingStep()
+        const result = await simulateRemainingStep()
         if (!result) break
         if (result.seasonEnded) { navigate('/game/sim-summary'); return }
         if (result.playoffStarted) break

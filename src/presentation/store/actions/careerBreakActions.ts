@@ -29,6 +29,19 @@ export function careerBreakActions(get: Get, set: Set) {
      * Kör uppehållet. Synkron och potentiellt tung (två säsonger headless) —
      * anroparen ansvarar för att visa ett väntetillstånd. Returnerar det nya
      * spelet så skärmen kan navigera vidare utan en extra store-läsning.
+     *
+     * genomgang-store-lazy-matchcore (2026-09-12): medvetet INTE dynamiskt
+     * importerad. simulateCareerBreak.ts:s Promise.all(import('./roundProcessor'),
+     * import('./processors/matchSimProcessor')) HÄNGDE (>120s, aldrig ens
+     * påbörjad testkörning) under vitest — roundProcessor.ts importerar redan
+     * matchSimProcessor.ts statiskt, och två samtidiga dynamiska importer mot
+     * överlappande moduler gav ett verkligt deadlock-mönster, inte bara
+     * transform-overhead. Samma mönster som gameFlowActions.ts:s advance()
+     * (EN dynamisk import, ingen Promise.all) fungerade felfritt — se
+     * MASTER_OPPET.md:s genomgang-store-lazy-matchcore-rad för detaljer.
+     * Career break är dessutom ett sällan-flöde bakom en redan lazy-laddad
+     * skärm (GameOverScreen), inte den heta Portal→Match-starten Jacobs order
+     * gällde — kvarstår statisk tills en säker enda-import-lösning finns.
      */
     startCareerBreak: (): SaveGame | null => {
       const { game } = get()

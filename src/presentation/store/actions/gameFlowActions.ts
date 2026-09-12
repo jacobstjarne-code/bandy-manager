@@ -19,7 +19,7 @@ import { applyFinanceChange } from '../../../domain/services/economyService'
 import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
 import { logEvent } from '../../../domain/services/eventLedgerService'
-import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
+import type { AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { getCoffeeRoomReturnDueMatchday, getCoffeeRoomScene, recordCoffeeRoomLedgerEchoShown } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
@@ -42,7 +42,7 @@ interface GetState {
   lastAdvanceResult: AdvanceResult | null
   resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
-  advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
+  advance: (suppressMatchNavigation?: boolean) => Promise<AdvanceResult | null>
   resolveWeeklyDecision: (choice: 'A' | 'B') => { text: string; deltas: ResolvedChoiceOutcomeDelta[] } | undefined
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
   recordFinalIntroShown: (fixture: Fixture, tier: FinalTier) => void
@@ -147,9 +147,21 @@ async function persistAutosave(game: SaveGame, context: string, set: Set): Promi
 
 export function gameFlowActions(get: Get, set: Set) {
   return {
-    advance: (suppressMatchNavigation?: boolean): AdvanceResult | null => {
+    advance: async (suppressMatchNavigation?: boolean): Promise<AdvanceResult | null> => {
       const { game } = get()
       if (!game) return null
+
+      // genomgang-store-lazy-matchcore (2026-09-12): advanceToNextEvent →
+      // roundProcessor.ts → matchSimProcessor.ts → matchSimulator.ts →
+      // matchCore/matchEngine var ett statiskt toppimport i denna modul,
+      // som är del av den globala storen (laddas vid appstart). Dynamisk
+      // import flyttar hela den kedjan till en egen chunk som bara hämtas
+      // när advance() faktiskt körs, inte vid startup — huvudchunken
+      // 2,27 MB → under 1,5 MB på denna diff (Jacobs order, samma klass
+      // som Pass 2). Den levande matchvyn (MatchLiveScreen) importerar
+      // matchCore/matchEngine oberoende i sin egen redan lazy-laddade
+      // chunk och påverkas inte.
+      const { advanceToNextEvent } = await import('../../../application/useCases/advanceToNextEvent')
 
       // GAP-1(b): auto-spara pre-advance-state INNAN riskoperationen (round-advance/season-end
       // är de tyngsta vägarna). Kraschar advance så kostar det aldrig mer än omgången som just
@@ -739,7 +751,7 @@ export function gameFlowActions(get: Get, set: Set) {
       void persistAutosave(updatedGame, 'markAnniversaryAcknowledged', set)
     },
 
-    simulateRemainingStep: (): AdvanceResult | null => {
+    simulateRemainingStep: async (): Promise<AdvanceResult | null> => {
       const state = get()
       const { game, resolveEvent, setPlayerLineup, advance } = state
       if (!game) return null

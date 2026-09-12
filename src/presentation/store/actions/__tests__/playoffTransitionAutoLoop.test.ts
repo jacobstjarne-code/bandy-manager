@@ -82,7 +82,7 @@ function withAutoLineup(game: SaveGame): SaveGame {
 }
 
 describe('advance() — playoffStarted-signalen ska aldrig svalts av auto-skip-loopen', () => {
-  it('efter grundseriens sista omgång: pendingScreen är playoff_intro direkt, oavsett om hanterad klubb kvalar till slutspel', () => {
+  it('efter grundseriens sista omgång: pendingScreen är playoff_intro direkt, oavsett om hanterad klubb kvalar till slutspel', async () => {
     // club_slottsbron/seed=7 slutar konsekvent sist (plats 12) i denna
     // simuleringsbana — måste INTE kvala till slutspel för att buggen
     // (auto-loopen svalde playoffStarted-signalen) ska reproduceras. En
@@ -102,7 +102,7 @@ describe('advance() — playoffStarted-signalen ska aldrig svalts av auto-skip-l
       if (!current.managedClubPendingLineup) {
         useGameStore.setState({ game: withAutoLineup(current) })
       }
-      useGameStore.getState().advance(true)
+      await useGameStore.getState().advance(true)
     }
 
     // Grundserien färdigspelad, slutspelet ännu inte startat.
@@ -118,7 +118,7 @@ describe('advance() — playoffStarted-signalen ska aldrig svalts av auto-skip-l
     if (!beforeTransition.managedClubPendingLineup) {
       useGameStore.setState({ game: withAutoLineup(beforeTransition) })
     }
-    const result = useGameStore.getState().advance(true)
+    const result = await useGameStore.getState().advance(true)
 
     expect(result?.playoffStarted).toBe(true)
     expect(result?.game.playoffBracket).toBeDefined()

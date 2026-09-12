@@ -2,7 +2,6 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { LiveMatchProgress, MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { PauseLean } from '../../components/match/HalftimeModal'
 import { FixtureStatus, InboxItemType } from '../../../domain/enums'
-import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
@@ -130,12 +129,17 @@ export function matchActions(get: Get, set: Set) {
       set({ game: completeManagedFixture(game, completed) })
     },
 
-    simulateAbandonedMatch: (fixtureId: string) => {
+    simulateAbandonedMatch: async (fixtureId: string): Promise<void> => {
       const { game } = get()
       if (!game) return
       const fixture = game.fixtures.find(f => f.id === fixtureId)
       if (!fixture || fixture.status === 'completed') return  // idempotent
       if (!fixture.homeLineup || !fixture.awayLineup) return
+
+      // genomgang-store-lazy-matchcore (2026-09-12): tredje statiska vägen in
+      // i matchmotorkedjan via gameStore.ts (matchActions.ts var komponerad
+      // statiskt, precis som gameFlowActions.ts och careerBreakActions.ts).
+      const { simulateMatch } = await import('../../../domain/services/matchEngine')
 
       const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
       const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
