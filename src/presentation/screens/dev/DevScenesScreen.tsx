@@ -60,6 +60,7 @@ import { GameOverScreen } from '../GameOverScreen'
 import { HistoryScreen } from '../HistoryScreen'
 import { EventOverlay } from '../../components/EventOverlay'
 import { EventCardInline } from '../../components/portal/EventCardInline'
+import { BurnoutMark } from '../../components/portal/BurnoutMark'
 import { DecisionCard } from '../../components/DecisionCard'
 import { PressConferenceScene } from '../../components/PressConferenceScene'
 import { ClubSelectionScreen } from '../ClubSelectionScreen'
@@ -106,6 +107,8 @@ import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
 import { buildRefereeMeetingChoices } from '../../../application/useCases/processors/matchSimProcessor'
+import { BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
+import { generateSupporterEvents } from '../../../domain/services/events/supporterEvents'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-forsbacka' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -215,6 +218,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
+  | 'burnout-illustration' | 'klack-tifo-illustration' | 'klack-conflict-illustration'
 
 const SCENES: { id: SceneId; label: string }[] = [
   { id: 'cup-victory',  label: 'Cup Victory' },
@@ -286,6 +290,9 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'taktik',           label: 'Taktiktavlan — alla 8 dimensioner + FÖRESLÅS' },
   { id: 'event-overlay',    label: 'EventOverlay — kritiskt event, fullskärms-modal' },
   { id: 'press-conference', label: 'PressConferenceScene — bespok scen' },
+  { id: 'burnout-illustration', label: 'Burnout — scenbild i phasemark' },
+  { id: 'klack-tifo-illustration', label: 'Klacken — tifo i inline-kort' },
+  { id: 'klack-conflict-illustration', label: 'Klacken — konflikt i inline-kort' },
   { id: 'primary-smfinal-vs-deadline', label: 'Primary — SM-final(100) mot deadline(90)' },
   { id: 'primary-event-vs-farewell',   label: 'Primary — overlay-event lämnar plats åt avsked' },
   { id: 'sommaren-s2',              label: 'Sommaren — säsong 2, utvilad, tre händelser, slutspel rimligt' },
@@ -1951,6 +1958,51 @@ const boardGameN = {
   }],
 }
 
+// Slutillustrationerna har egna deterministiska granskningsvyer. Klackkorten
+// genereras av den riktiga producenten så text, identiteter och val inte kan
+// glida från spelet medan dev-vyn ser korrekt ut.
+const NARRATIVE_ILLUSTRATION_CLUB_ID = 'club_forsbacka'
+const burnoutIllustrationBase = makeBaseGame({ seed: 72, clubId: NARRATIVE_ILLUSTRATION_CLUB_ID })
+const burnoutIllustrationMatchday = 8
+const burnoutIllustrationGame = {
+  ...burnoutIllustrationBase,
+  currentMatchday: burnoutIllustrationMatchday,
+  managerProfile: {
+    ...burnoutIllustrationBase.managerProfile!,
+    burnoutScore: 78,
+    lastShownBurnoutZone: 'hog' as const,
+    lastBurnoutCause: 'fatigue' as const,
+  },
+  narrativeBeatLog: [
+    ...(burnoutIllustrationBase.narrativeBeatLog ?? []),
+    {
+      semanticKey: BURNOUT_MARK_FIRED_KEY,
+      season: burnoutIllustrationBase.currentSeason,
+      round: burnoutIllustrationMatchday,
+    },
+  ],
+} as SaveGame
+
+const klackTifoGame = {
+  ...makeBaseGame({ seed: 73, clubId: NARRATIVE_ILLUSTRATION_CLUB_ID }),
+  currentMatchday: 6,
+} as SaveGame
+const klackTifoIllustrationEvent = generateSupporterEvents(klackTifoGame, 6, new Set(), () => 0)
+  .find(event => event.id.startsWith('supporter_tifo_'))!
+
+const klackConflictGameBase = makeBaseGame({ seed: 74, clubId: NARRATIVE_ILLUSTRATION_CLUB_ID })
+const klackConflictGame = {
+  ...klackConflictGameBase,
+  currentMatchday: 10,
+  supporterGroup: {
+    ...klackConflictGameBase.supporterGroup!,
+    tifoDone: true,
+    conflictSeason: klackConflictGameBase.currentSeason - 1,
+  },
+} as SaveGame
+const klackConflictIllustrationEvent = generateSupporterEvents(klackConflictGame, 10, new Set(), () => 0)
+  .find(event => event.id.startsWith('supporter_conflict_'))!
+
 export function DevScenesScreen() {
   const devScrollRef = useRef<HTMLDivElement>(null)
   // ?scene=<id> för deterministisk headless-capture (scripts/capture-scenes.mjs)
@@ -2019,6 +2071,9 @@ export function DevScenesScreen() {
       : scene === 'board-c' ? boardGameC
       : scene === 'board-n' ? boardGameN
       : scene === 'stillness' ? stillnessGame
+      : scene === 'burnout-illustration' ? burnoutIllustrationGame
+      : scene === 'klack-tifo-illustration' ? klackTifoGame
+      : scene === 'klack-conflict-illustration' ? klackConflictGame
       : scene === 'granska' ? granskaGame
       : scene === 'granska-level3' ? granskaLevel3Game
       : scene === 'granska-referee-meeting' ? granskaRefereeMeetingGame
@@ -2858,6 +2913,24 @@ export function DevScenesScreen() {
         {scene === 'mecenat-dinner' && mecenatDinnerEventForScene && (
           <div style={{ position: 'relative', minHeight: 500 }}>
             <EventCardInline event={mecenatDinnerEventForScene} currentMatchday={mecenatDinnerGame.currentMatchday} />
+          </div>
+        )}
+
+        {scene === 'burnout-illustration' && (
+          <div style={{ minHeight: 812, background: 'var(--bg-portal)', padding: '24px 0' }}>
+            <BurnoutMark game={burnoutIllustrationGame} />
+          </div>
+        )}
+
+        {scene === 'klack-tifo-illustration' && (
+          <div style={{ minHeight: 812, background: 'var(--bg-portal)', padding: '24px 14px' }}>
+            <EventCardInline event={klackTifoIllustrationEvent} currentMatchday={klackTifoGame.currentMatchday} />
+          </div>
+        )}
+
+        {scene === 'klack-conflict-illustration' && (
+          <div style={{ minHeight: 812, background: 'var(--bg-portal)', padding: '24px 14px' }}>
+            <EventCardInline event={klackConflictIllustrationEvent} currentMatchday={klackConflictGame.currentMatchday} />
           </div>
         )}
 

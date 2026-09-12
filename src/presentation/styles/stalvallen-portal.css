@@ -438,6 +438,24 @@
   line-height: 1.4;
 }
 
+/* Burnout-ögonblicket behåller phasemarkens danger-signal när bilden bär ytan. */
+.portal-phasemark.danger {
+  border-color: var(--danger);
+}
+
+.portal-phasemark.danger .portal-phasemark-eyebrow {
+  color: var(--danger);
+}
+
+.burnout-illustration-copy {
+  background: linear-gradient(
+    180deg,
+    transparent 24%,
+    color-mix(in srgb, var(--bg-portal-surface) 72%, transparent) 58%,
+    var(--bg-portal-surface) 100%
+  );
+}
+
 /* warm-variant — upptakt (mellansteg mot gold) */
 .portal-phasemark.warm {
   border-top-color: rgba(140, 110, 58, 0.45);

@@ -8,8 +8,8 @@ const illustrationNames = [
   'academy-breakthrough', 'annandagen', 'avsked', 'board-ultimatum',
   'bruksort-header', 'career-break', 'club-democracy', 'cup', 'cupguld',
   'derby', 'facility-completed', 'final', 'game-over', 'intro', 'kafferummet',
-  'mecenat-dinner', 'nedflyttning', 'nyar', 'premiar', 'press', 'season-end',
-  'valet', 'varsol',
+  'klack-konflikt', 'klack-tifo', 'mecenat-dinner', 'nedflyttning', 'nyar',
+  'premiar', 'press', 'season-end', 'valet', 'varsol', 'burnout-ceiling',
 ] as const
 
 const clubIntroNames = [
@@ -30,6 +30,15 @@ describe('product image asset integrity', () => {
     }
     for (const name of clubIntroNames) {
       expectNonEmptyPublicAsset(`assets/illustrations/intro-${name}.webp`)
+    }
+  })
+
+  it('keeps the three narrative moment illustrations in the shared compressed format', async () => {
+    for (const name of ['burnout-ceiling', 'klack-tifo', 'klack-konflikt'] as const) {
+      const relativePath = `assets/illustrations/${name}.webp`
+      const metadata = await sharp(resolve(process.cwd(), 'public', relativePath)).metadata()
+      expect(metadata.format, relativePath).toBe('webp')
+      expect(metadata.width, relativePath).toBeLessThanOrEqual(1170)
     }
   })
 

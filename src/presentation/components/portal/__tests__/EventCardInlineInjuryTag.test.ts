@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getEventSourceLabel, getInjuryTag } from '../EventCardInline'
+import { getEventSourceLabel, getInjuryTag, getInlineEventIllustration } from '../EventCardInline'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../../../domain/services/worldGenerator'
 import type { GameEvent } from '../../../../domain/entities/GameEvent'
@@ -118,5 +118,29 @@ describe('getEventSourceLabel', () => {
       choices: [], resolved: false, sender: { name: 'Karin Bergström', role: 'Målilla Nytt' },
     } as GameEvent
     expect(getEventSourceLabel(event)).toBe('📰 LOKALTIDNINGEN · Karin Bergström')
+  })
+})
+
+describe('getInlineEventIllustration', () => {
+  it('kopplar tifot och den senare konflikten till två skilda bilder i samma båge', () => {
+    expect(getInlineEventIllustration(makeEvent({
+      id: 'supporter_tifo_2028',
+      type: 'supporterEvent',
+    }))?.name).toBe('klack-tifo')
+    expect(getInlineEventIllustration(makeEvent({
+      id: 'supporter_conflict_2028',
+      type: 'supporterEvent',
+    }))?.name).toBe('klack-konflikt')
+  })
+
+  it('ger ingen bild åt andra supporterhändelser eller id-kollisioner i andra typer', () => {
+    expect(getInlineEventIllustration(makeEvent({
+      id: 'supporter_open_letter_2028',
+      type: 'supporterEvent',
+    }))).toBeUndefined()
+    expect(getInlineEventIllustration(makeEvent({
+      id: 'supporter_tifo_2028',
+      type: 'communityEvent',
+    }))).toBeUndefined()
   })
 })

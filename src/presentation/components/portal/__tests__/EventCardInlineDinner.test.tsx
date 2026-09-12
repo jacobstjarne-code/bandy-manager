@@ -51,3 +51,30 @@ describe('portalens mecenatmiddag', () => {
     }
   })
 })
+
+describe('portalens klackillustrationer', () => {
+  it('renderar tifot som header i inline-kortet utan att ändra eventets väg', async () => {
+    const event = {
+      id: 'supporter_tifo_2028',
+      type: 'supporterEvent',
+      title: 'Elin och tifot',
+      body: 'Klacken vill bygga ett tifo.',
+      choices: [{ id: 'yes', label: 'Låna lokalen', effect: { type: 'noOp' } }],
+      resolved: false,
+    } as GameEvent
+    const host = document.createElement('div')
+    document.body.append(host)
+    const root = createRoot(host)
+    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+
+    try {
+      await act(async () => root.render(<EventCardInline event={event} />))
+      expect(host.querySelector('img')?.getAttribute('src')).toBe('/assets/illustrations/klack-tifo.webp')
+      expect(host.textContent).toContain('Klacken vill bygga ett tifo.')
+    } finally {
+      await act(async () => root.unmount())
+      host.remove()
+      Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: false })
+    }
+  })
+})

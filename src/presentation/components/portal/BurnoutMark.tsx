@@ -4,6 +4,7 @@ import { pickBurnoutQuoteIndex, pickBurnoutHelperIndex, pickBurnoutRelapseQuoteI
 import { wasLoggedThisRound } from '../../../domain/services/narrativeLogService'
 import { getBurnoutRelapseText } from '../../../domain/services/burnoutMemoryTextService'
 import type { CardRenderProps } from '../../../domain/services/portal/dashboardCardBag'
+import { IllustrationScene } from '../illustration/IllustrationScene'
 
 export function BurnoutMark({ game }: CardRenderProps) {
   const profile = game.managerProfile
@@ -57,11 +58,29 @@ export function BurnoutMark({ game }: CardRenderProps) {
   const causeLine = causePool.length > 0 ? causePool[0] : null
 
   return (
-    <div className="portal-phasemark" style={{ borderColor: 'var(--danger)' }}>
-      <div className="portal-phasemark-eyebrow" style={{ color: 'var(--danger)' }}>{eyebrow}</div>
-      <div className="portal-phasemark-quote">"{quote}"</div>
-      <div className="portal-phasemark-helper">{helper}</div>
-      {causeLine && <div className="portal-phasemark-helper">{causeLine}</div>}
+    <div className="portal-phasemark danger" style={{ padding: 0, overflow: 'hidden' }}>
+      <IllustrationScene
+        mode="band"
+        name="burnout-ceiling"
+        alt="Ett tomt omklädningsrum med en ensam kvarglömd matchtröja"
+        objectPosition="center 25%"
+        fadeTo="var(--bg-portal-surface)"
+        style={{ height: 238 }}
+      >
+        <div className="burnout-illustration-copy" style={{
+          height: '100%',
+          boxSizing: 'border-box',
+          padding: '108px 14px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}>
+          <div className="portal-phasemark-eyebrow">{eyebrow}</div>
+          <div className="portal-phasemark-quote">"{quote}"</div>
+          <div className="portal-phasemark-helper">{helper}</div>
+          {causeLine && <div className="portal-phasemark-helper">{causeLine}</div>}
+        </div>
+      </IllustrationScene>
     </div>
   )
 }

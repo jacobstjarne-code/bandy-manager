@@ -27,6 +27,7 @@ import { getItemAge } from '../../../domain/services/decisionFatigueService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
 import { getEventTypeMeta } from '../../../domain/data/eventTypeLabels'
 import { DecisionChoices } from '../DecisionChoices'
+import { IllustrationScene } from '../illustration/IllustrationScene'
 import { SponsorCounterModal } from './SponsorCounterModal'
 import { MecenatDinnerEvent } from '../events/MecenatDinnerEvent'
 import { getEventContextLabel } from '../../../domain/services/eventContextService'
@@ -70,6 +71,36 @@ interface Props {
   currentMatchday?: number
 }
 
+interface InlineEventIllustration {
+  name: 'klack-tifo' | 'klack-konflikt'
+  alt: string
+  objectPosition: string
+}
+
+/**
+ * Supporterberättelsens två delar ska läsa som samma båge utan att göras om
+ * till blockerande overlays. Event-id:t är producentens kanoniska identitet;
+ * övriga supporterEvent (brev, bortaresa m.m.) förblir vanliga textkort.
+ */
+export function getInlineEventIllustration(event: GameEvent): InlineEventIllustration | undefined {
+  if (event.type !== 'supporterEvent') return undefined
+  if (event.id.startsWith('supporter_tifo_')) {
+    return {
+      name: 'klack-tifo',
+      alt: 'Klacken förbereder en stor banderoll på ståplatsläktaren',
+      objectPosition: 'center 62%',
+    }
+  }
+  if (event.id.startsWith('supporter_conflict_')) {
+    return {
+      name: 'klack-konflikt',
+      alt: 'Två grupper i klacken står åtskilda kring en nedfallen banderoll',
+      objectPosition: 'center 53%',
+    }
+  }
+  return undefined
+}
+
 /**
  * Exporterad (D1, 2026-08-19) så AmbientEventRow.tsx kan återanvända samma
  * emoji+etikett-mappning — en källa, inte en dubblett (Port 4).
@@ -106,6 +137,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const actions = getActionsForEvent(event)
   const typeLabel = getEventSourceLabel(event)
   const injuryTag = getInjuryTag(event, players)
+  const illustration = getInlineEventIllustration(event)
   // Entitets-dedup-grinden (2026-08-12): ett event OM ett bud ÄR budet, inte
   // en separat entitet — event.id och bid.id är olika strängar för samma
   // sak. relatedBidId är den kanoniska identiteten när den finns (matchar
@@ -149,6 +181,21 @@ export function EventCardInline({ event, currentMatchday }: Props) {
     >
       {/* Vänster-stripe — action card, 3 px */}
       <div className="portal-card-stripe portal-card-stripe-copper-wide" />
+
+      {illustration && (
+        <IllustrationScene
+          mode="header"
+          name={illustration.name}
+          alt={illustration.alt}
+          objectPosition={illustration.objectPosition}
+          fadeTo="var(--bg-portal-surface)"
+          style={{
+            height: 132,
+            margin: '-14px -16px 12px -18px',
+            borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+          }}
+        />
+      )}
 
       {/* Typ-label — eyebrow, klassbaserad */}
       <p className="portal-card-eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
