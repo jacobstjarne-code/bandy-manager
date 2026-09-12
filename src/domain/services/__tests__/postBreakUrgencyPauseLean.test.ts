@@ -11,7 +11,7 @@
  * ingen ändring av matchutfall.
  */
 import { describe, it, expect } from 'vitest'
-import { simulateSecondHalf } from '../matchCore'
+import { simulateFromMidMatch, simulateSecondHalf } from '../matchCore'
 import type { Player } from '../../entities/Player'
 import type { Fixture, TeamSelection } from '../../entities/Fixture'
 import {
@@ -114,5 +114,72 @@ describe('postBreakUrgency — dämpas av pauseLean=calm när motståndaren jaga
       const step = Number(stepStr)
       expect(urgency).toBeCloseTo((40 - step) / 10, 5)
     }
+  })
+})
+
+describe('utvisningstid över halvtid och regenerering', () => {
+  const baseInput = {
+    fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
+    seed: 7171, mode: 'fast' as const,
+    initialHomeScore: 0, initialAwayScore: 0,
+    initialShotsHome: 0, initialShotsAway: 0,
+    initialOnTargetHome: 0, initialOnTargetAway: 0,
+    initialCornersHome: 0, initialCornersAway: 0,
+    managedIsHome: true,
+  }
+
+  it('pausar klockan i halvtid och fortsätter från exakt återstående steg', () => {
+    const steps = [...simulateSecondHalf({
+      ...baseInput,
+      initialHomeSuspensions: 1,
+      initialAwaySuspensions: 0,
+      initialHomeSuspensionTimers: [3],
+      initialAwaySuspensionTimers: [],
+    })]
+
+    expect(steps.find(step => step.step === 31)?.activeSuspensions).toMatchObject({
+      homeCount: 1,
+      homeTimers: [2],
+    })
+    expect(steps.find(step => step.step === 32)?.activeSuspensions).toMatchObject({
+      homeCount: 1,
+      homeTimers: [1],
+    })
+    expect(steps.find(step => step.step === 33)?.activeSuspensions).toMatchObject({
+      homeCount: 0,
+      homeTimers: [],
+    })
+  })
+
+  it('ger äldre count-only-anrop en ändlig tiominutare, aldrig en evig utvisning', () => {
+    const steps = [...simulateSecondHalf({
+      ...baseInput,
+      initialHomeSuspensions: 1,
+      initialAwaySuspensions: 0,
+    })]
+
+    expect(steps.find(step => step.step === 31)?.activeSuspensions.homeCount).toBe(1)
+    expect(steps.find(step => step.step === 37)?.activeSuspensions.homeCount).toBe(0)
+    expect(steps.find(step => step.step === 60)?.activeSuspensions.homeCount).toBe(0)
+  })
+
+  it('fortsätter räkna ner en kvarvarande utvisning i förlängningen', () => {
+    const knockoutFixture: Fixture = { ...fixture, id: 'suspension-overtime', isKnockout: true }
+    const steps = [...simulateFromMidMatch({
+      ...baseInput,
+      fixture: knockoutFixture,
+      initialHomeScore: 9,
+      initialAwayScore: 9,
+      initialHomeSuspensions: 1,
+      initialAwaySuspensions: 0,
+      initialHomeSuspensionTimers: [3],
+      initialAwaySuspensionTimers: [],
+    }, 60, true)]
+
+    expect(steps.find(step => step.step === 60)?.activeSuspensions.homeTimers).toEqual([3])
+    expect(steps.find(step => step.step === 61)?.activeSuspensions.homeTimers).toEqual([3])
+    expect(steps.find(step => step.step === 62)?.activeSuspensions.homeTimers).toEqual([2])
+    expect(steps.find(step => step.step === 63)?.activeSuspensions.homeTimers).toEqual([1])
+    expect(steps.find(step => step.step === 64)?.activeSuspensions.homeTimers).toEqual([])
   })
 })

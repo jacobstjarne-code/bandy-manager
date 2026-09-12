@@ -267,7 +267,13 @@ export interface MatchStep {
   commentary: string
   commentaryType?: CommentaryType
   intensity: 'low' | 'medium' | 'high'
-  activeSuspensions: { homeCount: number; awayCount: number }
+  activeSuspensions: {
+    homeCount: number
+    awayCount: number
+    /** Återstående motorsteg per utvisning. Pausen förbrukar inga steg. */
+    homeTimers: number[]
+    awayTimers: number[]
+  }
   shotsHome: number
   shotsAway: number
   onTargetHome: number
@@ -366,6 +372,8 @@ export interface StepByStepInput {
   initialCornersAway?: number
   initialHomeSuspensions?: number
   initialAwaySuspensions?: number
+  initialHomeSuspensionTimers?: number[]
+  initialAwaySuspensionTimers?: number[]
   substitutions?: { outId: string; inId: string }[]
 }
 
@@ -381,6 +389,8 @@ export interface SecondHalfInput extends StepByStepInput {
   initialCornersAway: number
   initialHomeSuspensions: number
   initialAwaySuspensions: number
+  initialHomeSuspensionTimers?: number[]
+  initialAwaySuspensionTimers?: number[]
   // homeLineup.tactic / awayLineup.tactic already contain updated tactics
   substitutions?: { outId: string; inId: string }[]
 }

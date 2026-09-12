@@ -21,7 +21,7 @@ function step(index: number, minute: number): MatchStep {
     awayScore: 0,
     commentary: '',
     intensity: 'low',
-    activeSuspensions: { homeCount: 0, awayCount: 0 },
+    activeSuspensions: { homeCount: 0, awayCount: 0, homeTimers: [], awayTimers: [] },
     shotsHome: 3,
     shotsAway: 1,
     onTargetHome: 2,

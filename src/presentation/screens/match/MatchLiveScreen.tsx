@@ -807,6 +807,8 @@ export function MatchLiveScreen() {
       initialCornersAway: currentStepData.cornersAway,
       initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
+      initialHomeSuspensionTimers: currentStepData.activeSuspensions.homeTimers,
+      initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
       managedIsHome,
     }, fromStep, inSecondHalf)
 
@@ -1208,6 +1210,8 @@ export function MatchLiveScreen() {
       initialCornersAway: halftimeStep?.cornersAway ?? 0,
       initialHomeSuspensions: halftimeStep?.activeSuspensions.homeCount ?? 0,
       initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
+      initialHomeSuspensionTimers: halftimeStep?.activeSuspensions.homeTimers ?? [],
+      initialAwaySuspensionTimers: halftimeStep?.activeSuspensions.awayTimers ?? [],
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
       pauseLean: effectiveLean,
@@ -1216,7 +1220,8 @@ export function MatchLiveScreen() {
     const newSecondHalf: MatchStep[] = []
     for (const s of gen) newSecondHalf.push(s)
     setSteps([...firstHalf, ...newSecondHalf])
-    // Återställ reducer till halvtidsstatus (utvisningar nollställs, scores bevaras)
+    // Återställ reducer till samma halvtidsstatus som generatorn. Pausen
+    // förbrukar ingen utvisningstid, så även UI-räknaren behåller antalet.
     dispatch({
       type: 'RESET_FROM_HALFTIME',
       state: {
@@ -1226,8 +1231,8 @@ export function MatchLiveScreen() {
         initialShotsAway: halftimeStep?.shotsAway ?? 0,
         initialCornersHome: halftimeStep?.cornersHome ?? 0,
         initialCornersAway: halftimeStep?.cornersAway ?? 0,
-        initialHomeSuspensions: 0,
-        initialAwaySuspensions: 0,
+        initialHomeSuspensions: halftimeStep?.activeSuspensions.homeCount ?? 0,
+        initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
       },
     })
     setTacticChanged(true)
@@ -1287,6 +1292,8 @@ export function MatchLiveScreen() {
       initialCornersAway: currentMatchStep.cornersAway,
       initialHomeSuspensions: currentMatchStep.activeSuspensions.homeCount,
       initialAwaySuspensions: currentMatchStep.activeSuspensions.awayCount,
+      initialHomeSuspensionTimers: currentMatchStep.activeSuspensions.homeTimers,
+      initialAwaySuspensionTimers: currentMatchStep.activeSuspensions.awayTimers,
       managedIsHome,
     }, fromStep, inSecondHalf)
 

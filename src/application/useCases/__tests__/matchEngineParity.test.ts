@@ -177,6 +177,8 @@ function runLiveEngine(
     initialCornersAway: fhs?.cornersAway ?? 0,
     initialHomeSuspensions: fhs?.activeSuspensions?.homeCount ?? 0,
     initialAwaySuspensions: fhs?.activeSuspensions?.awayCount ?? 0,
+    initialHomeSuspensionTimers: fhs?.activeSuspensions?.homeTimers ?? [],
+    initialAwaySuspensionTimers: fhs?.activeSuspensions?.awayTimers ?? [],
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

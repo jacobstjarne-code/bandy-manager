@@ -123,6 +123,8 @@ function runMatchHeadless(
       initialCornersAway: halftimeStep.cornersAway,
       initialHomeSuspensions: halftimeStep.activeSuspensions.homeCount,
       initialAwaySuspensions: halftimeStep.activeSuspensions.awayCount,
+      initialHomeSuspensionTimers: halftimeStep.activeSuspensions.homeTimers,
+      initialAwaySuspensionTimers: halftimeStep.activeSuspensions.awayTimers,
     })
     const firstHalf = steps.slice(0, 31)
     const secondHalf: MatchStep[] = []

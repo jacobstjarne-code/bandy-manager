@@ -138,7 +138,7 @@ export function buildCeremonyOnlyStep(fixture: Fixture): MatchStep {
     awayScore: fixture.awayScore,
     commentary: '',
     intensity: 'low',
-    activeSuspensions: { homeCount: 0, awayCount: 0 },
+    activeSuspensions: { homeCount: 0, awayCount: 0, homeTimers: [], awayTimers: [] },
     shotsHome: fixture.report?.shotsHome ?? 0,
     shotsAway: fixture.report?.shotsAway ?? 0,
     onTargetHome: fixture.report?.onTargetHome ?? 0,

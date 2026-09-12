@@ -141,6 +141,8 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       initialCornersAway: currentStepData.cornersAway,
       initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
       initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
+      initialHomeSuspensionTimers: currentStepData.activeSuspensions.homeTimers,
+      initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
       managedIsHome,
       storylines: getResolvedStorylineProjections(game).map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     }, fromStep, inSecondHalf)

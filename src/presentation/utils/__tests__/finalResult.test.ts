@@ -10,7 +10,7 @@ function makeStep(overrides: Partial<MatchStep> = {}): MatchStep {
   return {
     step: 77, minute: 110, events: [], homeScore: 2, awayScore: 2,
     commentary: '', intensity: 'high',
-    activeSuspensions: { homeCount: 0, awayCount: 0 },
+    activeSuspensions: { homeCount: 0, awayCount: 0, homeTimers: [], awayTimers: [] },
     shotsHome: 10, shotsAway: 10, onTargetHome: 5, onTargetAway: 5,
     cornersHome: 3, cornersAway: 3,
     ...overrides,

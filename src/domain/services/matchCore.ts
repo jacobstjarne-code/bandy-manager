@@ -1,5 +1,5 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.2.2'
+export const MATCH_ENGINE_VERSION = '1.2.3'
 
 // Global goal-rate modifier. Multipliceras in i ALLA fem målvägar (attack,
 // transition, corner, freekick, penalty) för att bevara kalibrering när
@@ -575,11 +575,50 @@ function* simulateMatchCore(
   let homeScore = input.initialHomeScore ?? 0
   let awayScore = input.initialAwayScore ?? 0
 
-  // Suspension tracking
-  let homeActiveSuspensions = input.initialHomeSuspensions ?? 0
-  let awayActiveSuspensions = input.initialAwaySuspensions ?? 0
-  const homeSuspensionTimers: number[] = []
-  const awaySuspensionTimers: number[] = []
+  // Suspension tracking. En matchpaus/regenerering är ingen spelad tid:
+  // varje aktiv utvisning fortsätter därför från exakt samma återstående
+  // motorsteg. Äldre anropare kan bara bära antalet; de får då en full
+  // tiominutare i stället för den tidigare eviga utvisningen.
+  const fallbackSuspensionSteps = Math.round(10 / 1.5)
+  const seedSuspensionTimers = (count: number, timers: number[] | undefined): number[] => {
+    const seeded = (timers ?? [])
+      .filter(timer => Number.isFinite(timer) && timer > 0)
+      .map(timer => Math.max(1, Math.round(timer)))
+    while (seeded.length < count) seeded.push(fallbackSuspensionSteps)
+    return seeded
+  }
+  const homeSuspensionTimers = seedSuspensionTimers(
+    input.initialHomeSuspensions ?? 0,
+    input.initialHomeSuspensionTimers,
+  )
+  const awaySuspensionTimers = seedSuspensionTimers(
+    input.initialAwaySuspensions ?? 0,
+    input.initialAwaySuspensionTimers,
+  )
+  let homeActiveSuspensions = homeSuspensionTimers.length
+  let awayActiveSuspensions = awaySuspensionTimers.length
+  const activeSuspensionSnapshot = () => ({
+    homeCount: homeActiveSuspensions,
+    awayCount: awayActiveSuspensions,
+    homeTimers: [...homeSuspensionTimers],
+    awayTimers: [...awaySuspensionTimers],
+  })
+  const tickSuspensionTimers = () => {
+    for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
+      homeSuspensionTimers[i]--
+      if (homeSuspensionTimers[i] <= 0) {
+        homeSuspensionTimers.splice(i, 1)
+        homeActiveSuspensions = Math.max(0, homeActiveSuspensions - 1)
+      }
+    }
+    for (let i = awaySuspensionTimers.length - 1; i >= 0; i--) {
+      awaySuspensionTimers[i]--
+      if (awaySuspensionTimers[i] <= 0) {
+        awaySuspensionTimers.splice(i, 1)
+        awayActiveSuspensions = Math.max(0, awayActiveSuspensions - 1)
+      }
+    }
+  }
 
   // B12 steg 2a (DOM_B12_STEG2_2026-08-19.md) — manpowerState: 'A', ren
   // avläsning av homeActiveSuspensions/awayActiveSuspensions (redan lästa för
@@ -1030,20 +1069,7 @@ function* simulateMatchCore(
     if (emitFullTime) stepGoalMod *= SECOND_HALF_BOOST
 
     // Update suspension timers
-    for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
-      homeSuspensionTimers[i]--
-      if (homeSuspensionTimers[i] <= 0) {
-        homeSuspensionTimers.splice(i, 1)
-        homeActiveSuspensions = Math.max(0, homeActiveSuspensions - 1)
-      }
-    }
-    for (let i = awaySuspensionTimers.length - 1; i >= 0; i--) {
-      awaySuspensionTimers[i]--
-      if (awaySuspensionTimers[i] <= 0) {
-        awaySuspensionTimers.splice(i, 1)
-        awayActiveSuspensions = Math.max(0, awayActiveSuspensions - 1)
-      }
-    }
+    tickSuspensionTimers()
 
     // Determine initiative
     const homePenaltyFactor   = homeActiveSuspensions > 0 ? 0.65 : 1.0
@@ -1997,7 +2023,7 @@ function* simulateMatchCore(
       commentary: commentaryText,
       commentaryType,
       intensity,
-      activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+      activeSuspensions: activeSuspensionSnapshot(),
       shotsHome,
       shotsAway,
       onTargetHome,
@@ -2094,7 +2120,7 @@ function* simulateMatchCore(
   yield {
     step: 60, minute: 90, events: [], homeScore, awayScore,
     commentary: fullTimeText, intensity: 'high',
-    activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+    activeSuspensions: activeSuspensionSnapshot(),
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'regular',
   }
 
@@ -2105,7 +2131,7 @@ function* simulateMatchCore(
     step: 61, minute: 90, events: [], homeScore, awayScore,
     commentary: isFast ? 'Förlängning' : pickCommentary(commentary.overtimeStart, rand, commentaryHistory),
     intensity: 'high',
-    activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+    activeSuspensions: activeSuspensionSnapshot(),
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
   }
 
@@ -2124,6 +2150,7 @@ function* simulateMatchCore(
     weatherGoalMod !== 1.0 ? ['weather'] : []
 
   for (let step = 62; step < 75; step++) {
+    tickSuspensionTimers()
     const minute     = 91 + Math.round((step - 62) * 1.5)
     const stepEvents: MatchEvent[] = []
     const hPF        = homeActiveSuspensions > 0 ? 0.75 : 1.0
@@ -2180,7 +2207,7 @@ function* simulateMatchCore(
       step, minute, events: stepEvents, homeScore, awayScore,
       commentary: otCommentary,
       intensity: otGoalScored ? 'high' : 'medium',
-      activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+      activeSuspensions: activeSuspensionSnapshot(),
       shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
       overtimeResult: otGoalScored ? (isHA ? 'home' : 'away') : undefined,
     }
@@ -2190,7 +2217,7 @@ function* simulateMatchCore(
         step: 75, minute: 110, events: [], homeScore, awayScore,
         commentary: `Matchen är avgjord i förlängningen! ${homeScore}–${awayScore}.`,
         intensity: 'high',
-        activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+        activeSuspensions: activeSuspensionSnapshot(),
         shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
         overtimeResult: isHA ? 'home' : 'away',
       }
@@ -2209,7 +2236,7 @@ function* simulateMatchCore(
     step: 76, minute: 110, events: [], homeScore, awayScore,
     commentary: isFast ? 'Straffar' : pickCommentary(commentary.penaltyStart, rand, commentaryHistory),
     intensity: 'high',
-    activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+    activeSuspensions: activeSuspensionSnapshot(),
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'penalties',
   }
 
@@ -2232,7 +2259,7 @@ function* simulateMatchCore(
       step: 77 + penRound.round - 1, minute: 110, events: [], homeScore, awayScore,
       commentary: penCommentary,
       intensity: isLastRound ? 'high' : 'medium',
-      activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+      activeSuspensions: activeSuspensionSnapshot(),
       shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'penalties',
       penaltyRound: penRound,
       penaltyHomeTotal: runningHome,

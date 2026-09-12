@@ -12,7 +12,7 @@ function makeStep(overrides: Partial<MatchStep> = {}): MatchStep {
     awayScore: 0,
     commentary: '',
     intensity: 'low',
-    activeSuspensions: { homeCount: 0, awayCount: 0 },
+    activeSuspensions: { homeCount: 0, awayCount: 0, homeTimers: [], awayTimers: [] },
     shotsHome: 0,
     shotsAway: 0,
     onTargetHome: 0,

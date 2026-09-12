@@ -130,6 +130,8 @@ describe('matchCore — målvaktskommentar tillskriver rätt lag (SEXSÄSONGSAUD
         initialCornersAway: lastFirstHalfStep?.cornersAway ?? 0,
         initialHomeSuspensions: lastFirstHalfStep?.activeSuspensions?.homeCount ?? 0,
         initialAwaySuspensions: lastFirstHalfStep?.activeSuspensions?.awayCount ?? 0,
+        initialHomeSuspensionTimers: lastFirstHalfStep?.activeSuspensions?.homeTimers ?? [],
+        initialAwaySuspensionTimers: lastFirstHalfStep?.activeSuspensions?.awayTimers ?? [],
       }
       const secondHalfSteps = [...simulateSecondHalf(secondHalfInput)]
 

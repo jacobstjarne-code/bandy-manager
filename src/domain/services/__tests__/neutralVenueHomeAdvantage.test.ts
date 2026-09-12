@@ -110,6 +110,8 @@ function runMatch(fixture: Fixture, homeLineup: TeamSelection, awayLineup: TeamS
     initialCornersAway: fh?.cornersAway ?? 0,
     initialHomeSuspensions: fh?.activeSuspensions?.homeCount ?? 0,
     initialAwaySuspensions: fh?.activeSuspensions?.awayCount ?? 0,
+    initialHomeSuspensionTimers: fh?.activeSuspensions?.homeTimers ?? [],
+    initialAwaySuspensionTimers: fh?.activeSuspensions?.awayTimers ?? [],
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let last: any = null
