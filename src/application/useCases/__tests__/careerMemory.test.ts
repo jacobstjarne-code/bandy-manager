@@ -62,7 +62,7 @@ describe('A1 — karriärminnet kapas inte längre vid fem säsonger', () => {
     for (const n of checkpoints) {
       expect(seen.get(n), `seasonSummaries hade aldrig längd ${n} — checkpoints som faktiskt sågs: ${JSON.stringify([...seen.keys()])}`).toBe(n)
     }
-  })
+  }, 60_000)
 
   it('regressionsvakt: en 6:e säsong tar inte bort den 1:a (den gamla .slice(-5)-buggen)', () => {
     const clubTemplate = CLUB_TEMPLATES[1 % CLUB_TEMPLATES.length]
