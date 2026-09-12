@@ -479,7 +479,7 @@ export function PortalScreen() {
               <span style={{ color: cueColor, fontSize: 12, lineHeight: 1.3, flexShrink: 0 }}>
                 {cue.tone === 'warning' ? '⚠' : '↳'}
               </span>
-              <span style={{ fontSize: 10.5, color: cueColor, lineHeight: 1.35 }}>
+              <span className="h-body-sm" style={{ color: cueColor, lineHeight: 1.35 }}>
                 {cue.text}
               </span>
             </div>
