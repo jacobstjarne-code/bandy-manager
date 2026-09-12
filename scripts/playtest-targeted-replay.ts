@@ -63,7 +63,7 @@ for (const season of [2026, 2027]) {
     assert(base.supporterGroup)
     const voiceId = klackLeaderVoiceId(base.managedClubId, base.supporterGroup.leader.name)
     let g: SaveGame = { ...base, currentMatchday: 5, currentDate: `${season}-11-01`, pendingEvents: [], deferredDecisions: [],
-      introducedVoices: { [voiceId]: { provenance: 'legacy_assumed', source: 'migration' } } }
+      introducedVoices: { [voiceId]: { provenance: 'legacy_assumed' as const, source: 'migration' as const } } }
     const tifo = generateSupporterEvents(g, 5, new Set(), () => 0).find(e => e.id.startsWith('supporter_tifo_'))!
     assert(tifo)
     g = resolveEvent({ ...g, pendingEvents: [tifo] }, tifo.id, 'yes', undefined, true)
