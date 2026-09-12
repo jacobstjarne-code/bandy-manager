@@ -143,7 +143,7 @@ interface GameState {
   clearFiredGame: () => void
   // O13 (DOM_TRANARMARKNADEN_2026-08-26) — tränarmarknadens tre steg, i
   // domens ordning. Se careerBreakActions.ts.
-  startCareerBreak: () => SaveGame | null
+  startCareerBreak: () => Promise<SaveGame | null>
   revealCareerMarket: () => void
   acceptCareerOffer: (clubId: string) => boolean
   loadGame: (id: string) => Promise<boolean>
@@ -154,7 +154,7 @@ interface GameState {
   // loadGame(id) är no-op om id redan är den aktiva karriären (se dess egen
   // guard), så switchToSave är säker att anropa även på den redan aktiva.
   switchToSave: (id: string) => Promise<boolean>
-  advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
+  advance: (suppressMatchNavigation?: boolean) => Promise<AdvanceResult | null>
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTacticAdvancedMode: (advanced: boolean) => Promise<SaveActionResult>
@@ -189,7 +189,7 @@ interface GameState {
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number, halftimeDecision?: import('../components/match/HalftimeModal').PauseLean) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
   saveLiveMatchProgress: (fixtureId: string, progress: import('../../domain/entities/Fixture').LiveMatchProgress) => void
-  simulateAbandonedMatch: (fixtureId: string) => void
+  simulateAbandonedMatch: (fixtureId: string) => Promise<void>
   concedeWalkover: (fixtureId: string) => void
   clearSeasonSummary: () => void
   resolveContractDemands: (resolutions: Record<string, 'met' | 'skipped'>) => void
@@ -224,7 +224,7 @@ interface GameState {
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
-  simulateRemainingStep: () => AdvanceResult | null
+  simulateRemainingStep: () => Promise<AdvanceResult | null>
   clearRoundSummary: () => void
   // O3 (DOM_EGET_SASONGSMAL_2026-08-17.md): valfri goal-param, se
   // gameFlowActions.ts:s implementation för semantik (undefined = "inget

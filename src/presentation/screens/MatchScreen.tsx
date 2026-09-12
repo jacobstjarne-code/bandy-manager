@@ -190,7 +190,7 @@ export function MatchScreen() {
     }
   }
 
-  function handlePlayMatch() {
+  async function handlePlayMatch() {
     if (!canPlay) {
       setMatchStep('lineup')
       setLineupError(startingIds.length !== 11
@@ -238,7 +238,7 @@ export function MatchScreen() {
         })
       } else {
         try {
-          const result = advance(true) // suppress auto-navigation — we navigate manually
+          const result = await advance(true) // suppress auto-navigation — we navigate manually
           if (!result) {
             setLineupError('Kunde inte simulera matchen')
             return

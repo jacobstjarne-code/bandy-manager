@@ -14,7 +14,6 @@
  */
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { simulateCareerBreak } from '../../../application/useCases/simulateCareerBreak'
 import { switchManagedClub } from '../../../application/useCases/switchManagedClub'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
@@ -26,13 +25,15 @@ type Set = (partial: Partial<{ game: SaveGame | null }>) => void
 export function careerBreakActions(get: Get, set: Set) {
   return {
     /**
-     * Kör uppehållet. Synkron och potentiellt tung (två säsonger headless) —
-     * anroparen ansvarar för att visa ett väntetillstånd. Returnerar det nya
-     * spelet så skärmen kan navigera vidare utan en extra store-läsning.
+     * Kör uppehållet. Simuleringskedjan laddas först här; annars gör den
+     * sällsynta Game Over-vägen roundProcessor/matchCore till startkod för
+     * varje ny karriär. Returnerar det nya spelet så skärmen kan navigera
+     * vidare utan en extra store-läsning.
      */
-    startCareerBreak: (): SaveGame | null => {
+    startCareerBreak: async (): Promise<SaveGame | null> => {
       const { game } = get()
       if (!game || !game.managerFired || game.careerBreak) return null
+      const { simulateCareerBreak } = await import('../../../application/useCases/simulateCareerBreak')
       const { game: simulated } = simulateCareerBreak(game)
       set({ game: simulated })
       void saveSaveGame(simulated).then(r => {

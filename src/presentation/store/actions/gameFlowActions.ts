@@ -19,7 +19,7 @@ import { applyFinanceChange } from '../../../domain/services/economyService'
 import { canStartBuild, startFacilityBuild, FACILITY_NODE_DEFS } from '../../../domain/services/facilityService'
 import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../../domain/services/seasonDecisionCaptureService'
 import { logEvent } from '../../../domain/services/eventLedgerService'
-import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
+import type { AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { getCoffeeRoomReturnDueMatchday, getCoffeeRoomScene, recordCoffeeRoomLedgerEchoShown } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
@@ -42,7 +42,7 @@ interface GetState {
   lastAdvanceResult: AdvanceResult | null
   resolveEvent: (eventId: string, choiceId: string, madeByPlayer: boolean) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string, autoSelected?: boolean) => { success: boolean; error?: string }
-  advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
+  advance: (suppressMatchNavigation?: boolean) => Promise<AdvanceResult | null>
   resolveWeeklyDecision: (choice: 'A' | 'B') => { text: string; deltas: ResolvedChoiceOutcomeDelta[] } | undefined
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
   recordFinalIntroShown: (fixture: Fixture, tier: FinalTier) => void
@@ -147,9 +147,17 @@ async function persistAutosave(game: SaveGame, context: string, set: Set): Promi
 
 export function gameFlowActions(get: Get, set: Set) {
   return {
-    advance: (suppressMatchNavigation?: boolean): AdvanceResult | null => {
+    advance: async (suppressMatchNavigation?: boolean): Promise<AdvanceResult | null> => {
       const { game } = get()
       if (!game) return null
+
+      // Genomgångens kvarvarande bundle-rot: roundProcessor drar in hela
+      // fast-simkedjan (matchSimProcessor → matchEngine → matchCore) i
+      // huvudchunken när importen ligger på modulnivå. Ladda kedjan först
+      // när en omgång faktiskt ska spelas. import() cacheas av runtimen, så
+      // efter första omgången finns ingen extra modulhämtning per steg i
+      // "Simulera resterande säsong".
+      const { advanceToNextEvent } = await import('../../../application/useCases/advanceToNextEvent')
 
       // GAP-1(b): auto-spara pre-advance-state INNAN riskoperationen (round-advance/season-end
       // är de tyngsta vägarna). Kraschar advance så kostar det aldrig mer än omgången som just
@@ -739,7 +747,7 @@ export function gameFlowActions(get: Get, set: Set) {
       void persistAutosave(updatedGame, 'markAnniversaryAcknowledged', set)
     },
 
-    simulateRemainingStep: (): AdvanceResult | null => {
+    simulateRemainingStep: async (): Promise<AdvanceResult | null> => {
       const state = get()
       const { game, resolveEvent, setPlayerLineup, advance } = state
       if (!game) return null
@@ -787,7 +795,7 @@ export function gameFlowActions(get: Get, set: Set) {
           true,
         )
       }
-      return advance(true) // suppress navigation — caller handles it
+      return await advance(true) // suppress navigation — caller handles it
     },
 
     completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => {

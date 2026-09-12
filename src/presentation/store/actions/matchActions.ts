@@ -2,7 +2,6 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { LiveMatchProgress, MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import type { PauseLean } from '../../components/match/HalftimeModal'
 import { FixtureStatus, InboxItemType } from '../../../domain/enums'
-import { simulateMatch } from '../../../domain/services/matchEngine'
 import { fixtureSeed } from '../../../domain/utils/random'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
@@ -130,7 +129,7 @@ export function matchActions(get: Get, set: Set) {
       set({ game: completeManagedFixture(game, completed) })
     },
 
-    simulateAbandonedMatch: (fixtureId: string) => {
+    simulateAbandonedMatch: async (fixtureId: string): Promise<void> => {
       const { game } = get()
       if (!game) return
       const fixture = game.fixtures.find(f => f.id === fixtureId)
@@ -142,6 +141,10 @@ export function matchActions(get: Get, set: Set) {
       const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
       const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
 
+      // Den här sällsynta återhämtningsvägen får inte dra fast-simmotorn
+      // till appens startchunk via store-modulen. Samma matchEngine laddas
+      // först om en påbörjad match faktiskt måste lämnas över.
+      const { simulateMatch } = await import('../../../domain/services/matchEngine')
       const result = simulateMatch({
         fixture,
         homeLineup: fixture.homeLineup,

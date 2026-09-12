@@ -489,7 +489,7 @@ export function MatchLiveScreen() {
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
       fixture.attendance, halftimeDecisionForLog ?? undefined,
     )
-    advance(true)
+    void advance(true).catch(err => console.error('advance() failed:', err))
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
 

@@ -71,7 +71,7 @@ export function PortalScreen() {
            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (!hasManagedAtNextMd) {
-      advance()
+      void advance().catch(err => console.error('advance() failed:', err))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run once on mount — advance() navigates away, re-mount after return handles any remaining rounds
@@ -219,9 +219,9 @@ export function PortalScreen() {
     const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduledFixtures.length === 0) {
       setIsAdvancing(true)
-      requestAnimationFrame(() => {
-        try { advance() } catch (err) { console.error('advance() failed:', err) }
-        setIsAdvancing(false)
+      requestAnimationFrame(async () => {
+        try { await advance() } catch (err) { console.error('advance() failed:', err) }
+        finally { setIsAdvancing(false) }
       })
       return
     }
@@ -237,9 +237,9 @@ export function PortalScreen() {
     )
     if (hasPendingManagedWithoutLineup) { navigate('/game/match'); return }
     setIsAdvancing(true)
-    requestAnimationFrame(() => {
-      try { advance() } catch (err) { console.error('advance() failed:', err) }
-      setIsAdvancing(false)
+    requestAnimationFrame(async () => {
+      try { await advance() } catch (err) { console.error('advance() failed:', err) }
+      finally { setIsAdvancing(false) }
     })
   }, [isAdvancing, game, advance, navigate])
 
@@ -277,7 +277,7 @@ export function PortalScreen() {
         PendingScreen.QFSummary,
       ]
       for (let step = 0; step < 120; step++) {
-        const result = simulateRemainingStep()
+        const result = await simulateRemainingStep()
         if (!result) break
         if (result.seasonEnded) { navigate('/game/sim-summary'); return }
         if (result.playoffStarted) break
