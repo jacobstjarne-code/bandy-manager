@@ -13,6 +13,7 @@ import { TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWid
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 import type { Patron } from '../../../domain/entities/Community'
+import { patronVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 function withAutoLineup(game: SaveGame): SaveGame {
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining === 0)
@@ -51,6 +52,11 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
       communityStanding: 40,
       patron: makePatron({ isActive: true, introducedSeason: game.currentSeason }),
       resolvedEventIds: [`patron_intro_${game.currentSeason}`],
+      introducedVoices: {
+        [patronVoiceId(game.managedClubId, 'patron_test_testsson')]: {
+          provenance: 'observed', source: 'event', introducedSeason: game.currentSeason, introducedDate: game.currentDate,
+        },
+      },
     }
 
     const result = advanceToNextEvent(game, 1)
@@ -73,6 +79,23 @@ describe('patron cs-driven avhopp — roundProcessor', () => {
     let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
     game = withAutoLineup(game)
     game = { ...game, communityStanding: 40, patron: makePatron({ isActive: true }), resolvedEventIds: [] }
+
+    const result = advanceToNextEvent(game, 1)
+
+    expect(result.game.patron?.isActive).toBe(true)
+    expect(result.pendingEvents.some(e => e.id.startsWith('patron_cs_eviction_'))).toBe(false)
+  })
+
+  it('ett stale introducedSeason utan röstliggare räknas inte som ett möte', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 3 })
+    game = withAutoLineup(game)
+    game = {
+      ...game,
+      communityStanding: 40,
+      patron: makePatron({ isActive: true, introducedSeason: game.currentSeason }),
+      introducedVoices: {},
+      resolvedEventIds: [],
+    }
 
     const result = advanceToNextEvent(game, 1)
 

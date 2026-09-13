@@ -46,6 +46,10 @@ export function klackLeaderVoiceId(clubId: string, leaderName: string): VoiceId 
   return `klack_leader:${voicePart(clubId)}:${voicePart(leaderName)}`
 }
 
+export function supporterCharacterVoiceId(clubId: string, role: string, name: string): VoiceId {
+  return `supporter:${voicePart(clubId)}:${voicePart(role)}:${voicePart(name)}`
+}
+
 export function isVoiceIntroduced(
   game: Pick<SaveGame, 'introducedVoices'>,
   voiceId: VoiceId,

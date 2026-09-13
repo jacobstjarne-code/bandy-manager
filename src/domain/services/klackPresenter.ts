@@ -134,7 +134,7 @@ function pickQuote(
         ]
       : [
           'Vi tar hela familjen. Det är billigare än bio och roligare.',
-          'Min son vill ha tröja nummer 7. Vet inte vem det är men han är bestämd.',
+          'Min son har bestämt sig för tröja nummer 7. Han vet inte vem som bär den — sjuan ska det vara.',
           'Vi sitter bakom mål. Barnen älskar när det är hörna.',
         ],
   }
@@ -158,13 +158,19 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
   const EVENT_WINDOW = 3
 
   if (sg.tifoDoneMatchday && sg.tifoDone && currentMatchday - sg.tifoDoneMatchday <= EVENT_WINDOW) {
+    const tifoChoice = (game.resolvedChoices ?? []).find(choice =>
+      choice.eventId.startsWith('supporter_tifo_') && choice.madeByPlayer !== false,
+    )
+    const tifoBody = tifoChoice?.choiceId === 'maybe'
+      ? `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. De håller tifot enkelt och arbetar vidare med en mindre banderoll.`
+      : `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. Där arbetar de vidare med den stora banderollen.`
     return {
       type: 'event',
       eventType: 'tifo',
       groupName: sg.name,
       founded: sg.founded,
       title: 'Tifot tar form',
-      body: `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. Där arbetar de vidare med den stora banderollen.`,
+      body: tifoBody,
       note: `Klackens stämning stärktes · ${sg.members} medlemmar`,
     }
   }

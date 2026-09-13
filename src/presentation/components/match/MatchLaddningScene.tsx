@@ -157,7 +157,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 300,
+        position: 'fixed', top: 0, bottom: 0, left: '50%', width: '100%', maxWidth: 430, transform: 'translateX(-50%)', zIndex: 300,
         background: 'var(--bg-scene)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
@@ -273,7 +273,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 300,
+        position: 'fixed', top: 0, bottom: 0, left: '50%', width: '100%', maxWidth: 430, transform: 'translateX(-50%)', zIndex: 300,
         background: 'var(--bg-scene)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
@@ -406,7 +406,7 @@ export function MatchLaddningScene({ occasion, isFinal, game, opponent, nextFixt
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 300,
+      position: 'fixed', top: 0, bottom: 0, left: '50%', width: '100%', maxWidth: 430, transform: 'translateX(-50%)', zIndex: 300,
       background: 'var(--bg-portal)',
       display: 'flex',
       flexDirection: 'column',

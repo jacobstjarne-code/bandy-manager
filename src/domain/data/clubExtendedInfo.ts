@@ -1,9 +1,9 @@
 /**
  * B3 (BANDYSPRAK_KALLASNING_2026-08-19.md) — Jacobs dom 2026-08-19, alla
  * tolv dömda. Princip: pålitlig is (konstfrusen, gammal tradition) ger
- * tränade passningsmönster → spelande. Naturis/opålitlig is ger färre,
- * kallare, snabbare pass där individen bär bollen → åkande. En verklig
- * mekanism (tränade timmar på is), inte en smaksak — korrelerar
+ * tränade passningsmönster → spelande. Åkande lag bygger i stället sin
+ * identitet på fart, individuell bolltransport och rakare anfall. Det är
+ * klubbarnas träningskultur, inte dagens kylsystem — korrelerar
  * avsiktligt inte med tabellplacering (Brodéns egen poäng). De två
  * SVÅR-klassade klubbarna (U1s difficulty-modell) hamnar medvetet på
  * var sitt håll: Skutskär spelande, Slottsbron åkande.
@@ -22,15 +22,15 @@ export interface ClubExtendedInfo {
 export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
   'club_forsbacka': {
     clubId: 'club_forsbacka',
-    arenaNote: 'Naturis inbäddad bland furor. Köldhål vid sjön.',
+    arenaNote: 'Konstfrusen is inbäddad bland furor. Köldhål vid sjön.',
     patronType: 'Bruksdisponent',
     klimateArchetype: 'bruk_lakeside',
-    briefDescription: 'Bruksort i skogslandskap vid Storsjöns utlopp. Klämd mellan stadsklubbarnas skuggor — men när isen ligger är det magiskt.',
+    briefDescription: 'Bruksort i skogslandskap vid Storsjöns utlopp. Klämd mellan stadsklubbarnas skuggor — men på matchkvällar är det magiskt.',
     playStyleTradition: 'akande',
   },
   'club_soderfors': {
     clubId: 'club_soderfors',
-    arenaNote: 'Bruksort på ö i älven. Tidig is på smala armar.',
+    arenaNote: 'Konstfrusen bana på ön i älven. Vägen dit går över bron.',
     patronType: 'Brukschef',
     klimateArchetype: 'bruk_river_island',
     briefDescription: 'Ankarsmedjan vid Dalälven. Vägen till plan går alltid över en bro.',
@@ -65,20 +65,20 @@ export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
     arenaNote: 'Vid älvkanten i Dalälvens sammanlöp.',
     patronType: 'Ortens hantverksmästare',
     klimateArchetype: 'valley_inland',
-    briefDescription: 'Dalabygd där älvarna möts. Skidor och skridskors-kultur sida vid sida — bandyn måste kämpa för uppmärksamheten.',
+    briefDescription: 'Dalabygd där älvarna möts. Skid- och skridskokultur sida vid sida — bandyn måste kämpa för uppmärksamheten.',
     playStyleTradition: 'spelande',
   },
   'club_halleforsnas': {
     clubId: 'club_halleforsnas',
-    arenaNote: 'Naturis vid brukssjön. Konstfrusen väntar fortfarande.',
-    patronType: 'Järnbrukets fackstark',
+    arenaNote: 'Konstfrusen is vid brukssjön. Bruksortens mötesplats vintertid.',
+    patronType: 'Brukets tidigare fackordförande',
     klimateArchetype: 'bruk_lakeside',
     briefDescription: 'Sörmländsk bruksort vid Hälleforsen. Bandyn hålls levande av stolt tradition och järnets folk.',
     playStyleTradition: 'akande',
   },
   'club_lesjofors': {
     clubId: 'club_lesjofors',
-    arenaNote: 'Naturis sedan 1967. Köldhål i dalgången.',
+    arenaNote: 'Konstfrusen is i dalgångens köldhål.',
     patronType: 'Fjäderfabrikens skiftarbetare',
     klimateArchetype: 'valley_coldpit',
     briefDescription: 'Värmlands köldhål — temperaturen sjunker extra när högtrycket sätter in. Fostrat storspelare men förblir ett byalag.',
@@ -89,15 +89,15 @@ export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
     arenaNote: 'Konstfrusen obligatorisk. Salt havsluft från Kattegatt.',
     patronType: 'Kustnäringens eldsjäl',
     klimateArchetype: 'scanian_coast',
-    briefDescription: 'Sydligast i bandysverige. Konstfrusen är allt — naturis räknar de inte med. Underdog i ett hockeylandskap.',
+    briefDescription: 'Sydligast i bandysverige. Kylanläggningen är en del av klubbens stolthet. Underdog i ett hockeylandskap.',
     playStyleTradition: 'spelande',
   },
   'club_slottsbron': {
     clubId: 'club_slottsbron',
-    arenaNote: 'Vid Vänerns strand. Sent istäcke, dimma, storm.',
+    arenaNote: 'Konstfrusen bana vid Vänerns strand. Dimma och storm.',
     patronType: 'Sulfitbrukets veteranarbetare',
     klimateArchetype: 'vanern_effect',
-    briefDescription: 'Bruksort vid Vänern. Sjön fördröjer isen men ger också storarna av stämning när vädret vänder.',
+    briefDescription: 'Bruksort vid Vänern. Sjön ger dimma, vind och stora skiftningar i stämning när vädret vänder.',
     playStyleTradition: 'akande',
   },
   'club_skutskar': {

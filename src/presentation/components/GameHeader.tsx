@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Settings, BookOpen, Save, FolderOpen, Download, Upload, Bell } from 'lucide-react'
+import { Menu, Mail, BookOpen, Save, FolderOpen, Download, Upload, Bell } from 'lucide-react'
 import { Icon } from './primitives/Icon'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { TownSilhouette } from './TownSilhouette'
@@ -82,28 +82,6 @@ const CRIT_LABEL: Record<'open' | 'matchpuck' | 'decisive', string | null> = {
   open: null,
   matchpuck: 'Matchpuck',
   decisive: 'Avgörande',
-}
-
-/** Handritad SVG-kuvert-glyph i koppar. Ersätter 🔔-emoji. */
-function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; color?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 18 18"
-      fill="none"
-      stroke={color}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* Kuvert-kropp */}
-      <rect x="2" y="4" width="14" height="10" rx="1.5" />
-      {/* Veck uppifrån */}
-      <polyline points="2,4 9,10.5 16,4" />
-    </svg>
-  )
 }
 
 export function GameHeader() {
@@ -214,7 +192,7 @@ export function GameHeader() {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '44px 1fr auto',
+      gridTemplateColumns: '34px minmax(92px, 1fr) auto',
       alignItems: 'center',
       position: 'relative',
       padding: '8px 10px',
@@ -261,7 +239,8 @@ export function GameHeader() {
         </p>
       </div>
 
-      {/* Kolumn 3: Meta (sigill-chip + kuvert + inställningar) */}
+      {/* Kolumn 3: rond + en samlad verktygsingång. En enda fast ikon håller
+          klubbidentiteten läsbar även när rondnamnet är långt. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         {/* Omgångs-sigill */}
         {roundChipLabel && (
@@ -272,60 +251,28 @@ export function GameHeader() {
             background: 'rgba(201,122,58,0.10)',
             color: 'var(--accent)',
             whiteSpace: 'nowrap',
+            maxWidth: 'min(42vw, 132px)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}>
             {roundChipLabel}
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 1, padding: 2, border: '1px solid rgba(245,241,235,0.10)', borderRadius: 7, background: 'rgba(245,241,235,0.04)' }}>
-        {/* Klubbpärmen */}
-        <button
-          onClick={() => setShowKlubbparm(true)}
-          style={{
-            width: 30, height: 30, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            color: 'rgba(245,241,235,0.45)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-          aria-label="Klubbpärmen"
-        >
-          <Icon icon={BookOpen} size={16} />
-        </button>
-
-        {/* Kuvert-notifikation — SVG-glyph, inte emoji */}
-        <button
-          onClick={() => navigate('/game/inbox')}
-          style={{
-            position: 'relative',
-            width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.45)',
-          }}
-          aria-label="Inkorg"
-        >
-          <EnvelopeIcon size={17} color="currentColor" />
-          {/* Notifikationsprick — separat element, kan visas/döljas oberoende */}
-          {unreadInbox > 0 && (
-            <span style={{
-              position: 'absolute', top: 1, right: 1,
-              width: 8, height: 8, borderRadius: '50%',
-              background: 'var(--danger)',
-              border: '1.5px solid var(--bg-dark)',
-              display: 'block',
-            }} />
-          )}
-        </button>
-
-        {/* Inställningar */}
+        <div style={{ padding: 2, border: '1px solid rgba(245,241,235,0.10)', borderRadius: 7, background: 'rgba(245,241,235,0.04)' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
-            width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            color: 'rgba(245,241,235,0.45)',
+            color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.55)',
           }}
-          aria-label="Inställningar"
+          aria-label={unreadInbox > 0 ? `Meny, ${unreadInbox} olästa meddelanden` : 'Meny'}
+          aria-expanded={showMenu}
         >
-          <Icon icon={Settings} size={16} />
+          <Icon icon={Menu} size={18} />
+          {/* adherence-semantic-key: danger = oläst inkorg, samma notifieringssignal som tidigare kuvertprick */}
+          {unreadInbox > 0 && <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', background: 'var(--danger)', border: '1.5px solid var(--bg-dark)' }} />}
         </button>
         </div>
       </div>
@@ -362,6 +309,8 @@ export function GameHeader() {
             {lastConfirmedSaveAt ? `Senast sparat: ${formatRelativeSaveTime(lastConfirmedSaveAt)}` : 'Inte sparat än denna session'}
           </div>
           {[
+            { label: 'Klubbpärmen', icon: BookOpen, action: () => setShowKlubbparm(true) },
+            { label: unreadInbox > 0 ? `Inkorg (${unreadInbox})` : 'Inkorg', icon: Mail, action: () => navigate('/game/inbox') },
             { label: 'Notiser', icon: Bell, action: () => setShowNotisinstallningar(true) },
             { label: 'Spara spel', icon: Save, action: handleSaveGame },
             { label: 'Ladda spel', icon: FolderOpen, action: () => navigate('/') },

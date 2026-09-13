@@ -63,11 +63,17 @@ export function MatchScreen() {
       })
       .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
     if (!fixture) return 'lineup'
-    // matchflode-forbered-linjar ingrepp 3: vinjetten är fasens första
-    // andetag, före både laddningsbeat och uppställning.
     const opponentId = fixture.homeClubId === mid ? fixture.awayClubId : fixture.homeClubId
-    if (isFirstMeetingWithOpponent(game, opponentId)) return 'vignette'
     const beat = computeLaddningBeat(game, fixture)
+    // En hel cupscen etablerar först VARFÖR matchen betyder något. Vid ett
+    // första möte kommer motståndarvinjetten därefter. Vanliga matcher
+    // behåller person-före-kontext-ordningen.
+    if (
+      fixture.isCup &&
+      beat.tier === 'scene' &&
+      shouldShowPreparationLaddningBeat(beat, game.preferredMatchMode ?? 'full')
+    ) return 'laddning'
+    if (isFirstMeetingWithOpponent(game, opponentId)) return 'vignette'
     return beat.tier !== 'none' ? 'laddning' : 'lineup'
   })
   const [confirmingMatchStart, setConfirmingMatchStart] = useState(false)
@@ -396,6 +402,11 @@ export function MatchScreen() {
           fixture={nextFixture}
           isHome={isHome}
           onContinue={() => {
+            if (queuedLaddningBeat?.tier === 'none') {
+              setQueuedLaddningBeat(null)
+              setMatchStep('lineup')
+              return
+            }
             const handoffBeat = computeLaddningBeat(game, nextFixture)
             setQueuedLaddningBeat(handoffBeat)
             setMatchStep(handoffBeat.tier !== 'none' ? 'laddning' : 'lineup')
@@ -418,7 +429,15 @@ export function MatchScreen() {
           game={game}
           opponent={opp}
           nextFixture={nextFixture}
-          onContinue={() => setMatchStep('lineup')}
+          onContinue={() => {
+            const opponentId = nextFixture.homeClubId === managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
+            if (nextFixture.isCup && isFirstMeetingWithOpponent(game, opponentId)) {
+              setQueuedLaddningBeat({ tier: 'none' })
+              setMatchStep('vignette')
+              return
+            }
+            setMatchStep('lineup')
+          }}
         />
       )
     }

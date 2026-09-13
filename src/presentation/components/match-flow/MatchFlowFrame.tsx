@@ -135,7 +135,7 @@ export function MatchFlowFrame({
               <ClubBadge
                 clubId={clubId}
                 name={clubName}
-                size={22}
+                size={24}
                 strokeColor="color-mix(in srgb, var(--copper) 40%, transparent)"
               />
             </div>

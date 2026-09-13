@@ -5,6 +5,7 @@ import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { createNewGame } from '../../createNewGame'
 import { processPatronCommunityEvents } from '../eventProcessor'
 import { passesSeasonalEmergenceRoll, seasonalEmergenceProbability } from '../../../../domain/services/mecenatPatronEmergenceService'
+import { patronVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 function establishedGame(): SaveGame {
   for (let worldSeed = 0; worldSeed < 10_000; worldSeed++) {
@@ -87,7 +88,19 @@ describe('eventProcessor — patronens CS-skalerade säsongsrullning', () => {
   it('withdraws an introduced patron below the threshold and records the canonical event', () => {
     const base = establishedGame()
     const patron = activePatron()
-    const game = { ...base, communityStanding: 40, patron }
+    const game = {
+      ...base,
+      communityStanding: 40,
+      patron,
+      introducedVoices: {
+        [patronVoiceId(base.managedClubId, patron.id)]: {
+          provenance: 'observed' as const,
+          source: 'event' as const,
+          introducedSeason: base.currentSeason,
+          introducedDate: base.currentDate,
+        },
+      },
+    }
     const result = processPatronCommunityEvents(game, patron, undefined, 8, 8, () => 0, [])
 
     expect(result.updatedPatron).toEqual({ ...patron, isActive: false })
@@ -102,6 +115,16 @@ describe('eventProcessor — patronens CS-skalerade säsongsrullning', () => {
       subject: { kind: 'patron', id: patron.id },
       significance: 95,
     })])
+  })
+
+  it('låter inte ett stale introducedSeason ersätta ett faktiskt möte', () => {
+    const base = establishedGame()
+    const patron = activePatron()
+    const game = { ...base, communityStanding: 40, patron, introducedVoices: {} }
+    const result = processPatronCommunityEvents(game, patron, undefined, 8, 8, () => 0, [])
+
+    expect(result.updatedPatron?.isActive).toBe(true)
+    expect(result.gameEvents.some(event => event.type === 'patronWithdrawal')).toBe(false)
   })
 
   it('prövar inte samma godkända roll igen efter första serieomgången', () => {

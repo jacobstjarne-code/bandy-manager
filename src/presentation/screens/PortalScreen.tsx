@@ -273,6 +273,10 @@ export function PortalScreen() {
   // Slinga 1: grinda avancera-CTA:n tills veckans beslut hanterats (anti-autopilot).
   // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
   const weeklyDecisionPending = game.pendingWeeklyDecision != null
+  const firstWeekFocus = isSeason1Round1 && weeklyDecisionPending
+  const visibleSecondary = firstWeekFocus
+    ? layout.secondary.filter(card => card.id === 'weekly_decision')
+    : layout.secondary
 
   // PORTAL-TAKREGEL (2026-08-09), REVIDERAD AUDIT DEL 2 (2026-08-09): marks
   // blir data före de blir JSX. Budgeten (ATMOSPHERE_CAP, default 2) gäller
@@ -365,7 +369,7 @@ export function PortalScreen() {
         {/* PORTAL-TAKREGEL: högst ATMOSPHERE_CAP (2) atmosfärsrader, i
             prioritetsordning (atmosphereSelection.shown). Resten går ned i
             PortalQueueRail som chips (demotedAtmosphereChips nedan). */}
-        {atmosphereSelection.shown.map(kind => (
+        {!firstWeekFocus && atmosphereSelection.shown.map(kind => (
           <Fragment key={kind}>{ATMOSPHERE_COMPONENT[kind]}</Fragment>
         ))}
         {/* Undantag från "handlingar efter Primary": ObjectiveAlert när den
@@ -391,7 +395,7 @@ export function PortalScreen() {
             ny dismissedHints-post — samma villkor och innehåll som förut,
             bara attribuerat till samma kassör som redan talar i ankomsten
             (ArrivalScene.tsx:72,143), kafferummet och hallprövningen. */}
-        {isSeason1Round1 && activeCount > 0 && (
+        {firstWeekFocus && activeCount > 0 && (
           <div className="portal-tutorial-frame">
             <strong>{game.board?.find(m => m.role === 'kassör')?.firstName ?? 'Kassören'} · Kassör</strong>
             "Lugnare första veckan. En fråga åt gången — resten ligger och väntar tills du hittat rytmen."
@@ -403,19 +407,19 @@ export function PortalScreen() {
         {game.pendingCallupModal && (
           <CallupModal game={game} />
         )}
-        <PortalEventSlot game={game} />
+        <PortalEventSlot game={game} suppressDecisions={firstWeekFocus} />
         {/* DOM_POLISH_PORTALHIERARKI_2026-09-10 §1/§5: T2, andra rösten —
             aldrig CTA. storySlot är redan singular (PortalLayout.storySlot:
             DashboardCard | null), så "högst en" är strukturellt garanterad;
             klassen namnger tieret. */}
-        {StorySlotComponent && (
+        {StorySlotComponent && !firstWeekFocus && (
           <div className="portal-story">
             <StorySlotComponent game={game} />
           </div>
         )}
-        <PortalQueueRail game={game} demotedMarks={demotedAtmosphereChips} />
-        <PortalSecondarySection cards={layout.secondary} game={game} />
-        <PortalMinimalBar cards={layout.minimal} game={game} />
+        {!firstWeekFocus && <PortalQueueRail game={game} demotedMarks={demotedAtmosphereChips} />}
+        <PortalSecondarySection cards={visibleSecondary} game={game} />
+        {!firstWeekFocus && <PortalMinimalBar cards={layout.minimal} game={game} />}
         <PortalInboxCounter game={game} />
         <ClubNotificationPrompt game={game} />
       </div>
@@ -429,7 +433,7 @@ export function PortalScreen() {
           // fixerade CTA-stacken behöver den 44 px till närmaste knapp; barens
           // befintliga flex-gap ger 6 px; 39 px till ger heltalssäkert minst
           // 44 px även när subpixelavrundning annars landar på 43,99.
-          bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${weeklyDecisionPending ? 0 : Math.round(ctaHeight) + 39}px)`,
+          bottom: `calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance) + ${Math.round(ctaHeight) + 39}px)`,
           left: '50%',
           right: 'auto',
           width: '100%',
@@ -448,7 +452,7 @@ export function PortalScreen() {
           ("Redo — spela omgång N", "Fortsätt slutspel", "Säsong över").
           --cta-nav-clearance (48px) är samma token B-01/MatchLaddningScene
           redan etablerade för exakt den här bugklassen. */}
-      {!weeklyDecisionPending && !seamActive && <div ref={ctaRef} data-fixed-bottom-bar style={{
+      {!seamActive && <div ref={ctaRef} data-fixed-bottom-bar style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--cta-nav-clearance))',
         left: '50%',
@@ -479,7 +483,12 @@ export function PortalScreen() {
         {/* Drag 3 (§11 punkt 6) — "Vad nu?"-affordansen. Bildtext på handlingen,
             aldrig en tooltip/overlay. Färg = allvar: warning i grind-läge, annars
             secondary. Kassörens röst — terse, ↳-prefix, pekar utan att peka. */}
-        {(() => {
+        {weeklyDecisionPending ? (
+          // adherence-semantic-key: warning = veckobeslutet blockerar den disabled fortsättningsknappen
+          <div className="h-body-sm" style={{ color: 'var(--warning)', lineHeight: 1.35, padding: '0 2px' }}>
+            ⚠ 1 ohanterat beslut — hantera det ovan
+          </div>
+        ) : (() => {
           const cue = getNextActionCue(game)
           const cueColor = cue.tone === 'warning' ? 'var(--warning)' : 'var(--text-secondary)'
           return (
@@ -496,7 +505,7 @@ export function PortalScreen() {
         <button
           data-coach-id="cta-button"
           onClick={handleCtaClick}
-          disabled={!canClickAdvance || isAdvancing || seamActive}
+          disabled={weeklyDecisionPending || !canClickAdvance || isAdvancing || seamActive}
           className={`btn btn-primary btn-cta${canClickAdvance && !isAdvancing ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : isCtaWarm ? ' btn-warm' : ''}`}
         >
           {isAdvancing ? '···' : advanceButtonText}

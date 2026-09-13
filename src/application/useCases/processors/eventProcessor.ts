@@ -37,7 +37,7 @@ import type { Patron } from '../../../domain/entities/Community'
 import { applyPatronHappinessTransition } from '../../../domain/services/patronWithdrawalService'
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import { buildScandalLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
-import { generateRosterVoiceIntroductions, mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
+import { generateRosterVoiceIntroductions, isVoiceIntroduced, mecenatVoiceId, patronVoiceId } from '../../../domain/services/voiceIntroductionService'
 import { evaluateBoard, generateBoardMessage } from '../../../domain/services/boardService'
 import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
 import { checkInObjectives } from '../../../domain/services/boardObjectiveService'
@@ -204,7 +204,7 @@ export function processPatronCommunityEvents(
   // threshold is lost, the relationship ends and the withdrawal becomes canon.
   if (
     updatedPatron?.isActive &&
-    updatedPatron.introducedSeason !== undefined &&
+    isVoiceIntroduced(game, patronVoiceId(game.managedClubId, updatedPatron.id)) &&
     communityStanding < PATRON_CS_EVICTION_THRESHOLD
   ) {
     const evictionId = `patron_cs_eviction_${game.currentSeason}`
@@ -219,6 +219,7 @@ export function processPatronCommunityEvents(
       gameEvents.push({
         id: evictionId,
         type: 'patronWithdrawal',
+        voiceId: patronVoiceId(game.managedClubId, evictedPatronId),
         title: `${updatedPatron.name ?? 'Patronen'} drar sig ur`,
         body: `${updatedPatron.name ?? 'Patronen'} ber att få träffas en sista gång. Lugnt, sakligt, utan bitterhet.\n\n"Jag gick in i det här när orten stod bakom laget. Det var det jag ville vara med och bära — en klubb som bygden trodde på. Nu har läktaren tunnats ut och samtalet tystnat, och då är det inte min klubb att bära längre. Jag drar mig ur medan det ännu är i godo."\n\n${updatedPatron.name ?? 'Patronen'} lämnar. Det som byggts står kvar ett tag till, men handen under är borta.`,
         choices: [{ id: 'acknowledge', label: 'Noterat', effect: { type: 'patronWithdrawn' } }],
@@ -648,6 +649,7 @@ export function processGameEvents(
         const withdrawalEvent: GameEvent = {
           id: withdrawalId,
           type: 'mecenatWithdrawal',
+          voiceId: mecenatVoiceId(game.managedClubId, mecAfterDemand.id),
           title: withdrawalTitle,
           body: `${withdrawalBody}\n\nEkonomisk effekt: ${penaltyText} kr dras från kassan.`,
           choices: [
@@ -929,6 +931,7 @@ export function applyMecenatCapEviction(
   const withdrawalEvent: GameEvent = {
     id: withdrawalId,
     type: 'mecenatWithdrawal',
+    voiceId: mecenatVoiceId(game.managedClubId, toEvict.id),
     // Orsaken är orten, inte relationen: mecenaten lämnar för att bygden
     // hen ville stötta har tunnats ut, inte för att hen känt sig ignorerad
     // (skild orsak från kravmotorns avhopp ovan). Ingen ekonomisk straff-

@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { getCharacterName } from '../supporterService'
-import { klackLeaderVoiceId } from '../voiceIntroductionService'
+import { klackLeaderVoiceId, supporterCharacterVoiceId } from '../voiceIntroductionService'
 import { swedishGenitive } from '../../data/matchCommentary'
 
 export function generateSupporterEvents(
@@ -21,6 +21,7 @@ export function generateSupporterEvents(
   const tommy  = getCharacterName(game, 'family')
   const rolf   = getCharacterName(game, 'veteran')
   const leaderVoiceId = klackLeaderVoiceId(game.managedClubId, sg.leader.name)
+  const youthVoiceId = supporterCharacterVoiceId(game.managedClubId, 'youth', sg.youth.name)
   const conflictSemanticId = `supporter_conflict:${game.managedClubId}`
 
   // ── Tifo-eventet — Elin vill organisera tifo (omg 5-7, max en gång per säsong) ──
@@ -31,6 +32,9 @@ export function generateSupporterEvents(
         id: eid,
         type: 'supporterEvent',
         title: `${elin} och tifon`,
+        sender: { name: sg.youth.name, role: `Ung supporter, ${sg.name}` },
+        voiceId: youthVoiceId,
+        introducesVoiceId: youthVoiceId,
         body: `${elin} från klacken hör av sig. Hon och några kompisar vill göra ett tifo — en stor banderoll med klubbnamnet och ett citat från 1963.\n\n"Vi behöver bara tillgång till en hörna av föreningslokalen och lite tid. Inget kostar något."`,
         choices: [
           {

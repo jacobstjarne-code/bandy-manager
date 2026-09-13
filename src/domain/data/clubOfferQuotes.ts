@@ -21,7 +21,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'På Mariehov, när isen låg, var det värt att frysa. På Slagghögen är det inte annorlunda.',
+      text: 'När lamporna tändes på den gamla planen var det värt att frysa. På Slagghögen är det inte annorlunda.',
 
     },
   ],
@@ -153,7 +153,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Vi ville ha konstfrusen bana i decennier. Kommunen sa nej i decennier. Vi spelar ändå.',
+      text: 'Vi väntade på den konstfrusna banan i decennier. Nu vårdar vi den som allt annat här: tillsammans.',
 
     },
   ],
@@ -219,13 +219,13 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Vänern lägger sig sent. När den gör det är det bandyväder.',
+      text: 'Vänern håller kvar hösten länge. När kylan väl kommer är det bandyväder.',
 
     },
   ],
   'club_skutskar': [
     {
-      text: 'Första matchen spelades på Bodaåns is 1919. Vi förlorade 9–2. Sen dess har vi vunnit lite oftare än så.',
+      text: 'Första matchen spelades på Bodaåns is 1919. Vi förlorade 9–2. Ändå kom vi tillbaka nästa vinter.',
 
     },
     {
@@ -241,7 +241,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Damerna vann SM 2018. Det är trettio år sedan herrarna gjorde det. Halva orten vet det. Den andra halvan borde.',
+      text: 'Damerna skrev ett nytt kapitel när de vann. Halva orten vet det. Den andra halvan borde.',
 
     },
   ],
@@ -255,7 +255,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: '1960 gick tre av våra grabbar genom isen på Örtjärnet. Samma dag som motståndarna i Forsbacka plumsade i. Det var slutet på sjöis-bandyn.',
+      text: '1960 gick tre av våra grabbar genom isen på Örtjärnet. Samma dag plumsade ett lag i Forsbacka. Det blev slutet på sjöisbandyn.',
 
     },
     {

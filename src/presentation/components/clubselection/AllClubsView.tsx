@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { getDifficulty } from '../../../domain/services/offerSelectionService'
 import { CLUB_EXTENDED_INFO } from '../../../domain/data/clubExtendedInfo'
@@ -18,6 +18,18 @@ const REGION_ORDER = ['Norrbotten', 'Gästrikland', 'Dalarna', 'Västmanland', '
 
 export function AllClubsView({ onSelect, onBack }: Props) {
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null)
+  const expandedCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  useEffect(() => {
+    if (!selectedClubId) return
+    const frame = window.requestAnimationFrame(() => {
+      const expanded = expandedCardRefs.current[selectedClubId]
+      if (!expanded) return
+      expanded.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      expanded.focus({ preventScroll: true })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedClubId])
 
   const grouped = new Map<string, typeof CLUB_TEMPLATES>()
   for (const region of REGION_ORDER) {
@@ -80,18 +92,23 @@ export function AllClubsView({ onSelect, onBack }: Props) {
                     onClick={() => handlePillClick(club.id)}
                   />
                   {selectedClubId === club.id && extInfo && (
-                    <ClubExpandedCard
-                      clubId={club.id}
-                      clubName={club.name}
-                      difficulty={difficulty}
-                      region={club.region}
-                      arenaName={club.arenaName}
-                      supporterGroupName={club.supporterGroupName}
-                      boardExpectation={club.boardExpectation}
-                      extendedInfo={extInfo}
-                      quote={quote}
-                      onSelect={onSelect}
-                    />
+                    <div
+                      ref={node => { expandedCardRefs.current[club.id] = node }}
+                      tabIndex={-1}
+                    >
+                      <ClubExpandedCard
+                        clubId={club.id}
+                        clubName={club.name}
+                        difficulty={difficulty}
+                        region={club.region}
+                        arenaName={club.arenaName}
+                        supporterGroupName={club.supporterGroupName}
+                        boardExpectation={club.boardExpectation}
+                        extendedInfo={extInfo}
+                        quote={quote}
+                        onSelect={onSelect}
+                      />
+                    </div>
                   )}
                 </div>
               )

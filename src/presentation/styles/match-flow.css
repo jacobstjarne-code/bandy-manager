@@ -38,7 +38,7 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  background: var(--bg-leather); /* #3D3A32 — exakt match mot handoff */
+  background: transparent;
   border-radius: var(--radius-sm); /* 3px */
   border: 1px solid color-mix(in srgb, var(--copper) 40%, transparent);
   flex-shrink: 0;

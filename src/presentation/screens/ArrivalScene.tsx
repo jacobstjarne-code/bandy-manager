@@ -94,9 +94,6 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
       />
       <div
         className="arrival-scrim"
-        style={{
-          background: 'linear-gradient(180deg, rgba(250,244,233,0.54) 0px, rgba(250,244,233,0.26) 72px, rgba(250,244,233,0) 118px)',
-        }}
       />
       <div className="arrival-lamp-overlay" />
 
@@ -115,7 +112,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
         style={{
           color: '#4F382D',
           fontWeight: 700,
-          textShadow: '0 1px 0 rgba(255,255,255,0.55), 0 0 7px rgba(250,244,233,0.8)',
+          textShadow: '0 1px 1px rgba(255,255,255,0.35)',
         }}
       >
         Hoppa över ↘
@@ -128,7 +125,7 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
           style={{
             color: '#7A3F20',
             opacity: 0.95,
-            textShadow: '0 1px 0 rgba(255,255,255,0.55), 0 0 7px rgba(250,244,233,0.8)',
+            textShadow: '0 1px 1px rgba(255,255,255,0.35)',
           }}
         >
           ⬩ &nbsp;Ankomsten&nbsp; ⬩

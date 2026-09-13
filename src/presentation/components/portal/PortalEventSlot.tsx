@@ -37,15 +37,17 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
   game: SaveGame
+  suppressDecisions?: boolean
 }
 
-export function PortalEventSlot({ game }: Props) {
+export function PortalEventSlot({ game, suppressDecisions = false }: Props) {
   const attention = getCurrentAttention(game)
 
   // Bara render om det är ett event (inte screen/scene/idle)
   if (attention.kind !== 'event') return null
 
   const event = attention.event
+  if (suppressDecisions) return null
   const target = getEventRenderTarget(event)
 
   // Suppressa community-events under cup-finalhelgen (tonalt fel att visa bandyskola under finalen)

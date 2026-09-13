@@ -40,8 +40,8 @@ function BeatBars({ step, size }: { step: number; size: 'lg' | 'sm' }) {
         <span key={i} style={{
           display: 'inline-block', width: w, height: 3, borderRadius: 3,
           background: i <= step
-            ? 'var(--accent)'
-            : 'color-mix(in srgb, var(--accent) 25%, transparent)',
+            ? '#7A3F20'
+            : 'rgba(88,52,34,0.35)',
         }} />
       ))}
     </div>
@@ -147,7 +147,7 @@ export function TilltradeScreen() {
         }}>
           {/* Genre + bars */}
           <div style={{ textAlign: 'center' }}>
-            <div className="h-scene-genre">
+            <div className="h-scene-genre" style={{ color: '#6A351C', opacity: 1, textShadow: '0 1px 1px rgba(255,255,255,0.35)' }}>
               {step === 1 ? '⬩  Tillträdet  ⬩' : '⬩  Klart för avslag  ⬩'}
             </div>
             <BeatBars step={step} size="lg" />
@@ -243,7 +243,7 @@ export function TilltradeScreen() {
         flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="h-label h-label-light" style={{ margin: 0 }}>
+          <span className="h-label" style={{ margin: 0, color: '#5A3A2B', fontWeight: 700 }}>
             Steg {step} av 4 · {STEP_TITLES[step - 1]}
           </span>
           {step === 3 && (
@@ -333,14 +333,14 @@ export function TilltradeScreen() {
             {cornerOutcome && (
               <div style={{
                 margin: '0 16px 16px',
-                background: 'rgba(0,0,0,0.3)',
+                background: 'rgba(10,8,12,0.78)',
                 borderLeft: '2px solid var(--copper)',
                 borderRadius: '0 8px 8px 0',
                 padding: '9px 12px',
               }}>
                 <span style={{
                   fontFamily: 'Georgia, serif', fontStyle: 'italic',
-                  fontSize: 12, color: 'var(--text-quote-light)', lineHeight: 1.35,
+                  fontSize: 12, color: 'var(--text-light)', lineHeight: 1.35,
                 }}>
                   “Så funkar det. Under match får du åtta sekunder. Nu fick du så lång tid du ville.”
                 </span>

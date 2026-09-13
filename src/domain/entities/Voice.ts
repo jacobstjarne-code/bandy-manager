@@ -11,6 +11,7 @@ export const GATED_VOICE_KINDS = [
   'local_press',
   'patron',
   'klack_leader',
+  'supporter',
 ] as const
 
 /**

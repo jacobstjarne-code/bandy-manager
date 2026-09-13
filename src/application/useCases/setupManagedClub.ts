@@ -40,7 +40,7 @@ import { generateYouthTeam } from '../../domain/services/academyService'
 import { PATRON_PROFILES, PATRON_RELATIONS } from '../../domain/data/patronData'
 import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
 import { BOARD_PROFILES } from '../../domain/data/boardData'
-import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
+import { VOLUNTEER_FIRST_NAMES, getLocalPaperNames } from '../../domain/data/communityNames'
 import { FUNCTIONARY_TEMPLATES } from '../../domain/data/functionaries'
 import { createJournalist } from '../../domain/services/journalistService'
 import { createDoctor } from '../../domain/data/injuryDoctorText'
@@ -288,7 +288,9 @@ export function generateManagedClubEntourage(input: ManagedClubEntourageInput): 
   const managedPlayers = players.filter(p => p.clubId === clubId)
 
   const volunteers = pickUnique(VOLUNTEER_FIRST_NAMES, 6 + Math.floor(rand() * 3), rand)
-  const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
+  // Samma enda RNG-drag som tidigare, men inom klubbens riktiga region.
+  // Outletens identitet återanvänds sedan av alla press- och minnesytor.
+  const localPaperName = pickRandom([...getLocalPaperNames(managedClub.region)], rand)
 
   const journalist = createJournalist(localPaperName, rand)
   const doctor = createDoctor(rand)

@@ -18,6 +18,24 @@ export const LOCAL_PAPER_NAMES = [
   'Arbetarbladet', 'Sundsvalls Tidning', 'Hudiksvalls Tidning',
 ]
 
+/** Lokalpressen är en beständig del av klubbens persongalleri. Den får
+ * varieras inom rätt område, men aldrig väljas ur en nationell pool. */
+export const LOCAL_PAPER_NAMES_BY_REGION: Record<string, readonly string[]> = {
+  Gästrikland: ['Gefle Dagblad', 'Arbetarbladet'],
+  Uppland: ['Länstidningen', 'Lokalbladet'],
+  Västmanland: ['Västmanlands Nyheter'],
+  Norrbotten: ['Norra Västerbotten', 'Norrlands-Posten', 'Kuriren'],
+  Småland: ['Nya Tidningen', 'Lokalbladet'],
+  Dalarna: ['Dala-Demokraten', 'Länstidningen'],
+  Södermanland: ['Sörmlands-Posten'],
+  Värmland: ['Länstidningen', 'Nya Tidningen'],
+  Skåne: ['Lokalbladet', 'Dagbladet'],
+}
+
+export function getLocalPaperNames(region: string): readonly string[] {
+  return LOCAL_PAPER_NAMES_BY_REGION[region] ?? LOCAL_PAPER_NAMES
+}
+
 export const KIOSK_FLAVORS = [
   '{name} tackas för insatsen i kiosken.',
   '{name} fick slut på senap redan i halvtid.',

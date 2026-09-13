@@ -76,7 +76,8 @@ export function OpponentVignetteScene({ game, opponent, fixture, isHome, onConti
           <div>
             <div style={{
               fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 600, letterSpacing: 4,
-              textTransform: 'uppercase', color: 'var(--accent)', opacity: 0.75, marginBottom: 6,
+              // adherence-semantic-key: warm-light = varm motståndaringång över mörk bild, inte matchutfall
+              textTransform: 'uppercase', color: 'var(--warm-light)', opacity: 1, marginBottom: 6,
             }}>
               ⬩ Motståndaren ⬩
             </div>

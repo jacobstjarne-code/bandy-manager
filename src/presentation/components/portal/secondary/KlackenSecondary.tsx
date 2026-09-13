@@ -6,12 +6,10 @@ import { getKlackDisplay } from '../../../../domain/services/klackPresenter'
 export function KlackenSecondary({ game }: CardRenderProps) {
   const navigate = useNavigate()
 
-  const nextFixture = game.fixtures
-    .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
-
-  const currentMatchday = nextFixture?.matchday ?? 0
-  const klack = getKlackDisplay(game, currentMatchday)
+  // Efterklangen måste läsa samma kanoniska tidsaxel som resolvern skriver.
+  // Nästa fixtures matchday kan hoppa över cup-/kalenderluckor och förbruka
+  // hela uppföljningsfönstret innan kortet ens fått visas.
+  const klack = getKlackDisplay(game, game.currentMatchday)
   const sg = game.supporterGroup
 
   if (!sg || !klack) return null
@@ -48,6 +46,11 @@ export function KlackenSecondary({ game }: CardRenderProps) {
       <div className="h-quote h-quote-light" style={{ lineHeight: 1.5 }}>
         {klack.type === 'mood' ? klack.body : klack.type === 'event' ? klack.body : (klack as { quote?: string }).quote ?? ''}
       </div>
+      {klack.type === 'person' && (
+        <div className="h-micro" style={{ color: 'var(--text-light-secondary)', marginTop: 3 }}>
+          {klack.character.name} · {klack.role === 'leader' ? 'klackledare' : klack.role === 'veteran' ? 'veteran' : klack.role === 'youth' ? 'ung supporter' : 'familjeläktaren'}
+        </div>
+      )}
       <div className="h-micro" style={{ color: moodColor, marginTop: 4 }}> {/* ds-exempt: moodColor dynamisk */}
         Stämning {sg.mood} · {sg.members} medlemmar
       </div>

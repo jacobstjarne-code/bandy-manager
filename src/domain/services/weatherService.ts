@@ -116,9 +116,9 @@ export function generateMatchWeather(
     // SLUTTEST 2026-08-08 (punkt 6) — rot: hasArtificialIce ger ALLTID
     // Excellent/Good iceQuality (rad 57-58), så Thaw+Poor/Thaw+Moderate ovan
     // triggade aldrig för konstfrysta banor — regn hade noll mekanisk effekt
-    // där. Konstfrusen bana blir vattensjuk ovanpå isen vid töväder, men banan
-    // håller i grunden bättre än naturis — mildare straff än naturisens
-    // Moderate-gren (10-18/0.88), inte lika hårt som Poor (20-30/0.80).
+    // där. En bana med förstärkt kylanläggning blir fortfarande vattensjuk
+    // ovanpå isen vid töväder, men håller grunden bättre än seriens enklare
+    // konstfrusna anläggningar — mildare straff än Moderate-grenen.
     ballControlPenalty = 5 + Math.round(rand() * 5)
     speedModifier = 0.94
   } else if (condition === WeatherCondition.LightSnow) {
@@ -176,8 +176,8 @@ export function getIceQualityLabel(quality: IceQuality): string {
 
 /**
  * SLUTTEST RUNDA 4 (2026-08-08, punkt 4): "Istaggen ljuger inte, men den
- * tiger." iceQuality mäter ANLÄGGNINGENS kvalitet — konstfrusna klubbar
- * visar Excellent/Good oavsett väder (rätt: banan håller i grunden, se
+ * tiger." iceQuality mäter ANLÄGGNINGENS kvalitet — klubbar med förstärkt
+ * kylanläggning visar Excellent/Good oavsett väder (banan håller i grunden, se
  * RUNDA 2 punkt 6). Men vid condition===Thaw ligger det vatten OVANPÅ isen
  * (knotter-mekaniken, ballControlPenalty) — och "Bra is" läses av spelaren
  * som "inget händer", trots att effekten biter. Vid Thaw visar taggen

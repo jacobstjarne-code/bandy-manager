@@ -43,14 +43,17 @@ function Badge({ count }: { count: number }) {
 export function BottomNav() {
   const injuredInLineup = useInjuredInLineup()
   const currentDate = useGameStore(s => s.game?.currentDate ?? '')
+  const game = useGameStore(s => s.game)
   const { locked, reason } = useNavigationLock()
   const location = useLocation()
   const [lastActive, setLastActive] = useState<string>(location.pathname)
   const [bounceKey, setBounceKey] = useState<Record<string, number>>({})
 
   const isOnMatchLive = location.pathname.startsWith('/game/match/live')
+  const liveMatchComplete = isOnMatchLive && !!game?.lastCompletedFixtureId &&
+    game.fixtures.some(fixture => fixture.id === game.lastCompletedFixtureId && fixture.status === 'completed')
   const effectivelyLocked = locked || isOnMatchLive
-  const lockReason = reason ?? (isOnMatchLive ? 'Match pågår — spela klart' : null)
+  const lockReason = reason ?? (isOnMatchLive && !liveMatchComplete ? 'Match pågår — spela klart' : null)
 
   // NAV-PRINCIP (2026-06-15): GameShell äger DÖLJ/VISA (ceremonier), BottomNav äger
   // SPÄRR (match/live via effectivelyLocked). Tidigare hade BottomNav en EGEN

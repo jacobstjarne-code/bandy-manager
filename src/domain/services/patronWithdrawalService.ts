@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import { jobbetForsvannEvent } from './events/eventFactories'
+import { patronVoiceId } from './voiceIntroductionService'
 
 export interface PatronHappinessTransition {
   patron: SaveGame['patron']
@@ -54,6 +55,7 @@ export function applyPatronHappinessTransition(
     : {
         id: withdrawalId,
         type: 'patronWithdrawal',
+        voiceId: patronVoiceId(game.managedClubId, patron.id),
         title: `${patron.name} drar sig ur`,
         body: `${patron.name} har bestämt sig. Det grundläggande bidraget — ${Math.round(patron.contribution / 1000)} tkr/säsong — upphör. Klubben tappar sin dolda grundpelare.`,
         choices: [{

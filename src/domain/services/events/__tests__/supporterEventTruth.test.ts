@@ -7,7 +7,7 @@ import { getRolloverPolicy } from '../../deferredRolloverService'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import { resolveEvent } from '../eventResolver'
 import { generateSupporterEvents } from '../supporterEvents'
-import { klackLeaderVoiceId } from '../../voiceIntroductionService'
+import { klackLeaderVoiceId, supporterCharacterVoiceId } from '../../voiceIntroductionService'
 import { promoteFromQueue } from '../../decisionBudgetService'
 
 function supporterGroup(overrides: Partial<SupporterGroup> = {}): SupporterGroup {
@@ -37,6 +37,10 @@ describe('supporterEvent — global tid, effekter och sann efterklang', () => {
     const game = { ...makeGame(supporterGroup()), currentMatchday: 5, lastProcessedMatchday: 99 }
     const event = generateSupporterEvents(game, 5, new Set(), () => 0)
       .find(candidate => candidate.id.startsWith('supporter_tifo_'))!
+    const youthVoiceId = supporterCharacterVoiceId(game.managedClubId, 'youth', 'Elin')
+    expect(event.voiceId).toBe(youthVoiceId)
+    expect(event.introducesVoiceId).toBe(youthVoiceId)
+    expect(event.sender).toEqual({ name: 'Elin', role: 'Ung supporter, Järnkurvan' })
     const result = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'yes', undefined, true)
     expect(result.supporterGroup).toMatchObject({ mood: 65, tifoDone: true, tifoDoneMatchday: 5 })
     expect(result.communityStanding).toBe((game.communityStanding ?? 50) + 2)

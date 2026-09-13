@@ -15,6 +15,7 @@ import { backfillClubHistoryLedger } from '../../domain/services/clubHistoryLedg
 import type { FormationType } from '../../domain/entities/Formation'
 import { buildLegacyIntroducedVoices } from '../../domain/services/voiceIntroductionService'
 import { migrateLoanDestinationId } from '../../domain/services/loanDestinationService'
+import { getLocalPaperNames } from '../../domain/data/communityNames'
 
 /**
  * docs/dom/DOM_FORMATIONER_V2_2026-09-04.md §Migrering — gammal `formation` + gammal
@@ -177,6 +178,26 @@ function mergeLegacyBoard(
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
+
+  // Tidigare valdes lokaltidningen ur en nationell pool. Det gav exempelvis
+  // Sörmlands-Posten i Karlsborg och lät samma geografiska fel fortplanta sig
+  // till media, inkorg och efterklang. Rätta även pågående saves vid läsning;
+  // journalistens person-id (namnet) består, bara den felaktiga redaktionen
+  // byts till klubbregionens stabila förstaval.
+  const managedTemplate = typeof data.managedClubId === 'string'
+    ? CLUB_TEMPLATES.find(club => club.id === data.managedClubId)
+    : undefined
+  if (managedTemplate) {
+    const regionalPapers = getLocalPaperNames(managedTemplate.region)
+    if (regionalPapers.length > 0 && !regionalPapers.includes(String(data.localPaperName ?? ''))) {
+      const regionalPaper = regionalPapers[0]
+      data.localPaperName = regionalPaper
+      if (data.journalist && typeof data.journalist === 'object') {
+        const journalist = data.journalist as Record<string, unknown>
+        journalist.outlet = regionalPaper
+      }
+    }
+  }
 
   // ── communityActivities: ensure newer optional flags exist ─────────────
   // 2026-09-03: `bandyplay` betydde tidigare barnens bandyskola. När det

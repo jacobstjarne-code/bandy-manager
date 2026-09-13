@@ -584,7 +584,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             oberoende supporterförväntans-mekanik faktiskt byggs. */}
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
-        <InfoRow label="Konstis" value={club.hasArtificialIce ? 'Ja' : 'Nej'} />
+        <InfoRow label="Isanläggning" value={club.hasArtificialIce ? 'Förstärkt' : 'Standard'} />
         {(game.boardObjectives ?? []).length > 0 && (
           <div>
             <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>

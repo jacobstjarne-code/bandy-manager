@@ -26,6 +26,15 @@ export function SeasonSignatureSecondary({ game }: CardRenderProps) {
   const sig = game.currentSeasonSignature
   if (!sig || sig.id === 'calm_season') return null
 
+  // Drömrundan är en dold säsongspremiss tills tabellen faktiskt hunnit
+  // utveckla en tendens. Tre färdigspelade seriedagar är ett litet men
+  // verkligt observationsgolv; cupmatcher räknas inte.
+  const completedLeagueMatchdays = new Set(
+    game.fixtures.filter(fixture => fixture.status === 'completed' && !fixture.isCup)
+      .map(fixture => fixture.matchday),
+  ).size
+  if (sig.id === 'dream_round' && completedLeagueMatchdays < 3) return null
+
   const emoji = getSignatureEmoji(sig.id)
   const name = sig.id === 'scandal_season' ? 'Skandalrisk' : getSignatureName(sig.id)
   const borderColor = BORDER_COLOR[sig.id]

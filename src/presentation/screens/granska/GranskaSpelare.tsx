@@ -102,12 +102,12 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
               borderBottom: i < starters.length - 1 ? '1px solid var(--border)' : 'none',
               background: isPOTM ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
             }}>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                 <PlayerPortrait playerId={p.id} age={p.age} position={p.position} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="h-name" style={{ fontSize: 12, color: 'var(--text-primary)' }}>
-                  {isCap && <span style={{ marginRight: 2 }}>⭐</span>}
+                  {isCap && <span aria-label="Kapten" title="Kapten" style={{ display: 'inline-flex', marginRight: 4, padding: '0 3px', border: '1px solid var(--accent)', borderRadius: 2, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: 8, lineHeight: 1.35 }}>K</span>}
                   {isPOTM && <span style={{ marginRight: 2 }}>⭐</span>}
                   {p.firstName[0]}. {p.lastName}
                 </p>

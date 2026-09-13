@@ -81,7 +81,12 @@ export interface Club {
   consecutiveExpectationMisses?: number
   fanExpectation: ClubExpectation
   preferredStyle: ClubStyle
-  hasArtificialIce: boolean   // förberedd för V0.2 vädersystem
+  /**
+   * Legacy save key. Alla seriebanor är konstfrusna i spelets nutid; värdet
+   * skiljer en förstärkt/modern kylanläggning från seriens grundstandard och
+   * får därför aldrig presenteras som "konstis: ja/nej".
+   */
+  hasArtificialIce: boolean
   hasIndoorArena?: boolean
   arenaCapacity?: number
   arenaName?: string

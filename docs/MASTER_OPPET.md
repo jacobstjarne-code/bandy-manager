@@ -29,6 +29,22 @@
 
 `docs/MASTER_ARKIV.md` läses ALDRIG rutinmässigt vid sessionsstart — bara vid explicit behov av historik (Jacob frågar "var det redan löst?", en gammal dom behöver återfinnas). Auto-load-pekaren (CLAUDE.md, sessionsstart-checklistan) pekar på DEN HÄR filen, inte arkivet.
 
+## Checkpoint 2026-09-13 — release-playalong mot `2bd333e4`
+
+Playalong pausades efter omgång 2 och samtliga hittills reproducerade fynd
+åtgärdades i ett isolerat pass. Det omfattar klubbvalets scroll/fokus,
+nutida konstis- och klubbcopy, onboardingkontrast, första veckans fokus och
+låsta CTA, Drömrundans evidensgolv, headergruppering, cupscenens ordning och
+bredd, matchslutets CTA, kaptensmarkeringen, tifots röst-/efterklangskedja,
+patronens introduktionsgate samt lokalpressens regionala källa och
+save-migrering. Detaljer och rotorsaker:
+`docs/playtest/PLAYALONG_RELEASE_2BD333E4_2026-09-13.md`.
+
+Ingen ny öppen rad skapades: felen reproducerades, rotorsakerna åtgärdades
+och verifierades i samma pass. Full kontroll: 585 testfiler / 5 246 tester,
+TypeScript, produktionsbygge samt design-/innehållsgrindar gröna. Den enda
+aktiva MASTER-posten förblir därför `stickiness-drift-backend`.
+
 ## HISTORISK RÅSKÖRD
 
 **474 ursprungligen skördade rader.** (58 ur INVENTERING_2026-08-31.md + 185 ur docs/archive/historiska-statuskallor/BACKLOG.md + 231 ur docs/archive/historiska-statuskallor/SLUTTEST_KO.md.) Antalet är den historiska råskördens utdata, inte dagens totala kö och inte ett mål — se Jacobs egen instruktion om varför.

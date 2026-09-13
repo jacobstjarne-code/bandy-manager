@@ -19,7 +19,7 @@ import { stringHash } from '../utils/random'
 // det orten alltid säger om sig själv.
 export const STURE_PER_CLUB: Record<string, string> = {
   // Forsbacka — bruksort i skogslandskap, klämd mellan storstadsklubbarnas skuggor
-  'club_forsbacka': 'Storstadsklubbarna räknar inte med oss. Inte förrän isen ligger…',
+  'club_forsbacka': 'Storstadsklubbarna räknar inte med oss. Inte förrän lamporna tänds…',
 
   // Söderfors — ankarsmedjan på ö i Dalälven, vägen går alltid över bro
   'club_soderfors': 'Halva publiken bor över bron. Dom kommer alltid ändå.',

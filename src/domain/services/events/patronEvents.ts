@@ -25,8 +25,10 @@ export function generatePatronEvents(
 
   if (patron?.isActive) {
     const voiceId = patronVoiceId(game.managedClubId, patron.id)
-    const patronAlreadyIntroduced = patron.introducedSeason !== undefined
-      || isVoiceIntroduced(game, voiceId)
+    // Den observerade röstliggaren är sanningskälla. introducedSeason är ett
+    // historiskt hjälpfält och får inte ensamt göra ett osynligt/utrinnet
+    // introkort till ett verkligt möte.
+    const patronAlreadyIntroduced = isVoiceIntroduced(game, voiceId)
 
     // Patron intro — normally round 3. If an established runtime path reaches
     // a later round without the intro, recreate the missing card instead of
