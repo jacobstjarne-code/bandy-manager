@@ -35,7 +35,7 @@ export function generateSupporterEvents(
         choices: [
           {
             id: 'yes',
-            label: 'Klart, låna lokalen',
+            label: 'Såklart, låna lokalen',
             subtitle: 'lyfter stämningen på läktaren · orten värmer',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'supporterMood', amount: 5 },
@@ -44,7 +44,7 @@ export function generateSupporterEvents(
           },
           {
             id: 'maybe',
-            label: 'Ja men håll det enkelt',
+            label: 'Ja, men håll det enkelt',
             subtitle: 'lyfter stämningen på läktaren',
             effect: { type: 'supporterMood', amount: 2 },
           },
