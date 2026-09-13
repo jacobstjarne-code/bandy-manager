@@ -37,7 +37,8 @@ nutida konstis- och klubbcopy, onboardingkontrast, första veckans fokus och
 låsta CTA, Drömrundans evidensgolv, headergruppering, cupscenens ordning och
 bredd, matchslutets CTA, kaptensmarkeringen, tifots röst-/efterklangskedja,
 patronens introduktionsgate samt lokalpressens regionala källa och
-save-migrering. Detaljer och rotorsaker:
+save-migrering. Efter återstarten rättades även klubbvyns falska
+CTA-liknande flikrad till en kompakt pillnavigation. Detaljer och rotorsaker:
 `docs/playtest/PLAYALONG_RELEASE_2BD333E4_2026-09-13.md`.
 
 Ingen ny öppen rad skapades: felen reproducerades, rotorsakerna åtgärdades

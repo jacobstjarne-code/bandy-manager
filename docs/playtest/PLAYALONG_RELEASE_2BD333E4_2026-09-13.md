@@ -507,9 +507,29 @@ Karlsborgssaven vid nästa inläsning och uppdaterar journalistens redaktion
 utan att byta ut personen. Södermanlands-Posten bevaras för Hälleforsnäs, där
 den är geografiskt rimlig.
 
+## Klubbsidan
+
+### 20. Fliknavigationen såg ut som sex primära CTA-knappar
+
+**Observerat:** Klubbens sex flikar tog en hel knapphöjd, den aktiva fliken
+fick samma gradient/skugga som en primär handling och raden behövde scrollas
+trots att etiketterna är korta. Navigationsval och beslut fick därmed samma
+visuella betydelse.
+
+**Verifierad rot:** `TabBar`-variantens namn var `pills`, men implementationen
+återanvände `btn-primary`/`btn-ghost`. Aktiv flik ärvde därför CTA-familjens
+volym och raden satte varje knapp till `flex-shrink: 0` i en horisontell
+scrollcontainer.
+
+**Åtgärdat:** Pillvarianten har nu en egen navigationsgrammatik: sex lika
+flexibla pills ryms i samma rad, aktivt val markeras med tunn kopparkant och
+svagt tonad fond, och ingen CTA-gradient eller skugga används. Ändringen
+gäller den delade komponenten och gör även Historik och Värvning
+konsekventa.
+
 ## Genomfört åtgärdspass
 
-Samtliga konkreta fynd 1–16 samt rotfynden 18–19 åtgärdades i samma isolerade
+Samtliga konkreta fynd 1–16 samt rotfynden 18–20 åtgärdades i samma isolerade
 pass. Punkt 17 användes som tvärgående kontrollmetod: den hittade patronens
 skriv-/läs-konflikt och bekräftade att fungerande liggarprojektioner för
 spelarbågar, journalistrelation och burnout inte skulle ersättas.

@@ -1,4 +1,3 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
 import '../../styles/tabs.css'
 import { dotColor } from './Dot'
 
@@ -17,31 +16,6 @@ interface TabBarProps {
 }
 
 export function TabBar({ tabs, activeId, onSelect, variant = 'segment' }: TabBarProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [fade, setFade] = useState({ left: false, right: false })
-
-  const updateFade = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const { scrollLeft, scrollWidth, clientWidth } = el
-    setFade({
-      left: scrollLeft > 1,
-      right: scrollLeft + clientWidth < scrollWidth - 1,
-    })
-  }, [])
-
-  useEffect(() => {
-    updateFade()
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener('scroll', updateFade, { passive: true })
-    window.addEventListener('resize', updateFade)
-    return () => {
-      el.removeEventListener('scroll', updateFade)
-      window.removeEventListener('resize', updateFade)
-    }
-  }, [updateFade, tabs.length])
-
   if (variant === 'segment') {
     return (
       <div className="tab-bar tab-bar-segment" role="tablist">
@@ -64,15 +38,15 @@ export function TabBar({ tabs, activeId, onSelect, variant = 'segment' }: TabBar
   }
 
   return (
-    <div className="tab-bar" role="tablist">
-      <div className="tab-bar-scroll" ref={scrollRef}>
+    <div className="tab-bar tab-bar-pills" role="tablist">
+      <div className="tab-bar-scroll">
         {tabs.map(tab => (
           <button
             key={tab.id}
             role="tab"
             aria-selected={activeId === tab.id}
             onClick={() => onSelect(tab.id)}
-            className={`btn ${activeId === tab.id ? 'btn-primary' : 'btn-ghost'} tab-bar-btn`}
+            className={`tab-bar-pill${activeId === tab.id ? ' tab-bar-pill-active' : ''}`}
           >
             {tab.label}
             {tab.dot && (
@@ -81,8 +55,6 @@ export function TabBar({ tabs, activeId, onSelect, variant = 'segment' }: TabBar
           </button>
         ))}
       </div>
-      {fade.left && <div className="tab-bar-fade tab-bar-fade-left" />}
-      {fade.right && <div className="tab-bar-fade tab-bar-fade-right" />}
     </div>
   )
 }

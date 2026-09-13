@@ -37,27 +37,39 @@
 
 .tab-bar-scroll {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  width: 100%;
 }
 
-.tab-bar-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.tab-bar-btn {
-  padding: 6px 10px;
-  white-space: nowrap;
+.tab-bar-pill {
   position: relative;
-  flex-shrink: 0;
-  font-size: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: clamp(8px, 2.35vw, 10px);
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: clamp(0.15px, 0.12vw, 0.5px);
+  line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  transition: color .12s, border-color .12s, background-color .12s;
+}
+
+.tab-bar-pill-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  color: var(--accent-dark);
 }
 
 .tab-bar-dot {
@@ -67,25 +79,6 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-}
-
-.tab-bar-fade {
-  position: absolute;
-  top: 0;
-  width: 28px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.tab-bar-fade-right {
-  right: 0;
-  background: linear-gradient(to left, var(--bg-surface), transparent);
-}
-
-.tab-bar-fade-left {
-  left: 0;
-  background: linear-gradient(to right, var(--bg-surface), transparent);
 }
 
 /* ── Screen-level tab wrappers ── */
