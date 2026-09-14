@@ -58,10 +58,13 @@ stängd i samma pass och registrerad som `playalong-systemintroduktioner` i
 `MASTER_ARKIV.md`.
 
 Ingen ny öppen rad skapades: felen reproducerades, rotorsakerna åtgärdades
-och verifierades i samma pass. Full kontroll efter introduktionspasset:
-585 testfiler / 5 248 tester,
-TypeScript, produktionsbygge samt design-/innehållsgrindar gröna. Den enda
-aktiva MASTER-posten förblir därför `stickiness-drift-backend`.
+och verifierades i samma pass. Det pinnade tvåsäsongsprovet på `f5bfd2f9`
+nådde sex naturliga entréer, stoppade 21 för tidiga rösthändelser och höll
+besluts- och portaltaken utan ett enda invariantbrott. Full kontroll efter
+introduktionspasset: 585 testfiler / 5 250 tester, TypeScript,
+produktionsbygge samt design-/innehållsgrindar gröna. Rapport:
+`docs/playtest/PLAYTEST_ENTREER_TVASASONGER_2026-09-14.md`. Den enda aktiva
+MASTER-posten förblir därför `stickiness-drift-backend`.
 
 ## HISTORISK RÅSKÖRD
 
