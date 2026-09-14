@@ -1,9 +1,11 @@
 import type { CardRenderProps } from '../portalTypes'
+import { canVoiceSpeak, klackLeaderVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 /** Minimal-kort: klackens stämning inför derby. */
 export function KlackenMoodMinimal({ game }: CardRenderProps) {
   const sg = game.supporterGroup
   if (!sg) return null
+  if (!canVoiceSpeak(game, klackLeaderVoiceId(game.managedClubId, sg.leader.name))) return null
 
   const moodLabel = sg.mood >= 80
     ? 'peppad'

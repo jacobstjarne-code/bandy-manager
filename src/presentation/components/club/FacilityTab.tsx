@@ -11,6 +11,7 @@ import { financingFlavor } from '../../../domain/data/facilityFinancingStrings'
 import { formatHallNodeSub } from '../../../domain/services/events/hallProcessService'
 import { Overlay } from '../primitives/Overlay'
 import { SectionCard } from '../SectionCard'
+import { isVoiceIntroduced, mecenatVoiceId, politicianVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 export const tkr = (n: number) => `${Math.round(n / 1000)} tkr`
 
@@ -67,9 +68,17 @@ export function FacilityTab({ game, navigate, startFacilityBuildNode, decommissi
 
   // B1 §2 — finansieringskontext ur nuläget (relation/standing/mecenat).
   const pol = game.localPolitician
-  const activeMecenat = (game.mecenater ?? []).find(m => m.isActive && m.wealth >= 3 && m.happiness >= 50)
+  const politicianKnown = pol != null
+    && pol.demandsMet === true
+    && isVoiceIntroduced(game, politicianVoiceId(game.managedClubId, pol.mandatExpires ?? game.currentSeason))
+  const activeMecenat = (game.mecenater ?? []).find(m =>
+    m.isActive
+    && m.wealth >= 3
+    && m.happiness >= 50
+    && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+  )
   const ctx: FinancingContext = {
-    relationship: pol?.relationship ?? 0,
+    relationship: politicianKnown ? (pol.relationship ?? 0) : 0,
     standing: game.communityStanding ?? 50,
     mecenat: activeMecenat ? { name: activeMecenat.name, willing: true } : undefined,
   }
@@ -196,7 +205,7 @@ export function FacilityTab({ game, navigate, startFacilityBuildNode, decommissi
                     const flavor = financingFlavor(
                       o.mode,
                       o.available,
-                      { politician: pol?.name, mecenat: ctx.mecenat?.name },
+                      { politician: politicianKnown ? pol.name : undefined, mecenat: ctx.mecenat?.name },
                       `${selectedDef.id}:${o.mode}:${facilityState.builtNodeIds.length}`,
                     )
                     return flavor

@@ -15,7 +15,7 @@ import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { adjustSupporterMood } from '../../../domain/services/supporterService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { buildFacilityBuiltLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
-import { mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
+import { mecenatVoiceId, politicianVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -307,6 +307,9 @@ export function processCommunity(
 
   // ── Politiker inbox-notiser ────────────────────────────────────────────────
   const pol = game.localPolitician
+  const polVoiceId = pol
+    ? politicianVoiceId(game.managedClubId, pol.mandatExpires ?? game.currentSeason)
+    : undefined
   if (pol && justCompletedManagedFixture && pol.relationship > 50) {
     const wonNotif = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
     if (wonNotif) {
@@ -318,6 +321,7 @@ export function processCommunity(
         type: InboxItemType.BoardFeedback,
         title: `${pol.name} noterade segern`,
         body: `Kommunalrådet ${pol.name} skickade ett meddelande: "Bra match mot ${opponent?.name ?? 'motståndaren'}. Fortsätt så."`,
+        voiceId: polVoiceId,
         isRead: false,
       } as InboxItem)
     }
@@ -340,6 +344,7 @@ export function processCommunity(
           type: InboxItemType.KommunBidrag,
           title: `Stärkt relation med ${pol.name}`,
           body: milestoneTexts[milestone] ?? '',
+          voiceId: polVoiceId,
           isRead: false,
         } as InboxItem)
       }
@@ -361,6 +366,7 @@ export function processCommunity(
         // M34 (textaudit 2026-07-03): kommunBidrag betalas ut en gång per säsong
         // (economyService.ts: "once at round 1") — inte månadsvis.
         body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/säsong). Nytt bidrag: ${pol.kommunBidrag} kr.`,
+        voiceId: polVoiceId,
         isRead: false,
       } as InboxItem)
     }

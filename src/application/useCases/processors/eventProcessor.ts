@@ -536,7 +536,10 @@ export function processGameEvents(
 
     const roundsSinceLastSocial = nextMatchday - (mec.lastSocialRound ?? 0)
     if (roundsSinceLastSocial >= 4 && localRand() < 0.35 && mecenatSocialUsedTypes.size < MECENAT_SOCIAL_MAX_PER_SEASON) {
-      const socialEvent = generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand, mecenatSocialUsedTypes)
+      const voiceKnown = isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, mec.id))
+      const socialEvent = voiceKnown
+        ? generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand, mecenatSocialUsedTypes, game.managedClubId)
+        : null
       if (socialEvent) {
         gameEvents.push(socialEvent)
         const type = socialEvent.mecenatSocialKey ? getMecenatSocialType(socialEvent.mecenatSocialKey) : undefined
@@ -551,7 +554,10 @@ export function processGameEvents(
       const randomPlayer = game.players.find(p => p.clubId === game.managedClubId)
       const playerName = randomPlayer ? `${randomPlayer.firstName} ${randomPlayer.lastName}` : undefined
       const managedTactic = game.clubs.find(c => c.id === game.managedClubId)?.activeTactic
-      const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand, managedTactic?.mentality)
+      const voiceKnown = isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, mec.id))
+      const shoutEvent = voiceKnown
+        ? generateSilentShoutEvent(mec, playerName, localRand, managedTactic?.mentality, game.managedClubId)
+        : null
       // Prefixgrenen läser gamla saves vars id avslutades med Date.now().
       // Den stabila delen före tidsstämpeln är samma variantidentitet.
       if (shoutEvent && !hasSilentShoutVariant(shoutEvent.id)) {

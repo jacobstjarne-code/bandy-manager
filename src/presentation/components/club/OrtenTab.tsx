@@ -16,6 +16,14 @@ import { ACTIVITY_CS_BOOST } from '../../../domain/services/communityRenewalServ
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SUPPORTER_ROLE_LABELS } from '../../../domain/data/enumLabels'
 import { BarChart3, ClipboardList, FilePenLine } from 'lucide-react'
+import {
+  isVoiceIntroduced,
+  klackLeaderVoiceId,
+  localPressVoiceId,
+  mecenatVoiceId,
+  politicianVoiceId,
+} from '../../../domain/services/voiceIntroductionService'
+import { getCharacterName } from '../../../domain/services/supporterService'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -249,6 +257,19 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
       {/* Lokaltidningen */}
       {game.journalist && (() => {
         const j = game.journalist
+        const journalistKnown = isVoiceIntroduced(
+          game,
+          localPressVoiceId(game.managedClubId, j.name),
+        )
+        if (!journalistKnown) {
+          return (
+            <SectionCard title="📰 Lokaltidningen" stagger={2} collapsible defaultCollapsed>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Ingen personlig presskontakt ännu. Lokalreportern söker dig via Portal.
+              </p>
+            </SectionCard>
+          )
+        }
         const relColor = j.relationship >= 70 ? 'var(--success)' : j.relationship >= 40 ? 'var(--text-muted)' : 'var(--danger)'
         const relLabel = j.relationship >= 70 ? '😊 Positiv' : j.relationship < 40 ? '😤 Kritisk' : null
         const recentMemories = [...(j.memory ?? [])].reverse().slice(0, 2)
@@ -361,7 +382,22 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
 
       {/* Mecenater */}
       <SectionCard title="👥 Mecenater" stagger={2} id="section-sponsors">
-        {(game.mecenater ?? []).filter(m => m.isActive).length === 0 ? (
+        {(() => {
+          const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
+          const knownMecenater = activeMecenater.filter(m =>
+            isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+          )
+          if (knownMecenater.length === 0 && activeMecenater.length > 0) {
+            return (
+              <div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Ett lokalt ekonomiskt intresse finns.</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Möt personen via Portal innan namn, villkor och bidrag blir en del av klubbens arbete.
+                </p>
+              </div>
+            )
+          }
+          if (knownMecenater.length === 0) return (
           <div>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Inga mecenater ännu.</p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -372,8 +408,8 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               Fokusera på att vinna matcher och engagera bygden — då kommer intresset.
             </p>
           </div>
-        ) : (
-          (() => {
+          )
+          return (() => {
             const typeLabels: Record<string, string> = {
               brukspatron: 'Brukspatron',
               skogsägare: 'Skogsägare',
@@ -383,7 +419,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               lokal_handlare: 'Lokal handlare',
               jordbrukare: 'Jordbrukare',
             }
-            return (game.mecenater ?? []).filter(m => m.isActive).map(mec => {
+            return knownMecenater.map(mec => {
               const happColor = mec.happiness > 60 ? 'var(--success)' : mec.happiness > 40 ? 'var(--accent)' : 'var(--danger)'
               return (
                 <div key={mec.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
@@ -414,12 +450,36 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
               )
             })
           })()
-        )}
+        })()}
       </SectionCard>
 
       {/* Kommun */}
       {game.localPolitician && (() => {
         const polData = game.localPolitician
+        const politicianKnown = isVoiceIntroduced(
+          game,
+          politicianVoiceId(game.managedClubId, polData.mandatExpires ?? game.currentSeason),
+        )
+        if (!politicianKnown) {
+          return (
+            <SectionCard title="🏛️ Kommun" stagger={2} id="section-politician">
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Ingen kontakt är etablerad med kommunens politiska företrädare. En mötesförfrågan kommer via Portal.
+              </p>
+            </SectionCard>
+          )
+        }
+        if (polData.demandsMet !== true) {
+          return (
+            <SectionCard title="🏛️ Kommun" stagger={2} id="section-politician">
+              <p style={{ fontSize: 13, fontWeight: 600 }}>{polData.name}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{polData.title}, kommunen</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 8 }}>
+                Mötet är bokat. Kommunens förslag och villkor kommer som nästa steg i Portal.
+              </p>
+            </SectionCard>
+          )
+        }
         const agendaText: Record<string, string> = {
           youth: 'Vill se satsning på ungdomsverksamhet. Stärk akademin och kör bandyskola.',
           prestige: 'Vill att klubben sätter orten på kartan. Slutspel och bra resultat imponerar.',
@@ -649,6 +709,19 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
       {/* Klacken / Supporter */}
       {game.supporterGroup && (() => {
         const sg = game.supporterGroup!
+        const leaderKnown = isVoiceIntroduced(
+          game,
+          klackLeaderVoiceId(game.managedClubId, sg.leader.name),
+        )
+        if (!leaderKnown) {
+          return (
+            <SectionCard title="📯 Klacken" stagger={4} id="section-supporter">
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Klacken finns på läktaren, men ni har ännu inte etablerat någon kontakt. Klackledaren söker dig via Portal.
+              </p>
+            </SectionCard>
+          )
+        }
         const moodColor = sg.mood >= 70 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)'
         const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
         return (
@@ -660,7 +733,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {chars.map((c, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', minWidth: 90 }}>{c.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', minWidth: 90 }}>{getCharacterName(game, c.role)}</span>
                   {/* Språkläcka (audit 2026-08-29): renderade rå SupporterRole med
                       capitalize → "Leader"/"Youth"/"Family". Etiketterna är tomma
                       tills Opus levererat dem (SUPPORTER_ROLE_LABELS) — inget

@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
+import type { VoiceId } from '../entities/Voice'
 import { currentChronology } from '../services/currentChronology'
 import {
   agendaForSurface,
@@ -22,6 +23,11 @@ import type {
   AttentionVoice,
   NarrativePostReference,
 } from './types'
+import {
+  canVoiceSpeak,
+  mecenatVoiceId,
+  patronVoiceId,
+} from '../services/voiceIntroductionService'
 
 const SINCE_LAST_THRESHOLD = 60
 const ANNIVERSARY_THRESHOLD = 70
@@ -138,10 +144,30 @@ function passesThreshold(item: AgendaItem): boolean {
   return false
 }
 
+/**
+ * Entréprincipen gäller även den asynkrona notisytan. Liggaren får minnas
+ * en relation innan spelaren har sett dess entré, men Attention får inte
+ * göra den relationen till en push. Vi använder samma kanoniska
+ * röstregister som Portal/Inkorg — ingen parallell introduced-flagga.
+ */
+function narrativeActorIsIntroduced(game: SaveGame, item: AgendaItem): boolean {
+  const subject = item.post.subject
+  if (!subject) return true
+  if (subject.kind === 'mecenat') {
+    return canVoiceSpeak(game, mecenatVoiceId(game.managedClubId, subject.id))
+  }
+  if (subject.kind === 'patron') {
+    return canVoiceSpeak(game, patronVoiceId(game.managedClubId, subject.id))
+  }
+  if (subject.kind === 'voice') return canVoiceSpeak(game, subject.id as VoiceId)
+  return true
+}
+
 /** Familj 1 (Klubbminne) — oförändrad, agenda-driven. */
 function narrativeReturnCandidate(game: SaveGame): ForwardCandidate | null {
   const chronology = currentChronology(game)
-  const item = agendaForSurface(redaktoren(game, chronology), 'push').find(passesThreshold)
+  const item = agendaForSurface(redaktoren(game, chronology), 'push')
+    .find(candidate => passesThreshold(candidate) && narrativeActorIsIntroduced(game, candidate))
   if (!item) return null
 
   return {

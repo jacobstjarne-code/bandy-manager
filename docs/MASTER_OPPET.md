@@ -41,8 +41,25 @@ save-migrering. Efter återstarten rättades även klubbvyns falska
 CTA-liknande flikrad till en kompakt pillnavigation. Detaljer och rotorsaker:
 `docs/playtest/PLAYALONG_RELEASE_2BD333E4_2026-09-13.md`.
 
+Uppföljningen 2026-09-14 stängde introduktionsluckan som Carina Sundqvist
+avslöjade. Relationer följer nu en gemensam båge: institution först,
+namngiven kontakt, möte, villkor/svar och först därefter beständig relation
+och ekonomi. Kommun, klack, lokalpress, patron och mecenat går genom samma
+röstliggare; okända namn kan inte läcka via Portal, Inkorg, Orten, Ekonomi,
+Bygget, Granska eller Attention-notiser. En berättelsepost får finnas i
+liggaren före entrén, men notismotorn filtrerar den med samma kanoniska
+röstidentitet innan den kan bli push. De operativa systemen får i stället en
+kort förstagångsintroduktion av en redan känd funktionär: assisterande tränaren
+för Träning, Taktik, Kontrakt, Akademi, Marknad och Scouting samt kassören
+för Ekonomi. Trupp/startelva dubbleras inte eftersom Tillträdet redan lär ut
+dem. Bygget behåller sin kanoniska start i säsong två genom Valet; säsong ett
+visar bara ordförandens förklaring om varför funktionen väntar. Punkten är
+stängd i samma pass och registrerad som `playalong-systemintroduktioner` i
+`MASTER_ARKIV.md`.
+
 Ingen ny öppen rad skapades: felen reproducerades, rotorsakerna åtgärdades
-och verifierades i samma pass. Full kontroll: 585 testfiler / 5 246 tester,
+och verifierades i samma pass. Full kontroll efter introduktionspasset:
+585 testfiler / 5 248 tester,
 TypeScript, produktionsbygge samt design-/innehållsgrindar gröna. Den enda
 aktiva MASTER-posten förblir därför `stickiness-drift-backend`.
 

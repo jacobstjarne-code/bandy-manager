@@ -5,6 +5,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import { getDefaultRolloverChoice, getRolloverPolicy } from '../deferredRolloverService'
 import { resolveEvent } from '../events/eventResolver'
 import { generateDinnerEvent, getDinnerResolution } from '../mecenatDinnerService'
+import { mecenatVoiceId } from '../voiceIntroductionService'
 
 function mecenat(overrides: Partial<Mecenat> = {}): Mecenat {
   return {
@@ -36,6 +37,13 @@ function game(overrides: Partial<SaveGame> = {}): SaveGame {
     currentMatchday: 20,
     communityStanding: 50,
     mecenater: [mecenat()],
+    introducedVoices: {
+      ...(base.introducedVoices ?? {}),
+      [mecenatVoiceId(base.managedClubId, 'mec_dinner')]: {
+        provenance: 'legacy_assumed',
+        source: 'migration',
+      },
+    },
     pendingEvents: [],
     deferredDecisions: [],
     resolvedEventIds: [],
@@ -44,8 +52,13 @@ function game(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 describe('mecenatDinner — O11:s text/state-kontrakt', () => {
+  it('kan inte genereras innan mecenaten är introducerad', () => {
+    expect(generateDinnerEvent(game({ introducedVoices: {} }), 20)).toBeNull()
+  })
+
   it('bär alla åtta verkliga trefrågorsutfall som resolverbara eventval', () => {
     const event = generateDinnerEvent(game(), 20)!
+    expect(event.voiceId).toBe(mecenatVoiceId(game().managedClubId, 'mec_dinner'))
     expect(event.choices).toHaveLength(8)
     expect(event.choices.every(choice => choice.id.startsWith('final|') && choice.effect.type === 'multiEffect')).toBe(true)
     expect(event.choices.some(choice => choice.id === 'start')).toBe(false)

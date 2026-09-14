@@ -9,6 +9,7 @@ export const GATED_VOICE_KINDS = [
   'assistant_coach',
   'board',
   'local_press',
+  'politician',
   'patron',
   'klack_leader',
   'supporter',

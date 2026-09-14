@@ -4,6 +4,7 @@ import { processGameEvents } from '../eventProcessor'
 import { generateMecenat, generateSilentShoutEvent } from '../../../../domain/services/mecenatService'
 import { mulberry32 } from '../../../../domain/utils/random'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
+import { mecenatVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 const zeroRand = () => 0
 
@@ -18,7 +19,17 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     silentShout: 95,
     lastInteractionRound: 5,
   }
-  return { ...base, mecenater: [mecenat], ...overrides }
+  return {
+    ...base,
+    mecenater: [mecenat],
+    introducedVoices: {
+      ...(base.introducedVoices ?? {}),
+      [mecenatVoiceId(base.managedClubId, mecenat.id)]: {
+        provenance: 'legacy_assumed', source: 'migration',
+      },
+    },
+    ...overrides,
+  }
 }
 
 describe('silentShout — en producent och kanonisk dedupe', () => {

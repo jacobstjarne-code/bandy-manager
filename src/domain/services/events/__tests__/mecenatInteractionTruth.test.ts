@@ -6,6 +6,7 @@ import { getDefaultRolloverChoice } from '../../deferredRolloverService'
 import { generateMecenatInterventionEvent } from '../eventFactories'
 import { generatePostAdvanceEvents } from '../postAdvanceEvents'
 import { resolveEvent } from '../eventResolver'
+import { mecenatVoiceId } from '../../voiceIntroductionService'
 
 function makeMecenat(overrides: Partial<Mecenat> = {}): Mecenat {
   return {
@@ -23,6 +24,12 @@ function makeGame(mec = makeMecenat()) {
     ...base,
     currentMatchday: 6,
     mecenater: [mec],
+    introducedVoices: {
+      ...(base.introducedVoices ?? {}),
+      [mecenatVoiceId(base.managedClubId, mec.id)]: {
+        provenance: 'legacy_assumed' as const, source: 'migration' as const,
+      },
+    },
     players: base.players.map(player => ({ ...player, morale: 70, isFullTimePro: true, dayJob: undefined })),
     pendingEvents: [],
     resolvedEventIds: [],

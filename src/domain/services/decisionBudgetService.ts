@@ -10,6 +10,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent, DecisionTier } from '../entities/GameEvent'
 import { classifyInterrupt, isPendingSceneActionable } from './interruptClassifier'
 import { getDecisionSemanticId } from './decisionLifecycleService'
+import { isPassiveVoiceIntroduction } from './voiceIntroductionService'
 
 export const MAX_DECISIONS_PER_ROUND = 3
 /** Kept as an API alias for older callers. */
@@ -23,7 +24,7 @@ export const MAX_ACTIVE_DECISIONS = MAX_DECISIONS_PER_ROUND
 const STARVATION_ROUNDS = 3
 
 function isActionableEvent(event: GameEvent): boolean {
-  return !event.resolved && classifyInterrupt({
+  return !event.resolved && !isPassiveVoiceIntroduction(event) && classifyInterrupt({
     category: 'event',
     hasChoices: Array.isArray(event.choices) && event.choices.length > 0,
   }) === 'actionable'

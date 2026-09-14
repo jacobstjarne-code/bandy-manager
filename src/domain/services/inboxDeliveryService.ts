@@ -1,6 +1,6 @@
 import type { InboxItem, SaveGame } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
-import { canLocalPressSpeak, canVoiceSpeak, patronVoiceId, mecenatVoiceId } from './voiceIntroductionService'
+import { canLocalPressSpeak, canVoiceSpeak, patronVoiceId, mecenatVoiceId, politicianVoiceId } from './voiceIntroductionService'
 import { getInboxGroup } from './inboxPresentationService'
 
 export const MAX_UNREAD_INFORMATIONAL_INBOX = 4
@@ -89,6 +89,19 @@ function voiceIsReady(game: SaveGame, item: InboxItem, matchday: number): boolea
     if (game.patron && item.id.startsWith('inbox_patron_')) {
       return canVoiceSpeak(voiceGame, patronVoiceId(game.managedClubId, game.patron.id))
     }
+  }
+  if (item.type === InboxItemType.KommunBidrag && game.localPolitician && (
+    item.id.startsWith('inbox_pol_')
+    || item.id.startsWith('inbox_kommun_bidrag_')
+    || item.id.startsWith('inbox_kommunbidrag_')
+  )) {
+    return canVoiceSpeak(
+      voiceGame,
+      politicianVoiceId(
+        game.managedClubId,
+        game.localPolitician.mandatExpires ?? game.currentSeason,
+      ),
+    )
   }
   if (item.type !== InboxItemType.Media && item.type !== InboxItemType.MediaEvent) return true
   if (!game.journalist) return true

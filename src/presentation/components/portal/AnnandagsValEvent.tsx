@@ -17,6 +17,7 @@
 
 import { useGameStore } from '../../store/gameStore'
 import type { SaveGame, ClubEra } from '../../../domain/entities/SaveGame'
+import { isVoiceIntroduced, mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 interface Props {
   game: SaveGame
@@ -31,7 +32,9 @@ interface ValOption {
 
 function buildOptions(game: SaveGame): ValOption[] {
   const era: ClubEra = game.currentEra ?? 'survival'
-  const hasActiveMecenat = game.mecenater?.some(m => m.isActive) ?? false
+  const hasActiveMecenat = game.mecenater?.some(m =>
+    m.isActive && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+  ) ?? false
 
   const options: ValOption[] = []
 
@@ -63,7 +66,9 @@ function buildOptions(game: SaveGame): ValOption[] {
 
   // D — legacy + aktiv mecenat
   if (era === 'legacy' && hasActiveMecenat) {
-    const mecenat = game.mecenater?.find(m => m.isActive)
+    const mecenat = game.mecenater?.find(m =>
+      m.isActive && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+    )
     options.push({
       id: 'D',
       label: 'Mecenat-värd',

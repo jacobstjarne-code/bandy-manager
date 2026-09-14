@@ -5,7 +5,7 @@
  */
 
 import type { CardRenderProps } from '../portalTypes'
-import { getJournalistCardSeverity } from '../../../../domain/services/journalistVisibilityService'
+import { getJournalistCardSeverity, shouldShowJournalistCard } from '../../../../domain/services/journalistVisibilityService'
 import { buildJournalistSceneData } from '../../../../domain/data/scenes/journalistRelationshipScene'
 import { useGameStore } from '../../../store/gameStore'
 import { SectionLabel } from '../../SectionLabel'
@@ -14,7 +14,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
   const triggerJournalistScene = useGameStore(s => s.triggerJournalistScene)
 
   const severity = getJournalistCardSeverity(game)
-  if (severity === 'hidden' || !game.journalist) return null
+  if (!shouldShowJournalistCard(game) || severity === 'hidden' || !game.journalist) return null
 
   const isCold = severity === 'cold'
   const data = buildJournalistSceneData(

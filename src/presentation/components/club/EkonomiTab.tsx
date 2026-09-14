@@ -8,6 +8,7 @@ import { LICENSE_ZONE_TEXT } from '../../../domain/services/licenseService'
 import { leagueRoundExactAt } from '../../../domain/services/currentChronology'
 import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import { Phone } from 'lucide-react'
+import { isVoiceIntroduced, mecenatVoiceId, politicianVoiceId } from '../../../domain/services/voiceIntroductionService'
 import '../../styles/economy.css'
 
 const EMPTY_COMMUNITY = {
@@ -124,8 +125,17 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const actualMonthlyWages = weeklyWages * 4
   const communityTotal = income.communityMatchIncome + income.communityRoundIncome
   const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive && m.contribution > 0)
+  const visibleMecenater = activeMecenater.filter(m =>
+    isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+  )
   const politician = game.localPolitician ?? null
   const kommunBidrag = politician?.kommunBidrag ?? 0
+  const politicianRelationshipEstablished = politician != null
+    && politician.demandsMet === true
+    && isVoiceIntroduced(
+      game,
+      politicianVoiceId(game.managedClubId, politician.mandatExpires ?? game.currentSeason),
+    )
   const wagePressure = actualMonthlyWages > club.wageBudget
   // 2026-08-26 (Jacobs dom, docs/rapport/RAPPORT_LICENSVARNING_RENDERING_2026-08-26.md):
   // läste tidigare game.licenseReview — ett PARALLELLT system som inte
@@ -494,10 +504,10 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       </SectionCard>
 
       {/* Mecenater & Kommunbidrag */}
-      {(activeMecenater.length > 0 || kommunBidrag > 0) && (
+      {(visibleMecenater.length > 0 || (kommunBidrag > 0 && politicianRelationshipEstablished)) && (
         <SectionCard title="🏦 Övriga intäkter" stagger={4}>
-          {activeMecenater.map((m, i) => (
-            <div key={m.id} style={{ marginBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, paddingBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, borderBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
+          {visibleMecenater.map((m, i) => (
+            <div key={m.id} style={{ marginBottom: (i < visibleMecenater.length - 1 || politicianRelationshipEstablished) ? 10 : 0, paddingBottom: (i < visibleMecenater.length - 1 || politicianRelationshipEstablished) ? 10 : 0, borderBottom: (i < visibleMecenater.length - 1 || politicianRelationshipEstablished) ? '1px solid var(--border)' : 'none' }}>
               <div className="eco-mecenat-row">
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {m.name}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(m.contribution)}/sä</span>
@@ -505,12 +515,13 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{m.business}</p>
             </div>
           ))}
-          {kommunBidrag > 0 && (
+          {kommunBidrag > 0 && politicianRelationshipEstablished && politician && (
             <div>
               <div className="eco-mecenat-row">
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Beräknat säsongsbidrag{politician ? ` — ${politician.name}` : ''}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag — {politician.name}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatFinanceAbs(kommunBidrag)}</span>
               </div>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>{politician.title}, kommunen</p>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Omräknas och betalas vid säsongsslutet utifrån lokal förankring, ungdomsverksamhet och relation.</p>
             </div>
           )}

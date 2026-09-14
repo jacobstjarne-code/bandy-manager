@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { AGENDA_QUOTES, NEWSPAPER_HEADLINES } from '../../data/politicianData'
+import { politicianVoiceId } from '../voiceIntroductionService'
 
 const FEMALE_FIRST_NAMES = new Set([
   'Anna', 'Maria', 'Eva', 'Karin', 'Sara', 'Lena', 'Emma', 'Kristina',
@@ -31,11 +32,13 @@ export function generatePoliticianEvents(
   // ── Politician agenda events ─────────────────────────────────────────────
   const politician = game.localPolitician
   if (politician) {
+    const voiceId = politicianVoiceId(game.managedClubId, politician.mandatExpires ?? game.currentSeason)
     const agenda = politician.agenda
     const rel = politician.relationship ?? 50
+    const relationshipEstablished = politician.demandsMet === true
 
     // Youth push — round 4, agenda === 'youth', relationship > 30
-    if (currentRound === 4 && agenda === 'youth' && rel > 30) {
+    if (relationshipEstablished && currentRound === 4 && agenda === 'youth' && rel > 30) {
       const eid = `politician_youth_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.youth
@@ -61,12 +64,13 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
+          voiceId,
         })
       }
     }
 
     // Savings — round 6, agenda === 'savings'
-    if (currentRound === 6 && agenda === 'savings') {
+    if (relationshipEstablished && currentRound === 6 && agenda === 'savings') {
       const eid = `politician_savings_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.savings
@@ -96,12 +100,13 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
+          voiceId,
         })
       }
     }
 
     // Prestige — round 8, agenda === 'prestige'
-    if (currentRound === 8 && agenda === 'prestige') {
+    if (relationshipEstablished && currentRound === 8 && agenda === 'prestige') {
       const eid = `politician_prestige_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quotes = AGENDA_QUOTES.prestige
@@ -132,12 +137,13 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
+          voiceId,
         })
       }
     }
 
     // Inclusion — round 5, agenda === 'inclusion'
-    if (currentRound === 5 && agenda === 'inclusion') {
+    if (relationshipEstablished && currentRound === 5 && agenda === 'inclusion') {
       const eid = `politician_inclusion_${politician.mandatExpires ?? game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         events.push({
@@ -175,12 +181,13 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
+          voiceId,
         })
       }
     }
 
     // Low relationship warning — round >= 10, relationship < 30, max once per season
-    if (currentRound >= 10 && rel < 30) {
+    if (relationshipEstablished && currentRound >= 10 && rel < 30) {
       const eid = `politician_warning_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const headlineIdx = Math.floor(rand() * NEWSPAPER_HEADLINES.length)
@@ -234,6 +241,7 @@ export function generatePoliticianEvents(
             },
           ],
           resolved: false,
+          voiceId,
         })
       }
     }
@@ -242,6 +250,7 @@ export function generatePoliticianEvents(
   // ── Kommunmöte — politician demand event (once per politician) ───────────
   const politician2 = game.localPolitician
   if (politician2 && !politician2.demandsMet) {
+    const voiceId = politicianVoiceId(game.managedClubId, politician2.mandatExpires ?? game.currentSeason)
     const eid = `kommot_demand_${politician2.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
     const agendaEid = `politician_${politician2.agenda}_${politician2.mandatExpires ?? game.currentSeason}`
     // Skip demand if player has already seen the agenda-specific event for this topic
@@ -293,6 +302,7 @@ export function generatePoliticianEvents(
           body: demandBody,
           choices,
           resolved: false,
+          voiceId,
         })
       }
     }
@@ -300,7 +310,8 @@ export function generatePoliticianEvents(
 
   // ── Gentjänst event (new politician, corruption >= 50, 40% chance) ───────
   const pol3 = game.localPolitician
-  if (pol3 && (pol3.corruption ?? 0) >= 50 && currentRound === 2) {
+  if (pol3 && pol3.demandsMet === true && (pol3.corruption ?? 0) >= 50 && currentRound === 7) {
+    const voiceId = politicianVoiceId(game.managedClubId, pol3.mandatExpires ?? game.currentSeason)
     const mandateKey = pol3.mandatExpires ?? game.currentSeason
     const eid = `gentjanst_${mandateKey}`
     // Äldre saves använde ett säsongssuffix. Räkna även dem som sedda så en
@@ -342,6 +353,7 @@ export function generatePoliticianEvents(
           },
         ],
         resolved: false,
+        voiceId,
       })
     }
   }

@@ -370,6 +370,7 @@ export function generateSocialEvent(
   matchday: number,
   rand: () => number,
   usedTypes: Set<SocialEvent['type']> = new Set(),
+  clubId?: string,
 ): GameEvent | null {
   // Seasonal filtering — bandy season runs November–March (matchdays 1–22)
   // Jakt (älgjakt): September–October only = matchdays 1–3
@@ -394,6 +395,7 @@ export function generateSocialEvent(
     type: 'mecenatEvent',
     title: `🤝 ${mecenat.name}: ${label}`,
     sender: { name: mecenat.name, role: mecenat.business },
+    ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
     body,
     choices: [
       {
@@ -437,6 +439,7 @@ export function generateSilentShoutEvent(
   playerName: string | undefined,
   rand: () => number,
   tacticMentality?: TacticMentality,
+  clubId?: string,
 ): GameEvent | null {
   const ss = mecenat.silentShout
 
@@ -447,6 +450,7 @@ export function generateSilentShoutEvent(
       type: 'mecenatEvent',
       title: `📰 ${mecenat.name} i media`,
       sender: { name: mecenat.name, role: mecenat.business },
+      ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
       body: `Lokaltidningen nämner ${mecenat.name} i en artikel om klubben.\n\n"Enligt uppgifter nära klubben ska ${mecenat.name} vara nöjd med säsongens utveckling."`,
       choices: [
         { id: 'ok', label: 'Noterat', subtitle: 'Inga effekter', effect: { type: 'noOp' } },
@@ -462,6 +466,7 @@ export function generateSilentShoutEvent(
       type: 'mecenatEvent',
       title: `💰 ${mecenat.name} har ett förslag`,
       sender: { name: mecenat.name, role: mecenat.business },
+      ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
       body: `${mecenat.name} ringer.\n\n"Jag hörde att det finns en spelare som hade passat er."`,
       choices: [
         {
@@ -490,6 +495,7 @@ export function generateSilentShoutEvent(
       type: 'mecenatEvent',
       title: `⚠️ ${mecenat.name} har åsikter`,
       sender: { name: mecenat.name, role: mecenat.business },
+      ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
       body: `${mecenat.name}: "Vi spelar för defensivt. Jag vill se anfall. Publiken vill se mål."`,
       choices: [
         {
@@ -525,6 +531,7 @@ export function generateSilentShoutEvent(
       type: 'mecenatEvent',
       title: `${mecenat.name} hotar`,
       sender: { name: mecenat.name, role: mecenat.business },
+      ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
       body: `${mecenat.name}: "Om det inte blir ändringar överväger jag att dra mig tillbaka. Styrelsen borde lyssna."`,
       whyNow: { whyNowPerson: mecenat.name },
       choices: [
@@ -553,10 +560,12 @@ export function generateSilentShoutEvent(
 export function generateMecenatConflictEvent(
   mec1: Mecenat,
   mec2: Mecenat,
+  clubId?: string,
 ): GameEvent {
   return {
     id: `event_conflict_${mec1.id}_${mec2.id}`,
     type: 'mecenatEvent',
+    ...(clubId ? { voiceId: mecenatVoiceId(clubId, mec1.id) } : {}),
     title: `Konflikt: ${mec1.name} vs ${mec2.name}`,
     body: `${mec1.name} vill satsa på dyra värvningar. ${mec2.name} tycker ni ska fokusera på ungdomar.\n\nBåda väntar på ditt svar.`,
     choices: [
@@ -607,10 +616,12 @@ export function generateMecenatAllianceEvent(
   mec1: Mecenat,
   mec2: Mecenat,
   projectName: string,
+  clubId?: string,
 ): GameEvent {
   return {
     id: `event_alliance_${mec1.id}_${mec2.id}`,
     type: 'mecenatEvent',
+    ...(clubId ? { voiceId: mecenatVoiceId(clubId, mec1.id) } : {}),
     title: `🤝 ${mec1.name} & ${mec2.name} samarbetar`,
     body: `Både ${mec1.name} och ${mec2.name} har uttryckt intresse för ${projectName}.`,
     choices: [
@@ -663,7 +674,7 @@ export const MECENAT_KRAV_HAPPINESS_THRESHOLD = 75
 const MECENAT_KRAV_HAPPINESS_DELTA_KEEP = 12
 const MECENAT_KRAV_HAPPINESS_DELTA_LET_GO = -18
 
-export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, season: number): GameEvent {
+export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, season: number, clubId?: string): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   // Samma pro-mönster som generateMecenatIntroEvent (rad 307) — denna
   // funktion saknade det, så en kvinnlig mecenat (~hälften) fick "han/hans".
@@ -674,6 +685,7 @@ export function generateMecenatKravEvent(mecenat: Mecenat, player: Player, seaso
   return {
     id: `event_mecenat_krav_${mecenat.id}_s${season}`,
     type: 'mecenatEvent',
+    ...(clubId ? { voiceId: mecenatVoiceId(clubId, mecenat.id) } : {}),
     title: `${mecenat.name} har en önskan`,
     body: `Över kaffet säger ${mecenat.name} det rakt ut, utan att göra en grej av det: ${pro.subjLower} skulle vilja se ${playerName} få ett år till. ${pro.subj} var med när det var tunnare än nu, och mecenaten har ett gott öga till honom. Det är inget krav ${pro.subjLower} uttalar — men du förstår ändå. ${pro.poss} välvilja har en form, och det här är den.`,
     proofSource: {
@@ -745,6 +757,7 @@ export function checkMecenatRetirement(game: import('../entities/SaveGame').Save
   return {
     id: `event_mecenat_retire_${mecenat.id}_${game.currentSeason}`,
     type: 'mecenatEvent',
+    voiceId: mecenatVoiceId(game.managedClubId, mecenat.id),
     title: `${mecenat.name} funderar på sin framtid`,
     body: generateRetirementBody(mecenat),
     choices: [

@@ -17,7 +17,7 @@ import {
   O1_YOUTH_DEVELOPMENT_COST,
   passesO1SeasonalEventRoll,
 } from '../o1SystemEvents'
-import { klackLeaderVoiceId } from '../../voiceIntroductionService'
+import { klackLeaderVoiceId, politicianVoiceId } from '../../voiceIntroductionService'
 import { generateEvents } from '../communityEvents'
 
 function makeGame(): SaveGame {
@@ -28,6 +28,18 @@ function withClub(game: SaveGame, values: { finances?: number; facilities?: numb
   return {
     ...game,
     clubs: game.clubs.map(club => club.id === game.managedClubId ? { ...club, ...values } : club),
+  }
+}
+
+function withIntroducedPolitician(game: SaveGame): SaveGame {
+  const politician = game.localPolitician!
+  const voiceId = politicianVoiceId(game.managedClubId, politician.mandatExpires ?? game.currentSeason)
+  return {
+    ...game,
+    introducedVoices: {
+      ...(game.introducedVoices ?? {}),
+      [voiceId]: { provenance: 'observed', source: 'event' },
+    },
   }
 }
 
@@ -91,12 +103,12 @@ describe('O1 2/4 — anläggningen som kostar orten', () => {
 
   it('bygger ut genom de deklarerade ekonomi-, facilitets- och CS-effekterna', () => {
     const base = withClub(withPassingO1Gates(makeGame(), ['facility_community']), { finances: 400_000, facilities: 60 })
-    const game = {
+    const game = withIntroducedPolitician({
       ...base,
       communityStanding: 50,
       localPolitician: { ...base.localPolitician!, relationship: 55 },
       facilityState: { builtNodeIds: [] },
-    }
+    })
     const event = generateFacilityCommunityCostEvent(game, 10, new Set())!
     const resolved = resolveEvent({ ...game, pendingEvents: [event] }, event.id, 'build_out', () => 0, true)
     const club = resolved.clubs.find(candidate => candidate.id === resolved.managedClubId)!

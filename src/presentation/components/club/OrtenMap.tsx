@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Club } from '../../../domain/entities/Club'
+import { isVoiceIntroduced, mecenatVoiceId, politicianVoiceId } from '../../../domain/services/voiceIntroductionService'
 
 interface MapNode {
   id: string
@@ -27,11 +28,17 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
   const cs = game.communityStanding ?? 50
   const facilities = club.facilities ?? 50
   const youthQuality = club.youthQuality ?? 50
-  const polRelation = game.localPolitician?.relationship ?? 50
-  const polNextElection = game.localPolitician?.mandatExpires
+  const politician = game.localPolitician
+  const politicianKnown = politician != null
+    && politician.demandsMet === true
+    && isVoiceIntroduced(game, politicianVoiceId(game.managedClubId, politician.mandatExpires ?? game.currentSeason))
+  const polRelation = politicianKnown ? politician.relationship : 50
+  const polNextElection = politicianKnown ? politician.mandatExpires : undefined
 
   // Mecenater (Beslut B: noden representerar det publika nätverket, ej kommersiella sponsorer)
-  const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
+  const activeMecenater = (game.mecenater ?? []).filter(m =>
+    m.isActive && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+  )
   const mecenatValue = activeMecenater.length === 0
     ? 30
     : Math.round(activeMecenater.reduce((sum, m) => sum + m.happiness, 0) / activeMecenater.length)
@@ -65,7 +72,7 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
       emoji: '🏛️',
       x: 60, y: 100,
       value: polRelation,
-      subLabel: polNextElection ? `Val s.${polNextElection}` : `Rel. ${polRelation}`,
+      subLabel: !politicianKnown ? 'Ej etablerad' : polNextElection ? `Val s.${polNextElection}` : `Rel. ${polRelation}`,
     },
     {
       id: 'mecenater',

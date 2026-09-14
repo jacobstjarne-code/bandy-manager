@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { EkonomiTab, sponsorSearchFeedback } from '../EkonomiTab'
+import { politicianVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', () => {
   it('bevarar actionens riktiga kassafel i stället för att påstå otur och avdrag', () => {
@@ -122,5 +123,46 @@ describe('EkonomiTab — spelarens siffror beskriver den kanoniska prognosen', (
 
     expect(html).toContain('Om du startar:')
     expect(html).toContain('Bandyskola → Akademi')
+  })
+
+  it('namnger inte kommunens företrädare eller bidrag innan mötet är etablerat', () => {
+    const base = createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 1 })
+    const politician = {
+      ...base.localPolitician!,
+      name: 'Carina Sundqvist',
+      title: 'Kommunstyrelsens vice ordförande',
+      mandatExpires: 2028,
+      kommunBidrag: 112000,
+      demandsMet: false,
+    }
+    const props = {
+      club: base.clubs.find(c => c.id === base.managedClubId)!,
+      seekSponsor: () => ({ success: false }),
+      activateCommunity: () => ({ success: false }),
+      setTransferBudget: () => {},
+      buyScoutRounds: () => {},
+    }
+
+    const beforeMeeting = renderToStaticMarkup(
+      <EkonomiTab {...props} game={{ ...base, localPolitician: politician }} />,
+    )
+    expect(beforeMeeting).not.toContain('Carina Sundqvist')
+    expect(beforeMeeting).not.toContain('Kommunbidrag —')
+
+    const voiceId = politicianVoiceId(base.managedClubId, politician.mandatExpires)
+    const afterMeeting = renderToStaticMarkup(
+      <EkonomiTab
+        {...props}
+        game={{
+          ...base,
+          localPolitician: { ...politician, demandsMet: true },
+          introducedVoices: {
+            [voiceId]: { provenance: 'observed', source: 'event' },
+          },
+        }}
+      />,
+    )
+    expect(afterMeeting).toContain('Kommunbidrag — Carina Sundqvist')
+    expect(afterMeeting).toContain('Kommunstyrelsens vice ordförande, kommunen')
   })
 })

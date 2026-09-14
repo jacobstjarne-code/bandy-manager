@@ -1,5 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SupporterCharacter, SupporterRole } from '../entities/Community'
+import { canVoiceSpeak, klackLeaderVoiceId } from './voiceIntroductionService'
+import { getCharacterName } from './supporterService'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -148,6 +150,11 @@ function pickQuote(
 export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackDisplay | null {
   const sg = game.supporterGroup
   if (!sg) return null
+  if (!canVoiceSpeak(game, klackLeaderVoiceId(game.managedClubId, sg.leader.name))) return null
+
+  const leaderName = getCharacterName(game, 'leader')
+  const veteranName = getCharacterName(game, 'veteran')
+  const youthName = getCharacterName(game, 'youth')
 
   const arc = game.trainerArc
   const consecutiveWins = arc?.consecutiveWins ?? 0
@@ -162,8 +169,8 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       choice.eventId.startsWith('supporter_tifo_') && choice.madeByPlayer !== false,
     )
     const tifoBody = tifoChoice?.choiceId === 'maybe'
-      ? `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. De håller tifot enkelt och arbetar vidare med en mindre banderoll.`
-      : `${sg.youth.name} och hennes kompisar har fått en hörna av föreningslokalen. Där arbetar de vidare med den stora banderollen.`
+      ? `${youthName} och hennes kompisar har fått en hörna av föreningslokalen. De håller tifot enkelt och arbetar vidare med en mindre banderoll.`
+      : `${youthName} och hennes kompisar har fått en hörna av föreningslokalen. Där arbetar de vidare med den stora banderollen.`
     return {
       type: 'event',
       eventType: 'tifo',
@@ -182,7 +189,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       groupName: sg.name,
       founded: sg.founded,
       title: 'Konflikten i klacken',
-      body: `${sg.leader.name} och ${sg.youth.name} såg olika på klackens väg framåt. Klubben tog ställning i frågan.`,
+      body: `${leaderName} och ${youthName} såg olika på klackens väg framåt. Klubben tog ställning i frågan.`,
       note: `mood påverkat · ${sg.members} medlemmar`,
     }
   }
@@ -194,7 +201,7 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
       groupName: sg.name,
       founded: sg.founded,
       title: 'Bortaresan planeras',
-      body: `${sg.leader.name}, ${sg.veteran.name}, ${sg.youth.name} och hennes kompisar planerar bussen till en kommande bortamatch.`,
+      body: `${leaderName}, ${veteranName}, ${youthName} och hennes kompisar planerar bussen till en kommande bortamatch.`,
       note: `Klackens stämning stärktes · ${sg.members} medlemmar`,
     }
   }
@@ -202,13 +209,13 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
   // ── Mode B: Stämning (extreme mood) ──────────────────────────────────────
   if (sg.mood < 40) {
     const lowTitles = [
-      `${sg.veteran.name} fanns inte där`,
+      `${veteranName} fanns inte där`,
       'Sektionen tystnar',
       'Klacken håller sig borta',
     ]
     const lowBodies = [
-      `Första gången på flera år. "Jag kunde inte se det," sa ${sg.veteran.name} i morse. Hemmaplansfördelen bleknar.`,
-      `${sg.leader.name} skickade ett kort meddelande till gruppen: "Vi ses nästa gång." Inget mer.`,
+      `Första gången på flera år. "Jag kunde inte se det," sa ${veteranName} i morse. Hemmaplansfördelen bleknar.`,
+      `${leaderName} skickade ett kort meddelande till gruppen: "Vi ses nästa gång." Inget mer.`,
     ]
     return {
       type: 'mood',
@@ -224,12 +231,12 @@ export function getKlackDisplay(game: SaveGame, currentMatchday: number): KlackD
   if (sg.mood >= 80) {
     const highTitles = [
       `${sg.name} brinner`,
-      `${sg.leader.name} ropar upp ny koreografi`,
+      `${leaderName} ropar upp ny koreografi`,
       'Orten lever',
     ]
     const highBodies = [
       `${sg.members} röster i samma takt. Det hörs ända från parkeringen. Laget hör det.`,
-      `Nya tifon sitter redan klart. ${sg.veteran.name} jobbade hela helgen.`,
+      `Nya tifon sitter redan klart. ${veteranName} jobbade hela helgen.`,
     ]
     return {
       type: 'mood',

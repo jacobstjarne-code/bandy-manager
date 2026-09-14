@@ -3,6 +3,7 @@ import type { CardRenderProps } from '../portalTypes'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import type { Mecenat } from '../../../../domain/entities/Mecenat'
 import type { PendingDemand } from '../../../../domain/entities/Demand'
+import { canVoiceSpeak, mecenatVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 /**
  * Synlighetsfix (2026-07-21) — samma mönster som PatronDemandPrimary.tsx,
@@ -47,6 +48,7 @@ export function MecenatDemandSecondary({ game }: CardRenderProps) {
   const card = pickMecenatDemandCard(game)
   if (!card) return null
   const { mec, demand, roundsLeft, otherCount } = card
+  if (!canVoiceSpeak(game, mecenatVoiceId(game.managedClubId, mec.id))) return null
 
   return (
     <div

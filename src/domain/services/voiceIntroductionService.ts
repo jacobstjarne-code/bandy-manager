@@ -42,6 +42,12 @@ export function localPressVoiceId(clubId: string, journalistName: string): Voice
   return `local_press:${voicePart(clubId)}:${voicePart(journalistName)}`
 }
 
+/** One municipal representative for one mandate. A repeated name in a later
+ * mandate is a new relationship and must therefore receive a new entrance. */
+export function politicianVoiceId(clubId: string, mandateKey: number): VoiceId {
+  return `politician:${voicePart(clubId)}:${voicePart(String(mandateKey))}`
+}
+
 export function klackLeaderVoiceId(clubId: string, leaderName: string): VoiceId {
   return `klack_leader:${voicePart(clubId)}:${voicePart(leaderName)}`
 }
@@ -114,9 +120,9 @@ function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
         id: `voice_intro_local_press_${voicePart(game.managedClubId)}_${voicePart(game.journalist.name)}`,
         type: 'journalistExclusive',
         title: `${game.journalist.name}, ${game.journalist.outlet}.`,
-        body: `Bevakar ${clubName} — matcher, beslut, det som sägs i kön på Konsum. Var på plats före dig, och blir kvar efter.`,
+        body: `${game.journalist.name} vill träffas. Bevakar ${clubName} — matcherna, besluten, det som sägs runt laget.`,
         sender: { name: game.journalist.name, role: game.journalist.outlet },
-        choices: [],
+        choices: [{ id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' } }],
         resolved: false,
         voiceId,
         introducesVoiceId: voiceId,
@@ -132,10 +138,29 @@ function rosterIntroductionEvents(game: SaveGame): GameEvent[] {
       events.push({
         id: `voice_intro_klack_leader_${voicePart(game.managedClubId)}_${voicePart(leader.name)}`,
         type: 'supporterEvent',
-        title: `${leader.name}.`,
-        body: `Håller ihop ${swedishGenitive(clubName)} klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.`,
+        title: `${leader.name}, klackledare i ${game.supporterGroup?.name ?? `${swedishGenitive(clubName)} klack`}.`,
+        body: `${leader.name} vill sätta sig ner och prata. Om sångerna, resorna, ståplatsen bakom kortsidan — och hur klubb och klack håller ihop.`,
         sender: { name: leader.name, role: 'Klackledare' },
-        choices: [],
+        choices: [{ id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' } }],
+        resolved: false,
+        voiceId,
+        introducesVoiceId: voiceId,
+      })
+    }
+  }
+
+  const politician = game.localPolitician
+  if (politician) {
+    const mandateKey = politician.mandatExpires ?? game.currentSeason
+    const voiceId = politicianVoiceId(game.managedClubId, mandateKey)
+    if (!isVoiceIntroduced(game, voiceId) && !queuedVoiceIds.has(voiceId)) {
+      events.push({
+        id: `voice_intro_politician_${voicePart(game.managedClubId)}_${mandateKey}`,
+        type: 'politicianEvent',
+        title: `${politician.name}, ${politician.title}.`,
+        body: `${politician.name} kallar till möte om föreningens stöd. Och om vad kommunen väntar sig tillbaka.`,
+        sender: { name: politician.name, role: `${politician.title}, kommunen` },
+        choices: [{ id: 'book_meeting', label: 'Boka mötet', effect: { type: 'noOp' } }],
         resolved: false,
         voiceId,
         introducesVoiceId: voiceId,

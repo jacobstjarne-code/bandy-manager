@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getRivalry } from '../../../../domain/data/rivalries'
+import { canVoiceSpeak, klackLeaderVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 /**
  * Primary-kort för derbymatchdag.
@@ -37,7 +38,9 @@ export function DerbyPrimary({ game }: CardRenderProps) {
 
   // Klacken
   const sg = game.supporterGroup
-  const klackInfo = sg ? `${sg.name} · mood ${sg.mood}` : null
+  const klackInfo = sg && canVoiceSpeak(game, klackLeaderVoiceId(game.managedClubId, sg.leader.name))
+    ? `${sg.name} · stämning ${sg.mood}`
+    : null
 
   const roundDateStr = nextFixture.date ?? ''
   const matchDate = roundDateStr ? new Date(roundDateStr) : null

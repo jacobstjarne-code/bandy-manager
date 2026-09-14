@@ -4,6 +4,7 @@ import { checkMecenatRetirement } from '../../mecenatService'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { Mecenat } from '../../../entities/SaveGame'
+import { mecenatVoiceId } from '../../voiceIntroductionService'
 
 /**
  * Instrument-svepet (2.5, 2026-08-17) hittade detta mekaniskt: checkMecenatRetirement
@@ -29,12 +30,24 @@ function makeMecenat(overrides: Partial<Mecenat> = {}): Mecenat {
   } as Mecenat
 }
 
+function introduceMecenatVoice<T extends ReturnType<typeof createNewGame>>(game: T, id = 'mec-1'): T {
+  return {
+    ...game,
+    introducedVoices: {
+      ...(game.introducedVoices ?? {}),
+      [mecenatVoiceId(game.managedClubId, id)]: {
+        provenance: 'legacy_assumed', source: 'migration',
+      },
+    },
+  }
+}
+
 describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via post-switch-blocket', () => {
   for (const choiceId of ['listen', 'plan_succession', 'offer_tribute']) {
     it(`'${choiceId}' kraschar inte`, () => {
       const template = CLUB_TEMPLATES[0]
       let game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
-      game = { ...game, mecenater: [makeMecenat()] }
+      game = introduceMecenatVoice({ ...game, mecenater: [makeMecenat()] })
       const event = checkMecenatRetirement(game)!
       expect(event).toBeTruthy()
       game = { ...game, pendingEvents: [event] }
@@ -45,7 +58,7 @@ describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via p
   it("'listen' höjer happiness med 5 och sätter hasAnnouncedRetirement", () => {
     const template = CLUB_TEMPLATES[0]
     let game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
-    game = { ...game, mecenater: [makeMecenat({ happiness: 50 })] }
+    game = introduceMecenatVoice({ ...game, mecenater: [makeMecenat({ happiness: 50 })] })
     const event = checkMecenatRetirement(game)!
     game = { ...game, pendingEvents: [event] }
     game = resolveEvent(game, event.id, 'listen', undefined, true)
@@ -59,7 +72,7 @@ describe('mecenat-avgångsvalet — kraschar inte, applicerar rätt effekt via p
   it("'offer_tribute' höjer happiness med 5, communityStanding med 3, drar 25000 kr", () => {
     const template = CLUB_TEMPLATES[0]
     let game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
-    game = { ...game, mecenater: [makeMecenat({ happiness: 50 })], communityStanding: 50 }
+    game = introduceMecenatVoice({ ...game, mecenater: [makeMecenat({ happiness: 50 })], communityStanding: 50 })
     const club = game.clubs.find(c => c.id === game.managedClubId)!
     const financesBefore = club.finances
     const event = checkMecenatRetirement(game)!

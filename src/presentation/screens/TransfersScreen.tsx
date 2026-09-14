@@ -26,6 +26,8 @@ import '../styles/transfers.css'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
+import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
+import { FEATURE_INTRODUCTIONS } from '../../domain/data/featureIntroductions'
 
 /**
  * Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): sorterar inkommande bud efter svarsfrist
@@ -49,6 +51,8 @@ export function TransfersScreen() {
   const respondToIncomingBid = useGameStore(s => s.respondToIncomingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const dismissHint = useGameStore(s => s.dismissHint)
+  const saveGame = useGameStore(s => s.saveGame)
   useEffect(() => { markScreenVisited('transfers') }, [])
 
   // B1-nav Fas 2: renew-state + contracts-tabben flyttade till ContractsTab (Trupp → Värvning).
@@ -107,6 +111,14 @@ export function TransfersScreen() {
     .reduce((max, f) => Math.max(max, f.matchday ?? 0), 0)
   const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
   const transferBudget = getTransferBudgetSummary(game)
+  const dismissed = game.dismissedHints ?? []
+  const assistantName = game.assistantCoach?.name ?? 'Assisterande tränaren'
+  const dismissFeature = (id: string) => {
+    dismissHint(id)
+    void saveGame()
+  }
+  const guidedIntroVisible = (activeTab === 'marknad' && !dismissed.includes('feature:transfer-market'))
+    || (activeTab === 'scouting' && !dismissed.includes('feature:scouting'))
 
   const availablePlayersForDot = game.players.filter(p =>
     p.clubId !== game.managedClubId &&
@@ -289,7 +301,24 @@ export function TransfersScreen() {
         onSelect={(id) => setActiveTab(id as typeof activeTab)}
       />
 
-      <TabIntro entry={TAB_INTROS[activeTab]} />
+      {!guidedIntroVisible && <TabIntro entry={TAB_INTROS[activeTab]} />}
+
+      {activeTab === 'marknad' && !dismissed.includes('feature:transfer-market') && (
+        <FeatureIntroduction
+          speaker={assistantName}
+          role="Assisterande tränare"
+          text={FEATURE_INTRODUCTIONS.transferMarket}
+          onDismiss={() => dismissFeature('feature:transfer-market')}
+        />
+      )}
+      {activeTab === 'scouting' && !dismissed.includes('feature:scouting') && (
+        <FeatureIntroduction
+          speaker={assistantName}
+          role="Assisterande tränare"
+          text={FEATURE_INTRODUCTIONS.scouting}
+          onDismiss={() => dismissFeature('feature:scouting')}
+        />
+      )}
 
       <div className={`card-sharp transfers-window-bar ${windowInfo.status === 'open' ? 'transfers-window-open' : windowInfo.status === 'winter' ? 'transfers-window-winter' : 'transfers-window-closed'}`}>
         <p className={`transfers-window-status transfers-window-status--${windowInfo.status}`}>

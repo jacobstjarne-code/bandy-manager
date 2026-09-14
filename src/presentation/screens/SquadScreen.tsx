@@ -25,6 +25,8 @@ import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
 import { Icon } from '../components/primitives/Icon'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
+import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
+import { FEATURE_INTRODUCTIONS } from '../../domain/data/featureIntroductions'
 import '../styles/squad.css'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
@@ -414,6 +416,7 @@ export function SquadScreen() {
   const useLeadershipAction = useGameStore(s => s.useLeadershipAction)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const dismissHint = useGameStore(s => s.dismissHint)
+  const saveGame = useGameStore(s => s.saveGame)
   useEffect(() => { markScreenVisited('squad') }, [])
   const updateTactic = useGameStore(s => s.updateTactic)
   const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
@@ -554,6 +557,14 @@ export function SquadScreen() {
   const hasSeasonData = topScorer || topAssist || topRating || topSuspensions
 
   const dismissed = game?.dismissedHints ?? []
+  const assistantName = game?.assistantCoach?.name ?? 'Assisterande tränaren'
+  const dismissFeature = (id: string) => {
+    dismissHint(id)
+    void saveGame()
+  }
+  const guidedIntroVisible = (screenTab === 'taktik' && !dismissed.includes('feature:tactics'))
+    || (screenTab === 'värvning' && !dismissed.includes('feature:contracts'))
+    || (screenTab === 'trupp' && truppView === 'akademi' && !dismissed.includes('feature:academy'))
 
   return (
     <div className="screen-col-layout" style={{ background: 'var(--bg)' }}>
@@ -577,9 +588,17 @@ export function SquadScreen() {
           onSelect={(id) => setScreenTab(id as typeof screenTab)}
         />
       </div>
-      <TabIntro entry={TAB_INTROS[screenTab]} />
+      {!guidedIntroVisible && <TabIntro entry={TAB_INTROS[screenTab]} />}
       {screenTab === 'taktik' && club && game?.assistantCoach && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+          {!dismissed.includes('feature:tactics') && (
+            <FeatureIntroduction
+              speaker={assistantName}
+              role="Assisterande tränare"
+              text={FEATURE_INTRODUCTIONS.tactics}
+              onDismiss={() => dismissFeature('feature:tactics')}
+            />
+          )}
           <TacticBoardCard
             club={club}
             players={players}
@@ -601,6 +620,14 @@ export function SquadScreen() {
       {/* Värvning — kontraktsförlängning (B1-nav Fas 2) */}
       {screenTab === 'värvning' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+          {!dismissed.includes('feature:contracts') && (
+            <FeatureIntroduction
+              speaker={assistantName}
+              role="Assisterande tränare"
+              text={FEATURE_INTRODUCTIONS.contracts}
+              onDismiss={() => dismissFeature('feature:contracts')}
+            />
+          )}
           <ContractsTab
             initialRenewPlayerId={renewDeepLinkId}
             onConsumedDeepLink={() => setRenewDeepLinkId(null)}
@@ -961,6 +988,14 @@ export function SquadScreen() {
       {/* Player list — Akademi (klubb-flikar-overflod, flyttad hit från Klubb 2026-09-06) */}
       {screenTab === 'trupp' && truppView === 'akademi' && club && game && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+          {!dismissed.includes('feature:academy') && (
+            <FeatureIntroduction
+              speaker={assistantName}
+              role="Assisterande tränare"
+              text={FEATURE_INTRODUCTIONS.academy}
+              onDismiss={() => dismissFeature('feature:academy')}
+            />
+          )}
           <AkademiTab
             club={club}
             game={game}

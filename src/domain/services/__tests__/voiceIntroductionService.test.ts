@@ -11,6 +11,7 @@ import {
   klackLeaderVoiceId,
   localPressVoiceId,
   mecenatVoiceId,
+  politicianVoiceId,
   queueRosterVoiceIntroductions,
   recordVoiceIntroduction,
   seedTilltradeVoices,
@@ -113,7 +114,7 @@ describe('voice introduction gate', () => {
     expect(updated.eventLedger?.filter(entry => entry.type === 'voice_introduced')).toHaveLength(2)
   })
 
-  it('queues local press before the named supporter leader and admits only one intro today', () => {
+  it('queues named relationship contacts in order and admits only one intro today', () => {
     const base = game({
       onboardingComplete: true,
       currentMatchday: 0,
@@ -123,6 +124,10 @@ describe('voice introduction gate', () => {
         style: 'neutral', relationship: 50, memory: [], pressRefusals: 0,
       },
       supporterGroup: { leader: { name: 'Sture', role: 'leader' } } as never,
+      localPolitician: {
+        name: 'Anna Testsson', title: 'Kommunstyrelsens ordförande',
+        mandatExpires: 2030,
+      } as never,
       pendingEvents: [],
     })
 
@@ -130,16 +135,24 @@ describe('voice introduction gate', () => {
     expect(queued.pendingEvents?.map(item => item.introducesVoiceId)).toEqual([
       localPressVoiceId('malilla', 'Karin Bergström'),
       klackLeaderVoiceId('malilla', 'Sture'),
+      politicianVoiceId('malilla', 2030),
     ])
     expect(queued.pendingEvents?.[0]).toMatchObject({
       title: 'Karin Bergström, Målilla Nytt.',
-      body: 'Bevakar Målilla Bandy — matcher, beslut, det som sägs i kön på Konsum. Var på plats före dig, och blir kvar efter.',
-      choices: [],
+      body: 'Karin Bergström vill träffas. Bevakar Målilla Bandy — matcherna, besluten, det som sägs runt laget.',
+      choices: [{ id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' } }],
     })
     expect(queued.pendingEvents?.[1]?.body).toBe(
-      'Håller ihop Målilla Bandys klack — sångerna, resorna, ståplatsen bakom kortsidan. Talar för dem som står där varje match.',
+      'Sture vill sätta sig ner och prata. Om sångerna, resorna, ståplatsen bakom kortsidan — och hur klubb och klack håller ihop.',
     )
-    expect(queued.pendingEvents?.[1]?.choices).toEqual([])
+    expect(queued.pendingEvents?.[1]?.choices).toEqual([
+      { id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' } },
+    ])
+    expect(queued.pendingEvents?.[2]).toMatchObject({
+      title: 'Anna Testsson, Kommunstyrelsens ordförande.',
+      body: 'Anna Testsson kallar till möte om föreningens stöd. Och om vad kommunen väntar sig tillbaka.',
+      choices: [{ id: 'book_meeting', label: 'Boka mötet', effect: { type: 'noOp' } }],
+    })
     expect(getVoiceEligibleEvents(queued, queued.pendingEvents ?? []).map(item => item.id))
       .toEqual([queued.pendingEvents?.[0]?.id])
     expect(generateRosterVoiceIntroductions(queued)).toEqual([])

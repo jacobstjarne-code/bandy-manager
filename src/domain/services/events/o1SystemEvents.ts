@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import type { YouthPlayer } from '../../entities/Academy'
-import { klackLeaderVoiceId } from '../voiceIntroductionService'
+import { klackLeaderVoiceId, politicianVoiceId } from '../voiceIntroductionService'
 import { seasonalUnitRoll } from '../seasonalRollService'
 import { swedishGenitive } from '../../data/matchCommentary'
 
@@ -87,6 +87,7 @@ export function generateFacilityCommunityCostEvent(
       { id: 'leave_it', label: 'Låt det vara', effect: { type: 'noOp' } },
     ],
     sender: { name: politician.name, role: `${politician.title}, kommunen` },
+    voiceId: politicianVoiceId(game.managedClubId, politician.mandatExpires ?? game.currentSeason),
     mode: 'dilemma',
     systemhandelse: true,
     resolved: false,

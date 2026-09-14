@@ -106,6 +106,7 @@ import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, with
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
+import { mecenatVoiceId } from '../../../domain/services/voiceIntroductionService'
 import { applyDecisionBudget } from '../../../domain/services/decisionBudgetService'
 import { buildRefereeMeetingChoices } from '../../../application/useCases/processors/matchSimProcessor'
 import { BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
@@ -656,6 +657,11 @@ const mecenatDinnerBaseGame = makeGame(makeLeagueFixtures(), {
     happiness: 60, goodwill: 50, contribution: 60_000, totalContributed: 120_000,
     demands: [], socialExpectations: [], isActive: true, arrivedSeason: devSeason(7), silentShout: 0,
   }],
+  introducedVoices: {
+    [mecenatVoiceId(HOME_ID, 'dev-mecenat-dinner')]: {
+      provenance: 'legacy_assumed', source: 'migration',
+    },
+  },
 })
 const mecenatDinnerEvent = generateDinnerEvent(mecenatDinnerBaseGame, 20)!
 const mecenatDinnerGame = { ...mecenatDinnerBaseGame, pendingEvents: [mecenatDinnerEvent] }

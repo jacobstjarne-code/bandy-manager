@@ -5,6 +5,7 @@ import { calculateKommunBidrag } from '../../politicianService'
 import { getDefaultRolloverChoice, getRolloverPolicy } from '../../deferredRolloverService'
 import { generatePoliticianEvents } from '../politicianEvents'
 import { resolveEvent } from '../eventResolver'
+import { politicianVoiceId } from '../../voiceIntroductionService'
 
 function makeGame(agenda: 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure') {
   const base = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
@@ -21,7 +22,23 @@ function makeGame(agenda: 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infr
       kommunBidrag: 30000,
       kommunBidragModifier: 0,
       mandatExpires: 2030,
+      demandsMet: true,
     },
+    introducedVoices: {
+      ...(base.introducedVoices ?? {}),
+      [politicianVoiceId(base.managedClubId, 2030)]: {
+        provenance: 'legacy_assumed' as const,
+        source: 'migration' as const,
+      },
+    },
+  }
+}
+
+function makeUnmetGame(agenda: Parameters<typeof makeGame>[0]) {
+  const base = makeGame(agenda)
+  return {
+    ...base,
+    localPolitician: { ...base.localPolitician!, demandsMet: false },
   }
 }
 
@@ -104,7 +121,7 @@ describe('politicianEvent — text, state och livscykel håller ihop', () => {
 describe('kommunMote — text, state och livscykel håller ihop', () => {
   it('alla agendor använder valtext som motsvarar den omedelbara state-effekten', () => {
     const agendas = ['savings', 'youth', 'prestige', 'inclusion', 'infrastructure'] as const
-    const events = agendas.map(agenda => generatePoliticianEvents(makeGame(agenda), 3, new Set(), () => 0)
+    const events = agendas.map(agenda => generatePoliticianEvents(makeUnmetGame(agenda), 3, new Set(), () => 0)
       .find(candidate => candidate.type === 'kommunMote')!)
 
     expect(events.every(Boolean)).toBe(true)
@@ -117,7 +134,7 @@ describe('kommunMote — text, state och livscykel håller ihop', () => {
   })
 
   it('ett svar sätter den befintliga once-per-politician-markören och startar kommunens cooldown', () => {
-    const base = makeGame('infrastructure')
+    const base = makeUnmetGame('infrastructure')
     const event = generatePoliticianEvents(base, 3, new Set(), () => 0)
       .find(candidate => candidate.type === 'kommunMote')!
 
@@ -130,11 +147,11 @@ describe('kommunMote — text, state och livscykel håller ihop', () => {
   })
 
   it('ungdomsvalet läser den befintliga bandyskolan i stället för att lova en ospårad framtida', () => {
-    const withoutSchool = generatePoliticianEvents(makeGame('youth'), 3, new Set(), () => 0)
+    const withoutSchool = generatePoliticianEvents(makeUnmetGame('youth'), 3, new Set(), () => 0)
       .find(candidate => candidate.type === 'kommunMote')!
     const withSchoolGame = {
-      ...makeGame('youth'),
-      communityActivities: { ...makeGame('youth').communityActivities, bandySchool: { level: 1 } },
+      ...makeUnmetGame('youth'),
+      communityActivities: { ...makeUnmetGame('youth').communityActivities, bandySchool: { level: 1 } },
     } as ReturnType<typeof makeGame>
     const withSchool = generatePoliticianEvents(withSchoolGame, 3, new Set(), () => 0)
       .find(candidate => candidate.type === 'kommunMote')!
@@ -150,7 +167,7 @@ describe('kommunMote — text, state och livscykel håller ihop', () => {
   })
 
   it('rinner ut vid rollover eftersom inget neutralt noOp-val finns', () => {
-    const event = generatePoliticianEvents(makeGame('prestige'), 3, new Set(), () => 0)
+    const event = generatePoliticianEvents(makeUnmetGame('prestige'), 3, new Set(), () => 0)
       .find(candidate => candidate.type === 'kommunMote')!
 
     expect(getRolloverPolicy('kommunMote')).toBe('expire')
@@ -164,12 +181,12 @@ describe('gentjanst — text, state och livscykel håller ihop', () => {
       ...makeGame('prestige'),
       localPolitician: { ...makeGame('prestige').localPolitician!, corruption: 80 },
     }
-    const first = generatePoliticianEvents(base, 2, new Set(), () => 0)
+    const first = generatePoliticianEvents(base, 7, new Set(), () => 0)
       .find(candidate => candidate.type === 'gentjanst')!
 
     expect(first.id).toBe('gentjanst_2030')
-    expect(generatePoliticianEvents(base, 2, new Set([first.id]), () => 0)).toHaveLength(0)
-    expect(generatePoliticianEvents(base, 2, new Set(['gentjanst_2030_2026']), () => 0)).toHaveLength(0)
+    expect(generatePoliticianEvents(base, 7, new Set([first.id]), () => 0)).toHaveLength(0)
+    expect(generatePoliticianEvents(base, 7, new Set(['gentjanst_2030_2026']), () => 0)).toHaveLength(0)
   })
 
   it('beskriver en kontaktväg och ändrar bara de deklarerade mätarna', () => {
@@ -177,7 +194,7 @@ describe('gentjanst — text, state och livscykel håller ihop', () => {
       ...makeGame('prestige'),
       localPolitician: { ...makeGame('prestige').localPolitician!, corruption: 80 },
     }
-    const event = generatePoliticianEvents(base, 2, new Set(), () => 0)
+    const event = generatePoliticianEvents(base, 7, new Set(), () => 0)
       .find(candidate => candidate.type === 'gentjanst')!
     const playerIds = base.players.map(player => player.id)
     const youthIds = base.youthTeam?.players.map(player => player.id)
@@ -197,7 +214,7 @@ describe('gentjanst — text, state och livscykel håller ihop', () => {
       ...makeGame('prestige'),
       localPolitician: { ...makeGame('prestige').localPolitician!, corruption: 80 },
     }
-    const event = generatePoliticianEvents(base, 2, new Set(), () => 0)
+    const event = generatePoliticianEvents(base, 7, new Set(), () => 0)
       .find(candidate => candidate.type === 'gentjanst')!
 
     expect(event.choices.find(choice => choice.id === 'no')).toMatchObject({
@@ -211,7 +228,7 @@ describe('gentjanst — text, state och livscykel håller ihop', () => {
       ...makeGame('prestige'),
       localPolitician: { ...makeGame('prestige').localPolitician!, corruption: 80 },
     }
-    const event = generatePoliticianEvents(base, 2, new Set(), () => 0)
+    const event = generatePoliticianEvents(base, 7, new Set(), () => 0)
       .find(candidate => candidate.type === 'gentjanst')!
 
     expect(getRolloverPolicy('gentjanst')).toBe('expire')

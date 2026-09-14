@@ -34,7 +34,7 @@ import { deriveKapitelPunktKind } from '../../../domain/services/kapitelPunktSer
 import { KapitelPunkt } from '../../components/granska/KapitelPunkt'
 import { selectReviewCallback } from '../../../domain/services/reviewCallbackService'
 import { useGameStore } from '../../store/gameStore'
-import { canEventPassVoiceGate } from '../../../domain/services/voiceIntroductionService'
+import { canEventPassVoiceGate, canLocalPressSpeak } from '../../../domain/services/voiceIntroductionService'
 import { chronologyPointLabel } from '../../../domain/services/currentChronology'
 import { NextOpponentHook } from './NextOpponentHook'
 
@@ -305,7 +305,7 @@ export function GranskaOversikt({
             </div>
             <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(7px, 2.5vw, 18px)', marginBottom: 6 }}>
               <div style={{ textAlign: 'center', width: 'clamp(58px, 18vw, 74px)', flexShrink: 1 }}>
-                <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.homeClubId} name={homeClub?.name ?? ''} size={34} /></div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7 }}><ClubBadge clubId={fixture.homeClubId} name={homeClub?.name ?? ''} size={34} /></div>
                 <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{homeClub?.shortName ?? homeClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--match-positive)', textTransform: 'uppercase', marginTop: 2 }}>Hemma</div>
               </div>
@@ -316,7 +316,7 @@ export function GranskaOversikt({
                 {fixture.homeScore}<span style={{ opacity: 0.45, fontSize: '0.62em', verticalAlign: 'middle', margin: '0 clamp(2px, 1vw, 6px)' }}>–</span>{fixture.awayScore}
               </div>
               <div style={{ textAlign: 'center', width: 'clamp(58px, 18vw, 74px)', flexShrink: 1 }}>
-                <div style={{ margin: '0 auto 7px' }}><ClubBadge clubId={fixture.awayClubId} name={awayClub?.name ?? ''} size={34} /></div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7 }}><ClubBadge clubId={fixture.awayClubId} name={awayClub?.name ?? ''} size={34} /></div>
                 <div className="h-name" style={{ fontSize: 12, color: 'var(--text-light)' }}>{awayClub?.shortName ?? awayClub?.name}</div>
                 <div style={{ fontSize: 8, letterSpacing: '1px', color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginTop: 2 }}>Borta</div>
               </div>
@@ -728,7 +728,7 @@ export function GranskaOversikt({
       {visasFor('csPress', axes.tavlingstyp, axes.skede) && (() => {
         const cp = game.pendingCSPress
         if (!cp || !canEventPassVoiceGate(game, cp)) return null
-        const journalist = game.journalist
+        const journalist = canLocalPressSpeak(game) ? game.journalist : undefined
         return (
           <DecisionCard
             style={fadeIn(4)}
@@ -778,7 +778,7 @@ export function GranskaOversikt({
             (!fixture || i.id === `inbox_headline_md${fixture.matchday}_${game.currentSeason}`))
           .sort((a, b) => b.date.localeCompare(a.date))[0]
         if (!headlineItem) return null
-        const journalist = game.journalist
+        const journalist = canLocalPressSpeak(game) ? game.journalist : undefined
         const personaLabel = journalist?.persona === 'critical' ? 'Kritisk'
           : journalist?.persona === 'supportive' ? 'Stödjande'
           : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'

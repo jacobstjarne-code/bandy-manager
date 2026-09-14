@@ -1,6 +1,6 @@
 import type { SaveGame, InboxItem, AllTimeRecords, SeasonTransitionEvent, BoardAssessment, StorylineEntry } from '../../domain/entities/SaveGame'
 import { resolveContractExtension, getManagerDisplayName } from '../../domain/services/managerProfileService'
-import { patronVoiceId } from '../../domain/services/voiceIntroductionService'
+import { patronVoiceId, politicianVoiceId } from '../../domain/services/voiceIntroductionService'
 import { swedishGenitive } from '../../domain/data/matchCommentary'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
@@ -614,6 +614,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         type: InboxItemType.KommunBidrag,
         title: `Kommunbidrag utbetalat`,
         body: `${game.localPolitician.name} meddelar att kommunens bidrag på ${dynamicBidrag.toLocaleString('sv-SE')} kr har betalats ut. Beräknat utifrån ert ungdomsengagemang (${(game.youthTeam?.players.length ?? 0)} ungdomar), kommunens välvilja och er lokala ställning (${commStanding}/100).`,
+        voiceId: politicianVoiceId(game.managedClubId, game.localPolitician.mandatExpires ?? game.currentSeason),
         isRead: false,
       } as InboxItem)
     }
@@ -1448,8 +1449,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       id: `inbox_kommunval_${nextSeason}`,
       date: game.currentDate,
       type: InboxItemType.KommunBidrag,
-      title: `Kommunval: ${newPol.name} ny kommunalråd`,
-      body: `${newPol.name} (${newPol.party}) är kommunens nya kommunalråd med agenda "${newPol.agenda}". Kommunbidraget beräknas om baserat på deras prioriteringar. Relation startar på 40/100.`,
+      title: 'Kommunen får en ny politisk företrädare',
+      body: 'Kommunens politiska ledning har förändrats. Den nya företrädaren väntas kontakta föreningen om fortsatt stöd och kommunens prioriteringar.',
       isRead: false,
     } as InboxItem)
   }

@@ -15,6 +15,8 @@ import { TAB_INTROS } from '../../domain/data/tabIntros'
 import { SectionLabel } from '../components/SectionLabel'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { getArcMoodText } from '../../domain/services/trainerArcService'
+import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
+import { FEATURE_INTRODUCTIONS } from '../../domain/data/featureIntroductions'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -45,6 +47,8 @@ export function ClubScreen() {
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
   const recruitVolunteer = useGameStore(s => s.recruitVolunteer)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const dismissHint = useGameStore(s => s.dismissHint)
+  const saveGame = useGameStore(s => s.saveGame)
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'bygget', 'minne', 'tranare']
@@ -100,6 +104,23 @@ export function ClubScreen() {
   // status-område, direkt under epok-etiketten — enda ytan i koden som visar en
   // arc-liknande indikator.
   const arcMoodText = computeArcMoodText(game)
+  const dismissed = game.dismissedHints ?? []
+  const assistantName = game.assistantCoach?.name ?? 'Assisterande tränaren'
+  const treasurer = game.board?.find(member => member.role === 'kassör')
+  const treasurerName = treasurer
+    ? `${treasurer.firstName} ${treasurer.lastName}`.trim()
+    : 'Kassören'
+  const chair = game.board?.find(member => member.role === 'ordförande')
+  const chairName = chair ? `${chair.firstName} ${chair.lastName}`.trim() : 'Ordföranden'
+  const dismissFeature = (id: string) => {
+    dismissHint(id)
+    void saveGame()
+  }
+  const guidedIntroVisible = (activeTab === 'training' && !dismissed.includes('feature:training'))
+    || (activeTab === 'ekonomi' && !dismissed.includes('feature:economy'))
+    || (activeTab === 'bygget'
+      && (game.seasonSummaries?.length ?? 0) === 0
+      && !dismissed.includes('feature:facility-season-one'))
 
   return (
     <div className="screen-col-layout">
@@ -142,7 +163,7 @@ export function ClubScreen() {
       </div>
 
       {/* Tab description */}
-      <TabIntro entry={TAB_INTROS[activeTab]} />
+      {!guidedIntroVisible && <TabIntro entry={TAB_INTROS[activeTab]} />}
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 90px', paddingTop: 12 }}>
@@ -150,6 +171,14 @@ export function ClubScreen() {
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (
           <>
+            {!dismissed.includes('feature:training') && (
+              <FeatureIntroduction
+                speaker={assistantName}
+                role="Assisterande tränare"
+                text={FEATURE_INTRODUCTIONS.training}
+                onDismiss={() => dismissFeature('feature:training')}
+              />
+            )}
             <TrainingProjectsCard
               projects={game.trainingProjects ?? []}
               onStart={(type, intensity) => startTrainingProject(type, intensity)}
@@ -172,7 +201,17 @@ export function ClubScreen() {
 
         {/* ── Tab 2: Ekonomi ── */}
         {activeTab === 'ekonomi' && (
-          <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} setTransferBudget={setTransferBudget} buyScoutRounds={buyScoutRounds} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} />
+          <>
+            {!dismissed.includes('feature:economy') && (
+              <FeatureIntroduction
+                speaker={treasurerName}
+                role="Kassör"
+                text={FEATURE_INTRODUCTIONS.economy}
+                onDismiss={() => dismissFeature('feature:economy')}
+              />
+            )}
+            <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} setTransferBudget={setTransferBudget} buyScoutRounds={buyScoutRounds} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} />
+          </>
         )}
 
         {/* ── Tab 3: Klubb ── */}
@@ -182,12 +221,23 @@ export function ClubScreen() {
 
         {/* ── Tab 4: Bygget ── */}
         {activeTab === 'bygget' && (
-          <FacilityTab
-            game={game}
-            navigate={navigate}
-            startFacilityBuildNode={startFacilityBuildNode}
-            decommissionFacilityNode={decommissionFacilityNode}
-          />
+          <>
+            {(game.seasonSummaries?.length ?? 0) === 0
+              && !dismissed.includes('feature:facility-season-one') && (
+              <FeatureIntroduction
+                speaker={chairName}
+                role="Ordförande"
+                text={FEATURE_INTRODUCTIONS.facilitySeasonOne}
+                onDismiss={() => dismissFeature('feature:facility-season-one')}
+              />
+            )}
+            <FacilityTab
+              game={game}
+              navigate={navigate}
+              startFacilityBuildNode={startFacilityBuildNode}
+              decommissionFacilityNode={decommissionFacilityNode}
+            />
+          </>
         )}
 
         {/* ── Tab 5: Minne ── */}

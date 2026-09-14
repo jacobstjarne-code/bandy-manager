@@ -29,6 +29,7 @@ import { getCsDetOmojligaValetProbability } from '../communityStandingScaling'
 import { rotateSubject, genericBeatExcludeCount } from '../narrativeCoordinatorService'
 import type { Player } from '../../entities/Player'
 import { getKnownDecisionIdentities } from '../decisionLifecycleService'
+import { isVoiceIntroduced, mecenatVoiceId } from '../voiceIntroductionService'
 
 // ── Journalistreportagets säsongsspärr + spelarrotation (A-H4a) ────────────
 // Se GameEvent.journalistExclusiveKey för hela rotorsaksförklaringen.
@@ -567,13 +568,15 @@ export function generatePostAdvanceEvents(
 
   // 5k. Mecenat conflict (~3% if 2+ active mecenater)
   if (events.length < 2) {
-    const activeMecs = (game.mecenater ?? []).filter(m => m.isActive)
+    const activeMecs = (game.mecenater ?? []).filter(m =>
+      m.isActive && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+    )
     if (activeMecs.length >= 2 && rand() < 0.03) {
       const m1 = activeMecs[0]
       const m2 = activeMecs[1]
       const eid = `event_conflict_${m1.id}_${m2.id}_r${roundPlayed}`
       if (!alreadyQueued.has(eid)) {
-        events.push(generateMecenatConflictEvent(m1, m2))
+        events.push(generateMecenatConflictEvent(m1, m2, game.managedClubId))
       }
     }
   }
@@ -582,7 +585,11 @@ export function generatePostAdvanceEvents(
 
   // 5k2. Mecenat alliance (~2% if 2+ active mecenater with both happiness >= 60)
   if (events.length < 2) {
-    const happyMecs = (game.mecenater ?? []).filter(m => m.isActive && m.happiness >= 60)
+    const happyMecs = (game.mecenater ?? []).filter(m =>
+      m.isActive
+      && m.happiness >= 60
+      && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+    )
     if (happyMecs.length >= 2 && rand() < 0.02) {
       const m1 = happyMecs[0]
       const m2 = happyMecs[1]
@@ -591,7 +598,7 @@ export function generatePostAdvanceEvents(
         // Föreslå ett projekt som passar deras kombinerade intresse
         const projectNames = ['en ny värmestuga', 'uppgradering av strålkastarna', 'omklädningsrummet']
         const projectName = projectNames[Math.floor(rand() * projectNames.length)]
-        events.push(generateMecenatAllianceEvent(m1, m2, projectName))
+        events.push(generateMecenatAllianceEvent(m1, m2, projectName, game.managedClubId))
       }
     }
   }
@@ -611,13 +618,16 @@ export function generatePostAdvanceEvents(
   // (eventets id bär mecenat.id + currentSeason).
   if (events.length < 2) {
     const highHappinessMecenat = (game.mecenater ?? []).find(
-      m => m.isActive && !m.permanentlyWithdrawn && m.happiness >= MECENAT_KRAV_HAPPINESS_THRESHOLD,
+      m => m.isActive
+        && !m.permanentlyWithdrawn
+        && m.happiness >= MECENAT_KRAV_HAPPINESS_THRESHOLD
+        && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
     )
     const veteran = game.players.find(
       p => p.clubId === game.managedClubId && p.trait === 'veteran' && !p.isInjured,
     )
     if (highHappinessMecenat && veteran) {
-      const kravEvent = generateMecenatKravEvent(highHappinessMecenat, veteran, game.currentSeason)
+      const kravEvent = generateMecenatKravEvent(highHappinessMecenat, veteran, game.currentSeason, game.managedClubId)
       if (!alreadyQueued.has(kravEvent.id)) {
         events.push({ ...kravEvent, systemhandelse: true })
       }
@@ -629,13 +639,20 @@ export function generatePostAdvanceEvents(
   // 5l. Mecenat intervention — happiness < 40, no existing intervention queued this season
   for (const mec of game.mecenater ?? []) {
     if (events.length >= 2) break
-    if (!mec.isActive || mec.happiness >= 40) continue
+    if (
+      !mec.isActive
+      || mec.happiness >= 40
+      || !isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, mec.id))
+    ) continue
     const interventionPrefix = `event_mec_intervention_${mec.id}_s${game.currentSeason}_`
     const eid = `${interventionPrefix}r${roundPlayed}`
     const alreadyHasIntervention = [...alreadyQueued].some(id => id.startsWith(interventionPrefix))
     const interventionDue = mec.isActive && mec.happiness < 40 && !alreadyQueued.has(eid) && !alreadyHasIntervention
     if (interventionDue) {
-      events.push(generateMecenatInterventionEvent(mec, game.currentSeason, roundPlayed))
+      events.push({
+        ...generateMecenatInterventionEvent(mec, game.currentSeason, roundPlayed),
+        voiceId: mecenatVoiceId(game.managedClubId, mec.id),
+      })
     }
   }
 

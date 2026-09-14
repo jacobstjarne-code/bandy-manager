@@ -103,9 +103,17 @@ export function adjustSupporterMood(group: SupporterGroup, delta: number): Suppo
 export function getCharacterName(game: SaveGame, role: SupporterCharacter['role']): string {
   const sg = game.supporterGroup
   if (!sg) return role === 'youth' ? 'Elin' : role === 'leader' ? 'Sture' : role === 'veteran' ? 'Rolf' : 'Tommy'
+  const leaderKnown = canVoiceSpeak(
+    game,
+    klackLeaderVoiceId(game.managedClubId, sg.leader.name),
+  )
   if (role === 'leader') {
-    const voiceId = klackLeaderVoiceId(game.managedClubId, sg.leader.name)
-    return canVoiceSpeak(game, voiceId) ? sg.leader.name : 'Klackledaren'
+    return leaderKnown ? sg.leader.name : 'Klackledaren'
+  }
+  if (!leaderKnown) {
+    return role === 'youth' ? 'En ung supporter'
+      : role === 'veteran' ? 'En av veteranerna'
+      : 'En förälder i klacken'
   }
   return sg[role].name
 }

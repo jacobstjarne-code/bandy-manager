@@ -96,6 +96,26 @@ describe('legacy queue identity repair', () => {
   })
 })
 
+describe('voice introductions share the passive-interruption truth', () => {
+  it('does not count a one-button no-op introduction as an active decision', () => {
+    const voiceIntro = {
+      ...makeEvent('voice-intro'),
+      voiceId: 'local_press:club_a:test',
+      introducesVoiceId: 'local_press:club_a:test',
+      choices: [{ id: 'meet', label: 'Ta mötet', effect: { type: 'noOp' as const } }],
+    }
+    const actualDecisions = ['a', 'b', 'c'].map(makeEvent)
+    const game = makeGame({ pendingEvents: [voiceIntro, ...actualDecisions] })
+
+    expect(getActiveDecisionCount(game)).toBe(3)
+    const partitioned = applyDecisionBudget(game, game.currentMatchday)
+    expect(partitioned.pendingEvents?.map(event => event.id)).toEqual([
+      'a', 'b', 'c', 'voice-intro',
+    ])
+    expect(partitioned.deferredDecisions).toEqual([])
+  })
+})
+
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
     id: 'test',

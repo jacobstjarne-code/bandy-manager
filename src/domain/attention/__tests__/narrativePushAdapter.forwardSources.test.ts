@@ -12,6 +12,7 @@ import { CLUB_TEMPLATES } from '../../services/worldGenerator'
 import { narrativePushDrafts, type ForwardPushPayload } from '../narrativePushAdapter'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Fixture } from '../../entities/Fixture'
+import { mecenatVoiceId, patronVoiceId, politicianVoiceId } from '../../services/voiceIntroductionService'
 
 const MANAGED = 'club_soderfors'
 const RIVAL = 'club_skutskar'
@@ -33,6 +34,53 @@ function derbyFixture(daysAhead: number): Fixture {
 
 const alwaysNullResolver = () => null
 const acceptAnyResolver = (payload: ForwardPushPayload) => ({ title: 't', body: 'b', voice: 'assistant' as const })
+
+describe('narrativePushDrafts — entréprincipen', () => {
+  it('gör inte en ointroducerad relation till push men öppnar samma liggarpost efter entrén', () => {
+    const cases = [
+      {
+        key: 'mecenat',
+        subject: { kind: 'mecenat' as const, id: 'mec-1' },
+        voiceId: mecenatVoiceId(MANAGED, 'mec-1'),
+      },
+      {
+        key: 'patron',
+        subject: { kind: 'patron' as const, id: 'patron-1' },
+        voiceId: patronVoiceId(MANAGED, 'patron-1'),
+      },
+      {
+        key: 'voice',
+        subject: { kind: 'voice' as const, id: politicianVoiceId(MANAGED, 3) },
+        voiceId: politicianVoiceId(MANAGED, 3),
+      },
+    ]
+
+    for (const candidate of cases) {
+      const post = {
+        type: 'mecenat_withdrawal' as const,
+        semanticKey: `entrance_push_test:${candidate.key}:s3`,
+        clubId: MANAGED,
+        season: 3,
+        matchday: 9,
+        subject: candidate.subject,
+        significance: 95,
+      }
+      const unknown = baseGame({ currentMatchday: 10, eventLedger: [post], ledgerTold: {} })
+      expect(narrativePushDrafts(unknown, acceptAnyResolver)).toEqual([])
+
+      const introduced = {
+        ...unknown,
+        introducedVoices: {
+          [candidate.voiceId]: { provenance: 'observed' as const, source: 'event' as const },
+        },
+      }
+      expect(narrativePushDrafts(introduced, acceptAnyResolver)[0]).toMatchObject({
+        type: 'narrative_return',
+        subjectId: expect.stringContaining(candidate.key),
+      })
+    }
+  })
+})
 
 describe('narrativePushDrafts — calendar_anchor (familj 2)', () => {
   it('derby inom fönstret, men en resolver som avstår: ingen draft', () => {

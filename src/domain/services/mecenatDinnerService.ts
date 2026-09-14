@@ -2,6 +2,7 @@ import type { Mecenat } from '../entities/Mecenat'
 import type { GameEvent } from '../entities/GameEvent'
 import type { SaveGame } from '../entities/SaveGame'
 import { swedishGenitive } from '../data/matchCommentary'
+import { isVoiceIntroduced, mecenatVoiceId } from './voiceIntroductionService'
 
 export interface DinnerOption {
   id: string
@@ -186,7 +187,11 @@ export function generateDinnerEvent(
   game: SaveGame,
   _nextMatchday: number,
 ): GameEvent | null {
-  const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive && m.happiness >= 40)
+  const activeMecenater = (game.mecenater ?? []).filter(m =>
+    m.isActive
+    && m.happiness >= 40
+    && isVoiceIntroduced(game, mecenatVoiceId(game.managedClubId, m.id)),
+  )
   if (activeMecenater.length === 0) return null
 
   const mec = activeMecenater[0]
@@ -206,6 +211,7 @@ export function generateDinnerEvent(
     body: scene.settingDescription,
     sponsorData: JSON.stringify(scene),
     sender: { name: mec.name, role: mec.business },
+    voiceId: mecenatVoiceId(game.managedClubId, mec.id),
     // Den dedikerade scenen visar en fråga i taget, men eventet bär ändå alla
     // åtta verkliga slutval. Därmed kan den vanliga resolver-/sim-/guardkedjan
     // hantera middagen utan en dold specialeffekt eller en falsk intro-choice.

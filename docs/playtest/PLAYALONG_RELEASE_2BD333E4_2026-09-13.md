@@ -527,6 +527,45 @@ svagt tonad fond, och ingen CTA-gradient eller skugga används. Ändringen
 gäller den delade komponenten och gör även Historik och Värvning
 konsekventa.
 
+### 21. System och relationer saknade en begriplig början
+
+**Observerat:** Ekonomifliken visade `Beräknat säsongsbidrag — Carina
+Sundqvist` innan spelaren hade mött henne eller förstått att hon var
+kommunstyrelsens vice ordförande. Orten innehöll samtidigt en kommunrelation
+och ett uppdrag som aldrig hade presenterats. Samma risk fanns för klack,
+lokalpress, patron och mecenater. Träning, ekonomi, taktik, kontrakt, akademi,
+värvning och scouting gick dessutom att öppna utan att någon förklarade vad
+spelaren faktiskt kunde göra där.
+
+**Verifierad rot:** Save-statet skapade personer och ekonomiska prognoser
+före deras första spelvända kontakt. Röstliggaren fanns, men politikern var
+inte en gated voice och flera mecenatproducenter saknade canonical `voiceId`.
+Klubb- och ekonomivyerna läste personstate direkt. De operativa flikarna hade
+statiska beskrivningar, men inget beständigt första-besök där en redan känd
+funktionär satte funktionen i sitt sammanhang.
+
+**Åtgärdat vid roten:** Den gemensamma ordningen är nu institution eller
+behov → namngiven kontakt → möte/förklaring → villkor och svar → etablerad
+relation/funktion → senare berättelsebeats. Kommunen kan synas som institution
+före mötet, men politikerns namn, relation, bidrag, finansieringsval,
+agendakort och gentjänster väntar. Kommunens första kontakt, mötet och alla
+senare händelser bär samma mandatbundna röstidentitet; ett kommunmöte kan
+inte lösas innan kontakten har introducerats. Klackledaren och lokalreportern
+ber nu uttryckligen om ett första möte. Patronens och samtliga
+mecenatproducenters senare repliker, krav, sociala möten och avsked går genom
+samma röstgate som deras introduktion. Samma invariant gäller Attention:
+liggaren får minnas en senare berättelsepost, men mecenat-, patron- och
+röstbundna återblickar filtreras bort från push tills den kanoniska rösten
+har introducerats. Ingen parallell `introduced`-flagga har skapats.
+
+För funktionerna återkommer assisterande tränaren första gången spelaren
+öppnar Träning, Taktik, Kontrakt, Akademi, Marknad eller Scouting. Kassören
+introducerar Ekonomi. Introduktionerna kvitteras en gång och sparas. Trupp
+och startelva får ingen dubbel förklaring eftersom Tillträdet redan lär ut
+dem. Bygget behåller sin befintliga dramaturgi: ordföranden förklarar under
+säsong ett att klubben först behöver förstå sina behov, och själva systemet
+öppnas fortfarande genom helscenen Valet efter säsongen.
+
 ## Genomfört åtgärdspass
 
 Samtliga konkreta fynd 1–16 samt rotfynden 18–20 åtgärdades i samma isolerade
@@ -560,15 +599,19 @@ spelarbågar, journalistrelation och burnout inte skulle ersättas.
   klackröster rotera, alltid med namn och roll.
 - Patronens kronologi och lokalpressens geografi är rättade vid källan och
   täcks även för befintliga sparningar.
+- Relationer och operativa funktioner följer nu en gemensam introduktionsbåge;
+  namn, följder och Attention-notiser visas inte före sin kontakt, medan de
+  sportsliga verktygen förklaras av assisterande tränaren vid första besöket.
 
 ## Verifiering
 
 - TypeScript: godkänd.
 - Fokuserade regressioner för patron, klack, lokaltidning och matchscener:
   godkända.
-- Hela testsviten: **585 testfiler, 5 246 testfall, noll fel**.
+- Hela testsviten efter introduktionspasset: **585 testfiler, 5 248 testfall,
+  noll fel**.
 - Produktionsbygge och samtliga inbyggda design-, innehålls- och
-  konsekvenskontroller: godkända. Huvudchunk 1 399,40 kB, fortsatt under
+  konsekvenskontroller: godkända. Huvudchunk 1 401,85 kB, fortsatt under
   releasegränsen 1,5 MB.
 
 ## Status

@@ -7,6 +7,7 @@ import { CLUB_TEMPLATES } from '../../worldGenerator'
 import type { SaveGame } from '../../../entities/SaveGame'
 import type { Mecenat } from '../../../entities/Mecenat'
 import type { Player } from '../../../entities/Player'
+import { mecenatVoiceId } from '../../voiceIntroductionService'
 
 /**
  * SPEC_O1_MECENATENS_KRAV_2026-09-09 — O1-kandidat 1/4 (varsel-mallens 5/5).
@@ -40,9 +41,15 @@ function makeGameWithVeteranAndMecenat(overrides: { mecenatHappiness?: number; n
   const template = CLUB_TEMPLATES[0]
   const game = createNewGame({ managerName: 'Test', clubId: template.id, seed: 1 })
   const veteran = game.players.find(p => p.clubId === game.managedClubId)!
+  const mecenat = makeMecenat({ happiness: overrides.mecenatHappiness ?? MECENAT_KRAV_HAPPINESS_THRESHOLD })
+  const voiceId = mecenatVoiceId(game.managedClubId, mecenat.id)
   return {
     ...game,
-    mecenater: [makeMecenat({ happiness: overrides.mecenatHappiness ?? MECENAT_KRAV_HAPPINESS_THRESHOLD })],
+    mecenater: [mecenat],
+    introducedVoices: {
+      ...(game.introducedVoices ?? {}),
+      [voiceId]: { provenance: 'observed', source: 'event' },
+    },
     players: game.players.map(p =>
       p.id === veteran.id ? { ...p, trait: overrides.noVeteran ? undefined : 'veteran', isInjured: false } : p
     ),

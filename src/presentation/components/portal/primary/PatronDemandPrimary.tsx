@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import { canVoiceSpeak, patronVoiceId } from '../../../../domain/services/voiceIntroductionService'
 
 /**
  * Primary-kort för patron-konflikt.
@@ -10,6 +11,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
   const patron = game.patron
 
   if (!patron || !patron.isActive) return null
+  if (!canVoiceSpeak(game, patronVoiceId(game.managedClubId, patron.id))) return null
 
   const demand = patron.demands?.[0] ?? 'Kräver åtgärd'
   const goodwill = patron.goodwill ?? 50
