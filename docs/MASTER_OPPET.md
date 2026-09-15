@@ -23,7 +23,7 @@
 
 ## AKTUELL STATUS
 
-**7 aktiva poster:** `stickiness-drift-backend` plus sex `begriplighet-klass-*`-rader (BEGRIPLIGHETSREVISION_2026-09-12-passet, claimade och pushade 2026-09-15, 1→7). Räkna endast faktiska datarader med status `rapporterad`, `verifierad` eller `in_progress`; historiska räknarändringar och stängda poster finns i `docs/MASTER_ARKIV.md`.
+**6 aktiva poster:** `stickiness-drift-backend` plus fem `begriplighet-klass-*`-rader (BEGRIPLIGHETSREVISION_2026-09-12-passet, claimade och pushade 2026-09-15, 1→7). `begriplighet-klass-a-verifiering` stängdes samma dag efter ett verkligt fynd + fix (economicCrisisService.ts, se ARKIV), 7→6. Räkna endast faktiska datarader med status `rapporterad`, `verifierad` eller `in_progress`; historiska räknarändringar och stängda poster finns i `docs/MASTER_ARKIV.md`.
 
 **Stående regel (2026-09-08):** att stänga en rad = FLYTTA den till `MASTER_ARKIV.md`, aldrig bara stämpla om den `klar`/`stale` på plats. En rad som blir terminal och inte flyttas samma pass är en läckt regel, inte en genväg.
 
@@ -308,7 +308,6 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
-| begriplighet-klass-a-verifiering | Verifiera att röstregistrets entré-gate är uttömmande — finns en namngiven aktör som producerar en yta utan att gå via `getVoiceEligibleEvents`? | in_progress | Code | §Klass A | CLAIM 2026-09-15T00:00:00+02:00 — Code. Grep alla event-fabriker/`pendingEvents.push` för `sender.name` satt utan motsvarande `voiceId`/`introducesVoiceId`. Förväntat: noll träffar (gaten byggd i röstintroduktionspasset 2026-09-14) — verifiera, gissa inte. |
 | begriplighet-klass-b-kartlaggning | Följd utan orsak — en mätare (fanMood, communityStanding, supporterGroup.mood, finances) ändras > tröskel utan tillhörande liggarpost/synlig rad | in_progress | Code | §Klass B | CLAIM 2026-09-15T00:00:00+02:00 — Code. Lista varje kodväg som muterar de fyra mätarna med en materiell ändring, kryssa om samma väg skriver en `eventLedger`-post eller synlig rad. Föräldralösa mutationer → kandidatlista, ingen fix här. |
 | begriplighet-klass-c-kandidatlista | Val utan begripliga konsekvenser — ett besluts `choices[].effect` rör en mätare korttexten inte nämner | in_progress | Code | §Klass C | CLAIM 2026-09-15T00:00:00+02:00 — Code. Bara kandidatlistan (bedömningen är Opus/playalong): lista choices vars effect-mätare saknas i title/body/subtitle. Ingen fix, ingen dom. |
 | begriplighet-klass-d-e-inventering | Status utan skala (tal utan referensram) + verktyg utan syfte (flik/funktion utan introduktion) | in_progress | Code | §Klass D/E | CLAIM 2026-09-15T00:00:00+02:00 — Code. D: lista visade numeriska fält i Portal/OrtenTab utan min/max/normal-kontext i UI. E: lista varje flik/funktion i navigationen och OrtenTab, kryssa introduktion-ja/nej. Nej-raderna → kandidatlista, Opus dömer vilka som behöver kontext. |

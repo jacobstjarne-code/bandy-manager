@@ -37,7 +37,11 @@ describe('Medium 4 — minst en nåbar critical-produktionsinstans', () => {
     const event = checkEconomicCrisis(game, 10).event // startedMatchday(1) + 5 ≤ 10 → fas 3 nås
     expect(event).not.toBeNull()
     expect(event!.type).toBe('criticalEconomy')
-    expect(event!.whyNow).toEqual({ whyNowPerson: 'Johan Bergstedt' })
+    // begriplighet-klass-a-verifiering (2026-09-15): whyNowPerson är nu
+    // klubbens riktiga, redan röstregistrerade kassör — inte ett hårdkodat
+    // fiktivt namn utan entré (den gamla 'Johan Bergstedt').
+    const treasurer = game.board!.find(m => m.role === 'kassör')!
+    expect(event!.whyNow).toEqual({ whyNowPerson: `${treasurer.firstName} ${treasurer.lastName}` })
     expect(getEffectivePriority(event!)).toBe('critical')
   })
 

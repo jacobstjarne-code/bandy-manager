@@ -4,6 +4,23 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import type { GameEvent } from '../entities/GameEvent'
+import type { VoiceId } from '../entities/Voice'
+import { boardVoiceId, isVoiceIntroduced } from './voiceIntroductionService'
+
+/**
+ * begriplighet-klass-a-verifiering (2026-09-15): boardVoiceId(...) är bara
+ * en identitet — den introducerar ingen röst av sig själv. seedTilltradeVoices
+ * (som normalt registrerar hela styrelsen) körs FÖRST vid markOnboardingComplete
+ * (gameStore.ts), INTE i createNewGame. En kris kan i teorin (om än osannolikt
+ * i praktiken — startkassan är alltid långt över −200k) triggas innan
+ * onboardingen är klar. Sätts bara `voiceId` i det läget matchar eventet
+ * aldrig canEventPassVoiceGate (introducesSelf blir alltid falskt för ett
+ * rent voiceId) och blir för evigt olösbart — en permanent softlock, värre
+ * än buggen som fixas. Väljer rätt fält beroende på om rösten redan är känd.
+ */
+function boardSenderVoiceField(game: SaveGame, voiceId: VoiceId): { voiceId: VoiceId } | { introducesVoiceId: VoiceId } {
+  return isVoiceIntroduced(game, voiceId) ? { voiceId } : { introducesVoiceId: voiceId }
+}
 
 export interface EconomicCrisisCheckResult {
   event: GameEvent | null
@@ -42,13 +59,22 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
     const currentMatchday = game.fixtures
       .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
       .reduce((m, f) => Math.max(m, f.matchday ?? 0), 0)
+    // begriplighet-klass-a-verifiering (2026-09-15): hade tidigare ett
+    // hårdkodat fiktivt namn ('Anders Lindgren'), frikopplat från klubbens
+    // faktiska seedade ordförande (game.board, redan röstregistrerad vid
+    // Tillträdet via seedTilltradeVoices/boardVoiceId) och utan voiceId —
+    // en namngiven aktör som talade utan entré, samma buggklass som
+    // Carina-fyndet. Använder nu den riktiga ordföranden.
+    const chairman = game.board?.find(m => m.role === 'ordförande')
+    const chairmanName = chairman ? `${chairman.firstName} ${chairman.lastName}` : 'Ordföranden'
     return {
       event: {
         id: eventId,
         type: 'criticalEconomy',
         title: 'Styrelsen ringer — krismöte',
-        body: `Anders Lindgren (styrelsen) ringer klockan 22:17.\n\n"Jag har sett siffrorna. Vi är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Det här är inte ett sponsorproblem — det är ett strukturellt problem. Jag vill träffa dig. I morgon. Inte på klubbkontoret. På Stadshotellet. Jag bjuder."`,
-        sender: { name: 'Anders Lindgren', role: 'Styrelsens ordförande' },
+        body: `${chairmanName} (styrelsen) ringer klockan 22:17.\n\n"Jag har sett siffrorna. Vi är på ${managedClub.finances.toLocaleString('sv-SE')} kr. Det här är inte ett sponsorproblem — det är ett strukturellt problem. Jag vill träffa dig. I morgon. Inte på klubbkontoret. På Stadshotellet. Jag bjuder."`,
+        sender: { name: chairmanName, role: 'Ordförande' },
+        ...(chairman ? boardSenderVoiceField(game, boardVoiceId(game.managedClubId, chairman.id)) : {}),
         choices: [],
         resolved: false,
         priority: 'critical',
@@ -204,13 +230,20 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
       ? `Ekonomichefen har räknat. Det finns ${pathCountWord} ${pathWord}:`
       : `Ekonomichefen har räknat. Ingen i truppen går att sälja utan att röra legendstatusen — kvar finns ${pathCountWord} ${pathWord}:`
 
+    // begriplighet-klass-a-verifiering (2026-09-15): samma fynd som fas 1 —
+    // 'Johan Bergstedt'/'Ekonomichef' var hårdkodat och oregistrerat.
+    // 'Ekonomichef' är inte ens en modellerad BoardRole; klubbens riktiga
+    // motsvarighet är kassören (game.board, role 'kassör').
+    const treasurer = game.board?.find(m => m.role === 'kassör')
+    const treasurerName = treasurer ? `${treasurer.firstName} ${treasurer.lastName}` : 'Kassören'
     return {
       event: {
         id: eventId,
         type: 'criticalEconomy',
         title: 'Två vägar ur krisen',
         body: `${intro}\n\n${pathTexts.join('\n\n')}`,
-        sender: { name: 'Johan Bergstedt', role: 'Ekonomichef' },
+        sender: { name: treasurerName, role: 'Kassör' },
+        ...(treasurer ? boardSenderVoiceField(game, boardVoiceId(game.managedClubId, treasurer.id)) : {}),
         relatedPlayerId: bestPlayer?.id,
         choices,
         resolved: false,
@@ -222,7 +255,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): Econo
         // av de tre valen (sell_star) faktiskt irreversibelt. Instans-satt,
         // inte typ-nivå: fas 1/2 (bastu-nivå brådska, ingen konkret ultimatum
         // än) förblir 'normal' via samma GameEventType.
-        whyNow: { whyNowPerson: 'Johan Bergstedt' },
+        whyNow: { whyNowPerson: treasurerName },
       },
       economicCrisisState: game.economicCrisisState,
     }
