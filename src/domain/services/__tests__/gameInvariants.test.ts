@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkInvariants } from '../gameInvariants'
+import { checkInvariants, checkFinanceLogGap } from '../gameInvariants'
 import { makeBaseGame } from '../../../presentation/screens/dev/gameStateFactory'
 
 // SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a — staleContracts-invarianten:
@@ -50,5 +50,60 @@ describe('gameInvariants — staleContracts', () => {
     }
     const findings = checkInvariants(freeAgent).filter(f => f.name === 'staleContracts')
     expect(findings).toEqual([])
+  })
+})
+
+// begriplighet-klass-b (BEGRIPLIGHETSREVISION_2026-09-12, Opus dom 2026-09-15):
+// checkFinanceLogGap tar TVÅ tillstånd (before/after), avsiktligt utanför
+// checkInvariants()'s single-state-kontrakt — se gameInvariants.ts:s
+// kommentar vid funktionen för varför.
+describe('gameInvariants — checkFinanceLogGap', () => {
+  it('ingen finding när kassaändringen matchar en financeLog-post samma omgång', () => {
+    const before = makeBaseGame({ seed: 1 })
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const after = {
+      ...before,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 1000 } : c),
+      financeLog: [...(before.financeLog ?? []), { round: 5, amount: -1000, reason: 'event' as const, label: 'test' }],
+    }
+    expect(checkFinanceLogGap(before, after, 5)).toEqual([])
+  })
+
+  it('flaggar en kassaändring utan någon financeLog-post samma omgång', () => {
+    const before = makeBaseGame({ seed: 1 })
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const after = {
+      ...before,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 5000 } : c),
+    }
+    const findings = checkFinanceLogGap(before, after, 5)
+    expect(findings).toHaveLength(1)
+    expect(findings[0]).toMatchObject({ name: 'financeLogGap', severity: 'warn' })
+    expect(findings[0].message).toContain('-5000')
+  })
+
+  it('flaggar en delvis förklarad ändring (loggat belopp matchar inte faktiskt delta)', () => {
+    const before = makeBaseGame({ seed: 1 })
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const after = {
+      ...before,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 5000 } : c),
+      financeLog: [...(before.financeLog ?? []), { round: 5, amount: -3000, reason: 'event' as const, label: 'delvis' }],
+    }
+    const findings = checkFinanceLogGap(before, after, 5)
+    expect(findings).toHaveLength(1)
+    expect(findings[0].message).toContain('-2000')
+  })
+
+  it('räknar bara financeLog-poster för RÄTT omgång, inte tidigare omgångars poster', () => {
+    const before = makeBaseGame({ seed: 1 })
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const after = {
+      ...before,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 1000 } : c),
+      financeLog: [...(before.financeLog ?? []), { round: 4, amount: -1000, reason: 'event' as const, label: 'fel omgång' }],
+    }
+    const findings = checkFinanceLogGap(before, after, 5)
+    expect(findings).toHaveLength(1)
   })
 })

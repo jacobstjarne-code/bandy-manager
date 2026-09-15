@@ -4,7 +4,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { InboxItemType, TrainingType, TrainingIntensity } from '../../../domain/enums'
 import { mulberry32 } from '../../../domain/utils/random'
-import { applyFinanceChange } from '../../../domain/services/economyService'
+import { applyFinanceChange, appendFinanceLog } from '../../../domain/services/economyService'
 import { RISKY_SPONSOR_CONTRACT_ROUNDS } from '../../../domain/data/eventProcessorStrings'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { isActiveLicenseWarning } from '../../../domain/services/licenseService'
@@ -326,6 +326,16 @@ export function applyRiskySponsorMaturation(
   const paidSoFar = sponsor.weeklyIncome * roundsElapsed
   const clawback = Math.round(paidSoFar * RISKY_SPONSOR_CLAWBACK_SHARE)
   const clubsAfter = applyFinanceChange(game.clubs, game.managedClubId, -clawback)
+  // begriplighet-klass-b (2026-09-15): applyFinanceChange skrev tidigare
+  // beloppet utan en financeLog-post — kassaskärmen kunde aldrig i efterhand
+  // förklara VARFÖR summan sjönk, samma "följd utan orsak"-buggklass som
+  // resten av klass B jagade. Varje financeLog-mutation ska lämna ett spår.
+  const financeLogAfter = appendFinanceLog(game.financeLog ?? [], {
+    round: nextMatchday,
+    amount: -clawback,
+    reason: 'sponsorship',
+    label: `${sponsorName} — återkrav efter exponering`,
+  })
 
   // Effekt 3: anseende −4 — mildare än O1-konfliktkortets −6. Jacobs dom: att
   // bli lurad väger lättare än att aktivt välja bort någon.
@@ -335,6 +345,7 @@ export function applyRiskySponsorMaturation(
     ...game,
     sponsors: sponsorsAfter,
     clubs: clubsAfter,
+    financeLog: financeLogAfter,
     communityStanding: communityStandingAfter,
     riskySponsorContract: undefined,
     inbox: [...game.inbox, {

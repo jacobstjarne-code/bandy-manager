@@ -16,7 +16,7 @@ import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 
 import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
-import { checkInvariants } from '../src/domain/services/gameInvariants'
+import { checkInvariants, checkFinanceLogGap } from '../src/domain/services/gameInvariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
 import { extractMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'
@@ -153,6 +153,7 @@ async function main(): Promise<void> {
 
         // Advance
         let roundPlayed: number | null = null
+        const gameBeforeAdvance = game
         try {
           const result = advanceToNextEvent(game, stepSeed++)
           game = result.game
@@ -176,6 +177,12 @@ async function main(): Promise<void> {
               extractEconSnapshot(result.game, roundPlayed, result.game.standings ?? [])
             )
             roundsThisSeason = roundPlayed
+
+            // begriplighet-klass-b (2026-09-15): generaliserad invariant —
+            // en kassaändring utan matchande financeLog-post samma omgång.
+            for (const f of checkFinanceLogGap(gameBeforeAdvance, result.game, roundPlayed)) {
+              warnings.push({ season, round: roundPlayed, finding: f })
+            }
           }
 
           // B6: textmått — nya inbox-items denna omgång

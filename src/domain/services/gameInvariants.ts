@@ -363,3 +363,36 @@ function checkUniquePlayerIds(game: SaveGame): InvariantFinding[] {
     message: `${dupes.size} spelar-id förekommer mer än en gång i game.players: ${[...dupes].slice(0, 3).join(', ')}`,
   }]
 }
+
+// begriplighet-klass-b (BEGRIPLIGHETSREVISION_2026-09-12, Opus dom 2026-09-15):
+// generaliserad invariant — en applyFinanceChange-mutation utan en matchande
+// appendFinanceLog-post samma omgång är ett brott (financelog-gap-diagnos-
+// 2026-09-01.ts fann konkreta instanser av exakt detta mönster; den sponsor-
+// clawback-buggen begriplighetsrevisionen hittade var en till). AVSIKTLIG
+// UNDANTAG från filens egna single-state-kontrakt: en logglucka kan bara
+// upptäckas som en ÖVERGÅNG (before → after), inte ur ett enda tillstånd.
+// Anropas explicit med två tillstånd, ingår INTE i checkInvariants()'s
+// samlade lista — anroparen (idag scripts/stress-test.ts) äger before/after-
+// paret från sin egen rond-loop.
+export function checkFinanceLogGap(
+  before: SaveGame,
+  after: SaveGame,
+  round: number,
+): InvariantFinding[] {
+  const clubId = after.managedClubId
+  const financesBefore = before.clubs.find(c => c.id === clubId)?.finances
+  const financesAfter = after.clubs.find(c => c.id === clubId)?.finances
+  if (financesBefore === undefined || financesAfter === undefined) return []
+
+  const actualDelta = financesAfter - financesBefore
+  const roundEntries = (after.financeLog ?? []).filter(e => e.round === round)
+  const loggedDelta = roundEntries.reduce((sum, e) => sum + e.amount, 0)
+  const gap = actualDelta - loggedDelta
+  if (gap === 0) return []
+
+  return [{
+    name: 'financeLogGap',
+    severity: 'warn',
+    message: `omgång ${round}: kassan ändrades ${gap > 0 ? '+' : ''}${gap} kr utan matchande financeLog-post (faktisk delta ${actualDelta}, loggad ${loggedDelta})`,
+  }]
+}

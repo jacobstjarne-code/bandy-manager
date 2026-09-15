@@ -32,6 +32,7 @@ import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilit
 import type { FacilityFinancingMode } from '../../domain/entities/Community'
 import { buildDecisionLedgerEntry, captureFacilityBuildDecision } from '../../domain/services/seasonDecisionCaptureService'
 import { logEvent } from '../../domain/services/eventLedgerService'
+import { buildCommunityShiftLedgerEntry, detectCommunityShiftDirection } from '../../domain/services/clubHistoryLedgerService'
 import type { ContractTermOffer } from '../../domain/services/contractNegotiationService'
 
 import { matchActions } from './actions/matchActions'
@@ -1196,9 +1197,31 @@ export const useGameStore = create<GameState>()(
         if (!can.ok) return { success: false, error: can.reason ?? 'Kan inte avvecklas' }
 
         const newState = decommissionFacilityNode(nodeId, state)
-        const newStanding = Math.max(0, (game.communityStanding ?? 50) - DECOMMISSION_COMMUNITY_STANDING_COST)
+        const csFrom = game.communityStanding ?? 50
+        const csTo = Math.max(0, csFrom - DECOMMISSION_COMMUNITY_STANDING_COST)
 
-        set({ game: { ...game, facilityState: newState, communityStanding: newStanding } })
+        const gameAfter = { ...game, facilityState: newState, communityStanding: csTo }
+        // begriplighet-klass-b (2026-09-15): CS-tappet förklarades bara i
+        // stundens UI (FacilityTab.tsx:s förhandsvisning) — ingen liggarpost
+        // skrevs, så kafferum/klack/Granska kunde aldrig referera det
+        // retroaktivt. Samma tröskelkorsnings-mönster roundProcessor.ts
+        // redan använder för alla andra CS-rörelser, inte en särskild väg.
+        const communityShiftDirection = detectCommunityShiftDirection(csFrom, csTo)
+        const gameWithLedger = communityShiftDirection
+          ? {
+              ...gameAfter,
+              eventLedger: logEvent(gameAfter, buildCommunityShiftLedgerEntry({
+                clubId: game.managedClubId,
+                season: game.currentSeason,
+                matchday: game.currentMatchday,
+                from: csFrom,
+                to: csTo,
+                direction: communityShiftDirection,
+              })),
+            }
+          : gameAfter
+
+        set({ game: gameWithLedger })
         return { success: true }
       },
 

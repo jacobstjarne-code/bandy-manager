@@ -90,6 +90,22 @@ describe('applyRiskySponsorMaturation', () => {
     expect(result.inbox.some(i => i.id === 'risky_sponsor_exposed_sponsor_risky')).toBe(true)
   })
 
+  // begriplighet-klass-b (2026-09-15): claw-backet mutade finances direkt
+  // utan financeLog-post — kassaskärmen kunde aldrig i efterhand förklara
+  // beloppet. checkFinanceLogGap (gameInvariants.ts) skyddar mönstret framåt.
+  it('claw-backet lämnar en financeLog-post — beloppet är spårbart i efterhand', () => {
+    let game = baseGame()
+    game = {
+      ...game,
+      sponsors: [makeRiskySponsor({ contractRounds: 40, weeklyIncome: 550 })],
+      riskySponsorContract: { sponsorId: 'sponsor_risky', riskMaturityRound: 14, acceptedRound: 8, season: game.currentSeason },
+    }
+    const result = applyRiskySponsorMaturation(game, 14, '2026-01-01', ALWAYS_FIRES)
+    const entry = result.financeLog!.find(e => e.round === 14 && e.amount === -1100)
+    expect(entry).toBeDefined()
+    expect(entry!.reason).toBe('sponsorship')
+  })
+
   it('claw-back är HÄLFTEN, inte allt av vad som betalats', () => {
     let game = baseGame()
     const startFinances = game.clubs.find(c => c.id === game.managedClubId)!.finances
