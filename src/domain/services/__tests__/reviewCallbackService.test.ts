@@ -211,4 +211,47 @@ describe('Berättaren steg 5 — Granska-callbacks', () => {
       post: award,
     })
   })
+
+  it.each([
+    ['burnoutCeiling:step_back', 'Du klev tillbaka en period när det tog för hårt. Första gången du valde dig själv.'],
+    ['burnoutCeiling:push_through', 'Du körde vidare fast kroppen sa ifrån. Det satte sina spår.'],
+  ] as const)('låter Granska återge managerbeslutet %s med årsbokens låsta mening', (semanticKey, text) => {
+    const { game, fixture } = setup()
+    const post: EventLedgerEntry = {
+      type: 'decision', semanticKey, clubId: game.managedClubId,
+      managerId: game.id, season: game.currentSeason, matchday: fixture.matchday,
+      significance: 100, madeByPlayer: true,
+      subject: { kind: 'manager', id: game.id },
+    }
+    expect(selectReviewCallback({
+      ...game,
+      currentMatchday: fixture.matchday,
+      eventLedger: [post],
+    }, fixture)).toEqual({
+      kind: 'manager_burnout', text, post,
+    })
+  })
+
+  it('manager-ekot visas bara en gång och gissar inte text för andra managerposter', () => {
+    const { game, fixture } = setup()
+    const post: EventLedgerEntry = {
+      type: 'decision', semanticKey: 'burnoutCeiling:step_back', clubId: game.managedClubId,
+      managerId: game.id, season: game.currentSeason, matchday: fixture.matchday,
+      significance: 100, madeByPlayer: true,
+      subject: { kind: 'manager', id: game.id },
+    }
+    const ledgerTold = markLedgerPostTold({}, post, 'review', {
+      season: game.currentSeason, matchday: fixture.matchday,
+    })
+    expect(selectReviewCallback({ ...game, eventLedger: [post], ledgerTold }, fixture)).toBeNull()
+    expect(selectReviewCallback({
+      ...game,
+      eventLedger: [{ ...post, semanticKey: 'manager:unknown' }],
+    }, fixture)).toBeNull()
+    expect(selectReviewCallback({
+      ...game,
+      currentMatchday: fixture.matchday + 5,
+      eventLedger: [post],
+    }, fixture)).toBeNull()
+  })
 })

@@ -7,12 +7,17 @@ import { agendaForSurface, redaktoren } from './redaktorenService'
 import { toldMarksFor } from './ledgerToldService'
 import { getManagerReturnContext } from './managerReturnService'
 import { resolveSubjectName } from './momentLedgerService'
+import {
+  getBurnoutCeilingPushThroughSentence,
+  getBurnoutCeilingStepBackSentence,
+} from '../data/seasonDecisionSentences'
 
 export type ReviewCallbackKind =
   | 'former_player_goal'
   | 'former_player_potm'
   | 'missed_target_potm'
   | 'manager_return'
+  | 'manager_burnout'
   | 'developed_player_award'
 
 export interface ReviewCallback {
@@ -161,6 +166,32 @@ function selectDevelopedPlayerCallback(game: SaveGame): ReviewCallback | null {
   return null
 }
 
+/**
+ * begriplighet-klass-f: managerposter var redan korrekt klassade för review,
+ * men saknade en konsument. Burnout-takets två terminalval återanvänder de
+ * Opus-låsta meningar som årsboken redan komponerar ur samma semanticKey.
+ * Inga andra managerposter får en gissad text.
+ */
+function selectManagerReviewCallback(game: SaveGame): ReviewCallback | null {
+  const agenda = agendaForSurface(redaktoren(game, currentChronology(game)), 'review')
+  for (const { post, freshnessQueue } of agenda) {
+    // Ett privat beslut är ett färskt eko, inte en lös historikrad som får
+    // dyka upp flera säsonger senare i en migrerad save.
+    if (freshnessQueue !== 'since_last') continue
+    if (post.subject?.kind !== 'manager' || post.subject.id !== game.id) continue
+    if (post.type !== 'decision') continue
+    if (toldMarksFor(game.ledgerTold, post).some(mark => mark.surface === 'review')) continue
+    const text = post.semanticKey === 'burnoutCeiling:step_back'
+      ? getBurnoutCeilingStepBackSentence()
+      : post.semanticKey === 'burnoutCeiling:push_through'
+        ? getBurnoutCeilingPushThroughSentence()
+        : null
+    if (!text) continue
+    return { kind: 'manager_burnout', text, post }
+  }
+  return null
+}
+
 /** SPEC_BERATTAREN §5: exakt en callback, med relationen före bakgrunden. */
 export function selectReviewCallback(game: SaveGame, fixture: Fixture): ReviewCallback | null {
   const formerPlayer = selectFormerPlayerCallback(game, fixture)
@@ -173,5 +204,7 @@ export function selectReviewCallback(game: SaveGame, fixture: Fixture): ReviewCa
       text: 'Första gången tillbaka. Läktaren minns, åt båda hållen.',
     }
   }
+  const manager = selectManagerReviewCallback(game)
+  if (manager) return manager
   return selectDevelopedPlayerCallback(game)
 }

@@ -16,7 +16,7 @@ import { SectionLabel } from '../components/SectionLabel'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { getArcMoodText } from '../../domain/services/trainerArcService'
 import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
-import { FEATURE_INTRODUCTIONS } from '../../domain/data/featureIntroductions'
+import { FEATURE_INTRODUCTIONS, getCommunityFeatureIntroductionSpeaker } from '../../domain/data/featureIntroductions'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -106,6 +106,7 @@ export function ClubScreen() {
   const arcMoodText = computeArcMoodText(game)
   const dismissed = game.dismissedHints ?? []
   const assistantName = game.assistantCoach?.name ?? 'Assisterande tränaren'
+  const communityIntroSpeaker = getCommunityFeatureIntroductionSpeaker(game)
   const treasurer = game.board?.find(member => member.role === 'kassör')
   const treasurerName = treasurer
     ? `${treasurer.firstName} ${treasurer.lastName}`.trim()
@@ -118,6 +119,9 @@ export function ClubScreen() {
   }
   const guidedIntroVisible = (activeTab === 'training' && !dismissed.includes('feature:training'))
     || (activeTab === 'ekonomi' && !dismissed.includes('feature:economy'))
+    || (activeTab === 'orten'
+      && communityIntroSpeaker !== null
+      && !dismissed.includes('feature:community'))
     || (activeTab === 'bygget'
       && (game.seasonSummaries?.length ?? 0) === 0
       && !dismissed.includes('feature:facility-season-one'))
@@ -216,7 +220,17 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} scrollToSection={rawSection} />
+          <>
+            {communityIntroSpeaker && !dismissed.includes('feature:community') && (
+              <FeatureIntroduction
+                speaker={communityIntroSpeaker.speaker}
+                role={communityIntroSpeaker.role}
+                text={FEATURE_INTRODUCTIONS.community}
+                onDismiss={() => dismissFeature('feature:community')}
+              />
+            )}
+            <OrtenTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} scrollToSection={rawSection} />
+          </>
         )}
 
         {/* ── Tab 4: Bygget ── */}

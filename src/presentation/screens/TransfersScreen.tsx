@@ -119,6 +119,8 @@ export function TransfersScreen() {
   }
   const guidedIntroVisible = (activeTab === 'marknad' && !dismissed.includes('feature:transfer-market'))
     || (activeTab === 'scouting' && !dismissed.includes('feature:scouting'))
+    || (activeTab === 'freeagents' && !dismissed.includes('feature:free-agents'))
+    || (activeTab === 'sell' && !dismissed.includes('feature:sell-players'))
 
   const availablePlayersForDot = game.players.filter(p =>
     p.clubId !== game.managedClubId &&
@@ -317,6 +319,22 @@ export function TransfersScreen() {
           role="Assisterande tränare"
           text={FEATURE_INTRODUCTIONS.scouting}
           onDismiss={() => dismissFeature('feature:scouting')}
+        />
+      )}
+      {activeTab === 'freeagents' && !dismissed.includes('feature:free-agents') && (
+        <FeatureIntroduction
+          speaker={assistantName}
+          role="Assisterande tränare"
+          text={FEATURE_INTRODUCTIONS.freeAgents}
+          onDismiss={() => dismissFeature('feature:free-agents')}
+        />
+      )}
+      {activeTab === 'sell' && !dismissed.includes('feature:sell-players') && (
+        <FeatureIntroduction
+          speaker={assistantName}
+          role="Assisterande tränare"
+          text={FEATURE_INTRODUCTIONS.sellPlayers}
+          onDismiss={() => dismissFeature('feature:sell-players')}
         />
       )}
 
