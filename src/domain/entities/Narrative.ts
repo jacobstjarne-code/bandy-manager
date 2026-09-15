@@ -361,7 +361,13 @@ export interface EventLedgerEntry {
   // 'referee' tillagd docs/dom/DOM_DOMARRELATION_2026-09-02.md (Jacobs dom) — samma
   // polymorfa union, en femte entitetstyp. Referee.id (redan ett stabilt
   // id-fält, ingen patron-liknande migrering behövs).
-  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee' | 'voice'; id: string }
+  // 'manager' tillagd BEGRIPLIGHETSREVISION_2026-09-12 §Klass F (Opus dom,
+  // 2026-09-15) — managern var redan en förstklassig identitet (managerId
+  // ovan) men kunde inte VARA subject, vilket gjorde att INGEN manager-
+  // centrerad post (burnout) någonsin kvalificerade för kafferum i
+  // redaktorenService.ts:s fitsSurfaces (den kräver `post.subject`). id
+  // pekar på game.id (en enda manager per save, inget separat register).
+  subject?: { kind: 'player' | 'club' | 'mecenat' | 'patron' | 'referee' | 'voice' | 'manager'; id: string }
   // Skärpning 3 (Fas 4 Moment-vägval, 2026-09-01, Opus dom): för genuint
   // två-parts-händelser — en Moment som redan bär BÅDA subjectPlayerId OCH
   // subjectClubId (transfer_story: spelaren + köpande klubben; rival_sale:

@@ -112,6 +112,16 @@ function fitsSurfaces(post: EventLedgerEntry): NarrativeSurface[] {
   const surfaces: NarrativeSurface[] = ['portal', 'efterklang', 'yearbook', 'push']
   if (PRESS_TYPES.has(post.type)) surfaces.push('press')
   if (REVIEW_TYPES.has(post.type)) surfaces.push('review')
+  // BEGRIPLIGHETSREVISION_2026-09-12 §Klass F (Opus dom, 2026-09-15):
+  // burnoutCeiling ska nå granska-eko men INTE press (privat, ingen
+  // presskonferens om utbrändhet). post.type för den posten är 'decision'
+  // — delad av flera orelaterade system (weeklyDecisionService,
+  // orsakVerkanService, seasonDecisionCaptureService m.fl.) — så att lägga
+  // 'decision' i REVIEW_TYPES hade gjort ALLA beslut granskningsbara, inte
+  // bara burnout. subject.kind==='manager' är den precisa gaten: bara
+  // manager-centrerade poster (idag bara burnoutCeiling) får review, ingen
+  // annan 'decision'-post rörs.
+  if (post.subject?.kind === 'manager') surfaces.push('review')
   if (post.subject) surfaces.push('coffee_room')
   return surfaces
 }

@@ -2966,6 +2966,44 @@ export function resolveEvent(
           tension: true,
           systemsAffectedCount: 4,
           madeByPlayer: true,
+          // BEGRIPLIGHETSREVISION_2026-09-12 §Klass F (Opus dom,
+          // 2026-09-15): spelets högsta significance (100) nådde ändå
+          // FÄRST portal/efterklang/yearbook/push — subject saknades, så
+          // redaktorenService.ts:s fitsSurfaces gav varken kafferum eller
+          // granska-eko. subject.kind:'manager' ger båda (se
+          // redaktorenService.ts och momentLedgerService.ts).
+          subject: { kind: 'manager', id: updatedGame.id },
+        }),
+      }
+    }
+  }
+
+  // BEGRIPLIGHETSREVISION_2026-09-12 §Klass F (Opus dom, 2026-09-15):
+  // supporter_conflict (supporterEvents.ts) var en ren supporterMood-
+  // mutation utan liggarpost — kunde strukturellt aldrig eka i kafferum/
+  // klack/Granska (de läser bara game.eventLedger). Skriver nu en 'decision'-
+  // post oavsett vilket av de tre valen som gjordes (alla tre representerar
+  // att konflikten adresserades, bara på olika sätt). subject = klackledarens
+  // REDAN röstregistrerade identitet (samma voiceId eventet självt bär) —
+  // coffeeRoomService.ts:s befintliga "Det pratas om {name}."-pool blir
+  // korrekt utan ny text.
+  if (madeByPlayer && event.id.startsWith('supporter_conflict_')) {
+    const semanticKey = `supporterConflict:${updatedGame.currentSeason}`
+    const alreadyLogged = (updatedGame.eventLedger ?? []).some(entry =>
+      entry.type === 'decision'
+      && entry.semanticKey === semanticKey
+      && entry.season === updatedGame.currentSeason)
+    if (!alreadyLogged && event.voiceId) {
+      updatedGame = {
+        ...updatedGame,
+        eventLedger: logEvent(updatedGame, {
+          type: 'decision',
+          semanticKey,
+          season: updatedGame.currentSeason,
+          matchday: updatedGame.currentMatchday,
+          significance: 55,
+          madeByPlayer: true,
+          subject: { kind: 'voice', id: event.voiceId },
         }),
       }
     }

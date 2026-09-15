@@ -196,5 +196,9 @@ export function resolveSubjectName(
       return isVoiceId(subject.id)
         ? game.introducedVoices?.[subject.id]?.nameSnapshot
         : undefined
+    case 'manager':
+      // BEGRIPLIGHETSREVISION_2026-09-12 §Klass F — en enda manager per
+      // save, inget register att slå upp id mot; namnet är alltid aktuellt.
+      return subject.id === game.id ? game.managerName : undefined
   }
 }
