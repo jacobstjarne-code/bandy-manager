@@ -12,7 +12,7 @@ const OPP = 'club_2'
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
     managedClubId: MANAGED, cupBracket: null, playoffBracket: null,
-    clubs: [], fixtures: [], currentMatchday: 8,
+    clubs: [], fixtures: [], currentSeason: 8, currentMatchday: 8,
     ...overrides,
   } as SaveGame
 }
@@ -177,7 +177,10 @@ describe('getAwaitingNextRoundInfo', () => {
     const game = makeGame({
       cupBracket: bracket,
       clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
-      fixtures: [{ id: 'f2', matchday: 8, date: '2027-03-12' } as SaveGame['fixtures'][number]],
+      fixtures: [
+        { id: 'league-before', season: 8, matchday: 7, status: 'scheduled', homeClubId: MANAGED, awayClubId: OPP } as SaveGame['fixtures'][number],
+        { id: 'f2', season: 8, matchday: 8, date: '2027-03-12', status: 'scheduled', isCup: true, isKnockout: true, homeClubId: MANAGED, awayClubId: 'club_3' } as SaveGame['fixtures'][number],
+      ],
     })
     expect(getAwaitingNextRoundInfo(game, 'cup')).toEqual({
       title: 'Nästa rond: IFK Testby',
@@ -185,7 +188,7 @@ describe('getAwaitingNextRoundInfo', () => {
     })
   })
 
-  it('cup, motståndare känd men fixture saknar datum — "om N omgångar" i body', () => {
+  it('cup, cupmatchen kommer före nästa seriematch — cupen gäller', () => {
     const bracket = cupBracketWith([
       { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
       { id: 'm2', round: 2, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: 'club_3' },
@@ -194,12 +197,48 @@ describe('getAwaitingNextRoundInfo', () => {
       cupBracket: bracket,
       currentMatchday: 5,
       clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
-      fixtures: [{ id: 'f2', matchday: 8 } as SaveGame['fixtures'][number]],
+      fixtures: [
+        { id: 'f2', season: 8, matchday: 8, status: 'scheduled', isCup: true, isKnockout: true, homeClubId: MANAGED, awayClubId: 'club_3' } as SaveGame['fixtures'][number],
+        { id: 'league-after', season: 8, matchday: 9, status: 'scheduled', homeClubId: MANAGED, awayClubId: OPP } as SaveGame['fixtures'][number],
+      ],
     })
     expect(getAwaitingNextRoundInfo(game, 'cup')).toEqual({
       title: 'Nästa rond: IFK Testby',
-      body: 'om 3 omgångar. Tills dess är det serien som räknas.',
+      body: 'om 3 omgångar. Tills dess är det cupen som gäller.',
     })
+  })
+
+  it('cup, ingen kommande seriematch — cupen gäller', () => {
+    const bracket = cupBracketWith([
+      { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+      { id: 'm2', round: 2, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: 'club_3' },
+    ])
+    const game = makeGame({
+      cupBracket: bracket,
+      currentMatchday: 5,
+      clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
+      fixtures: [
+        { id: 'f2', season: 8, matchday: 8, status: 'scheduled', isCup: true, isKnockout: true, homeClubId: MANAGED, awayClubId: 'club_3' } as SaveGame['fixtures'][number],
+      ],
+    })
+    expect(getAwaitingNextRoundInfo(game, 'cup')?.body).toBe('om 3 omgångar. Tills dess är det cupen som gäller.')
+  })
+
+  it('cup och serie på samma matchday — cupen är nästa hinder', () => {
+    const bracket = cupBracketWith([
+      { id: 'm1', round: 1, fixtureId: 'f1', homeClubId: MANAGED, awayClubId: OPP, winnerId: MANAGED },
+      { id: 'm2', round: 2, fixtureId: 'f2', homeClubId: MANAGED, awayClubId: 'club_3' },
+    ])
+    const game = makeGame({
+      cupBracket: bracket,
+      currentMatchday: 5,
+      clubs: [{ id: 'club_3', name: 'IFK Testby' }] as SaveGame['clubs'],
+      fixtures: [
+        { id: 'f2', season: 8, matchday: 8, status: 'scheduled', isCup: true, isKnockout: true, homeClubId: MANAGED, awayClubId: 'club_3' } as SaveGame['fixtures'][number],
+        { id: 'league-same-day', season: 8, matchday: 8, status: 'scheduled', homeClubId: MANAGED, awayClubId: OPP } as SaveGame['fixtures'][number],
+      ],
+    })
+    expect(getAwaitingNextRoundInfo(game, 'cup')?.body).toBe('om 3 omgångar. Tills dess är det cupen som gäller.')
   })
 })
 

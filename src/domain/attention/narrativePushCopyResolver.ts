@@ -261,7 +261,7 @@ export function createNarrativePushCopyResolver(
         : {
             voice,
             title: `${opponentName}. Igen.`,
-            body: `${resultat} förra gången. Den siffran står kvar i Krönikan.`,
+            body: `${resultat} förra gången. Den siffran står kvar i din karriärhistorik.`,
           }
     }
 

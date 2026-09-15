@@ -144,14 +144,26 @@ export function getAwaitingNextRoundInfo(game: SaveGame, tavlingstyp: Tavlingsty
   const opponentId = nextMatch.homeClubId === managedClubId ? nextMatch.awayClubId : nextMatch.homeClubId
   const opponent = game.clubs.find(c => c.id === opponentId)
   const fixture = game.fixtures.find(f => f.id === nextMatch.fixtureId)
+  const nextLeagueFixture = game.fixtures
+    .filter(f =>
+      f.status === 'scheduled' &&
+      f.season === game.currentSeason &&
+      !f.isCup &&
+      !f.isKnockout &&
+      (f.homeClubId === managedClubId || f.awayClubId === managedClubId),
+    )
+    .sort((a, b) => a.matchday - b.matchday)[0]
   const whenClause = fixture?.date
     ? new Date(fixture.date).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
     : fixture
       ? `om ${Math.max(1, fixture.matchday - game.currentMatchday)} omgångar`
       : 'snart'
+  const competitionClause = fixture && nextLeagueFixture?.matchday < fixture.matchday
+    ? 'Tills dess är det serien som räknas.'
+    : 'Tills dess är det cupen som gäller.'
 
   return {
     title: `Nästa rond: ${opponent?.name ?? 'Okänd motståndare'}`,
-    body: `${whenClause}. Tills dess är det serien som räknas.`,
+    body: `${whenClause}. ${competitionClause}`,
   }
 }

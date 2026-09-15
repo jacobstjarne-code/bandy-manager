@@ -294,6 +294,7 @@ describe('createNarrativePushCopyResolver', () => {
     expect(first?.voice).toBe('press')
     expect(second?.voice).toBe('club')
     expect(second?.title).toBe('Skutskärs IF. Igen.')
+    expect(second?.body).toBe('2–6 förra gången. Den siffran står kvar i din karriärhistorik.')
   })
 
   it('revansch: förlorad derby (outcome=lost) förra säsongen ger "förra säsongen", inte "i höstas"', () => {
