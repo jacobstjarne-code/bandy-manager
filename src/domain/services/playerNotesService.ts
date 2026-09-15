@@ -12,13 +12,23 @@ export interface PlayerNote {
 }
 
 function determineTag(p: Player): NoteTag | null {
+  // Anteckningen handlar om faktisk speltid/form, inte om en viss tävling.
+  // Säsongsstatistiken är avsiktligt liga-only; cupen ligger separat.
+  const league = p.seasonStats
+  const cup = p.seasonCupStats
+  const gamesPlayed = league.gamesPlayed + (cup?.gamesPlayed ?? 0)
+  const goals = league.goals + (cup?.goals ?? 0)
+  const ratingGames = league.gamesPlayed + (cup?.gamesPlayed ?? 0)
+  const averageRating = ratingGames > 0
+    ? ((league.averageRating * league.gamesPlayed) + ((cup?.averageRating ?? 0) * (cup?.gamesPlayed ?? 0))) / ratingGames
+    : 0
+
   if (p.fitness < 50) return 'trött'
-  if (p.seasonStats.goals >= 3 && p.seasonStats.gamesPlayed <= 5) return 'skottform'
-  const avgRating = p.seasonStats.averageRating
-  if (avgRating >= 8.0 && p.seasonStats.gamesPlayed >= 2) return 'glödande'
+  if (goals >= 3 && gamesPlayed <= 5) return 'skottform'
+  if (averageRating >= 8.0 && gamesPlayed >= 2) return 'glödande'
   const loyalty = p.loyaltyScore ?? 5
   if (loyalty <= 3 && p.morale < 40) return 'missnöjd'
-  if (p.age < 24 && p.seasonStats.gamesPlayed === 0) return 'vill-mer'
+  if (p.age < 24 && gamesPlayed === 0) return 'vill-mer'
   if (p.form < 35) return 'sviktande'
   return null
 }

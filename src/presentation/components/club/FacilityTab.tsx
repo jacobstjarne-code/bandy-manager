@@ -153,6 +153,7 @@ export function FacilityTab({ game, navigate, startFacilityBuildNode, decommissi
           }}
           clubName={managedClub?.arenaName ?? managedClub?.name}
           hallNodeSub={formatHallNodeSub(game)}
+          previewOnly={isSeason1}
         />
       </SectionCard>
 

@@ -26,3 +26,11 @@
   margin-bottom: 8px;
   line-height: 1.45;
 }
+
+.squad-formation-recommended {
+  color: var(--accent-text);
+}
+
+.squad-formation-current {
+  color: var(--success);
+}

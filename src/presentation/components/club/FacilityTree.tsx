@@ -11,6 +11,8 @@ interface FacilityTreeProps {
   selectedNodeId?: string
   onSelect?: (nodeId: string) => void
   clubName?: string
+  /** Season-one preview: available nodes are not actionable until Valet. */
+  previewOnly?: boolean
   /** Block 3a — HALLNODE_SUBS[stage] med riktiga värden ifyllda (hallProcessService.formatHallNodeSub). */
   hallNodeSub?: string
 }
@@ -91,7 +93,7 @@ function CooldownDots({ total, filled }: { total: number; filled: number }) {
   )
 }
 
-function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive, builtNodeIds, currentMatchday }: {
+function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive, builtNodeIds, currentMatchday, previewOnly }: {
   view: FacilityNodeView
   mode: 'betrakta' | 'valj'
   selected: boolean
@@ -100,6 +102,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
   hallTrialActive?: boolean
   builtNodeIds: string[]
   currentMatchday: number
+  previewOnly?: boolean
 }) {
   const { def, status } = view
   const isHall = def.isHall
@@ -122,7 +125,7 @@ function NodeCard({ view, mode, selected, onSelect, hallNodeSub, hallTrialActive
     if (isHall) return 'Prövning'
     if (status === 'built') return view.completedSeason ? `Byggd ${view.completedSeason}` : 'Byggd'
     if (status === 'ongoing') return 'Pågår'
-    if (status === 'available') return 'Möjlig'
+    if (status === 'available') return previewOnly ? 'Efter Valet' : 'Möjlig'
     // Bug 2 (AUDIT DEL 4, A4): taggen visade tidigare bara requires[0] — vilseledande
     // för noder med flera krav (t.ex. akademi_3: traningshall + akademi_2). Generisk
     // tagg, full uppdelning per krav visas i LockRequirements nedan.
@@ -268,6 +271,7 @@ export function FacilityTree({
   onSelect,
   clubName,
   hallNodeSub,
+  previewOnly = false,
 }: FacilityTreeProps) {
   const hallTrialActive = !!facilityState.hallTrial
   const tree = getFacilityTreeByGren(facilityState, currentMatchday)
@@ -349,6 +353,7 @@ export function FacilityTree({
                     hallTrialActive={view.def.isHall ? hallTrialActive : undefined}
                     builtNodeIds={facilityState.builtNodeIds}
                     currentMatchday={currentMatchday}
+                    previewOnly={previewOnly}
                   />
                 </div>
               ))}

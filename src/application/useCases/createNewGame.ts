@@ -92,17 +92,23 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const { bracket: cupBracket, fixtures: rawCupFixtures } = generateCupFixtures(clubsSortedByRep.map(c => c.id), season, cupRand)
   const cupFixtures = stampFixturesFromCalendar(rawCupFixtures, calendar)
 
-  // Pre-generate weather for round 1 so it's visible before first match
-  const round1Fixtures = fixtures.filter(f => f.roundNumber === 1)
-  const round1Weathers: MatchWeather[] = round1Fixtures.map((f, i) => {
+  const allFixtures = [...fixtures, ...cupFixtures]
+
+  // Förhandsvädret ska tillhöra den första MATCHDAGEN, inte den första
+  // serieomgången. Säsongen börjar med cup, och serie-only-urvalet gjorde
+  // därför att spelarens första match visade "Okänt väder". Samma seedform
+  // som roundProcessor/matchSimProcessor använder bevarar simuleringens
+  // determinism och kalibrering.
+  const firstMatchday = Math.min(...allFixtures.map(f => f.matchday))
+  const firstMatchdayFixtures = allFixtures.filter(f => f.matchday === firstMatchday)
+  const firstMatchdaySeed = firstMatchday * 1000 + season * 7
+  const firstMatchdayWeathers: MatchWeather[] = firstMatchdayFixtures.map((f, i) => {
     const homeClub = clubs.find(c => c.id === f.homeClubId)!
-    return generateMatchWeather(season, 1, homeClub, f.id, (input.seed ?? 42) + 50000 + i * 7919)
+    return generateMatchWeather(season, firstMatchday, homeClub, f.id, firstMatchdaySeed + i * 7919, undefined, f.date)
   })
 
   const now = new Date().toISOString()
   const saveId = `save_${Date.now()}`
-
-  const allFixtures = [...fixtures, ...cupFixtures]
 
   // Ensure the player's chosen club doesn't have hasIndoorArena
   const initialWageBudget = calculateWageBudget(players, input.clubId)
@@ -155,7 +161,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       pendingOffers: [],
     },
     youthIntakeHistory: [],
-    matchWeathers: round1Weathers,
+    matchWeathers: firstMatchdayWeathers,
     managedClubPendingLineup: defaultLineup,
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
     trainingHistory: [],

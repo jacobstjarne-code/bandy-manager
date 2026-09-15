@@ -665,12 +665,18 @@ function buildCoffeeRoomScene(game: SaveGame): LegacyCoffeeScene | null {
   // fanns ens i gamla getCoffeeRoomQuote) — utanför den här portens scope.
   if (game.pendingVictoryEcho && shouldSurfaceVictoryEcho(game, game.pendingVictoryEcho)) {
     const echoKey = game.pendingVictoryEcho.coffeeSemanticKey
+    // Older saves may contain the pre-fix "Speaker: \"line\"" shape. Split it
+    // at the boundary so both old and new echoes use the normal speaker/text
+    // renderer and receive quotation marks exactly once.
+    const legacySpokenLine = game.pendingVictoryEcho.coffeeLine.match(/^([^:]+):\s*["“](.*)["”]$/s)
+    const speaker = game.pendingVictoryEcho.coffeeSpeaker ?? legacySpokenLine?.[1]
+    const text = legacySpokenLine?.[2] ?? game.pendingVictoryEcho.coffeeLine
     return {
       exchanges: [],
       pickedIndices: [],
       narrativeKeys: echoKey ? [echoKey] : [],
       meta: { title: 'Kafferummet' },
-      narratorLine: { text: game.pendingVictoryEcho.coffeeLine },
+      narratorLine: { ...(speaker ? { speaker } : {}), text },
       consumedVictoryEcho: true,
     }
   }

@@ -20,7 +20,7 @@ import { AkademiTab } from '../components/club/AkademiTab'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { SeasonArcCard } from '../components/squad/SeasonArcCard'
 import { StillnessSection } from '../components/squad/StillnessSection'
-import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
+import { getRecommendedFormation, FORMATION_META, FORMATIONS } from '../../domain/entities/Formation'
 import { TabBar } from '../components/shared/TabBar'
 import { TabIntro } from '../components/shared/TabIntro'
 import { Icon } from '../components/primitives/Icon'
@@ -568,7 +568,7 @@ export function SquadScreen() {
 
   return (
     <div className="screen-col-layout" style={{ background: 'var(--bg)' }}>
-      {!dismissed.includes('squad') && (
+      {!guidedIntroVisible && screenTab === 'trupp' && truppView === 'alag' && !dismissed.includes('squad') && (
         <FirstVisitHint
           screenId="squad"
           text="Dra spelare till positioner. Grön ring = rätt plats. Gul = kan funka. Utan laguppställning kan du inte spela."
@@ -643,6 +643,8 @@ export function SquadScreen() {
           .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
         const recommended = getRecommendedFormation(players)
         const currentFormation = club?.activeTactic?.formation ?? '3-3-4'
+        const currentFormationLabel = FORMATIONS[currentFormation as keyof typeof FORMATIONS]?.label ?? currentFormation
+        const recommendedFormationLabel = FORMATIONS[recommended]?.label ?? recommended
         const allEmpty = injured.length === 0 && suspended.length === 0 && lowMorale.length === 0 && expiringContracts.length === 0
         const latestPulse = (game.teamFitnessHistory ?? []).slice(-1)[0]
         const injuryDanger = (latestPulse?.injuryCount ?? 0) >= 2
@@ -735,11 +737,16 @@ export function SquadScreen() {
               <div className="card-sharp" style={{ padding: '12px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nuvarande</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{currentFormation}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{currentFormationLabel}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: recommended !== currentFormation ? 8 : 0 }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Rekommenderad</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: recommended !== currentFormation ? 'var(--accent)' : 'var(--success)' }}>{recommended}</span>
+                  <span
+                    className={recommended !== currentFormation ? 'squad-formation-recommended' : 'squad-formation-current'}
+                    style={{ fontSize: 14, fontWeight: 700 }}
+                  >
+                    {recommendedFormationLabel}
+                  </span>
                 </div>
                 {recommended !== currentFormation && (
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>

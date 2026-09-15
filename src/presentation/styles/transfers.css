@@ -1141,3 +1141,30 @@
   border-left-color: var(--success);
   background: color-mix(in srgb, var(--success) 9%, var(--bg-surface));
 }
+
+/* UX audit: compact, single-open position groups on the scouting surface. */
+.transfers-position-toggle {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+}
+
+.transfers-position-toggle--open {
+  border-bottom: 1px solid var(--border);
+}
+
+.transfers-position-toggle-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.transfers-position-toggle-icon {
+  color: var(--accent-text);
+  font-size: 14px;
+}

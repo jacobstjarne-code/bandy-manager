@@ -67,6 +67,7 @@ export function ScoutingTab({
   onToggleShortlist,
 }: ScoutingTabProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<PlayerPosition>>(new Set())
+  const [openPosition, setOpenPosition] = useState<PlayerPosition | null>(null)
   const [reportsExpanded, setReportsExpanded] = useState(false)
 
   const scoutablePlayers = getScoutablePlayers(game.players, game.managedClubId)
@@ -345,14 +346,27 @@ export function ScoutingTab({
         {POSITION_GROUPS.map(pos => {
           const groupPlayers = scoutablePlayers.filter(p => p.position === pos)
           if (groupPlayers.length === 0) return null
+          const isOpen = openPosition === pos
           const isExpanded = expandedGroups.has(pos)
           const visible = isExpanded ? groupPlayers : groupPlayers.slice(0, GROUP_CAP)
           const hidden = groupPlayers.length - GROUP_CAP
 
           return (
             <div key={pos} className="transfers-group">
-              <SectionLabel>{positionLong(pos)}</SectionLabel>
-              <div className="card-sharp transfers-card-clipped">
+              <button
+                type="button"
+                className={`btn btn-ghost transfers-position-toggle${isOpen ? ' transfers-position-toggle--open' : ''}`}
+                aria-expanded={isOpen}
+                onClick={() => setOpenPosition(current => current === pos ? null : pos)}
+              >
+                <span className="transfers-position-toggle-label">
+                  {positionLong(pos)} · {groupPlayers.length}
+                </span>
+                <span aria-hidden="true" className="transfers-position-toggle-icon">
+                  {isOpen ? '−' : '+'}
+                </span>
+              </button>
+              {isOpen && <div className="card-sharp transfers-card-clipped">
                 {visible.map((player, index) => {
                   const report = scoutReports[player.id]
                   const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
@@ -412,8 +426,8 @@ export function ScoutingTab({
                     </div>
                   )
                 })}
-              </div>
-              {!isExpanded && hidden > 0 && (
+              </div>}
+              {isOpen && !isExpanded && hidden > 0 && (
                 <button
                   className="btn btn-ghost transfers-expand-btn"
                   onClick={() => setExpandedGroups(prev => new Set([...prev, pos]))}

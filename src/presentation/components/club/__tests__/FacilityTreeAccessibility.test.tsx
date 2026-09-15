@@ -23,6 +23,7 @@ function renderTree(
   mode: 'betrakta' | 'valj',
   onSelect = vi.fn(),
   facilityState: FacilityState = { builtNodeIds: [] },
+  previewOnly = false,
 ) {
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -35,6 +36,7 @@ function renderTree(
         currentSeason={1}
         mode={mode}
         onSelect={onSelect}
+        previewOnly={previewOnly}
       />,
     )
   })
@@ -97,5 +99,13 @@ describe('FacilityTree — B1:s ratificerade nodstater och konsekvensrad', () =>
 
     expect(card.textContent).toContain('Kassa −120 tkr')
     expect(card.textContent).not.toContain('Ekonomi ↓')
+  })
+
+  it('märker säsong ett som en förhandsvisning fram till Valet', () => {
+    const { view } = renderTree('betrakta', vi.fn(), { builtNodeIds: [] }, true)
+    const card = findCard(view, 'Värmestuga')
+
+    expect(card.textContent).toContain('Efter Valet')
+    expect(card.textContent).not.toContain('Möjlig')
   })
 })

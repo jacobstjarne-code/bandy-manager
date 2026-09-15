@@ -274,9 +274,20 @@ export function PortalScreen() {
   // buildPortal garanterar att beslutskortet syns när detta är satt — ingen soft-lock.
   const weeklyDecisionPending = game.pendingWeeklyDecision != null
   const firstWeekFocus = isSeason1Round1 && weeklyDecisionPending
+  const weeklyDecisionRef = useRef<HTMLDivElement | null>(null)
   const visibleSecondary = firstWeekFocus
     ? layout.secondary.filter(card => card.id === 'weekly_decision')
     : layout.secondary
+
+  // The first-week contract is one instruction at a time. Bring the single
+  // actionable card into view and do not layer a separate scroll prompt over it.
+  useEffect(() => {
+    if (!firstWeekFocus) return
+    const frame = requestAnimationFrame(() => {
+      weeklyDecisionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [firstWeekFocus])
 
   // PORTAL-TAKREGEL (2026-08-09), REVIDERAD AUDIT DEL 2 (2026-08-09): marks
   // blir data före de blir JSX. Budgeten (ATMOSPHERE_CAP, default 2) gäller
@@ -418,17 +429,20 @@ export function PortalScreen() {
           </div>
         )}
         {!firstWeekFocus && <PortalQueueRail game={game} demotedMarks={demotedAtmosphereChips} />}
-        <PortalSecondarySection cards={visibleSecondary} game={game} />
+        <div ref={firstWeekFocus ? weeklyDecisionRef : undefined}>
+          <PortalSecondarySection cards={visibleSecondary} game={game} />
+        </div>
         {!firstWeekFocus && <PortalMinimalBar cards={layout.minimal} game={game} />}
         <PortalInboxCounter game={game} />
         <ClubNotificationPrompt game={game} />
       </div>
 
-      <ScrollMoreCue
-        scrollRef={gameScrollRef}
-        fadeColor="var(--bg-portal)"
-        accentColor="var(--accent-portal)"
-        style={{
+      {!firstWeekFocus && (
+        <ScrollMoreCue
+          scrollRef={gameScrollRef}
+          fadeColor="var(--bg-portal)"
+          accentColor="var(--accent-portal)"
+          style={{
           // Själva Visa mer-knappen är också en träffyta. När den följer den
           // fixerade CTA-stacken behöver den 44 px till närmaste knapp; barens
           // befintliga flex-gap ger 6 px; 39 px till ger heltalssäkert minst
@@ -439,8 +453,9 @@ export function PortalScreen() {
           width: '100%',
           maxWidth: 430,
           transform: 'translateX(-50%)',
-        }}
-      />
+          }}
+        />
+      )}
 
       {/* STICKY CTA — synlig ovanför BottomNav när inget veckobeslut pågår.
           Ett aktivt beslut äger ytan: en låst CTA gav ingen handling och täckte

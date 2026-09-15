@@ -21,6 +21,8 @@ export interface VictoryEcho {
   diaryLine: string
   // Kafferummets röst — LEVANDE sedan D4-regressionsfixen (coffeeRoomService.ts).
   coffeeLine: string
+  /** Speaker kept separate so the presentation layer owns quotation marks. */
+  coffeeSpeaker?: string
   /** Cooldown key written only when the coffee-room echo is actually shown. */
   coffeeSemanticKey?: string
   /** Fixed one-line echoes may yield to other coffee-room material while this key is recent. */
@@ -85,7 +87,8 @@ export function generateVictoryEcho(
     case 'playoff_derby_win':
       return {
         diaryLine: `Triumfen över ${opponentName} ekar fortfarande i korridorerna. Ingen hade sovit ordentligt på tre dagar.`,
-        coffeeLine: `Kioskvakten: "Jag sålde korv till fyra personer som grät. Dom bad inte om ursäkt."`,
+        coffeeSpeaker: 'Kioskvakten',
+        coffeeLine: 'Jag sålde korv till fyra personer som grät. Dom bad inte om ursäkt.',
         coffeeSemanticKey: VICTORY_ECHO_PLAYOFF_DERBY_WIN_KEY,
         coffeeCooldownSeasons: 2,
         boardMessage: `Ordföranden: "Det är för sånt här jag satte mig i den här stolen. Tack."`,
@@ -93,14 +96,16 @@ export function generateVictoryEcho(
     case 'playoff_win':
       return {
         diaryLine: `Slutspelsvinsten mot ${opponentName} satte sig. Klubben känns tyngre på ett gott sätt.`,
-        coffeeLine: `Sekreteraren: "Det ringde tre gamla medlemmar i förmiddags. Ingen ville något. De bara ville prata."`,
+        coffeeSpeaker: 'Sekreteraren',
+        coffeeLine: 'Det ringde tre gamla medlemmar i förmiddags. Ingen ville något. De bara ville prata.',
         coffeeSemanticKey: VICTORY_ECHO_PLAYOFF_WIN_KEY,
         coffeeCooldownSeasons: 2,
       }
     case 'big_derby_win':
       return {
         diaryLine: `${score} mot ${opponentName} är redan en berättelse. Det kommer pratas om den i fem år.`,
-        coffeeLine: `Materialaren: "Jag hittade fyra flaskor bakom sargen. Två var tomma."`,
+        coffeeSpeaker: 'Materialaren',
+        coffeeLine: 'Jag hittade fyra flaskor bakom sargen. Två var tomma.',
         coffeeSemanticKey: VICTORY_ECHO_BIG_DERBY_WIN_KEY,
         coffeeCooldownSeasons: 2,
       }

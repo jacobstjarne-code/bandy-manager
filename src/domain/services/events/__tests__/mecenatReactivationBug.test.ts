@@ -48,6 +48,32 @@ function makeWithdrawnMecenat(): Mecenat {
 }
 
 describe('K5 — permanent avskedad mecenat kan inte röras av mecenatHappiness', () => {
+  it('en ännu ointroducerad mecenat behåller sin latenta relation när välkomsten appliceras', () => {
+    let game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
+    const mecenat: Mecenat = {
+      ...makeWithdrawnMecenat(),
+      id: 'mecenat_pending_intro',
+      happiness: 78,
+      isActive: false,
+      permanentlyWithdrawn: false,
+    }
+    const introEvent: GameEvent = {
+      id: 'test_mecenat_intro',
+      type: 'mecenatEvent',
+      title: 't', body: 'b',
+      choices: [{
+        id: 'welcome', label: 'Välkommen',
+        effect: { type: 'mecenatHappiness', targetMecenatId: mecenat.id, amount: 10 },
+      }],
+      resolved: false,
+    }
+    game = { ...game, mecenater: [mecenat], pendingEvents: [introEvent] }
+
+    game = resolveEvent(game, introEvent.id, 'welcome', undefined, true)
+
+    expect(game.mecenater?.[0]).toMatchObject({ isActive: true, happiness: 88 })
+  })
+
   it('top-level mecenatHappiness-effekt mot en avskedad mecenat gör ingenting alls', () => {
     let game = createNewGame({ managerName: 'Test', clubId: CLUB_TEMPLATES[0].id, seed: 1 })
     game = { ...game, mecenater: [makeWithdrawnMecenat()] }

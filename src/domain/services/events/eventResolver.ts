@@ -1308,7 +1308,7 @@ export function resolveEvent(
           ...updatedGame,
           mecenater: updatedGame.mecenater.map(m =>
             m.id === targetId
-              ? { ...m, isActive: true, happiness: Math.min(100, 50 + delta), lastInteractionRound: updatedGame.currentMatchday }
+              ? { ...m, isActive: true, happiness: Math.min(100, m.happiness + delta), lastInteractionRound: updatedGame.currentMatchday }
               : m
           ),
         }

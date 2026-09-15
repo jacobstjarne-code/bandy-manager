@@ -246,22 +246,34 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
 
 function InboxThinRow({ item, onRead, index }: { item: InboxItem; onRead: (id: string) => void; index: number }) {
   const navigate = useNavigate()
+  const [expanded, setExpanded] = useState(false)
   const actionRoute = inboxActionRoute(item.type)
+  const hasExpandableBody = item.body.trim().length > 0 && !actionRoute
+  const isInteractive = !!actionRoute || hasExpandableBody
 
   function handleClick() {
     if (!item.isRead) setTimeout(() => onRead(item.id), 200)
-    if (actionRoute) navigate(actionRoute)
+    if (actionRoute) {
+      navigate(actionRoute)
+      return
+    }
+    if (hasExpandableBody) setExpanded(value => !value)
   }
 
   const isRead = item.isRead
   return (
-    <div
+    <button
+      type="button"
       onClick={handleClick}
+      disabled={!isInteractive}
+      aria-expanded={hasExpandableBody ? expanded : undefined}
       style={{
-        display: 'flex', alignItems: 'center', gap: 8,
+        appearance: 'none', width: '100%', border: 0, background: 'transparent',
+        display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
         padding: '6px 4px',
         borderBottom: '1px solid var(--border)',
-        cursor: actionRoute ? 'pointer' : 'default',
+        cursor: isInteractive ? 'pointer' : 'default',
+        textAlign: 'left', fontFamily: 'inherit',
         animation: `fadeInUp 180ms ease-out ${Math.min(index, 14) * 25}ms both`,
       }}
     >
@@ -278,7 +290,7 @@ function InboxThinRow({ item, onRead, index }: { item: InboxItem; onRead: (id: s
         fontSize: 10.5,
         color: isRead ? 'var(--text-muted)' : 'var(--text-secondary)',
         fontWeight: isRead ? 400 : 600,
-        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        whiteSpace: expanded ? 'normal' : 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>
         {item.title}
       </span>
@@ -288,7 +300,20 @@ function InboxThinRow({ item, onRead, index }: { item: InboxItem; onRead: (id: s
           {getRoundLabel(item)}
         </span>
       )}
-    </div>
+      {hasExpandableBody && (
+        <span aria-hidden="true" style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>
+          {expanded ? '⌃' : '›'}
+        </span>
+      )}
+      {expanded && hasExpandableBody && (
+        <span style={{
+          flexBasis: '100%', marginLeft: 24, padding: '3px 12px 4px 0',
+          fontSize: 10, lineHeight: 1.5, color: 'var(--text-secondary)',
+        }}>
+          {item.body}
+        </span>
+      )}
+    </button>
   )
 }
 

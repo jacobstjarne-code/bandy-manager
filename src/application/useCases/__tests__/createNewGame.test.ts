@@ -34,6 +34,18 @@ describe('createNewGame', () => {
     expect(allScheduled).toBe(true)
   })
 
+  it('pre-generates weather for every fixture on the actual first matchday', () => {
+    const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
+    const firstMatchday = Math.min(...game.fixtures.map(fixture => fixture.matchday))
+    const firstFixtureIds = game.fixtures
+      .filter(fixture => fixture.matchday === firstMatchday)
+      .map(fixture => fixture.id)
+    const weatherFixtureIds = new Set(game.matchWeathers.map(entry => entry.fixtureId))
+
+    expect(firstFixtureIds.length).toBeGreaterThan(0)
+    expect(firstFixtureIds.every(id => weatherFixtureIds.has(id))).toBe(true)
+  })
+
   it('currentDate starts with the season year and "10-"', () => {
     const game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
     expect(game.currentDate).toMatch(/^2025-10-/)

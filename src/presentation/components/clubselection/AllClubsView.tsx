@@ -25,7 +25,9 @@ export function AllClubsView({ onSelect, onBack }: Props) {
     const frame = window.requestAnimationFrame(() => {
       const expanded = expandedCardRefs.current[selectedClubId]
       if (!expanded) return
-      expanded.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      // The expanded card is taller than the collapsed row. Centering it keeps
+      // the action button visible even on shorter mobile viewports.
+      expanded.scrollIntoView({ behavior: 'smooth', block: 'center' })
       expanded.focus({ preventScroll: true })
     })
     return () => window.cancelAnimationFrame(frame)

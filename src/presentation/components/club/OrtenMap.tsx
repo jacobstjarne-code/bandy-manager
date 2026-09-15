@@ -110,12 +110,6 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
 
   return (
     <div style={{ marginBottom: 12 }}>
-      <p style={{
-        fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--text-muted)', marginBottom: 8, fontFamily: 'var(--font-body)',
-      }}>
-        ORTSKARTAN
-      </p>
       <div style={{ position: 'relative', textAlign: 'center' }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: W, display: 'block', margin: '0 auto' }}>
           {/* Animated pulse rings */}
@@ -153,6 +147,15 @@ export function OrtenMap({ club, game, onNodeClick }: OrtenMapProps) {
                 key={n.id}
                 style={{ cursor: onNodeClick ? 'pointer' : 'default' }}
                 onClick={() => onNodeClick?.(n.id)}
+                role={onNodeClick ? 'button' : undefined}
+                tabIndex={onNodeClick ? 0 : undefined}
+                aria-label={onNodeClick ? `${n.label}: ${n.value}, ${n.subLabel}. Visa mer` : undefined}
+                onKeyDown={onNodeClick ? event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    onNodeClick(n.id)
+                  }
+                } : undefined}
               >
                 <circle cx={n.x} cy={n.y} r={22} fill="var(--bg-elevated)" stroke={col} strokeWidth={isLow ? 2.5 : 2} strokeOpacity={0.8} />
                 {/* Low value warning pulse */}

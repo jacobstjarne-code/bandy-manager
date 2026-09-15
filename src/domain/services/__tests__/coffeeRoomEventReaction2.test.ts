@@ -92,7 +92,10 @@ describe('D4-regressionsfix, andra omgången — de fyra sista pooler', () => {
       fatigueHotStreak: 5, // ska INTE vinna över victory-echo
     })
     const scene = getCoffeeRoomScene(g)
-    expect(scene?.narratorLine?.text).toContain('grät')
+    expect(scene?.narratorLine).toEqual({
+      speaker: 'Kioskvakten',
+      text: 'Jag sålde korv till fyra personer som grät.',
+    })
     expect(scene?.exchanges).toEqual([])
   })
 
