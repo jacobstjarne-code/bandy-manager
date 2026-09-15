@@ -85,6 +85,17 @@ export function csColor(cs: number): string {
   return 'var(--danger)'
 }
 
+// begriplighet-klass-d (BEGRIPLIGHETSREVISION_2026-09-12, Opus dom 2026-09-15):
+// klackens stämning fick tidigare visas som en naken siffra på flera ställen
+// (DerbyPrimary.tsx) medan KlackenMoodMinimal.tsx redan hade rätt lösning
+// (kvalitativ text, inte bar — kortet är för kompakt för en bar). Extraherad
+// hit så ordvalet aldrig kan glida isär mellan de två ställena.
+export function klackMoodLabel(mood: number): { label: string; color: string } {
+  const label = mood >= 80 ? 'peppad' : mood >= 60 ? 'redo' : mood >= 40 ? 'avvaktande' : 'tyst'
+  const color = mood >= 60 ? 'var(--success)' : 'var(--text-muted)'
+  return { label, color }
+}
+
 export function eventIcon(type: MatchEventType): string {
   if (type === MatchEventType.Goal) return '🥅'
   if (type === MatchEventType.Suspension) return '🚫'

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getRivalry } from '../../../../domain/data/rivalries'
 import { canVoiceSpeak, klackLeaderVoiceId } from '../../../../domain/services/voiceIntroductionService'
+import { klackMoodLabel } from '../../../utils/formatters'
 
 /**
  * Primary-kort för derbymatchdag.
@@ -38,8 +39,12 @@ export function DerbyPrimary({ game }: CardRenderProps) {
 
   // Klacken
   const sg = game.supporterGroup
+  // begriplighet-klass-d (2026-09-15): rått mood-tal utan skala/färg —
+  // samma kvalitativa etikett som KlackenMoodMinimal.tsx (delad via
+  // klackMoodLabel), inte en bar (kortet är plain text-konkatenerat, ingen
+  // egen yta för en stapel).
   const klackInfo = sg && canVoiceSpeak(game, klackLeaderVoiceId(game.managedClubId, sg.leader.name))
-    ? `${sg.name} · stämning ${sg.mood}`
+    ? `${sg.name} · ${klackMoodLabel(sg.mood).label}`
     : null
 
   const roundDateStr = nextFixture.date ?? ''

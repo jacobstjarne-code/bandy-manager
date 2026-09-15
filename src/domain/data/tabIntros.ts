@@ -5,7 +5,11 @@
 // Redaktionell linje (bekräftad 2026-06-23): säg först VAD DU GÖR här. Lägg en
 // systemisk svans bara där kopplingen till resten av spelet är icke-uppenbar
 // (intensitet→skada, röda siffror→styrelse, puls→hemmaplansfördel). Ingen svans
-// där fliken förklarar sig själv (Minne, Akademi, Trupp).
+// där fliken förklarar sig själv (Minne, Trupp).
+// begriplighet-klass-d-e (2026-09-15): Akademi stod tidigare i listan ovan
+// som "förklarar sig själv" — motsägs av att den 2026-09-14 fick en egen
+// FeatureIntroduction (featureIntroductions.ts), dvs den bedömdes ICKE
+// självförklarande nog. Kommentaren rättad, ingen introduktion ändrad.
 //
 // Konsumeras av TabIntro-komponenten (shared/TabIntro.tsx): { icon, label, text }.
 // Komponenten renderar icon + text; label finns för wiring/överblick. Ersätter

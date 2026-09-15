@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getKlackDisplay } from '../../../../domain/services/klackPresenter'
+import { klackMoodLabel } from '../../../utils/formatters'
 
 /** Secondary-kort: klackens stämning inför hemmamatch. */
 export function KlackenSecondary({ game }: CardRenderProps) {
@@ -14,11 +15,10 @@ export function KlackenSecondary({ game }: CardRenderProps) {
 
   if (!sg || !klack) return null
 
-  const moodColor = sg.mood >= 70
-    ? 'var(--success)'
-    : sg.mood >= 40
-    ? 'var(--text-muted)'
-    : 'var(--danger)'
+  // begriplighet-klass-d (2026-09-15): rått mood-tal utan skala — samma
+  // kvalitativa etikett som KlackenMoodMinimal.tsx/DerbyPrimary.tsx (delad
+  // via klackMoodLabel, ersätter denna filens egen 70/40-trösklar).
+  const { label: moodLabel, color: moodColor } = klackMoodLabel(sg.mood)
 
   return (
     <div
@@ -52,7 +52,7 @@ export function KlackenSecondary({ game }: CardRenderProps) {
         </div>
       )}
       <div className="h-micro" style={{ color: moodColor, marginTop: 4 }}> {/* ds-exempt: moodColor dynamisk */}
-        Stämning {sg.mood} · {sg.members} medlemmar
+        Stämning {moodLabel} · {sg.members} medlemmar
       </div>
     </div>
   )

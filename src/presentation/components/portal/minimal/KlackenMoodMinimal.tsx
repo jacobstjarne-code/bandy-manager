@@ -1,5 +1,6 @@
 import type { CardRenderProps } from '../portalTypes'
 import { canVoiceSpeak, klackLeaderVoiceId } from '../../../../domain/services/voiceIntroductionService'
+import { klackMoodLabel } from '../../../utils/formatters'
 
 /** Minimal-kort: klackens stämning inför derby. */
 export function KlackenMoodMinimal({ game }: CardRenderProps) {
@@ -7,15 +8,7 @@ export function KlackenMoodMinimal({ game }: CardRenderProps) {
   if (!sg) return null
   if (!canVoiceSpeak(game, klackLeaderVoiceId(game.managedClubId, sg.leader.name))) return null
 
-  const moodLabel = sg.mood >= 80
-    ? 'peppad'
-    : sg.mood >= 60
-    ? 'redo'
-    : sg.mood >= 40
-    ? 'avvaktande'
-    : 'tyst'
-
-  const moodColor = sg.mood >= 60 ? 'var(--success)' : 'var(--text-muted)'
+  const { label: moodLabel, color: moodColor } = klackMoodLabel(sg.mood)
 
   return (
     <div style={{ textAlign: 'center' }}>
