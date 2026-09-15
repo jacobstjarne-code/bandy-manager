@@ -374,10 +374,23 @@ function checkUniquePlayerIds(game: SaveGame): InvariantFinding[] {
 // Anropas explicit med två tillstånd, ingår INTE i checkInvariants()'s
 // samlade lista — anroparen (idag scripts/stress-test.ts) äger before/after-
 // paret från sin egen rond-loop.
+// RÄTTELSE 2026-09-15 (Code, begriplighet-b-flerommgangshopp-financelog):
+// ursprungsversionen tog ett enda `round`-nummer och jämförde HELA actual-
+// deltat mot bara DEN omgångens financeLog-poster. Det var fel när en
+// advanceToNextEvent-omgång internt rekurserar över flera matchdays (t.ex.
+// "Auto-advance playoff rounds when managed club is eliminated",
+// roundProcessor.ts) — varje inre hopp loggar korrekt under sitt EGET
+// round-nummer, men det yttre anropets enda `roundPlayed`-värde är bara det
+// SISTA hoppet. Ett verifierat repro (seed 1, matchday 29→37 i ett enda
+// yttre anrop) visade skenbart en lucka på −258 625 kr mot single-round-
+// checken — en RANGE-check (before.currentMatchday, after.currentMatchday]
+// gav gap=0, alla åtta mellanliggande omgångars poster fanns, bara utspridda
+// över sina egna round-nummer. Inget spel-fel; ett fel i själva invarianten.
+// Tar nu before/after direkt, ingen separat round-parameter — bounds härleds
+// ur de två speltillstånden, kan inte glida isär från anroparens egen bokföring.
 export function checkFinanceLogGap(
   before: SaveGame,
   after: SaveGame,
-  round: number,
 ): InvariantFinding[] {
   const clubId = after.managedClubId
   const financesBefore = before.clubs.find(c => c.id === clubId)?.finances
@@ -385,14 +398,16 @@ export function checkFinanceLogGap(
   if (financesBefore === undefined || financesAfter === undefined) return []
 
   const actualDelta = financesAfter - financesBefore
-  const roundEntries = (after.financeLog ?? []).filter(e => e.round === round)
-  const loggedDelta = roundEntries.reduce((sum, e) => sum + e.amount, 0)
+  const loBound = before.currentMatchday
+  const hiBound = after.currentMatchday
+  const rangeEntries = (after.financeLog ?? []).filter(e => e.round > loBound && e.round <= hiBound)
+  const loggedDelta = rangeEntries.reduce((sum, e) => sum + e.amount, 0)
   const gap = actualDelta - loggedDelta
   if (gap === 0) return []
 
   return [{
     name: 'financeLogGap',
     severity: 'warn',
-    message: `omgång ${round}: kassan ändrades ${gap > 0 ? '+' : ''}${gap} kr utan matchande financeLog-post (faktisk delta ${actualDelta}, loggad ${loggedDelta})`,
+    message: `omgång ${loBound + 1}-${hiBound}: kassan ändrades ${gap > 0 ? '+' : ''}${gap} kr utan matchande financeLog-post (faktisk delta ${actualDelta}, loggad ${loggedDelta})`,
   }]
 }

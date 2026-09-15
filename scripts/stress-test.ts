@@ -180,7 +180,7 @@ async function main(): Promise<void> {
 
             // begriplighet-klass-b (2026-09-15): generaliserad invariant —
             // en kassaändring utan matchande financeLog-post samma omgång.
-            for (const f of checkFinanceLogGap(gameBeforeAdvance, result.game, roundPlayed)) {
+            for (const f of checkFinanceLogGap(gameBeforeAdvance, result.game)) {
               warnings.push({ season, round: roundPlayed, finding: f })
             }
           }

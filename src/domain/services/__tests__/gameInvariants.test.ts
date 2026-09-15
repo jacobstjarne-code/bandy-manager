@@ -59,51 +59,103 @@ describe('gameInvariants — staleContracts', () => {
 // kommentar vid funktionen för varför.
 describe('gameInvariants — checkFinanceLogGap', () => {
   it('ingen finding när kassaändringen matchar en financeLog-post samma omgång', () => {
-    const before = makeBaseGame({ seed: 1 })
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 4 }
     const club = before.clubs.find(c => c.id === before.managedClubId)!
     const after = {
       ...before,
+      currentMatchday: 5,
       clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 1000 } : c),
       financeLog: [...(before.financeLog ?? []), { round: 5, amount: -1000, reason: 'event' as const, label: 'test' }],
     }
-    expect(checkFinanceLogGap(before, after, 5)).toEqual([])
+    expect(checkFinanceLogGap(before, after)).toEqual([])
   })
 
   it('flaggar en kassaändring utan någon financeLog-post samma omgång', () => {
-    const before = makeBaseGame({ seed: 1 })
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 4 }
     const club = before.clubs.find(c => c.id === before.managedClubId)!
     const after = {
       ...before,
+      currentMatchday: 5,
       clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 5000 } : c),
     }
-    const findings = checkFinanceLogGap(before, after, 5)
+    const findings = checkFinanceLogGap(before, after)
     expect(findings).toHaveLength(1)
     expect(findings[0]).toMatchObject({ name: 'financeLogGap', severity: 'warn' })
     expect(findings[0].message).toContain('-5000')
   })
 
   it('flaggar en delvis förklarad ändring (loggat belopp matchar inte faktiskt delta)', () => {
-    const before = makeBaseGame({ seed: 1 })
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 4 }
     const club = before.clubs.find(c => c.id === before.managedClubId)!
     const after = {
       ...before,
+      currentMatchday: 5,
       clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 5000 } : c),
       financeLog: [...(before.financeLog ?? []), { round: 5, amount: -3000, reason: 'event' as const, label: 'delvis' }],
     }
-    const findings = checkFinanceLogGap(before, after, 5)
+    const findings = checkFinanceLogGap(before, after)
     expect(findings).toHaveLength(1)
     expect(findings[0].message).toContain('-2000')
   })
 
-  it('räknar bara financeLog-poster för RÄTT omgång, inte tidigare omgångars poster', () => {
-    const before = makeBaseGame({ seed: 1 })
+  it('räknar bara financeLog-poster i omgångsintervallet (before, after] — inte poster från FÖRE detta anrops fönster', () => {
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 4 }
     const club = before.clubs.find(c => c.id === before.managedClubId)!
     const after = {
       ...before,
+      currentMatchday: 5,
       clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 1000 } : c),
+      // Runda 4 hann redan innan detta anrops fönster (before.currentMatchday
+      // === 4) — ska INTE räknas med, den hör till ett tidigare anrop.
       financeLog: [...(before.financeLog ?? []), { round: 4, amount: -1000, reason: 'event' as const, label: 'fel omgång' }],
     }
-    const findings = checkFinanceLogGap(before, after, 5)
+    const findings = checkFinanceLogGap(before, after)
     expect(findings).toHaveLength(1)
+  })
+
+  // begriplighet-b-flerommgangshopp-financelog (2026-09-15): rättelsen som
+  // orsakade denna omskrivning. roundProcessor.ts:s "Auto-advance playoff
+  // rounds when managed club is eliminated" kan låta ETT yttre
+  // advanceToNextEvent-anrop rekursera över FLERA matchdays — varje inre
+  // hopp loggar korrekt under sitt EGET round-nummer. Ett repro (seed 1,
+  // matchday 29→37 i ett enda anrop) visade en SKENBAR lucka på −258 625 kr
+  // med den gamla single-round-checken; en range-check över hela fönstret
+  // gav gap=0. Inget spelfel fanns — bara i den gamla checkens antagande att
+  // ett anrop alltid täcker EN omgång.
+  it('ett multi-omgångshopp (flera financeLog-poster i fönstret) ger INGEN falsk lucka så länge summan stämmer', () => {
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 29 }
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const perRoundNet = -1000
+    const rounds = [30, 31, 32, 33, 34, 35, 37] // 36 saknas i sekvensen (bye-vecka), precis som det verifierade repro:t
+    const after = {
+      ...before,
+      currentMatchday: 37,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances + perRoundNet * rounds.length } : c),
+      financeLog: [
+        ...(before.financeLog ?? []),
+        ...rounds.map(round => ({ round, amount: perRoundNet, reason: 'wages' as const, label: `Löner omg ${round}` })),
+      ],
+    }
+    expect(checkFinanceLogGap(before, after)).toEqual([])
+  })
+
+  it('ett multi-omgångshopp MED en genuin lucka i en av mellanomgångarna flaggas fortfarande', () => {
+    const before = { ...makeBaseGame({ seed: 1 }), currentMatchday: 29 }
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const after = {
+      ...before,
+      currentMatchday: 37,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances - 9000 } : c),
+      financeLog: [
+        ...(before.financeLog ?? []),
+        // Bara 8 000 av 9 000 kr loggade över hela fönstret — en genuin lucka kvarstår.
+        { round: 31, amount: -3000, reason: 'wages' as const, label: 'Löner' },
+        { round: 34, amount: -5000, reason: 'wages' as const, label: 'Löner' },
+      ],
+    }
+    const findings = checkFinanceLogGap(before, after)
+    expect(findings).toHaveLength(1)
+    expect(findings[0].message).toContain('-1000')
+    expect(findings[0].message).toContain('30-37')
   })
 })
