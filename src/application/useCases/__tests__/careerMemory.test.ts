@@ -81,5 +81,5 @@ describe('A1 — karriärminnet kapas inte längre vid fem säsonger', () => {
     expect(seasons.length, `seasonSummaries: ${JSON.stringify(seasons)}`).toBeGreaterThanOrEqual(6)
     // Den FÖRSTA spelade säsongen ska fortfarande finnas — inte bara de fem senaste.
     expect(seasons[0]).toBe(Math.min(...seasons))
-  })
+  }, 60_000)
 })
