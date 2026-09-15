@@ -713,6 +713,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
   newInboxItems.push(...scandalResult.inboxItems)
   roundLedgerEntries.push(...scandalResult.ledgerEntries)
+  roundFinanceLog.push(...scandalResult.financeLogEntries)
 
   // ── Post-match events: insändare, opponent quote (ambient i Granska) ─────
   // Citatets skandalpremiss måste läsa den här omgångens canonical resultat,

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { checkInvariants, checkFinanceLogGap } from '../gameInvariants'
+import { appendFinanceLog, FINANCE_LOG_MAX } from '../economyService'
 import { makeBaseGame } from '../../../presentation/screens/dev/gameStateFactory'
 
 // SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a — staleContracts-invarianten:
@@ -157,5 +158,34 @@ describe('gameInvariants — checkFinanceLogGap', () => {
     expect(findings).toHaveLength(1)
     expect(findings[0].message).toContain('-1000')
     expect(findings[0].message).toContain('30-37')
+  })
+
+  it('ger ingen falsk lucka när samma multi-omgångshopp fyller capen och början av observationsfönstret har pensionerats', () => {
+    const base = { ...makeBaseGame({ seed: 1 }), currentMatchday: 26 }
+    let beforeLog = [] as NonNullable<typeof base.financeLog>
+    for (let i = 0; i < FINANCE_LOG_MAX; i++) {
+      beforeLog = appendFinanceLog(beforeLog, { round: 18, amount: 1, reason: 'event', label: `gammal-${i}` })
+    }
+    const before = { ...base, financeLog: beforeLog }
+    const club = before.clubs.find(c => c.id === before.managedClubId)!
+    const amounts = Array.from({ length: FINANCE_LOG_MAX + 8 }, (_, index) => ({
+      round: 27 + Math.floor(index / 6),
+      amount: index === 0 ? 7750 : -100,
+      reason: 'event' as const,
+      label: `ny-${index}`,
+    }))
+    let afterLog = beforeLog
+    for (const entry of amounts) afterLog = appendFinanceLog(afterLog, entry)
+    const actualDelta = amounts.reduce((sum, entry) => sum + entry.amount, 0)
+    const after = {
+      ...before,
+      currentMatchday: 37,
+      clubs: before.clubs.map(c => c.id === club.id ? { ...c, finances: c.finances + actualDelta } : c),
+      financeLog: afterLog,
+    }
+
+    expect(after.financeLog).toHaveLength(FINANCE_LOG_MAX)
+    expect(after.financeLog).not.toContain(beforeLog[beforeLog.length - 1])
+    expect(checkFinanceLogGap(before, after)).toEqual([])
   })
 })

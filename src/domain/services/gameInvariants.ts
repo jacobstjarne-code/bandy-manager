@@ -15,6 +15,7 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import { FixtureStatus, PlayerPosition } from '../enums'
+import { FINANCE_LOG_MAX } from './economyService'
 
 export interface InvariantFinding {
   name: string
@@ -400,7 +401,27 @@ export function checkFinanceLogGap(
   const actualDelta = financesAfter - financesBefore
   const loBound = before.currentMatchday
   const hiBound = after.currentMatchday
-  const rangeEntries = (after.financeLog ?? []).filter(e => e.round > loBound && e.round <= hiBound)
+  const beforeLog = before.financeLog ?? []
+  const afterLog = after.financeLog ?? []
+
+  // Ett yttre advance-anrop kan rekursivt processa hela slutspelsfönstret.
+  // Om fler än FINANCE_LOG_MAX rader skapats i samma anrop är början av
+  // observationsfönstret avsiktligt borta ur visningsloggen. Då går det inte
+  // att jämföra hela kassadeltat med den bevarade delmängden utan en falsk
+  // lucka. Så länge den sista raden från before fortfarande finns kvar vet vi
+  // däremot att samtliga nya rader ryms och att jämförelsen är komplett.
+  const lastBeforeEntry = beforeLog[beforeLog.length - 1]
+  const retainsBeforeBoundary = lastBeforeEntry !== undefined && afterLog.some(entry =>
+    entry.round === lastBeforeEntry.round
+    && entry.amount === lastBeforeEntry.amount
+    && entry.reason === lastBeforeEntry.reason
+    && entry.label === lastBeforeEntry.label
+  )
+  const observationWindowTruncated = afterLog.length >= FINANCE_LOG_MAX
+    && (beforeLog.length === 0 || !retainsBeforeBoundary)
+  if (observationWindowTruncated) return []
+
+  const rangeEntries = afterLog.filter(e => e.round > loBound && e.round <= hiBound)
   const loggedDelta = rangeEntries.reduce((sum, e) => sum + e.amount, 0)
   const gap = actualDelta - loggedDelta
   if (gap === 0) return []

@@ -26,6 +26,14 @@ describe('processScandals — eventLedger dual-write', () => {
       significance: 70,
     })])
     expect(result.ledgerEntries[0]?.semanticKey).toBe(result.updatedScandals[0]?.id)
+    const beforeCash = game.clubs.find(club => club.id === game.managedClubId)!.finances
+    const afterCash = result.updatedClubs.find(club => club.id === game.managedClubId)!.finances
+    expect(result.financeLogEntries).toEqual([{
+      round: 6,
+      amount: afterCash - beforeCash,
+      reason: 'event',
+      label: result.inboxItems[0].title,
+    }])
   })
 
   it('skriver ingen klubbkanon för en skandal som bara drabbar en AI-klubb', () => {
@@ -44,5 +52,6 @@ describe('processScandals — eventLedger dual-write', () => {
 
     expect(result.updatedScandals).toHaveLength(1)
     expect(result.ledgerEntries).toEqual([])
+    expect(result.financeLogEntries).toEqual([])
   })
 })

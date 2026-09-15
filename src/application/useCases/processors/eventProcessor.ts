@@ -1,4 +1,5 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
+import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getEventPriority, type GameEvent, type TransferBid } from '../../../domain/entities/GameEvent'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
@@ -1072,6 +1073,8 @@ export interface ScandalProcessorResult {
   pendingPointDeductions: Record<string, number>
   /** Canonical history for a newly triggered managed-club scandal. */
   ledgerEntries: EventLedgerEntry[]
+  /** Kassaeffekter för den hanterade klubben, för samma kanoniska ekonomilog. */
+  financeLogEntries: FinanceEntry[]
 }
 
 export function processScandals(
@@ -1088,6 +1091,7 @@ export function processScandals(
     pointDeductions: game.pointDeductions ?? {},
     pendingPointDeductions: game.pendingPointDeductions ?? {},
     ledgerEntries: [],
+    financeLogEntries: [],
   }
   if (options?.skipSideEffects) return neutral
 
@@ -1113,6 +1117,11 @@ export function processScandals(
 
   // 3. Apply effects
   const effects = applyScandalEffect(gameAfterResolution, newScandal, localRand)
+  const managedBefore = gameAfterResolution.clubs.find(club => club.id === game.managedClubId)?.finances
+  const managedAfter = effects.updatedClubs.find(club => club.id === game.managedClubId)?.finances
+  const managedFinanceDelta = managedBefore !== undefined && managedAfter !== undefined
+    ? managedAfter - managedBefore
+    : 0
 
   return {
     inboxItems: effects.inboxItems,
@@ -1125,5 +1134,14 @@ export function processScandals(
       const entry = buildScandalLedgerEntry(newScandal, game.managedClubId)
       return entry ? [entry] : []
     })(),
+    financeLogEntries: managedFinanceDelta === 0
+      ? []
+      : [{
+          round: nextMatchday,
+          amount: managedFinanceDelta,
+          reason: newScandal.type === 'sponsor_collapse' ? 'sponsorship' : 'event',
+          // Samma redan godkända rubrik som berättar om kassaeffekten i inkorgen.
+          label: effects.inboxItems[0]?.title ?? 'Skandal',
+        }],
   }
 }
