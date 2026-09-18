@@ -342,6 +342,8 @@ export interface EventProcessorResult {
   wageBudgetOverrunRounds: number
   wageBudgetWarningSent: boolean
   riskySponsorOfferSentThisSeason: number | undefined
+  /** §5.2 — antal sponsorerbjudanden skapade denna säsong (taket är sex). */
+  sponsorOffersThisSeason: number | undefined
   patronWithdrawnSeason: number | undefined
   mecenatWithdrawnSeason: number | undefined
   // Beslutsekonomi
@@ -396,6 +398,14 @@ export function processGameEvents(
     ...newEvents,
     ...communityEvents,
   ]
+
+  // KÖRORDER 2026-09-18 §5.2 — säsongstaket räknar erbjudanden SKAPADE, inte
+  // besvarade: ett kort som löper ut obesvarat har ändå tagit sin plats i
+  // säsongens flöde. Grinden i postAdvanceEvents läser talet nästa omgång.
+  const sponsorOffersQueuedNow = newEvents.filter(e => e.type === 'sponsorOffer').length
+  const sponsorOffersThisSeason = sponsorOffersQueuedNow > 0
+    ? (game.sponsorOffersThisSeason ?? 0) + sponsorOffersQueuedNow
+    : game.sponsorOffersThisSeason
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (managedClub && managedClub.finances < -50000 && managedClub.finances >= -100000) {
@@ -837,6 +847,7 @@ export function processGameEvents(
     wageBudgetOverrunRounds,
     wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason,
+    sponsorOffersThisSeason,
     patronWithdrawnSeason,
     mecenatWithdrawnSeason,
     lastEventQueueRound,

@@ -285,8 +285,26 @@ function pickEventResolutionPolicy(event: GameEvent): string {
   // Explicit hold-position policy: reject every bid this harness doesn't
   // otherwise have a deliberate policy for, same "smallest footprint"
   // reasoning as the noOp default for every other event type.
+  //
+  // burnoutRelief har samma form som transferBidReceived ovan och samma fel
+  // (KÖRORDER 2026-09-18 §5.3, hittat 2026-09-18): inget noOp-val finns, så
+  // fallbacken tog choices[0] = `delegate` — det ENDA av de tre valen som bär
+  // ett externt pris, journalistrelationen −10 (BURNOUT_DELEGATE_JOURNALIST_DELTA,
+  // burnoutReliefService.ts). Två sådana kort per säsong tar relationen 50 → 30,
+  // och under 30 ger getJournalistCommunityModifier −1 communityStanding VARJE
+  // omgång resten av säsongen (journalistVisibilityService.ts, tillämpad i
+  // communityProcessor.ts, odämpad eftersom dämpningen bara träffar positiva
+  // termer). Det var skrivvägen bakom `ev_ignore`-anomalin: den som svarade
+  // straffades, den som ignorerade slapp — men bara för att HARNESSEN alltid
+  // valde det dyraste alternativet, inte för att svara är dyrt i spelet.
+  //
+  // `train` är valet med minst yttre fotavtryck (sänker burnoutScore och
+  // tvingar lätt träning i fyra omgångar — berör bara managerns egen kurva),
+  // samma "smallest footprint"-resonemang som noOp-defaulten vilar på.
   const explicitChoice = event.type === 'transferBidReceived'
     ? event.choices.find(c => c.effect.type === 'rejectTransfer')
+    : event.type === 'burnoutRelief'
+    ? event.choices.find(c => c.id === 'train')
     : event.choices.find(c => c.effect.type === 'noOp')
   return (explicitChoice ?? event.choices[0])?.id ?? ''
 }

@@ -2405,6 +2405,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
     })(),
     managerFired: managerFired ? true : undefined,
+    // KÖRORDER 2026-09-18 §5.4. Ordern sa "skriv det i seasonEndProcessor
+    // bredvid boardTruth.firedReason, eller ta bort fältet — det läses
+    // ingenstans idag". Andra ledet stämmer inte: `game.firedReason` läses på
+    // sex ställen (firingFrequencyService, analyticsLifecycle, GameOverScreen,
+    // AnalyticsBridge). Det som SAKNADES var skrivningen: orsaken räknades ut
+    // här (se `firedReason` ovan) men lades bara i
+    // seasonSummary.boardTruth.relationship, aldrig på spelet. Bara
+    // konkursvägen (postRoundFlagsProcessor) satte toppnivåfältet, så ett
+    // avsked vid säsongsslut nådde analyticsLifecycle som "unknown" trots att
+    // orsaken var känd. Konsumenterna föll tillbaka på sammanfattningen och
+    // dolde luckan.
+    firedReason: managerFired ? firedReason : game.firedReason,
     // O13 (DOM_TRANARMARKNADEN_2026-08-26): `game.currentSeason` är säsongen
     // som just SPELATS KLART — updatedGame bär redan nextSeason. Uppehålls-
     // simuleringen behöver veta vilken av dem avskedet gällde, annars kan
@@ -2599,6 +2611,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     wageBudgetOverrunRounds: 0,
     wageBudgetWarningSent: false,
     riskySponsorOfferSentThisSeason: undefined,
+    // §5.2 — både taket och avslagscooldownen nollas vid rullningen.
+    // Cooldownen är ett globalt matchday-tal och skulle annars behöva
+    // rebasas; en ny säsong är dessutom en rimlig nystart för
+    // sponsormarknaden, så den rensas i stället.
+    sponsorOffersThisSeason: undefined,
+    sponsorOfferCooldownUntilRound: undefined,
     // C-B3 — Pensionsval
     pendingRetirementDecision,
     lastRetirementSeason,

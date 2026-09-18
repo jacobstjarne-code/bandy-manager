@@ -1060,6 +1060,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetOverrunRounds: eventResult.wageBudgetOverrunRounds,
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
+    sponsorOffersThisSeason: eventResult.sponsorOffersThisSeason,
     mecenatWithdrawnSeason,
     // O2 lager 2 (Jacobs dom 2026-08-24): fas 1 (event_crisis_awareness)
     // ambient — tillståndsövergången sker vid genereringen

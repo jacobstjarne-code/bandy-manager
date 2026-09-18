@@ -84,6 +84,14 @@ export function pickJournalistExclusiveSubject(game: SaveGame, managedPlayers: P
  *
  * @cites Fixture.matchday, bid.sellingClubId, bid.buyingClubId
  */
+/**
+ * KÖRORDER 2026-09-18 §5.2 — sponsorgrindens två magnituder. Spec-givna, inte
+ * härledda: cooldown fyra omgångar efter ett avböjt erbjudande, tak sex
+ * erbjudanden per säsong.
+ */
+export const SPONSOR_DECLINE_COOLDOWN_ROUNDS = 4
+export const SPONSOR_OFFERS_PER_SEASON = 6
+
 export function generatePostAdvanceEvents(
   game: SaveGame,
   newBids: TransferBid[],
@@ -741,6 +749,10 @@ export function generatePostAdvanceEvents(
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor((managedClub?.reputation ?? 50) / 20))
 
+  // §5.2 — magnituderna är spec-givna (körordern 2026-09-18), inte härledda.
+  // SPONSOR_DECLINE_COOLDOWN_ROUNDS sätts på game.sponsorOfferCooldownUntilRound
+  // av eventResolver när spelaren tackar nej.
+
   // Spöksponsorn — one-time if desperate
   if (events.length < 2) {
     const spookId = 'ghostSponsorOffered'
@@ -878,7 +890,14 @@ export function generatePostAdvanceEvents(
     ...(game.pendingEvents ?? []),
     ...(game.deferredDecisions ?? []),
   ].some(e => e.type === 'sponsorOffer' && !e.resolved)
-  if (activeSponsors.length < maxSponsors && !hasOpenSponsorOffer) {
+  // KÖRORDER 2026-09-18 §5.2 — två spärrar utöver platsgrinden.
+  // (1) Cooldown: ett avslag håller i fyra omgångar. Utan den kunde nästa
+  //     omgång bära ett nytt erbjudande, så nejet kostade ingenting.
+  // (2) Säsongstak: högst SPONSOR_OFFERS_PER_SEASON erbjudanden per säsong,
+  //     så en klubb med lediga platser inte möts av ett obegränsat flöde.
+  const sponsorCooldownActive = (game.sponsorOfferCooldownUntilRound ?? 0) > roundPlayed
+  const sponsorSeasonCapReached = (game.sponsorOffersThisSeason ?? 0) >= SPONSOR_OFFERS_PER_SEASON
+  if (activeSponsors.length < maxSponsors && !hasOpenSponsorOffer && !sponsorCooldownActive && !sponsorSeasonCapReached) {
     const offer = generateSponsorOffer(
       managedClub?.reputation ?? 50,
       activeSponsors.length,

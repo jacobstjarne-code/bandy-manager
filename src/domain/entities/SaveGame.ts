@@ -902,6 +902,17 @@ export interface SaveGame {
     season: number
   }
   riskySponsorOfferSentThisSeason?: number  // season when last offer was generated
+
+  /**
+   * KÖRORDER 2026-09-18 §5.2 — sponsorgrinden. Grinden var enbart
+   * "activeSponsors < maxSponsors och inget öppet erbjudande", vilket betyder
+   * att ett nej omedelbart kunde följas av ett nytt erbjudande nästa omgång.
+   * Avslaget kostade alltså ingenting och erbjudandena blev bakgrundsbrus.
+   * Cooldownen ger nejet en varaktighet; säsongstaket gör att en klubb med
+   * lediga platser inte kan mötas av ett obegränsat flöde.
+   */
+  sponsorOfferCooldownUntilRound?: number   // globalt matchday-tal, satt vid avslag
+  sponsorOffersThisSeason?: number          // antal erbjudanden SKAPADE denna säsong
   patronWithdrawnSeason?: number       // patron re-emergence cooldown: blocks new patron for 2 seasons after patron withdrawal
   mecenatWithdrawnSeason?: number       // lock new mecenat spawn for 2 seasons after a mecenat withdrawal
 

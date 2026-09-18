@@ -1212,3 +1212,27 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 **Känn igen:** en ny liggartyp vars konsument returnerar `null`/tomt trots att en matchande post finns i `game.eventLedger`. Ett test som konstruerar `EventLedgerEntry` för hand och anropar konsumentfunktionen direkt (kringgår redaktören helt) i stället för att gå via `selectReviewCallback`/`agendaForSurface`. En PR-diff som lägger till en typ i `Narrative.ts`s union men inte rör `redaktorenService.ts` eller `clubMemoryService.ts`.
 
 **Historik (2026-09-08):** k12 (`docs/dom/DOM_K12_TRANSFER_TARGET_MISSED_2026-09-08.md`, commit `c71b4d3e`) — Codex fångade grindfelet under granskning innan release, inte i produktion. Fixat genom att lägga `transfer_target_missed` i `REVIEW_TYPES` (redaktorenService.ts) samt `STATIC_MOMENT_KIND`/`MOMENT_FAMILY` (clubMemoryService.ts) i samma commit som producent/konsument.
+
+## 61. En spak som mäts konstant kan se död ut fast den är schemalagd per design
+
+**Mönster:** spaksvepet (`scripts/lever-sweep.ts`) håller varje spak i ETT läge hela säsongen och jämför mot baslinjen. För en spak som är avsedd att växlas under säsongen mäter det fel sak, och utfallet blir "noll effekt" eller "sämre än att inte göra något". Periodiseringen dömdes så: konstant toppa förfaller 1,7 seasonForm per omgång i 34 omgångar, vilket inget riktigt spelbeteende gör. Vilolägena (Lätt, Recovery) fick samma dom — de mättes konstant på en frisk trupp, medan de per definition är SVARSLÄGEN på en sliten.
+
+**Rotorsak:** "Δpoäng mot baslinjen vid konstant läge" är ett mått på hur bra spaken är som *standardinställning*, inte på hur bra den är som *beslut*. För en spak vars hela värde ligger i att växlas vid rätt tillfälle är de två frågorna olika, och svepet svarar bara på den första.
+
+**Fix:** mät periodiska spakar med en POLICY, inte ett läge — och låt policyn använda den tröskel spelaren faktiskt får se på skärmen, inte en teoretisk. `scripts/diag-rest-policy.ts` är mallen: villkorad Lätt (välj Lätt när minst en i startelvan ligger under `FATIGUE_AVAILABILITY_FLOOR`) slog konstant Normal med +0,38 poäng och sänkte skadorna, medan konstant Lätt gav +0,23 och kostade 8 moral. Samma spak, motsatt dom, beroende på mätningens form.
+
+**Känn igen:** en §0-grindregelrapport där ett läge aldrig är bäst i något sammanhang, och där spaken har en naturlig "när ska jag använda den?"-fråga. Innan läget döms dött: finns ett tillstånd som borde utlösa det, och kan svepet över huvud taget nå det tillståndet?
+
+**Historik (2026-09-18):** Fable gjorde rättelsen först för periodiseringen (TILLÄGG i `docs/CODE_KORORDER_SPAKBALANS_2026-09-18.md`), Code stötte på samma fel för vilolägena i §3 och Jacob beslutade att mäta villkorat i stället för att mjuka upp magnituderna.
+
+## 62. Tillståndsövergångar i presentationslagret är osynliga för headless
+
+**Mönster:** varje mätning vi gör — spaksvep, stresstest, kalibrering — kör genom `scripts/stress/fixtures.ts`, inte genom appen. En övergång som bara sker i storen (`gameStore.ts`) eller i en skärmkomponent inträffar därför aldrig i mätningen, och varje siffra som beror på den är fel utan att någonting failar.
+
+**Rotorsak:** harnessen är en ANDRA implementation av spelets flöde, och den driftar tyst. `AUDIT_SPAKSVEP_TEXTEXPONERING_2026-09-18` §2.6 hittade tre sådana övergångar samtidigt: kontraktskraven (`season_summary → contract_demands`), beslutskorten (aldrig besvarade headless) och röstintroduktionerna (Tillträdet öppnar permanenta röstgrindar som headless hoppade över). Varje GRIND-körning och varje mätskript sedan augusti körde alltså utan kontraktskrav, med obesvarade kort, och med klack-/politikerkort tyst bortfiltrerade av `canEventPassVoiceGate`.
+
+**Fix:** varje ny `pendingScreen`-övergång i storen ska ha en motsvarighet i `fixtures.ts` — och motsvarigheten ska anropa SAMMA domänfunktion, inte en headless-variant av den. `completeOnboarding()` bröts ut ur `markOnboardingComplete` just för det. `scripts/stress/__tests__/harnessOnboardingParity.test.ts` låser de tre övergångarna; `scripts/harness-acceptance.ts` mäter om något kort fastnar.
+
+**Känn igen:** ett mätvärde som är misstänkt stabilt (noll besvarade kort, noll kontraktskrav, ett kort som ligger kvar 24 omgångar). En PR som lägger till en `pendingScreen`-gren i storen utan att röra `scripts/stress/`.
+
+**Historik (2026-09-18):** §1 i `docs/CODE_KORORDER_SPAKBALANS_2026-09-18.md`, commit `408f72f1`. Efter fixen: besvarade beslutskort 54,2 → 61,0 per säsong, mötta kontraktskrav 0,0 → 1,8, `supporter_away_trip` från 24 omgångar fastnat till noll.

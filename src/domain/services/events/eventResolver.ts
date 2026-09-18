@@ -33,6 +33,7 @@ import { getJobGuaranteeCapableSponsorIds } from '../contractNegotiationService'
 import { canEventPassVoiceGate, isPassiveVoiceIntroduction, recordVoiceIntroduction } from '../voiceIntroductionService'
 import { captureResolvedChoiceOutcome } from '../eventChoiceReceiptService'
 import { getDecisionSemanticId, getDecisionTemplateKey, recordDecisionLifecycle } from '../decisionLifecycleService'
+import { SPONSOR_DECLINE_COOLDOWN_ROUNDS } from './postAdvanceEvents'
 
 /**
  * PÅSTÅENDEKARTAN (2026-08-24): den nedskrivna sanningen "vad valde spelaren"
@@ -551,9 +552,16 @@ export function resolveEvent(
           isRead: false,
         }]
       : game.inbox
+    // KÖRORDER 2026-09-18 §5.2: ett nej håller i fyra omgångar. Utan
+    // cooldownen kunde nästa omgång bära ett nytt erbjudande, så avslaget
+    // kostade ingenting och erbjudandena blev bakgrundsbrus.
+    const declined = choiceId === 'reject'
     return finalizeSponsorResolution({
       ...game,
       inbox,
+      sponsorOfferCooldownUntilRound: declined
+        ? (game.currentMatchday ?? 0) + SPONSOR_DECLINE_COOLDOWN_ROUNDS
+        : game.sponsorOfferCooldownUntilRound,
     })
   }
 
