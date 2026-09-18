@@ -3,6 +3,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { createRoot, type Root } from 'react-dom/client'
 import { createNewGame } from '../../../../application/useCases/createNewGame'
 import { FatigueFloorConfirm } from '../FatigueFloorConfirm'
+import { FATIGUE_AVAILABILITY_FLOOR } from '../../../../domain/services/squadEvaluator'
 
 beforeAll(() => {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -47,7 +48,7 @@ describe('FatigueFloorConfirm — mobil blockerare', () => {
     expect(dialog).not.toBeNull()
     expect(appRoot.contains(dialog)).toBe(false)
     expect(dialog.style.zIndex).toBe('400')
-    expect(dialog.textContent).toContain('10 av 11 har minst 22 % kondition')
+    expect(dialog.textContent).toContain(`10 av 11 har minst ${FATIGUE_AVAILABILITY_FLOOR} % kondition`)
     expect(dialog.textContent).toContain('Den valda elvan har inte elva spelare med tillräcklig kondition.')
     expect(dialog.textContent).not.toContain('15 av 11')
 

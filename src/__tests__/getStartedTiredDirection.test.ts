@@ -1,8 +1,9 @@
 /**
  * High 2 (Skutskär-auditen, 2026-08-22, Jacobs dom) — hårt villkor: en
- * spelare under SPELKLARHET_FITNESS_FLOOR (22) kan aldrig få en good/neutral
+ * spelare under SPELKLARHET_FITNESS_FLOOR kan aldrig få en good/neutral
  * "startade trött"-rad, oavsett matchbetyg. Ingen fjärde riktning.
  */
+import { FATIGUE_AVAILABILITY_FLOOR } from '../domain/services/squadEvaluator'
 import { describe, it, expect } from 'vitest'
 import { getStartedTiredDirection } from '../presentation/screens/granska/helpers'
 
@@ -12,11 +13,11 @@ describe('getStartedTiredDirection', () => {
   })
 
   it('precis på golvet räknas som spelklar, inte under', () => {
-    expect(getStartedTiredDirection('22', 9, 'good')).toBe('good')
+    expect(getStartedTiredDirection(String(FATIGUE_AVAILABILITY_FLOOR), 9, 'good')).toBe('good')
   })
 
   it('precis under golvet är bad', () => {
-    expect(getStartedTiredDirection('21', 9, 'good')).toBe('bad')
+    expect(getStartedTiredDirection(String(FATIGUE_AVAILABILITY_FLOOR - 1), 9, 'good')).toBe('bad')
   })
 
   it('över golvet med högt betyg → good', () => {

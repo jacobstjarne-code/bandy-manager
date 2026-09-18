@@ -65,12 +65,26 @@ export function getSelectionScore(player: Player): number {
  * (setLineup.ts, playerStateProcessor.ts, båda application-lager) inte kan
  * importera från presentation/utils utan att bryta lagerriktningen.
  * `lineupNudge.ts`s `SPELKLARHET_FITNESS_FLOOR` är nu en re-export av denna
- * — EN sanning, ETT värde (22, mitten av Jacobs låsta 20–25%-spann), tre
- * konsekvenser: under den nedprioriteras spelaren i "Fyll bästa" (HIGH2)
- * OCH AI-laguttagningen (C-FT1), samt riskerar att stå över nästa match
- * (A-H3 ben 2).
+ * — EN sanning, ETT värde, tre konsekvenser: under den nedprioriteras
+ * spelaren i "Fyll bästa" (HIGH2) OCH AI-laguttagningen (C-FT1), samt
+ * riskerar att stå över nästa match (A-H3 ben 2).
+ *
+ * KÖRORDER 2026-09-18, efter §3.0: 22 → 45. Jacobs beslut.
+ *
+ * ROT: 22 var mitten av Jacobs låsta 20–25 %-spann, satt när A3-mätningen
+ * visade att 60 % av alla starter skedde under golvet. §3.0 vände den
+ * ekonomin, och golvet följde inte med: över 2112 startelvsobservationer
+ * under de nya konstanterna föll INGEN spelare under 22 (lägsta sedda 28).
+ * Alla tre konsekvenserna slutade därmed inträffa, och `Sliten`-taggen i
+ * laguttagningen plus hela FatigueFloorConfirm-dialogen blev oåtkomliga —
+ * byggda, tidigare synliga, inte längre nåbara.
+ *
+ * 45 är valt ur den nya fördelningen, inte ur det gamla spannet: 3,7 % av
+ * starterna ligger under 45 och 6,2 % under 55. Varningen blir sällsynt men
+ * verklig igen, vilket är vad målbilden ("en ordinarie orkar en match i
+ * veckan") kräver — tröttheten ska synas när den är verklig, inte varje vecka.
  */
-export const FATIGUE_AVAILABILITY_FLOOR = 22
+export const FATIGUE_AVAILABILITY_FLOOR = 45
 
 export type LineupSelectionMode = 'strongest' | 'rested' | 'matchfit'
 

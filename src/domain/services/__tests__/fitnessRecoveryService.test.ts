@@ -102,7 +102,11 @@ describe('fitnessRecoveryService — A3 återhämtningskurvan', () => {
 
 describe('fitnessRecoveryService — A3 sommaråterställningen (domens krav 2)', () => {
   it('sommarmålet ligger på rimlig matchberedskap och skalar med uthållighet', () => {
-    expect(summerFitnessTarget(0)).toBeGreaterThan(FATIGUE_AVAILABILITY_FLOOR * 3)
+    // Kravet är "rimlig matchberedskap", inte en multipel av golvet. `* 3` var
+    // skrivet när golvet var 22 och band testet till ett tal som sedan flyttats
+    // (KÖRORDER 2026-09-18: 22 → 45). Sommarmålet ska ligga tydligt ÖVER golvet
+    // — en spelare kommer tillbaka spelklar, inte på gränsen.
+    expect(summerFitnessTarget(0)).toBeGreaterThan(FATIGUE_AVAILABILITY_FLOOR + 20)
     expect(summerFitnessTarget(100)).toBeGreaterThan(summerFitnessTarget(0))
     expect(summerFitnessTarget(100)).toBeLessThanOrEqual(100)
   })

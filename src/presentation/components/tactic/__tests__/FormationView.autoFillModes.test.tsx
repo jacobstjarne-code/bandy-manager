@@ -10,6 +10,7 @@ import {
   TacticMentality, TacticTempo, TacticPassingRisk, TacticWidth,
   TacticAttackingFocus, CornerStrategy, PenaltyKillStyle,
 } from '../../../../domain/enums'
+import { SPELKLARHET_FITNESS_FLOOR } from '../../../utils/lineupNudge'
 import type { Player } from '../../../../domain/entities/Player'
 import type { Tactic } from '../../../../domain/entities/Club'
 
@@ -176,8 +177,8 @@ describe('FormationView — autofyll-lägen', () => {
 
   it('respekterar golvet i alla tre lägen: en spelare under SPELKLARHET_FITNESS_FLOOR väljs aldrig om ett alternativ ovanför finns', () => {
     const { players: fillers, lineupSlots } = fillerPlayers('mid-r')
-    const belowFloor = makePlayer('cand-tired', PlayerPosition.Midfielder, { currentAbility: 99, fitness: 10 })
-    const aboveFloor = makePlayer('cand-ok', PlayerPosition.Midfielder, { currentAbility: 30, fitness: 25 })
+    const belowFloor = makePlayer('cand-tired', PlayerPosition.Midfielder, { currentAbility: 99, fitness: SPELKLARHET_FITNESS_FLOOR - 12 })
+    const aboveFloor = makePlayer('cand-ok', PlayerPosition.Midfielder, { currentAbility: 30, fitness: SPELKLARHET_FITNESS_FLOOR + 3 })
 
     for (const mode of ['Starkast', 'Mest utvilad', 'Bäst för dagens match'] as const) {
       renderFormation(baseTactic({ lineupSlots }), [...fillers, belowFloor, aboveFloor])
