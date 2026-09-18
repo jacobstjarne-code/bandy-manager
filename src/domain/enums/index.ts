@@ -121,6 +121,13 @@ export enum InboxItemType {
   /** akademi-junior-fyller-20 (DOM_AKADEMI_LIGGARE §4): en P19-spelare som
    *  fyllde tjugo och lämnade akademin, med eller utan beslutskort. */
   AcademyAgedOut = 'academyAgedOut',
+  /** KÖRORDER 2026-09-18 §5.1: Nemesis, Rivalmöte och karriärsmilstolpar låg
+   *  alla under BoardFeedback — en typ som betyder "styrelsen säger något".
+   *  Det är inte styrelsen som talar här, och sammanblandningen gjorde de tre
+   *  omöjliga att räkna, filtrera eller strypa var för sig (textexponerings-
+   *  mätningen fick 6,0 "boardFeedback"-poster per säsong utan att kunna säga
+   *  vilka). Egen typ, samma skäl som DecisionRollover fick sin. */
+  RivalryMilestone = 'rivalryMilestone',
 }
 
 export enum TrainingType {

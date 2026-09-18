@@ -114,10 +114,17 @@ export function updatePlayerMatchStats(
         const opponentIdMs = isHomeMs ? fixture.awayClubId : fixture.homeClubId
         const opponentMs = game.clubs.find(c => c.id === opponentIdMs)
         const oppNameMs = opponentMs?.shortName ?? opponentMs?.name ?? 'motståndet'
+        const managedClubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'klubbens'
 
         // Hat trick milestone (3+ goals this fixture)
         if (goals >= 3) {
-          if (!newMilestones.some(m => m.type === 'hatTrick' && m.season === game.currentSeason && m.round === nextRound)) {
+          // KÖRORDER 2026-09-18 §5.1: spärren var per SÄSONG OCH OMGÅNG, vilket
+          // i praktiken betyder varje hattrick — en målfarlig forward utlöste
+          // "Karriärsmilstolpe" fyra, fem gånger om året och ordet slutade
+          // betyda något. En milstolpe passeras en gång. Nu: första hattricket
+          // per spelare och KARRIÄR, oavsett säsong.
+          const hadHatTrickBefore = newMilestones.some(m => m.type === 'hatTrick')
+          if (!hadHatTrickBefore) {
             newMilestones.push({
               type: 'hatTrick',
               season: game.currentSeason,
@@ -127,9 +134,10 @@ export function updatePlayerMatchStats(
             newMilestoneInboxItems.push({
               id: `inbox_milestone_hatTrick_${p.id}_r${nextRound}_${game.currentSeason}`,
               date: game.currentDate,
-              type: InboxItemType.BoardFeedback,
+              type: InboxItemType.RivalryMilestone,
               title: `Karriärsmilstolpe: ${playerName}`,
-              body: `${playerName} satte hattrick och nådde en karriärsmilstolpe!`,
+              // Fables text (TEXTLEVERANS A3), kopierad ordagrant.
+              body: `${playerName} gjorde sitt första hattrick i ${managedClubName}-tröjan. Bollen är hans, den ligger i väskan redan.`,
               relatedPlayerId: p.id,
               isRead: false,
             } as InboxItem)
@@ -171,9 +179,10 @@ export function updatePlayerMatchStats(
             newMilestoneInboxItems.push({
               id: `inbox_milestone_goals50_${p.id}_${game.currentSeason}`,
               date: game.currentDate,
-              type: InboxItemType.BoardFeedback,
+              type: InboxItemType.RivalryMilestone,
               title: `Karriärsmilstolpe: ${playerName}`,
-              body: `${playerName} nådde 50 mål i karriären — ett historiskt ögonblick!`,
+              // Fables text (TEXTLEVERANS A3), kopierad ordagrant.
+              body: `${playerName} passerade femtio mål för klubben. Ingen sa något särskilt i omklädningsrummet. Alla visste.`,
               relatedPlayerId: p.id,
               isRead: false,
             } as InboxItem)

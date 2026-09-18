@@ -489,6 +489,11 @@ export interface SaveGame {
     draws: number
     lastResult?: 'win' | 'loss' | 'draw'
     currentStreak: number  // positive = win streak, negative = loss streak
+    /** KÖRORDER 2026-09-18 §5.1 — har vinstsviten mot den här klubben någon
+     *  gång nått dominansgränsen? Bär minnet som gör att Rivalmöte-raden kan
+     *  gå exakt två gånger per relation (när dominansen etableras och när den
+     *  bryts) i stället för varannan match. */
+    dominanceEstablished?: boolean
   }>
 
   opponentAnalyses?: Record<string, OpponentAnalysis>  // key = opponentClubId

@@ -23,6 +23,27 @@ export interface NarrativeResult {
   inboxItems: InboxItem[]
 }
 
+/**
+ * KÖRORDER 2026-09-18 §5.1 — Nemesis talar vid tre fasta trösklar, inte vid
+ * varje mål. Texterna är Fables (docs/TEXTLEVERANS_SPAKBALANS_2026-09-18.md
+ * A1), kopierade ordagrant. Siffrorna skrivs ut i bokstäver just för att
+ * trösklarna är fasta — det är samma tal varje gång.
+ */
+export const NEMESIS_THRESHOLDS = [3, 6, 10] as const
+
+function nemesisBody(threshold: number, name: string, club: string): string {
+  if (threshold === 3) return `${name} (${club}) har gjort tre mål mot oss nu. Backarna vet vem han är.`
+  if (threshold === 6) return `Sex mål mot oss av ${name} (${club}). Han hittar samma yta varje gång. Scouten har hans nummer.`
+  return `${name} (${club}) är uppe i tio mål mot oss. Det pratas om det på Konsum. Han lär inte flytta hit.`
+}
+
+/**
+ * §5.1 — Rivalmötet talar bara när dominansen ETABLERAS eller BRYTS.
+ * Tidigare gick raden även på "två raka" i endera riktningen, vilket gjorde
+ * den till en notis varannan match mot samma klubb — 107 gånger i en karriär.
+ */
+const RIVALRY_DOMINANCE_STREAK = 4
+
 export function processNarrative(
   game: SaveGame,
   justCompletedManagedFixture: Fixture | null,
@@ -157,33 +178,41 @@ export function processNarrative(
       },
     }
 
-    const totalMeetings = newWins + newLosses + newDraws
-    if (totalMeetings >= 4) {
-      const rival = game.clubs.find(c => c.id === opponentId)
-      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-      const alreadySentId = `inbox_rivalry_context_${opponentId}_r${nextMatchday}_${game.currentSeason}`
+    // KÖRORDER 2026-09-18 §5.1 — bara två ögonblick i hela relationen till en
+    // klubb, inte en notis varannan match. Dominansen ETABLERAS när
+    // vinstsviten når RIVALRY_DOMINANCE_STREAK, och BRYTS vid första förlusten
+    // därefter. `dominanceEstablished` i rivalryHistory bär minnet, så ingen
+    // av raderna kan gå två gånger på samma sida av gränsen.
+    const rival = game.clubs.find(c => c.id === opponentId)
+    const rivalName = rival?.name ?? 'motståndaren'
+    const wasDominant = rivalryHistory[opponentId]?.dominanceEstablished === true
+    const establishes = !wasDominant && newStreak >= RIVALRY_DOMINANCE_STREAK
+    const breaks = wasDominant && newStreak <= 0
+
+    if (establishes || breaks) {
+      const alreadySentId = `inbox_rivalry_${establishes ? 'established' : 'broken'}_${opponentId}_r${nextMatchday}_${game.currentSeason}`
       if (!game.inbox.some(i => i.id === alreadySentId)) {
-        let rivalryBody = ''
-        if (newWins > newLosses + newLosses * 0.5 && won) {
-          rivalryBody = `${managedClub?.name ?? 'Ni'} dominerar mötet mot ${rival?.name ?? 'motståndaren'} med ${newWins}–${newLosses} i matcher. Dominansen håller i sig.`
-        } else if (newLosses > newWins && won) {
-          rivalryBody = `Revansch! ${managedClub?.name ?? 'Ni'} bröt den negativa sviten mot ${rival?.name ?? 'motståndaren'} som lett ${newLosses}–${newWins} i möten.`
-        } else if (Math.abs(newStreak) >= 2) {
-          const streakText = newStreak > 0 ? `${newStreak} raka segrar` : `${Math.abs(newStreak)} raka förluster`
-          rivalryBody = `${managedClub?.name ?? 'Ni'} har nu ${streakText} mot ${rival?.name ?? 'motståndaren'}.`
-        }
-        if (rivalryBody) {
-          inboxItems.push({
-            id: alreadySentId,
-            date: game.currentDate,
-            type: InboxItemType.BoardFeedback,
-            title: `Rivalmöte: ${rival?.name ?? 'Motståndaren'}`,
-            body: rivalryBody,
-            relatedClubId: opponentId,
-            isRead: false,
-          } as InboxItem)
-        }
+        inboxItems.push({
+          id: alreadySentId,
+          date: game.currentDate,
+          type: InboxItemType.RivalryMilestone,
+          title: `Rivalmöte: ${rival?.name ?? 'Motståndaren'}`,
+          // Fables texter (TEXTLEVERANS A2), kopierade ordagrant.
+          body: establishes
+            ? `Fyra raka mot ${rivalName}. De har börjat byta lag på straffar när vi kommer.`
+            : `${rivalName} tog den till slut. ${newWins}–${newLosses} i matcher fortfarande, men det där kommer de leva på ett tag.`,
+          relatedClubId: opponentId,
+          isRead: false,
+        } as InboxItem)
       }
+    }
+
+    rivalryHistory = {
+      ...rivalryHistory,
+      [opponentId]: {
+        ...rivalryHistory[opponentId],
+        dominanceEstablished: establishes ? true : breaks ? false : wasDominant,
+      },
     }
   }
 
@@ -211,18 +240,30 @@ export function processNarrative(
       }
       const newTotal = prev.goalsAgainstUs + matchGoals
       const newMatches = (prev.matchesScoredIn ?? 0) + 1
-      // Match-spärr: kräver mål i ≥2 separata matcher + ≥3 totalt
-      const shouldSendInbox = newMatches >= 2 && newTotal >= 3 && (prev.inboxSentAt == null || prev.inboxSentAt < newTotal)
+      // KÖRORDER 2026-09-18 §5.1 — trösklar, inte varje mål. Villkoret var
+      // `inboxSentAt < newTotal`, vilket gav en post för VARJE nytt mål efter
+      // det tredje: en spelare som gjorde nio mål mot oss kostade sju poster.
+      // Nu talar systemet tre gånger under hela relationen, vid 3, 6 och 10.
+      // Match-spärren (mål i ≥2 separata matcher) står kvar — en spelare som
+      // gör hattrick i en enda match är inte en nemesis.
+      const crossed = NEMESIS_THRESHOLDS.find(
+        t => newTotal >= t && prev.goalsAgainstUs < t,
+      )
+      const shouldSendInbox = newMatches >= 2 && crossed !== undefined
       nemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, matchesScoredIn: newMatches, clubId: opponentClubId }
-      if (shouldSendInbox) {
+      if (shouldSendInbox && crossed !== undefined) {
         nemesisTracker[playerId].inboxSentAt = newTotal
         const nemesisClub = game.clubs.find(c => c.id === opponentClubId)
+        const nemesisName = `${opponentPlayer.firstName} ${opponentPlayer.lastName}`
+        const nemesisClubName = nemesisClub?.name ?? 'motst.'
         inboxItems.push({
-          id: `inbox_nemesis_${playerId}_${game.currentSeason}`,
+          // Id:t bär tröskeln — annars skulle andra och tredje posten krocka
+          // med den första inom samma säsong.
+          id: `inbox_nemesis_${playerId}_t${crossed}_${game.currentSeason}`,
           date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: `Nemesis: ${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
-          body: `${opponentPlayer.firstName} ${opponentPlayer.lastName} (${nemesisClub?.name ?? 'motst.'}) har nu gjort ${newTotal} mål mot oss. Är det dags att värva honom istället?`,
+          type: InboxItemType.RivalryMilestone,
+          title: `Nemesis: ${nemesisName}`,
+          body: nemesisBody(crossed, nemesisName, nemesisClubName),
           relatedPlayerId: playerId,
           isRead: false,
           kind: 'nemesis',
