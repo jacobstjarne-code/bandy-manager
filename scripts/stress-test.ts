@@ -15,7 +15,8 @@ import type { SaveGame } from '../src/domain/entities/SaveGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
 import { FixtureStatus } from '../src/domain/enums'
 
-import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen, autoBuildCheapestAffordableFacility } from './stress/fixtures'
+import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen, autoResolvePendingEvents, autoBuildCheapestAffordableFacility } from './stress/fixtures'
+import { mulberry32 } from '../src/domain/utils/random'
 import { checkInvariants, checkFinanceLogGap } from '../src/domain/services/gameInvariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
@@ -105,6 +106,14 @@ async function main(): Promise<void> {
   for (let seedIdx = 0; seedIdx < seeds; seedIdx++) {
     const ring = makeRingBuffer()
     const warnings: SeedResult['warnings'] = []
+    // KÖRORDER 2026-09-18 §1.2 (AUDIT_SPAKSVEP §2.6, harnessfynd 2): stresstestet
+    // anropade bara autoResolvePendingScreen, aldrig autoResolvePendingEvents —
+    // varje GRIND-körning har alltså haft en TOM beslutskortsekonomi (patron
+    // spawnar aldrig, bud besvaras aldrig, sponsorer hänger kvar). Samma
+    // placering som lever-sweep.ts: lös korten FÖRE advanceToNextEvent, med en
+    // deterministisk mulberry på seeden (aldrig Math.random — en stresskörning
+    // måste vara reproducerbar från sitt seed).
+    const eventRand = mulberry32(seedIdx * 7919 + 17)
     let game: SaveGame
     let seedCrashed = false
     let crashReason: string | undefined
@@ -142,6 +151,9 @@ async function main(): Promise<void> {
       const textMetricsAcc = newTextMetricsAccumulator()
       let previousInboxIds = new Set<string>(game.inbox.map(i => i.id))
       let roundsThisSeason = 0
+      // §1.2-acceptans: antal besvarade beslutskort per säsong (svepets baslinje
+      // låg på ~60). Före fixen var detta per definition 0 i varje GRIND-körning.
+      let eventsAnsweredThisSeason = 0
 
       while (!seasonDone && !seedCrashed) {
         // Always set lineup before advancing (advance clears managedClubPendingLineup each round)
@@ -150,6 +162,11 @@ async function main(): Promise<void> {
         // NÅGONSIN en anläggningsnod — O5 kraft 2 (drift) kunde bara
         // verifieras analytiskt, aldrig i drift. Se docs/archive/historiska-statuskallor/BACKLOG.md.
         game = autoBuildCheapestAffordableFacility(game)
+        // §1.2: dränera beslutskorten innan omgången rullas (se kommentaren vid
+        // eventRand ovan). Räknas nedan för acceptansrapporten.
+        const pendingBeforeResolve = (game.pendingEvents ?? []).length
+        game = autoResolvePendingEvents(game, eventRand)
+        eventsAnsweredThisSeason += pendingBeforeResolve - (game.pendingEvents ?? []).length
 
         // Advance
         let roundPlayed: number | null = null

@@ -13,6 +13,7 @@ import { canStartBuild, startFacilityBuild, getFacilityNodeViews, createInitialF
 import { applyFinanceChange } from '../../src/domain/services/economyService'
 import { applyContractDemandResolutions } from '../../src/domain/services/contractDemandService'
 import { resolveEvent } from '../../src/domain/services/events/eventResolver'
+import { completeOnboarding } from '../../src/domain/services/voiceIntroductionService'
 
 // ── Game creation ─────────────────────────────────────────────────────────────
 
@@ -23,8 +24,15 @@ export function createHeadlessGame(seed: number): SaveGame {
     clubId: clubTemplate.id,
     seed,
   })
+  // KÖRORDER 2026-09-18 §1.3 (AUDIT_SPAKSVEP §2.6, harnessfynd 3): en riktig
+  // spelare har passerat Ankomsten + Tillträdet innan omgång 1, vilket öppnar
+  // de permanenta röstgrindarna. Headless hoppade det steget helt, så varje
+  // kort med en `voiceId` (klack, politiker, bortaresa) filtrerades tyst bort
+  // av canEventPassVoiceGate och kunde aldrig besvaras. Samma domänfunktion
+  // som storens markOnboardingComplete anropar — ingen egen headless-variant.
+  const onboarded = completeOnboarding(game)
   // Clear the initial BoardMeeting screen — headless, no UI pause needed
-  return { ...game, pendingScreen: null }
+  return { ...onboarded, pendingScreen: null }
 }
 
 // ── Lineup auto-selection ────────────────────────────────────────────────────
@@ -158,6 +166,21 @@ export function autoResolvePendingScreen(game: SaveGame): ResolveResult {
       unresolvable: false,
       screenType: ps,
     }
+  }
+
+  // KÖRORDER 2026-09-18 §1.1 (AUDIT_SPAKSVEP §2.6, harnessfynd 1): produktionens
+  // `clearSeasonSummary` (gameFlowActions.ts) går `season_summary →
+  // contract_demands` när säsongsslutet lämnade obemötta marknadskrav — headless
+  // gick `season_summary → null` rakt av, så A-H2b-policyn i contract_demands-
+  // grenen OVAN aldrig kördes. Varje GRIND-/mätkörning sedan 2026-08-28 har
+  // därmed tappat kontraktskraven tyst, trots kommentaren som påstod motsatsen.
+  // Spegla övergången här, och dränera den i SAMMA anrop (rekursionen träffar
+  // contract_demands-grenen ovan) så anropare som kör helpern en gång per varv
+  // inte lämnar skärmen hängande en omgång.
+  if (ps === 'season_summary' && (game.pendingContractDemands ?? []).length > 0) {
+    const withDemandsScreen: SaveGame = { ...game, pendingScreen: 'contract_demands' as SaveGame['pendingScreen'] }
+    const drained = autoResolvePendingScreen(withDemandsScreen)
+    return { ...drained, screenType: ps }
   }
 
   return {

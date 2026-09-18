@@ -316,6 +316,29 @@ export function seedTilltradeVoices(game: SaveGame): SaveGame {
 }
 
 /**
+ * KÖRORDER 2026-09-18 §1.3 (AUDIT_SPAKSVEP §2.6, harnessfynd 3): tillståndet
+ * "onboardingen är avklarad" bodde bara i presentationslagret
+ * (`gameStore.markOnboardingComplete`). Headless nådde det aldrig, så
+ * klackledare/politiker m.fl. förblev ointroducerade och `canEventPassVoiceGate`
+ * (eventResolver.ts) returnerade tyst oförändrat spel för varje kort med en
+ * `voiceId` — bortaresan låg obesvarad i 26 omgångar på seed 3, och ALLA
+ * klack-/politikerkort var döda i varje headless-mätning som gjorts.
+ *
+ * Övergången är domänlogik, inte UI: den öppnar permanenta röstgrindar och
+ * köar rosterintroduktioner. Bor därför här, och anropas av BÅDE storen och
+ * `createHeadlessGame` — samma spel mäts som spelas.
+ */
+export function completeOnboarding(game: SaveGame): SaveGame {
+  return queueRosterVoiceIntroductions(
+    seedTilltradeVoices({
+      ...game,
+      onboardingComplete: true,
+      introducedInboxTopics: [...new Set([...(game.introducedInboxTopics ?? []), 'squad'])],
+    }),
+  )
+}
+
+/**
  * Legacy saves cannot prove the historical date of an introduction. Their
  * gate is therefore migrated without inventing a timestamp or ledger event.
  */

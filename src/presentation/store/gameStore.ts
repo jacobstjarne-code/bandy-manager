@@ -55,7 +55,7 @@ import {
   markLedgerPostTold as markLedgerPostToldInRegistry,
 } from '../../domain/services/ledgerToldService'
 import type { NarrativePostReference } from '../../domain/attention/types'
-import { queueRosterVoiceIntroductions, seedTilltradeVoices } from '../../domain/services/voiceIntroductionService'
+import { completeOnboarding } from '../../domain/services/voiceIntroductionService'
 import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryService'
 
 export type SaveActionResult = { success: boolean; error?: string }
@@ -625,13 +625,11 @@ export const useGameStore = create<GameState>()(
         if (!game) return { success: false, error: 'Inget spel laddat' }
         // Ankomsten + Tillträdet have already shown the board and assistant
         // coach. Open their permanent voice gates at the same atomic save.
-        const updated = queueRosterVoiceIntroductions(
-          seedTilltradeVoices({
-            ...game,
-            onboardingComplete: true,
-            introducedInboxTopics: [...new Set([...(game.introducedInboxTopics ?? []), 'squad'])],
-          }),
-        )
+        // KÖRORDER 2026-09-18 §1.3: själva övergången bor nu i domänen
+        // (completeOnboarding, voiceIntroductionService.ts) så headless-
+        // harnessen kan nå exakt samma tillstånd. Storen äger fortfarande NÄR
+        // den sker och persisteringen; den äger inte längre VAD den gör.
+        const updated = completeOnboarding(game)
         set({ game: updated })
         return persistGameSnapshot(updated, set)
       },
