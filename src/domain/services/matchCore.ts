@@ -37,6 +37,44 @@ const SUSPENSION_FREQUENCY_MOD = 1.51
 // som managedIsHome ovan.
 const REFEREE_ATTITUDE_FOUL_STEP = 0.03
 
+// KÖRORDER 2026-09-18 §2 — mentalitetens händelselager, styrkeberoende.
+// Storlekarna är KALIBRERADE mot §2:s acceptans (|Δpoäng| offensiv↔defensiv
+// < 1,5 i snitt, tecknet ska skilja mellan topp-4 och botten-4, avsked inom
+// 5 procentenheter), inte gissade. Se buildSequenceWeights för mekaniken.
+// MENTALITY_EDGE_SCALE är den styrkeskillnad (evaluateSquad-composite,
+// offense+defense) där effekten når sitt fulla utslag.
+const MENTALITY_ATTACK_BONUS = 10
+const MENTALITY_HALFCHANCE_BONUS = 6
+const MENTALITY_TRANSITION_BONUS = 2
+const MENTALITY_EDGE_SCALE = 12
+
+/**
+ * KÖRORDER 2026-09-18 §2.1 — ROTORSAKEN till att offensiv mentalitet vann
+ * oavsett sammanhang.
+ *
+ * Initiativet (vem som anfaller nästa sekvens) vägdes enbart med ANFALLS-
+ * styrkan: `homeWeight = effectiveHomeAttack * ...`. Försvarsstyrkan fanns
+ * inte i formeln alls. Offensiv mentalitet köpte därför BÅDE fler sekvenser
+ * och bättre sekvenser, medan defensiv bara köpte bättre — och betalade med
+ * färre. Sonden (scripts/probe-mentality.ts, jämnstarka lag) visade utslaget:
+ * offensiv +0,28 gjorda mål men bara +0,03 insläppta; defensiv −0,45 gjorda
+ * och −0,04 insläppta. Per sekvens är lagren symmetriska; det var ANTALET
+ * sekvenser som lutade.
+ *
+ * Ett försvarsstarkt lag återerövrar bollen oftare — försvaret hör hemma i
+ * innehavsvikten. Andelen är HÄRLEDD ur mentalitetsstegen, inte vald: bytet
+ * mellan lägena ändrar anfallet med 2×OFFENSE_STEP och försvaret med
+ * 2×DEFENSE_STEP, så innehavet blir neutralt när
+ *   OFFENSE_STEP × (1 − s) = DEFENSE_STEP × s  ⇒  s = OFF / (OFF + DEF).
+ * Uttrycket står här i stället för ett tal så att stegen och innehavsvikten
+ * inte kan glida isär vid en senare kalibrering.
+ *
+ * För två likvärdiga trupper med samma taktik ändrar blandningen ingenting
+ * (offense- och defenseScore är då lika), så baskalibreringen står kvar.
+ */
+const POSSESSION_DEFENSE_SHARE =
+  MENTALITY_OFFENSE_STEP / (MENTALITY_OFFENSE_STEP + MENTALITY_DEFENSE_STEP)
+
 // Två oberoende grindar i canScore(): båda måste vara uppfyllda
 // för att en målscen ska kunna konvertera.
 //
@@ -116,7 +154,7 @@ import type { Player } from '../entities/Player'
 import type { MatchEvent } from '../entities/Fixture'
 import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition, CornerStrategy } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
-import { getTacticModifiers } from './tacticModifiers'
+import { getTacticModifiers, MENTALITY_OFFENSE_STEP, MENTALITY_DEFENSE_STEP } from './tacticModifiers'
 import { getHeightMode } from '../entities/Formation'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
@@ -821,7 +859,53 @@ function* simulateMatchCore(
     if (tactic.width === 'wide')   { wCorner += 5 }
     if (tactic.cornerStrategy === 'aggressive') { wCorner += 3 }
     if (tactic.passingRisk === 'direct') { wLostball += 5; wAttack += 3; wHalfchance -= 3 }
-    if (tactic.mentality === 'offensive') { wAttack += 5; wHalfchance += 3 }
+
+    // KÖRORDER 2026-09-18 §2 (AUDIT_SPAKSVEP §2.2) — mentalitetens asymmetri.
+    // ROT: tacticModifiers.ts är symmetriskt (offensiv +0,10 anfall/−0,10
+    // försvar, defensiv tvärtom), men HÄR låg tidigare ett ensidigt
+    // `if (mentality === 'offensive') { wAttack += 5; wHalfchance += 3 }` utan
+    // motsvarighet för defensiv. Offensiv betalade i ett lager och fick gratis i
+    // ett annat, vilket gjorde mentalitet till ett rätt svar i stället för en
+    // avvägning: +3,2 poäng, +90k, avsked 4 % mot 17 %, för ALLA tolv klubbar.
+    //
+    // §2.2: bidraget skalas nu med lagstyrkeskillnaden, mätt med motorns EGET
+    // mått (evaluateSquad-composite, före taktikmodifierarna — annars skulle
+    // mentaliteten mata sin egen skalning). En offensiv satsning ska löna sig
+    // mot ett svagare lag och straffa sig mot ett starkare; defensiv speglat.
+    // Vid jämn styrka (edge ≈ 0) bär tacticModifiers-lagret ensamt effekten.
+    const oppTactic = isHome ? awayLineup.tactic : homeLineup.tactic
+    const ownRaw = isHome ? homeEval.offenseScore + homeEval.defenseScore
+                          : awayEval.offenseScore + awayEval.defenseScore
+    const oppRaw = isHome ? awayEval.offenseScore + awayEval.defenseScore
+                          : homeEval.offenseScore + homeEval.defenseScore
+    // > 0 = jag är starkare. Klampad till ±1 vid MENTALITY_EDGE_SCALE poängs skillnad.
+    const edge = Math.max(-1, Math.min(1, (ownRaw - oppRaw) / MENTALITY_EDGE_SCALE))
+    const strongerBy = Math.max(0, edge)   // hur mycket STARKARE jag är
+    const weakerBy   = Math.max(0, -edge)  // hur mycket SVAGARE jag är
+
+    if (tactic.mentality === 'offensive') {
+      // Full bonus mot klart svagare lag, ingen alls mot klart starkare.
+      wAttack     += MENTALITY_ATTACK_BONUS * strongerBy
+      wHalfchance += MENTALITY_HALFCHANCE_BONUS * strongerBy
+    } else if (tactic.mentality === 'defensive') {
+      // Omställning är det defensiva lagets vapen i bandy, och den lönar sig när
+      // man är underlägsen. Samma riktning som dispositionFactor (mentalitet
+      // låg → konservativ rytm), så burst-klustringen inte bryts.
+      wTransition += MENTALITY_TRANSITION_BONUS * weakerBy
+    }
+
+    // Motståndarens mentalitet, speglat: en svagare motståndare som bunkrar
+    // kväver mitt anfall; en svagare motståndare som chansar ger mig omställningar.
+    if (oppTactic.mentality === 'defensive') {
+      wAttack -= MENTALITY_ATTACK_BONUS * strongerBy
+    } else if (oppTactic.mentality === 'offensive') {
+      // Starkare motståndare som dessutom satsar framåt trycker tillbaka mig —
+      // jag kommer helt enkelt till färre anfall. Speglingen av raden ovan; utan
+      // den fanns bara UPPSIDAN av att möta ett offensivt lag, aldrig priset,
+      // och den starka klubbens offensiva val kostade den bara defensivt.
+      wAttack     -= MENTALITY_ATTACK_BONUS * weakerBy
+      wTransition += MENTALITY_TRANSITION_BONUS * strongerBy
+    }
 
     if (step < 5 || step > 55)  wAtmosphere   += 4
     if (step >= 30 && step <= 35) wTacticalShift += 3
@@ -1102,15 +1186,22 @@ function* simulateMatchCore(
 
     // Hot-hand appliceras hela matchen, medan andrahalvleksläget fortsatt bär
     // chasing/controlling. Ingen extra ställningsstyrd mean reversion ovanpå det.
-    const effectiveHomeAttack = step >= 30
-      ? clamp(homeAttack * homeModeAttackMult * homeHotMult, 0, 1)
-      : clamp(homeAttack * homeHotMult, 0, 1)
-    const effectiveAwayAttack = step >= 30
-      ? clamp(awayAttack * awayModeAttackMult * awayHotMult, 0, 1)
-      : clamp(awayAttack * awayHotMult, 0, 1)
+    // §2.1: innehavsvikten blandar in försvaret (POSSESSION_DEFENSE_SHARE) —
+    // annars ger ett defensivt val färre sekvenser utan att köpa några tillbaka.
+    //
+    // Hot-hand och andrahalvlekslägets jaga/förvalta-multiplikator ligger UTANFÖR
+    // blandningen, på hela innehavsvikten. Låg man dem kvar inne i anfallsdelen
+    // nådde bara (1 − s) av jaga-effekten fram till bollinnehavet, och comeback-
+    // frekvensen föll under kalibreringen (−1 mål i halvlek 17,3 % → 14,4 %,
+    // −2 mål 11,0 % → 4,9 % i §2.3-jämförelsen). Lägena ändrar inte kvoten
+    // mellan anfall och försvar, så mentalitetsneutraliteten är opåverkad.
+    const homeModeMult = (step >= 30 ? homeModeAttackMult : 1) * homeHotMult
+    const awayModeMult = (step >= 30 ? awayModeAttackMult : 1) * awayHotMult
+    const homePossession = clamp((homeAttack * (1 - POSSESSION_DEFENSE_SHARE) + homeDefense * POSSESSION_DEFENSE_SHARE) * homeModeMult, 0, 1)
+    const awayPossession = clamp((awayAttack * (1 - POSSESSION_DEFENSE_SHARE) + awayDefense * POSSESSION_DEFENSE_SHARE) * awayModeMult, 0, 1)
 
-    const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
-    const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost
+    const homeWeight = homePossession * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
+    const awayWeight = awayPossession * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost
 
     // B12 steg 2, fält 3/4 (docs/dom/DOM_B12_STEG2_2026-08-19.md) — contributingFactors:
     // 'B', lista över redan beräknade modifierare skilda från 1.0/0. Definierad

@@ -23,6 +23,31 @@ import {
  */
 export const FORMATION_523_EXTRA_FITNESS_COST = 10
 
+/**
+ * KÖRORDER 2026-09-18 §2 (AUDIT_SPAKSVEP §2.2) — mentalitetens verkliga
+ * asymmetri satt hos KONSUMENTEN, inte här.
+ *
+ * ROT: stegen såg symmetriska ut (±0,10 på båda sidor) men matchmotorns
+ * chansformel väger dem olika — `matchCore.ts:1247`:
+ *   base = attAttack * 0.6 - defDefense * 0.4
+ * Ett anfallssteg på 0,10 flyttar alltså 0,6 × 0,10 av min chanskvalitet,
+ * medan ett lika stort försvarssteg bara flyttar 0,4 × 0,10 av motståndarens.
+ * Offensiv mentalitet var därför en gratis nettovinst i varje match, oavsett
+ * lagstyrka, motståndare och ställning: +3,6 poäng per säsong för ALLA tolv
+ * klubbar i 24-seeders-svepet.
+ *
+ * Försvarssteget är därför STÖRRE än anfallssteget. Det som SKILJER lägena åt
+ * ska komma från sammanhanget — styrkeskillnaden i
+ * matchCore.buildSequenceWeights — inte från en konstant bonus.
+ *
+ * Kvoten mellan stegen styr också innehavsvikten: matchCore härleder
+ * POSSESSION_DEFENSE_SHARE ur de här två talen, så ändras ettdera följer
+ * innehavsneutraliteten med automatiskt. Slutvärdena är kalibrerade mot §2:s
+ * acceptans över 144 seeds × 3 säsonger, inte härledda i ett steg.
+ */
+export const MENTALITY_OFFENSE_STEP = 0.10
+export const MENTALITY_DEFENSE_STEP = 0.13
+
 export interface TacticModifiers {
   offenseModifier: number    // 0.75–1.25
   defenseModifier: number    // 0.75–1.25
@@ -50,14 +75,14 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
   // mentality
   switch (tactic.mentality) {
     case TacticMentality.Defensive:
-      offense -= 0.10
-      defense += 0.10
+      offense -= MENTALITY_OFFENSE_STEP
+      defense += MENTALITY_DEFENSE_STEP
       break
     case TacticMentality.Balanced:
       break
     case TacticMentality.Offensive:
-      offense += 0.10
-      defense -= 0.10
+      offense += MENTALITY_OFFENSE_STEP
+      defense -= MENTALITY_DEFENSE_STEP
       break
   }
 
