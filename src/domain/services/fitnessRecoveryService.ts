@@ -55,14 +55,31 @@ export const FITNESS_RECOVERY_CEILING = 100
 
 /**
  * Andel av gapet till taket som återhämtas på en normalvecka (7 dagar),
- * per arbetsbelastning. Satta av uthållighetstest B (se doktrinens tillägg):
- * ger jämvikt ≈ 58 % (18 man) / 64 % (20) / 72 % (24) i mean field, och
- * mätt utfall 61/67/74. En äkta ständig startare (aldrig roterad) landar
- * kring 6 % — trötthet kostar fortfarande, den bara spiralerar inte.
+ * per arbetsbelastning.
+ *
+ * KÖRORDER 2026-09-18 §3.0 (kandidat K). Tidigare 0,16 / 0,32 / 0,42, satta av
+ * uthållighetstest B mot TRUPPENS snitt. Det måttet dolde felet: mätt på BÄSTA
+ * ELVAN låg en ordinarie startspelare på 26,8 i snitt omgång 9–25, lägst 13,7.
+ * Truppsnittet såg rimligt ut för att bänken drog upp det. Startspelarna spelade
+ * alltså tre fjärdedelar av ligasäsongen på en fjärdedel av sin kondition, och
+ * varken träningstabellen eller periodiseringen går att balansera ovanpå en
+ * konditionsekonomi som är strukturellt negativ.
+ *
+ * Jacobs beslut 2026-09-18: målbilden är Elitserien — en ordinarie orkar en match
+ * i veckan hela säsongen. Kalibreringsmålet (jämvikt 65–70 för en ordinarie med
+ * Normal träning utan rotation, och två matcher samma vecka kostar synligt) är
+ * låst; talen nedan är mätta mot det, inte valda.
+ *
+ * Alla tre takterna är skalade tillsammans, inte bara startarens. Att bara höja
+ * startaren till 0,40 når samma snitt men gör hans återhämtning nästan lika med
+ * den vilades (0,42), och då finns inget skäl att rotera alls.
+ *
+ * Utfall under K (bästa elvan, omg 9–25, Normal träning, ingen rotation):
+ * snitt 65,5, lägst 44,5, 3,3 skador/säsong (mot 26,8 / 13,7 / 6,0 före).
  */
-export const RECOVERY_RATE_STARTED = 0.16
-export const RECOVERY_RATE_BENCH   = 0.32
-export const RECOVERY_RATE_RESTED  = 0.42
+export const RECOVERY_RATE_STARTED = 0.34
+export const RECOVERY_RATE_BENCH   = 0.48
+export const RECOVERY_RATE_RESTED  = 0.58
 
 /** Sommaren: begriplig återställning till rimlig matchberedskap (domens krav 2).
  *  Mål = BASE + SPAN × (stamina/100) → 78–92. En spelare sänks aldrig av
@@ -133,7 +150,7 @@ export function recoveryGain(
  * domen kräver att spelaren ser samma tal som motorn kommer räkna.
  *
  * `matchCost` är noll för bench/rested; för `started` är det den redan
- * beräknade förlusten (bas 15–25 × taktik × väder × position + Bygg-tillägg),
+ * beräknade förlusten (bas 13–20 × taktik × väder × position + Bygg-tillägg),
  * som ligger kvar oförändrad i playerStateProcessor — A3 rör återhämtningen,
  * inte matchkostnadens magnitud.
  */
@@ -164,12 +181,16 @@ export function summerSeasonForm(previousSeasonForm: number | undefined): number
 
 /**
  * A3 krav 3 — den genomsnittliga matchkostnaden en startare betalar, använd
- * av prognosen. Motorn slumpar 15–25 per match; prognosen kan inte veta
+ * av prognosen. Motorn slumpar 13–20 per match; prognosen kan inte veta
  * utfallet i förväg och visar därför mittvärdet. Multiplikatorerna (taktik,
  * väder, position) är kända först i rundprocessorn — prognosen är en
  * förväntan, inte ett löfte, och texten måste säga det.
+ *
+ * KÖRORDER 2026-09-18 §3.0: 20 → 17 när `baseFitnessLoss` gick från 15+0–9 till
+ * 13+0–7. Prognosen måste följa motorn, annars ljuger "efter nästa match"-raden
+ * för spelaren.
  */
-export const EXPECTED_MATCH_FITNESS_COST = 20
+export const EXPECTED_MATCH_FITNESS_COST = 17
 
 export interface FitnessProjection {
   /** Kondition inför NÄSTA match om han startar den här. */
@@ -190,7 +211,7 @@ export interface FitnessProjection {
  * A3 krav 3 — "Visa `efter nästa match` / `tillgänglig igen` så spelaren kan
  * förstå återhämtningen och planera runt den."
  *
- * Prognosen är en FÖRVÄNTAN, inte ett löfte: matchkostnaden slumpas 15–25 och
+ * Prognosen är en FÖRVÄNTAN, inte ett löfte: matchkostnaden slumpas 13–20 och
  * skalas sedan av taktik/väder/position, vilka inte är kända förrän rundan
  * körs. Den använder mittvärdet (EXPECTED_MATCH_FITNESS_COST) och texten som
  * visar den måste säga "ungefär". Den delar formel med motorn

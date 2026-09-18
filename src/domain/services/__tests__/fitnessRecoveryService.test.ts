@@ -229,12 +229,26 @@ describe('A3 — uthållighetstest B, trupploopens netto (sluten simulering)', (
     })
   }
 
-  it('den som VÄGRAR rotera betalar fortfarande fullt pris — trötthet är inte bortlagad', () => {
-    // Ständig startare, aldrig vilad: ska falla under golvet och stanna där.
-    let f = 85
-    for (let r = 0; r < 30; r++) {
-      f = projectFitnessAfterRound(f, 'started', EXPECTED_MATCH_FITNESS_COST, { stamina: 60 })
+  it('den som VÄGRAR rotera betalar fortfarande ett pris — men spiralerar inte längre', () => {
+    // KÖRORDER 2026-09-18 §3.0: testet krävde tidigare att en ständig startare
+    // faller UNDER golvet (22) och stannar där. Jacobs beslut vänder premissen —
+    // målbilden är Elitserien, där en ordinarie orkar en match i veckan hela
+    // säsongen. Invarianten står kvar (rotation ska löna sig), men mätpunkten
+    // är nu avståndet till den vilade, inte ett fritt fall.
+    const started = (rounds: number) => {
+      let f = 85
+      for (let r = 0; r < rounds; r++) f = projectFitnessAfterRound(f, 'started', EXPECTED_MATCH_FITNESS_COST, { stamina: 60 })
+      return f
     }
-    expect(f).toBeLessThan(FATIGUE_AVAILABILITY_FLOOR)
+    let rested = 85
+    for (let r = 0; r < 30; r++) rested = projectFitnessAfterRound(rested, 'rested', 0, { stamina: 60 })
+
+    // Trötthet kostar: han ligger tydligt under den som vilats, och långt under taket.
+    expect(started(30)).toBeLessThan(rested - 25)
+    expect(started(30)).toBeLessThan(75)
+    // Men han är spelbar — över golvet där laguttagningen börjar nedprioritera honom.
+    expect(started(30)).toBeGreaterThan(FATIGUE_AVAILABILITY_FLOOR)
+    // Jämvikt, inte drift: fem säsonger senare ligger han kvar på samma nivå.
+    expect(Math.abs(started(150) - started(30))).toBeLessThan(2)
   })
 })

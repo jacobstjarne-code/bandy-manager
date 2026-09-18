@@ -127,8 +127,10 @@ describe('playerStateProcessor — B9 positionsviktad fatigue', () => {
     const highPress = run('523_hog').updatedPlayers.find(player => player.id === 'h_m1')!
 
     // Samma RNG och samma tacticModifiers isolerar den särskilda kostnaden.
-    // Proportionell återhämtning tar tillbaka en liten del efter matchen.
-    expect(balanced.fitness - highPress.fitness).toBeGreaterThanOrEqual(8)
+    // Proportionell återhämtning tar tillbaka en del efter matchen — och sedan
+    // KÖRORDER 2026-09-18 §3.0 (RECOVERY_RATE_STARTED 0.16 → 0.34) en större
+    // del, så det synliga nettot av samma bruttokostnad är 7 i stället för 8.
+    expect(balanced.fitness - highPress.fitness).toBeGreaterThanOrEqual(7)
     expect(balanced.fitness - highPress.fitness).toBeLessThanOrEqual(FORMATION_523_EXTRA_FITNESS_COST)
   })
 
@@ -181,10 +183,13 @@ describe('playerStateProcessor — B9 positionsviktad fatigue', () => {
     const homeResult = result.updatedPlayers.filter(p => p.clubId === 'club1')
     const totalLoss = homeResult.reduce((sum, p) => sum + (90 - p.fitness), 0)
     const avgLoss = totalLoss / homeResult.length
-    // baseFitnessLoss är 15 + slump(0-9) → snitt runt 19.5, tacticFatigue/
-    // weatherTacticFatigue är 1.0 (neutral taktik, inget väder, ej managed).
-    // Rundningsfel per spelare är max ±0.5 → gruppfelet begränsat.
-    expect(avgLoss).toBeGreaterThan(15)
-    expect(avgLoss).toBeLessThan(24)
+    // KÖRORDER 2026-09-18 §3.0: baseFitnessLoss är 13 + slump(0-7) → brutto-
+    // snitt runt 16.5, och den proportionella återhämtningen (nu 0.34 för en
+    // startare) tar tillbaka en del av det innan omgången är klar. Det NETTO
+    // testet mäter är därför lägre än bruttokostnaden. Bandet är avsiktligt
+    // brett — poängen är att positionsviktningen inte ändrar gruppens snitt,
+    // inte att fånga den exakta kalibreringen.
+    expect(avgLoss).toBeGreaterThan(5)
+    expect(avgLoss).toBeLessThan(16)
   })
 })

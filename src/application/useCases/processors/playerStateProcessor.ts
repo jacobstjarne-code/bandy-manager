@@ -163,8 +163,11 @@ export function applyPlayerStateUpdates(
     const roundsInMode = currentMatchday - periodisationSince
 
     if (startersThisRound.has(player.id)) {
-      // Reduce fitness 15-25
-      const baseFitnessLoss = 15 + Math.floor(localRand() * 10)
+      // Reduce fitness 13-20. KÖRORDER 2026-09-18 §3.0 (kandidat K), sänkt från
+      // 15-24 tillsammans med RECOVERY_RATE_*: en ordinarie ska orka en match i
+      // veckan hela säsongen. Två matcher samma vecka kostar fortfarande 26-40
+      // brutto, så veckodubblingar syns.
+      const baseFitnessLoss = 13 + Math.floor(localRand() * 8)
       const tacticFatigue = managedTacticMods && isManaged
         ? managedTacticMods.fatigueRate
         : 1.0

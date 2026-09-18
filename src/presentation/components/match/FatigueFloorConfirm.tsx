@@ -180,7 +180,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, onConfirm, onCan
           <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 8 }}>
             {/* SVENSK TEXT — CODE SKRIVER ALDRIG: förklaringen av de två talen
                 (efter nästa match om han startar / om han vilas) och att det är
-                en förväntan, inte ett löfte — matchkostnaden slumpas 15–25. */}
+                en förväntan, inte ett löfte — matchkostnaden slumpas 13–20. */}
             Talen är efter nästa match — vänster om han startar, höger om han vilas. En förväntan, inte ett löfte: en match tar olika mycket ur olika spelare.
           </p>
         </div>
