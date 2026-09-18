@@ -84,7 +84,12 @@ export function generateNominations(game: SaveGame): GalaNomination[] {
     (b.currentAbility - (b.startSeasonCA ?? b.currentAbility)) -
     (a.currentAbility - (a.startSeasonCA ?? a.currentAbility))
   )[0]
-  if (bestYoung && (bestYoung.currentAbility - (bestYoung.startSeasonCA ?? bestYoung.currentAbility)) >= 3) {
+  // KÖRORDER 2026-09-18 §3.3: tröskeln höjd 3 → 4 när träningsvalet började ge
+  // U24 ungefär ett CA-steg till per säsong (mätt: Normal 7,4 → 8,3). Notera
+  // dock vad tröskeln FAKTISKT är: ett golv på ligans BÄSTA unga spelare, inte
+  // ett sällsynthetskrav. Den var i praktiken alltid uppfylld redan före
+  // ändringen, så det här är följdriktighet, inte en skärpning.
+  if (bestYoung && (bestYoung.currentAbility - (bestYoung.startSeasonCA ?? bestYoung.currentAbility)) >= 4) {
     const club = game.clubs.find(c => c.id === bestYoung.clubId)
     const improvement = Math.round(bestYoung.currentAbility - (bestYoung.startSeasonCA ?? bestYoung.currentAbility))
     nominations.push({

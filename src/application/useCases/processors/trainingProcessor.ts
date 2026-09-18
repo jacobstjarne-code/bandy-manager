@@ -2,7 +2,7 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player } from '../../../domain/entities/Player'
 import type { TrainingSession, TrainingProject } from '../../../domain/entities/Training'
 import { TrainingType, TrainingIntensity, InboxItemType } from '../../../domain/enums'
-import { applyTrainingToSquad, selectAiTrainingFocus, getTrainingEffects } from '../../../domain/services/trainingService'
+import { applyTrainingToSquad, selectAiTrainingFocus, getTrainingEffects, countConsecutiveExtremeRounds } from '../../../domain/services/trainingService'
 import { createTrainingItem } from '../../../domain/services/inboxService'
 import { processTrainingProjectsPerRound, PROJECT_DEFINITIONS } from '../../../domain/services/trainingProjectService'
 import { mulberry32 } from '../../../domain/utils/random'
@@ -53,6 +53,9 @@ export function applyRoundTraining(
       focus,
       club.facilities,
       baseSeed + club.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0) + nextRound,
+      // §3.4 — bara den hanterade klubben kan välja Extreme medvetet; AI:n
+      // väljer via selectAiTrainingFocus och har ingen svit att räkna.
+      isManaged ? countConsecutiveExtremeRounds(game.trainingHistory ?? []) : 0,
     )
     trainingPlayers = trainingResult.updatedPlayers
 

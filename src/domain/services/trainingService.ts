@@ -1,5 +1,5 @@
 import type { Player } from '../entities/Player'
-import type { TrainingFocus, TrainingEffects } from '../entities/Training'
+import type { TrainingFocus, TrainingEffects, TrainingSession } from '../entities/Training'
 import { TrainingType, TrainingIntensity } from '../enums'
 import { mulberry32 } from '../utils/random'
 import { clamp } from '../utils/clamp'
@@ -27,7 +27,14 @@ interface IntensityConfig {
 }
 
 const INTENSITY_CONFIG: Record<TrainingIntensity, IntensityConfig> = {
-  [TrainingIntensity.Light]:   { attributeMultiplier: 0.5, fitnessBase:  8, injuryRisk: 0.8, moraleEffect:  2, sharpnessEffect:  0 },
+  // KÖRORDER 2026-09-18 §3.1: Lätts moraleEffect var +2 PER OMGÅNG som
+  // grundvärde. Över en säsong blev det moral 74 → 96 gratis, och med det
+  // +4,5 poäng, +161k och avsked 17 % → 4 %. Priset (attributeMultiplier 0,5)
+  // är 0,15 attributpoäng per pass — osynligt inom samma säsong. Lätt var
+  // alltså inte ett val utan ett rätt svar. Grundvärdet är nu 0; den vilade
+  // moralvinsten finns kvar men bara där den är motiverad, se
+  // trainingMoraleEffectFor.
+  [TrainingIntensity.Light]:   { attributeMultiplier: 0.5, fitnessBase:  8, injuryRisk: 0.8, moraleEffect:  0, sharpnessEffect:  0 },
   [TrainingIntensity.Normal]:  { attributeMultiplier: 1.0, fitnessBase:  3, injuryRisk: 1.0, moraleEffect:  0, sharpnessEffect:  0 },
   [TrainingIntensity.Hard]:    { attributeMultiplier: 1.5, fitnessBase: -5, injuryRisk: 1.4, moraleEffect: -2, sharpnessEffect:  0 },
   [TrainingIntensity.Extreme]: { attributeMultiplier: 2.0, fitnessBase:-12, injuryRisk: 2.0, moraleEffect: -5, sharpnessEffect:  0 },
@@ -52,9 +59,14 @@ export function getTrainingEffects(focus: TrainingFocus): TrainingEffects {
     attributeBoosts[attr] = (base as number) * intensityCfg.attributeMultiplier
   }
 
+  // KÖRORDER 2026-09-18 §3.1: Recovery gav +1 moral PER OMGÅNG oavsett läge —
+  // samma pump som Lätt, bara via typen i stället för intensiteten. Mätningen
+  // efter att Lätt stängts visade att den ensam bar +17,3 moral per säsong,
+  // långt över acceptansens +5. Grundvärdet är därför 0 här också, och vilans
+  // moralvinst delas ut villkorat i trainingMoraleEffectFor.
   const moraleEffect =
     focus.type === TrainingType.Recovery
-      ? 1
+      ? 0
       : focus.type === TrainingType.MatchPrep
       ? 2
       : intensityCfg.moraleEffect
@@ -70,6 +82,72 @@ export function getTrainingEffects(focus: TrainingFocus): TrainingEffects {
     moraleEffect,
     sharpnessEffect,
   }
+}
+
+/**
+ * KÖRORDER 2026-09-18 §3.1 — Lätt trängning ger moral bara där vilan betyder
+ * något. En sliten spelare mår bra av ett lugnt pass; en ung, pigg spelare blir
+ * understimulerad av det. Hård och Extreme är oförändrade (deras moralpris ska
+ * kännas oavsett kondition).
+ */
+export const LIGHT_TRAINING_TIRED_FITNESS = 55
+export const LIGHT_TRAINING_UNDERSTIMULATED_FITNESS = 75
+export const LIGHT_TRAINING_UNDERSTIMULATED_MAX_AGE = 24
+
+export function trainingMoraleEffectFor(player: Player, focus: TrainingFocus, baseEffect: number): number {
+  // Både Lätt (intensitet) och Recovery (typ) är "vila" och behandlas lika —
+  // acceptansen i §3 kräver uttryckligen "Recovery samma".
+  const isRestful = focus.intensity === TrainingIntensity.Light || focus.type === TrainingType.Recovery
+  if (!isRestful) return baseEffect
+  // Samma zon som Squad Pulse markerar som sliten — spelaren känner igen läget.
+  if (player.fitness < LIGHT_TRAINING_TIRED_FITNESS) return baseEffect + 2
+  if (player.age <= LIGHT_TRAINING_UNDERSTIMULATED_MAX_AGE && player.fitness > LIGHT_TRAINING_UNDERSTIMULATED_FITNESS) {
+    return baseEffect - 1
+  }
+  return baseEffect
+}
+
+/**
+ * KÖRORDER 2026-09-18 §3.2 — konditionsvinsten av ett pass är en andel av
+ * avståndet till taket i stället för ett platt påslag. Platt +8 varje omgång
+ * gjorde Lätt/Recovery till en pump som fungerade lika bra på en utvilad trupp
+ * som på en sliten. Nu är +8 vid kondition 50 fortfarande +8, men bara +2,4 vid 85.
+ *
+ * Bara VINSTER skalas. Hårds −5 och Extremes −12 är en kostnad, och att göra den
+ * billigare för en redan sliten spelare vore fel håll.
+ *
+ * Detta är inte dubbel avtagning mot fitnessRecoveryService: den skalar
+ * ÅTERHÄMTNINGEN efter arbetsbelastning, den här skalar TRÄNINGENS påslag. Två
+ * skilda kanaler som båda planar ut nära taket, vilket är avsikten — taket ska
+ * vara svårt att nå oavsett vilken väg man tar dit.
+ */
+export function trainingFitnessGainFor(fitnessBase: number, currentFitness: number): number {
+  if (fitnessBase <= 0) return fitnessBase
+  const headroomFactor = Math.min(1, Math.max(0, (100 - currentFitness) / 50))
+  return fitnessBase * headroomFactor
+}
+
+/**
+ * KÖRORDER 2026-09-18 §3.4 — Extreme får ett uttalat syfte: kortsiktig toppning.
+ * Den var tidigare bara sämre (88 % avsked, moral 7,6) utan att vara bra på
+ * något, alltså ett dött läge enligt grindregeln. Nu är de tre första
+ * omgångarna priset man betalar för attributspiken; därefter fördubblas moral-
+ * och skadekostnaden. Samma spik-och-förfall-mönster som periodiseringens toppa.
+ */
+export const EXTREME_GRACE_ROUNDS = 3
+
+export function extremeOverreachMultiplier(consecutiveExtremeRounds: number): number {
+  return consecutiveExtremeRounds >= EXTREME_GRACE_ROUNDS ? 2 : 1
+}
+
+/** Antal omgångar i rad som avslutats med Extreme, ur `game.trainingHistory`. */
+export function countConsecutiveExtremeRounds(history: readonly TrainingSession[]): number {
+  let n = 0
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].focus.intensity !== TrainingIntensity.Extreme) break
+    n++
+  }
+  return n
 }
 
 // ── Age factor for attribute boosts ─────────────────────────────────────────
@@ -91,9 +169,14 @@ export function applyTrainingToSquad(
   focus: TrainingFocus,
   facilities: number,           // 0–100
   seed: number,
+  /** §3.4 — omgångar i rad på Extreme FÖRE denna. 0 för AI-klubbar. */
+  consecutiveExtremeRounds = 0,
 ): TrainingResult {
   const rand = mulberry32(seed)
   const effects = getTrainingEffects(focus)
+  const overreach = focus.intensity === TrainingIntensity.Extreme
+    ? extremeOverreachMultiplier(consecutiveExtremeRounds)
+    : 1
   const facilityMultiplier = facilities / 100
 
   // Base injury chance per player per training session
@@ -103,7 +186,8 @@ export function applyTrainingToSquad(
     [TrainingIntensity.Hard]:    0.08,
     [TrainingIntensity.Extreme]: 0.15,
   }
-  const baseInjuryChance = BASE_INJURY_CHANCE[focus.intensity]
+  // §3.4 — efter EXTREME_GRACE_ROUNDS omgångar i rad på Extreme fördubblas priset.
+  const baseInjuryChance = BASE_INJURY_CHANCE[focus.intensity] * overreach
 
   const injuredPlayerIds: string[] = []
   const updatedPlayers = players.map(player => {
@@ -131,10 +215,11 @@ export function applyTrainingToSquad(
 
     // Fitness — fulltime pros recover +2 extra per round
     const fitnessBonus = isFullTimePro ? 2 : 0
-    updated.fitness = clamp(player.fitness + effects.fitnessChange + fitnessBonus, 0, 100)
+    const fitnessGain = trainingFitnessGainFor(effects.fitnessChange, player.fitness)
+    updated.fitness = clamp(player.fitness + fitnessGain + fitnessBonus, 0, 100)
 
     // Morale
-    updated.morale = clamp(player.morale + effects.moraleEffect, 0, 100)
+    updated.morale = clamp(player.morale + trainingMoraleEffectFor(player, focus, effects.moraleEffect) * overreach, 0, 100)
 
     // Sharpness
     if (effects.sharpnessEffect !== 0) {

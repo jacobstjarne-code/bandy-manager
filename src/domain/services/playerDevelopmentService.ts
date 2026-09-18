@@ -350,6 +350,42 @@ interface RoundDevelopmentContext {
   trainingIntensity: string // 'light' | 'normal' | 'heavy'
 }
 
+/**
+ * KÖRORDER 2026-09-18 §3.3 — träningsvalet ska synas i CA för unga spelare.
+ *
+ * ROT: träning höjer ATTRIBUT, och attribut är en frikopplad axel från CA. Det
+ * finns ingen härledning attribut → currentAbility någonstans i koden, och att
+ * bygga en skulle krocka med den dokumenterade ägardelningen (se kommentaren
+ * ovanför applyVeteranAttributeDecline: omgångssystemet äger CA, annars
+ * dubbelräknas nedgången). Den enda befintliga vägen från träning till CA är
+ * den här termen, som låg på +0,02/−0,01 för alla åldrar — ungefär +0,8 CA per
+ * säsong för Hård, noll för Normal. Träningsvalet syntes alltså inte.
+ *
+ * Jacobs beslut 2026-09-18: bygg via den här termen, och SÄNK körorderns mål
+ * (+2 vid Normal, +4 vid Hård). Motivet: hela säsongsutvecklingen för en U24 rör
+ * sig kring något enstaka CA-steg, så körorderns tal hade gjort träningen till
+ * den dominerande utvecklingsspaken i stället för speltid — motsatsen till
+ * kanon. Målet är att skillnaden mellan Lätt och Hård ska SYNAS i spelarkortets
+ * ↑-siffra vid säsongsslut, inte att träning ska bygga spelare.
+ *
+ * Åldersgränsen följer bandet som redan finns i calculateRoundDevelopment
+ * (≤ 23 = "under 24"). Ingen ny kurva uppfinns — DOM_ALDERSKURVA_2026-09-06
+ * förbjuder uttryckligen en till oberoende ungdomskurva.
+ */
+export const YOUNG_TRAINING_CA_MAX_AGE = 23
+
+function trainingCaPerRound(age: number, intensity: string): number {
+  if (age <= YOUNG_TRAINING_CA_MAX_AGE) {
+    if (intensity === 'heavy') return 0.06
+    if (intensity === 'light') return -0.01
+    return 0.03
+  }
+  // Oförändrat för 24+ — §3.3 gäller bara unga spelare.
+  if (intensity === 'heavy') return 0.02
+  if (intensity === 'light') return -0.01
+  return 0
+}
+
 function calculateRoundDevelopment(
   player: Player,
   context: RoundDevelopmentContext,
@@ -382,8 +418,7 @@ function calculateRoundDevelopment(
   else if (baseDelta > 0 && gap <= 5) baseDelta *= 0.5
 
   // Training intensity modifier
-  if (context.trainingIntensity === 'heavy') baseDelta += 0.02
-  if (context.trainingIntensity === 'light') baseDelta -= 0.01
+  baseDelta += trainingCaPerRound(age, context.trainingIntensity)
 
   return clamp(baseDelta, -0.3, 0.5)
 }

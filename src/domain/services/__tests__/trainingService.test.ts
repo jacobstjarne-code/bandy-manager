@@ -3,6 +3,11 @@ import {
   getTrainingEffects,
   applyTrainingToSquad,
   selectAiTrainingFocus,
+  trainingMoraleEffectFor,
+  trainingFitnessGainFor,
+  extremeOverreachMultiplier,
+  countConsecutiveExtremeRounds,
+  EXTREME_GRACE_ROUNDS,
 } from '../trainingService'
 import type { Player } from '../../entities/Player'
 import { PlayerPosition, PlayerArchetype, TrainingType, TrainingIntensity } from '../../enums'
@@ -80,7 +85,11 @@ describe('getTrainingEffects', () => {
     const effects = getTrainingEffects({ type: TrainingType.Recovery, intensity: TrainingIntensity.Normal })
     expect(Object.keys(effects.attributeBoosts).length).toBe(0)
     expect(effects.fitnessChange).toBeGreaterThan(0)
-    expect(effects.moraleEffect).toBeGreaterThan(0)
+    // KÖRORDER 2026-09-18 §3.1: moralen är inte längre ett GRUNDVÄRDE här.
+    // Recovery gav +1 varje omgång oavsett läge och bar ensam +17,3 moral per
+    // säsong efter att Lätts pump stängts. Vilans moralvinst delas nu ut
+    // villkorat per spelare — se trainingMoraleEffectFor-testerna nedan.
+    expect(effects.moraleEffect).toBe(0)
   })
 
   it('MatchPrep gives no attribute boosts but high sharpness effect', () => {
@@ -301,5 +310,79 @@ describe('selectAiTrainingFocus', () => {
   it('Falls back to Physical for empty squad', () => {
     const focus = selectAiTrainingFocus([], 'club_test')
     expect(focus.type).toBe(TrainingType.Physical)
+  })
+})
+
+/**
+ * KÖRORDER 2026-09-18 §3.1/§3.2/§3.4 — de tre spakarna som gjorde träningen
+ * till ett rätt svar i stället för ett val. Svepet före ändringen: Lätt +4,5
+ * poäng, +161k, moral 74 → 96, avsked 17 % → 4 %; Recovery identiskt; Extreme
+ * 88 % avsked utan att vara bra på något.
+ */
+describe('§3.1 — vilans moral delas ut villkorat, inte som grundvärde', () => {
+  const light = { type: TrainingType.Physical, intensity: TrainingIntensity.Light }
+  const recovery = { type: TrainingType.Recovery, intensity: TrainingIntensity.Normal }
+  const hard = { type: TrainingType.Physical, intensity: TrainingIntensity.Hard }
+
+  it('en sliten spelare mår bra av ett lugnt pass', () => {
+    const tired = makePlayer({ fitness: 40, age: 28 })
+    expect(trainingMoraleEffectFor(tired, light, 0)).toBe(2)
+    expect(trainingMoraleEffectFor(tired, recovery, 0)).toBe(2)
+  })
+
+  it('en ung, pigg spelare blir understimulerad', () => {
+    const fresh = makePlayer({ fitness: 90, age: 21 })
+    expect(trainingMoraleEffectFor(fresh, light, 0)).toBe(-1)
+  })
+
+  it('en pigg spelare över åldersgränsen är oberörd', () => {
+    const fresh = makePlayer({ fitness: 90, age: 30 })
+    expect(trainingMoraleEffectFor(fresh, light, 0)).toBe(0)
+  })
+
+  it('Hård är oförändrad — dess moralpris ska kännas oavsett kondition', () => {
+    expect(trainingMoraleEffectFor(makePlayer({ fitness: 40 }), hard, -2)).toBe(-2)
+    expect(trainingMoraleEffectFor(makePlayer({ fitness: 95 }), hard, -2)).toBe(-2)
+  })
+})
+
+describe('§3.2 — konditionsvinsten är en andel av avståndet till taket', () => {
+  it('+8 vid kondition 50 är fortfarande +8', () => {
+    expect(trainingFitnessGainFor(8, 50)).toBeCloseTo(8, 5)
+  })
+
+  it('samma pass ger bara +2,4 vid kondition 85 — ingen pump på en utvilad trupp', () => {
+    expect(trainingFitnessGainFor(8, 85)).toBeCloseTo(2.4, 5)
+  })
+
+  it('vinsten överstiger aldrig grundvärdet, hur slut spelaren än är', () => {
+    expect(trainingFitnessGainFor(8, 10)).toBeCloseTo(8, 5)
+  })
+
+  it('kostnader skalas INTE — Hårds pris blir inte billigare för en sliten spelare', () => {
+    expect(trainingFitnessGainFor(-5, 30)).toBe(-5)
+    expect(trainingFitnessGainFor(-12, 90)).toBe(-12)
+  })
+})
+
+describe('§3.4 — Extreme är kortsiktig toppning, inte ett läge att bo i', () => {
+  const extreme = { focus: { type: TrainingType.Physical, intensity: TrainingIntensity.Extreme } }
+  const normal = { focus: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal } }
+  const session = (f: typeof extreme) => ({ season: 1, roundNumber: 1, focus: f.focus, effects: getTrainingEffects(f.focus) })
+
+  it('priset är oförändrat under de tre första omgångarna', () => {
+    for (let n = 0; n < EXTREME_GRACE_ROUNDS; n++) expect(extremeOverreachMultiplier(n)).toBe(1)
+  })
+
+  it('priset fördubblas därefter', () => {
+    expect(extremeOverreachMultiplier(EXTREME_GRACE_ROUNDS)).toBe(2)
+    expect(extremeOverreachMultiplier(EXTREME_GRACE_ROUNDS + 5)).toBe(2)
+  })
+
+  it('sviten räknas bara bakåt till första icke-Extreme-passet', () => {
+    const history = [session(extreme), session(normal), session(extreme), session(extreme)]
+    expect(countConsecutiveExtremeRounds(history)).toBe(2)
+    expect(countConsecutiveExtremeRounds([])).toBe(0)
+    expect(countConsecutiveExtremeRounds([session(normal)])).toBe(0)
   })
 })
