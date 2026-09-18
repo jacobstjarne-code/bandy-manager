@@ -807,43 +807,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
 
 // ── Use case helpers (2–6) — ej wired i UI än ─────────────────
 
-/** Use case 2: Halvtidskommentar */
-export function getHalftimeCoachComment(
-  coach: AssistantCoach,
-  homeScore: number,
-  awayScore: number,
-  isHome: boolean,
-): string {
-  const leading = isHome ? homeScore > awayScore : awayScore > homeScore
-  const margin = Math.abs(homeScore - awayScore)
-  return generateCoachQuote(coach, { type: 'halftime', leading, margin })
-}
 
-/** Use case 3: Taktikval-feedback mid-match */
-export function getTacticChangeFeedback(
-  coach: AssistantCoach,
-  wasBoldChange: boolean,
-): string {
-  return generateCoachQuote(coach, { type: 'tactic-change', bold: wasBoldChange })
-}
 
-/** Use case 4: 30% chans att assistenten formulerar veckans beslut */
-export function framesWeeklyDecision(coach: AssistantCoach): boolean {
-  const h = simpleHash(coach.name)
-  return (h % 10) < 3
-}
 
-/** Use case 5: Säsongssammanfattning-reflektion */
-export function getSeasonSummaryReflection(
-  coach: AssistantCoach,
-  finalPosition: number,
-  expectation: number,
-): string {
-  return generateCoachQuote(coach, { type: 'season-summary', finalPosition, expectation })
-}
 
-/** Use case 6: 40% chans att assistenten tar presskonferensen vid förlust */
-export function canSubstituteAtPressConference(coach: AssistantCoach): boolean {
-  const h = simpleHash(coach.name + coach.personality)
-  return (h % 10) < 4
-}

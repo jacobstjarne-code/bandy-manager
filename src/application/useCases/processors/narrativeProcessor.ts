@@ -10,6 +10,7 @@ import { classifyVictory, generateVictoryEcho, shouldSurfaceVictoryEcho } from '
 import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 import { swedishGenitive } from '../../../domain/data/matchCommentary'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
+import { getAwayTripNarrative } from '../../../domain/services/supporterRituals'
 import { detectArcTriggers, progressArcs } from '../../../domain/services/arcService'
 import { logNarrativeBeat } from '../../../domain/services/narrativeLogService'
 
@@ -83,6 +84,42 @@ export function processNarrative(
     fanMood = Math.max(0, Math.min(100, fanMood + fanDelta))
     if (isHome && supporterGroup) {
       supporterGroup = updateSupporterMembers(supporterGroup, won, localRand)
+    }
+  }
+
+  // ── Bortaresans efterklang (DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 2) ──────
+  // Bortaresekortet fanns, men inget hände efteråt: spelaren sa ja till att
+  // subventionera bussen och fick aldrig veta hur resan gick. Klass F,
+  // händelse utan efterdyning — och för ett kort spelaren aktivt valt.
+  // `getAwayTripNarrative` bar redan vinst-/förlustvarianterna med klackledare,
+  // veteran, ungdom och familj som namngivna röster; den anropades bara aldrig.
+  if (justCompletedManagedFixture && supporterGroup) {
+    const wasAway = justCompletedManagedFixture.awayClubId === game.managedClubId
+    // `awayTripMatchday` är omgången kortet BESVARADES, inte bortamatchens
+    // omgång (eventResolver sätter resolvedMatchday). Efterklangen hör därför
+    // till den FÖRSTA bortamatchen från och med beslutet — inte till en
+    // likhetsjämförelse, som aldrig slog till. Id:t nycklas på resan så den
+    // går exakt en gång per besvarad bortaresa.
+    const trip = supporterGroup.awayTripSeason === game.currentSeason
+      ? supporterGroup.awayTripMatchday
+      : undefined
+    const echoId = `inbox_awaytrip_after_${game.currentSeason}_${trip}`
+    const alreadySent = game.inbox.some(i => i.id === echoId) || inboxItems.some(i => i.id === echoId)
+    if (wasAway && trip !== undefined && justCompletedManagedFixture.matchday >= trip && !alreadySent) {
+      const opponentClub = game.clubs.find(c => c.id === justCompletedManagedFixture.homeClubId)
+      const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndaren'
+      const tripWon = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
+      const narrative = getAwayTripNarrative(game, 'after', tripWon, opponentName)
+      if (narrative) {
+        inboxItems.push({
+          id: echoId,
+          date: game.currentDate,
+          type: InboxItemType.Community,
+          title: `Bussen hem från ${opponentName}`,
+          body: narrative,
+          isRead: false,
+        } as InboxItem)
+      }
     }
   }
 

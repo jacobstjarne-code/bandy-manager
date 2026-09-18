@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join, relative, extname, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripComments } from './forbudslistan'
@@ -79,8 +79,30 @@ export interface PreservationViolation {
  * bevarandelistat namn. Noll förekomster utanför kommentarer = namnet är
  * borta ur koden — bevarad text raderad, som `hallDebateData` i `d0d4d923`.
  */
+/**
+ * DOM_DÖDA_TEXTPOOLER_2026-09-18 införde en TREDJE giltig utgång för en
+ * bevarandelistad pool, utöver "finns kvar i src/" och "fick en yta och togs
+ * ur blocket": ARKIVERAD. Texten är bra men ytan finns inte, och i stället för
+ * att ligga kvar som en död export i `src/` flyttas raderna ordagrant till
+ * `docs/archive/textpooler/` tillsammans med villkoret för när de plockas.
+ *
+ * Grinden ska fortsätta betyda samma sak — "den här texten får inte försvinna
+ * osynligt" — så arkivet räknas som ett giltigt hem. Det som INTE är giltigt är
+ * att namnet försvinner från båda ställena.
+ */
+const ARCHIVE_DIR = join(REPO_ROOT, 'docs/archive/textpooler')
+
+function readArchivedText(): string {
+  if (!existsSync(ARCHIVE_DIR)) return ''
+  return readdirSync(ARCHIVE_DIR)
+    .filter(f => f.endsWith('.md'))
+    .map(f => readFileSync(join(ARCHIVE_DIR, f), 'utf-8'))
+    .join('\n')
+}
+
 export function scanPreservationDeletions(): PreservationViolation[] {
   const names = readPreservedNames()
+  const archived = readArchivedText()
   const files: string[] = []
   for (const d of SCOPE_DIRS) walk(join(REPO_ROOT, d), files)
 
@@ -95,6 +117,7 @@ export function scanPreservationDeletions(): PreservationViolation[] {
   for (const name of names) {
     const pattern = new RegExp(`\\b${name}\\b`)
     const found = [...strippedByFile.values()].some(src => pattern.test(src))
+      || pattern.test(archived)
     if (!found) violations.push({ name })
   }
   return violations

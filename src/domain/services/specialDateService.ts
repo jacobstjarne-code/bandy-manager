@@ -181,3 +181,59 @@ export function cupFinalBriefingSpectator(ctx: SpecialDateContext, season: numbe
     venueCity: ctx.venueCity,
   })
 }
+
+// ── Inkopplingsväljare (DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 1) ───────────────
+
+/**
+ * Pool 1 var exporterad men aldrig anropad: NextMatchPrimary visade etiketten
+ * ANNANDAGEN/SM-FINALEN utan att någon briefingtext följde med. De sex
+ * pickarna ovan fanns färdiga, det var väljaren som saknades.
+ *
+ * SPELANDE-fallet — vår klubbs egen fixtur bär flaggan. Ytan är Förbered,
+ * raden under motståndarrubriken.
+ *
+ * Ordningen är den mest specifika först: en SM-final kan infalla på en dag som
+ * också är cupfinalhelg i schemat, och då är det finalen som gäller.
+ */
+export function getSpecialDateBriefing(game: SaveGame, fixture: Fixture): string | null {
+  const managedPlays = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
+  if (!managedPlays) return null
+
+  const ctx = buildSpecialDateContext(fixture, game)
+  const season = game.currentSeason
+  const matchday = fixture.matchday
+
+  if (fixture.isFinaldag) return finaldagBriefingPlaying(ctx, season, matchday)
+  if (fixture.isCupFinalhelgen && fixture.isKnockout) return cupFinalBriefingPlaying(ctx, season, matchday)
+  if (fixture.isAnnandagen) return annandagsbandyBriefing(ctx, season, matchday)
+  if (fixture.isNyarsbandy) return nyarsbandyBriefing(ctx, season, matchday)
+  return null
+}
+
+/**
+ * ÅSKÅDAR-fallet. Avvikelse från domens ytangivelse, med skäl: domen sa
+ * Förbered för hela pool 1, men `isFinaldag` sitter bara på SM-finalen, och är
+ * vår klubb utslagen får vi ingen Förbered-vy den omgången över huvud taget
+ * (advanceToNextEvent hoppar förbi slutspelsrundor vi inte är med i). De två
+ * åskådarpoolerna hade alltså förblivit döda på den ytan.
+ *
+ * Domen pekar själv ut varför de finns: finaldagen utan egen match är en av
+ * korridorens tystaste omgångar. Ytan som visas just då är portalens
+ * SpectatorPrimary — kortet som renderas när klubben inte har någon schemalagd
+ * match kvar. Där hör raden hemma.
+ */
+export function getSpectatorSpecialDateBriefing(game: SaveGame): string | null {
+  const managedId = game.managedClubId
+  const flagged = game.fixtures.find(f =>
+    f.status === 'scheduled'
+    && (f.isFinaldag || (f.isCupFinalhelgen && f.isKnockout))
+    && f.homeClubId !== managedId
+    && f.awayClubId !== managedId,
+  )
+  if (!flagged) return null
+
+  const ctx = buildSpecialDateContext(flagged, game)
+  return flagged.isFinaldag
+    ? finaldagBriefingSpectator(ctx, game.currentSeason, flagged.matchday)
+    : cupFinalBriefingSpectator(ctx, game.currentSeason, flagged.matchday)
+}

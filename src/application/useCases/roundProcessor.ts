@@ -127,6 +127,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const injuredBeforeRound = new Set(
     trainingPlayers.filter(p => p.isInjured && p.clubId === game.managedClubId).map(p => p.id)
   )
+  // DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 4 — samma ögonblicksbild för
+  // avstängningar som raden ovan gör för skador, så återkomsten kan få en rad.
+  const suspendedBeforeRound = new Set(
+    trainingPlayers.filter(p => p.suspensionGamesRemaining > 0 && p.clubId === game.managedClubId).map(p => p.id)
+  )
 
   const managedClubForTactic = game.clubs.find(c => c.id === game.managedClubId)
   const managedTacticMods = managedClubForTactic
@@ -203,6 +208,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     game,
     updatedPlayers,
     injuredBeforeRound,
+    suspendedBeforeRound,
     newlyInjured,
     newlySuspended,
     playThroughResolutions,

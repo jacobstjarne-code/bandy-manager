@@ -36,20 +36,4 @@ export function eraLabel(era: ClubEra): string {
   }
 }
 
-export function eraFullLabel(era: ClubEra): string {
-  switch (era) {
-    case 'survival': return 'Kamp för överlevnad'
-    case 'fotfaste': return 'Fotfäste i serien'
-    case 'establishment': return 'Etablering'
-    case 'legacy': return 'Klubbens storhetstid'
-  }
-}
 
-export function eraDescription(era: ClubEra): string {
-  switch (era) {
-    case 'survival': return 'Klubben befinner sig i ett kritiskt läge. Varje poäng räknas.'
-    case 'fotfaste': return 'Ett ordentligt resultat visar att ni hör hemma här. Bygg vidare.'
-    case 'establishment': return 'Orten räknar er inte längre som nykomlingar. Förväntningarna växer.'
-    case 'legacy': return 'Det är inte längre bara bandy. Det är ortens identitet.'
-  }
-}

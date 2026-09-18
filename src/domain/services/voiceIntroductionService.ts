@@ -328,6 +328,26 @@ export function seedTilltradeVoices(game: SaveGame): SaveGame {
  * köar rosterintroduktioner. Bor därför här, och anropas av BÅDE storen och
  * `createHeadlessGame` — samma spel mäts som spelas.
  */
+/**
+ * Inbox-ämnesgrinden (inboxDeliveryService.topicIsReady) släpper bara igenom en
+ * post vars ämne är introducerat, och ämnen introduceras av att spelaren BESÖKER
+ * skärmen. Den övergången bodde bara i storen (`markScreenVisited`), vilket gör
+ * den osynlig för headless — LESSONS #62, andra instansen.
+ *
+ * Konsekvensen var tyst och bred: allt med ämnet `club` eller `transfers`
+ * (Community, SponsorNetwork, KommunBidrag, YouthIntake, alla transferposter …)
+ * filtrerades bort i VARJE mätning, eftersom harnessen bara seedade `squad`.
+ * Delad funktion här så storen och harnessen inte kan glida isär igen.
+ */
+export const INBOX_TOPIC_SCREENS = ['squad', 'transfers', 'club'] as const
+
+export function introduceInboxTopic(game: SaveGame, screen: string): SaveGame {
+  if (!INBOX_TOPIC_SCREENS.includes(screen as typeof INBOX_TOPIC_SCREENS[number])) return game
+  const introduced = game.introducedInboxTopics ?? []
+  if (introduced.includes(screen)) return game
+  return { ...game, introducedInboxTopics: [...introduced, screen] }
+}
+
 export function completeOnboarding(game: SaveGame): SaveGame {
   return queueRosterVoiceIntroductions(
     seedTilltradeVoices({

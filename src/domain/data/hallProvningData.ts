@@ -14,6 +14,9 @@ export const PROVNING_AMBIENT: Partial<Record<HallTrialStage, { kafferum: string
       '"Tak", sa någon vid kaffet. Det räckte för en halvtimmes diskussion.',
       'Kassören har börjat dricka kaffe med oss. Han har siffror med sig.',
       'Ingen säger hall rakt ut längre. Alla vet ändå vad som menas.',
+      // Migrerad ur HALL_PROCESS_BEATS (DOM_DÖDA_TEXTPOOLER_2026-09-18) innan
+      // den poolen ströks — portalbeaten byggdes aldrig, raden är för bra att tappa.
+      'Snacket om hallen har börjat på allvar. Alla har en åsikt, så klart.',
     ],
     klack: [
       'Birger samlar Västra Sidan efter matchen. Ingen banderoll än — bara samtal.',
@@ -25,6 +28,8 @@ export const PROVNING_AMBIENT: Partial<Record<HallTrialStage, { kafferum: string
       'Papper på bordet i klubbhuset nu. Förbundet vill se siffror, inte känslor.',
       'Publiksiffrorna räknas på riktigt i år. Varje termos på läktaren är ett argument.',
       'Kassören sover dåligt, säger hans fru på Konsum.',
+      // Migrerad ur HALL_PROCESS_BEATS, se kommentaren i forankring ovan.
+      'Förbundet har sagt sitt om hallen. Det ligger ett papper på bordet nu.',
     ],
     klack: [
       'Klacken vet att den räknas i kravlistan. Den sjunger därefter.',
@@ -34,6 +39,9 @@ export const PROVNING_AMBIENT: Partial<Record<HallTrialStage, { kafferum: string
     kafferum: [
       'Kommunalrådet var på matchen i lördags. Satt kvar hela andra halvlek. Folk noterade.',
       'Det förhandlas i stadshuset nu. Gubbarna gissar olika om utgången — alla med samma säkerhet.',
+      // Migrerad ur HALL_PROCESS_BEATS (nyckeln hette 'kommun'; forhandling är
+      // det levande steget för kommunspåret), se kommentaren i forankring ovan.
+      'Kommunen har tagit i frågan om hallen. Inget löfte — men en dörr på glänt.',
     ],
     klack: [
       'Västra Sidan har skickat ett eget brev till kommunen. Birger skrev under först.',
@@ -158,65 +166,7 @@ export const HALLNODE_SUBS: Record<HallTrialStage, string> = {
 // här igen, ordagrant återställda ur git-historiken — INGEN ny text skriven.
 // Väntar på: Opus/Jacob avgör om nyhetspoolen ska väva in en omvärldsklubb-källa
 // eller om exporterna ska tas bort permanent (BEVARANDELISTA.md, uppdatera samtidigt).
-export const HALL_NEWS_POSITIVE = [
-  '{hallclub} rapporterar perfekt is till kvällens match. Inga problem med väder.',
-  '{hallclub}s ungdomslag tränar fem dagar i veckan — året runt. Utan hall hade det inte gått.',
-  '"Spelarna slipper förfrusna fingrar och stela muskler" — {hallclub}s tränare i {paper}.',
-  '{hallclub} genomför alla planerade träningar i januari. Utomhuslagen ställde in tre.',
-  '"Rehabiliteringen går snabbare inomhus" — {hallclub}s sjukgymnast.',
-  '{hallclub}s akademi lockar talanger. "Träningsmöjligheterna är avgörande" säger 16-åring.',
-  '"Jag hade slutat utan hallen. Kunde inte kombinera jobb och träning ute i minus 20" — spelare i {hallclub}.',
-  '{hallclub}s damsektion växer — tack vare året-runt-tillgång till is.',
-]
 
-export const HALL_NEWS_NEGATIVE = [
-  '{hallclub} drog 280 åskådare igår. Hallen rymmer 4 000.',
-  'Problem i {hallclub}s hall: kondens i taket droppade på isen under matchen.',
-  '{hallclub}s isbädd måste läggas om. Kostnad: 1,8 miljoner.',
-  '"Det är som att spela i ett kylskåp" — bortalagets spelare om {hallclub}s arena.',
-  '{hallclub}s driftskostnader: 3,2 miljoner per år. Klubben gick back förra året.',
-  'Publiken klagar på sikten i {hallclub}s hall. "Stolparna skymmer halva planen."',
-  'Paradoxen: {hallclub}s is blev sämre ju fler som kom. Värmen från publiken.',
-  '"Stämningen dör i hallen. Det är inte samma sak" — supporter i {paper}.',
-  '{hallclub} tvingades stänga hallen en vecka — värmesystemet kollapsade.',
-  'Kommunen höjer hyran för {hallclub}s hall. +15% från nästa säsong.',
-  'Kondensproblemen i {hallclub}s hall förvärras. Fjärde matchen med droppar.',
-  '{hallclub}s elräkning: 890 000 kr bara i januari. Styrelsen sväljer hårt.',
-]
-
-export const HALL_NEWS_OUTDOOR_PRIDE = [
-  'Ni drog storpublik i snöstorm. {hallclub} hade 290 i sin hall.',
-  'Utomhusmatchen mot {opponent} beskrivs som "årets upplevelse" i {paper}.',
-  '"Riktig bandy spelas utomhus" — insändare i {paper} efter er seger.',
-  'Strålkastarljus, snöfall och två poäng. Publiken gick hem med röda kinder och leenden.',
-  'Er match är den mest sedda på Bandyplay den här veckan. "Atmosfären!" kommenterar tittarna.',
-  '"Den här kvällen är anledningen till att jag älskar bandy" — supporter på sociala medier.',
-  '{paper}: "Utomhusbandyn lever — {club} bevisar det match efter match."',
-  'Ungdomslaget spelade sin bästa match i minus 12. Tränaren: "De växer av det."',
-]
-
-export const BOARD_HALL_QUOTES = {
-  supporter: [
-    '"Jag vill ha publik. Publik kommer utomhus, inte i hallar."',
-    '"Har du känt stämningen en snökväll med 1 500 på planen? Det kan ingen hall ge."',
-    '"Jag tar hellre 2 000 utomhus än 300 i en hall."',
-  ],
-  ekonom: [
-    '"Vet du vad en hall kostar? Räkna. Sen säger du nej själv."',
-    '"Driftskostnaderna för en hall: 3 miljoner per år. Minst."',
-    '"Kommunen lovar alltid. Sen kommer besparingarna."',
-    '"Gubbängens isbädd kostade 1,8 att lägga om. Och den håller max fem år."',
-  ],
-  traditionalist: [
-    '"Bandy. Spelas. Utomhus. Slut på diskussionen."',
-    '"Min farfar stod här i minus 25 och tittade på bandy. Hall? Aldrig."',
-    '"Det finns ett ord för bandy inomhus. Det heter innebandy."',
-    '"Vi har spelat här i 80 år. Jag tänker inte vara den som ger upp."',
-  ],
-  modernist: [
-    '"Hallklubbarna lockar med träningstider året om. Samband med att vi tappar folk? Kanske."',
-    '"Ungdomarna slutar. De orkar inte frysa. Vi måste lyssna."',
-    '"En hall ger oss träning 12 månader om året istället för 5."',
-    '"Jag säger inte att hall är svaret. Men frågan måste ställas."',
-  ],
-}
+// DOM_DÖDA_TEXTPOOLER_2026-09-18: HALL_NEWS_POSITIVE/NEGATIVE/OUTDOOR_PRIDE och BOARD_HALL_QUOTES är ARKIVERADE, inte strukna —
+// texten är bra, ytan finns inte. Raderna ligger ordagrant i
+// docs/archive/textpooler/hallprovningens-nyhetsstrom.md, med villkoret för när de plockas.

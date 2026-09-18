@@ -17,30 +17,6 @@ export type RivalryIntensity = 1 | 2 | 3
  * Raderna väljs bara när playerTransferLedgerService kan belägga respektive
  * proxy. Poolerna är presentation; sanningen och 0–3-urvalet bor i servicen.
  */
-export const PLAYER_LEDGER_TENURE_LINES = [
-  'Sju säsonger i klubben. Har ratat två bud förr.',
-  'Nio år i tröjan. Han vet var isen är hårdast.',
-  'Kom hit som junior, har aldrig lämnat.',
-] as const
-
-export const PLAYER_LEDGER_DAY_JOB_LINES = [
-  'Kör grävmaskin åt kommunen på vardagarna.',
-  'Står i järnhandeln på stan mellan träningarna.',
-  'Vaktmästare på skolan. Alla ungar känner honom.',
-] as const
-
-export const PLAYER_LEDGER_BLOODLINE_LINES = [
-  '214 matcher. Fostrad av Ekström, fostrar Sjödin.',
-  'Bär numret hans farbror bar. Ingen glömmer det.',
-  'Tredje generationen i klubben. Det står i pärmen.',
-] as const
-
-export const PLAYER_LEDGER_TRIUMPH_LINES = [
-  'Nollade Skutskär i SM-finalen.',
-  'Avgjorde derbyt när det stod och vägde.',
-  'Gjorde målet som tog upp laget. Det pratas om det än.',
-] as const
-
 export const PLAYER_LEDGER_HOMEBOUND_LINES = [
   'Aldrig krävt mer än laget tålde.',
   'Har sagt att han spelar här tills benen tar slut.',
@@ -176,24 +152,6 @@ export const DREAM_CLUB_MAGIC: string[] = [
  *
  * Plockas via getRivalry().intensity (1-3).
  */
-export const RIVALRY_WARNING_PER_INTENSITY: Record<RivalryIntensity, string[]> = {
-  1: [
-    'Klacken hörs på avstånd. De vet redan.',
-    'Det blir prat i kafferummet. Inget värre.',
-    'Vi har spelat dem flera gånger. Det här blir noterat.',
-  ],
-  2: [
-    'Klacken kommer inte att gilla det här.',
-    'Det är en rivalitet. Spelare som går dit minns det länge.',
-    'Det stannar inte vid klubben. Hela bygden får veta.',
-  ],
-  3: [
-    'Det är den klubben. Klacken kommer inte att glömma.',
-    'Det målas banderoller i veckan. Han blir ihågkommen.',
-    'Det stannar i klubben i tio år. Sture pratar fortfarande om Lindgren-affären 02.',
-  ],
-}
-
 /**
  * Player-reaktioner vid rival-sälj — visas i TransferBidResult inbox-item
  * när spelare faktiskt såldes till rival. Annorlunda ton än vanliga acceptans.
@@ -240,3 +198,7 @@ export const INCOMING_BID_KAFFERUM: string[] = [
   '"De får inte honom." "Det bestämmer inte vi." Kaffet kallnade.',
   'Det pratas tystare än vanligt. Som när man inte vill väcka otur.',
 ]
+
+// DOM_DÖDA_TEXTPOOLER_2026-09-18: PLAYER_LEDGER_*-raderna och RIVALRY_WARNING_PER_INTENSITY är ARKIVERADE, inte strukna —
+// texten är bra, ytan finns inte. Raderna ligger ordagrant i
+// docs/archive/textpooler/spelarliggaren-och-rivalitetsvarningen.md, med villkoret för när de plockas.

@@ -13,7 +13,7 @@ import { canStartBuild, startFacilityBuild, getFacilityNodeViews, createInitialF
 import { applyFinanceChange } from '../../src/domain/services/economyService'
 import { applyContractDemandResolutions } from '../../src/domain/services/contractDemandService'
 import { resolveEvent } from '../../src/domain/services/events/eventResolver'
-import { completeOnboarding } from '../../src/domain/services/voiceIntroductionService'
+import { completeOnboarding, introduceInboxTopic, INBOX_TOPIC_SCREENS } from '../../src/domain/services/voiceIntroductionService'
 
 // ── Game creation ─────────────────────────────────────────────────────────────
 
@@ -30,7 +30,12 @@ export function createHeadlessGame(seed: number): SaveGame {
   // kort med en `voiceId` (klack, politiker, bortaresa) filtrerades tyst bort
   // av canEventPassVoiceGate och kunde aldrig besvaras. Samma domänfunktion
   // som storens markOnboardingComplete anropar — ingen egen headless-variant.
-  const onboarded = completeOnboarding(game)
+  // DOM_DÖDA_TEXTPOOLER_2026-09-18: inbox-ämnesgrinden är den ANDRA
+  // presentationslagerövergången harnessen missade (LESSONS #62). En riktig
+  // spelare besöker Trupp, Klubb och Transfers under de första omgångarna och
+  // öppnar därmed ämnena; headless gjorde det aldrig, så varje post med ämnet
+  // `club` eller `transfers` filtrerades tyst bort i ALLA mätningar.
+  const onboarded = INBOX_TOPIC_SCREENS.reduce(introduceInboxTopic, completeOnboarding(game))
   // Clear the initial BoardMeeting screen — headless, no UI pause needed
   return { ...onboarded, pendingScreen: null }
 }

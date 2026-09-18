@@ -20,6 +20,7 @@ import { agendaForSurface, redaktoren } from './redaktorenService'
 import { recordLedgerPostToldByKey } from './ledgerToldService'
 import { isOnCooldown } from './narrativeLogService'
 import { shouldSurfaceVictoryEcho } from './postVictoryNarrativeService'
+import { DEADLINE_KAFFERUM_TEXT } from '../data/windowDeadlineText'
 
 function hashSeed(n: number): number {
   let x = (n ^ 0x9e3779b9) >>> 0
@@ -710,6 +711,26 @@ function buildCoffeeRoomScene(game: SaveGame): LegacyCoffeeScene | null {
       pickedIndices: [],
       meta: { title: 'Kafferummet' },
       narratorLine: { text: game.pendingHallEcho.text },
+    }
+  }
+
+  // DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 5 — transferdagen. Fasen fanns
+  // (scheduleGenerator sätter isWindowDeadlineDay), rummet fanns, texten fanns
+  // skriven; det var bara kopplingen som saknades. Ligger under de ovillkorade
+  // en-gångs-ekona ovan — en segerkänsla eller en landslagsåterkomst väger
+  // tyngre än dagens rykten — men över det generiska rundbygget.
+  const deadlineFixture = game.fixtures.find(f =>
+    f.status === 'scheduled'
+    && f.isWindowDeadlineDay
+    && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+  )
+  if (deadlineFixture) {
+    const idx = Math.abs(game.currentSeason * 31 + deadlineFixture.matchday) % DEADLINE_KAFFERUM_TEXT.length
+    return {
+      exchanges: [],
+      pickedIndices: [],
+      meta: { title: 'Kafferummet', subtitle: 'Transferdagen' },
+      narratorLine: { text: DEADLINE_KAFFERUM_TEXT[idx] },
     }
   }
 

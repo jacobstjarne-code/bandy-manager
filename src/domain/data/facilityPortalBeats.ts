@@ -69,22 +69,5 @@ export const FACILITY_COMPLETED_BEATS: Record<string, string> = {
 export const FACILITY_COMPLETED_FALLBACK = (label: string): string =>
   `${label} står klar. Ett bygge till bakom oss.`
 
-/**
- * En nod blev MÖJLIG denna omgång (beroenden uppfyllda, inget aktivt bygge).
- * Lättare knuff än "klar" — en öppning, inte en händelse. Generell ton, ej nodspecifik,
- * för att inte bli en feature-prompt ("bygg det här nu!"). Bara: vägen ligger öppen.
- */
-export const FACILITY_AVAILABLE_BEAT =
-  'Det finns något nytt att bygga om man vill. Klubben har råd att tänka framåt.'
 
-/**
- * Hallen-prövningen tog ett steg (förankring → krav → kommun → bygge).
- * VÄNTAR OPUS MEKANIK-LÅSNING (06-11 §5) — processtegen finns inte ännu. Texterna
- * nedan är placeringshållare i rätt ton, färdigställs när stegen är specade.
- */
-export const HALL_PROCESS_BEATS: Record<string, string> = {
-  forankring:  'Snacket om hallen har börjat på allvar. Alla har en åsikt, så klart.',
-  krav:        'Förbundet har sagt sitt om hallen. Det ligger ett papper på bordet nu.',
-  kommun:      'Kommunen har tagit i frågan om hallen. Inget löfte — men en dörr på glänt.',
-}
 

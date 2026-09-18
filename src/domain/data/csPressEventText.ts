@@ -150,13 +150,6 @@ export function getSeverityFromRelationship(relationship: number): PressSeverity
   return 'neutral'
 }
 
-export function pickCSPressQuestion(
-  player: { id: string; firstName: string; lastName: string },
-  fixtureId: string,
-  relationship: number,
-): string {
-  return pickCSPressQuestionSelection(player, fixtureId, relationship, 0, 0).text
-}
 
 export function csPressCauseIsRelevant(
   memory: CSPressCauseMemory | undefined,
@@ -226,12 +219,3 @@ export function pickCSPressPublishedQuote(
     .replace(/\{OUTLET\}/g, journalist.outlet)
 }
 
-export function buildCSPressMemoryEntry(
-  choice: PressChoice,
-  player: { firstName: string; lastName: string },
-  opponent: { name: string },
-): string {
-  return CS_PRESS_MEMORY_TEMPLATES[choice]
-    .replace(/\{NAME\}/g, `${player.firstName} ${player.lastName}`)
-    .replace(/\{OPPONENT\}/g, opponent.name)
-}

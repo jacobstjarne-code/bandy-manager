@@ -24,64 +24,6 @@ export const CUP_FINAL_VENUE = {
 
 // ── Lore-data ─────────────────────────────────────────────────────────────────
 
-export const STUDAN_FACTS = {
-  inaugurated: '21 mars 1909',
-  totalFinals: 23,
-  rank: 'näst flest efter Stockholms Stadion (47)',
-  attendanceRecord: 25_560,
-  attendanceRecordYear: 2010,
-  attendanceRecordMatch: 'Hammarby IF 3–1 Bollnäs GIF',
-  attendanceRecordContext: 'Den enda SM-final som spelats i 3×30 minuter — pga ymnigt snöfall',
-  location: 'Vid Fyrisån, intill Stadsträdgården i centrala Uppsala',
-  reconstruction: 'Ombyggd 2017–2020 av White Arkitekter',
-  finalsPeriod1: '1991–2012',
-  finalsPeriod2: '2018–2023',
-  iconicMatches: [
-    {
-      year: 2010,
-      teams: 'Hammarby–Bollnäs',
-      score: '3–1',
-      story: '3×30 minuter pga snöfall. "Grisbandy" första två perioderna, "riktig bandy" sista. Hammarbys första SM-guld på 105 år.',
-    },
-    {
-      year: 2011,
-      teams: 'SAIK–Bollnäs',
-      score: '6–5 (sudden death)',
-      story: 'SAIK-ikonen Daniel "Zeke" Eriksson sköt avgörande mål via frislag i sin allra sista match.',
-    },
-    {
-      year: 1999,
-      teams: 'Västerås–Falu BS',
-      score: '3–2',
-      story: 'Falu BS hela vägen till final — första laget med ryska spelare (Sergej Obuchov + Valerij Gratjev).',
-    },
-  ],
-}
-
-export const SAVSTAAS_FACTS = {
-  inaugurated: '1973–1974 (säsongen)',
-  artificialIce: 1984,
-  homePeriod: 'Bollnäs hemmaplan 1974–2022',
-  attendanceRecord: 8_151,
-  attendanceRecordDate: '26 december 2000',
-  attendanceRecordMatch: 'Bollnäs–Edsbyn (annandagen)',
-  attendanceRecordContext: 'Publikrekordet är från en annandagsmatch — det är inget tomt sammanträffande',
-  atmosphere: {
-    supporters: 'Flames — en gång rankad som Sveriges fjärde bästa supporterklubb (alla sporter, Aftonbladet)',
-    inmarchSong: 'Dans på Sävstaås',
-    fireworks: 'Nisses fyrverkerier innan match',
-    flagSize: 'Jumboflaggor 4×4 meter',
-    standsSouth: 'Träläktare med murkna brädor, blåaktigt rostigt räcke',
-    standsEast: 'Hela långsidan, 25–30 trappsteg hög, inget tak',
-    standsMain: 'Tak, störst, nyast — där Flames står',
-    iceHall: 'Ishallen bredvid där folk värmer fingrar i halvtid + köper korv',
-    smell: 'Kväljande cigarettrök, korv, glögg',
-  },
-  ghost: 'Sirius vann ingen bortamatch på Sävstaås 1983–2018. 23 raka förluster på 35 år.',
-  bollnasFinals: [1943, 1951, 1956, 2010, 2011, 2017],
-  bollnasGold: [1951, 1956],
-}
-
 // ── SpecialDateContext ────────────────────────────────────────────────────────
 
 export interface SpecialDateContext {
@@ -119,11 +61,11 @@ export const ANNANDAGSBANDY_COMMENTARY_LORE: string[] = [
 ]
 
 export const ANNANDAGSBANDY_BRIEFING: string[] = [
-  '🎄 Annandagen. {arenaName} ska gå varm i dag.',
-  '🎄 26 december. Mötet med {opponentName} klockan 13:15. Plogen har gått sedan klockan sex i morse.',
-  '🎄 Annandagsbandy mot {opponentName}. Hela bygden samlas, även de som inte brukar gå på match.',
-  '🎄 Det är annandag jul. {arenaName} fylls av folk som behöver komma ut ur sina hem.',
-  '🎄 Annandagen — {rivalryName}. Året ska ha en till topp innan det är över.',
+  'Annandagen. {arenaName} ska gå varm i dag.',
+  '26 december. Mötet med {opponentName} klockan 13:15. Plogen har gått sedan klockan sex i morse.',
+  'Annandagsbandy mot {opponentName}. Hela bygden samlas, även de som inte brukar gå på match.',
+  'Det är annandag jul. {arenaName} fylls av folk som behöver komma ut ur sina hem.',
+  'Annandagen — {rivalryName}. Året ska ha en till topp innan det är över.',
 ]
 
 export function annandagsbandyInbox(ctx: SpecialDateContext): { subject: string; body: string } {
@@ -148,11 +90,11 @@ export const NYARSBANDY_COMMENTARY: string[] = [
 ]
 
 export const NYARSBANDY_BRIEFING: string[] = [
-  '🎆 Nyårsafton. Match klockan {tipoffHour}, midnatt klockan tolv. Båda går fort.',
-  '🎆 Det är 31 december och det spelas bandy på {arenaName}. Det är inte normalt, men i år är det så.',
-  '🎆 Nyårsbandy mot {opponentName}. Folk kommer i jackor och tänker på middagen sen.',
-  '🎆 Sista matchen för året. Tabellen ska se ut på ett visst sätt när det nya året börjar.',
-  '🎆 Nyårsafton-bandy. Säsongens bisarraste schemaläggning.',
+  'Nyårsafton. Match klockan {tipoffHour}, midnatt klockan tolv. Båda går fort.',
+  'Det är 31 december och det spelas bandy på {arenaName}. Det är inte normalt, men i år är det så.',
+  'Nyårsbandy mot {opponentName}. Folk kommer i jackor och tänker på middagen sen.',
+  'Sista matchen för året. Tabellen ska se ut på ett visst sätt när det nya året börjar.',
+  'Nyårsafton-bandy. Säsongens bisarraste schemaläggning.',
 ]
 
 // ── SM-FINALDAG ───────────────────────────────────────────────────────────────
@@ -182,18 +124,18 @@ export const FINALDAG_COMMENTARY_3X30: string[] = [
 ]
 
 export const FINALDAG_BRIEFING_PLAYING: string[] = [
-  '🏆 SM-FINAL. {opponentName}, {arenaName}, klockan 13:15. Hela säsongen är det här.',
-  '🏆 Finaldagen. Det finns inte mycket att säga. Spelarna vet vad det är.',
-  '🏆 I dag är det final. Bygden har bussat hit. Halva orten är på plats.',
+  'SM-FINAL. {opponentName}, {arenaName}, klockan 13:15. Hela säsongen är det här.',
+  'Finaldagen. Det finns inte mycket att säga. Spelarna vet vad det är.',
+  'I dag är det final. Bygden har bussat hit. Halva orten är på plats.',
 ]
 
 // Spectator: utökad pool 2026-05-08 — endast 1 variant gav garanterad repetition
 export const FINALDAG_BRIEFING_SPECTATOR: string[] = [
-  '🏆 SM-finalen i dag: {homeClubName} mot {awayClubName}. Vi är inte där. Inte i år.',
-  '🏆 Finaldagen. {homeClubName} mot {awayClubName} på Studan. Säsongen är slut för oss — finalen påminner.',
-  '🏆 Studenternas i dag. {homeClubName} mot {awayClubName}. Inte vår final, men finalen.',
-  '🏆 SM-final klockan 13:15. Vi tittar — som tre fjärdedelar av bandysverige.',
-  '🏆 Det är finaldag. Inte vår, men finaldag. Klacken kommer ändå att sjunga någonstans.',
+  'SM-finalen i dag: {homeClubName} mot {awayClubName}. Vi är inte där. Inte i år.',
+  'Finaldagen. {homeClubName} mot {awayClubName} på Studan. Säsongen är slut för oss — finalen påminner.',
+  'Studenternas i dag. {homeClubName} mot {awayClubName}. Inte vår final, men finalen.',
+  'SM-final klockan 13:15. Vi tittar — som tre fjärdedelar av bandysverige.',
+  'Det är finaldag. Inte vår, men finaldag. Klacken kommer ändå att sjunga någonstans.',
 ]
 
 export function finaldagInboxPlaying(ctx: SpecialDateContext): { subject: string; body: string } {
@@ -234,14 +176,14 @@ export const CUPFINAL_COMMENTARY_LORE: string[] = [
 ]
 
 export const CUPFINAL_BRIEFING_PLAYING: string[] = [
-  '🏆 Cup-final i dag. {opponentName}, {arenaName}, klockan 14. Säsongens första riktiga match.',
-  '🏆 Vi spelar cup-final. Det här är en sån match som folk minns även om de glömmer placeringen i serien.',
-  '🏆 Cup-finalen. {journeyLine}',
+  'Cup-final i dag. {opponentName}, {arenaName}, klockan 14. Säsongens första riktiga match.',
+  'Vi spelar cup-final. Det här är en sån match som folk minns även om de glömmer placeringen i serien.',
+  'Cup-finalen. {journeyLine}',
 ]
 
 export const CUPFINAL_BRIEFING_SPECTATOR: string[] = [
-  '🏆 Cup-finalhelgen pågår. {homeClubName} mot {awayClubName}. Vi följer från sidan i år.',
-  '🏆 Det är cup-final i {venueCity}. Bandyåret tar fart utan oss i finalen.',
+  'Cup-finalhelgen pågår. {homeClubName} mot {awayClubName}. Vi följer från sidan i år.',
+  'Det är cup-final i {venueCity}. Bandyåret tar fart utan oss i finalen.',
 ]
 
 export function cupFinalInboxPlaying(ctx: SpecialDateContext): { subject: string; body: string } {
@@ -257,3 +199,7 @@ export function cupFinalInboxPlaying(ctx: SpecialDateContext): { subject: string
 
 // Cup-final spectator inbox: SKIPPED per design — inte relevant att maila
 // spelaren om en final som inte berör deras klubb.
+
+// DOM_DÖDA_TEXTPOOLER_2026-09-18: STUDAN_FACTS och SAVSTAAS_FACTS är ARKIVERADE, inte strukna —
+// texten är bra, ytan finns inte. Raderna ligger ordagrant i
+// docs/archive/textpooler/studan-och-savstaas-faktarutor.md, med villkoret för när de plockas.

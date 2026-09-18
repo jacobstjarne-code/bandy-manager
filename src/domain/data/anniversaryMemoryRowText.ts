@@ -10,15 +10,7 @@ export function anniversaryRowLabel(echo: ActiveAnniversary): string {
   return `Eko · ${echo.yearsAgo} år sedan`
 }
 
-const ECHO_DETAIL: Record<'won' | 'lost' | 'neutral', string> = {
-  won: 'Samma vecka som detta hände — ett ljust minne som återkommer.',
-  lost: 'Samma vecka som detta hände — det skaver fortfarande.',
-  neutral: 'Samma vecka som detta hände, ett annat år.',
-}
 
-export function anniversaryRowDetail(echo: ActiveAnniversary): string {
-  return ECHO_DETAIL[echo.outcome]
-}
 
 // pickAnniversaryMemoryRowLabel — används av ClubMemoryEventRow.tsx
 export function pickAnniversaryMemoryRowLabel(anniversary: ActiveAnniversary): string {

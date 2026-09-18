@@ -20,9 +20,11 @@ describe('BEVARANDETEXT-RADERINGSGRINDEN — ingen bevarandelistad pool försvin
       throw new Error(
         `${violations.length} bevarandelistad(e) export(er) hittas inte längre i src/:\n` +
         violations.map(v => `  - ${v.name}`).join('\n') +
-        '\n\nÅterställ ur git-historiken (git log -S"<namn>"), eller — om exporten medvetet ' +
-        'fick en yta och slutade vara text-utan-yta — ta bort raden ur BEVARANDELISTA.mds ' +
-        '```bevarandelista-block i samma commit.',
+        '\n\nTre giltiga utgångar: (1) återställ ur git-historiken (git log -S"<namn>"), ' +
+        '(2) om exporten medvetet fick en yta och slutade vara text-utan-yta — ta bort raden ur ' +
+        'BEVARANDELISTA.mds ```bevarandelista-block i samma commit, eller (3) om texten är bra men ' +
+        'ytan inte finns — arkivera raderna ordagrant i docs/archive/textpooler/ med villkoret för ' +
+        'när de plockas (DOM_DÖDA_TEXTPOOLER_2026-09-18). Grinden räknar arkivet som ett giltigt hem.',
       )
     }
     expect(violations).toEqual([])

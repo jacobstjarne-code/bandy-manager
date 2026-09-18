@@ -81,16 +81,6 @@ export function pickFavoritePlayer(players: Player[]): Player | undefined {
 
 // ── Update favoritePlayerId if player was sold ────────────────────────────────
 
-export function updateSupporterFavorite(
-  group: SupporterGroup,
-  activePlayers: Player[],
-): SupporterGroup {
-  const activeIds = new Set(activePlayers.map(p => p.id))
-  if (group.favoritePlayerId && activeIds.has(group.favoritePlayerId)) return group
-
-  const newFav = pickFavoritePlayer(activePlayers)
-  return { ...group, favoritePlayerId: newFav?.id }
-}
 
 // ── Mood helpers ──────────────────────────────────────────────────────────────
 
@@ -189,10 +179,3 @@ export function reevaluateFavoritePlayer(
 
 // ── Mood label ────────────────────────────────────────────────────────────────
 
-export function getSupporterMoodLabel(mood: number): string {
-  if (mood >= 80) return 'Elektrisk'
-  if (mood >= 65) return 'Tajt'
-  if (mood >= 45) return 'Stabil'
-  if (mood >= 30) return 'Besviket'
-  return 'Uppgivet'
-}

@@ -60,33 +60,3 @@ Ingen kommer minnas matchen — utom om ni förlorar.`,
   ]
 }
 
-export function shouldTriggerCupIntro(game: SaveGame): boolean {
-  // One-shot per säsong: visa innan första cupmatchen.
-  // Använd shownScenes med säsongs-suffix för att tillåta nästa säsong.
-  // shownScenes är SceneId[], så vi kollar om någon entry matchar denna säsong
-  if ((game.shownScenes ?? []).some(s => s === 'cup_intro')) {
-    // Visad redan denna körning — kolla om det var denna säsong via lastSavedAt
-    // Enkelhet: tillåt bara en cup_intro per session, regenerera vid säsongsstart
-    // För säsongsövergång hanteras detta via roundProcessor som rensar cup_intro från shownScenes
-    return false
-  }
-
-  // Måste finnas en kommande cupmatch för managed club
-  const hasUpcomingCup = game.fixtures.some(f =>
-    f.isCup &&
-    f.status === FixtureStatus.Scheduled &&
-    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-  )
-  if (!hasUpcomingCup) return false
-
-  // Inga cupmatcher ska redan vara spelade denna säsong
-  const hasPlayedCupThisSeason = game.fixtures.some(f =>
-    f.isCup &&
-    f.season === game.currentSeason &&
-    f.status === FixtureStatus.Completed &&
-    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-  )
-  if (hasPlayedCupThisSeason) return false
-
-  return true
-}

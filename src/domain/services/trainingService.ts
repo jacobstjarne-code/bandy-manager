@@ -314,18 +314,3 @@ export function trainingIntensityLabel(intensity: TrainingIntensity): string {
   return map[intensity] ?? intensity
 }
 
-export function trainingTypeDescription(type: TrainingType): string {
-  const map: Record<TrainingType, string> = {
-    [TrainingType.Skating]:     'Skridskoåkning +0.3, Acceleration +0.2',
-    [TrainingType.BallControl]: 'Bollkontroll +0.3, Dribbling +0.2',
-    [TrainingType.Passing]:     'Passning +0.3, Vision +0.15',
-    [TrainingType.Shooting]:    'Skott +0.3, Spelsinne +0.1',
-    [TrainingType.Defending]:   'Försvar +0.3, Positionering +0.2',
-    [TrainingType.CornerPlay]:  'Hörnspel +0.4, Passning +0.15',
-    [TrainingType.Physical]:    'Kondition +0.3, Acceleration +0.15, Arbetsinsats +0.15',
-    [TrainingType.Tactical]:    'Spelsinne +0.2, Positionering +0.2, Vision +0.15',
-    [TrainingType.Recovery]:    'Kondition +15, Moral +3',
-    [TrainingType.MatchPrep]:   'Skärpa +8, Moral +2',
-  }
-  return map[type] ?? ''
-}

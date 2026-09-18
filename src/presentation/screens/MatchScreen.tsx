@@ -23,6 +23,7 @@ import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance, buildAttendanceParams } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
+import { getSpecialDateBriefing } from '../../domain/services/specialDateService'
 import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 import { computeLaddningBeat, shouldShowPreparationLaddningBeat, type LaddningBeat } from '../../domain/data/matchLaddningGrind'
@@ -541,6 +542,22 @@ export function MatchScreen() {
             />
           </div>
         )}
+
+        {/* Specialdagsbriefing (DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 1) — raden
+            under motståndarrubriken. Portalen visade redan etiketten
+            ANNANDAGEN/SM-FINALEN utan att någon text följde med; de sex
+            pickarna i specialDateService fanns färdiga men anropades aldrig. */}
+        {nextFixture && (() => {
+          const briefing = getSpecialDateBriefing(game, nextFixture)
+          if (!briefing) return null
+          return (
+            <div className="card-round" style={{ margin: '0 12px 8px', padding: '8px 12px' }}>
+              <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>
+                {briefing}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* Stämningskortet */}
         {nextFixture && (() => {

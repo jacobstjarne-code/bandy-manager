@@ -17,6 +17,16 @@ för varje namn — noll förekomster = bygget failar (bevarad text raderad, som
 `hallDebateData` i `d0d4d923`). Synka blocket när en pool läggs till eller får
 en yta. Bara textpooler — typ-only-exporterna längst ner hör inte hit.
 
+**Tre giltiga utfall för ett namn i blocket** (sedan DOM_DÖDA_TEXTPOOLER_2026-09-18):
+
+1. **Kvar i `src/`** — bevarad text-utan-yta, orörd. Grundfallet.
+2. **Fick en yta** — raden tas ur blocket i samma commit som inkopplingen.
+3. **Arkiverad** — texten är bra, ytan finns inte, och raderna ligger ordagrant
+   i `docs/archive/textpooler/` med villkoret för när de plockas. Grinden räknar
+   arkivet som ett giltigt hem, så namnet står kvar i blocket.
+
+Det enda som failar är att ett namn försvinner från **både** `src/` och arkivet.
+
 ```bevarandelista
 diaryLine
 HALL_NEWS_POSITIVE
@@ -29,13 +39,46 @@ EVENT_FLAVORS
 STUDAN_FACTS
 SAVSTAAS_FACTS
 SUSPENSION_INCIDENT_MULTI_LINES
-SUSPENSION_RETURN_LINES
-DEADLINE_KAFFERUM_TEXT
 anniversaryRowDetail
 FACILITY_AVAILABLE_BEAT
-HALL_PROCESS_BEATS
 MUSTWIN_CRIT_TAGS
 ```
+
+
+---
+
+## UTFALL AV DOM_DÖDA_TEXTPOOLER_2026-09-18
+
+**Fick en yta — tagna ur blocket:**
+
+- `SUSPENSION_RETURN_LINES` → inbox när avstängningen är avtjänad
+  (`inboxService.createSuspensionReturnItem`, speglad mot skadeåterkomsten).
+- `DEADLINE_KAFFERUM_TEXT` → kafferummet den omgång `isWindowDeadlineDay` är sant
+  (`coffeeRoomService`).
+- `HALL_PROCESS_BEATS` → de tre raderna migrerades in i `PROVNING_AMBIENT`
+  (`hallProvningData.ts`, stegen forankring/krav/forhandling) innan poolen ströks.
+  Texten är alltså i spel, inte i arkiv.
+
+Samtidigt inkopplade, men de stod aldrig i blocket: specialdagsbriefingarna
+(Förbered + portalens åskådarkort), bortaresans efterklang, välkomstsången
+(hemmapremiären) och domarens öppningsrad (matchlive, steg 1).
+
+**Arkiverade — står kvar i blocket, bor i `docs/archive/textpooler/`:**
+
+| Pool | Arkivfil | Plockas när |
+|---|---|---|
+| `HALL_NEWS_*`, `BOARD_HALL_QUOTES` | `hallprovningens-nyhetsstrom.md` | hallen får ett mediaspår |
+| `KIOSK_FLAVORS`, `LOTTERY_FLAVORS`, `EVENT_FLAVORS` | `ortsaktiviteternas-volontarvardag.md` | korridoralternativ 2 (D4 Bygden) |
+| `STUDAN_FACTS`, `SAVSTAAS_FACTS` | `studan-och-savstaas-faktarutor.md` | raderna tvättats från riktiga klubbnamn |
+
+`FACILITY_AVAILABLE_BEAT`, `MUSTWIN_CRIT_TAGS` och `ECHO_DETAIL` (som
+`anniversaryRowDetail` konsumerade) stod som STRYK i domen men fanns på den här
+listan. Koden är struken enligt domen; texten ligger i
+`korta-pooler-ur-strykbeslutet.md`, och namnen står kvar i blocket.
+
+`PLAYER_LEDGER_*` och `RIVALRY_WARNING_PER_INTENSITY` arkiverades i samma pass
+(`spelarliggaren-och-rivalitetsvarningen.md`) men stod aldrig i blocket — de är
+hårdkodade exempel utan variabler, alltså förlaga snarare än pool.
 
 ---
 

@@ -84,54 +84,6 @@ export interface ToneModifier {
   followUpChance: number  // 0-1, chance of tough follow-up question
 }
 
-export function getJournalistTone(journalist: Journalist): ToneModifier {
-  const rel = journalist.relationship
-  const persona = journalist.persona
-
-  // Base tone from relationship
-  let questionStyle: ToneModifier['questionStyle'] = 'neutral'
-  let headlineStyle: ToneModifier['headlineStyle'] = 'neutral'
-  let followUpChance = 0.1
-
-  if (rel >= 70) {
-    questionStyle = 'friendly'
-    headlineStyle = 'positive'
-    followUpChance = 0.05
-  } else if (rel <= 30) {
-    questionStyle = 'hostile'
-    headlineStyle = 'negative'
-    followUpChance = 0.3
-  }
-
-  // Persona modifiers
-  switch (persona) {
-    case 'critical':
-      if (questionStyle === 'neutral') questionStyle = 'hostile'
-      followUpChance += 0.15
-      break
-    case 'supportive':
-      if (questionStyle === 'neutral') questionStyle = 'friendly'
-      if (headlineStyle === 'neutral') headlineStyle = 'positive'
-      followUpChance = Math.max(0, followUpChance - 0.05)
-      break
-    case 'sensationalist':
-      followUpChance += 0.2
-      if (rel < 50) headlineStyle = 'negative'
-      break
-    case 'analytical':
-      // Always neutral tone, focus on facts
-      questionStyle = 'neutral'
-      break
-  }
-
-  // Recent refusals make everyone hostile
-  if (journalist.pressRefusals >= 2) {
-    questionStyle = 'hostile'
-    followUpChance = Math.min(1, followUpChance + 0.2)
-  }
-
-  return { questionStyle, headlineStyle, followUpChance }
-}
 
 // ── Generate post-match headline for inbox ────────────────────────────────
 
@@ -208,23 +160,3 @@ export function generateCriticalArticle(journalist: Journalist, managerName: str
 
 // ── Generate persona-flavored headline prefix ─────────────────────────────
 
-export function getHeadlinePrefix(journalist: Journalist, isPositive: boolean): string {
-  const { persona, name, outlet } = journalist
-
-  if (isPositive) {
-    switch (persona) {
-      case 'supportive': return `${name} i ${outlet}: `
-      case 'analytical': return `${outlet} — analys: `
-      case 'sensationalist': return `${outlet}: SENSATION! `
-      case 'critical': return `${name}, ${outlet}: `
-    }
-  } else {
-    switch (persona) {
-      case 'critical': return `${name} i ${outlet}: `
-      case 'sensationalist': return `${outlet}: KRIS! `
-      case 'analytical': return `${outlet} — granskning: `
-      case 'supportive': return `${name}, ${outlet}: `
-    }
-  }
-  return `${outlet}: `
-}

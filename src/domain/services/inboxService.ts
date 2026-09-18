@@ -6,7 +6,7 @@ import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType } from '../enums'
 import { positionShort } from '../format'
-import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES } from '../data/suspensionText'
+import { SUSPENSION_INCIDENT_LINES, SUSPENSION_INCIDENT_MULTI_LINES, SUSPENSION_RETURN_LINES } from '../data/suspensionText'
 import { swedishGenitive } from '../data/matchCommentary'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 import { getInjurySeverity, DIAGNOSIS_LINES, pickRecoveryLine } from '../data/injuryDoctorText'
@@ -154,6 +154,31 @@ export function createRecoveryItem(
     type: InboxItemType.Recovery,
     title: `Tillbaka: ${spelare}`,
     body: pickRecoveryLine(player.id, spelare),
+    relatedPlayerId: player.id,
+    isRead: false,
+  }
+}
+
+/**
+ * DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 4. SUSPENSION_RETURN_LINES fanns
+ * skriven men anropades aldrig: avstängningen räknades ner tyst i
+ * playerStateProcessor och spelaren upptäckte återkomsten först i
+ * laguttagningen. Skadeåterkomsten (createRecoveryItem ovan) hade sin rad
+ * sedan länge — det här är dess motsvarighet på avstängningssidan.
+ */
+export function createSuspensionReturnItem(
+  player: Player,
+  nextOpponentName: string,
+  currentDate: string,
+): InboxItem {
+  const spelare = `${player.firstName} ${player.lastName}`
+  const line = SUSPENSION_RETURN_LINES[Math.abs(player.id.charCodeAt(0)) % SUSPENSION_RETURN_LINES.length]
+  return {
+    id: generateId(InboxItemType.Suspension),
+    date: currentDate,
+    type: InboxItemType.Suspension,
+    title: `Spelklar igen: ${spelare}`,
+    body: line.replace(/\{spelare\}/g, spelare).replace(/\{motståndare\}/g, nextOpponentName),
     relatedPlayerId: player.id,
     isRead: false,
   }

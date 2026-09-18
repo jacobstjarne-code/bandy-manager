@@ -2,11 +2,13 @@ import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
 import type { Moment } from '../../../domain/entities/Moment'
 import type { Player } from '../../../domain/entities/Player'
 import type { InboxItem, RippleChain, SaveGame } from '../../../domain/entities/SaveGame'
+import { FixtureStatus } from '../../../domain/enums'
 import {
   createInjuryItem,
   createPlayThroughAftermathItem,
   createRecoveryItem,
   createSuspensionItem,
+  createSuspensionReturnItem,
 } from '../../../domain/services/inboxService'
 import { buildSystemRippleLedgerEntry } from '../../../domain/services/orsakVerkanService'
 import { applyRipples, describeRippleChain } from '../../../domain/services/rippleEffectService'
@@ -16,6 +18,7 @@ interface RoundNotificationsInput {
   updatedPlayers: Player[]
   injuredBeforeRound: Set<string>
   newlyInjured: Array<{ player: Player; days: number }>
+  suspendedBeforeRound: Set<string>
   newlySuspended: Array<{ player: Player }>
   playThroughResolutions: Array<{ player: Player; relapsed: boolean; aftermathLine: string }>
   nextMatchday: number
@@ -31,7 +34,7 @@ export interface RoundNotificationsResult {
 }
 
 export function processRoundNotifications(input: RoundNotificationsInput): RoundNotificationsResult {
-  const { game, updatedPlayers, injuredBeforeRound, newlyInjured, newlySuspended, playThroughResolutions, nextMatchday } = input
+  const { game, updatedPlayers, injuredBeforeRound, suspendedBeforeRound, newlyInjured, newlySuspended, playThroughResolutions, nextMatchday } = input
   let gameAfterRipples = game
   const rippleChains: RippleChain[] = []
   const ledgerEntries = [...input.initialLedgerEntries]
@@ -75,6 +78,26 @@ export function processRoundNotifications(input: RoundNotificationsInput): Round
   for (const player of updatedPlayers) {
     if (player.clubId === game.managedClubId && injuredBeforeRound.has(player.id) && !player.isInjured) {
       inboxItems.push(createRecoveryItem(player, game.currentDate))
+    }
+  }
+  // DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 4 — avstängningens återkomst, speglad
+  // mot skadeåterkomsten ovan. `{motståndare}` är nästa motståndare, inte den
+  // han missade: raden handlar om att han kan väljas igen.
+  const nextOpponentName = (() => {
+    const next = game.fixtures
+      .filter(f => f.status === FixtureStatus.Scheduled
+        && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+      .sort((a, b) => a.matchday - b.matchday)[0]
+    if (!next) return 'nästa motstånd'
+    const oppId = next.homeClubId === game.managedClubId ? next.awayClubId : next.homeClubId
+    const opp = game.clubs.find(c => c.id === oppId)
+    return opp?.shortName ?? opp?.name ?? 'nästa motstånd'
+  })()
+  for (const player of updatedPlayers) {
+    if (player.clubId === game.managedClubId
+      && suspendedBeforeRound.has(player.id)
+      && player.suspensionGamesRemaining === 0) {
+      inboxItems.push(createSuspensionReturnItem(player, nextOpponentName, game.currentDate))
     }
   }
   for (const { player, aftermathLine } of playThroughResolutions) {

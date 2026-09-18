@@ -32,7 +32,7 @@ import { hasManagedClubFutureFixture } from '../../utils/nextActionCue'
 import { applyContractDemandResolutions } from '../../../domain/services/contractDemandService'
 import { fixtureSeed, mulberry32 } from '../../../domain/utils/random'
 import { getFinalIntroScene, type FinalTier } from '../../../domain/data/scenes/finalIntroScene'
-import { getVoiceEligibleEvents } from '../../../domain/services/voiceIntroductionService'
+import { getVoiceEligibleEvents, introduceInboxTopic } from '../../../domain/services/voiceIntroductionService'
 import { pickBestEleven } from '../../../domain/services/squadEvaluator'
 import { isPlayerInMatchSquad } from '../../../domain/services/matchSquadService'
 
@@ -700,14 +700,13 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return
       const visited = game.visitedScreensThisRound ?? []
-      const introduced = game.introducedInboxTopics ?? []
-      const introducesTopic = screen === 'squad' || screen === 'transfers' || screen === 'club'
       const nextVisited = visited.includes(screen) ? visited : [...visited, screen]
-      const nextIntroduced = introducesTopic && !introduced.includes(screen)
-        ? [...introduced, screen]
-        : introduced
-      if (nextVisited !== visited || nextIntroduced !== introduced) {
-        set({ game: { ...game, visitedScreensThisRound: nextVisited, introducedInboxTopics: nextIntroduced } })
+      // Ämnesintroduktionen delas med harnessen (introduceInboxTopic) — den här
+      // övergången bodde tidigare bara här, och var därmed osynlig för varje
+      // headless-mätning. LESSONS #62.
+      const withTopic = introduceInboxTopic(game, screen)
+      if (nextVisited !== visited || withTopic !== game) {
+        set({ game: { ...withTopic, visitedScreensThisRound: nextVisited } })
       }
     },
 

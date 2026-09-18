@@ -3,17 +3,6 @@ import { formatRating } from '../format'
 
 type NarrativeEntry = NonNullable<Player['diary']>[number]
 
-export function addNarrativeEntry(
-  player: Player,
-  season: number,
-  matchday: number,
-  text: string,
-  type: NarrativeEntry['type'],
-): Player {
-  const entry: NarrativeEntry = { season, matchday, text, type }
-  const log = [...(player.diary ?? []), entry].slice(-20) // keep last 20 entries
-  return { ...player, diary: log }
-}
 
 /**
  * Ren renderare — tar redan verifierade parametrar (opponent/season/matchday).
@@ -62,12 +51,6 @@ export function generateDebutEntry(opponent: string, season: number, matchday: n
   }
 }
 
-export function generateGoalStreakEntry(goals: number, season: number, matchday: number): NarrativeEntry {
-  return {
-    season, matchday, type: 'form',
-    text: `${goals} mål på ${goals + 1} matcher. Formen är het just nu.`,
-  }
-}
 
 export function generateMilestoneGoalEntry(total: number, season: number, matchday: number): NarrativeEntry {
   return {
@@ -83,12 +66,6 @@ export function generateMilestoneGamesEntry(total: number, season: number, match
   }
 }
 
-export function generateAcademyPromotionEntry(season: number, matchday: number): NarrativeEntry {
-  return {
-    season, matchday, type: 'milestone', semanticKey: 'academy_promotion',
-    text: 'Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.',
-  }
-}
 
 /**
  * Ren renderare, samma mönster som ovan — rating/goals är redan lästa och

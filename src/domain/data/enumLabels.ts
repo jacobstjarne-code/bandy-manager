@@ -2,9 +2,6 @@ import type { SupporterRole } from '../entities/Community'
 import {
   TacticMentality,
   TacticTempo,
-  TacticPassingRisk,
-  TacticWidth,
-  TacticAttackingFocus,
 } from '../enums'
 
 /**
@@ -33,23 +30,8 @@ export const TACTIC_TEMPO_LABELS: Record<TacticTempo, string> = {
   [TacticTempo.High]: 'Högt',
 }
 
-export const TACTIC_PASSING_RISK_LABELS: Record<TacticPassingRisk, string> = {
-  [TacticPassingRisk.Safe]: 'Säker',
-  [TacticPassingRisk.Mixed]: 'Blandad',
-  [TacticPassingRisk.Direct]: 'Direkt',
-}
 
-export const TACTIC_WIDTH_LABELS: Record<TacticWidth, string> = {
-  [TacticWidth.Narrow]: 'Smal',
-  [TacticWidth.Normal]: 'Normal',
-  [TacticWidth.Wide]: 'Bred',
-}
 
-export const TACTIC_ATTACKING_FOCUS_LABELS: Record<TacticAttackingFocus, string> = {
-  [TacticAttackingFocus.Central]: 'Centralt',
-  [TacticAttackingFocus.Wings]: 'Kanter',
-  [TacticAttackingFocus.Mixed]: 'Blandat',
-}
 
 /**
  * Kategorietiketterna (för "Tryck: Lågt"-formen). Håller isär kategori och
@@ -74,11 +56,3 @@ export const SUPPORTER_ROLE_LABELS: Record<SupporterRole, string> = {
   family: 'Familjefaren',
 }
 
-export const TACTIC_CATEGORY_LABELS = {
-  mentality: 'Mentalitet',
-  tempo: 'Tempo',
-  press: 'Tryck',
-  passingRisk: 'Passningsrisk',
-  width: 'Bredd',
-  attackingFocus: 'Anfallsfokus',
-} as const

@@ -69,11 +69,6 @@ export const UPPTAKT_COUNTDOWN: Record<UpptaktSubState, string[]> = {
   ],
 }
 
-export const MUSTWIN_CRIT_TAGS: string[] = [
-  'Måstematch', 'Fyrapoängsmatch', 'Avgörande', 'Slutspelsstrid',
-  'Strecket avgörs', 'Plats på spel',
-]
-
 import { seededPickNoRepeat } from '../utils/random'
 
 export function pickUpptaktPhaseMark(state: UpptaktSubState, seed: number, seen: Set<number>): PhaseMarkVariant {

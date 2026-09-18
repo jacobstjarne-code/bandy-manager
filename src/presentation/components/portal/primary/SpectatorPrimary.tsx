@@ -3,6 +3,7 @@ import type { CardRenderProps } from '../portalTypes'
 import type { SpectatorFocusType } from '../../../../domain/data/spectatorPrimaryText'
 import { SPECTATOR_PRIMARY_TEXT } from '../../../../domain/data/spectatorPrimaryText'
 import { FixtureStatus } from '../../../../domain/enums'
+import { getSpectatorSpecialDateBriefing } from '../../../../domain/services/specialDateService'
 
 function pickFocus(game: CardRenderProps['game']): { type: SpectatorFocusType; count: number } {
   const club = game.clubs.find(c => c.id === game.managedClubId)
@@ -41,6 +42,8 @@ export function SpectatorPrimary({ game }: CardRenderProps) {
   )
   if (hasScheduled) return null
 
+  const specialDateBriefing = getSpectatorSpecialDateBriefing(game)
+
   const handleCta = () => {
     // Bugg hittad under klubb-flikar-overflod (2026-09-06): '/game/academy' är
     // ingen route i AppRouter.tsx — klicket landade på catch-all → tillbaka till
@@ -58,6 +61,14 @@ export function SpectatorPrimary({ game }: CardRenderProps) {
       <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 12, lineHeight: 1.5 }}>
         {body}
       </p>
+      {/* DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 1: finaldagen utan egen match är
+          en av korridorens tystaste omgångar. Raden syns bara den omgång någon
+          ANNAN spelar SM-final eller cupfinal. */}
+      {specialDateBriefing && (
+        <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: '0 0 12px' }}>
+          {specialDateBriefing}
+        </p>
+      )}
       <button className="btn btn-outline" style={{ width: '100%', padding: '10px' }} onClick={handleCta}>
         {variant.cta}
       </button>
