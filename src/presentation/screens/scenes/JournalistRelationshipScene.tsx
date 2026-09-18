@@ -1,13 +1,14 @@
 /**
  * JournalistRelationshipScene — fullskärmsscen för journalistrelationen.
  * Visar relationsgrad, minneslista och outlook.
- * Pixel-värden från SPEC_JOURNALIST_KAPITEL_A mock-CSS. Justera inte.
+ * Relationsöversikt som öppnas från journalistkortet i Portalen.
  */
 
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { buildJournalistSceneData } from '../../../domain/data/scenes/journalistRelationshipScene'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SceneCTA } from './shared/SceneCTA'
+import { SceneHeader } from './shared/SceneHeader'
 
 interface Props {
   game: SaveGame
@@ -39,39 +40,10 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
       flexDirection: 'column',
     }}>
 
-      {/* 1. SceneHeader — genre tag + namn + outlet */}
-      <div style={{ textAlign: 'center' }}>
-        <div className="h-label h-label-light" style={{
-          textAlign: 'center',
-          padding: '18px 0 8px',
-          color: 'var(--accent)',
-          opacity: 0.7,
-        }}>
-          I DETTA ÖGONBLICK
-        </div>
-        <div style={{ padding: '6px 24px 0' }}>
-        <div style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 28,
-          fontWeight: 700,
-          color: 'var(--text-light)',
-          textAlign: 'center',
-          lineHeight: 1.1,
-          marginBottom: 4,
-        }}>
-          {data.name}
-        </div>
-        <div style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 13,
-          color: 'var(--text-light-secondary)',
-          fontStyle: 'italic',
-          marginTop: 4,
-          paddingBottom: 18,
-        }}>
-          {data.outlet}
-        </div>
-        </div>
+      {/* Samma huvud och CTA som övriga scener, men en statusetikett i stället
+          för ett påstående om att något sker just nu. */}
+      <div style={{ padding: '18px 24px 0' }}>
+        <SceneHeader genre="PRESSRELATION" title={data.name} subtitle={data.outlet} subtitleMarginBottom={20} />
       </div>
 
       {/* 2. Relations-block */}
@@ -154,8 +126,8 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
       </div>
 
       {/* 5. SceneCTA */}
-      <div style={{ padding: '14px 20px 24px' }}>
-        <SceneCTA label="Tillbaka till klubben" onClick={onComplete} />
+      <div style={{ padding: '14px 20px 24px', marginTop: 'auto' }}>
+        <SceneCTA label="Till Portalen" onClick={onComplete} />
       </div>
     </div>
   )

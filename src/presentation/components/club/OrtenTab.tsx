@@ -5,7 +5,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { SectionCard } from '../SectionCard'
 import { InfoRow } from '../primitives'
-import { csColor, formatDecimalComma } from '../../utils/formatters'
+import { formatDecimalComma } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 import { readClubLedger } from '../../../domain/services/eventLedgerService'
 import { buildMemoryEventFromLedger } from '../../../domain/services/clubMemoryService'
@@ -13,7 +13,7 @@ import { OrtenMap } from './OrtenMap'
 import { generateVolunteerRoster, getActiveVolunteerBonus, getVolunteerProfile } from '../../../domain/services/volunteerService'
 import { COMMUNITY_ACTIVITY_ACTIVATION_COSTS } from '../../../domain/services/economyService'
 import { ACTIVITY_CS_BOOST } from '../../../domain/services/communityRenewalService'
-import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
+import { CommunityPulseMeter } from './CommunityPulseMeter'
 import { SUPPORTER_ROLE_LABELS } from '../../../domain/data/enumLabels'
 import { BarChart3, ClipboardList, FilePenLine } from 'lucide-react'
 import {
@@ -88,7 +88,6 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
     if (result.success) setTimeout(() => setActivityFeedback(null), 2500)
   }
 
-  const cs = game.communityStanding ?? 50
   // liggare-ny-community-shift DEL 2 (Orten-vyn, konsument 3 av 4): ingen ny
   // prosa — samma buildMemoryEventFromLedger/text som Krönikan och
   // Portal/Berättaren redan renderar (DEL 1, 2026-09-07). Senaste vändningen
@@ -142,24 +141,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
 
       {/* Bygdens puls */}
       <SectionCard title="🏠 Bygdens puls" stagger={1}>
-        {/* Puls-hero med trendpil */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: 40, fontWeight: 300, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
-          {(() => {
-            const delta = game.communityStandingDelta ?? 0
-            if (delta > 0) return <span style={{ fontSize: 20, color: 'var(--success)' }}>▲</span>
-            if (delta < 0) return <span style={{ fontSize: 20, color: 'var(--danger)' }}>▼</span>
-            return <span style={{ fontSize: 20, color: 'var(--text-muted)' }}>—</span>
-          })()}
-          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <p className="h-label">SÄSONG</p>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{seasonSpanLabel(game.currentSeason)}</p>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
-          <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
-          <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
-        </div>
+        <CommunityPulseMeter game={game} />
         {latestShiftText && (
           <p className="h-quote-sm" style={{ marginBottom: 10 }}>
             {latestShiftText}

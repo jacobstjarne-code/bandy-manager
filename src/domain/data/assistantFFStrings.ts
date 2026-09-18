@@ -15,7 +15,7 @@ export const ASSISTANT_FF_LINES = {
       'Han tog den nära — trängde ihop det vid första stolpen.',
     ],
     center: [
-      'Assistenten slog ut den mot mitten. Skytten stod klar vid linjen.',
+      'En perfekt passning mot mitten. Skytten stod klar.',
       'Rakt ut till linjen — assistenten litade på skytten.',
       'Han la den mot mitten. Direktskott eller inget.',
     ],

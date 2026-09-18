@@ -12,7 +12,7 @@ import { Check, ArrowLeftRight, Clock, Zap, Activity, Ban, Newspaper, Graduation
 import { PlayerLink } from '../components/PlayerLink'
 import { Dot, dotColor, type DotColor } from '../components/shared/Dot'
 import { Icon } from '../components/primitives/Icon'
-import { getInboxGroup as getGroup, type InboxGroup } from '../../domain/services/inboxPresentationService'
+import { getInboxGroup as getGroup, getOpenIncomingBidForInboxItem, isDeliverableInboxItem, type InboxGroup } from '../../domain/services/inboxPresentationService'
 
 // ── Fynd 12 + PC-5: agerbara poster routar till sin handlingsyta ──
 // Förfrågningar MED egen yta länkas dit (Övergångar, Trupp, Klubb) i stället för
@@ -129,6 +129,8 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
   const hasBody = Boolean(item.body?.trim())
   const isCoach = item.tone === 'coach'
   const actionRoute = inboxActionRoute(item.type)
+  const isOpenBid = expiresRound != null && (item.type === InboxItemType.TransferBidReceived || item.type === InboxItemType.TransferOffer)
+  const isScoutReport = item.type === InboxItemType.ScoutReport
   const isActionable = actionRoute != null
   // En post ser klickbar ut bara om den faktiskt gör något: routar, expanderar,
   // eller är oläst (klick = kvittera). Rena lästa rubriker blir inert (fynd 12).
@@ -136,7 +138,10 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
 
   function handleClick() {
     if (!item.isRead) setTimeout(() => onRead(item.id), 300)
-    if (actionRoute) { navigate(actionRoute); return }
+    if (actionRoute) {
+      navigate(actionRoute, isOpenBid ? { state: { tab: 'marknad', highlightPlayer: item.relatedPlayerId } } : undefined)
+      return
+    }
     if (hasBody) setExpanded(e => !e)
   }
 
@@ -203,9 +208,18 @@ function InboxRow({ item, onRead, index, playerName, expiresRound }: RowProps) {
             {item.licenseZoneLabel}
           </p>
         )}
-        {playerName && item.relatedPlayerId && (
-          <PlayerLink playerId={item.relatedPlayerId} name={playerName} style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }} />
-        )}
+        {isOpenBid || isScoutReport ? (
+          <button type="button" onClick={event => {
+            event.stopPropagation()
+            if (!item.isRead) setTimeout(() => onRead(item.id), 300)
+            navigate('/game/transfers', { state: isOpenBid ? { tab: 'marknad', highlightPlayer: item.relatedPlayerId } : { tab: 'scouting' } })
+          }} style={{ display: 'inline-block', marginTop: 3, padding: 0, border: 0, background: 'none',
+            color: 'var(--accent)', fontSize: 11, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            {isOpenBid ? 'Svara på bud ›' : 'Visa scoutrapporter ›'}
+          </button>
+        ) : playerName && item.relatedPlayerId ? (
+          <PlayerLink playerId={item.relatedPlayerId} name="Visa spelare" style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }} />
+        ) : null}
       </div>
 
       {/* Deadline pill (KRÄVER SVAR items with expiry) */}
@@ -510,17 +524,13 @@ export function InboxScreen() {
   }
 
   function getExpiresRound(item: InboxItem): number | undefined {
-    if (item.type !== InboxItemType.TransferBidReceived && item.type !== InboxItemType.TransferOffer) return undefined
-    const bid = game!.transferBids.find(
-      b => b.playerId === item.relatedPlayerId && b.direction === 'incoming' && b.status === 'pending',
-    )
-    return bid?.expiresRound ?? undefined
+    return getOpenIncomingBidForInboxItem(item, game!)?.expiresRound ?? undefined
   }
 
   // MatchResult items stay in game.inbox (inboxToPortal uses them) but aren't shown here —
   // Granska is the authoritative match result surface.
   const visible = [...game.inbox]
-    .filter(i => i.type !== InboxItemType.MatchResult)
+    .filter(i => i.type !== InboxItemType.MatchResult && isDeliverableInboxItem(i, game))
     .sort((a, b) => b.date.localeCompare(a.date))
 
   const sorted = visible  // alias for downstream refs

@@ -486,6 +486,27 @@ export function executeTransfer(
 
   const fanMoodPenalty = isAcademyProduct && isSoldFromManagedClub ? -8 : 0
 
+  // En redan sparad matchuppställning får inte behålla en såld spelare som
+  // startspelare, avbytare, kapten eller i formationens slot-karta. Lämna
+  // platsen tom så tränaren kan välja ersättare inför nästa match.
+  const pendingLineup = game.managedClubPendingLineup
+  const updatedPendingLineup = isSoldFromManagedClub && pendingLineup
+    ? {
+        ...pendingLineup,
+        startingPlayerIds: pendingLineup.startingPlayerIds.filter(id => id !== playerId),
+        benchPlayerIds: pendingLineup.benchPlayerIds.filter(id => id !== playerId),
+        captainPlayerId: pendingLineup.captainPlayerId === playerId ? undefined : pendingLineup.captainPlayerId,
+        tactic: pendingLineup.tactic.lineupSlots
+          ? {
+              ...pendingLineup.tactic,
+              lineupSlots: Object.fromEntries(
+                Object.entries(pendingLineup.tactic.lineupSlots).map(([slotId, id]) => [slotId, id === playerId ? null : id]),
+              ),
+            }
+          : pendingLineup.tactic,
+      }
+    : pendingLineup
+
   // SKALA-BUGGEN steg B (2026-09-02) — rot: läste f.roundNumber (tävlings-
   // relativt: liga 1-22, cup 1-4, slutspel egen skala) och tog max över ALLA
   // fixturetyper utan diskriminant, så FinanceEntry.round blev en oskalad
@@ -554,6 +575,8 @@ export function executeTransfer(
     ...game,
     players: updatedPlayers,
     clubs: updatedClubs,
+    managedClubPendingLineup: updatedPendingLineup,
+    captainPlayerId: isSoldFromManagedClub && game.captainPlayerId === playerId ? undefined : game.captainPlayerId,
     transferBids: updatedBids,
     financeLog: updatedFinanceLog,
     seasonNetTransferSpend: updatedSeasonNetTransferSpend,

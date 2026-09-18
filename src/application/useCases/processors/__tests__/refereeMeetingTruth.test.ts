@@ -36,6 +36,14 @@ describe('refereeMeeting — O11:s text/state-kontrakt', () => {
     ])
   })
 
+  it('visar båda relationernas riktning utan att färgmärka något som rätt val', () => {
+    expect(buildRefereeMeetingChoices('ref_truth').map(choice => choice.impactPreview)).toEqual([
+      [{ label: 'Domaren', direction: 'up' }, { label: 'Klacken', direction: 'down' }],
+      [{ label: 'Ingen förändring', direction: 'unchanged' }],
+      [{ label: 'Domaren', direction: 'down' }, { label: 'Klacken', direction: 'up' }],
+    ])
+  })
+
   it('matchsimuleringen bevarar den uppdaterade domarhistoriken i sitt resultat', () => {
     const base = createNewGame({ managerName: 'Test', clubId: 'club_heros', season: 2025, seed: 23 })
     const fixture = base.fixtures.find(candidate =>

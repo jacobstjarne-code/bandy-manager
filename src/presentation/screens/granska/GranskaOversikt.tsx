@@ -237,6 +237,7 @@ interface GranskaOversiktProps {
   penResult: { home: number; away: number } | undefined
   keyMoments: MatchEvent[]
   pendingEvents: GameEvent[]
+  refereeMeeting?: GameEvent
   resolvedEventIds: Set<string>
   chosenLabels: Record<string, string>
   chosenOutcomes: Record<string, string>
@@ -260,7 +261,7 @@ interface GranskaOversiktProps {
 export function GranskaOversikt({
   game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
-  keyMoments, pendingEvents, resolvedEventIds, chosenLabels, chosenOutcomes, fadeIn, onChoice, onResolve,
+  keyMoments, pendingEvents, refereeMeeting, resolvedEventIds, chosenLabels, chosenOutcomes, fadeIn, onChoice, onResolve,
   rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults, onOpenReport, axes,
 }: GranskaOversiktProps) {
   const navigate = useNavigate()
@@ -298,9 +299,9 @@ export function GranskaOversikt({
           <div style={{
             background: getHeroWeatherBg(game.matchWeathers?.find(mw => mw.fixtureId === fixture.id)?.weather.condition),
             backgroundImage: 'radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--match-gold) 8%, transparent), transparent 60%)',
-            padding: '26px 20px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0',
+            padding: '23px 20px 14px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0',
           }}>
-            <div className="h-scene-genre" style={{ color: 'var(--match-gold)', opacity: 0.8, marginBottom: 20 }}>
+            <div className="h-scene-genre" style={{ color: 'var(--match-gold)', opacity: 0.8, marginBottom: 15 }}>
               ⬩ &nbsp;Slutsignal&nbsp; ⬩
             </div>
             <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(7px, 2.5vw, 18px)', marginBottom: 6 }}>
@@ -329,7 +330,7 @@ export function GranskaOversikt({
             )}
 
             <span style={{
-              display: 'inline-block', margin: '8px 0 16px', padding: '3px 12px', borderRadius: 99,
+              display: 'inline-block', margin: '8px 0 8px', padding: '3px 12px', borderRadius: 99,
               background: won ? 'color-mix(in srgb, var(--match-positive) 14%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 14%, transparent)' : 'rgba(245,241,235,0.08)',
               border: `1px solid ${won ? 'color-mix(in srgb, var(--match-positive) 35%, transparent)' : lost ? 'color-mix(in srgb, var(--danger) 35%, transparent)' : 'rgba(245,241,235,0.2)'}`,
               color: won ? 'var(--match-positive)' : resultColor, fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
@@ -353,12 +354,12 @@ export function GranskaOversikt({
             <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, background: 'linear-gradient(90deg,transparent,color-mix(in srgb, var(--ice) 50%, transparent),transparent)' }} />
           </div>
 
-          <div style={{ padding: '16px 14px 16px', textAlign: 'center' }}>
+          <div style={{ padding: '12px 14px 13px', textAlign: 'center' }}>
             {potm && potmRating != null && (
-              <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>⭐ {potm.firstName} {potm.lastName} · {formatRating(potmRating)}</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-dark)' }}>⭐ {potm.firstName} {potm.lastName} · {formatRating(potmRating)}</p>
             )}
             {fixture.attendance != null && (
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
             )}
             {/* SLUTTEST RUNDA 4 (punkt 2): fixture.arenaName läses FÖRST (satt av
                 cupService.ts/playoffService.ts för neutral-plan-matcher — "Sävstaås
@@ -369,11 +370,11 @@ export function GranskaOversikt({
                 neutral-plan-matcher (!fixture.isNeutralVenue-gaten) sedan RUNDA 3
                 satte isNeutralVenue även på cupens semi/final. */}
             {fixture.arenaName ? (
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, fontStyle: 'italic' }}>
                 Spelades på {fixture.arenaName}{fixture.venueCity ? ` i ${fixture.venueCity}` : ''}
               </p>
             ) : homeClub?.arenaName && (
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {formatArenaName(homeClub.arenaName)}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, fontStyle: 'italic' }}>Spelades på {formatArenaName(homeClub.arenaName)}</p>
             )}
 
             {/* Match summary */}
@@ -392,7 +393,7 @@ export function GranskaOversikt({
               }
               const summary = generateQuickSummary(fixture, isHome, game.players, axes.tavlingstyp, axes.skede)
               return summary ? (
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 9, padding: '8px 10px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
                   {summary}
                 </p>
               ) : null
@@ -417,13 +418,15 @@ export function GranskaOversikt({
               // penResult-grenen har egen färglogik (straff → alltid won/lost, ingen neutral)
               if (penResult) {
                 return (
-                  <div style={{ marginTop: 12, paddingTop: 11, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
+                  // adherence-semantic-key: grön/röd text anger vinst eller förlust efter straffar.
+                  <div style={{ marginTop: 10, paddingTop: 9, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
                     {flavorText}
                   </div>
                 )
               }
               return (
-                <div style={{ marginTop: 12, paddingTop: 11, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                // adherence-semantic-key: grön/röd text anger matchens utfall; oavgjort är neutralt.
+                <div style={{ marginTop: 10, paddingTop: 9, borderTop: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--text-secondary)' }}>
                   {flavorText}
                 </div>
               )
@@ -439,7 +442,9 @@ export function GranskaOversikt({
             {keyMoments.map((e, i) => {
               const isHomeEvent = e.clubId === fixture?.homeClubId
               const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
-              const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
+              const scorerName = scorer
+                ? `${scorer.firstName[0]}. ${scorer.lastName}`
+                : game.clubs.find(club => club.id === e.clubId)?.shortName ?? 'Motståndaren'
               const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🥅') : '⏱️'
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: isHomeEvent ? 'flex-start' : 'flex-end', gap: 5 }}>
@@ -749,7 +754,7 @@ export function GranskaOversikt({
 
       {/* Domarmöte. GRANSKA DEL 4 (2026-08-12): registrerad, ✓ i alla lägen. */}
       {visasFor('refereeMeeting', axes.tavlingstyp, axes.skede) && (() => {
-        const rm = game.pendingRefereeMeeting
+        const rm = refereeMeeting
         if (!rm) return null
         return (
           <DecisionCard

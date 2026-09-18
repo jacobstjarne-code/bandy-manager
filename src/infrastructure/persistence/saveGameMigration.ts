@@ -192,10 +192,12 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     if (regionalPapers.length > 0 && !regionalPapers.includes(String(data.localPaperName ?? ''))) {
       const regionalPaper = regionalPapers[0]
       data.localPaperName = regionalPaper
-      if (data.journalist && typeof data.journalist === 'object') {
-        const journalist = data.journalist as Record<string, unknown>
-        journalist.outlet = regionalPaper
-      }
+    }
+    // En äldre save kan redan ha rätt localPaperName men ett annat outlet på
+    // journalisten. Båda ytorna ska använda samma regionala redaktion.
+    if (data.journalist && typeof data.journalist === 'object') {
+      const journalist = data.journalist as Record<string, unknown>
+      journalist.outlet = data.localPaperName
     }
   }
 

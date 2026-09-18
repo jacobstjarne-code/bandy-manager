@@ -4,6 +4,8 @@
 // verifieras i orsakVerkanService.test.ts.
 import { describe, it, expect } from 'vitest'
 import { transferActions } from '../transferActions'
+import { processScouts } from '../../../../application/useCases/processors/scoutProcessor'
+import { processTransferBids } from '../../../../application/useCases/processors/transferProcessor'
 import { bidReceivedEvent } from '../../../../domain/services/events/eventFactories'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import type { TransferBid } from '../../../../domain/entities/GameEvent'
@@ -172,6 +174,65 @@ describe('ÖVERLÄMNING 2: respondToIncomingBid sammanslagen med resolveEvent', 
   })
 })
 
+describe('Sälj — ett aktivt bud per spelare', () => {
+  it('skapar ett bud första gången men inte ett till vid upprepat klick', () => {
+    const store = makeStore(makeGame())
+    const actions = transferActions(store.get, store.set)
+
+    expect(actions.listPlayerForSale('berg').success).toBe(true)
+    const firstBid = store.getGame()?.transferBids?.[0]
+    expect(firstBid).toMatchObject({ playerId: 'berg', direction: 'incoming', status: 'pending' })
+    expect(actions.listPlayerForSale('berg')).toMatchObject({ success: false })
+    expect(store.getGame()?.transferBids).toHaveLength(1)
+    expect(store.getGame()?.pendingEvents).toHaveLength(1)
+  })
+
+  it('kan bjuda ut spelaren igen när det förra budet inte längre väntar på svar', () => {
+    const store = makeStore(makeGame({ transferBids: [makeBid({ status: 'rejected' })] }))
+    const result = transferActions(store.get, store.set).listPlayerForSale('berg')
+
+    expect(result.success).toBe(true)
+    expect(store.getGame()?.transferBids).toHaveLength(2)
+  })
+
+  it('avvisar försök att bjuda ut en spelare som inte tillhör klubben', () => {
+    const store = makeStore(makeGame({ players: [makePlayer(), makePlayer({ id: 'other', clubId: 'c2' })] }))
+    const result = transferActions(store.get, store.set).listPlayerForSale('other')
+
+    expect(result.success).toBe(false)
+    expect(store.getGame()?.transferBids).toHaveLength(0)
+  })
+
+  it('tar bort en såld spelare ur trupp och sparad uppställning via Marknads accepteraknapp', () => {
+    const store = makeStore(makeGame({
+      captainPlayerId: 'berg',
+      managedClubPendingLineup: {
+        startingPlayerIds: ['berg'],
+        benchPlayerIds: ['berg'],
+        captainPlayerId: 'berg',
+        tactic: { ...defaultTactic, lineupSlots: { forward: 'berg', keeper: null } },
+      },
+    }))
+    const actions = transferActions(store.get, store.set)
+    expect(actions.listPlayerForSale('berg').success).toBe(true)
+    expect(store.getGame()?.players.find(p => p.id === 'berg')?.clubId).toBe('c1')
+    const bidId = store.getGame()!.transferBids[0].id
+
+    expect(actions.respondToIncomingBid(bidId, 'accept').success).toBe(true)
+
+    const after = store.getGame()!
+    expect(after.players.find(p => p.id === 'berg')?.clubId).toBe('c2')
+    expect(after.clubs.find(c => c.id === 'c1')?.squadPlayerIds).not.toContain('berg')
+    expect(after.clubs.find(c => c.id === 'c2')?.squadPlayerIds).toContain('berg')
+    expect(after.players.filter(p => p.clubId === after.managedClubId).map(p => p.id)).not.toContain('berg')
+    expect(after.managedClubPendingLineup?.startingPlayerIds).not.toContain('berg')
+    expect(after.managedClubPendingLineup?.benchPlayerIds).not.toContain('berg')
+    expect(after.managedClubPendingLineup?.captainPlayerId).toBeUndefined()
+    expect(after.managedClubPendingLineup?.tactic.lineupSlots?.forward).toBeNull()
+    expect(after.captainPlayerId).toBeUndefined()
+  })
+})
+
 // O5 kraft 1 (Jacobs dom 2026-08-17, byggd 2026-08-23): renewContract-
 // golvet skalar nu med klubbens rykte istf. vara en ren currentAbility-
 // funktion. berg: currentAbility 72, isFullTimePro (inget dayJob).
@@ -253,6 +314,69 @@ describe('renewContract — loggar till financeLog (Framgångskurvan steg 3, del
 })
 
 describe('transferflödets rotfixar', () => {
+  it('skickat bud syns som väntande och får ett svar nästa omgång', () => {
+    const target = makePlayer({ id: 'target', clubId: 'c2', marketValue: 200_000, salary: 14_000 })
+    const base = makeGame({ players: [makePlayer(), target] })
+    const game = {
+      ...base,
+      fixtures: [{ id: 'next', homeClubId: 'c1', awayClubId: 'c2', status: 'scheduled', matchday: 15 }] as SaveGame['fixtures'],
+      scoutReports: { target: { playerId: 'target', clubId: 'c2', scoutedSeason: 2025 } } as SaveGame['scoutReports'],
+    }
+    const store = makeStore(game)
+    // Ett avsiktligt lågt bud ger ett deterministiskt avslag i stället för
+    // ett slumpmässigt motbud; här verifieras hela omgångskopplingen.
+    const sent = transferActions(store.get, store.set).placeOutgoingBid('target', 1, 25_000, 2)
+    expect(sent.success).toBe(true)
+    expect(store.getGame()?.transferBids).toContainEqual(expect.objectContaining({ playerId: 'target', status: 'pending', expiresRound: 15 }))
+
+    const next = processTransferBids(store.getGame()!, store.getGame()!.players, 15, '2025-09-22', () => 0.9)
+    expect(next.allBids.find(bid => bid.playerId === 'target')?.status).toBe('rejected')
+    expect(next.inboxItems.some(item => item.title.includes('Anders Berg'))).toBe(true)
+  })
+
+  it('följer en utvärdering genom två omgångar till rapport och inkorg utan extra scoutkostnad', () => {
+    const target = makePlayer({ id: 'target', clubId: 'c2' })
+    const store = makeStore(makeGame({ players: [makePlayer(), target] }))
+    const actions = transferActions(store.get, store.set)
+    const started = actions.startEvaluation('target', 'c2', false, false)
+
+    expect(started).toMatchObject({ success: true, roundsRemaining: 2 })
+    expect(store.getGame()?.scoutBudget).toBe(9)
+    expect(store.getGame()?.scoutReports?.target).toBeUndefined()
+    expect(actions.startTalentSearch('any', 30, 20_000, 14).success).toBe(false)
+
+    const first = processScouts(store.getGame()!, store.getGame()!.players, 15, 7, () => 0.6)
+    store.set({ game: { ...store.getGame()!, activeScoutAssignment: first.updatedScoutAssignment, scoutReports: first.updatedScoutReports } })
+    expect(store.getGame()?.activeScoutAssignment?.roundsRemaining).toBe(1)
+    expect(first.inboxItems).toHaveLength(0)
+
+    const second = processScouts(store.getGame()!, store.getGame()!.players, 16, 7, () => 0.6)
+    expect(second.updatedScoutAssignment).toBeNull()
+    expect(second.updatedScoutReports.target?.playerId).toBe('target')
+    expect(second.inboxItems).toEqual([expect.objectContaining({ title: 'Scoutrapport: Anders Berg', relatedPlayerId: 'target' })])
+    expect(store.getGame()?.scoutBudget).toBe(9)
+  })
+
+  it('följer en talangspaning genom två omgångar och ger agerbara namn', () => {
+    const target = makePlayer({ id: 'target', clubId: 'c2', age: 22, salary: 12_000 })
+    const store = makeStore(makeGame({ players: [makePlayer(), target] }))
+    const actions = transferActions(store.get, store.set)
+    expect(actions.startTalentSearch('any', 30, 20_000, 14).success).toBe(true)
+    expect(store.getGame()?.scoutBudget).toBe(8)
+    expect(actions.startEvaluation('target', 'c2', false).success).toBe(false)
+
+    const first = processScouts(store.getGame()!, store.getGame()!.players, 15, 7, () => 0.6)
+    store.set({ game: { ...store.getGame()!, activeTalentSearch: first.updatedTalentSearch, talentSearchResults: first.updatedTalentResults } })
+    expect(store.getGame()?.activeTalentSearch?.roundsRemaining).toBe(1)
+    expect(first.updatedTalentResults).toHaveLength(0)
+
+    const second = processScouts(store.getGame()!, store.getGame()!.players, 16, 7, () => 0.6)
+    expect(second.updatedTalentSearch).toBeNull()
+    expect(second.updatedTalentResults.at(-1)?.players).toContainEqual(expect.objectContaining({ playerId: 'target' }))
+    expect(second.inboxItems).toContainEqual(expect.objectContaining({ title: 'Spaningsrapport klar' }))
+    expect(store.getGame()?.scoutBudget).toBe(8)
+  })
+
   it('löser en nollrundors scouting direkt och returnerar samma väntetid som lagras', () => {
     const target = makePlayer({ id: 'target', clubId: 'c2' })
     const game = makeGame({

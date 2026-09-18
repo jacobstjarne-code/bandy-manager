@@ -61,7 +61,7 @@ import { MatchFlowFrame } from '../../components/match-flow/MatchFlowFrame'
 import { seasonSpanLabel } from '../../../domain/utils/seasonYear'
 import { SiffrorDrawer } from '../../components/match/SiffrorDrawer'
 import { InteraktionsDock } from '../../components/match/InteraktionsDock'
-import { buildCeremonyOnlyStep, findRecoverableLiveFixture, getLiveMatchResumePoint, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import { applyLastMinutePressDecision, buildCeremonyOnlyStep, findRecoverableLiveFixture, getChosenLivePress, getLiveMatchResumePoint, getSubstitutionFeedRow, shouldIncludeMatchStepInFeed, shouldEndMatchAfterStep } from '../matchLiveHelpers'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 import { getCharacterName } from '../../../domain/services/supporterService'
 import { shouldPauseAtHalftime } from '../../utils/matchFlowMode'
@@ -778,6 +778,7 @@ export function MatchLiveScreen() {
     newHomeScore: number,
     newAwayScore: number,
     atStep: number,
+    pressChoice?: PressChoice,
   ): MatchStep[] | null {
     if (!game || !fixture || !homeLineup || !awayLineup) return null
     const managedIsHome = fixture.homeClubId === game.managedClubId
@@ -811,6 +812,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
       matchProfile: currentStepData.matchProfile,
       managedIsHome,
+      livePressChoice: pressChoice ?? getChosenLivePress(steps),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []
@@ -1125,8 +1127,10 @@ export function MatchLiveScreen() {
     }, isFastForward ? 0 : outcome.type === 'goal' ? 4000 : 2500)
   }
 
-  function handleLastMinutePressChoice(_choice: PressChoice) {
+  function handleLastMinutePressChoice(choice: PressChoice) {
+    if (lastMinutePressResolved.current) return
     lastMinutePressResolved.current = true
+    setSteps(prev => applyLastMinutePressDecision(prev, currentStep, choice, regenerateRemainderWithUpdatedScore))
     // Valet äger bara upplösningen; stegtimern äger progressionen.
     setTimeout(() => {
       setActiveLastMinutePress(null)
@@ -1302,6 +1306,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensionTimers: currentMatchStep.activeSuspensions.awayTimers,
       matchProfile: currentMatchStep.matchProfile,
       managedIsHome,
+      livePressChoice: getChosenLivePress(steps),
     }, fromStep, inSecondHalf)
 
     const newRemainder: MatchStep[] = []

@@ -10,12 +10,17 @@ import { stringHash } from '../utils/random'
  * låter likadana. Code fixar separat event-id:t så samma spelare inte re-fyrar
  * över omgångar; det här dödar upprepningen MELLAN spelare.
  *
- * Språksvep 4 B (2026-09-12): tre av raderna gör ett tidspåstående ("två år",
+ * Språksvep 4 B (2026-09-12): tre rader gör ett tidspåstående ("två år",
  * "gav det tre", "sedan han var tolv") som valdes på hash oavsett spelarens
- * verkliga akademitid — en 16-åring kunde få "två års väntan". Poolen är nu
- * delad: tidsneutrala rader gäller alla; tidsbundna rader kräver att
- * anroparen skickar `seasonsInAcademy` och att talet håller. Utan argument
- * (äldre anropare) används bara den neutrala poolen — hellre tyst än falsk.
+ * verkliga akademitid — en 16-åring kunde få "två års väntan".
+ *
+ * Historik: raderna ströks först (2026-09-12 fm) sedan verifieringen visade
+ * att joinedClubSeason sätts till UPPFLYTTNINGSsäsongen, inte inträdet —
+ * differensen blev alltid 0. Samma dag byggde Code fältet `academyJoinedSeason`
+ * på Player (academyService.ts:buildPromotedPlayerFromYouth), som bevarar
+ * P19-inträdet genom uppflyttningen just för det här ändamålet. Raderna är
+ * därför ÅTERINFÖRDA och gatade på den faktiska akademitiden, beräknad ur
+ * det fält som överlever. Saknas fältet (äldre saves) → bara neutrala rader.
  *
  * Rösten: akademitränaren som går i god för grabben. Bandysvensk
  * understatement, ingen klyscha, ingen AI-ton. SVENSK TEXT AV OPUS — Code
@@ -31,7 +36,7 @@ const NEUTRAL_QUOTES: readonly string[] = [
   'Det är inte tur. Det har suttit i honom hela tiden — vi la bara inte fingrarna emellan.',
 ]
 
-/** Rader som bara är sanna vid minst så många säsonger i akademin. */
+/** Rader som bara är sanna vid minst så många hela säsonger i akademin. */
 const TENURE_QUOTES: ReadonlyArray<{ minSeasons: number; text: string }> = [
   { minSeasons: 2, text: 'Han har varit den mest hungrige på träning i två år. Det är inte tur.' },
   { minSeasons: 3, text: 'Vi sa åt honom att ge det ett år till. Han gav det tre. Nu betalar det sig.' },
@@ -41,10 +46,25 @@ const TENURE_QUOTES: ReadonlyArray<{ minSeasons: number; text: string }> = [
 /**
  * Returnerar en genombrottsreplik, deterministiskt vald ur playerId så att en
  * given spelare alltid får samma rad men olika spelare får olika.
- * `seasonsInAcademy` (hela säsonger i klubbens akademi vid genombrottet)
- * öppnar de tidsbundna raderna; utelämnad → bara neutrala rader.
+ *
+ * Tidsbundna rader öppnas bara när akademitiden faktiskt bär dem. Skicka
+ * spelarens `academyJoinedSeason` (P19-inträdet, bevarat genom uppflyttningen)
+ * och genombrottets `currentSeason`; är fältet undefined (äldre saves) faller
+ * anropet tillbaka till enbart de neutrala raderna — hellre tyst än falsk.
+ * Den råa `seasonsInAcademy` kan skickas direkt i stället, för anropare som
+ * redan har talet.
  */
-export function academyBreakthroughQuote(playerId: string, seasonsInAcademy?: number): string {
+export function academyBreakthroughQuote(
+  playerId: string,
+  opts?: { academyJoinedSeason?: number; currentSeason?: number } | number,
+): string {
+  const seasonsInAcademy =
+    typeof opts === 'number'
+      ? opts
+      : opts?.academyJoinedSeason !== undefined && opts?.currentSeason !== undefined
+        ? opts.currentSeason - opts.academyJoinedSeason
+        : undefined
+
   const pool = [
     ...NEUTRAL_QUOTES,
     ...TENURE_QUOTES

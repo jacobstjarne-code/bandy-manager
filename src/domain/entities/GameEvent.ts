@@ -85,6 +85,8 @@ export interface EventChoice {
    * Exakta tal är förbjudna här utom pengar; de faktiska icke-pengadeltana
    * skrivs efter resolution till ResolvedChoice.outcomeDeltas. */
   subtitle?: string
+  /** Sakliga, icke-värderande riktningar för val som påverkar flera relationer. */
+  impactPreview?: { label: string; direction: 'up' | 'down' | 'unchanged' }[]
   /** D1 punkt 3. 'neutral'/'positive' visar ALDRIG en markör (facit-förbud,
    *  O12 — att märka ut det goda valet är facit). 'costly' visar costLabel.
    *  ALDRIG --danger eller ⚠ i renderingslagret — hård spärr i domen: rött

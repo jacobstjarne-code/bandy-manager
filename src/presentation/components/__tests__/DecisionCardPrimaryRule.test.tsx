@@ -24,6 +24,27 @@ describe('beslutskortens primärregel', () => {
     expect(html).not.toContain('btn-primary')
   })
 
+  it('visar motriktade följder men behåller likvärdiga valknappar', () => {
+    const html = renderToStaticMarkup(
+      <DecisionCard
+        label="Domarmöte"
+        body="Hur svarar du?"
+        resolved={false}
+        choices={[
+          { id: 'respect', label: 'Respektera', impactPreview: [{ label: 'Domaren', direction: 'up' }, { label: 'Klacken', direction: 'down' }], effect: { type: 'noOp' } },
+          { id: 'neutral', label: 'Neutral', impactPreview: [{ label: 'Ingen förändring', direction: 'unchanged' }], effect: { type: 'noOp' } },
+        ]}
+        onChoose={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('Domaren ↑')
+    expect(html).toContain('Klacken ↓')
+    expect(html).toContain('Ingen förändring')
+    expect(html.match(/btn-outline/g)).toHaveLength(2)
+    expect(html).not.toContain('btn-primary')
+  })
+
   it('visar exakt den uttryckligen valda vägen som kopparprimär', () => {
     const html = renderToStaticMarkup(
       <DecisionCard

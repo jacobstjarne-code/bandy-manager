@@ -17,14 +17,14 @@ import { PlayerLedgerPanel } from './PlayerLedgerPanel'
 import { buildPlayerLedger, buildTransferRivalryWarning } from '../../../domain/services/playerTransferLedgerService'
 import '../../styles/match-flow.css'
 
-const PERF_DOTS = Array.from({ length: 8 })
-
 interface BidModalProps {
   player: Player
   game: SaveGame
   managedClub: { transferBudget: number; finances: number }
   onClose: () => void
   onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number, terms: ContractTermOffer) => void
+  error?: string | null
+  onEdit?: () => void
   rivalry?: Rivalry | null
   mode?: 'transfer' | 'freeAgent'
   salaryRange?: { min: number; max: number }
@@ -40,14 +40,14 @@ interface BidModalProps {
 }
 
 export function BidModal({
-  player, game, managedClub, onClose, onConfirm, rivalry, mode = 'transfer', salaryRange, availableTransferBudget,
+  player, game, managedClub, onClose, onConfirm, error, onEdit, rivalry, mode = 'transfer', salaryRange, availableTransferBudget,
   availableTerms = [], jobGuaranteeSponsor, imageRightsSponsor, minSalary,
 }: BidModalProps) {
   const isFreeAgent = mode === 'freeAgent'
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
   const [offerAmount, setOfferAmount] = useState(isFreeAgent ? 0 : suggestedBid)
   const [offeredSalary, setOfferedSalary] = useState(
-    isFreeAgent && salaryRange ? salaryRange.max : Math.round(player.salary / 500) * 500,
+    isFreeAgent && salaryRange ? salaryRange.max : Math.max(Math.round(player.salary / 500) * 500, minSalary ?? 0),
   )
   const [contractYears, setContractYears] = useState(3)
   const [terms, setTerms] = useState<ContractTermOffer>({})
@@ -61,8 +61,8 @@ export function BidModal({
     : null
 
   return (
-    <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={430} zIndex="var(--z-modal)" backdropPadding="20px">
-      <div className="transfers-modal-box transfers-modal-shell">
+    <Overlay onClose={onClose} ariaLabel={`${isFreeAgent ? 'Värva' : 'Lägg bud på'} ${player.firstName} ${player.lastName}`} maxWidth={390} zIndex="var(--z-modal)" backdropPadding="20px">
+      <div className="transfers-modal-box transfers-modal-shell transfers-bid-modal">
         <div className="transfers-modal-header-sm transfers-modal-header-pad">
           <div>
             <h3 className="transfers-modal-title">{isFreeAgent ? 'Värva' : 'Lägg bud'}</h3>
@@ -71,9 +71,6 @@ export function BidModal({
           <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
         <div className="transfers-modal-body">
-          <div className="mf-margin" aria-hidden="true">
-            {PERF_DOTS.map((_, i) => <div key={i} className="mf-perf" />)}
-          </div>
           <div className="transfers-modal-content">
             {contextClub && (
               <PlayerLedgerPanel
@@ -90,8 +87,8 @@ export function BidModal({
             </div>
             {!isFreeAgent && (
               <div className="transfers-form-group">
-                <label className="transfers-label">Budsumma (kr)</label>
-                <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
+                <label className="transfers-label">Budsumma (tkr)</label>
+                <input type="number" value={Math.round(offerAmount / 1000)} onChange={e => { setOfferAmount(Number(e.target.value) * 1000); onEdit?.() }} step={5}
                   className="transfers-input" />
               </div>
             )}
@@ -102,7 +99,7 @@ export function BidModal({
                   internt (samma enhet onConfirm förväntar), bara in/ut-
                   konverteringen är i tkr. */}
               <label className="transfers-label">Erbjuden lön (tkr/mån)</label>
-              <input type="number" value={Math.round(offeredSalary / 1000)} onChange={e => setOfferedSalary(Number(e.target.value) * 1000)} step={1}
+              <input type="number" value={Math.round(offeredSalary / 1000)} onChange={e => { setOfferedSalary(Number(e.target.value) * 1000); onEdit?.() }} step={1}
                 className="transfers-input" />
             </div>
             <div className="transfers-form-group transfers-form-group--lg">
@@ -111,7 +108,7 @@ export function BidModal({
                 {[1, 2, 3].map(y => (
                   <button
                     key={y}
-                    onClick={() => setContractYears(y)}
+                    onClick={() => { setContractYears(y); onEdit?.() }}
                     className={`btn btn-outline transfers-year-btn ${contractYears === y ? 'transfers-year-btn--selected' : ''}`}
                   >
                     {y} år
@@ -124,7 +121,7 @@ export function BidModal({
                 <ContractTermChips
                   availableTerms={availableTerms}
                   terms={terms}
-                  onChange={setTerms}
+                  onChange={next => { setTerms(next); onEdit?.() }}
                   requiredSalary={requiredSalary}
                   jobGuaranteeSponsor={jobGuaranteeSponsor}
                   imageRightsSponsor={imageRightsSponsor}
@@ -142,12 +139,13 @@ export function BidModal({
             )}
             {!isFreeAgent && availableBudget < offerAmount && <p className="transfers-error-text">Otillräcklig tillgänglig transferbudget</p>}
             {!isFreeAgent && availableBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p className="transfers-error-text">Budet skulle föra kassan under −100 tkr</p>}
+            {error && <p role="alert" className="transfers-error-text">{error}</p>}
           </div>
         </div>
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears, terms)}
           disabled={!canAfford}
-          className="btn btn-primary mf-stamp"
+          className="btn btn-primary transfers-bid-submit"
         >
           {isFreeAgent ? 'Värva →' : 'Lägg bud →'}
         </button>

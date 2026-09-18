@@ -23,7 +23,7 @@
 
 ## AKTUELL STATUS
 
-**1 aktiv post:** `stickiness-drift-backend`. `begriplighet-e-flikintroduktioner` och `begriplighet-f-granska-eko-yta` stängdes 2026-09-15 efter att flikentréerna fått kanonisk röstgate och Granska fått ett riktat, deduplicerat burnout-eko; se ARKIV. Räkna endast faktiska datarader med status `rapporterad`, `verifierad` eller `in_progress`; historiska räknarändringar och stängda poster finns i `docs/MASTER_ARKIV.md`.
+**3 aktiva poster:** `stickiness-drift-backend`, `beta-inbjudningar-anvandare`, `beta-statistikvy`. Begriplighetsraderna H/E/F och ekonomiloggskontrollen stängdes 2026-09-15; se ARKIV. Räkna endast faktiska datarader med status `rapporterad`, `verifierad` eller `in_progress`; historiska räknarändringar och stängda poster finns i `docs/MASTER_ARKIV.md`.
 
 **Stående regel (2026-09-08):** att stänga en rad = FLYTTA den till `MASTER_ARKIV.md`, aldrig bara stämpla om den `klar`/`stale` på plats. En rad som blir terminal och inte flyttas samma pass är en läckt regel, inte en genväg.
 
@@ -144,6 +144,8 @@ Andra exemplet på tillstånds-maskinens fulla cykel, samma mönster som raden o
 
 | id | beskrivning | status | ägare | källa | nästa-åtgärd |
 |---|---|---|---|---|---|
+| beta-inbjudningar-anvandare | Överväg en liten, inbjudningsstyrd användarhantering inför betatest: veta vilka som fått tillträde, om och hur länge de spelar, samt ge betan en avgränsad känsla. Skilj tillträde från personligt konto och statistik; installation/session/tratt mäts redan pseudonymt via `analytics_events` utan inloggning. Ingen sparfil behöver flyttas till servern för denna idé. | rapporterad | Jacob | Jacob 2026-09-17 | Produktbeslut före spec: räcker personliga engångsinbjudningar för tillträde och befintlig aggregatstatistik, eller behövs konton för uppföljning per testare/återställning mellan enheter? Bestäm också hur inbjudan återkallas och hur beta-id i så fall kopplas till nuvarande installations-id. Bygg inget inloggningssystem enbart för att få statistik eller exklusivitetskänsla. |
+| beta-statistikvy | Liten intern läsvy för betatestet över befintliga `analytics_events`: aktiva installationer 7/30 dagar, passlängd, återkomst och tratten onboarding → första match → säsong 1/3. Inbjudna testare/aktiveringsgrad kan läggas till först om inbjudningssystemet byggs. Befintlig statistik-spec placerar läsvyn post-launch; Jacob överväger att tidigarelägga den inför beta. | rapporterad | Jacob | Jacob 2026-09-17 | Besluta om före-beta-prioritet och vilka 4–6 frågor vyn ska besvara. Verifiera vilka mått 90-dygnsfönstret kan ge; bygg i så fall en separat administratörsskyddad aggregatendpoint och en enkel intern vy, inte en publik spelsida eller rå händelselista. Räkna unika installationer, inte event som spelare; behåll opt-out och gallring. |
 
 ## KF. SYSTEMKARTANS FYND
 

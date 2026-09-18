@@ -4,6 +4,7 @@
  */
 
 import { simulateMatch } from '../src/domain/services/matchEngine'
+import { readFileSync } from 'node:fs'
 import { MATCH_TOTAL_GOAL_CAP } from '../src/domain/services/matchCore'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
@@ -110,6 +111,8 @@ let homeWins = 0
 let draws = 0
 let secondHalfGoals = 0
 const totalGoalHistogram = new Map<number, number>()
+const scoreHistogram = new Map<string, number>()
+const marginHistogram = new Map<number, number>()
 let goalPairs = 0
 let extensions = 0
 let equalizersWithNextGoal = 0
@@ -157,6 +160,10 @@ for (let i = 0; i < N; i++) {
   const gs = (f.homeScore ?? 0) + (f.awayScore ?? 0)
   totalGoals += gs
   totalGoalHistogram.set(gs, (totalGoalHistogram.get(gs) ?? 0) + 1)
+  const score = `${f.homeScore ?? 0}-${f.awayScore ?? 0}`
+  scoreHistogram.set(score, (scoreHistogram.get(score) ?? 0) + 1)
+  const margin = Math.abs((f.homeScore ?? 0) - (f.awayScore ?? 0))
+  marginHistogram.set(margin, (marginHistogram.get(margin) ?? 0) + 1)
   if ((f.homeScore ?? 0) > (f.awayScore ?? 0)) homeWins++
   if ((f.homeScore ?? 0) === (f.awayScore ?? 0)) draws++
 
@@ -246,6 +253,35 @@ console.log(`Svans ${tailFrom}–${MATCH_TOTAL_GOAL_CAP}: ${Array.from({ length:
   const goals = tailFrom + index
   return `${goals}:${totalGoalHistogram.get(goals) ?? 0}`
 }).join(' · ')}`)
+
+// Jämför hela resultatfördelningen med samma Bandygrytan-urval som TARGETS:
+// Elitserien herr, grundserie. Slutspel och kval har andra villkor.
+type RealMatch = { phase: string; homeScore: number; awayScore: number }
+const realData = JSON.parse(readFileSync(new URL('../docs/data/bandygrytan_detailed.json', import.meta.url), 'utf8')) as {
+  herr: { matches: RealMatch[] }
+}
+const realMatches = realData.herr.matches.filter(match => match.phase === 'regular')
+const realGoals = realMatches.map(match => match.homeScore + match.awayScore)
+const realMargins = realMatches.map(match => Math.abs(match.homeScore - match.awayScore))
+const pctAtLeast = (values: number[], threshold: number) => (values.filter(value => value >= threshold).length / values.length * 100).toFixed(1)
+const simValues = [...totalGoalHistogram].flatMap(([goals, n]) => Array(n).fill(goals) as number[])
+const simMargins = [...marginHistogram].flatMap(([margin, n]) => Array(n).fill(margin) as number[])
+const topScores = (matches: string[]) => {
+  const counts = new Map<string, number>()
+  for (const match of matches) counts.set(match, (counts.get(match) ?? 0) + 1)
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([score, n]) => `${score}:${(n / matches.length * 100).toFixed(1)}%`).join(' · ')
+}
+const simScoreList = [...scoreHistogram].flatMap(([score, n]) => Array(n).fill(score) as string[])
+const realScoreList = realMatches.map(match => `${match.homeScore}-${match.awayScore}`)
+console.log(`\nResultatfördelning — Bandygrytan herr grundserie ${realMatches.length} matcher / motor ${N} matcher:`)
+console.log(`  Mål ≥12: ${pctAtLeast(realGoals, 12)}% verkligt · ${pctAtLeast(simValues, 12)}% spel`)
+console.log(`  Mål ≥15: ${pctAtLeast(realGoals, 15)}% verkligt · ${pctAtLeast(simValues, 15)}% spel`)
+console.log(`  Mål ≥17: ${pctAtLeast(realGoals, 17)}% verkligt · ${pctAtLeast(simValues, 17)}% spel`)
+console.log(`  Mål ≥18: ${pctAtLeast(realGoals, 18)}% verkligt · ${pctAtLeast(simValues, 18)}% spel`)
+console.log(`  Marginal ≥5: ${pctAtLeast(realMargins, 5)}% verkligt · ${pctAtLeast(simMargins, 5)}% spel`)
+console.log(`  Marginal ≥7: ${pctAtLeast(realMargins, 7)}% verkligt · ${pctAtLeast(simMargins, 7)}% spel`)
+console.log(`  Vanliga resultat verkligt: ${topScores(realScoreList)}`)
+console.log(`  Vanliga resultat i spelet: ${topScores(simScoreList)}`)
 
 console.log(`\nMomentum (${goalPairs} intilliggande målpar):`)
 console.log(`Utökningsgrad: ${(extensionRate * 100).toFixed(1)}% (verkligt herrmål 55,0%, mål 52–58%)`)

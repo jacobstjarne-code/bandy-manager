@@ -1,5 +1,6 @@
 import type { Fixture, LiveMatchProgress } from '../../domain/entities/Fixture'
 import type { MatchStep } from '../../domain/services/matchSimulator'
+import type { PressChoice } from '../../domain/services/lastMinutePressService'
 import { FixtureStatus, MatchEventType } from '../../domain/enums'
 import type { FeedRow } from '../components/match/commentary/CommentaryFeedStalvallen'
 
@@ -77,6 +78,28 @@ export function getEventAlignment(eventClubId: string, homeClubId: string): 'hom
  */
 export function shouldEndMatchAfterStep(currentStep: number, totalSteps: number): boolean {
   return currentStep + 1 >= totalSteps
+}
+
+/** Sparar spelarens sena pressval på visat steg och ersätter endast framtiden.
+ *  Håll ut är ett no-op på den redan simulerade matchen. */
+export function applyLastMinutePressDecision(
+  steps: MatchStep[],
+  currentStep: number,
+  choice: PressChoice,
+  regenerate: (homeScore: number, awayScore: number, atStep: number, choice: PressChoice) => MatchStep[] | null,
+): MatchStep[] {
+  const current = steps[currentStep]
+  if (!current) return steps
+  const acknowledged: MatchStep = { ...current, lastMinutePressData: undefined, lastMinutePressChoice: choice }
+  const kept = [...steps.slice(0, currentStep), acknowledged]
+  if (choice === 'acceptResult') return [...kept, ...steps.slice(currentStep + 1)]
+  const remainder = regenerate(current.homeScore, current.awayScore, currentStep, choice)
+  return [...kept, ...(remainder ?? steps.slice(currentStep + 1))]
+}
+
+/** Läs ur de sparade live-stegen, inte en transient React-ref. */
+export function getChosenLivePress(steps: readonly MatchStep[]): PressChoice | undefined {
+  return steps.find(step => step.lastMinutePressChoice)?.lastMinutePressChoice
 }
 
 /**

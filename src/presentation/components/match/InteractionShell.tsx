@@ -39,6 +39,8 @@ interface Props {
   // Explicit opt-out: ingen tidspress (övningsläge). Default = false → timern kör
   // som vanligt. "timer saknas = av" undviks medvetet (skulle tyst släcka live-paneler).
   untimed?: boolean
+  /** Introt använder sidfotens primärknapp. Tidlös förhandsvisning gör det inte. */
+  primaryCta?: boolean
   stats?: ReactNode
   pitch: ReactNode
   coachTip?: string
@@ -46,7 +48,7 @@ interface Props {
   actions?: ReactNode
   // New structured sub-choice buttons (rendered separately from legacy actions)
   subChoices?: ReactNode
-  readout?: { label: string; pct: number }
+  readout?: { label: string }
   riskRow?: string[]
   phase: InteractionPhase
   outcome?: ReactNode
@@ -128,7 +130,7 @@ export function InteractionShell({
   timer,
   stats, pitch, coachTip, coach, actions,
   subChoices, readout, riskRow, cta,
-  phase, outcome, onTimeout, untimed,
+  phase, outcome, onTimeout, untimed, primaryCta,
   foldHintLabel, foldHintPrompt,
 }: Props) {
   // Resolve timer config — timer prop takes precedence over legacy timerSeconds
@@ -188,7 +190,7 @@ export function InteractionShell({
           <div className="interaction-title-row">
             <div className="interaction-title-inner">
               <span className="interaction-title">{title}</span>
-              <span className="interaction-minute">{minute}&apos;</span>
+              <span className="interaction-minute">MIN {minute}</span>
             </div>
           </div>
 
@@ -221,9 +223,8 @@ export function InteractionShell({
         {/* Readout */}
         {readout && (
           <div className="interaction-readout">
-            <span className="interaction-readout-label">KOMBINATION: </span>
+            <span className="interaction-readout-label">VAL: </span>
             <span className="interaction-readout-value">{readout.label}</span>
-            <span className="interaction-readout-pct">{readout.pct}%</span>
           </div>
         )}
 
@@ -246,16 +247,12 @@ export function InteractionShell({
           </div>
         )}
 
-        {/* New CTA button. T1 (SF-3, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13):
-            i untimed (practice) sammanfaller diegetisk commit och sidfot — rendera
-            sidfotsmallen (.btn .btn-primary .btn-cta), inte den mono/flat/tidsatta
-            live-stilen. untimed är i praktiken bara sant för hörnan i introt idag
-            (enda konsumenten som sätter practice), så andra interaction-cta-copper-
-            ytor (straff/kontring/frislag, alltid live) påverkas inte. */}
+        {/* I introt sammanfaller hörnans commit och sidfot. En tidlös
+            förhandsvisning ska däremot behålla matchknappens utseende. */}
         {cta && phase === 'choosing' && (
           <button
             onClick={cta.onClick}
-            className={untimed ? 'btn btn-primary btn-cta' : (cta.variant === 'danger' ? 'interaction-cta-danger' : 'interaction-cta-copper')}
+            className={primaryCta ? 'btn btn-primary btn-cta' : (cta.variant === 'danger' ? 'interaction-cta-danger' : 'interaction-cta-copper')}
           >
             {cta.label}
           </button>

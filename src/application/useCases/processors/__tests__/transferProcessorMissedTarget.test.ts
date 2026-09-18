@@ -16,6 +16,15 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 describe('processTransferBids — transfer_target_missed', () => {
+  it('en ny inkommande budnotis pekar på samma bud och spelare som handlingsytan', () => {
+    const game = makeGame()
+    const result = processTransferBids(game, game.players, 2, '2027-09-02', () => 0)
+    const bid = result.newBids.find(candidate => candidate.direction === 'incoming')
+    expect(bid).toBeDefined()
+    const item = result.inboxItems.find(candidate => candidate.id === `inbox_incoming_bid_${bid?.id}`)
+    expect(item).toMatchObject({ relatedBidId: bid?.id, relatedPlayerId: bid?.playerId })
+  })
+
   it('reparerar ett dubblerat inkommande bud och låter terminal status vinna', () => {
     const game = makeGame()
     const target = game.players.find(player => player.clubId === game.managedClubId)!

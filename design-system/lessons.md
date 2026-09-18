@@ -1,5 +1,26 @@
 # Design Lessons — Bandy Manager
 
+## 2026-09-12 — Två konkurrerande stilkällor för scen-illustration (MISSLYCKANDE, tre försök)
+
+### Vad hände
+Opus skulle skriva bildprompter för tre nya scen-illustrationer (burnout, klack). Skrev dem mot `docs/incoming/Illustrationer-stilbibel-2026-08-18.dc.html`, som formulerar stilen som **"flat vector illustration, grainy lithograph, matte"**. Tre genereringar i rad kom tillbaka som **tecknad serie** — mjuka gradienter, målat djup, påmålat slitage, symmetrisk affisch-komposition. Jacob underkände alla tre ("ser ut som en tecknad serie").
+
+### Rotorsaken
+Det finns TVÅ stildokument som beskriver samma sak med olika ord:
+- **`design-system/SCENE_STYLE.md`** — den LÅSTA kanoniska husstilen. Säger **"mid-century screenprint / skandinavisk affischtradition, platta former byggda av färg- och valörmassor INTE konturlinjer"** och namnger hävstången mot cartoony explicit: **"remove all outlines, flat shape-based only"**. Har två godkända referensplattor (kafferummet inne, nedflyttning ute) och ett bevisat recept: mata referensplattan som stil + motivtext, kör Nano Banana 2 Flash.
+- **`docs/incoming/Illustrationer-stilbibel-2026-08-18.dc.html`** — en äldre/parallell formulering som säger "flat vector / grainy lithograph". Den frasen drar en bildmodell mot måleriskt digitalt djup = tecknat.
+
+Opus läste incoming-filen och inte SCENE_STYLE.md. "flat vector" och "grainy lithograph" är fel ord — de ber om illustration, inte om screentryck. Att jämföra mot Eriks faktiska referensbilder (annandagen = platt screentryck med tryckkorn och pappersram; kafferummet = interiörplattan) hade avslöjat felet direkt, men Opus dömde mot en textbeskrivning i stället för mot bilderna.
+
+### Regeln framåt
+1. **`design-system/SCENE_STYLE.md` är den ENDA kanoniska källan för scen-illustrationsstil.** Läs den först, alltid. Stilbibeln i incoming är historik — läs den inte som recept.
+2. **Prompt-språket är "screenprint / linocut / flat shape-based / no outlines / print grain", ALDRIG "flat vector / grainy lithograph / illustration".** De senare drar mot tecknat.
+3. **Mata alltid en referensplatta** (kafferummet för interiör, nedflyttning för utomhus) — text ensam driver iväg, det står i receptet.
+4. **Döm nya bilder mot Eriks faktiska referensbilder, inte mot en textbeskrivning av stilen.** Har Opus inte bilderna: be Jacob ladda upp annandagen (kanon för kornet) innan en prompt skrivs.
+5. Samma möns­ter som pixel-scoreboard-lärdomen nedan: Opus dömde utan att se det den dömde mot.
+
+---
+
 ## 2025-01-XX — Pixel scoreboard in feed context (MISSLYCKANDE)
 
 ### Vad hände

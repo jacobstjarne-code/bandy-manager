@@ -1,5 +1,14 @@
 # SCENE_STYLE — husstil för BM scen-illustration
 
+> **KANON. LÄS DENNA, INTE incoming-stilbibeln.** Det finns en äldre parallell
+> formulering i `docs/incoming/Illustrationer-stilbibel-2026-08-18.dc.html` som
+> säger "flat vector illustration, grainy lithograph". De orden drar en
+> bildmodell mot måleriskt djup = **tecknad serie** (bevisat tre misslyckade
+> genereringar 2026-09-12, se lessons.md). Rätt språk står nedan:
+> **screenprint / linocut / platta massor / inga konturer / tryckkorn.** Mata
+> alltid en referensplatta. Döm nya bilder mot Eriks faktiska bilder, inte mot
+> en textbeskrivning.
+
 **Författare:** Opus · **Etablerad:** 2026-06-23 (tillsammans med Jacob, genom Nano Banana 2-loop)
 **Status:** Husstil låst. Två referensplattor godkända. Receptet bevisat tre körningar i rad.
 
@@ -76,6 +85,10 @@ Markerad med platta (U = utomhus/nedflyttning, I = inomhus/kafferum) och status.
 - Sparken/avsked (I) — tömt kontor, packad låda. Syskon till nedflyttningsbilden i ton.
 - Uppflyttning (U) — motvikt till nedflyttning, försiktig ljusning.
 - Transferfönster (I) — väntan, telefon, bud.
+- **Burnouttaket (I)** — `burnout-ceiling`, mode=band, DesignDom 2026-09-12. Kör mot INTERIÖRplattaN (kafferummet). Motiv: tömt omklädningsrum sent, en enda sliten tröja på en krok mot en plankvägg, en bänk, en naken glödlampa. Ingen människa. Stående; motiv i övre halvan, tomt golv nedtill (bandets fadezon skyddar texten). Karriärens mest irreversibla ögonblick — tyngd, inte dekor.
+- **Klack-tifo (U)** — `klack-tifo`, mode=header, dag 6. Kör mot UTOMHUSplattan (nedflyttning). Motiv: ett halvfärdigt tifo hissas över en tom ståplats, Birger och gruppen underifrån. Par med klack-konflikt — SAMMA plats, samma komposition, så de två läser som en fortsättning.
+- **Klack-konflikt (U)** — `klack-konflikt`, mode=header, dag 11. Andra referensen är den godkända klack-tifon (håll platsen identisk). Motiv: samma läktare, nu splittrad — två grupperingar vända från varandra, en nedhissad banderoll mellan dem. Motivskiftet (byggt→splittrat) bär berättelsen.
+- **Bandygalan — INGEN slot** (DesignDom 2026-09-12, godkänd av Opus). GalaScene:s guld-disciplin (medaljen enda fyllda guldytan) får inte lösas upp av en bakgrundsbild. Bygg ingen — den typografiska scenen är komplett.
 
 **Generella**
 - Klubbhuset dag (U), första träningen (U), tom läktare (U) — fyllnadsscener i samma språk.

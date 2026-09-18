@@ -1,6 +1,6 @@
 /**
  * SundayTrainingPlayerList — sex-radig spelarlista i söndagsträningen.
- * Pixel-värden från training-mockup .player-row / .player-icon / .player-text.
+ * Training-mockupens spelarrader med mobilanpassad läsbarhet.
  */
 
 import type { SundayTrainingPlayer } from '../../../../domain/data/scenes/sundayTrainingScene'
@@ -46,9 +46,9 @@ export function SundayTrainingPlayerList({ players }: Props) {
           <div
             style={{
               flex: 1,
-              fontSize: 13,
-              color: 'var(--text-light-secondary)',
-              lineHeight: 1.5,
+              fontSize: 15,
+              color: 'var(--text-light)',
+              lineHeight: 1.55,
               fontFamily: 'Georgia, serif',
             }}
             dangerouslySetInnerHTML={{

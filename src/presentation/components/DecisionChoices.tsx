@@ -5,6 +5,7 @@ interface DecisionChoice {
   id: string
   label: string
   subtitle?: string
+  impactPreview?: { label: string; direction: 'up' | 'down' | 'unchanged' }[]
   /** D1 (docs/dom/DOM_D1_EVENTVIKTNING_2026-08-19.md) punkt 3 — se GameEvent.ts:s
    *  EventChoice/getConsequenceLines för den mekaniska regeln. */
   consequenceLevel?: ConsequenceLevel
@@ -23,9 +24,11 @@ interface Props {
    *  fullskärms-modals knappar till inline-kortskala (12px/7×14). Standard
    *  'sm' är oförändrad för alla ~30 befintliga anropsställen. */
   size?: 'sm' | 'lg'
+  /** Val som ligger direkt på en mörk scen, utan ljust kort bakom. */
+  onDark?: boolean
 }
 
-export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryChoiceId, size = 'sm' }: Props) {
+export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryChoiceId, size = 'sm', onDark = false }: Props) {
   const containerStyle: React.CSSProperties = layout === 'inline'
     ? { display: 'flex', gap: 8, flexWrap: 'wrap' }
     : { display: 'flex', flexDirection: 'column', gap: 5 }
@@ -43,7 +46,7 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
         // irreversible → "Går inte att ändra.", kostnaden alltid först. ALDRIG
         // --danger eller ⚠ här (hård spärr i domen — rött läser som "fel").
         const consequenceLines = getConsequenceLines(choice)
-        const hasExtraLines = !!choice.subtitle || consequenceLines.length > 0
+        const hasExtraLines = !!choice.subtitle || !!choice.impactPreview?.length || consequenceLines.length > 0
         return (
           <button
             key={choice.id}
@@ -52,6 +55,12 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
             style={{
               ...(layout === 'stack' ? { width: '100%', textAlign: 'left' } : undefined),
               ...lgStyle,
+              ...(onDark ? {
+                color: isPrimary ? 'var(--text-on-copper-cta)' : 'var(--text-light)',
+                background: isPrimary
+                  ? 'linear-gradient(to bottom, var(--accent-dark), var(--accent-deep))'
+                  : 'var(--bg-dark-surface)',
+              } : {}),
               // ÖVERLÄMNING 2 (2026-08-12): .btn är display:inline-flex (global.css) —
               // en flex-container lägger sina barn i EN RAD som default, oavsett att
               // subtitle-spannet nedan har display:'block'. Ett flex-item ignorerar sin
@@ -66,12 +75,19 @@ export function DecisionChoices({ choices, onChoose, layout = 'stack', primaryCh
           >
             {choice.label}
             {choice.subtitle && (
-              <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>
+              <span style={{ display: 'block', fontSize: size === 'lg' ? 11 : 10, color: onDark ? (isPrimary ? 'var(--text-on-copper-cta)' : 'var(--text-light-secondary)') : 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>
                 {choice.subtitle}
               </span>
             )}
+            {choice.impactPreview && choice.impactPreview.length > 0 && (
+              <span style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 5, fontSize: size === 'lg' ? 12 : 11, fontWeight: 600, color: onDark ? 'var(--text-light-secondary)' : 'var(--text-secondary)' }}>
+                {choice.impactPreview.map(impact => (
+                  <span key={impact.label}>{impact.label}{impact.direction === 'unchanged' ? '' : ` ${impact.direction === 'up' ? '↑' : '↓'}`}</span>
+                ))}
+              </span>
+            )}
             {consequenceLines.map((line, i) => (
-              <span key={i} style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>
+              <span key={i} style={{ display: 'block', fontSize: size === 'lg' ? 11 : 10, color: onDark ? (isPrimary ? 'var(--text-on-copper-cta)' : 'var(--text-light-secondary)') : 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>
                 {line}
               </span>
             ))}

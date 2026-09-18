@@ -20,15 +20,21 @@ interface LastMinutePressProps {
   data: LastMinutePressData
   onChoose: (choice: PressChoice) => void
   coach?: AssistantCoach
+  /** Tidlös förhandsvisning av matchpanelen. */
+  practice?: boolean
 }
 
-const CHOICES: { c: PressChoice; label: string; rates: number }[] = [
-  { c: 'allIn',        label: 'ALLT FRAM',  rates: 0.42 },
-  { c: 'pushForward',  label: 'TRYCK PÅ',   rates: 0.28 },
-  { c: 'acceptResult', label: 'HÅLL UT',    rates: 0.08 },
+const CHOICES: { c: PressChoice; label: string }[] = [
+  { c: 'allIn',        label: 'ALLT FRAM' },
+  { c: 'pushForward',  label: 'TRYCK PÅ' },
+  { c: 'acceptResult', label: 'HÅLL UT' },
 ]
 
-const RISK_ROW = ['FOUL +25', 'SLÄPPER IN +15', 'TIMEOUT → TRYCK PÅ']
+const RISK_ROW: Record<PressChoice, string[]> = {
+  allIn: ['HÖG UTVISNINGSRISK', 'HÖG RISK BAKÅT'],
+  pushForward: ['ÖKAD UTVISNINGSRISK', 'ÖKAD RISK BAKÅT'],
+  acceptResult: [],
+}
 
 /** SVG pitch schematic for last-minute press — hela plan, högt formation, röda risk-pilar */
 function LastMinutePitchSVG({ choice }: { choice: PressChoice }) {
@@ -102,7 +108,7 @@ function LastMinutePitchSVG({ choice }: { choice: PressChoice }) {
   )
 }
 
-export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps) {
+export function LastMinutePress({ data, onChoose, coach, practice }: LastMinutePressProps) {
   const [choice, setChoice] = useState<PressChoice>('pushForward')
   const [phase, setPhase] = useState<InteractionPhase>('choosing')
 
@@ -130,28 +136,15 @@ export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps)
 
   // Sub-choices — monospace LED buttons
   const subChoicesNode = (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div className="interaction-sub-choices-row">
       {CHOICES.map(({ c, label }) => {
         const isSelected = choice === c
         return (
           <button
             key={c}
             onClick={() => phase === 'choosing' && setChoice(c)}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              background: isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${isSelected ? 'var(--led-green)' : 'rgba(255,255,255,0.12)'}`,
-              borderRadius: 4,
-              color: isSelected ? 'var(--led-green)' : 'rgba(245,241,235,0.5)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 8,
-              fontWeight: 700,
-              letterSpacing: '0.8px',
-              cursor: phase === 'choosing' ? 'pointer' : 'default',
-              boxShadow: isSelected ? '0 0 6px rgba(102,255,51,0.3)' : 'none',
-              textAlign: 'center',
-            }}
+            className={`interaction-sub-btn ${isSelected ? 'interaction-sub-btn-selected' : 'interaction-sub-btn-unselected'}`}
+            style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
           >
             {label}
           </button>
@@ -168,13 +161,14 @@ export function LastMinutePress({ data, onChoose, coach }: LastMinutePressProps)
       foldHintPrompt="STÄLL IN LAGET"
       minute={data.minute}
       timer={{ seconds: 8 }}
+      untimed={practice}
       pitch={<LastMinutePitchSVG choice={choice} />}
       subChoices={subChoicesNode}
-      readout={{ label: CHOICES.find(c => c.c === choice)?.label ?? '', pct: Math.round((CHOICES.find(c => c.c === choice)?.rates ?? 0) * 100) }}
-      riskRow={RISK_ROW}
+      readout={{ label: CHOICES.find(c => c.c === choice)?.label ?? '' }}
+      riskRow={RISK_ROW[choice]}
       coachTip={coachTip}
       coach={coach}
-      cta={{ label: 'Spräng igenom', variant: 'danger', onClick: () => handleConfirm() }}
+      cta={{ label: CHOICES.find(c => c.c === choice)?.label ?? '', variant: choice === 'allIn' ? 'danger' : 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={
         phase === 'revealed' ? (

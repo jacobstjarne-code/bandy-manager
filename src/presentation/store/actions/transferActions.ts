@@ -1,6 +1,7 @@
 import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/entities/SaveGame'
 import { processScoutAssignment, startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid, getCounterOfferAmount, getTransferBudgetSummary, resolveFreeAgents } from '../../../domain/services/transferService'
+import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange, appendFinanceLog, computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
@@ -417,6 +418,12 @@ export function transferActions(get: Get, set: Set) {
       if (!game) return { success: false, error: 'Inget spel laddat' }
       const player = game.players.find(p => p.id === playerId)
       if (!player) return { success: false, error: 'Spelaren hittades inte' }
+      if (player.clubId !== game.managedClubId) return { success: false, error: 'Spelaren tillhör inte din klubb' }
+      if (player.isClubLegend) return { success: false, error: 'Klubblegenden kan inte säljas' }
+      if (getTransferWindowStatus(game.currentDate).status === 'closed') return { success: false, error: 'Transferfönstret är stängt' }
+      if ((game.transferBids ?? []).some(b => b.playerId === playerId && b.direction === 'incoming' && b.status === 'pending')) {
+        return { success: false, error: 'Spelaren har redan ett bud att besvara' }
+      }
 
       const otherClubs = game.clubs.filter(c => c.id !== game.managedClubId)
       if (otherClubs.length === 0) return { success: false, error: 'Inga motståndarklubbar tillgängliga' }

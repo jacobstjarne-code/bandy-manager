@@ -51,7 +51,8 @@ export function NameInputScreen() {
         <div style={{ width: 60 }} />
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px' }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', padding: '24px 18px' }}>
+        <div className="card-round" style={{ width: '100%', maxWidth: 360, flexShrink: 0, margin: 'auto 0', padding: '30px 24px 24px', textAlign: 'center' }}>
         <p style={{
           fontSize: 11, fontWeight: 700, letterSpacing: '4px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24,
@@ -89,15 +90,12 @@ export function NameInputScreen() {
             {nameError}
           </p>
         )}
-      </div>
-
-      <div style={{ padding: '20px 32px' }}>
         <button
           onClick={tryAdvance}
           disabled={!managerName.trim()}
           className="btn btn-primary"
           style={{
-            width: '100%', padding: '16px 24px', fontSize: 14,
+            width: '100%', marginTop: 28, padding: '16px 24px', fontSize: 14,
             letterSpacing: '3px', textTransform: 'uppercase',
             opacity: isNameValid(managerName) ? 1 : 0.35,
             cursor: isNameValid(managerName) ? 'pointer' : 'not-allowed',
@@ -106,6 +104,7 @@ export function NameInputScreen() {
         >
           GÅ VIDARE →
         </button>
+        </div>
       </div>
 
       <footer style={{

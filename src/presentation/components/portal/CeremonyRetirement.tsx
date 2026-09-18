@@ -106,6 +106,8 @@ export function CeremonyRetirement({ game, event }: Props) {
           choices={event.choices}
           onChoose={(choiceId) => resolveEvent(event.id, choiceId, true)}
           primaryChoiceId={event.choices[0]?.id}
+          size="lg"
+          onDark
         />
       </div>
     </div>

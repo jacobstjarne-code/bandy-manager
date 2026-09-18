@@ -44,12 +44,21 @@ export function GranskaScreen() {
   const [pendingEventsSnapshot, setPendingEventsSnapshot] = useState(() => game
     ? getVoiceEligibleEvents(game, game.pendingEvents ?? [])
     : [])
+  // Domarmötet ligger utanför pendingEvents. Behåll samma kvitto efter svar
+  // som de vanliga besluten får via pendingEventsSnapshot.
+  const [refereeMeetingSnapshot, setRefereeMeetingSnapshot] = useState(() => game?.pendingRefereeMeeting)
 
   useEffect(() => {
     if (!game) return
     const liveEligible = getVoiceEligibleEvents(game, game.pendingEvents ?? [])
     setPendingEventsSnapshot(previous => mergePendingEventsSnapshot(previous, liveEligible))
   }, [game])
+
+  useEffect(() => {
+    if (game?.pendingRefereeMeeting) {
+      setRefereeMeetingSnapshot(previous => previous ?? game.pendingRefereeMeeting)
+    }
+  }, [game?.pendingRefereeMeeting])
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -244,6 +253,7 @@ export function GranskaScreen() {
             penResult={penResult}
             keyMoments={keyMoments}
             pendingEvents={pendingEvents}
+            refereeMeeting={refereeMeetingSnapshot}
             resolvedEventIds={effectiveResolvedEventIds}
             chosenLabels={effectiveChosenLabels}
             chosenOutcomes={effectiveChosenOutcomes}

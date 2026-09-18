@@ -14,7 +14,7 @@
  *
  * LastMinutePress.tsx:s onChoose nås via två vägar som BÅDA landar i
  * MatchLiveScreen.tsx:s handleLastMinutePressChoice: ett aktivt spelarval
- * (handleConfirm(c), knappen "Spräng igenom") och ett timeout-standardval
+ * (handleConfirm(c), valets huvudknapp) och ett timeout-standardval
  * (onTimeout={() => handleConfirm('pushForward')}). Eftersom båda vägarna
  * anropar EXAKT samma handler, verifierar detta test timerns slutvillkor —
  * samma arkitektoniska val som
@@ -22,7 +22,42 @@
  * (@testing-library/react finns inte i projektet).
  */
 import { describe, it, expect } from 'vitest'
-import { shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import { applyLastMinutePressDecision, getChosenLivePress, shouldEndMatchAfterStep } from '../matchLiveHelpers'
+import type { MatchStep } from '../../../domain/services/matchSimulator'
+
+const step = (index: number): MatchStep => ({
+  step: index, minute: index * 1.5, events: [], homeScore: 0, awayScore: 1,
+  commentary: '', intensity: 'low',
+  activeSuspensions: { homeCount: 0, awayCount: 0, homeTimers: [], awayTimers: [] },
+  shotsHome: 0, shotsAway: 0, onTargetHome: 0, onTargetAway: 0,
+  cornersHome: 0, cornersAway: 0,
+})
+
+describe('slutminutsvalets sparade stegserie', () => {
+  it('Håll ut behåller framtiden och sparar valet utan att räkna om', () => {
+    const before = [step(55), step(56), step(57)]
+    before[0].lastMinutePressData = { minute: 83, scoreDiff: -1, stepsLeft: 5, fatigueLevel: 25 }
+    const after = applyLastMinutePressDecision(before, 0, 'acceptResult', () => {
+      throw new Error('Håll ut får inte simulera om matchen')
+    })
+    expect(after[1]).toBe(before[1])
+    expect(after[2]).toBe(before[2])
+    expect(after[0].lastMinutePressData).toBeUndefined()
+    expect(getChosenLivePress(after)).toBe('acceptResult')
+  })
+
+  it('Allt fram ersätter bara återstående steg och lämnar ett durabelt valspår', () => {
+    const before = [step(54), step(55), step(56)]
+    const regenerated = [step(56), step(57)]
+    const after = applyLastMinutePressDecision(before, 1, 'allIn', (home, away, atStep, choice) => {
+      expect([home, away, atStep, choice]).toEqual([0, 1, 1, 'allIn'])
+      return regenerated
+    })
+    expect(after[0]).toBe(before[0])
+    expect(after.slice(2)).toEqual(regenerated)
+    expect(getChosenLivePress(after)).toBe('allIn')
+  })
+})
 
 describe('shouldEndMatchAfterStep — stegtimerns enda slutvillkor', () => {
   it('sista steget (currentStep + 1 === totalSteps) ska avsluta matchen', () => {
@@ -30,10 +65,9 @@ describe('shouldEndMatchAfterStep — stegtimerns enda slutvillkor', () => {
     expect(shouldEndMatchAfterStep(59, 60)).toBe(true)
   })
 
-  it('lastMinutePress som fyrar på det ALLRA sista steget (regression för den exakta buggen) leder till matchDone', () => {
-    // Detta ÄR scenariot GPT hittade: en lastMinutePressData på step 59/60,
-    // spelaren löser (aktivt eller timeout) — matchen ska avslutas, inte
-    // stega currentStep till 60 (utanför steps).
+  it('ett äldre sparat pressval på sista steget leder ändå till matchDone', () => {
+    // Nya matcher öppnar inte pressvalet på sista spelsteget: där finns inget
+    // kvar att påverka. Äldre saves kan däremot redan bära rutan där.
     const totalSteps = 60
     const lastMinutePressStepIndex = 59
     expect(shouldEndMatchAfterStep(lastMinutePressStepIndex, totalSteps)).toBe(true)

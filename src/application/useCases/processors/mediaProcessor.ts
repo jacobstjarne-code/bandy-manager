@@ -5,7 +5,6 @@ import { generateMediaHeadlines, generateTrendArticles, generateAbsurdityArticle
 import { generatePostMatchHeadline } from '../../../domain/services/journalistService'
 import { generateTransferRumor } from '../../../domain/services/rumorService'
 import { checkReputationMilestones, milestonesToInbox } from '../../../domain/services/reputationMilestoneService'
-import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../../domain/services/transferDeadlineService'
 import { deriveUtfall } from '../../../domain/services/matchTypeAxes'
 import { InboxItemType } from '../../../domain/enums'
 import {
@@ -200,20 +199,6 @@ export function processMedia(
           reputationDelta += milestone.effect.amount
         }
       }
-    }
-  }
-
-  // Transfer deadline events (league rounds 13-15)
-  if (currentLeagueRound !== null && currentLeagueRound >= 13 && currentLeagueRound <= 15 && !isSecondPassForManagedMatch) {
-    const panicBids = generateDeadlineBids(game, localRand)
-    for (const bid of panicBids) {
-      inboxItems.push(deadlineBidToInbox(bid, game.currentDate, currentLeagueRound, game.currentSeason))
-      resolvedEventIds = [...resolvedEventIds, `deadline_bid_${game.currentSeason}_r${currentLeagueRound}`]
-    }
-    const discountOffer = generateDiscountOffer(game, localRand)
-    if (discountOffer) {
-      inboxItems.push(deadlineOfferToInbox(discountOffer, game.currentDate, currentLeagueRound, game.currentSeason))
-      resolvedEventIds = [...resolvedEventIds, `deadline_offer_${game.currentSeason}_r${currentLeagueRound}`]
     }
   }
 

@@ -131,7 +131,7 @@ import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
   SEQUENCE_TYPES, computeWeatherEffects, computeWeatherTacticInteraction,
   simulatePenalties, pickGoalCommentary, pickWeatherCommentary,
-  GOAL_TIMING_BY_PERIOD, SUSP_TIMING_BY_PERIOD, PHASE_CONSTANTS, getTimingPeriod,
+  GOAL_TIMING_BY_PERIOD, SUSP_TIMING_BY_PERIOD, PHASE_CONSTANTS, getTimingPeriod, commentaryPlayerReference,
 } from './matchUtils'
 import type { MatchStep, StepByStepInput, SecondHalfInput } from './matchUtils'
 import type { PairChemistry } from './chemistryService'
@@ -141,7 +141,8 @@ import { resolveAIPenaltyKeeperDive, resolvePenalty } from './penaltyInteraction
 import type { PenaltyInteractionData } from './penaltyInteractionService'
 import type { CounterInteractionData } from './counterAttackInteractionService'
 import type { FreeKickInteractionData } from './freeKickInteractionService'
-import type { LastMinutePressData } from './lastMinutePressService'
+import { getPressModifiers } from './lastMinutePressService'
+import type { LastMinutePressData, PressChoice } from './lastMinutePressService'
 import { deriveUtfall } from './matchTypeAxes'
 
 const CHEM_K = 0.12  // tie-breaker weight on the mean of SIGNIFICANT pairs
@@ -289,6 +290,8 @@ export interface MatchCoreInput extends StepByStepInput {
   /** Spak A — managed-lagets pausval. Modulerar post-paus-fönstret (SPEC-SPAK-AB A1).
    *  Kräver managedIsHome satt. Default odefinierat = no-op (baskalibrering orörd). */
   pauseLean?: 'push' | 'calm' | 'hold'
+  /** Live-matchens återstående steg efter spelarens sena pressval. */
+  livePressChoice?: PressChoice
 }
 
 // ── Match situation helpers ───────────────────────────────────────────────────
@@ -662,7 +665,18 @@ function* simulateMatchCore(
   let interactiveCornersUsed  = 0
   let interactiveCountersUsed = 0
   let interactiveFreeKicksUsed = 0
-  let lastMinutePressTriggered = false
+  let lastMinutePressTriggered = input.livePressChoice !== undefined
+  const livePressModifiers = input.livePressChoice !== undefined && managedIsHome !== undefined
+    ? getPressModifiers(input.livePressChoice)
+    : null
+  const applyLivePressGoalChance = (base: number, attackingHome: boolean): number => {
+    if (!livePressModifiers || managedIsHome === undefined) return base
+    const bonus = attackingHome === managedIsHome
+      ? livePressModifiers.goalThresholdBonus
+      : livePressModifiers.concedeProbBonus
+    if (bonus === 0) return base
+    return Math.min(0.95, base + bonus)
+  }
 
   // Kvitterings-momentum (Fas 2, struktur): när ett lag kvitterar från underläge
   // till lika behåller det momentum i stället för att direkt falla till
@@ -699,6 +713,13 @@ function* simulateMatchCore(
   function findPlayerName(playerId: string): string {
     const p = allPlayers.find(pl => pl.id === playerId)
     return p ? `${p.firstName} ${p.lastName}` : playerId
+  }
+
+  // I löpande referat används efternamn, som i ett mänskligt matchreferat.
+  // Vid namnkrock mellan trupperna behövs hela namnet för att undvika tvetydighet.
+  function findCommentaryName(playerId: string): string {
+    const player = allPlayers.find(p => p.id === playerId)
+    return player ? commentaryPlayerReference(player, allPlayers) : playerId
   }
 
   function trackGoal(id: string)   { playerGoals[id]    = (playerGoals[id]    ?? 0) + 1 }
@@ -1206,7 +1227,7 @@ function* simulateMatchCore(
 
         const shotResult   = rand()
         // matchEngine-calibrated multiplier (1.05). GOAL_RATE_MOD kompenserar för cap-höjning.
-        const goalThreshold = chanceQuality * 1.05 * GOAL_RATE_MOD * (1 - defGK * 0.35) * stepGoalMod
+        const goalThreshold = applyLivePressGoalChance(chanceQuality * 1.05 * GOAL_RATE_MOD * (1 - defGK * 0.35) * stepGoalMod, isHomeAttacking)
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
           if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
@@ -1270,7 +1291,7 @@ function* simulateMatchCore(
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
         const shotResult   = rand()
         // matchEngine-calibrated (0.58, was 0.28)
-        const goalThreshold = chanceQuality * 0.58 * GOAL_RATE_MOD * (1 - defGK * 0.4) * 1.15 * stepGoalMod
+        const goalThreshold = applyLivePressGoalChance(chanceQuality * 0.58 * GOAL_RATE_MOD * (1 - defGK * 0.4) * 1.15 * stepGoalMod, isHomeAttacking)
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
           if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
@@ -1359,11 +1380,11 @@ function* simulateMatchCore(
           : attackingCornerStrategy === CornerStrategy.Safe ? 0.88
           : 1.0
         const modeCornerMult = isHomeAttacking ? homeModeCornerMult : awayModeCornerMult
-        const goalThreshold = clamp(
+        const goalThreshold = applyLivePressGoalChance(clamp(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
           cornerClampMax,
-        ) * GOAL_RATE_MOD * cornerConversionMod * modeCornerMult
+        ) * GOAL_RATE_MOD * cornerConversionMod * modeCornerMult, isHomeAttacking)
 
         const r = rand()
         if (r < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
@@ -1428,7 +1449,7 @@ function* simulateMatchCore(
       const halfchancePlayoffBonus = isPlayoff ? 1.05 : 1.0
       const chanceQuality  = randRange(rand, 0.05, 0.25) * halfchancePlayoffBonus
       // matchEngine-calibrated (0.63, was 0.30)
-      const goalThreshold  = chanceQuality * 0.63 * GOAL_RATE_MOD * stepGoalMod
+      const goalThreshold  = applyLivePressGoalChance(chanceQuality * 0.63 * GOAL_RATE_MOD * stepGoalMod, isHomeAttacking)
       const shotResult     = rand()
 
       if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
@@ -1464,7 +1485,10 @@ function* simulateMatchCore(
       // M15 (regelboksanpassning 2026-07-03): 1.46→1.02, sedan omkalibrerad
       // 1.02→SUSPENSION_FREQUENCY_MOD (sluttest-utvisningar-kalibrering,
       // GO 2026-09-08) — se konstantens egen kommentar för varför.
-      const foulThreshold = foulProb * SUSPENSION_FREQUENCY_MOD * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult * refereeFoulMult
+      const baseFoulThreshold = foulProb * SUSPENSION_FREQUENCY_MOD * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult * refereeFoulMult
+      const foulThreshold = livePressModifiers && managedIsHome !== undefined && isHomeAttacking !== managedIsHome
+        ? Math.min(0.95, baseFoulThreshold + livePressModifiers.foulProbBonus)
+        : baseFoulThreshold
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70
@@ -1537,7 +1561,7 @@ function* simulateMatchCore(
     const scoreStr      = `${homeScore}–${awayScore}`
     const attackingTeam = isHomeAttacking ? homeTeamRef : awayTeamRef
     const defendingTeam = isHomeAttacking ? awayTeamRef : homeTeamRef
-    const savingGK      = gkPlayerId ? findPlayerName(gkPlayerId) : ''
+    const savingGK      = gkPlayerId ? findCommentaryName(gkPlayerId) : ''
 
     let commentaryText = penaltyCauseText   // penalty cause overrides default if set
     let isDerbyStep    = false
@@ -1551,7 +1575,7 @@ function* simulateMatchCore(
         opponent:  defendingTeam,
         score:     scoreStr,
         minute:    String(minute),
-        player:    scorerPlayerId ? findPlayerName(scorerPlayerId) : '',
+        player:    scorerPlayerId ? findCommentaryName(scorerPlayerId) : '',
         goalkeeper: savingGK,
         intensity: 'intensiv',
         result:    homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
@@ -1647,7 +1671,7 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand, commentaryHistory), templateVars)
         }
       } else if (cornerGoalScored && scorerPlayerId) {
-        templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
+        templateVars = { ...templateVars, player: homeScore + awayScore === 1 ? findPlayerName(scorerPlayerId) : findCommentaryName(scorerPlayerId) }
         const cornerIntro = fillTemplate(pickCommentary(commentary.corner, rand, commentaryHistory), templateVars)
         let goalText: string
         if (weather?.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
@@ -1661,9 +1685,18 @@ function* simulateMatchCore(
         }
         commentaryText = cornerIntro + ' ' + goalText
       } else if (goalScored && scorerPlayerId) {
-        templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
+        // En hörna kan följas av mål för FÖRSVARANDE lag på kontring.
+        // Anfallssidan för hörnan är då inte målskyttens sida.
+        const goalEvent = stepEvents.find(event => event.type === MatchEventType.Goal)
+        const scoringHome = goalEvent ? goalEvent.clubId === fixture.homeClubId : isHomeAttacking
+        templateVars = {
+          ...templateVars,
+          player: homeScore + awayScore === 1 ? findPlayerName(scorerPlayerId) : findCommentaryName(scorerPlayerId),
+          team: scoringHome ? homeTeamRef : awayTeamRef,
+          opponent: scoringHome ? awayTeamRef : homeTeamRef,
+        }
         const scorerPlayer    = allPlayers.find(p => p.id === scorerPlayerId)
-        const scorerIsManaged = managedIsHome !== undefined ? (managedIsHome ? isHomeAttacking : !isHomeAttacking) : false
+        const scorerIsManaged = managedIsHome !== undefined ? managedIsHome === scoringHome : false
         const scorerName      = findPlayerName(scorerPlayerId)
         const currentMargin   = Math.abs(homeScore - awayScore)
 
@@ -1704,7 +1737,7 @@ function* simulateMatchCore(
           if (matchedStory) {
             commentaryText = storylineMap[matchedStory.type]
           } else {
-            commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
+            commentaryText = fillTemplate(pickGoalCommentary(scoringHome ? homeScore : awayScore, scoringHome ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
           }
         } else if (rand() < 0.40) {
           // Contextual commentary (THE BOMB 1.3)
@@ -1727,18 +1760,18 @@ function* simulateMatchCore(
               commentaryHistory,
             ), templateVars)
           }
-          commentaryText = contextual ?? fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
+          commentaryText = contextual ?? fillTemplate(pickGoalCommentary(scoringHome ? homeScore : awayScore, scoringHome ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
         } else if (weather?.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
           commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand, commentaryHistory), templateVars)
         } else if (weather?.condition === WeatherCondition.Thaw && rand() < 0.20) {
           commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand, commentaryHistory), templateVars)
         } else {
-          commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
+          commentaryText = fillTemplate(pickGoalCommentary(scoringHome ? homeScore : awayScore, scoringHome ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
         }
 
         // Supporter goal reaction
         if (supporterCtx && managedIsHome !== undefined) {
-          const managedScored = managedIsHome === isHomeAttacking
+          const managedScored = managedIsHome === scoringHome
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           if (managedScored && rand() < 0.35) {
             commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_home, rand, commentaryHistory), sv)
@@ -1762,7 +1795,7 @@ function* simulateMatchCore(
         // Målvakten hör till FÖRSVARANDE lag, inte anfallande — templateVars.team/opponent
         // sattes ovan utifrån isHomeAttacking (anfallssidan) och pekade därför fel klubb
         // i {team}-tokens i save-poolen (t.ex. "Han höll {team} kvar i matchen där!").
-        templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId), team: defendingTeam, opponent: attackingTeam }
+        templateVars = { ...templateVars, goalkeeper: findCommentaryName(gkPlayerId), team: defendingTeam, opponent: attackingTeam }
         // Sprint 28-B: Legend GK save commentary (70% override)
         const gkPlayer    = allPlayers.find(p => p.id === gkPlayerId)
         const gkIsManaged = managedIsHome !== undefined ? (managedIsHome ? !isHomeAttacking : isHomeAttacking) : false
@@ -1778,7 +1811,7 @@ function* simulateMatchCore(
         const suspensionSides = suspensionCommentarySides(isHomeAttacking, homeTeamRef, awayTeamRef)
         templateVars = {
           ...templateVars,
-          player: findPlayerName(suspendedPlayerId),
+          player: findCommentaryName(suspendedPlayerId),
           ...suspensionSides,
         }
         if (rivalry && rand() < 0.50) {
@@ -1808,7 +1841,7 @@ function* simulateMatchCore(
         commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand, commentaryHistory), templateVars)
       } else if (seqType === 'player_duel') {
         const dp   = getGoalScorer(attackingStarters)
-        const dv   = { ...templateVars, player: dp ? findPlayerName(dp.id) : attackingTeam }
+        const dv   = { ...templateVars, player: dp ? findCommentaryName(dp.id) : attackingTeam }
         commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand, commentaryHistory), dv)
       } else if (seqType === 'atmosphere') {
         if (fixture.isCup && input.isCupFinalhelgen) {
@@ -1825,11 +1858,11 @@ function* simulateMatchCore(
         }
       } else if (seqType === 'offside_call') {
         const op   = getGoalScorer(attackingStarters)
-        const ov   = { ...templateVars, player: op ? findPlayerName(op.id) : attackingTeam }
+        const ov   = { ...templateVars, player: op ? findCommentaryName(op.id) : attackingTeam }
         commentaryText = fillTemplate(pickCommentary(commentary.offside_call, rand, commentaryHistory), ov)
       } else if (seqType === 'freekick_danger') {
         const fp   = getGoalScorer(attackingStarters)
-        const fv   = { ...templateVars, player: fp ? findPlayerName(fp.id) : attackingTeam }
+        const fv   = { ...templateVars, player: fp ? findCommentaryName(fp.id) : attackingTeam }
         commentaryText = fillTemplate(pickCommentary(commentary.freekick_danger, rand, commentaryHistory), fv)
       } else {
         if (rivalry && step % 10 === 0 && !goalScored && !saveOccurred && !suspensionOccurred && !cornerOccurred && rand() < 0.30) {
@@ -1930,7 +1963,7 @@ function* simulateMatchCore(
       if (suspensionOccurred && suspendedPlayerId && rand() < 0.35) {
         const managedIsDefending = managedIsHome !== undefined ? (managedIsHome !== isHomeAttacking) : false
         const scoreDiff = managedIsHome ? (homeScore - awayScore) : (awayScore - homeScore)
-        const suspName  = findPlayerName(suspendedPlayerId)
+        const suspName  = findCommentaryName(suspendedPlayerId)
         if (managedIsDefending && scoreDiff < 0) {
           commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_frustration, rand, commentaryHistory), { ...templateVars, player: suspName, score: scoreStr })
         } else if (managedIsDefending && scoreDiff > 0) {
@@ -1976,7 +2009,9 @@ function* simulateMatchCore(
       }
 
       // Last-minute press trigger
-      if (!lastMinutePressTriggered && step >= 55 && managedIsHome !== undefined) {
+      // Valet påverkar bara framtida steg; visa ingen beslutsruta på sista
+      // spelsteget när det inte finns någon återstående tid att påverka.
+      if (!lastMinutePressTriggered && step >= 55 && step < 59 && managedIsHome !== undefined) {
         const mg   = managedIsHome ? homeScore : awayScore
         const og   = managedIsHome ? awayScore : homeScore
         if (mg - og === -1) {
@@ -2201,7 +2236,7 @@ function* simulateMatchCore(
     if (isFast) {
       otCommentary = otGoalScored ? otScoreStr : ''
     } else if (otGoalScored && otScorerPlayerId) {
-      otCommentary = fillTemplate(pickCommentary(commentary.overtimeGoal, rand, commentaryHistory), { player: findPlayerName(otScorerPlayerId), score: otScoreStr, team: attackTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
+      otCommentary = fillTemplate(pickCommentary(commentary.overtimeGoal, rand, commentaryHistory), { player: findCommentaryName(otScorerPlayerId), score: otScoreStr, team: attackTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
     } else if (step === 74) {
       otCommentary = fillTemplate(pickCommentary(commentary.overtimeEnd, rand, commentaryHistory), { score: otScoreStr, team: '', opponent: '', minute: '110', player: '', goalkeeper: '', rivalry: '', result: '' })
     } else {

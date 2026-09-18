@@ -22,6 +22,19 @@ function item(id: string, type: InboxItemType = InboxItemType.Community): InboxI
 const chronology = { season: 2026, matchday: 4, leagueRound: null, date: '2026-10-08' }
 
 describe('finalizeInboxDelivery', () => {
+  it('släpper inte fram deadline-bud som bara finns som text, inte som öppet bud', () => {
+    const phantom = item('deadline_window_bid_2026_4', InboxItemType.TransferDeadline)
+    const result = finalizeInboxDelivery(game({ inbox: [phantom], deferredInbox: [phantom] }), [phantom], chronology)
+    expect(result.inbox).toEqual([])
+    expect(result.deferredInbox).toEqual([])
+  })
+
+  it('släpper fram en deadline-notis som pekar på ett verkligt öppet bud', () => {
+    const linked = { ...item('real-deadline', InboxItemType.TransferDeadline), relatedBidId: 'real-bid' }
+    const g = game({ transferBids: [{ id: 'real-bid', playerId: 'p', direction: 'incoming', status: 'pending' }] as SaveGame['transferBids'] })
+    expect(finalizeInboxDelivery(g, [linked], chronology).inbox.map(candidate => candidate.id)).toContain(linked.id)
+  })
+
   it('portionerar informationsnotiser men släpper alltid igenom ärenden som kräver svar', () => {
     const info = Array.from({ length: 8 }, (_, index) => item(`info-${index}`))
     const action = item('offer', InboxItemType.TransferOffer)

@@ -22,9 +22,11 @@ export const LOCAL_PAPER_NAMES = [
  * varieras inom rätt område, men aldrig väljas ur en nationell pool. */
 export const LOCAL_PAPER_NAMES_BY_REGION: Record<string, readonly string[]> = {
   Gästrikland: ['Gefle Dagblad', 'Arbetarbladet'],
+  Hälsingland: ['Hälsinge-Kuriren', 'Hudiksvalls Tidning'],
   Uppland: ['Länstidningen', 'Lokalbladet'],
   Västmanland: ['Västmanlands Nyheter'],
-  Norrbotten: ['Norra Västerbotten', 'Norrlands-Posten', 'Kuriren'],
+  Norrbotten: ['Norrlands-Posten', 'Kuriren'],
+  Västerbotten: ['Norra Västerbotten', 'Folkbladet'],
   Småland: ['Nya Tidningen', 'Lokalbladet'],
   Dalarna: ['Dala-Demokraten', 'Länstidningen'],
   Södermanland: ['Sörmlands-Posten'],
@@ -33,7 +35,8 @@ export const LOCAL_PAPER_NAMES_BY_REGION: Record<string, readonly string[]> = {
 }
 
 export function getLocalPaperNames(region: string): readonly string[] {
-  return LOCAL_PAPER_NAMES_BY_REGION[region] ?? LOCAL_PAPER_NAMES
+  // En okänd region får aldrig en slumpad tidning från andra änden av landet.
+  return LOCAL_PAPER_NAMES_BY_REGION[region] ?? ['Lokaltidningen']
 }
 
 export const KIOSK_FLAVORS = [

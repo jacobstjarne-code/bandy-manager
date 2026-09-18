@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { ScoutAssignment, ScoutReport } from '../../../domain/entities/Scouting'
@@ -8,6 +7,7 @@ import { getScoutAssignmentRounds, getScoutReportAge, getAttributeBand, ATTRIBUT
 import { getScoutablePlayers } from '../../../domain/services/talentScoutService'
 import { positionShort, positionLong, formatValue } from '../../utils/formatters'
 import { SectionLabel } from '../SectionLabel'
+import { PlayerPortrait } from '../PlayerPortrait'
 
 const POSITION_GROUPS: PlayerPosition[] = [
   PlayerPosition.Goalkeeper,
@@ -16,6 +16,13 @@ const POSITION_GROUPS: PlayerPosition[] = [
   PlayerPosition.Midfielder,
   PlayerPosition.Forward,
 ]
+const POSITION_GROUP_LABELS: Record<PlayerPosition, string> = {
+  [PlayerPosition.Goalkeeper]: 'Målvakter',
+  [PlayerPosition.Defender]: 'Backar',
+  [PlayerPosition.Half]: 'Ytterhalvor',
+  [PlayerPosition.Midfielder]: 'Mittfältare',
+  [PlayerPosition.Forward]: 'Anfallare',
+}
 
 const GROUP_CAP = 8
 // L3 (mobil speltest-audit, 2026-08-26): Scoutrapporter var okapad — varje
@@ -40,6 +47,7 @@ interface ScoutingTabProps {
   onSetSpanningMaxAge: (v: number) => void
   onSetSpanningMaxSalary: (v: number) => void
   onBid: (playerId: string) => void
+  onShowFreeAgents: () => void
   onScout: (player: Player) => void
   onStartTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
   onScoutMessage: (msg: string | null) => void
@@ -61,6 +69,7 @@ export function ScoutingTab({
   onSetSpanningMaxAge,
   onSetSpanningMaxSalary,
   onBid,
+  onShowFreeAgents,
   onScout,
   onStartTalentSearch,
   onScoutMessage,
@@ -69,14 +78,35 @@ export function ScoutingTab({
   const [expandedGroups, setExpandedGroups] = useState<Set<PlayerPosition>>(new Set())
   const [openPosition, setOpenPosition] = useState<PlayerPosition | null>(null)
   const [reportsExpanded, setReportsExpanded] = useState(false)
+  const [reportToShow, setReportToShow] = useState<string | null>(null)
 
   const scoutablePlayers = getScoutablePlayers(game.players, game.managedClubId)
-    .sort((a, b) => {
-      const aScout = !!scoutReports[a.id]
-      const bScout = !!scoutReports[b.id]
-      if (aScout !== bScout) return aScout ? 1 : -1
-      return b.currentAbility - a.currentAbility
-    })
+    .filter(player => player.clubId !== 'free_agent')
+    // Låt spelaren stå kvar på samma plats när rapporten blir klar. Den gamla
+    // sorteringen flyttade rapportklara spelare bakom de outvärderade och kunde
+    // få ett klick på ”Utvärdera” att se ut som om ingenting hände.
+    .sort((a, b) => b.currentAbility - a.currentAbility)
+  const pendingBids = new Map((game.transferBids ?? [])
+    .filter(bid => bid.direction === 'outgoing' && bid.status === 'pending')
+    .map(bid => [bid.playerId, bid]))
+
+  function bidState(playerId: string) {
+    const bid = pendingBids.get(playerId)
+    if (!bid) return null
+    const roundsLeft = bid.expiresRound - currentRound
+    return <span className="transfers-bid-pending" role="status">Bud skickat · {formatValue(bid.offerAmount)} · {roundsLeft > 0 ? `svar om ${roundsLeft} omg.` : 'svar väntat'}</span>
+  }
+
+  useEffect(() => {
+    if (!reportToShow) return
+    document.getElementById(`scout-report-${reportToShow}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setReportToShow(null)
+  }, [reportToShow, reportsExpanded])
+
+  function showReport(playerId: string) {
+    setReportsExpanded(true)
+    setReportToShow(playerId)
+  }
 
   // Pre-compute scout cost per player (same logic as handleScout in TransfersScreen)
   function scoutCost(player: Player): 'direkt' | '1 omgång' | '2 omgångar' {
@@ -97,7 +127,7 @@ export function ScoutingTab({
       <div className="card-stagger-1 transfers-section">
         <div className="card-sharp transfers-spaning-intro">
           <p className="transfers-spaning-info">
-            <strong className="transfers-strong">Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
+            <strong className="transfers-strong">Spaning</strong> sållar fram namn efter position, ålder och lön. Tar 2 omgångar. <em>Utvärdering</em> ger en rapport om en spelare du väljer själv.
           </p>
         </div>
 
@@ -167,10 +197,10 @@ export function ScoutingTab({
                   setTimeout(() => onScoutMessage(null), 3000)
                 }
               }}
-              disabled={scoutBudget < 2}
-              className={`btn ${scoutBudget >= 2 ? 'btn-primary' : 'btn-ghost'} transfers-spaning-cta`}
+              disabled={scoutBudget < 2 || !!activeAssignment}
+              className={`btn ${scoutBudget >= 2 && !activeAssignment ? 'btn-primary' : 'btn-ghost'} transfers-spaning-cta`}
             >
-              Starta spaning
+              {activeAssignment ? 'Scout upptagen' : 'Starta spaning'}
             </button>
           </div>
         )}
@@ -184,8 +214,9 @@ export function ScoutingTab({
                 {latestResult.players.map((suggestion, index) => {
                   const player = game.players.find(p => p.id === suggestion.playerId)
                   const club = player ? game.clubs.find(c => c.id === player.clubId) : null
-                  const report = player ? (game.scoutReports ?? {})[player.id] : null
+                  const report = player ? scoutReports[player.id] : null
                   const isAlreadyScouted = !!report
+                  const isCurrentAssignment = activeAssignment?.targetPlayerId === suggestion.playerId
                   return (
                     <div key={suggestion.playerId} className={`transfers-talent-row ${index < latestResult.players.length - 1 ? 'transfers-row-divider' : ''} ${isAlreadyScouted ? 'transfers-talent-row--scouted' : ''}`}>
                       <div className="transfers-list-content">
@@ -193,28 +224,36 @@ export function ScoutingTab({
                           {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
                         </p>
                         <p className="transfers-talent-meta">
-                          {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? '?'} · {player ? `${player.age} år` : ''} · Styrka ~{suggestion.estimatedCA}
+                          {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? (player?.clubId === 'free_agent' ? 'Fri agent' : '?')} · {player ? `${player.age} år` : ''} · Styrka ~{suggestion.estimatedCA}
                         </p>
                         <p className="transfers-talent-notes">{suggestion.scoutNotes}</p>
+                        {bidState(suggestion.playerId)}
                       </div>
                       <div className="transfers-talent-actions">
-                        {isAlreadyScouted && <span className="tag tag-copper">Scoutad</span>}
-                        {player && !isAlreadyScouted && (
-                          <button
-                            onClick={() => player && onScout(player)}
-                            disabled={!!activeAssignment || scoutBudget <= 0}
-                            className={`btn ${(!activeAssignment && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--slim`}
-                          >
-                            {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
+                        {isAlreadyScouted && (
+                          <button type="button" onClick={() => showReport(suggestion.playerId)} className="transfers-report-link">
+                            Visa rapport
                           </button>
                         )}
-                        {windowOpen && player && managedClub && (
+                        {player && player.clubId !== 'free_agent' && player.clubId !== game.managedClubId && !isAlreadyScouted && (
+                          <button
+                            onClick={() => player && onScout(player)}
+                            disabled={!!activeAssignment || !!game.activeTalentSearch || scoutBudget <= 0}
+                            className={`btn ${(!activeAssignment && !game.activeTalentSearch && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--slim`}
+                          >
+                            {isCurrentAssignment ? 'Pågår' : activeAssignment || game.activeTalentSearch ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
+                          </button>
+                        )}
+                        {player?.clubId === 'free_agent' && (
+                          <button onClick={onShowFreeAgents} className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim">
+                            Visa under Fria
+                          </button>
+                        )}
+                        {windowOpen && player && player.clubId !== 'free_agent' && player.clubId !== game.managedClubId && managedClub && isAlreadyScouted && !pendingBids.has(player.id) && (
                           <button
                             onClick={() => onBid(suggestion.playerId)}
                             className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim"
-                          >
-                            Lägg bud
-                          </button>
+                          >Lägg bud</button>
                         )}
                       </div>
                     </div>
@@ -243,7 +282,7 @@ export function ScoutingTab({
             <div className="card-sharp transfers-card-clipped">
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
-                const reportClub = game.clubs.find(c => c.id === report.clubId)
+                const reportClub = game.clubs.find(c => c.id === reportPlayer?.clubId)
                 const age = getScoutReportAge(report, game.currentSeason, report.scoutedSeason)
                 const freshnessLabel = age === 'fresh' ? 'Färsk' : age === 'aging' ? 'Gammal' : 'Inaktuell'
                 const freshnessClass = `transfers-freshness--${age}`
@@ -251,34 +290,30 @@ export function ScoutingTab({
                 return (
                   <div
                     key={report.playerId}
+                    id={`scout-report-${report.playerId}`}
                     className={`transfers-report-row ${index < reportEntries.length - 1 ? 'transfers-row-divider' : ''}`}
                   >
                     <div className="transfers-list-content">
                       <div className="transfers-report-header">
+                        {reportPlayer && (
+                          <span className="transfers-report-portrait">
+                            <PlayerPortrait playerId={reportPlayer.id} age={reportPlayer.age} position={reportPlayer.position} />
+                          </span>
+                        )}
                         <p className="transfers-report-name">
                           {reportPlayer ? `${reportPlayer.firstName} ${reportPlayer.lastName}` : report.playerId}
                         </p>
-                        <button
-                          onClick={() => onToggleShortlist(report.playerId)}
-                          aria-label={report.shortlisted ? 'Ta bort från favoriter' : 'Lägg till i favoriter'}
-                          className="btn-ghost transfers-shortlist-btn"
-                        >
-                          <Star
-                            size={16}
-                            color={report.shortlisted ? 'var(--accent)' : 'var(--text-muted)'}
-                            fill={report.shortlisted ? 'var(--accent)' : 'none'}
-                          />
-                        </button>
                         <span className={`transfers-freshness ${freshnessClass}`}>
                           {freshnessLabel}
                         </span>
                       </div>
                       <p className="transfers-report-meta">
-                        {reportPlayer ? positionShort(reportPlayer.position) + ' · ' : ''}{reportClub?.name ?? '?'} · Säsong {report.scoutedSeason}
+                        {reportPlayer ? positionShort(reportPlayer.position) + ' · ' : ''}{reportClub?.name ?? (reportPlayer?.clubId === 'free_agent' ? 'Fri agent' : '?')} · Säsong {report.scoutedSeason}
                       </p>
                       <p className="transfers-report-meta">
                         Styrka ~{report.estimatedCA} ± {caRange} · Potential ~{report.estimatedPA}
                       </p>
+                      {bidState(report.playerId)}
                       {report.notes && (
                         <p className="transfers-report-notes">{report.notes}</p>
                       )}
@@ -311,14 +346,28 @@ export function ScoutingTab({
                         </div>
                       )}
                     </div>
-                    {windowOpen && reportPlayer && managedClub && (
+                    <div className="transfers-report-actions">
+                      {reportPlayer?.clubId === 'free_agent' && (
+                        <button onClick={onShowFreeAgents} className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim">
+                          Visa under Fria
+                        </button>
+                      )}
+                      {windowOpen && reportPlayer && reportPlayer.clubId !== 'free_agent' && reportPlayer.clubId !== game.managedClubId && managedClub && !pendingBids.has(report.playerId) && (
+                        <button
+                          onClick={() => onBid(report.playerId)}
+                          className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim"
+                        >Lägg bud</button>
+                      )}
                       <button
-                        onClick={() => onBid(report.playerId)}
-                        className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim"
+                        type="button"
+                        onClick={() => onToggleShortlist(report.playerId)}
+                        aria-pressed={Boolean(report.shortlisted)}
+                        aria-label={report.shortlisted ? 'Ta bort från favoriter' : 'Lägg till i favoriter'}
+                        className="transfers-shortlist-btn"
                       >
-                        Lägg bud
+                        {report.shortlisted ? 'Ta bort favorit' : 'Spara favorit'}
                       </button>
-                    )}
+                    </div>
                   </div>
                 )
               })}
@@ -341,7 +390,10 @@ export function ScoutingTab({
           <span className={`transfers-budget-remaining ${scoutBudget > 3 ? '' : 'transfers-budget-remaining--low'}`}>
             Budget: {scoutBudget} kvar
           </span>
-        }>Spelare att utvärdera</SectionLabel>
+        }>Spelare per position</SectionLabel>
+        <p className="transfers-scouting-guide">
+          Antalet visar spelare i andra klubbar, inte vilka som är till salu. Utvärdera för en rapport; därefter kan du spara en favorit eller lägga bud.
+        </p>
 
         {POSITION_GROUPS.map(pos => {
           const groupPlayers = scoutablePlayers.filter(p => p.position === pos)
@@ -360,7 +412,7 @@ export function ScoutingTab({
                 onClick={() => setOpenPosition(current => current === pos ? null : pos)}
               >
                 <span className="transfers-position-toggle-label">
-                  {positionLong(pos)} · {groupPlayers.length}
+                  {POSITION_GROUP_LABELS[pos]} · {groupPlayers.length} spelare
                 </span>
                 <span aria-hidden="true" className="transfers-position-toggle-icon">
                   {isOpen ? '−' : '+'}
@@ -372,13 +424,14 @@ export function ScoutingTab({
                   const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
                   const isStale = reportAge === 'stale'
                   const isScouted = !!report && !isStale
+                  const isCurrentAssignment = activeAssignment?.targetPlayerId === player.id
                   const club = game.clubs.find(c => c.id === player.clubId)
-                  const canScout = !activeAssignment && scoutBudget > 0 && !isScouted
-                  const cost = !isScouted ? scoutCost(player) : null
+                  const canScout = !activeAssignment && !game.activeTalentSearch && scoutBudget > 0 && !isScouted
+                  const cost = !isScouted && !isCurrentAssignment ? scoutCost(player) : null
                   return (
                     <div
                       key={player.id}
-                      className={`transfers-list-row-lg${isScouted ? ' transfers-state-scouted-bg transfers-player-row--scouted' : ''}${index < visible.length - 1 ? ' transfers-row-divider' : ''}`}
+                      className={`transfers-list-row-lg${isScouted ? ' transfers-state-scouted-bg' : ''}${index < visible.length - 1 ? ' transfers-row-divider' : ''}`}
                     >
                       <div className="transfers-list-content">
                         <p className="transfers-list-name-lg">
@@ -391,8 +444,12 @@ export function ScoutingTab({
                         <p className="transfers-player-meta">
                           {positionShort(player.position)} · {player.age} år · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
                           {isScouted
-                            ? <span>Styrka ~{report!.estimatedCA}</span>
-                            : <span className="transfers-muted">Styrka ej utvärderad</span>
+                            ? <span>Rapport klar · Styrka ~{report!.estimatedCA}</span>
+                            : isCurrentAssignment
+                              ? <span>Utvärdering pågår · {activeAssignment.roundsRemaining} omg. kvar</span>
+                              : isStale
+                                ? <span>Rapporten behöver uppdateras</span>
+                                : <span className="transfers-muted">Styrka ej utvärderad</span>
                           }
                           {cost && (
                             <span className="transfers-cost-wrap">
@@ -405,14 +462,19 @@ export function ScoutingTab({
                         {isScouted && (
                           <p className="transfers-player-notes">{report!.notes}</p>
                         )}
+                        {bidState(player.id)}
                       </div>
-                      {isScouted && windowOpen && (
-                        <button
-                          onClick={() => onBid(player.id)}
-                          className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim transfers-btn-offset"
-                        >
-                          Bud
-                        </button>
+                      {isScouted && (
+                        <div className="transfers-scout-actions">
+                          <button type="button" onClick={() => showReport(player.id)} className="transfers-report-link">
+                            Visa rapport
+                          </button>
+                          {windowOpen && !pendingBids.has(player.id) && (
+                            <button onClick={() => onBid(player.id)} className="btn btn-outline transfers-btn-sm transfers-btn-sm--slim">
+                              Lägg bud
+                            </button>
+                          )}
+                        </div>
                       )}
                       {!isScouted && (
                         <button
@@ -420,7 +482,7 @@ export function ScoutingTab({
                           disabled={!canScout}
                           className={`btn ${canScout ? 'btn-outline' : 'btn-ghost'} transfers-btn-sm transfers-btn-sm--slim`}
                         >
-                          {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
+                          {isCurrentAssignment ? 'Pågår' : activeAssignment || game.activeTalentSearch ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : isStale ? 'Utvärdera igen' : 'Utvärdera'}
                         </button>
                       )}
                     </div>
@@ -432,7 +494,7 @@ export function ScoutingTab({
                   className="btn btn-ghost transfers-expand-btn"
                   onClick={() => setExpandedGroups(prev => new Set([...prev, pos]))}
                 >
-                  + {hidden} fler {positionLong(pos).toLowerCase()}
+                  + {hidden} fler {POSITION_GROUP_LABELS[pos].toLowerCase()}
                 </button>
               )}
             </div>

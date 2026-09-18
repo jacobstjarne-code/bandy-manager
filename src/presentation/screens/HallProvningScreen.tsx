@@ -47,6 +47,15 @@ export default function HallProvningScreen() {
   }
   const nodeDef = FACILITY_NODE_DEFS.find(d => d.isHall)
   const subText = formatHallNodeSub(game)
+  const resolved = new Set(game.resolvedEventIds ?? [])
+  const season = game.currentSeason
+  const nextForankringStep = !resolved.has(`hallprocess_d1_s${season}`)
+    ? 'Medlemsmötet i klubbhuset'
+    : !resolved.has(`hallprocess_d2_s${season}`)
+      ? 'Mötet med Birger'
+      : !resolved.has(`hallprocess_d3_s${season}`)
+        ? 'Lokaltidningens frågor'
+        : 'Röstningen om hallen'
 
   return (
     <div className="screen-col-layout">
@@ -94,6 +103,18 @@ export default function HallProvningScreen() {
             </div>
             <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
               {(trial?.support ?? 0) >= 60 ? STOD_LABELS.high : (trial?.support ?? 0) >= 40 ? STOD_LABELS.mid : STOD_LABELS.low}
+            </p>
+          </div>
+        )}
+
+        {stage === 'forankring' && (
+          <div className="card-sharp" style={{ padding: '14px 16px' }}>
+            <p className="h-label">NÄSTA STEG</p>
+            <p style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: 8 }}>
+              {nextForankringStep}
+            </p>
+            <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', marginTop: 6 }}>
+              Beslutet kommer som ett kort i Portalen när det är dags. Här följer du hur stödet förändras.
             </p>
           </div>
         )}
@@ -154,9 +175,16 @@ export default function HallProvningScreen() {
           </div>
         )}
 
-        <p className="h-quote-sm" style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: 4 }}>
-          Inget är förvalt.
-        </p>
+        {stage === 'krav' && (
+          <p className="h-quote-sm" style={{ color: 'var(--text-secondary)' }}>
+            När kraven är uppfyllda kommer nästa besked i Portalen.
+          </p>
+        )}
+        {stage === 'forhandling' && (
+          <p className="h-quote-sm" style={{ color: 'var(--text-secondary)' }}>
+            Förhandlingsbesluten kommer som kort i Portalen.
+          </p>
+        )}
       </div>
     </div>
   )

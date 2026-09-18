@@ -11,8 +11,8 @@ describe('lokaltidning — klubbens geografi är sanningskälla', () => {
       journalist: game.journalist ? { ...game.journalist, outlet: 'Sörmlands-Posten' } : undefined,
     })
 
-    expect(migrated.localPaperName).toBe('Norra Västerbotten')
-    expect(migrated.journalist?.outlet).toBe('Norra Västerbotten')
+    expect(migrated.localPaperName).toBe('Norrlands-Posten')
+    expect(migrated.journalist?.outlet).toBe('Norrlands-Posten')
   })
 
   it('bevarar en redaktion som redan hör till klubbens region', () => {
@@ -25,5 +25,17 @@ describe('lokaltidning — klubbens geografi är sanningskälla', () => {
 
     expect(migrated.localPaperName).toBe('Sörmlands-Posten')
     expect(migrated.journalist?.outlet).toBe('Sörmlands-Posten')
+  })
+
+  it('synkar journalistens redaktion när endast lokaltidningen redan är rätt', () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_karlsborg', seed: 19 })
+    const migrated = migrateSaveGame({
+      ...game,
+      localPaperName: 'Kuriren',
+      journalist: game.journalist ? { ...game.journalist, outlet: 'Sörmlands-Posten' } : undefined,
+    })
+
+    expect(migrated.localPaperName).toBe('Kuriren')
+    expect(migrated.journalist?.outlet).toBe('Kuriren')
   })
 })

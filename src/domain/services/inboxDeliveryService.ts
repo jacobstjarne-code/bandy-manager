@@ -1,7 +1,7 @@
 import type { InboxItem, SaveGame } from '../entities/SaveGame'
 import { InboxItemType } from '../enums'
 import { canLocalPressSpeak, canVoiceSpeak, patronVoiceId, mecenatVoiceId, politicianVoiceId } from './voiceIntroductionService'
-import { getInboxGroup } from './inboxPresentationService'
+import { getInboxGroup, isDeliverableInboxItem } from './inboxPresentationService'
 
 export const MAX_UNREAD_INFORMATIONAL_INBOX = 4
 export const MAX_DEFERRED_INBOX = 30
@@ -126,7 +126,7 @@ export function finalizeInboxDelivery(
   // Event resolutions can add inbox rows between round ticks. Stamp legacy/
   // direct rows the next time they pass the editor so they can age out instead
   // of remaining unread forever.
-  let existing = game.inbox.map(item => ({
+  let existing = game.inbox.filter(item => isDeliverableInboxItem(item, game)).map(item => ({
     ...item,
     createdSeason: item.createdSeason ?? chronology.season,
     createdMatchday: item.createdMatchday ?? chronology.matchday,
@@ -162,6 +162,7 @@ export function finalizeInboxDelivery(
     .map(occurrenceKey))
 
   const candidates = [...blockedExisting, ...(game.deferredInbox ?? []), ...newItems]
+    .filter(item => isDeliverableInboxItem(item, game))
   const unique = new Map<string, InboxItem>()
   for (const raw of candidates) {
     if (existingIds.has(raw.id)) continue

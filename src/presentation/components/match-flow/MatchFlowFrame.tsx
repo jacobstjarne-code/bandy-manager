@@ -68,6 +68,26 @@ const PHASES: { key: MatchFlowPhase; label: string }[] = [
 const PHASE_INDEX: Record<MatchFlowPhase, number> = { forbered: 0, spela: 1, granska: 2 }
 const PERF_DOTS = Array.from({ length: 12 })
 
+/** Matchflödets riktiga fasrad, också använd som läsbart exempel i Klubbpärmen. */
+export function MatchPhaseStrip({ phase }: { phase: MatchFlowPhase }) {
+  const phaseIdx = PHASE_INDEX[phase]
+  return (
+    <div className="mf-rps">
+      {PHASES.map((p, i) => {
+        const cls = i === phaseIdx ? 'active' : i < phaseIdx ? 'done' : 'pending'
+        return (
+          <span key={p.key} className={`mf-rps-item ${cls}`}>
+            {i < phaseIdx && <span className="mf-rps-icon">✓</span>}
+            {i === phaseIdx && <span className="mf-rps-icon">⬡</span>}
+            {p.label}
+            {i < PHASES.length - 1 && <span className="mf-rps-sep" aria-hidden="true"> — </span>}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 export function MatchFlowFrame({
   clubId,
   clubName,
@@ -86,7 +106,6 @@ export function MatchFlowFrame({
 }: MatchFlowFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [scoreboardBottom, setScoreboardBottom] = useState(0)
-  const phaseIdx = PHASE_INDEX[phase]
   // Grepp 4: under spel viker masthead + RPS ihop till en tunn orienteringsrad.
   const slim = phase === 'spela' && liveScore != null
 
@@ -147,23 +166,7 @@ export function MatchFlowFrame({
           </div>
 
           {/* ── RPS-strip ── */}
-          <div className="mf-rps">
-            {PHASES.map((p, i) => {
-              const isDone = i < phaseIdx
-              const isActive = i === phaseIdx
-              const cls = isActive ? 'active' : isDone ? 'done' : 'pending'
-              return (
-                <span key={p.key} className={`mf-rps-item ${cls}`}>
-                  {isDone && <span className="mf-rps-icon">✓</span>}
-                  {isActive && <span className="mf-rps-icon">⬡</span>}
-                  {p.label}
-                  {i < PHASES.length - 1 && (
-                    <span className="mf-rps-sep" aria-hidden="true"> — </span>
-                  )}
-                </span>
-              )
-            })}
-          </div>
+          <MatchPhaseStrip phase={phase} />
         </>
       )}
 

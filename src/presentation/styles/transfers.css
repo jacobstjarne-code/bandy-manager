@@ -243,8 +243,9 @@
 
 /* ── Screen root ── */
 .transfers-screen {
-  padding: 0 12px;
-  padding-top: 8px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px 24px;
   background: var(--bg);
 }
 
@@ -360,12 +361,6 @@
 }
 
 /* ── Scout budget label ── */
-.transfers-scout-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
 /* ── Spaning section ── */
 .transfers-spaning-info {
   font-size: 12px;
@@ -418,7 +413,8 @@
 }
 
 /* ── Report section ── */
-.transfers-report-row {
+.transfers-report-row,
+.transfers-talent-row {
   padding: 10px 14px;
   display: flex;
   align-items: flex-start;
@@ -432,7 +428,19 @@
   margin-bottom: 2px;
 }
 
+.transfers-report-portrait {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid var(--border-dark);
+  background: var(--bg-surface);
+}
+
 .transfers-report-name {
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
   /* G1·G3 (CODE_INSTRUKTION_KORRVANDA2): saknade Georgia — Scouting-raden är
@@ -444,13 +452,15 @@
   text-overflow: ellipsis;
 }
 
-.transfers-report-meta {
+.transfers-report-meta,
+.transfers-talent-meta {
   font-size: 12px;
   color: var(--text-secondary);
   margin-bottom: 2px;
 }
 
-.transfers-report-notes {
+.transfers-report-notes,
+.transfers-talent-notes {
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
@@ -477,13 +487,6 @@
 }
 
 /* ── Talent search result row ── */
-.transfers-talent-row {
-  padding: 10px 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
 .transfers-talent-actions {
   display: flex;
   flex-direction: column;
@@ -492,23 +495,20 @@
   align-items: flex-end;
 }
 
+.transfers-bid-pending {
+  display: block;
+  margin-top: 6px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .transfers-talent-name {
   font-size: 14px;
   font-weight: 600;
   font-family: var(--font-display);
   margin-bottom: 2px;
-}
-
-.transfers-talent-meta {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
-.transfers-talent-notes {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-style: italic;
 }
 
 /* ── Sprint 1 completion: shared transfer layout vocabulary ── */
@@ -668,6 +668,76 @@
   padding: 4px 12px 16px 10px;
 }
 
+/* Budet är en kort förhandling, inte ett matchprotokoll. Behåll formulär och
+   CTA inom mobilens 390px och låt fler villkor scrolla i innehållet. */
+.transfers-bid-modal .transfers-modal-header-pad {
+  margin-bottom: 0;
+  padding: 12px 14px 10px;
+}
+
+.transfers-bid-modal .transfers-modal-content {
+  padding: 0 14px 6px;
+}
+
+.transfers-bid-modal .transfers-info-box {
+  margin-bottom: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.transfers-bid-modal .transfers-form-group,
+.transfers-bid-modal .transfers-form-group.transfers-form-group--lg {
+  margin-bottom: 12px;
+}
+
+.transfers-bid-modal .transfers-label,
+.transfers-bid-modal .transfers-label.transfers-label--lg {
+  margin-bottom: 4px;
+}
+
+.transfers-bid-modal .transfers-input {
+  padding: 7px 10px;
+}
+
+.transfers-bid-modal .transfers-year-btn {
+  padding: 5px;
+  font-size: 13px;
+}
+
+.transfers-bid-submit {
+  margin: 8px 14px 14px;
+  width: calc(100% - 28px);
+  min-height: 48px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.transfers-dev-scout-control {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  z-index: var(--z-toast);
+  transform: translateX(-50%);
+  width: min(390px, calc(100vw - 28px));
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-modal);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.transfers-dev-scout-control-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.transfers-dev-scout-control-header span { color: var(--text-muted); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; }
+.transfers-dev-scout-control-header button { flex: 0 0 45px; font-size: 20px; color: var(--text-secondary); background: transparent; }
+.transfers-dev-scout-control p { margin: 0; line-height: 1.35; }
+.transfers-dev-scout-control > .btn { width: 100%; }
+
 .transfers-info-box--lg {
   margin-bottom: 20px;
 }
@@ -798,12 +868,36 @@
 }
 
 .transfers-shortlist-btn {
-  flex-shrink: 0;
-  padding: 4px;
-  display: flex;
-  border: none;
-  background: none;
+  width: 100%;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
   cursor: pointer;
+}
+
+.transfers-shortlist-btn[aria-pressed='true'] {
+  color: var(--text-secondary);
+}
+
+.transfers-report-actions {
+  width: 86px;
+  flex: 0 0 86px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.transfers-report-actions .btn {
+  width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 .transfers-shortlist-btn:focus-visible,
@@ -845,8 +939,37 @@
   color: var(--danger);
 }
 
-.transfers-player-row--scouted {
-  opacity: 0.8;
+.transfers-scouting-guide {
+  margin: 4px 0 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.transfers-scout-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.transfers-report-link {
+  border: 0;
+  padding: 4px 2px;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.transfers-report-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .transfers-stale-label {
@@ -883,14 +1006,15 @@
 .transfers-scout-dots {
   display: inline-flex;
   align-items: center;
+  gap: 2px;
 }
 
-.transfers-scout-dots,
 .transfers-section-label,
 .transfers-interest-badge {
   gap: 2px;
 }
 
+.transfers-scout-label,
 .transfers-scout-count,
 .transfers-response-time {
   font-size: 11px;
@@ -1158,9 +1282,9 @@
 }
 
 .transfers-position-toggle-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

@@ -17,46 +17,54 @@ const TENURE_TEXTS = [
 ]
 
 // DOM_SPRAKSVEP4 (2026-09-12), Språksvep 4 B: en hash-vald tidsbunden rad
-// ("två år", "sedan han var tolv") fick tidigare visas för en nyanländ
-// akademispelare. Poolen är nu delad — riktat test på gränsvillkoret.
+// ("två år", "sedan han var tolv") fick visas för en nyanländ akademispelare.
+// Efter att Code byggde Player.academyJoinedSeason (bevarar P19-inträdet genom
+// uppflyttningen) gatas de tidsbundna raderna på den faktiska akademitiden.
 describe('academyBreakthroughQuote', () => {
-  it('16-åring med seasonsInAcademy=0 (joinedSeason=innevarande) får aldrig en tidsbunden rad', () => {
+  it('en nyuppflyttad spelare (0 säsonger i akademin) får aldrig en tidsbunden rad', () => {
     for (let i = 0; i < 200; i++) {
-      const quote = academyBreakthroughQuote(`player_16_${i}`, 0)
+      const quote = academyBreakthroughQuote(`p16_${i}`, { academyJoinedSeason: 2030, currentSeason: 2030 })
       expect(TENURE_TEXTS, quote).not.toContain(quote)
       expect(NEUTRAL_TEXTS).toContain(quote)
     }
   })
 
-  it('utan argument alls (äldre anropare) används bara den neutrala poolen', () => {
+  it('utan tenure-uppgift (äldre saves) används bara den neutrala poolen', () => {
     for (let i = 0; i < 200; i++) {
-      const quote = academyBreakthroughQuote(`player_noarg_${i}`)
-      expect(NEUTRAL_TEXTS).toContain(quote)
+      expect(NEUTRAL_TEXTS).toContain(academyBreakthroughQuote(`pna_${i}`))
+      expect(NEUTRAL_TEXTS).toContain(academyBreakthroughQuote(`pundef_${i}`, { currentSeason: 2030 }))
     }
   })
 
-  it('19-åring med seasonsInAcademy=3 (joinedSeason −3) kan få en tidsbunden rad', () => {
+  it('tre säsonger i akademin öppnar minSeasons≤3 men inte minSeasons=4', () => {
     const seen = new Set<string>()
-    for (let i = 0; i < 200; i++) {
-      seen.add(academyBreakthroughQuote(`player_19_${i}`, 3))
+    for (let i = 0; i < 300; i++) {
+      seen.add(academyBreakthroughQuote(`p19_${i}`, { academyJoinedSeason: 2027, currentSeason: 2030 }))
     }
-    const gotTenureLine = [...seen].some(q => TENURE_TEXTS.includes(q))
-    expect(gotTenureLine).toBe(true)
-    // minSeasons:4-raden ("sedan han var tolv") ska INTE vara nåbar vid 3.
+    expect([...seen].some(q => TENURE_TEXTS.includes(q))).toBe(true)
+    // "sedan han var tolv" kräver 4 — ska inte vara nåbar vid 3.
     expect(seen.has(TENURE_TEXTS[2])).toBe(false)
   })
 
-  it('seasonsInAcademy=4 öppnar samtliga tre tidsbundna rader', () => {
+  it('fyra säsonger öppnar samtliga tre tidsbundna rader', () => {
     const seen = new Set<string>()
-    for (let i = 0; i < 300; i++) {
-      seen.add(academyBreakthroughQuote(`player_veteran_${i}`, 4))
+    for (let i = 0; i < 400; i++) {
+      seen.add(academyBreakthroughQuote(`pvet_${i}`, { academyJoinedSeason: 2026, currentSeason: 2030 }))
     }
     for (const t of TENURE_TEXTS) expect(seen.has(t)).toBe(true)
   })
 
-  it('samma spelare får alltid samma rad (deterministiskt per playerId)', () => {
-    const a = academyBreakthroughQuote('fixed_id', 4)
-    const b = academyBreakthroughQuote('fixed_id', 4)
+  it('den råa sifferformen fungerar för anropare som redan har talet', () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 300; i++) seen.add(academyBreakthroughQuote(`praw_${i}`, 4))
+    for (const t of TENURE_TEXTS) expect(seen.has(t)).toBe(true)
+    // och 0 ger bara neutralt
+    for (let i = 0; i < 200; i++) expect(NEUTRAL_TEXTS).toContain(academyBreakthroughQuote(`praw0_${i}`, 0))
+  })
+
+  it('samma spelare + samma tenure får alltid samma rad (deterministiskt)', () => {
+    const a = academyBreakthroughQuote('fixed', { academyJoinedSeason: 2026, currentSeason: 2030 })
+    const b = academyBreakthroughQuote('fixed', { academyJoinedSeason: 2026, currentSeason: 2030 })
     expect(a).toBe(b)
   })
 })

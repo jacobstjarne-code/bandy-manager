@@ -11,7 +11,6 @@
  */
 import { useState, useEffect } from 'react'
 import type { CounterInteractionData, CounterOutcome, CounterChoice } from '../../../domain/services/counterAttackInteractionService'
-import { counterChoiceSuccessRates } from '../../../domain/services/counterAttackInteractionService'
 import { InteractionShell } from './InteractionShell'
 import type { InteractionPhase } from './InteractionShell'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
@@ -22,6 +21,8 @@ interface CounterInteractionProps {
   outcome: CounterOutcome | null
   onChoose: (choice: CounterChoice) => void
   coach?: AssistantCoach
+  /** Dev-galleriets stillbild: ingen timer, live-matchen är oförändrad. */
+  practice?: boolean
 }
 
 const CHOICES: { choice: CounterChoice; label: string }[] = [
@@ -101,11 +102,9 @@ function CounterPitchSVG({
   )
 }
 
-export function CounterInteraction({ data, outcome, onChoose, coach }: CounterInteractionProps) {
+export function CounterInteraction({ data, outcome, onChoose, coach, practice }: CounterInteractionProps) {
   const [choice, setChoice] = useState<CounterChoice>('earlyBall')
   const [phase, setPhase] = useState<InteractionPhase>('choosing')
-
-  const rates = counterChoiceSuccessRates(data)
 
   const coachTip = coach ? generateCoachQuote(coach, {
     type: 'counter',
@@ -154,6 +153,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
       foldHintPrompt="LÄS SPELET"
       minute={data.minute}
       timer={{ seconds: 8 }}
+      untimed={practice}
       pitch={
         <CounterPitchSVG
           data={data}
@@ -161,7 +161,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
         />
       }
       subChoices={subChoicesNode}
-      readout={{ label: choiceLabels[choice], pct: Math.round(rates[choice] * 100) }}
+      readout={{ label: choiceLabels[choice] }}
       coachTip={coachTip}
       coach={coach}
       cta={{ label: 'Kör kontringen', variant: 'copper', onClick: () => handleConfirm() }}

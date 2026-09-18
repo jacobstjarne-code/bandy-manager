@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { positionShort, formatSalary } from '../utils/formatters'
 import { ScrollMoreCue } from '../components/ScrollMoreCue'
+import { UNMET_DEMAND_MORALE_PENALTY } from '../../domain/services/contractDemandService'
 
 /**
  * SeasonContractDemandsScreen — A-H2b RETENTION (DOM_AH2B_RETENTION_2026-08-28).
@@ -72,7 +73,7 @@ export function SeasonContractDemandsScreen() {
           💰 LÖNEKRAV
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
-          Truppen vill ha det den är värd
+          {demands.length === 1 ? 'En spelare begär högre lön' : 'Spelarna begär högre lön'}
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
           De som bar laget i år vet det. Möter du inte kravet finns alltid en klubb som gör det — och då är det inte längre ditt beslut.
@@ -92,7 +93,10 @@ export function SeasonContractDemandsScreen() {
       {/* ── KRAVLISTA ── */}
       <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12, marginLeft: 16, marginRight: 16 }}>
         <p className="h-label" style={{ marginBottom: 8 }}>
-          {demands.length} {demands.length === 1 ? 'SPELARE' : 'SPELARE'} — {metCount}/{demands.length} MÖTTA
+          {demands.length} SPELARE
+        </p>
+        <p aria-live="polite" style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 8px' }}>
+          Möter kravet: {metCount} · Behåller lönen: {demands.length - metCount}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {demands.map((demand, i) => {
@@ -100,6 +104,11 @@ export function SeasonContractDemandsScreen() {
             if (!player) return null
             const decision = decisions[demand.playerId] ?? 'skipped'
             const isMet = decision === 'met'
+            // Lönekraven visas efter rollover: seasonStats är då nästa säsongs
+            // nollställda siffror. Läs den avslutade säsongen ur historiken.
+            const lastSeason = player.seasonHistory?.find(
+              s => s.season === game.currentSeason - 1 && s.clubId === game.managedClubId && s.games > 0,
+            )
             return (
               <div key={demand.playerId} style={{
                 display: 'flex', flexDirection: 'column', gap: 6,
@@ -117,6 +126,12 @@ export function SeasonContractDemandsScreen() {
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                   {formatSalary(demand.currentSalary)} → <strong style={{ color: 'var(--text-primary)' }}>{formatSalary(demand.minSalary)}</strong>
                 </div>
+                {lastSeason && (
+                  <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                    Senaste säsongen i serien: {lastSeason.games} matcher · {lastSeason.goals} mål · {lastSeason.assists} assist
+                    {lastSeason.rating > 0 && <> · betyg {lastSeason.rating.toFixed(1).replace('.', ',')}</>}
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button
                     onClick={() => toggle(demand.playerId, 'met')}
@@ -124,11 +139,11 @@ export function SeasonContractDemandsScreen() {
                     className="btn btn-outline"
                     style={{
                       flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
-                      background: isMet ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : undefined,
-                      boxShadow: isMet ? 'inset 0 0 0 1px var(--accent)' : undefined,
+                      background: isMet ? 'color-mix(in srgb, var(--accent) 22%, transparent)' : undefined,
+                      boxShadow: isMet ? 'inset 0 0 0 2px var(--accent)' : undefined,
                     }}
                   >
-                    Möt kravet
+                    {isMet ? '✓ ' : ''}Möt kravet
                   </button>
                   <button
                     onClick={() => toggle(demand.playerId, 'skipped')}
@@ -136,12 +151,15 @@ export function SeasonContractDemandsScreen() {
                     className="btn btn-outline"
                     style={{
                       flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
-                      background: !isMet ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : undefined,
-                      boxShadow: !isMet ? 'inset 0 0 0 1px var(--accent)' : undefined,
+                      background: !isMet ? 'color-mix(in srgb, var(--accent) 22%, transparent)' : undefined,
+                      boxShadow: !isMet ? 'inset 0 0 0 2px var(--accent)' : undefined,
                     }}
                   >
-                    Behåll nuvarande lön
+                    {!isMet ? '✓ ' : ''}Behåll nuvarande lön
                   </button>
+                </div>
+                <div role="status" aria-live="polite" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                  {isMet ? 'Lönen höjs när du bekräftar.' : `Lönen står kvar. Moralen −${UNMET_DEMAND_MORALE_PENALTY} när du bekräftar.`}
                 </div>
               </div>
             )

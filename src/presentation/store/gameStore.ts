@@ -25,6 +25,7 @@ import {
   snapshotSave,
 } from '../../infrastructure/persistence/saveGameStorage'
 import { migrateSaveGame } from '../../infrastructure/persistence/saveGameMigration'
+import { isDeliverableInboxItem } from '../../domain/services/inboxPresentationService'
 import { subscribeToSaveWrites } from '../../infrastructure/persistence/saveConflictChannel'
 import { applyFinanceChange, appendFinanceLog } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
@@ -1649,7 +1650,7 @@ export const useCanAdvance = () => {
 export const useUnreadInboxCount = () => {
   const game = useGameStore(s => s.game)
   if (!game) return 0
-  return game.inbox.filter(i => !i.isRead && i.type !== InboxItemType.MatchResult).length
+  return game.inbox.filter(i => !i.isRead && i.type !== InboxItemType.MatchResult && isDeliverableInboxItem(i, game)).length
 }
 
 // Returns the current playoff bracket or null

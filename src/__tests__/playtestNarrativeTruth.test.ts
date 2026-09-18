@@ -123,6 +123,17 @@ describe('speltest — berättelsen följer kanoniskt state', () => {
     expect(getInboxGroup(n, { ...g, transferBids: [] })).toBe('nyheter')
   })
 
+  it('en riktig budnotis matchar exakt bud-id, även i äldre sparningar utan spelarkoppling', () => {
+    const oldNotice = { ...notice(InboxItemType.TransferBidReceived), id: 'inbox_incoming_bid_first' }
+    const bids = [
+      { id: 'first', playerId: 'p', direction: 'incoming', status: 'accepted' },
+      { id: 'second', playerId: 'p', direction: 'incoming', status: 'pending' },
+    ] as SaveGame['transferBids']
+    expect(getInboxGroup(oldNotice, game({ transferBids: bids }))).toBe('nyheter')
+    expect(getInboxGroup({ ...oldNotice, id: 'inbox_incoming_bid_second' }, game({ transferBids: bids }))).toBe('kräver-svar')
+    expect(getInboxGroup({ ...oldNotice, id: 'new-notice', relatedBidId: 'second', relatedPlayerId: 'p' }, game({ transferBids: bids }))).toBe('kräver-svar')
+  })
+
   it('även skadenotiser väntar på truppintroduktionen', () => {
     const result = finalizeInboxDelivery(game({ inbox: [], introducedInboxTopics: [] }), [notice(InboxItemType.Injury)], chronology)
     expect(result.inbox).toHaveLength(0)

@@ -39,16 +39,24 @@ export function buildRefereeMeetingChoices(refereeId: string): GameEvent['choice
       id: 'respect',
       label: 'Respektera',
       subtitle: 'Du skakar hand. Klacken buar.',
+      impactPreview: [{ label: 'Domaren', direction: 'up' }, { label: 'Klacken', direction: 'down' }],
       effect: { type: 'multiEffect', subEffects: JSON.stringify([
         { type: 'refereeRelationship', refereeId, value: 1 },
         { type: 'supporterMood', amount: -2 },
       ]) },
     },
-    { id: 'neutral', label: 'Neutral', subtitle: 'Du rycker på axlarna och går.', effect: { type: 'noOp' } },
+    {
+      id: 'neutral',
+      label: 'Neutral',
+      subtitle: 'Du rycker på axlarna och går.',
+      impactPreview: [{ label: 'Ingen förändring', direction: 'unchanged' }],
+      effect: { type: 'noOp' },
+    },
     {
       id: 'protest',
       label: 'Protestera',
       subtitle: 'Du säger vad du tycker. Domaren minns namn.',
+      impactPreview: [{ label: 'Domaren', direction: 'down' }, { label: 'Klacken', direction: 'up' }],
       effect: { type: 'multiEffect', subEffects: JSON.stringify([
         { type: 'refereeRelationship', refereeId, value: -1 },
         { type: 'supporterMood', amount: 2 },

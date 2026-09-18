@@ -10,6 +10,7 @@ import {
 } from '../../infrastructure/attention/attentionClient'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
+import { isDeliverableInboxItem } from '../../domain/services/inboxPresentationService'
 
 function playerDecisionCount(game: NonNullable<ReturnType<typeof useGameStore.getState>['game']>): number {
   const eventChoices = (game.resolvedChoices ?? []).filter(choice => choice.madeByPlayer === true).length
@@ -25,7 +26,7 @@ export function AttentionBridge() {
   const game = useGameStore(state => state.game)
   const markNarrativePushDelivered = useGameStore(state => state.markNarrativePushDelivered)
   const unreadInboxCount = useMemo(
-    () => game?.inbox.filter(item => !item.isRead && item.type !== InboxItemType.MatchResult).length ?? 0,
+    () => game?.inbox.filter(item => !item.isRead && item.type !== InboxItemType.MatchResult && isDeliverableInboxItem(item, game)).length ?? 0,
     [game?.inbox],
   )
   const previousGameState = useRef<{

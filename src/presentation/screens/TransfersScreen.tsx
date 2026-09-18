@@ -40,7 +40,7 @@ export function sortBidsByUrgency(bids: TransferBid[]): TransferBid[] {
   return [...bids].sort((a, b) => (a.expiresRound ?? 0) - (b.expiresRound ?? 0))
 }
 
-export function TransfersScreen() {
+export function TransfersScreen({ initialTab = 'marknad' }: { initialTab?: 'marknad' | 'scouting' | 'freeagents' | 'sell' } = {}) {
   const game = useGameStore(s => s.game)
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const toggleScoutShortlist = useGameStore(s => s.toggleScoutShortlist)
@@ -59,14 +59,19 @@ export function TransfersScreen() {
   // pendingAction/overrunPct stannar — buden använder dem (egen wage-overrun-instans per yta).
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
+  const [bidError, setBidError] = useState<string | null>(null)
   const [contractingFreeAgentId, setContractingFreeAgentId] = useState<string | null>(null)
+  const [freeAgentError, setFreeAgentError] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [overrunPct, setOverrunPct] = useState(0)
-  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'freeagents' | 'sell'>('marknad')
+  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'freeagents' | 'sell'>(initialTab)
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
   const location = useLocation()
+
+  useEffect(() => { setBidError(null) }, [biddingPlayerId])
+  useEffect(() => { setFreeAgentError(null) }, [contractingFreeAgentId])
 
   useEffect(() => {
     const state = location.state as { tab?: string; highlightPlayer?: string } | null
@@ -149,8 +154,7 @@ export function TransfersScreen() {
     const doSign = () => {
       const result = signFreeAgent(agentId, offeredSalary, contractYears, terms)
       if (!result.success) {
-        setScoutMessage(result.error ?? 'Kunde inte värva spelaren.')
-        setTimeout(() => setScoutMessage(null), 4000)
+        setFreeAgentError(result.error ?? 'Kunde inte värva spelaren.')
         return
       }
       // C-T8 §6 — termaccept-raderna visas som scoutMessage istf en tyst stäng.
@@ -207,13 +211,12 @@ export function TransfersScreen() {
 
     const doBid = () => {
       const result = placeOutgoingBid(playerId, offerAmount, offeredSalary, contractYears)
-      setBiddingPlayerId(null)
       if (result.success) {
+        setBiddingPlayerId(null)
         setScoutMessage('Bud skickat! Svar om 1 omgång.')
         setTimeout(() => setScoutMessage(null), 4000)
       } else {
-        setScoutMessage(result.error ?? 'Kunde inte lägga bud.')
-        setTimeout(() => setScoutMessage(null), 3000)
+        setBidError(result.error ?? 'Kunde inte lägga bud.')
       }
     }
 
@@ -296,7 +299,7 @@ export function TransfersScreen() {
         tabs={[
           { id: 'marknad', label: 'Marknad', dot: marknadHasDot ? 'accent' : null },
           { id: 'scouting', label: 'Scouting', dot: null },
-          { id: 'freeagents', label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
+          { id: 'freeagents', label: 'Fria', dot: null },
           { id: 'sell', label: 'Sälj', dot: saljHasDot ? 'accent' : null },
         ]}
         activeId={activeTab}
@@ -515,6 +518,7 @@ export function TransfersScreen() {
           onSetSpanningMaxAge={setSpanningMaxAge}
           onSetSpanningMaxSalary={setSpanningMaxSalary}
           onBid={setBiddingPlayerId}
+          onShowFreeAgents={() => setActiveTab('freeagents')}
           onScout={handleScout}
           onStartTalentSearch={startTalentSearch}
           onScoutMessage={setScoutMessage}
@@ -592,8 +596,11 @@ export function TransfersScreen() {
             managedClub={managedClub}
             onClose={() => setBiddingPlayerId(null)}
             onConfirm={handleBid}
+            error={bidError}
+            onEdit={() => setBidError(null)}
             rivalry={bidRivalry}
             availableTransferBudget={transferBudget.available}
+            minSalary={computeContractMinSalary(biddingPlayer, managedClub, computeLeaguePositionAverages(game))}
           />
         )
       })()}
@@ -611,6 +618,8 @@ export function TransfersScreen() {
             managedClub={managedClub}
             onClose={() => setContractingFreeAgentId(null)}
             onConfirm={handleSignFreeAgent}
+            error={freeAgentError}
+            onEdit={() => setFreeAgentError(null)}
             mode="freeAgent"
             salaryRange={getContractSalaryRange(minSalary)}
             availableTerms={availableTerms}

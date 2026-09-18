@@ -81,7 +81,11 @@ import { CupIntroScene } from '../scenes/CupIntroScene'
 import { SundayTrainingScene } from '../scenes/SundayTrainingScene'
 import { SeasonSignatureRevealScene } from '../scenes/SeasonSignatureRevealScene'
 import { ScoutingTab } from '../../components/transfers/ScoutingTab'
+import type { Player } from '../../../domain/entities/Player'
 import { startScoutAssignment, processScoutAssignment } from '../../../domain/services/scoutingService'
+import { processScouts } from '../../../application/useCases/processors/scoutProcessor'
+import { transferActions } from '../../store/actions/transferActions'
+import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { IntroSequence } from '../IntroSequence'
 import { TilltradeScreen } from '../TilltradeScreen'
 import { NameInputScreen } from '../NameInputScreen'
@@ -91,12 +95,12 @@ import { CornerInteraction } from '../../components/match/CornerInteraction'
 import { PenaltyInteraction } from '../../components/match/PenaltyInteraction'
 import { CounterInteraction } from '../../components/match/CounterInteraction'
 import { FreeKickInteraction } from '../../components/match/FreeKickInteraction'
+import { LastMinutePress } from '../../components/match/LastMinutePress'
 import { PhaseOverlay } from '../../components/match/PhaseOverlay'
 import { CeremonySmFinal } from '../../components/match/CeremonySmFinal'
 import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
 import { BidModal } from '../../components/transfers/BidModal'
 import { RenewContractModal } from '../../components/transfers/RenewContractModal'
-import { BoardPatienceMinimal } from '../../components/portal/minimal/BoardPatienceMinimal'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
@@ -112,6 +116,7 @@ import { buildRefereeMeetingChoices } from '../../../application/useCases/proces
 import { BURNOUT_MARK_FIRED_KEY } from '../../../domain/services/managerProfileService'
 import { generateSupporterEvents } from '../../../domain/services/events/supporterEvents'
 import { generateGalaEvent, generateNominations } from '../../../domain/services/bandyGalaService'
+import { generateWorld } from '../../../domain/services/worldGenerator'
 
 type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'efterklang' | 'squad' | 'portal' | 'tranare' | 'board-a' | 'board-b' | 'board-c' | 'board-n' | 'stillness' | 'granska' | 'upptakt' | 'ekonomi' | 'playercard' | 'season-a' | 'season-b' | 'season-c' | 'miljoheader-forsbacka' | 'miljoheader-karlsborg' | 'miljoheader-rogle'
   | 'tabell' | 'season-header' | 'finalhelg' | 'annandagen' | 'arrival' | 'squad-trupp'
@@ -122,7 +127,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // AUDIT DEL 2 (2026-08-09), Etapp B-baseline: Transfers, fyra fönstertillstånd
   // — bevisar att budkortet (B1, byggs efter denna baseline) inte försvinner
   // när fönstret växlar eller antal bud ändras.
-  | 'transfers-closed' | 'transfers-open-nobids' | 'transfers-onebid' | 'transfers-multibids'
+  | 'transfers-closed' | 'transfers-open-nobids' | 'transfers-onebid' | 'transfers-multibids' | 'transfers-free-agents'
   // AUDIT DEL 3 (2026-08-10): Granska matchtypsmatrisen — förberedelse för
   // Design-uppdraget (DESIGN_UPPDRAG_GRANSKA_DEL4_2026-08-10.md steg A).
   // 'granska' (befintlig) täcker liga.
@@ -218,7 +223,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   | 'scouting' | 'intro-sequence' | 'tilltrade' | 'name-input' | 'klubbparm' | 'ceremony-retirement'
   | 'match-laddning-derby' | 'match-laddning-cup' | 'match-laddning-nyar' | 'match-laddning-annandagen' | 'match-laddning-final' | 'final-intro-lagpresentation'
   | 'granska-level3' | 'granska-referee-meeting' | 'board-patience-minimal' | 'club-badge-contact-sheet' | 'next-match-forsbacka' | 'next-match-derby' | 'next-match-annandagen' | 'mecenat-dinner'
-  | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction'
+  | 'corner-interaction' | 'penalty-interaction' | 'counter-interaction' | 'free-kick-interaction' | 'last-minute-press'
   | 'phase-overlay' | 'bid-modal' | 'renew-contract-modal' | 'ceremony-sm-final' | 'ceremony-cup-final'
   | 'manager-fired-redirect'
   | 'burnout-illustration' | 'klack-tifo-illustration' | 'klack-conflict-illustration' | 'gala'
@@ -260,6 +265,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'transfers-open-nobids', label: 'Transfers — fönster öppet, inga bud' },
   { id: 'transfers-onebid',      label: 'Transfers — ett inkommande bud' },
   { id: 'transfers-multibids',   label: 'Transfers — flera inkommande bud' },
+  { id: 'transfers-free-agents', label: 'Transfers — fri agent att värva' },
   { id: 'finalhelg',     label: 'Finalhelg-portal (IllustrationScene header)' },
   { id: 'annandagen',    label: 'Annandagen-anslag (IllustrationScene band)' },
   { id: 'arrival',       label: 'ArrivalScene (IllustrationScene fullbleed)' },
@@ -354,6 +360,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'penalty-interaction', label: 'Matchinteraktion — straff' },
   { id: 'counter-interaction', label: 'Matchinteraktion — kontring' },
   { id: 'free-kick-interaction', label: 'Matchinteraktion — frislag' },
+  { id: 'last-minute-press', label: 'Matchinteraktion — slutminuterna' },
   { id: 'phase-overlay', label: 'Matchfas — förlängning' },
   { id: 'bid-modal', label: 'Övergång — lägg bud' },
   { id: 'renew-contract-modal', label: 'Kontrakt — förläng' },
@@ -683,6 +690,9 @@ const interactionFreeKickData = {
   minute: 72, kickerName: 'Mikael Strand', kickerId: 'p-h2', kickerShooting: 73,
   kickerPassing: 79, distanceMeters: 24, wallSize: 4,
 }
+const interactionLastMinuteData = {
+  minute: 88, scoreDiff: -1, stepsLeft: 2, fatigueLevel: 74,
+}
 const ceremonyHomeLineup = buildSimpleLineup(squadGame, HOME_ID)
 const ceremonyAwayLineup = buildSimpleLineup(squadGame, AWAY_ID)
 const journalistRelationshipArc = typeof window !== 'undefined'
@@ -693,29 +703,35 @@ const journalistRelationshipType = journalistRelationshipArc === 'feud'
   : journalistRelationshipArc === 'redemption'
     ? 'journalist_redemption' as const
     : null
+const journalistRelationshipBaseGame = makeBaseGame({ clubId: 'club_forsbacka', seed: 17 })
 const journalistSceneGame = {
-  ...efterklangGame,
+  ...journalistRelationshipBaseGame,
+  currentSeason: devSeason(8),
   storylines: journalistRelationshipType ? [{
     id: `dev-${journalistRelationshipType}`,
     type: journalistRelationshipType,
     season: devSeason(7),
     matchday: 12,
-    clubId: HOME_ID,
+    clubId: journalistRelationshipBaseGame.managedClubId,
     description: 'dev-history',
     displayText: 'dev-history',
     resolved: true,
   }] : [],
   journalist: {
-    ...efterklangGame.journalist!,
-    outlet: 'Gefle Dagblad',
+    ...journalistRelationshipBaseGame.journalist!,
+    name: 'Britta Sandström',
     style: 'neutral' as const,
     relationship: journalistRelationshipArc === 'feud'
       ? 18
       : journalistRelationshipArc === 'redemption'
         ? 80
-        : efterklangGame.journalist!.relationship,
+        : 80,
     pressRefusals: 1,
-    memory: efterklangGame.journalist!.memory.map((m, i) => i === 2 ? { ...m, event: 'refused_press' } : m),
+    memory: [
+      { season: devSeason(8), matchday: 4, event: 'good_answer', sentiment: 4 },
+      { season: devSeason(8), matchday: 7, event: 'bad_answer', sentiment: -5 },
+      { season: devSeason(8), matchday: 9, event: 'refused_press', sentiment: -6 },
+    ],
   },
 }
 
@@ -723,6 +739,12 @@ const journalistSceneGame = {
 // faktiskt läser. Samma SaveGame-form som resten av galleriet, ingen egen
 // presentationskopia av skärmen.
 const contractDemandsGame = makeGame(makeLeagueFixtures(), {
+  players: devPlayers.map(player => player.id === 'p-f2' ? {
+    ...player,
+    seasonHistory: player.seasonHistory.map(season => season.season === devSeason(7)
+      ? { ...season, games: 22, goals: 14, assists: 7, rating: 7.5 }
+      : season),
+  } : player),
   pendingContractDemands: [
     { playerId: 'p-d1', currentSalary: 8_000, minSalary: 10_500 },
     { playerId: 'p-f2', currentSalary: 7_700, minSalary: 9_800 },
@@ -1048,6 +1070,21 @@ const transfersClosedGame = withTransferWindowClosed(factoryMidSeasonGame)
 const transfersOpenNoBidsGame = withTransferWindowOpen(factoryMidSeasonGame)
 const transfersOneBidGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 1)
 const transfersMultiBidsGame = withIncomingBids(withTransferWindowOpen(factoryMidSeasonGame), 3)
+const freeAgentSeedPlayer = transfersOpenNoBidsGame.players.find(player => player.clubId !== transfersOpenNoBidsGame.managedClubId)!
+const transfersFreeAgentsGame: SaveGame = {
+  ...transfersOpenNoBidsGame,
+  players: transfersOpenNoBidsGame.players.map(player => player.id === freeAgentSeedPlayer.id
+    ? { ...player, clubId: 'free_agent', salary: 12_000 }
+    : player),
+  clubs: transfersOpenNoBidsGame.clubs.map(club => ({
+    ...club,
+    squadPlayerIds: club.squadPlayerIds.filter(id => id !== freeAgentSeedPlayer.id),
+  })),
+  transferState: {
+    ...transfersOpenNoBidsGame.transferState,
+    freeAgentIds: [freeAgentSeedPlayer.id],
+  },
+}
 
 // transfer-scouting-falsk-precision (2026-09-04): en riktig genererad
 // ScoutReport, samma väg spelet självt tar (processScoutAssignment) — så
@@ -1062,35 +1099,136 @@ const scoutingDevReport = processScoutAssignment(
   7,
   transfersOpenNoBidsGame.currentSeason,
 )
+// Galleryscenen ska kunna visa hela buddialogen, inte fastna på ett låst
+// standardbud för att den återanvänder en annan transferscens lilla budget.
+const scoutingDevGame: SaveGame = {
+  ...transfersOpenNoBidsGame,
+  scoutReports: { [scoutingTargetPlayer.id]: scoutingDevReport },
+  // Behåll framtida matcher för budregeln, men inga redan mötta motståndare:
+  // utvärdering ska fortfarande ta 1–2 omgångar.
+  fixtures: transfersOpenNoBidsGame.fixtures.filter(fixture => fixture.status === 'scheduled'),
+  transferBids: [],
+  clubs: transfersOpenNoBidsGame.clubs.map(club => club.id === transfersOpenNoBidsGame.managedClubId
+    ? { ...club, transferBudget: 400_000, finances: Math.max(club.finances, 650_000) }
+    : club),
+}
 
 function ScoutingDevScene() {
-  const [position, setPosition] = useState('ALL')
-  const [maxAge, setMaxAge] = useState(24)
+  const [position, setPosition] = useState('any')
+  const [maxAge, setMaxAge] = useState(21)
   const [maxSalary, setMaxSalary] = useState(12_000)
-  const game = transfersOpenNoBidsGame
+  const [game, setGame] = useState<SaveGame>(scoutingDevGame)
+  const gameRef = useRef(game)
+  const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
+  const [bidError, setBidError] = useState<string | null>(null)
+  const [demoMessage, setDemoMessage] = useState<string | null>(null)
   const managedClub = game.clubs.find(club => club.id === game.managedClubId)
+  const biddingPlayer = game.players.find(player => player.id === biddingPlayerId)
+  const scoutBusy = !!game.activeScoutAssignment || !!game.activeTalentSearch
+
+  function applyGame(next: SaveGame) {
+    gameRef.current = next
+    setGame(next)
+  }
+
+  // Samma actions som TransfersScreen använder, men mot en isolerad fixture.
+  // Ingen sparfil eller global store skrivs när man klickar i galleriet.
+  function actions() {
+    return transferActions(
+      () => ({ game: gameRef.current }),
+      partial => { if (partial.game) applyGame(partial.game) },
+    )
+  }
+
+  function handleScout(player: Player) {
+    const targetClub = game.clubs.find(club => club.id === player.clubId)
+    const sameRegion = !!managedClub && !!targetClub && managedClub.region === targetClub.region
+    const hasPlayedAgainst = game.fixtures.some(fixture => fixture.status === 'completed' && (
+      (fixture.homeClubId === game.managedClubId && fixture.awayClubId === player.clubId)
+      || (fixture.awayClubId === game.managedClubId && fixture.homeClubId === player.clubId)
+    ))
+    const result = actions().startEvaluation(player.id, player.clubId, sameRegion, hasPlayedAgainst)
+    setDemoMessage(result.success
+      ? result.roundsRemaining === 0
+        ? `Rapport om ${player.firstName} ${player.lastName} klar direkt.`
+        : `Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${result.roundsRemaining} omgångar.`
+      : result.error ?? 'Kunde inte starta utvärderingen.')
+  }
+
+  function advancePreviewRound() {
+    const current = gameRef.current
+    const nextMatchday = current.currentMatchday + 1
+    const processed = processScouts(current, current.players, nextMatchday, 7, () => 0.6)
+    applyGame({
+      ...current,
+      currentMatchday: nextMatchday,
+      scoutReports: processed.updatedScoutReports,
+      activeScoutAssignment: processed.updatedScoutAssignment,
+      activeTalentSearch: processed.updatedTalentSearch,
+      talentSearchResults: processed.updatedTalentResults,
+      inbox: [...current.inbox, ...processed.inboxItems],
+    })
+    setDemoMessage(processed.inboxItems.length > 0
+      ? processed.inboxItems.map(item => item.title).join(' · ')
+      : `Omgång ${nextMatchday} klar. Scouten arbetar vidare.`)
+  }
 
   return (
-    <ScoutingTab
-      game={game}
-      scoutReports={{ [scoutingTargetPlayer.id]: scoutingDevReport }}
-      scoutBudget={game.scoutBudget ?? 10}
-      activeAssignment={game.activeScoutAssignment ?? null}
-      windowOpen
-      managedClub={managedClub}
-      spaningPosition={position}
-      spaningMaxAge={maxAge}
-      spaningMaxSalary={maxSalary}
-      currentRound={game.currentMatchday}
-      onSetSpanningPosition={setPosition}
-      onSetSpanningMaxAge={setMaxAge}
-      onSetSpanningMaxSalary={setMaxSalary}
-      onBid={() => {}}
-      onScout={() => {}}
-      onStartTalentSearch={() => ({ success: true })}
-      onScoutMessage={() => {}}
-      onToggleShortlist={() => {}}
-    />
+    <>
+      {(scoutBusy || demoMessage) && (
+        <div className="transfers-dev-scout-control">
+          <div className="transfers-dev-scout-control-header">
+            <span>TESTLÄGE · OMGÅNG {game.currentMatchday} · SCOUTBUDGET {game.scoutBudget}</span>
+            {demoMessage && <button type="button" onClick={() => setDemoMessage(null)} aria-label="Stäng meddelandet">×</button>}
+          </div>
+          {demoMessage && <p role="status">{demoMessage}</p>}
+          {scoutBusy && <button type="button" className="btn btn-primary" onClick={advancePreviewRound}>Spela nästa omgång →</button>}
+        </div>
+      )}
+      <ScoutingTab
+        game={game}
+        scoutReports={game.scoutReports ?? {}}
+        scoutBudget={game.scoutBudget}
+        activeAssignment={game.activeScoutAssignment ?? null}
+        windowOpen
+        managedClub={managedClub}
+        spaningPosition={position}
+        spaningMaxAge={maxAge}
+        spaningMaxSalary={maxSalary}
+        currentRound={game.currentMatchday}
+        onSetSpanningPosition={setPosition}
+        onSetSpanningMaxAge={setMaxAge}
+        onSetSpanningMaxSalary={setMaxSalary}
+        onBid={playerId => { setDemoMessage(null); setBidError(null); setBiddingPlayerId(playerId) }}
+        onShowFreeAgents={() => {}}
+        onScout={handleScout}
+        onStartTalentSearch={(...args) => actions().startTalentSearch(...args)}
+        onScoutMessage={setDemoMessage}
+        onToggleShortlist={playerId => actions().toggleScoutShortlist(playerId)}
+      />
+      {biddingPlayer && managedClub && (
+        <BidModal
+          key={biddingPlayer.id}
+          player={biddingPlayer}
+          game={game}
+          managedClub={managedClub}
+          onClose={() => { setBiddingPlayerId(null); setBidError(null) }}
+          error={bidError}
+          onEdit={() => setBidError(null)}
+          minSalary={computeContractMinSalary(biddingPlayer, managedClub, computeLeaguePositionAverages(game))}
+          onConfirm={(playerId, offerAmount, offeredSalary, contractYears) => {
+            const result = actions().placeOutgoingBid(playerId, offerAmount, offeredSalary, contractYears)
+            if (!result.success) {
+              setBidError(result.error ?? 'Kunde inte lägga budet.')
+              return
+            }
+            setBiddingPlayerId(null)
+            setBidError(null)
+            setDemoMessage(`Bud på ${biddingPlayer.firstName} ${biddingPlayer.lastName} skickat. Svar nästa omgång. Budet syns också vid spelarens rapport. Testvyn ändrar inte din sparfil.`)
+          }}
+        />
+      )}
+    </>
   )
 }
 
@@ -1548,11 +1686,48 @@ const granskaGame = makeGame([...makeLeagueFixtures(), granskaFixture, ...gransk
     ],
   }],
 })
+// UX-granskningens scenvarianter ska visa spelets riktiga klubbar och märken,
+// även i tabell/andra matcher; dev-fabrikens Edsbyn/Bollnäs och club-s*-id:n
+// får inte läcka till spelarens förhandsvisning.
+const granskaClubIds: Record<string, string> = {
+  [HOME_ID]: 'club_karlsborg',
+  [AWAY_ID]: 'club_lesjofors',
+  'club-s1': 'club_forsbacka',
+  'club-s2': 'club_vastanfors',
+  'club-s4': 'club_soderfors',
+  'club-s5': 'club_malilla',
+  'club-s6': 'club_gagnef',
+  'club-s8': 'club_halleforsnas',
+  'club-s9': 'club_rogle',
+  'club-s10': 'club_slottsbron',
+  'club-s11': 'club_skutskar',
+  'club-s12': 'club_heros',
+}
+const granskaClubId = (id: string) => granskaClubIds[id] ?? id
+function withCanonicalGranskaClubs(game: SaveGame): SaveGame {
+  return {
+    ...game,
+    managedClubId: granskaClubId(HOME_ID),
+    clubs: generateWorld(devSeason(8), 42).clubs.map(club => ({
+      ...club,
+      squadPlayerIds: club.id === granskaClubId(HOME_ID) ? devPlayers.map(player => player.id) : [],
+      ...(club.id === granskaClubId(HOME_ID) ? { finances: game.clubs[0].finances } : {}),
+    })),
+    players: game.players.map(player => ({ ...player, clubId: granskaClubId(player.clubId) })),
+    fixtures: game.fixtures.map(fixture => ({
+      ...fixture,
+      homeClubId: granskaClubId(fixture.homeClubId),
+      awayClubId: granskaClubId(fixture.awayClubId),
+      events: fixture.events.map(event => ({ ...event, clubId: granskaClubId(event.clubId) })),
+    })),
+    standings: game.standings.map(row => ({ ...row, clubId: granskaClubId(row.clubId) })),
+  }
+}
 const granskaLevel3Game = {
-  ...granskaGame,
+  ...withCanonicalGranskaClubs(granskaGame),
   resolvedChoices: [{ eventId: 'dev-critical-1', choiceId: 'accept', label: 'Godkänn kravet' }],
 } as SaveGame
-const granskaRefereeMeetingGame = {
+const granskaRefereeMeetingGame = withCanonicalGranskaClubs({
   ...granskaGame,
   pendingEvents: [],
   pendingRefereeMeeting: {
@@ -1567,7 +1742,7 @@ const granskaRefereeMeetingGame = {
   referees: [{ id: 'ref_dev', firstName: 'Rut', lastName: 'Rask', homeTown: 'Falun', yearsOfExperience: 12, style: 'strict' as const, personality: 'veteran' as const, managedMatches: 4 }],
   refereeRelations: [{ refereeId: 'ref_dev', lastMatchSeason: devSeason(8), lastMatchRound: 20, totalMatches: 2, totalCardsGiven: 5, totalPenaltiesGiven: 1, clubReaction: 0 as const }],
   supporterGroup: { ...granskaGame.supporterGroup!, mood: 50 },
-} as SaveGame
+} as SaveGame)
 // Upptakt sub-states — fingerade tabeller (played=19, 3 omg kvar)
 function makeUpptaktStandings(managedPoints: number, otherPoints: number[]) {
   const rows = [
@@ -2111,6 +2286,7 @@ export function DevScenesScreen() {
       : scene === 'transfers-open-nobids' ? transfersOpenNoBidsGame
       : scene === 'transfers-onebid' ? transfersOneBidGame
       : scene === 'transfers-multibids' ? transfersMultiBidsGame
+      : scene === 'transfers-free-agents' ? transfersFreeAgentsGame
       : scene === 'finalhelg' ? finalhelgGame
       : scene === 'arrival' ? makeBaseGame({ seed: 31, clubId: arrivalClubId })
       : scene === 'opponent-intro' || scene === 'match-laddning-derby' || scene === 'match-laddning-cup' || scene === 'match-laddning-nyar' || scene === 'match-laddning-annandagen'
@@ -2169,7 +2345,7 @@ export function DevScenesScreen() {
       : scene === 'next-match-derby' ? nextMatchDerbyGame
       : scene === 'next-match-annandagen' ? nextMatchAnnandagenGame
       : scene === 'manager-fired-redirect' ? gameOverGame
-      : scene === 'corner-interaction' || scene === 'penalty-interaction' || scene === 'counter-interaction'
+      : scene === 'corner-interaction' || scene === 'penalty-interaction' || scene === 'counter-interaction' || scene === 'last-minute-press'
         || scene === 'free-kick-interaction' || scene === 'phase-overlay' || scene === 'bid-modal'
         || scene === 'renew-contract-modal' || scene === 'ceremony-sm-final' || scene === 'ceremony-cup-final' ? squadGame
       : scene === 'ceremony-retirement' ? retirementCeremonyGame
@@ -2486,7 +2662,7 @@ export function DevScenesScreen() {
           <SeasonSignatureRevealScene game={seasonSignatureGame} onComplete={() => {}} />
         )}
         {scene === 'scouting' && (
-          <div style={{ minHeight: '844px', background: 'var(--bg)', padding: '16px 12px' }}>
+          <div style={{ minHeight: '844px', background: 'var(--bg)', padding: '16px 12px 120px' }}>
             <ScoutingDevScene />
           </div>
         )}
@@ -2515,13 +2691,16 @@ export function DevScenesScreen() {
           <CornerInteraction data={interactionCornerData} outcome={null} onChoose={() => {}} practice />
         )}
         {scene === 'penalty-interaction' && (
-          <PenaltyInteraction data={interactionPenaltyData} outcome={null} onChoose={() => {}} />
+          <PenaltyInteraction data={interactionPenaltyData} outcome={null} onChoose={() => {}} practice />
         )}
         {scene === 'counter-interaction' && (
-          <CounterInteraction data={interactionCounterData} outcome={null} onChoose={() => {}} />
+          <CounterInteraction data={interactionCounterData} outcome={null} onChoose={() => {}} practice />
         )}
         {scene === 'free-kick-interaction' && (
-          <FreeKickInteraction data={interactionFreeKickData} outcome={null} onChoose={() => {}} />
+          <FreeKickInteraction data={interactionFreeKickData} outcome={null} onChoose={() => {}} practice />
+        )}
+        {scene === 'last-minute-press' && (
+          <LastMinutePress data={interactionLastMinuteData} onChoose={() => {}} practice />
         )}
         {scene === 'phase-overlay' && (
           <PhaseOverlay phase="overtime" onContinue={() => {}} />
@@ -2587,10 +2766,8 @@ export function DevScenesScreen() {
         )}
         {scene === 'manager-fired-redirect' && <ManagerFiredRedirectDevScene />}
         {scene === 'board-patience-minimal' && (
-          <div className="card--portal" style={{ minHeight: '844px', background: 'var(--bg-portal-surface)', padding: '28px 16px' }}>
-            <div className="card-sharp" style={{ background: 'var(--bg-portal-surface)', padding: '16px 12px' }}>
-              <BoardPatienceMinimal game={boardPatienceWarningGame} />
-            </div>
+          <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
+            <PortalScreen />
           </div>
         )}
         {(scene === 'next-match-forsbacka' || scene === 'next-match-derby' || scene === 'next-match-annandagen') && (
@@ -2607,9 +2784,9 @@ export function DevScenesScreen() {
             <SeasonTransitionScene />
           </div>
         )}
-        {(scene === 'transfers-closed' || scene === 'transfers-open-nobids' || scene === 'transfers-onebid' || scene === 'transfers-multibids') && (
+        {(scene === 'transfers-closed' || scene === 'transfers-open-nobids' || scene === 'transfers-onebid' || scene === 'transfers-multibids' || scene === 'transfers-free-agents') && (
           <div style={{ height: '812px', overflow: 'auto', position: 'relative' }}>
-            <TransfersScreen />
+            <TransfersScreen initialTab={scene === 'transfers-free-agents' ? 'freeagents' : 'marknad'} />
           </div>
         )}
         {scene === 'finalhelg' && finalReady && (

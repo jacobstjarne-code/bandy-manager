@@ -11,7 +11,6 @@
  */
 import { useState, useEffect } from 'react'
 import type { CornerInteractionData, CornerOutcome, CornerZone, CornerDelivery } from '../../../domain/services/cornerInteractionService'
-import { cornerZoneSuccessRates, formatRate } from '../../../domain/services/cornerInteractionService'
 import { InteractionShell } from './InteractionShell'
 import type { InteractionPhase } from './InteractionShell'
 import type { AssistantCoach } from '../../../domain/entities/AssistantCoach'
@@ -36,7 +35,7 @@ const DELIVERY_OPTIONS: { key: CornerDelivery; label: string }[] = [
 /** SVG corner schematic — Stålvallen LED palette */
 function CornerPitchSVG({
   zone, delivery, cornerSide, topZone, bottomZone, topLabel, bottomLabel,
-  topRate, centerRate, bottomRate, phase, onSetZone,
+  phase, onSetZone,
 }: {
   zone: CornerZone
   delivery: CornerDelivery
@@ -45,16 +44,13 @@ function CornerPitchSVG({
   bottomZone: CornerZone
   topLabel: string
   bottomLabel: string
-  topRate: number
-  centerRate: number
-  bottomRate: number
   phase: InteractionPhase
   onSetZone: (z: CornerZone) => void
 }) {
-  const zones: { z: CornerZone; label: string; rate: number; y: number }[] = [
-    { z: topZone,    label: topLabel,    rate: topRate,    y: 14 },
-    { z: 'center',   label: 'MITT',      rate: centerRate, y: 48 },
-    { z: bottomZone, label: bottomLabel, rate: bottomRate, y: 88 },
+  const zones: { z: CornerZone; label: string; y: number }[] = [
+    { z: topZone,    label: topLabel,    y: 14 },
+    { z: 'center',   label: 'MITT',      y: 48 },
+    { z: bottomZone, label: bottomLabel, y: 88 },
   ]
 
   // Corner pin position
@@ -97,7 +93,7 @@ function CornerPitchSVG({
       ))}
 
       {/* 3 zones */}
-      {zones.map(({ z, label, rate, y }) => {
+      {zones.map(({ z, label, y }) => {
         const isSelected = zone === z
         const h = z === 'center' ? 34 : 28
         return (
@@ -116,13 +112,6 @@ function CornerPitchSVG({
               fontFamily="monospace" fontWeight="700" letterSpacing="1"
               style={{ pointerEvents: 'none' }}
             >{label}</text>
-            <text
-              x="50" y={y + (h / 2) + 7}
-              textAnchor="middle" fontSize="5.5"
-              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.4)'}
-              fontFamily="monospace"
-              style={{ pointerEvents: 'none' }}
-            >{formatRate(rate)}</text>
           </g>
         )
       })}
@@ -155,6 +144,15 @@ function CornerPitchSVG({
   )
 }
 
+/** Samma isplan som i hörnvalet. */
+export function CornerPitchGuide() {
+  return <CornerPitchSVG
+    zone="center" delivery="low" cornerSide="right"
+    topZone="near" bottomZone="far" topLabel="NÄRA" bottomLabel="BORTRE"
+    phase="locked" onSetZone={() => {}}
+  />
+}
+
 export function CornerInteraction({ data, outcome, onChoose, coach, practice }: CornerInteractionProps) {
   const [zone, setZone] = useState<CornerZone>('center')
   const [delivery, setDelivery] = useState<CornerDelivery>('hard')
@@ -165,8 +163,6 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
   const bottomZone: CornerZone = cornerSide === 'right' ? 'far' : 'near'
   const topLabel = cornerSide === 'right' ? 'NÄRA' : 'BORTRE'
   const bottomLabel = cornerSide === 'right' ? 'BORTRE' : 'NÄRA'
-
-  const rates = cornerZoneSuccessRates(data)
 
   const coachTip = coach ? generateCoachQuote(coach, {
     type: 'corner',
@@ -205,7 +201,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
   )
 
   const zoneLabel = zone === 'center' ? 'MITT' : zone === 'near' ? 'NÄRA' : 'BORTRE'
-  const zoneRate = rates[zone]
+  const deliveryLabel = DELIVERY_OPTIONS.find(option => option.key === delivery)?.label ?? ''
 
   return (
     <InteractionShell
@@ -216,6 +212,7 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
       minute={data.minute}
       timer={{ seconds: 8 }}
       untimed={practice}
+      primaryCta={practice}
       pitch={
         <CornerPitchSVG
           zone={zone}
@@ -225,15 +222,12 @@ export function CornerInteraction({ data, outcome, onChoose, coach, practice }: 
           bottomZone={bottomZone}
           topLabel={topLabel}
           bottomLabel={bottomLabel}
-          topRate={rates[topZone]}
-          centerRate={rates['center']}
-          bottomRate={rates[bottomZone]}
           phase={phase}
           onSetZone={setZone}
         />
       }
       subChoices={subChoicesNode}
-      readout={{ label: zoneLabel, pct: Math.round(zoneRate * 100) }}
+      readout={{ label: `${zoneLabel} · ${deliveryLabel}` }}
       coachTip={coachTip}
       coach={coach}
       // T1 (SF-3, CODE_INSTRUKTION_SIDFOT_INTRORAM 2026-07-13): i introt/practice

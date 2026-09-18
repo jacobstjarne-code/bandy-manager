@@ -1,8 +1,5 @@
-import type { SaveGame } from '../entities/SaveGame'
-import { currentLeagueRound } from '../services/anslagService'
-
 /**
- * Klubbpärmen — kapitel-registry med unlock-predikat mot riktig game-state.
+ * Klubbpärmen — alltid tillgänglig som uppslagsbok, även före ett systems introduktion.
  * Instruktion: docs/CODE_INSTRUKTION_TILLTRADET_KLUBBPARMEN_2026-06-26.md
  *
  * OPUS: alla sex kapitel skrivna i bruksortens protokoll-röst, grundade mot mekaniken
@@ -20,8 +17,6 @@ export interface KlubbparmChapterContent {
 export interface KlubbparmChapter {
   id: string
   label: string
-  /** Predikat mot game-state — kapitlet växer fram när systemet låses upp. */
-  isUnlocked: (game: SaveGame) => boolean
   content: KlubbparmChapterContent
 }
 
@@ -58,7 +53,7 @@ const ORTEN: KlubbparmChapterContent = {
   tumregel: 'Sköt orten i medgång, så bär den dig i motgång.',
 }
 
-// De tre låsta kapitlen (renderas när sina system tänds). Grundade mot: Klacken =
+// De senare systemen är också läsbara från början. Grundade mot: Klacken =
 // supporterService (namngiven klack, ledare, ritual, favoritspelare, mood-skala,
 // växer/glesnar på hemmaresultat), Ekonomi = TAB_INTROS.ekonomi + facilityDescriptions
 // (kassa/intäkter → styrelse/sponsorer; bygget sten för sten med avvägningar),
@@ -93,16 +88,12 @@ const SLUTSPEL: KlubbparmChapterContent = {
 }
 
 export const KLUBBPARM_CHAPTERS: KlubbparmChapter[] = [
-  // Hörnor + Matchen + Orten: alltid öppna (grunden, lärs i Tillträdet).
-  { id: 'hornor',  label: 'Hörnor',  isUnlocked: () => true, content: HORNOR },
-  { id: 'matchen', label: 'Matchen', isUnlocked: () => true, content: MATCHEN },
-  { id: 'orten',   label: 'Orten',   isUnlocked: () => true, content: ORTEN },
-  // Klacken: när klack-systemet är aktivt (supporterGroup finns).
-  { id: 'klacken', label: 'Klacken', isUnlocked: g => g.supporterGroup != null, content: KLACKEN },
-  // Ekonomi: när B1 Klubbutveckling är upplåst (facilityState-markören).
-  { id: 'ekonomi', label: 'Ekonomi', isUnlocked: g => g.facilityState != null, content: EKONOMI },
-  // Slutspel: bracket finns ELLER grundserien är slut (omgång ≥ 22).
-  { id: 'slutspel', label: 'Slutspel', isUnlocked: g => g.playoffBracket != null || currentLeagueRound(g) >= 22, content: SLUTSPEL },
+  { id: 'hornor',  label: 'Hörnor',  content: HORNOR },
+  { id: 'matchen', label: 'Matchen', content: MATCHEN },
+  { id: 'orten',   label: 'Orten',   content: ORTEN },
+  { id: 'klacken', label: 'Klacken', content: KLACKEN },
+  { id: 'ekonomi', label: 'Ekonomi', content: EKONOMI },
+  { id: 'slutspel', label: 'Slutspel', content: SLUTSPEL },
 ]
 
 /**

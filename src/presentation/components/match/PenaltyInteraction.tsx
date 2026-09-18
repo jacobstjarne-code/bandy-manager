@@ -7,7 +7,7 @@
  *   steel-blue GK, amber shooter dot, red shot lane
  * - Monospace LED sub-choice buttons (LÅGT / HÖGT)
  *
- * Mekanik (penaltyInteractionService) ORÖRD — DIR_RATES, height modifiers.
+ * Mekanik (penaltyInteractionService) ORÖRD. Visa inga frikopplade procentsatser.
  */
 import { useState, useEffect } from 'react'
 import type { PenaltyInteractionData, PenaltyOutcome, PenaltyDirection, PenaltyHeight } from '../../../domain/services/penaltyInteractionService'
@@ -21,18 +21,14 @@ interface PenaltyInteractionProps {
   outcome: PenaltyOutcome | null
   onChoose: (dir: PenaltyDirection, height: PenaltyHeight) => void
   coach?: AssistantCoach
+  /** Dev-galleriets stillbild: ingen timer, utan att ändra live-matchens tidspress. */
+  practice?: boolean
 }
 
 const HEIGHT_OPTIONS: { key: PenaltyHeight; label: string }[] = [
   { key: 'low',  label: 'LÅGT' },
   { key: 'high', label: 'HÖGT' },
 ]
-const DIR_RATES: Record<PenaltyDirection, number> = { left: 0.50, center: 0.35, right: 0.50 }
-
-function combinedRate(d: PenaltyDirection, h: PenaltyHeight): number {
-  return Math.max(0.10, Math.min(0.75, DIR_RATES[d] * (h === 'high' ? 0.85 : 1.0)))
-}
-
 /** SVG penalty schematic — front-view goal, 6 zones, LED palette */
 function PenaltyPitchSVG({
   dir, height, phase, onSetDir,
@@ -104,13 +100,6 @@ function PenaltyPitchSVG({
               fontFamily="monospace" fontWeight="700"
               style={{ pointerEvents: 'none' }}
             >{label}</text>
-            <text
-              x={x + w / 2} y={rectY + 28}
-              textAnchor="middle" fontSize="6"
-              fill={isSelected ? 'var(--led-green)' : 'rgba(180,200,210,0.35)'}
-              fontFamily="monospace"
-              style={{ pointerEvents: 'none' }}
-            >{Math.round(combinedRate(d, height) * 100)}%</text>
           </g>
         )
       })}
@@ -132,7 +121,7 @@ function PenaltyPitchSVG({
   )
 }
 
-export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyInteractionProps) {
+export function PenaltyInteraction({ data, outcome, onChoose, coach, practice }: PenaltyInteractionProps) {
   const [dir, setDir] = useState<PenaltyDirection>('left')
   const [height, setHeight] = useState<PenaltyHeight>('low')
   const [phase, setPhase] = useState<InteractionPhase>('choosing')
@@ -186,6 +175,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
       foldHintPrompt="VÄLJ PLACERING"
       minute={data.minute}
       timer={{ seconds: 8 }}
+      untimed={practice}
       pitch={
         <PenaltyPitchSVG
           dir={dir}
@@ -195,7 +185,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
         />
       }
       subChoices={subChoicesNode}
-      readout={{ label: `${dirLabels[dir]} · ${height === 'low' ? 'LÅGT' : 'HÖGT'}`, pct: Math.round(combinedRate(dir, height) * 100) }}
+      readout={{ label: `${dirLabels[dir]} · ${height === 'low' ? 'LÅGT' : 'HÖGT'}` }}
       coachTip={coachTip}
       coach={coach}
       cta={{ label: 'Skjut straffen', variant: 'copper', onClick: () => handleConfirm() }}
@@ -209,7 +199,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
           fontFamily: outcome.type !== 'goal' ? 'var(--font-display)' : 'var(--font-mono)',
           margin: 0,
         }}>
-          {outcome.type === 'goal' ? 'MÅL! ' : ''}{outcome.description}
+          {outcome.description}
         </p>
       ) : null}
       onTimeout={() => handleConfirm('left', 'low')}

@@ -8,6 +8,19 @@ import type { Rivalry } from '../data/rivalries'
 import { getRivalry } from '../data/rivalries'
 import { commentary, pickCommentary } from '../data/matchCommentary'
 
+/** Kort spelarreferens i löpande referat; hela namnet vid efternamnskrock. */
+export function commentaryPlayerReference(
+  player: Pick<Player, 'id' | 'firstName' | 'lastName'>,
+  matchPlayers: Array<Pick<Player, 'id' | 'firstName' | 'lastName'>>,
+): string {
+  const surname = player.lastName.trim()
+  const fullName = `${player.firstName} ${player.lastName}`.trim()
+  if (!surname) return fullName
+  const ambiguous = matchPlayers.some(other =>
+    other.id !== player.id && other.lastName.trim().toLocaleLowerCase('sv') === surname.toLocaleLowerCase('sv'))
+  return ambiguous ? fullName : surname
+}
+
 // ── Match phase context ────────────────────────────────────────────────────
 // Derived from fixture matchday: regular (1-26), quarterfinal (27-31),
 // semifinal (32-36), final (37+). Drives all phase-specific probability tables.
@@ -294,6 +307,8 @@ export interface MatchStep {
   freeKickInteractionData?: import('./freeKickInteractionService').FreeKickInteractionData
   // Last-minute press (automatic when trailing by 1 at step >= 55)
   lastMinutePressData?: import('./lastMinutePressService').LastMinutePressData
+  /** Sparat live-val för återupptagning och senare omsimuleringar. */
+  lastMinutePressChoice?: import('./lastMinutePressService').PressChoice
   // Assistentens röstrad när denna step:s interaktion (corner/counter/frislag)
   // löstes av assistenten under snabbspolning istället för spelarval. Renderas
   // som en atmosfärrad FÖRE utfallsraden i commentary-feeden.

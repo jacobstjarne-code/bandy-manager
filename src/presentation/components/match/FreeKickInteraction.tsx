@@ -21,25 +21,22 @@ interface FreeKickInteractionProps {
   outcome: FreeKickOutcome | null
   onChoose: (choice: FreeKickChoice) => void
   coach?: AssistantCoach
+  /** Tidlös förhandsvisning av matchpanelen. */
+  practice?: boolean
 }
 
-const BASE_RATES: Record<FreeKickChoice, number> = { shoot: 0.28, chipPass: 0.22, layOff: 0.15 }
-
-const CHOICES: { choice: FreeKickChoice; label: string; sublabel: string }[] = [
-  { choice: 'shoot',    label: 'SKJUT',  sublabel: 'direkt' },
-  { choice: 'chipPass', label: 'CHIP',   sublabel: 'chip' },
-  { choice: 'layOff',   label: 'KORT',   sublabel: 'lay-off' },
+const CHOICES: { choice: FreeKickChoice; label: string }[] = [
+  { choice: 'shoot',    label: 'SKJUT' },
+  { choice: 'chipPass', label: 'CHIP' },
+  { choice: 'layOff',   label: 'KORT' },
 ]
 
 /** SVG freekick schematic — Stålvallen LED palette */
 function FreeKickPitchSVG({
-  data, choice, rates, phase, onSetChoice,
+  data, choice,
 }: {
   data: FreeKickInteractionData
   choice: FreeKickChoice
-  rates: Record<FreeKickChoice, number>
-  phase: InteractionPhase
-  onSetChoice: (c: FreeKickChoice) => void
 }) {
   // Ball position (bottom-center area)
   const ballX = 130, ballY = 125
@@ -102,29 +99,11 @@ function FreeKickPitchSVG({
         {data.kickerName.split(' ').pop()}
       </text>
 
-      {/* Choice lanes (dim — all 3 visible, active one is bright) */}
-      {(Object.entries(lanes) as [FreeKickChoice, typeof lanes[FreeKickChoice]][]).map(([c, lane]) => {
-        const isActive = choice === c
-        const rate = rates[c]
-        return (
-          <g key={c} opacity={isActive ? 1 : 0.3}
-            onClick={() => phase === 'choosing' && onSetChoice(c)}
-            style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
-          >
-            <text
-              x={lane.x2 + (c === 'layOff' ? 8 : -8)} y={lane.y2}
-              textAnchor={c === 'layOff' ? 'start' : 'end'}
-              fontSize="5.5" fill={lane.color} fontFamily="monospace" fontWeight="700"
-              style={{ pointerEvents: 'none' }}
-            >{Math.round(rate * 100)}%</text>
-          </g>
-        )
-      })}
     </svg>
   )
 }
 
-export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKickInteractionProps) {
+export function FreeKickInteraction({ data, outcome, onChoose, coach, practice }: FreeKickInteractionProps) {
   const [choice, setChoice] = useState<FreeKickChoice>('shoot')
   const [phase, setPhase] = useState<InteractionPhase>('choosing')
 
@@ -144,15 +123,6 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
     if (phase !== 'choosing') return
     setPhase('locked')
     onChoose(c)
-  }
-
-  // Adjust rates based on wall size and distance
-  const wallBonus = data.wallSize <= 2 ? 0.06 : data.wallSize >= 4 ? -0.04 : 0
-  const distPenalty = data.distanceMeters > 22 ? -0.06 : data.distanceMeters < 14 ? 0.04 : 0
-  const rates: Record<FreeKickChoice, number> = {
-    shoot: Math.max(0.08, BASE_RATES.shoot + wallBonus + distPenalty),
-    chipPass: Math.max(0.08, BASE_RATES.chipPass - distPenalty * 0.5),
-    layOff: Math.max(0.08, BASE_RATES.layOff),
   }
 
   const subChoicesNode = (
@@ -183,17 +153,15 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
       foldHintPrompt="VÄLJ AVSLUT"
       minute={data.minute ?? 0}
       timer={{ seconds: 8 }}
+      untimed={practice}
       pitch={
         <FreeKickPitchSVG
           data={data}
           choice={choice}
-          rates={rates}
-          phase={phase}
-          onSetChoice={setChoice}
         />
       }
       subChoices={subChoicesNode}
-      readout={{ label: choiceLabels[choice], pct: Math.round(rates[choice] * 100) }}
+      readout={{ label: choiceLabels[choice] }}
       coachTip={coachTip}
       coach={coach}
       cta={{ label: 'Slå frislaget', variant: 'copper', onClick: () => handleConfirm() }}

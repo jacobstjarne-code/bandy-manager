@@ -9,6 +9,8 @@ export interface InboxItem {
   body: string
   relatedClubId?: string
   relatedPlayerId?: string
+  /** Exact incoming bid this notice concerns; older saves can recover it from the item id. */
+  relatedBidId?: string
   relatedFixtureId?: string
   /** Decision-lifecycle provenance for aggregated rollover notices. */
   sourceEventIds?: string[]

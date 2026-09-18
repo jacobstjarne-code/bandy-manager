@@ -25,7 +25,7 @@ import { appendFinanceLog, applyFinanceChange } from '../../domain/services/econ
 import { processEconomy } from './processors/economyProcessor'
 import { applyCommunityConsequences, applyCommunityRoundResult, processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
-import { executeAcceptedTransfers, generateDeadlineDayBidInbox, processLoans, processTransferBids } from './processors/transferProcessor'
+import { executeAcceptedTransfers, processLoans, processTransferBids } from './processors/transferProcessor'
 import { processSponsors, applyRiskySponsorMaturation } from './processors/sponsorProcessor'
 import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/services/contextualSponsorService'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
@@ -375,9 +375,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const upcomingFixtureResult = processUpcomingFixtureInbox(finalAllFixtures, game, nextMatchday)
   newInboxItems.push(...upcomingFixtureResult.inboxItems)
   const pendingAnnandagsVal = upcomingFixtureResult.pendingAnnandagsVal
-  const upcomingManagedFix = upcomingFixtureResult.upcomingManagedFixture
-
-  newInboxItems.push(...generateDeadlineDayBidInbox(game, upcomingManagedFix, nextMatchday, localRand))
 
   const marketValueResult = processMarketValues(game, finalPlayers, nextMatchday)
   const availabilityUpdatedPlayers = marketValueResult.players
@@ -827,7 +824,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // trimmedInbox redan efter media-steget, så sponsor/community/skandal
   // skrevs efter ögonblicksbilden och försvann eller gick runt dedupen.
   newInboxItems.push(...marketValueInbox)
-  const inboxDelivery = finalizeInboxDelivery(game, newInboxItems, {
+  const inboxDelivery = finalizeInboxDelivery({ ...game, transferBids: allBids }, newInboxItems, {
     season: game.currentSeason,
     matchday: nextMatchday,
     leagueRound: currentLeagueRound ?? null,

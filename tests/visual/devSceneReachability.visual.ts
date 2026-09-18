@@ -259,11 +259,17 @@ test('Avskedsceremonin visar spelaren, avskedet och alla tre valen', async ({ pa
 
 test('Granska nivå 3 visar det persisterade valet som belagt citat', async ({ page }) => {
   await page.goto('/dev/scenes?scene=granska-level3&width=390&inspect=1', { waitUntil: 'networkidle' })
-  const chosen = page.locator('[data-scene-content]').getByText('Godkänn kravet', { exact: true })
+  const scene = page.locator('[data-scene-content]')
+  const chosen = scene.getByText('Godkänn kravet', { exact: true })
 
   await chosen.scrollIntoViewIfNeeded()
   await expect(chosen).toBeVisible()
   await expect(chosen.locator('xpath=../preceding-sibling::span[1]')).toHaveText('✓')
+  await expect(scene.getByText('Karlsborg', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Lesjöfors', { exact: true }).first()).toBeVisible()
+  await expect(scene.getByText('Forsbacka', { exact: true })).toBeVisible()
+  await expect(scene.getByText('Edsbyn BK')).toHaveCount(0)
+  await expect(scene.getByText('Bollnäs GoIF')).toHaveCount(0)
 })
 
 test('Styrelsens minimalkort visar ultimatum, orsak och väg tillbaka', async ({ page }) => {

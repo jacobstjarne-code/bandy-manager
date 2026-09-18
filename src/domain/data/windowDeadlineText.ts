@@ -30,9 +30,3 @@ export const DEADLINE_KAFFERUM_TEXT: string[] = [
   '"Sista dagen. Sedan vet vi vad vi har för vinter." – Sixten',
   '"Telefonen hos managern ringer hela dagen, tydligen." – Göte',
 ]
-
-export const DEADLINE_AI_BID_TEXT: string[] = [
-  '{club} lägger ett bud på {player} i sista minuten.',
-  'Sent på deadline-dagen — {club} är intresserade av {player}.',
-  'Det kom ett bud. {club} vill ha {player} innan fönstret stänger.',
-]

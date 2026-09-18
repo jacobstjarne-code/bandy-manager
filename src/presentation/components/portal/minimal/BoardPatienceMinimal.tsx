@@ -18,7 +18,7 @@ import { getBoardPatienceZone } from '../../../../domain/services/portal/boardPa
  * (under_press/ultimatum) + väg tillbaka (bara ultimatum) — se
  * boardPatienceZone.ts för hur orsaken väljs.
  */
-export function BoardPatienceMinimal({ game }: CardRenderProps) {
+export function BoardPatienceMinimal({ game, prominent = false }: CardRenderProps & { prominent?: boolean }) {
   const { zone, label, headline, causeLine, pathBackLine } = getBoardPatienceZone(game)
 
   const color = zone === 'stabilt'
@@ -28,29 +28,29 @@ export function BoardPatienceMinimal({ game }: CardRenderProps) {
     : 'var(--danger)'
 
   return (
-    <div style={{ textAlign: 'center' }}>
+    <div style={{ textAlign: prominent ? 'left' : 'center' }}>
       <div style={{
-        color: 'var(--text-muted)',
-        fontSize: 8,
+        color: prominent ? 'var(--text-light-secondary)' : 'var(--text-muted)',
+        fontSize: prominent ? 10 : 8,
         letterSpacing: '1px',
         textTransform: 'uppercase',
-        marginBottom: 2,
+        marginBottom: prominent ? 4 : 2,
       }}>
         Styrelsen
       </div>
-      <div className="h-num-sm" style={{ color }}>
+      <div className="h-num-sm" style={{ color: prominent ? 'var(--text-light)' : color, fontSize: prominent ? 18 : undefined }}>
         {label}
       </div>
-      <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 4 }}>
+      <div style={{ color: prominent ? 'var(--text-light)' : 'var(--text-muted)', fontSize: prominent ? 12 : 10, marginTop: 4 }}>
         {headline}
       </div>
       {causeLine && (
-        <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>
+        <div style={{ color: prominent ? 'var(--text-light-secondary)' : 'var(--text-muted)', fontSize: prominent ? 11 : 10 }}>
           {causeLine}
         </div>
       )}
       {pathBackLine && (
-        <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>
+        <div style={{ color: prominent ? 'var(--text-light)' : 'var(--text-muted)', fontSize: prominent ? 11 : 10, marginTop: prominent ? 8 : 2 }}>
           {pathBackLine}
         </div>
       )}

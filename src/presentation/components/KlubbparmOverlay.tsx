@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Lock } from 'lucide-react'
-import { Icon } from './primitives/Icon'
 import { Overlay } from './primitives/Overlay'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { KLUBBPARM_CHAPTERS, chapterAwaitsText } from '../../domain/data/klubbparmContent'
 import { seasonSpanLabel } from '../../domain/utils/seasonYear'
+import { KlubbparmVisual } from './KlubbparmVisual'
 
 /**
  * Klubbpärmen — in-world föreningspärm, öppnas från menyn. Ersätter HelpOverlay.
@@ -19,12 +18,9 @@ interface KlubbparmOverlayProps {
 }
 
 export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
-  const chapters = KLUBBPARM_CHAPTERS.map(ch => ({ ch, unlocked: ch.isUnlocked(game) }))
-  const firstUnlocked = chapters.find(c => c.unlocked)?.ch.id ?? KLUBBPARM_CHAPTERS[0].id
-  const [activeId, setActiveId] = useState(firstUnlocked)
+  const [activeId, setActiveId] = useState(KLUBBPARM_CHAPTERS[0].id)
 
   const active = KLUBBPARM_CHAPTERS.find(c => c.id === activeId) ?? KLUBBPARM_CHAPTERS[0]
-  const activeUnlocked = active.isUnlocked(game)
 
   const club = game.clubs.find(c => c.id === game.managedClubId)
   const clubLabel = `${(club?.shortName ?? club?.name ?? '').toUpperCase()} · ${seasonSpanLabel(game.currentSeason)}`
@@ -85,38 +81,29 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
           borderBottom: '1px solid var(--border-parm)',
           flexShrink: 0,
         }}>
-          {chapters.map(({ ch, unlocked }) => {
+          {KLUBBPARM_CHAPTERS.map(ch => {
             const isActive = ch.id === activeId
             const style: React.CSSProperties = isActive ? {
               fontFamily: 'system-ui', fontSize: 10, fontWeight: 700,
               letterSpacing: '1px', color: 'var(--bg-surface)',
               background: 'var(--accent)', borderRadius: 4, padding: '5px 10px',
               border: 'none', cursor: 'pointer',
-            } : unlocked ? {
+            } : {
               fontFamily: 'system-ui', fontSize: 10, fontWeight: 600,
               letterSpacing: '1px', color: 'var(--text-secondary)',
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-parm)',
               borderRadius: 4, padding: '5px 10px',
               cursor: 'pointer',
-            } : {
-              fontFamily: 'system-ui', fontSize: 10, fontWeight: 600,
-              letterSpacing: '1px', color: 'var(--text-parm-locked)',
-              background: 'var(--bg-parm-locked)',
-              border: '1px dashed var(--border-parm)',
-              borderRadius: 4, padding: '5px 10px',
-              cursor: 'default',
-              display: 'inline-flex', alignItems: 'center', gap: 4,
             }
 
             return (
               <button
                 key={ch.id}
-                onClick={() => unlocked && setActiveId(ch.id)}
-                disabled={!unlocked}
+                onClick={() => setActiveId(ch.id)}
+                aria-current={isActive ? 'page' : undefined}
                 style={style}
               >
-                {!unlocked && <Icon icon={Lock} size={9} />}
                 {ch.label}
               </button>
             )
@@ -137,14 +124,7 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
             pointerEvents: 'none',
           }} />
 
-          {!activeUnlocked ? (
-            <p style={{
-              fontFamily: 'system-ui', fontSize: 11,
-              color: 'var(--text-muted)', fontStyle: 'italic',
-            }}>
-              Kapitlet öppnas när systemet låses upp.
-            </p>
-          ) : chapterAwaitsText(active) ? (
+          {chapterAwaitsText(active) ? (
             // Säkerhetsnät, inte förväntad väg — se chapterAwaitsText/KLUBBPARM_CHAPTERS
             // i klubbparmContent.ts. Ny kapitel-post utan text = denna raden syns.
             <p style={{ fontFamily: 'system-ui', fontSize: 11, color: 'var(--text-muted)' }}>[Opus]</p>
@@ -157,26 +137,36 @@ export function KlubbparmOverlay({ game, onClose }: KlubbparmOverlayProps) {
               }}>
                 Kapitel · {active.label}
               </p>
-              {active.content.paragraphs.map((p, i) => (
-                <p key={i} style={{
+              <KlubbparmVisual game={game} chapterId={active.id} chapterLabel={active.label} />
+              <p style={{
                   fontSize: 13, color: 'var(--text-secondary)',
-                  lineHeight: 1.55, margin: '0 0 10px',
+                  lineHeight: 1.55, margin: '0 0 14px',
                 }}>
-                  {p}
-                </p>
-              ))}
-              {active.content.tumregel && (
-                <div className="card-sharp" style={{ padding: '10px 12px', marginTop: 4 }}>
-                  <p style={{
-                    fontFamily: 'system-ui', fontSize: 9, fontWeight: 600,
-                    letterSpacing: '2px', textTransform: 'uppercase',
-                    color: 'var(--accent)', marginBottom: 6,
-                  }}>Tumregel</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }}>
-                    {active.content.tumregel}
-                  </p>
+                {active.content.paragraphs[0]}
+              </p>
+              <details key={active.id} style={{ borderTop: '1px solid var(--border-parm)', paddingTop: 11 }}>
+                <summary style={{
+                  color: 'var(--accent)', fontFamily: 'system-ui', fontSize: 12,
+                  fontWeight: 700, cursor: 'pointer' }}>
+                  Läs mer
+                </summary>
+                <div style={{ paddingTop: 14 }}>
+                  {active.content.paragraphs.slice(1).map((p, i) => (
+                    <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)',
+                      lineHeight: 1.55, margin: '0 0 10px' }}>{p}</p>
+                  ))}
+                  {active.content.tumregel && (
+                    <div className="card-sharp" style={{ padding: '10px 12px', marginTop: 4 }}>
+                      <p style={{ fontFamily: 'system-ui', fontSize: 9, fontWeight: 600,
+                        letterSpacing: '2px', textTransform: 'uppercase',
+                        color: 'var(--accent)', marginBottom: 6 }}>Tumregel</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }}>
+                        {active.content.tumregel}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </details>
             </>
           )}
         </div>
