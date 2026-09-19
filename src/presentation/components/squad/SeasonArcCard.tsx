@@ -6,6 +6,9 @@ import {
   getReaction,
   projectSeasonForm,
   PROJECTION_HORIZON,
+  getSeasonClock,
+  getSeasonClockWarning,
+  MODE_EXPLANATION,
 } from '../../../domain/services/periodisationService'
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { positionShort } from '../../utils/formatters'
@@ -214,6 +217,24 @@ export function SeasonArcCard({ game }: Props) {
   const currentAvg = historyEntries.length > 0 ? (historyEntries[historyEntries.length - 1].avgSeasonForm ?? 60) : 60
   const consequenceLine = getPhaseConsequence(mode, starters.length > 0 ? starters : managedPlayers.slice(0, 11), roundsInMode, currentAvg)
 
+  // §4.3 säsongsklockan — var i säsongen laget står och vad fasen är byggd
+  // för. Ingen automatik; spelaren väljer fortfarande själv.
+  const bracket = game.playoffBracket
+  const allSeries = bracket
+    ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
+    : []
+  const eliminated = allSeries.some(sx => sx.loserId === game.managedClubId)
+  const inPlayoff = !eliminated && allSeries.some(sx =>
+    sx.homeClubId === game.managedClubId || sx.awayClubId === game.managedClubId)
+  const clock = getSeasonClock({
+    fixtures: game.fixtures,
+    managedClubId: game.managedClubId,
+    currentSeason: game.currentSeason,
+    eliminated,
+    inPlayoff,
+  })
+  const clockWarning = getSeasonClockWarning(mode, roundsInMode, clock)
+
   return (
     <>
       {/* ── Säsongsbåge card ── */}
@@ -253,6 +274,13 @@ export function SeasonArcCard({ game }: Props) {
           </span>
         </div>
 
+        {/* §4.3 — fasnamnet: var i säsongen vi är. Fables text (A7). */}
+        <div style={{ padding: '6px 13px 0' }}>
+          <p className="h-quote-sm" style={{ lineHeight: 1.45, margin: 0 }}>
+            {clock.label}
+          </p>
+        </div>
+
         {/* Dial */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, padding: '8px 12px 13px' }}>
           {(['bygg', 'hall', 'toppa', 'vila'] as PeriodisationMode[]).map(m => (
@@ -284,9 +312,34 @@ export function SeasonArcCard({ game }: Props) {
               }}>
                 {m === 'bygg' ? 'form ↑ långsamt' : m === 'hall' ? 'stabilt' : m === 'toppa' ? '3 upp, sen svacka' : 'vila ben, form ↓'}
               </div>
+              {/* §4.3 — fasens avsedda läge. En prick, inte en knuff: spelet
+                  säger vad fasen är byggd för och låter valet vara spelarens. */}
+              {m === clock.intendedMode && (
+                <div className="h-micro" style={{ color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.2 }}>
+                  fasens läge
+                </div>
+              )}
             </button>
           ))}
         </div>
+
+        {/* §4.3 — fast förklaring av VAD läget gör (A7). De dynamiska
+            raderna nedan behålls; den här säger inte vad som händer just nu,
+            utan vad läget är till för. */}
+        <div style={{ padding: '0 13px 8px' }}>
+          <p className="h-micro" style={{ lineHeight: 1.45, margin: 0, color: 'var(--text-secondary)' }}>
+            {MODE_EXPLANATION[mode]}
+          </p>
+        </div>
+
+        {/* §4.3 — varningen syns bara när valet kostar. */}
+        {clockWarning && (
+          <div style={{ padding: '0 13px 10px' }}>
+            <p className="h-micro" style={{ ...FLAG_STYLE.warn, lineHeight: 1.45, margin: 0, padding: '6px 8px', borderRadius: 'var(--radius-sm, 3px)' }}>
+              {clockWarning}
+            </p>
+          </div>
+        )}
 
         {/* Konsekvensrad — en mening om vad valet faktiskt gör, eller ingenting */}
         {consequenceLine && (
