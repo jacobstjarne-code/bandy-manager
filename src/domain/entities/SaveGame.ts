@@ -773,6 +773,14 @@ export interface SaveGame {
     matchesScoredIn: number   // distinct matches with ≥1 goal (match-spärr, BUG-2)
     inboxSentAt?: number  // goalsAgainstUs count when inbox was last sent
     signedBy?: string     // our clubId if signed
+    /** TILLÄGG 4 (2026-09-18): säsongen då spelaren blev SIN KLUBBS nemesis.
+     *  En nemesis per motståndarklubb och säsong — den med flest mål mot oss
+     *  vid tröskeltillfället. Utan det blev varje målfarlig forward i varje
+     *  klubb sin egen räknare, och posterna blev bakgrundsbrus. */
+    nemesisSeason?: number
+    /** TILLÄGG 4: avslutningsraden är skickad. En gång per nemesis och
+     *  KARRIÄR — bågen får ett slut, inte en ny räknare. */
+    closureSent?: boolean
   }>
 
   // Sprint G — preferred match mode (persists between matches)

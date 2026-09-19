@@ -30,10 +30,22 @@ export interface NarrativeResult {
  * A1), kopierade ordagrant. Siffrorna skrivs ut i bokstäver just för att
  * trösklarna är fasta — det är samma tal varje gång.
  */
-export const NEMESIS_THRESHOLDS = [3, 6, 10] as const
+/**
+ * Jacobs beslut 2026-09-19, efter mätningen på HEAD: trappan är 6/10, inte
+ * 3/6/10. Tröskel 3 ensam stod för 7,55 av de 18,20 posterna per säsong — tre
+ * mål mot oss under en hel karriär är en låg ribba i en tolvlagsserie, och de
+ * flesta motståndarforwards passerade den. Med 6/10 landar summan på 10,65,
+ * alltså i praktiken på acceptansens under-10.
+ *
+ * Tresiffer-raden är inte omskriven, bara utan tröskel; den står kvar i
+ * docs/TEXTLEVERANS_SPAKBALANS_2026-09-18.md (A1) om trappan ändras igen.
+ */
+export const NEMESIS_THRESHOLDS = [6, 10] as const
+
+/** TILLÄGG 4: avslutningsraden kan först komma efter att tröskel 6 nåtts. */
+export const NEMESIS_CLOSURE_MIN_GOALS = 6
 
 function nemesisBody(threshold: number, name: string, club: string): string {
-  if (threshold === 3) return `${name} (${club}) har gjort tre mål mot oss nu. Backarna vet vem han är.`
   if (threshold === 6) return `Sex mål mot oss av ${name} (${club}). Han hittar samma yta varje gång. Scouten har hans nummer.`
   return `${name} (${club}) är uppe i tio mål mot oss. Det pratas om det på Konsum. Han lär inte flytta hit.`
 }
@@ -265,6 +277,9 @@ export function processNarrative(
     for (const evt of opponentGoalEvents) {
       if (evt.playerId) goalsByOpponent[evt.playerId] = (goalsByOpponent[evt.playerId] ?? 0) + 1
     }
+    // Alla mål i en fixtur kommer från EN klubb, så hela det här blocket rör
+    // en enda motståndarklubb — det gör "högst en post per omgång" till en
+    // följd av att bara en spelare får tala, inte en extra spärr.
     for (const [playerId, matchGoals] of Object.entries(goalsByOpponent)) {
       const opponentPlayer = game.players.find(p => p.id === playerId)
       if (!opponentPlayer) continue
@@ -275,33 +290,81 @@ export function processNarrative(
         goalsAgainstUs: 0,
         matchesScoredIn: 0,
       }
-      const newTotal = prev.goalsAgainstUs + matchGoals
-      const newMatches = (prev.matchesScoredIn ?? 0) + 1
-      // KÖRORDER 2026-09-18 §5.1 — trösklar, inte varje mål. Villkoret var
-      // `inboxSentAt < newTotal`, vilket gav en post för VARJE nytt mål efter
-      // det tredje: en spelare som gjorde nio mål mot oss kostade sju poster.
-      // Nu talar systemet tre gånger under hela relationen, vid 3, 6 och 10.
-      // Match-spärren (mål i ≥2 separata matcher) står kvar — en spelare som
-      // gör hattrick i en enda match är inte en nemesis.
-      const crossed = NEMESIS_THRESHOLDS.find(
-        t => newTotal >= t && prev.goalsAgainstUs < t,
-      )
-      const shouldSendInbox = newMatches >= 2 && crossed !== undefined
-      nemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, matchesScoredIn: newMatches, clubId: opponentClubId }
-      if (shouldSendInbox && crossed !== undefined) {
-        nemesisTracker[playerId].inboxSentAt = newTotal
+      nemesisTracker[playerId] = {
+        ...prev,
+        goalsAgainstUs: prev.goalsAgainstUs + matchGoals,
+        matchesScoredIn: (prev.matchesScoredIn ?? 0) + 1,
+        clubId: opponentClubId,
+      }
+    }
+
+    // TILLÄGG 4 (2026-09-18) — EN nemesis per motståndarklubb och säsong.
+    // Tidigare räknade varje målfarlig forward i varje klubb sin egen trappa,
+    // och posterna blev bakgrundsbrus (7,55 poster per säsong bara på den
+    // lägsta tröskeln). Nu: klubbens nemesis är den med flest mål mot oss vid
+    // tröskeltillfället, och när han väl utsetts är det bara han som talar
+    // resten av säsongen.
+    const clubEntries = Object.values(nemesisTracker).filter(e => e.clubId === opponentClubId)
+    const established = clubEntries.find(e => e.nemesisSeason === game.currentSeason)
+    const candidate = established
+      ?? [...clubEntries].sort((a, b) => b.goalsAgainstUs - a.goalsAgainstUs)[0]
+
+    let nemesisPostThisRound = false
+    if (candidate) {
+      const before = (game.nemesisTracker ?? {})[candidate.playerId]?.goalsAgainstUs ?? 0
+      const after = nemesisTracker[candidate.playerId].goalsAgainstUs
+      const crossed = [...NEMESIS_THRESHOLDS].reverse().find(t => after >= t && before < t)
+      // Match-spärren står kvar: en spelare som gör hattrick i EN match är
+      // ingen nemesis, hur många mål det än blev.
+      if (crossed !== undefined && (nemesisTracker[candidate.playerId].matchesScoredIn ?? 0) >= 2) {
         const nemesisClub = game.clubs.find(c => c.id === opponentClubId)
-        const nemesisName = `${opponentPlayer.firstName} ${opponentPlayer.lastName}`
         const nemesisClubName = nemesisClub?.name ?? 'motst.'
+        nemesisTracker[candidate.playerId] = {
+          ...nemesisTracker[candidate.playerId],
+          inboxSentAt: after,
+          nemesisSeason: game.currentSeason,
+        }
+        nemesisPostThisRound = true
         inboxItems.push({
-          // Id:t bär tröskeln — annars skulle andra och tredje posten krocka
-          // med den första inom samma säsong.
-          id: `inbox_nemesis_${playerId}_t${crossed}_${game.currentSeason}`,
+          id: `inbox_nemesis_${candidate.playerId}_t${crossed}_${game.currentSeason}`,
           date: game.currentDate,
           type: InboxItemType.RivalryMilestone,
-          title: `Nemesis: ${nemesisName}`,
-          body: nemesisBody(crossed, nemesisName, nemesisClubName),
-          relatedPlayerId: playerId,
+          title: `Nemesis: ${candidate.name}`,
+          body: nemesisBody(crossed, candidate.name, nemesisClubName),
+          relatedPlayerId: candidate.playerId,
+          isRead: false,
+          kind: 'nemesis',
+        } as InboxItem)
+      }
+    }
+
+    // TILLÄGG 4 — bågen får ett slut. När vi VINNER mot nemesisens klubb och
+    // han inte gör mål, efter att tröskel 6 passerats, kommer avslutningsraden
+    // en gång per nemesis och KARRIÄR. Det är skillnaden mellan en berättelse
+    // och en räknare, och Nemesis är den enda av de tre mekaniska posterna som
+    // förtjänar den.
+    // Bara klubbens UTSEDDA nemesis kan stängas — en slumpmässig forward med
+    // sex mål mot oss är ingen båge som behöver ett slut. Och aldrig i samma
+    // omgång som en tröskelpost: tillägg 4 säger högst EN nemesis-post per
+    // omgång, och tröskeln är den som utlöstes av dagens match.
+    const closureCandidate = nemesisPostThisRound ? undefined : Object.values(nemesisTracker).find(e =>
+      e.clubId === opponentClubId
+      && !e.closureSent
+      && e.nemesisSeason !== undefined
+      && (e.inboxSentAt ?? 0) >= NEMESIS_CLOSURE_MIN_GOALS,
+    )
+    if (closureCandidate && !goalsByOpponent[closureCandidate.playerId]) {
+      const weWon = deriveUtfall(justCompletedManagedFixture, game.managedClubId) === 'vunnet'
+      if (weWon) {
+        nemesisTracker[closureCandidate.playerId] = { ...closureCandidate, closureSent: true }
+        inboxItems.push({
+          id: `inbox_nemesis_closure_${closureCandidate.playerId}`,
+          date: game.currentDate,
+          type: InboxItemType.RivalryMilestone,
+          title: `Nemesis: ${closureCandidate.name}`,
+          // Fables text (TILLÄGG 4), kopierad ordagrant.
+          body: `${closureCandidate.name} gick mållös från isen i dag. Backarna höll honom. Det märktes på hur de gick av.`,
+          relatedPlayerId: closureCandidate.playerId,
           isRead: false,
           kind: 'nemesis',
         } as InboxItem)
