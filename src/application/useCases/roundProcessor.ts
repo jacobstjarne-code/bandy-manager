@@ -7,6 +7,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../domain/enums'
 import { resolveEvent } from '../../domain/services/events/eventResolver'
 import { getBurnoutEscalation, assistantTookOverBody } from '../../domain/services/burnoutReliefService'
+import { generateCorridorPost } from '../../domain/services/corridorService'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -120,6 +121,7 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
   const simulatedFixtures: Fixture[] = []
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
+  let corridorLineUsed: string | null = null
   const newMoments: Moment[] = []
 
   // Detect if there is a pending (unplayed) cup match for the managed club this round
@@ -259,6 +261,15 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
       body: assistantTookOverBody(game.journalist?.name ?? 'Journalisten'),
       isRead: false,
     } as InboxItem)
+  }
+
+  // TEXTLEVERANS §D / TILLÄGG 4 — korridoren omgång 28–36. En klubb som åkt ut
+  // ur både slutspel och cup fick tidigare ingenting alls där: 9–43 ord per
+  // omgång, och nästan alla tomma omgångar i hela säsongen låg i det spannet.
+  const corridorPost = generateCorridorPost(gameAfterRipples, nextMatchday)
+  if (corridorPost) {
+    newInboxItems.push(corridorPost.item)
+    corridorLineUsed = corridorPost.usedKey
   }
 
   newInboxItems.push(...processRoundMilestoneInbox(
@@ -966,6 +977,11 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
     lastIncomingBidMatchday,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
+    // §D: raden är förbrukad för resten av karriären. Capad som
+    // resolvedEventIds — registret ska inte växa obegränsat.
+    corridorLinesUsed: corridorLineUsed
+      ? [...(game.corridorLinesUsed ?? []), corridorLineUsed].slice(-200)
+      : game.corridorLinesUsed,
     pendingEvents: [
       ...(game.pendingEvents ?? []).filter(e =>
         !e.resolved &&

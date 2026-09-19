@@ -4,6 +4,7 @@ import type { ScoutReport } from '../../domain/entities/Scouting'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { PlayerArchetype } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
+import { trainingDeltaLine } from '../../domain/services/playerDevelopmentService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
 import { PlayerPortrait } from './PlayerPortrait'
@@ -693,6 +694,22 @@ export function PlayerCard({
         {isOwned && (player.caHistory ?? []).length >= 1 && (
           <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />
         )}
+
+        {/* TEXTLEVERANS §A6 — vad säsongens träning faktiskt gjort. Bara för
+            spelare under 24, där träningstermen har ett utslag stort nog att
+            tala om. AVVIKELSE från tillägg 4:s "SquadScreen": trupplistan är
+            en kompakt rad per spelare, och en mening under varje delta hade
+            lagt till just det brus korridorspasset ska minska. Spelarkortet
+            är dessutom vad A6:s egen rubrik säger. */}
+        {isOwned && (() => {
+          const line = game ? trainingDeltaLine(player, game.currentMatchday) : null
+          if (!line) return null
+          return (
+            <p className="h-micro" style={{ color: 'var(--text-secondary)', lineHeight: 1.45, marginTop: 6 }}>
+              {line}
+            </p>
+          )
+        })()}
       </div>
       )}
 

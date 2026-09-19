@@ -533,6 +533,14 @@ export interface SaveGame {
   volunteers?: string[]
   volunteerMorale?: Record<string, number>  // name → morale 0-100
   localPaperName?: string
+
+  /**
+   * TEXTLEVERANS §D — korridorens raddedup. En rad används högst en gång per
+   * KARRIÄR, inte per säsong: nio tysta omgångar varje år i tio år blir annars
+   * samma fem meningar om och om igen. Nyckeln är "pool:index".
+   * Tar en pool slut hoppar generatorn över omgången, den återanvänder aldrig.
+   */
+  corridorLinesUsed?: string[]
   patron?: Patron
   localPolitician?: LocalPolitician
   previousKommunBidrag?: number

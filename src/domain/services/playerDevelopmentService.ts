@@ -486,3 +486,38 @@ export function shouldRetire(player: Player, rand: () => number): boolean {
   prob *= caFactor
   return rand() < prob
 }
+
+// ── A6: träningsdeltat i spelarkortet (§3.3) ─────────────────────────────────
+
+/**
+ * TEXTLEVERANS §A6 + TILLÄGG 4. Raden under CA-grafen som säger vad säsongens
+ * träning faktiskt gjort. Visas bara för spelare under 24 — det är där
+ * trainingCaPerRound har ett utslag stort nog att tala om.
+ *
+ * Jacobs rättelse 2026-09-18: den ursprungliga nollraden ("Lätt träning bygger
+ * inget") ströks eftersom den inte stämmer — en U24 som spelar utvecklas
+ * +7,4 CA per säsong även på Lätt. Skillnaden mot Normal är ~1 CA, alltså
+ * LÅNGSAMMARE, inte noll.
+ *
+ * Returnerar null när raden inte ska synas.
+ */
+export const TRAINING_DELTA_MAX_AGE = 23
+export const TRAINING_DELTA_SLOW_FROM_ROUND = 11
+
+export function trainingDeltaLine(
+  player: Pick<Player, 'age' | 'currentAbility' | 'startSeasonCA'>,
+  currentMatchday: number,
+): string | null {
+  if (player.age > TRAINING_DELTA_MAX_AGE) return null
+  if (player.startSeasonCA == null) return null
+  const delta = player.currentAbility - player.startSeasonCA
+  if (delta === 0) return null
+  // A6: "en decimal om under 1, annars heltal".
+  const n = Math.abs(delta) < 1 ? Math.abs(delta).toFixed(1) : String(Math.round(Math.abs(delta)))
+  if (delta < 0) return `−${n} sedan säsongsstart.`
+  if (delta >= 2) return `+${n} sedan säsongsstart. Träningen syns.`
+  // 0 < delta < 2 — raden är en jämförelse mot vad som VAR möjligt, och den
+  // blir missvisande tidigt på säsongen när ingen hunnit bygga något än.
+  if (currentMatchday < TRAINING_DELTA_SLOW_FROM_ROUND) return null
+  return `+${n} sedan säsongsstart. Lätt träning bygger långsammare.`
+}

@@ -489,6 +489,13 @@ function* simulateMatchCore(
   const cornerWithoutShot = commentary.corner_miss.filter(line => !/skott|stolp|burgavel|skjuter/i.test(line))
   const cupKickoffForDate = commentary.cup_kickoff.filter(line => !line.includes('Oktober') || input.fixtureMonth === 10)
   const cupAtmosphereForDate = commentary.cup_atmosphere.filter(line => !/oktober/i.test(line) || input.fixtureMonth === 10)
+  // TEXTLEVERANS §E (2026-09-19): kortsideraden förutsätter en utomhusarena
+  // med ståplats bakom kortsidan. Samma villkor som M3 använder för
+  // väderraderna — filtrera bort raden inomhus i stället för att låta den
+  // beskriva en läktare som inte finns.
+  const derbyKickoffForVenue = input.hallInomhus
+    ? commentary.derby_kickoff.filter(line => !line.includes('kortsidan'))
+    : commentary.derby_kickoff
 
   // Match profile — rullas exakt en gång. Halvtid och interaktiva
   // regenereringar kan använda andra RNG-seeds, men får inte skriva om
@@ -1743,7 +1750,7 @@ function* simulateMatchCore(
         } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
           commentaryText = fillTemplate(pickCommentary(commentary.cup_kickoff, rand, commentaryHistory, cupKickoffForDate), templateVars)
         } else if (rivalry) {
-          commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
+          commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand, commentaryHistory, derbyKickoffForVenue), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
         } else if (matchPhase === 'final') {
           commentaryText = fillTemplate(pickCommentary(commentary.final_kickoff, rand, commentaryHistory), templateVars)

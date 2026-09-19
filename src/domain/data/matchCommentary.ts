@@ -208,7 +208,7 @@ export const commentary = {
     "Nästan! En bra tanke av {team}, men bollen fastnar på mittplan.",
     "Matchen flödar. Spelet är öppet och snabbt.",
     "Båda lagen vill framåt. Intensivt tempo just nu.",
-    "En stund av lugn innan nästa storm. {team} samlar sig.",
+    "Bollen rullar i mittzonen. Ingen har bråttom.",
     "Spelarna verkar spara lite på krafterna. Ingen vill ta onödiga risker.",
     "{team} spelar tillbaka till liberon som håller i bollen och ger laget andrum.",
     "Friläge! Men avslutet går rakt på målvakten. Vilken chans.",
@@ -454,7 +454,7 @@ export const commentary = {
     "DERBY! {rivalry}! Det är drag på läktaren. Den här matchen betyder mer än två poäng.",
     "DERBYDAGS! {team} mot {opponent} — {rivalry}. Rivalerna möts igen!",
     "{rivalry} är igång! Publiken har väntat på det här länge.",
-    "Det är derby ikväll! {team} mot {opponent}. Stämningen är elektrisk!",
+    "Det står folk tre led tjockt bakom kortsidan.",
     "Avslag i {rivalry}! Spelarna har väntat på den här matchen hela säsongen.",
   ],
 
@@ -590,15 +590,15 @@ export const commentary = {
 
   situational_tight: [
     'Jämnt som tusan. Ingen vill göra det första felet.',
-    'Det här är schack på is. Båda lagen respekterar varandra.',
+    'Ingen vill göra första misstaget.',
     'Försiktigt nu. Ingen vill släppa in det första målet.',
     'Millimeterbandy. Varje detalj kan avgöra.',
   ],
 
   situational_opened_up: [
     'Nu har matchen öppnat sig! Det går fram och tillbaka!',
-    'Helt öppen match nu. Försvaret har glömt var det bor.',
-    'Det är hög underhållning — men någon tränare gråter bakom glaset.',
+    'Backlinjen står tio meter fel. Igen.',
+    'Publiken får valuta. Bänkarna får gråa hår.',
     'Bollen rör sig fort. Båda lag vill ha mer.',
   ],
 
