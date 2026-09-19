@@ -99,6 +99,10 @@ export interface SimulateMatchInput {
   storylines?: Array<{ playerId?: string; type: string; displayText: string }>
   fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
+  /** DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 3 — klackens arenahälsning, satt av
+   *  anroparen vid hemmapremiären. Motorn känner inte till säsongsstruktur och
+   *  ska inte behöva göra det; den renderar bara raden om den finns. */
+  welcomeSongLine?: string
   refereeName?: string  // for opening commentary display
   /** DOM_DOMARRELATION_2026-09-02: domarens ackumulerade attityd (clubReaction,
    *  refereeService.ts) mot den HANTERADE klubben, -2..2. Odefinierat/0 = no-op
@@ -280,6 +284,8 @@ export interface MatchStep {
   homeScore: number
   awayScore: number
   commentary: string
+  /** Display-only rotation memory; safe to carry across halves/regeneration. */
+  commentaryMemory?: import('../data/matchCommentary').CommentaryMemory
   commentaryType?: CommentaryType
   intensity: 'low' | 'medium' | 'high'
   activeSuspensions: {
@@ -363,6 +369,10 @@ export interface StepByStepInput {
   lastRivalSaleMatchday?: number  // C-T9 — recent rival sale for klack commentary
   currentMatchday?: number        // C-T9 — needed to check if sale is recent
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
+  /** DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 3 — klackens arenahälsning, satt av
+   *  anroparen vid hemmapremiären. Motorn känner inte till säsongsstruktur och
+   *  ska inte behöva göra det; den renderar bara raden om den finns. */
+  welcomeSongLine?: string
   refereeName?: string  // for opening commentary display
   /** DOM_DOMARRELATION_2026-09-02: domarens ackumulerade attityd (clubReaction,
    *  refereeService.ts) mot den HANTERADE klubben, -2..2. Odefinierat/0 = no-op
@@ -380,6 +390,7 @@ export interface StepByStepInput {
   /** Matchens frusna grundkaraktär vid halvtid/regenerering. */
   matchProfile?: NonNullable<MatchStep['matchProfile']>
   // Second-half restart fields (optional — omit for full match from step 0)
+  commentaryMemory?: import('../data/matchCommentary').CommentaryMemory
   startStep?: number
   initialHomeScore?: number
   initialAwayScore?: number

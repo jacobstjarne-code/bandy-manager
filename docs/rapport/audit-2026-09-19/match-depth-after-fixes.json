@@ -1,0 +1,292 @@
+{
+  "method": "12 independent worlds × 5 scenarios × 40 seeds; full commentary, no managed interaction; seeded Math.random for trait text; carry matchProfile to second half",
+  "counts": {
+    "regular": 480,
+    "derby": 480,
+    "cup-quarter": 480,
+    "cup-final": 480,
+    "indoor-snow": 480
+  },
+  "rows": 147866,
+  "goals": 21885,
+  "repeatMatches": 2394,
+  "adjacent": 0,
+  "insideHalfAdjacent": 0,
+  "within6": 145,
+  "nameMentions": {
+    "fullNames": 9787,
+    "lastNames": 33055,
+    "warning": "Only references to players attached to this steps events; excludes unrelated prose. Not a full NLP name audit."
+  },
+  "poolSizes": {
+    "kickoff": 5,
+    "kickoff_home_arena": 4,
+    "counter_after_corner_slow": 3,
+    "halfTime": 5,
+    "fullTime": 8,
+    "goal": 11,
+    "goalOpener": 8,
+    "goalLead": 8,
+    "goalEqualizer": 8,
+    "goalReducing": 5,
+    "goalLate": 5,
+    "goalExtend": 8,
+    "cornerGoal": 8,
+    "save": 10,
+    "miss": 8,
+    "suspension": 8,
+    "corner": 5,
+    "corner_miss": 10,
+    "powerPlayGood": 5,
+    "neutral": 29,
+    "weather_heavySnow": 6,
+    "weather_thaw": 6,
+    "weather_cold": 5,
+    "weather_fog": 4,
+    "weather_clear": 3,
+    "weatherCold": 3,
+    "weatherSnow": 3,
+    "weatherMild": 3,
+    "weatherFog": 3,
+    "weatherGood": 3,
+    "weather_miss_heavySnow": 3,
+    "weather_miss_thaw": 5,
+    "weather_miss_fog": 4,
+    "weather_goal_heavySnow": 4,
+    "weather_goal_thaw": 4,
+    "playoff_kickoff": 3,
+    "quarterfinal_kickoff": 3,
+    "semifinal_kickoff": 3,
+    "final_kickoff": 3,
+    "semifinal_goal": 3,
+    "final_goal": 3,
+    "final_fullTime_win": 3,
+    "final_fullTime_loss": 2,
+    "cup_kickoff": 5,
+    "cup_goalOpener": 1,
+    "cup_goal": 4,
+    "cup_fullTime_win": 4,
+    "cup_fullTime_loss": 4,
+    "cup_final_kickoff": 4,
+    "cup_final_goal": 4,
+    "cup_final_fullTime_win": 4,
+    "cup_final_fullTime_loss": 4,
+    "cup_atmosphere": 8,
+    "cup_finalweekend_atmosphere": 6,
+    "playoff_general": 3,
+    "derby_kickoff": 5,
+    "derby_goal": 3,
+    "derby_suspension": 3,
+    "derby_neutral": 5,
+    "derby_fullTime": 2,
+    "cornerVariant": 4,
+    "secondHalf": 4,
+    "iceDeterioration_snow": 3,
+    "iceDeterioration_thaw": 3,
+    "overtimeStart": 3,
+    "overtimeGoal": 3,
+    "overtimeEnd": 2,
+    "overtimeNoGoal": 25,
+    "penaltyStart": 3,
+    "penaltyWinHome": 2,
+    "penaltyWinAway": 2,
+    "situational_dominating": 5,
+    "situational_under_pressure": 5,
+    "situational_tight": 4,
+    "situational_opened_up": 4,
+    "context_season_opener": 3,
+    "context_title_race": 3,
+    "context_relegation": 3,
+    "context_cup_final": 3,
+    "context_comeback_chasing": 3,
+    "context_protecting_lead": 3,
+    "context_player_hot_streak": 4,
+    "context_player_drought": 3,
+    "context_captain_moment": 3,
+    "context_fan_favorite": 3,
+    "context_suspension_frustration": 3,
+    "context_suspension_tactical": 3,
+    "context_shorthanded_surviving": 3,
+    "context_shorthanded_conceding": 3,
+    "momentum_swing_home": 4,
+    "momentum_swing_away": 4,
+    "tactical_shift": 5,
+    "player_duel": 4,
+    "atmosphere": 8,
+    "offside_call": 4,
+    "freekick_danger": 5,
+    "referee_strict": 4,
+    "referee_lenient": 3,
+    "referee_inconsistent": 3,
+    "supporter_kickoff": 4,
+    "supporter_halfTime": 4,
+    "supporter_late_home": 4,
+    "supporter_late_silent": 4,
+    "supporter_goal_home": 8,
+    "supporter_goal_conceded": 3,
+    "supporter_attendance_low": 3,
+    "supporter_scandal_recent": 8,
+    "legend_goal": 12,
+    "legend_assist": 4,
+    "legend_gk_save": 3,
+    "legend_late": 3
+  },
+  "forcedRepeat": [
+    "ett",
+    "två"
+  ],
+  "topExact": [
+    [
+      "Trevande spel från alla håll. Båda lagen söker öppningar.",
+      2364
+    ],
+    [
+      "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
+      1972
+    ],
+    [
+      "Intensivt mittfältsspel. Det är tätt här.",
+      1912
+    ],
+    [
+      "Det går undan nu. Öppet åt båda håll.",
+      1906
+    ],
+    [
+      "Fajt på mitten. Ingen vill ge bort bollen.",
+      1904
+    ],
+    [
+      "Bra drag på publiken i dag. Det ekar över isen.",
+      1850
+    ],
+    [
+      "Publiken suckar. Spelet har tappat tempo de senaste minuterna.",
+      1846
+    ],
+    [
+      "Tränarna på båda bänkarna ger instruktioner. Taktiken justeras.",
+      1819
+    ],
+    [
+      "En lång boll som blir avblåst för offside.",
+      1805
+    ],
+    [
+      "Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.",
+      1797
+    ],
+    [
+      "Bollen studsar oberäkneligt. Ingen kan styra spelet just nu.",
+      1786
+    ],
+    [
+      "Matchen flödar. Spelet är öppet och snabbt.",
+      1738
+    ],
+    [
+      "Spelarna verkar spara lite på krafterna. Ingen vill ta onödiga risker.",
+      1735
+    ],
+    [
+      "Båda lagen vill framåt. Intensivt tempo just nu.",
+      1718
+    ],
+    [
+      "Offside. Anfallet bryts och domaren pekar åt andra hållet.",
+      946
+    ],
+    [
+      "Omställning borta. Tränaren har reagerat efter målet.",
+      688
+    ],
+    [
+      "Hörna för Hälleforsnäs. Men inget kommer ut av det.",
+      495
+    ],
+    [
+      "Hörna för Forsbacka. Men inget kommer ut av det.",
+      490
+    ],
+    [
+      "Gagnef får hörna. Lång boll på sista skytten, men ingen lycka den här gången.",
+      480
+    ],
+    [
+      "Hörna för Gagnef. Men inget kommer ut av det.",
+      475
+    ]
+  ],
+  "findings": {
+    "indoorSnowCandidate": {
+      "count": 108,
+      "examples": [
+        {
+          "scenario": "indoor-snow",
+          "seed": 704002,
+          "minute": 44,
+          "step": 29,
+          "score": "4-0",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704007,
+          "minute": 89,
+          "step": 59,
+          "score": "2-2",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704014,
+          "minute": 35,
+          "step": 23,
+          "score": "5-0",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704016,
+          "minute": 89,
+          "step": 59,
+          "score": "7-2",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704017,
+          "minute": 11,
+          "step": 7,
+          "score": "0-0",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704018,
+          "minute": 80,
+          "step": 53,
+          "score": "4-2",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704022,
+          "minute": 66,
+          "step": 44,
+          "score": "5-2",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704023,
+          "minute": 83,
+          "step": 55,
+          "score": "4-2",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        }
+      ]
+    }
+  },
+  "gameplayHash": "e172b98e030449f491507de9edd151b45fea48e1e4d02162a028c548e1f1ea26"
+}

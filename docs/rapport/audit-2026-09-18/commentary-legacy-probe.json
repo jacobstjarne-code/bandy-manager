@@ -1,0 +1,139 @@
+{
+  "matches": 1000,
+  "rows": 58777,
+  "unique": 6772,
+  "repeatedAdjacent": 16,
+  "repeatedWithinSix": 219,
+  "multipleMajorEvents": 0,
+  "hiddenMajorEvents": 0,
+  "nonMonotonicMinutes": 0,
+  "unresolvedTokens": 0,
+  "cornerClaimsShotWithoutStat": 3530,
+  "neutralClaimsShotWithoutStat": 959,
+  "counterGoalsAfterOpposingCorner": 143,
+  "repeats": [
+    [
+      "Spelarna verkar spara lite på krafterna. Ingen vill ta onödiga risker.",
+      691
+    ],
+    [
+      "Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.",
+      689
+    ],
+    [
+      "Trevande spel från alla håll. Båda lagen söker öppningar.",
+      685
+    ],
+    [
+      "En lång boll som blir avblåst för offside.",
+      678
+    ],
+    [
+      "Intensivt mittfältsspel. Det är tätt här.",
+      672
+    ],
+    [
+      "Båda lagen vill framåt. Intensivt tempo just nu.",
+      670
+    ],
+    [
+      "Fajt på mitten. Ingen vill ge bort bollen.",
+      669
+    ],
+    [
+      "Bollen studsar oberäkneligt. Ingen kan styra spelet just nu.",
+      664
+    ],
+    [
+      "Tränarna på båda bänkarna ger instruktioner. Taktiken justeras.",
+      660
+    ],
+    [
+      "Publiken suckar. Spelet har tappat tempo de senaste minuterna.",
+      658
+    ],
+    [
+      "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
+      655
+    ],
+    [
+      "Matchen flödar. Spelet är öppet och snabbt.",
+      653
+    ],
+    [
+      "Bra drag på publiken i dag. Det ekar över isen.",
+      636
+    ],
+    [
+      "Friläge! Men avslutet går rakt på målvakten. Vilken chans.",
+      635
+    ],
+    [
+      "Det går undan nu. Öppet åt båda håll.",
+      635
+    ],
+    [
+      "Hörna till Västanfors. En variant! Kort spel med skott i dödvinkel. Långt utanför!",
+      551
+    ],
+    [
+      "Hörna till Västanfors. Slås in alldeles för löst. Rensas av försvaret.",
+      541
+    ],
+    [
+      "Västanfors får hörna. Lång boll på sista skytten, men ingen lycka den här gången.",
+      537
+    ],
+    [
+      "Hörna för Västanfors. Skott på mål, men enkelt undan.",
+      534
+    ],
+    [
+      "Hörna. Inslagen mot tredjeskytt, som skjuter rakt i Forsbackas rus.",
+      531
+    ]
+  ],
+  "multiExamples": [],
+  "inMatchRepeatExamples": [
+    "1/24′ Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.",
+    "6/48′ Västanfors får hörna. En bra inslagen boll som resulterar i ett skott låååångt över.",
+    "10/66′ Forsbacka trycker på med en man mer!",
+    "17/47′ Hörna till Västanfors. En variant! Kort spel med skott i dödvinkel. Långt utanför!",
+    "18/50′ Lång boll hemåt. Forsbacka startar om.",
+    "23/59′ Fajt på mitten. Ingen vill ge bort bollen.",
+    "28/63′ Offside. Bra bevakning av Västanfors. Backlinjen sitter.",
+    "30/47′ Västanfors får hörna. Bollen studsar lite, men det blir ändå till ett skott i ruset.",
+    "38/35′ Tränarna på båda bänkarna ger instruktioner. Taktiken justeras.",
+    "40/44′ Domaren blåser för offside. Västanfors tappar initiativet.",
+    "43/38′ Bra drag på publiken i dag. Det ekar över isen.",
+    "55/80′ Västanfors jagar. Klockan tickar. Publiken trycker på."
+  ],
+  "truthExamples": [
+    "Hörna utan skott 1/3′ Hörna Västanfors. Boll på tredjeskytten som skjuter i stolpen!",
+    "Hörna utan skott 1/8′ Forsbacka får hörna. En bra inslagen boll som resulterar i ett skott låååångt över.",
+    "Hörna utan skott 2/32′ Västanfors får hörna. Bollen studsar lite, men det blir ändå till ett skott i ruset.",
+    "Hörna utan skott 2/47′ Hörna för Västanfors. Skott på mål, men enkelt undan.",
+    "Skott utan statistik 2/50′ Halvchans för Västanfors, men för dåligt avslut för att hota på riktigt.",
+    "Hörna utan skott 2/78′ Hörna för Forsbacka. Skott på mål, men enkelt undan.",
+    "Hörna utan skott 3/56′ Ny hörna till Forsbacka. Förstaskytt lägger den i burgaveln.",
+    "Skott utan statistik 4/3′ Friläge! Men avslutet går rakt på målvakten. Vilken chans.",
+    "Hörna utan skott 4/6′ Ny hörna till Forsbacka. Förstaskytt lägger den i burgaveln.",
+    "Hörna utan skott 4/8′ Hörna Västanfors. Boll på tredjeskytten som skjuter i stolpen!",
+    "Hörna utan skott 4/35′ Ny hörna till Forsbacka. Förstaskytt lägger den i burgaveln.",
+    "Hörna utan skott 4/38′ Hörna för Västanfors. Skott på mål, men enkelt undan."
+  ],
+  "counterExamples": [
+    "14/83′ hörna=club_forsbacka mål=club_vastanfors: MÅL! Bo Alm — Brandman på dagarna, målskytt på kvällarna!",
+    "17/80′ hörna=club_forsbacka mål=club_vastanfors: MÅL! Per Pettersson — Sjuksköterska på dagarna, målskytt på kvällarna!",
+    "20/12′ hörna=club_forsbacka mål=club_vastanfors: MÅÅÅL! Jonasson skapar andrum för Västanfors! 2–0!",
+    "24/72′ hörna=club_vastanfors mål=club_forsbacka: Petersson ger Forsbacka hopp med en reducering! 3–2!",
+    "35/87′ hörna=club_forsbacka mål=club_vastanfors: Klockan tickar men Engström bryr sig inte! Ett sent mål ger ställningen 6–2!",
+    "37/45′ hörna=club_vastanfors mål=club_forsbacka: Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 4–3.",
+    "41/50′ hörna=club_forsbacka mål=club_vastanfors: Engström kommer ensam med målvakten och gör inga misstag. 2–4!",
+    "45/81′ hörna=club_forsbacka mål=club_vastanfors: Reducering av Lindberg! Matchen lever fortfarande för Västanfors! 7–5!",
+    "47/47′ hörna=club_vastanfors mål=club_forsbacka: MÅÅÅL! Hage placerar in bollen från långt håll! 5–2!",
+    "75/42′ hörna=club_vastanfors mål=club_forsbacka: MÅÅÅL! Jansson placerar in bollen från långt håll! 2–4!",
+    "78/20′ hörna=club_forsbacka mål=club_vastanfors: MÅÅÅL! Engström står för en drömmatch! 2–0!",
+    "87/8′ hörna=club_forsbacka mål=club_vastanfors: LEDNING! Niklas Engström levererar första målet med ett vasst avslut! 0–1!"
+  ]
+}

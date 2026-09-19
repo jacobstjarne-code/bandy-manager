@@ -1,4 +1,5 @@
 import type { Player } from '../entities/Player'
+import { stableStringSeed } from '../utils/random'
 
 export type CommentaryTemplate = string
 
@@ -883,13 +884,49 @@ export function fillTemplate(template: string, vars: Record<string, string>): st
     .replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
 }
 
-// Pick a random item from an array deterministically, avoiding recent repeats per pool.
-// history tracks the last N picks per pool reference; N = min(arr.length - 1, 3).
+// Selection history is keyed by pool contents, not temporary filtered arrays.
+const displayedHistory = new WeakMap<Map<CommentaryTemplate[], CommentaryTemplate[]>, Map<string, CommentaryTemplate[]>>()
+export type CommentaryMemory = Record<string, string[]>
+
+export function createCommentaryHistory(memory: CommentaryMemory = {}): Map<string[], string[]> {
+  const history = new Map<string[], string[]>()
+  displayedHistory.set(history, new Map(Object.entries(memory).map(([key, lines]) => [key, [...lines]])))
+  return history
+}
+
+export function snapshotCommentaryMemory(history: Map<string[], string[]>): CommentaryMemory {
+  return Object.fromEntries(displayedHistory.get(history) ?? [])
+}
+
+export function shareCommentaryMemory(source: Map<string[], string[]>, target: Map<string[], string[]>): void {
+  const memory = displayedHistory.get(source) ?? new Map<string, string[]>()
+  displayedHistory.set(source, memory)
+  displayedHistory.set(target, memory)
+}
+
+function chooseDisplayed(eligible: string[], pick: string, index: number, history: Map<string[], string[]>): string {
+  let displayed = displayedHistory.get(history)
+  if (!displayed) { displayed = new Map(); displayedHistory.set(history, displayed) }
+  const key = stableStringSeed(JSON.stringify(eligible)).toString(16)
+  const recent = displayed.get(key) ?? []
+  const window = Math.min(new Set(eligible).size - 1, 6)
+  const blocked = window > 0 ? recent.slice(-window) : []
+  const available = eligible.filter(line => !blocked.includes(line))
+  const selected = available.includes(pick) ? pick : available[Math.max(0, index) % available.length]
+  displayed.set(key, [...recent, selected].slice(-6))
+  return selected
+}
+
+// Keep the legacy draw protocol separate from displayed selection: matchCore
+// shares this RNG with gameplay. Eligibility/no-repeat fixes must not consume
+// extra draws or change future legacy retries (and therefore match outcomes).
 export function pickCommentary(
   arr: CommentaryTemplate[],
   rng: () => number,
   history: Map<CommentaryTemplate[], CommentaryTemplate[]>,
+  eligible: CommentaryTemplate[] = arr,
 ): CommentaryTemplate {
+  if (!arr.length || !eligible.length) throw new Error('Commentary pool must not be empty')
   const N = Math.min(arr.length - 1, 3)
   const seen = history.get(arr) ?? []
   let pick: CommentaryTemplate
@@ -900,7 +937,7 @@ export function pickCommentary(
   } while (N > 0 && seen.slice(-N).includes(pick) && attempts < arr.length)
   const next = [...seen, pick]
   history.set(arr, next.slice(-N - 1))
-  return pick
+  return chooseDisplayed(eligible, pick, arr.indexOf(pick), history)
 }
 
 export function getTraitCommentary(
@@ -909,6 +946,7 @@ export function getTraitCommentary(
   players: Player[],
   durationMinutes?: 5 | 10,
   captainPlayerId?: string,
+  history?: Map<string[], string[]>,
 ): string | null {
   const player = players.find(p => p.id === playerId)
   if (!player) return null
@@ -990,12 +1028,14 @@ export function getTraitCommentary(
   if (eventType === 'goal') {
     const pool = traitGoals[traitKey]
     if (!pool) return null
-    return pool[Math.floor(Math.random() * pool.length)]
+    const index = Math.floor(Math.random() * pool.length)
+    return history ? chooseDisplayed(pool, pool[index], index, history) : pool[index]
   }
   if (eventType === 'suspension') {
     const pool = traitSuspensions[traitKey]
     if (!pool) return null
-    const pick = pool[Math.floor(Math.random() * pool.length)]
+    const index = Math.floor(Math.random() * pool.length)
+    const pick = history ? chooseDisplayed(pool, pool[index], index, history) : pool[index]
     // M15/Del 4 (2026-07-03): {minuter}-token nu inskriven i poolerna ovan —
     // durationMinutes (5|10) resolvas här. Saknas värdet faller strängen
     // tillbaka med synlig token; anropet SKA alltid skicka durationMinutes.

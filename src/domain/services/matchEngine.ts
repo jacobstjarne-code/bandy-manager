@@ -89,6 +89,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     initialHomeSuspensionTimers: fhs?.activeSuspensions.homeTimers ?? [],
     initialAwaySuspensionTimers: fhs?.activeSuspensions.awayTimers ?? [],
     matchProfile: fhs?.matchProfile,
+    commentaryMemory: fhs?.commentaryMemory,
   }
 
   let lastStep: MatchStep | null = null

@@ -1,0 +1,1059 @@
+{
+  "method": "12 independent worlds × 5 scenarios × 40 seeds; full commentary, no managed interaction; seeded Math.random for trait text; carry matchProfile to second half",
+  "counts": {
+    "regular": 480,
+    "derby": 480,
+    "cup-quarter": 480,
+    "cup-final": 480,
+    "indoor-snow": 480
+  },
+  "rows": 147866,
+  "goals": 21885,
+  "repeatMatches": 2399,
+  "adjacent": 19,
+  "insideHalfAdjacent": 18,
+  "within6": 556,
+  "nameMentions": {
+    "fullNames": 9422,
+    "lastNames": 31639,
+    "warning": "Only references to players attached to this steps events; excludes unrelated prose. Not a full NLP name audit."
+  },
+  "poolSizes": {
+    "kickoff": 5,
+    "kickoff_home_arena": 4,
+    "counter_after_corner_slow": 3,
+    "halfTime": 5,
+    "fullTime": 8,
+    "goal": 11,
+    "goalOpener": 8,
+    "goalLead": 8,
+    "goalEqualizer": 8,
+    "goalReducing": 5,
+    "goalLate": 5,
+    "goalExtend": 8,
+    "cornerGoal": 8,
+    "save": 10,
+    "miss": 8,
+    "suspension": 8,
+    "corner": 5,
+    "corner_miss": 10,
+    "powerPlayGood": 5,
+    "neutral": 29,
+    "weather_heavySnow": 6,
+    "weather_thaw": 6,
+    "weather_cold": 5,
+    "weather_fog": 4,
+    "weather_clear": 3,
+    "weatherCold": 3,
+    "weatherSnow": 3,
+    "weatherMild": 3,
+    "weatherFog": 3,
+    "weatherGood": 3,
+    "weather_miss_heavySnow": 3,
+    "weather_miss_thaw": 5,
+    "weather_miss_fog": 4,
+    "weather_goal_heavySnow": 4,
+    "weather_goal_thaw": 4,
+    "playoff_kickoff": 3,
+    "quarterfinal_kickoff": 3,
+    "semifinal_kickoff": 3,
+    "final_kickoff": 3,
+    "semifinal_goal": 3,
+    "final_goal": 3,
+    "final_fullTime_win": 3,
+    "final_fullTime_loss": 2,
+    "cup_kickoff": 5,
+    "cup_goalOpener": 1,
+    "cup_goal": 4,
+    "cup_fullTime_win": 4,
+    "cup_fullTime_loss": 4,
+    "cup_final_kickoff": 4,
+    "cup_final_goal": 4,
+    "cup_final_fullTime_win": 4,
+    "cup_final_fullTime_loss": 4,
+    "cup_atmosphere": 8,
+    "cup_finalweekend_atmosphere": 6,
+    "playoff_general": 3,
+    "derby_kickoff": 5,
+    "derby_goal": 3,
+    "derby_suspension": 3,
+    "derby_neutral": 5,
+    "derby_fullTime": 2,
+    "cornerVariant": 4,
+    "secondHalf": 4,
+    "iceDeterioration_snow": 3,
+    "iceDeterioration_thaw": 3,
+    "overtimeStart": 3,
+    "overtimeGoal": 3,
+    "overtimeEnd": 2,
+    "overtimeNoGoal": 25,
+    "penaltyStart": 3,
+    "penaltyWinHome": 2,
+    "penaltyWinAway": 2,
+    "situational_dominating": 5,
+    "situational_under_pressure": 5,
+    "situational_tight": 4,
+    "situational_opened_up": 4,
+    "context_season_opener": 3,
+    "context_title_race": 3,
+    "context_relegation": 3,
+    "context_cup_final": 3,
+    "context_comeback_chasing": 3,
+    "context_protecting_lead": 3,
+    "context_player_hot_streak": 4,
+    "context_player_drought": 3,
+    "context_captain_moment": 3,
+    "context_fan_favorite": 3,
+    "context_suspension_frustration": 3,
+    "context_suspension_tactical": 3,
+    "context_shorthanded_surviving": 3,
+    "context_shorthanded_conceding": 3,
+    "momentum_swing_home": 4,
+    "momentum_swing_away": 4,
+    "tactical_shift": 5,
+    "player_duel": 4,
+    "atmosphere": 8,
+    "offside_call": 4,
+    "freekick_danger": 5,
+    "referee_strict": 4,
+    "referee_lenient": 3,
+    "referee_inconsistent": 3,
+    "supporter_kickoff": 4,
+    "supporter_halfTime": 4,
+    "supporter_late_home": 4,
+    "supporter_late_silent": 4,
+    "supporter_goal_home": 8,
+    "supporter_goal_conceded": 3,
+    "supporter_attendance_low": 3,
+    "supporter_scandal_recent": 8,
+    "legend_goal": 12,
+    "legend_assist": 4,
+    "legend_gk_save": 3,
+    "legend_late": 3
+  },
+  "forcedRepeat": [
+    "ett",
+    "ett"
+  ],
+  "topExact": [
+    [
+      "Publiken suckar. Spelet har tappat tempo de senaste minuterna.",
+      1787
+    ],
+    [
+      "Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.",
+      1757
+    ],
+    [
+      "Tränarna på båda bänkarna ger instruktioner. Taktiken justeras.",
+      1756
+    ],
+    [
+      "Spelarna verkar spara lite på krafterna. Ingen vill ta onödiga risker.",
+      1749
+    ],
+    [
+      "Intensivt mittfältsspel. Det är tätt här.",
+      1748
+    ],
+    [
+      "Bollen studsar oberäkneligt. Ingen kan styra spelet just nu.",
+      1746
+    ],
+    [
+      "En lång boll som blir avblåst för offside.",
+      1741
+    ],
+    [
+      "Matchen flödar. Spelet är öppet och snabbt.",
+      1738
+    ],
+    [
+      "Båda lagen vill framåt. Intensivt tempo just nu.",
+      1729
+    ],
+    [
+      "Friläge! Men avslutet går rakt på målvakten. Vilken chans.",
+      1718
+    ],
+    [
+      "Fajt på mitten. Ingen vill ge bort bollen.",
+      1711
+    ],
+    [
+      "Trevande spel från alla håll. Båda lagen söker öppningar.",
+      1709
+    ],
+    [
+      "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
+      1674
+    ],
+    [
+      "Det går undan nu. Öppet åt båda håll.",
+      1666
+    ],
+    [
+      "Bra drag på publiken i dag. Det ekar över isen.",
+      1640
+    ],
+    [
+      "Offside. Anfallet bryts och domaren pekar åt andra hållet.",
+      950
+    ],
+    [
+      "Omställning borta. Tränaren har reagerat efter målet.",
+      667
+    ],
+    [
+      "Publiksiffran annonseras: 400 åskådare på plats.",
+      482
+    ],
+    [
+      "400 har tagit sig till matchen idag. Bra uppslutning.",
+      471
+    ],
+    [
+      "Speaker meddelar: 400 åskådare. Bandyintresset lever.",
+      463
+    ]
+  ],
+  "findings": {
+    "suspensionTaggedAsHalftime": {
+      "count": 156,
+      "examples": [
+        {
+          "scenario": "regular",
+          "seed": 700000,
+          "minute": 45,
+          "step": 30,
+          "score": "5-1",
+          "text": "Domaren blåser för halvtidsvila. 5–1 efter 45 spelade minuter."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700018,
+          "minute": 45,
+          "step": 30,
+          "score": "3-2",
+          "text": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 3–2."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700036,
+          "minute": 45,
+          "step": 30,
+          "score": "6-2",
+          "text": "Domaren blåser för halvtidsvila. 6–2 efter 45 spelade minuter."
+        },
+        {
+          "scenario": "derby",
+          "seed": 701011,
+          "minute": 45,
+          "step": 30,
+          "score": "3-0",
+          "text": "45 minuter spelade. Nu lite andrum. Ställning: 3–0."
+        },
+        {
+          "scenario": "derby",
+          "seed": 701020,
+          "minute": 45,
+          "step": 30,
+          "score": "2-5",
+          "text": "45 minuter spelade. Nu lite andrum. Ställning: 2–5."
+        },
+        {
+          "scenario": "derby",
+          "seed": 701022,
+          "minute": 45,
+          "step": 30,
+          "score": "3-4",
+          "text": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 3–4."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702027,
+          "minute": 45,
+          "step": 30,
+          "score": "6-0",
+          "text": "Paus. Tränarna väntar i omklädningsrummet. 6–0 och många frågor att besvara."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702037,
+          "minute": 45,
+          "step": 30,
+          "score": "5-1",
+          "text": "Paus. Tränarna väntar i omklädningsrummet. 5–1 och många frågor att besvara."
+        }
+      ]
+    },
+    "cornerShotTextWithoutShot": {
+      "count": 6879,
+      "examples": [
+        {
+          "scenario": "regular",
+          "seed": 700001,
+          "minute": 17,
+          "step": 11,
+          "score": "3-0",
+          "text": "Hörna. Inslagen mot tredjeskytt, som skjuter rakt i Söderfors rus."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700001,
+          "minute": 53,
+          "step": 35,
+          "score": "5-4",
+          "text": "Hörna till Söderfors. En variant! Kort spel med skott i dödvinkel. Långt utanför!"
+        },
+        {
+          "scenario": "regular",
+          "seed": 700001,
+          "minute": 86,
+          "step": 57,
+          "score": "10-7",
+          "text": "Hörna Söderfors. Boll på tredjeskytten som skjuter i stolpen!"
+        },
+        {
+          "scenario": "regular",
+          "seed": 700001,
+          "minute": 87,
+          "step": 58,
+          "score": "10-7",
+          "text": "Forsbacka får hörna. Bollen studsar lite, men det blir ändå till ett skott i ruset."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700002,
+          "minute": 12,
+          "step": 8,
+          "score": "0-0",
+          "text": "Hörna för Forsbacka. Skott på mål, men enkelt undan."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700002,
+          "minute": 53,
+          "step": 35,
+          "score": "2-2",
+          "text": "Söderfors får hörna. En bra inslagen boll som resulterar i ett skott låååångt över."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700002,
+          "minute": 56,
+          "step": 37,
+          "score": "2-3",
+          "text": "Hörna till Söderfors. En variant! Kort spel med skott i dödvinkel. Långt utanför!"
+        },
+        {
+          "scenario": "regular",
+          "seed": 700002,
+          "minute": 68,
+          "step": 45,
+          "score": "3-3",
+          "text": "Ny hörna till Forsbacka. Förstaskytt lägger den i burgaveln."
+        }
+      ]
+    },
+    "saveWithNonSaveText": {
+      "count": 406,
+      "examples": [
+        {
+          "scenario": "regular",
+          "seed": 700003,
+          "minute": 45,
+          "step": 30,
+          "score": "1-3",
+          "text": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 1–3."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700017,
+          "minute": 45,
+          "step": 30,
+          "score": "6-2",
+          "text": "Domaren blåser för halvtidsvila. 6–2 efter 45 spelade minuter."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700019,
+          "minute": 84,
+          "step": 56,
+          "score": "5-0",
+          "text": "Publiksiffran annonseras: 400 åskådare på plats."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700028,
+          "minute": 45,
+          "step": 30,
+          "score": "2-1",
+          "text": "Paus. Tränarna väntar i omklädningsrummet. 2–1 och många frågor att besvara."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700033,
+          "minute": 45,
+          "step": 30,
+          "score": "2-0",
+          "text": "Domaren blåser för halvtidsvila. 2–0 efter 45 spelade minuter."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700034,
+          "minute": 45,
+          "step": 30,
+          "score": "4-4",
+          "text": "Halvtid! Det har varit en intensiv halvlek. 4–4."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700034,
+          "minute": 77,
+          "step": 51,
+          "score": "9-9",
+          "text": "Speaker meddelar: 400 åskådare. Bandyintresset lever."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700036,
+          "minute": 80,
+          "step": 53,
+          "score": "9-6",
+          "text": "Speaker meddelar: 400 åskådare. Bandyintresset lever."
+        }
+      ]
+    },
+    "neutralSaveTextWithoutShot": {
+      "count": 1348,
+      "examples": [
+        {
+          "scenario": "regular",
+          "seed": 700004,
+          "minute": 2,
+          "step": 1,
+          "score": "0-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700004,
+          "minute": 18,
+          "step": 12,
+          "score": "1-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700004,
+          "minute": 63,
+          "step": 42,
+          "score": "5-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700006,
+          "minute": 29,
+          "step": 19,
+          "score": "2-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700010,
+          "minute": 6,
+          "step": 4,
+          "score": "0-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700010,
+          "minute": 20,
+          "step": 13,
+          "score": "0-0",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700010,
+          "minute": 51,
+          "step": 34,
+          "score": "2-2",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700010,
+          "minute": 65,
+          "step": 43,
+          "score": "2-2",
+          "text": "Friläge! Men avslutet går rakt på målvakten. Vilken chans."
+        }
+      ]
+    },
+    "goalTaggedAsHalftime": {
+      "count": 358,
+      "examples": [
+        {
+          "scenario": "regular",
+          "seed": 700004,
+          "minute": 45,
+          "step": 30,
+          "score": "4-0",
+          "text": "Halvtid! Det har varit en intensiv halvlek. 4–0.",
+          "rendered": "Halvtid! Det har varit en intensiv halvlek. 4–0."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700011,
+          "minute": 45,
+          "step": 30,
+          "score": "3-4",
+          "text": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 3–4.",
+          "rendered": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 3–4."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700014,
+          "minute": 45,
+          "step": 30,
+          "score": "6-3",
+          "text": "Paus. Tränarna väntar i omklädningsrummet. 6–3 och många frågor att besvara.",
+          "rendered": "Paus. Tränarna väntar i omklädningsrummet. 6–3 och många frågor att besvara."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700025,
+          "minute": 45,
+          "step": 30,
+          "score": "6-4",
+          "text": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 6–4.",
+          "rendered": "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: 6–4."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700031,
+          "minute": 45,
+          "step": 30,
+          "score": "5-1",
+          "text": "45 minuter spelade. Nu lite andrum. Ställning: 5–1.",
+          "rendered": "45 minuter spelade. Nu lite andrum. Ställning: 5–1."
+        },
+        {
+          "scenario": "regular",
+          "seed": 700035,
+          "minute": 45,
+          "step": 30,
+          "score": "4-1",
+          "text": "Paus. Tränarna väntar i omklädningsrummet. 4–1 och många frågor att besvara.",
+          "rendered": "Paus. Tränarna väntar i omklädningsrummet. 4–1 och många frågor att besvara."
+        },
+        {
+          "scenario": "derby",
+          "seed": 701002,
+          "minute": 45,
+          "step": 30,
+          "score": "7-2",
+          "text": "Halvtid! Det har varit en intensiv halvlek. 7–2.",
+          "rendered": "Halvtid! Det har varit en intensiv halvlek. 7–2."
+        },
+        {
+          "scenario": "derby",
+          "seed": 701015,
+          "minute": 45,
+          "step": 30,
+          "score": "5-5",
+          "text": "45 minuter spelade. Nu lite andrum. Ställning: 5–5.",
+          "rendered": "45 minuter spelade. Nu lite andrum. Ställning: 5–5."
+        }
+      ]
+    },
+    "adjacentRepeat": {
+      "count": 19,
+      "examples": [
+        {
+          "scenario": "derby",
+          "seed": 701002,
+          "minute": 42,
+          "step": 28,
+          "score": "7-1",
+          "text": "Söderfors trycker på med en man mer!"
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702031,
+          "minute": 39,
+          "step": 26,
+          "score": "5-0",
+          "text": "Utvisningen skapar lite mer utrymme. Forsbacka försöker hitta läget."
+        },
+        {
+          "scenario": "cup-final",
+          "seed": 703016,
+          "minute": 12,
+          "step": 8,
+          "score": "0-1",
+          "text": "Sjölund vinner brottningen — tredje gången i rad. Dominerar sin yta."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704022,
+          "minute": 86,
+          "step": 57,
+          "score": "6-3",
+          "text": "Söderfors trycker på med en man mer!"
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712000,
+          "minute": 33,
+          "step": 22,
+          "score": "0-4",
+          "text": "Söderfors utnyttjar utvisningen och trycker på nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712000,
+          "minute": 80,
+          "step": 53,
+          "score": "1-6",
+          "text": "Söderfors utnyttjar utvisningen och trycker på nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712026,
+          "minute": 33,
+          "step": 22,
+          "score": "2-0",
+          "text": "Offside. Anfallet bryts och domaren pekar åt andra hållet."
+        },
+        {
+          "scenario": "cup-final",
+          "seed": 713000,
+          "minute": 78,
+          "step": 52,
+          "score": "2-8",
+          "text": "Söderfors utnyttjar utvisningen och trycker på nu."
+        }
+      ]
+    },
+    "falseDerbyOpener": {
+      "count": 431,
+      "examples": [
+        {
+          "scenario": "derby",
+          "seed": 701003,
+          "minute": 26,
+          "step": 17,
+          "score": "3-1",
+          "text": "Sjölund! Upplandsderbyt har fått sitt första mål! 3–1!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701003,
+          "minute": 59,
+          "step": 39,
+          "score": "8-4",
+          "text": "Koskinen! Upplandsderbyt har fått sitt första mål! 8–4!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701004,
+          "minute": 41,
+          "step": 27,
+          "score": "3-4",
+          "text": "Engdahl! Upplandsderbyt har fått sitt första mål! 3–4!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701006,
+          "minute": 23,
+          "step": 15,
+          "score": "3-1",
+          "text": "Koskinen! Upplandsderbyt har fått sitt första mål! 3–1!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701006,
+          "minute": 71,
+          "step": 47,
+          "score": "8-9",
+          "text": "Berglund! Upplandsderbyt har fått sitt första mål! 8–9!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701006,
+          "minute": 87,
+          "step": 58,
+          "score": "9-12",
+          "text": "Sjölund! Upplandsderbyt har fått sitt första mål! 9–12!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701007,
+          "minute": 29,
+          "step": 19,
+          "score": "3-2",
+          "text": "Lindberg! Upplandsderbyt har fått sitt första mål! 3–2!"
+        },
+        {
+          "scenario": "derby",
+          "seed": 701007,
+          "minute": 72,
+          "step": 48,
+          "score": "7-5",
+          "text": "Lindberg! Upplandsderbyt har fått sitt första mål! 7–5!"
+        }
+      ]
+    },
+    "quarterCalledCupFinal": {
+      "count": 143,
+      "examples": [
+        {
+          "scenario": "cup-quarter",
+          "seed": 702002,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Cupfinal. Alla ögon på Forsbacka. Nerver av stål krävs."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702009,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Titeln hägrar. Forsbacka är en match ifrån att lyfta bucklan."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702010,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "En match. En chans. Inget mer. Cupfinalen har börjat."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702014,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Cupfinal. Alla ögon på Söderfors. Nerver av stål krävs."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702015,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Cupfinal. Alla ögon på Forsbacka. Nerver av stål krävs."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702016,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Cupfinal. Alla ögon på Forsbacka. Nerver av stål krävs."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702017,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "En match. En chans. Inget mer. Cupfinalen har börjat."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702018,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Cupfinal. Alla ögon på Söderfors. Nerver av stål krävs."
+        }
+      ]
+    },
+    "quarterWinPromisesQuarter": {
+      "count": 35,
+      "examples": [
+        {
+          "scenario": "cup-quarter",
+          "seed": 702009,
+          "minute": 90,
+          "step": 60,
+          "score": "10-5",
+          "text": "Slutsignal. Forsbacka går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702022,
+          "minute": 90,
+          "step": 60,
+          "score": "9-6",
+          "text": "Slutsignal. Forsbacka går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702029,
+          "minute": 90,
+          "step": 60,
+          "score": "9-3",
+          "text": "Slutsignal. Forsbacka går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702032,
+          "minute": 90,
+          "step": 60,
+          "score": "8-2",
+          "text": "Slutsignal. Forsbacka går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702035,
+          "minute": 90,
+          "step": 60,
+          "score": "7-2",
+          "text": "Slutsignal. Forsbacka går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712026,
+          "minute": 90,
+          "step": 60,
+          "score": "7-4",
+          "text": "Slutsignal. Söderfors går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 722009,
+          "minute": 90,
+          "step": 60,
+          "score": "7-4",
+          "text": "Slutsignal. Västanfors går vidare. Kvarten väntar."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 732010,
+          "minute": 90,
+          "step": 60,
+          "score": "8-4",
+          "text": "Slutsignal. Karlsborg går vidare. Kvarten väntar."
+        }
+      ]
+    },
+    "augustCupClaimsOctober": {
+      "count": 40,
+      "examples": [
+        {
+          "scenario": "cup-quarter",
+          "seed": 702028,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 702031,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712011,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712020,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712024,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712030,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712032,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        },
+        {
+          "scenario": "cup-quarter",
+          "seed": 712036,
+          "minute": 0,
+          "step": 0,
+          "score": "0-0",
+          "text": "Avslag. Oktober. Bandyåret börjar nu."
+        }
+      ]
+    },
+    "indoorSnowCandidate": {
+      "count": 591,
+      "examples": [
+        {
+          "scenario": "indoor-snow",
+          "seed": 704000,
+          "minute": 9,
+          "step": 6,
+          "score": "0-1",
+          "text": "I snökaoset hittar Jonas Mattsson en springa! 0–1!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704000,
+          "minute": 21,
+          "step": 14,
+          "score": "2-2",
+          "text": "Hörna Söderfors. Hela klacken reser sig. Ur snöyran kommer Hedlund och bollen ligger där. 2–2!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704000,
+          "minute": 38,
+          "step": 25,
+          "score": "3-2",
+          "text": "MÅÅÅL TROTS SNÖSTORMEN! Samuelsson hittar nätet ändå! 3–2!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704000,
+          "minute": 53,
+          "step": 35,
+          "score": "4-3",
+          "text": "I snökaoset hittar Mattsson en springa! 4–3!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704000,
+          "minute": 89,
+          "step": 59,
+          "score": "5-3",
+          "text": "Hörna Forsbacka. Hela klacken reser sig. MÅÅÅL TROTS SNÖSTORMEN! Ros hittar nätet ändå! 5–3!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704001,
+          "minute": 47,
+          "step": 31,
+          "score": "8-3",
+          "text": "Hörna till Forsbacka. MÅÅÅL TROTS SNÖSTORMEN! Gran hittar nätet ändå! 8–3!"
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704002,
+          "minute": 44,
+          "step": 29,
+          "score": "4-0",
+          "text": "Utanför faller snön. Den får falla ifred numera."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 704003,
+          "minute": 5,
+          "step": 3,
+          "score": "1-0",
+          "text": "MÅÅÅL TROTS SNÖSTORMEN! Leif Granqvist hittar nätet ändå! 1–0!"
+        }
+      ]
+    },
+    "firstGoalAlreadyScored": {
+      "count": 29,
+      "examples": [
+        {
+          "scenario": "derby",
+          "seed": 711005,
+          "minute": 45,
+          "step": 30,
+          "score": "0-1",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "derby",
+          "seed": 711031,
+          "minute": 66,
+          "step": 44,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "cup-final",
+          "seed": 723035,
+          "minute": 60,
+          "step": 40,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "regular",
+          "seed": 730004,
+          "minute": 50,
+          "step": 33,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "derby",
+          "seed": 731028,
+          "minute": 41,
+          "step": 27,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "cup-final",
+          "seed": 733032,
+          "minute": 45,
+          "step": 30,
+          "score": "0-1",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 734027,
+          "minute": 60,
+          "step": 40,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        },
+        {
+          "scenario": "indoor-snow",
+          "seed": 744031,
+          "minute": 45,
+          "step": 30,
+          "score": "1-0",
+          "text": "Försiktigt nu. Ingen vill släppa in det första målet."
+        }
+      ]
+    }
+  },
+  "gameplayHash": "e172b98e030449f491507de9edd151b45fea48e1e4d02162a028c548e1f1ea26"
+}

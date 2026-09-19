@@ -1,0 +1,56 @@
+fatal: not a git repository (or any of the parent directories): .git
+[vite.config] git rev-parse --short HEAD misslyckades, __GIT_HASH__ = "843613c": Command failed: git rev-parse --short HEAD
+fatal: not a git repository (or any of the parent directories): .git
+
+
+Starting stress test: 12 seeds × 3 seasons
+──────────────────────────────────────────────────
+[seed 1/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 2/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 3/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 4/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 5/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 6/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 7/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 8/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 9/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 10/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 11/12]  season 1 ✓  season 2 ✓  season 3 ✓
+[seed 12/12]  season 1 ✓  season 2 ✓  season 3 ✓
+
+Skriven /private/tmp/bandy-audit-20260918.nKKTqJ/scripts/stress/season_stats.json (5998 matcher)
+
+── Textmått (B6) ──────────────────────────────
+Texter/omgång (snitt över 36 säsonger): 3.01
+Andel handlingskrävande (proxy: expiresRound satt): 0.0%
+Flest dubblerade strängar i en säsong: 18  ·  högsta enskilda upprepning: 12x
+Omgångar mellan en karaktärs repliker (fromRole): snitt 5.9, max 21
+
+
+═══ STRESS TEST ═══
+Seeds: 12
+Max seasons: 3
+Completed: 36 seasons out of 36 attempted
+
+Crashes: 0
+
+Invariant breaks (non-crash warns): 0
+
+Per-invariant summary:
+  tableSum: 0 violations
+  fixtureCount: 0 violations
+  playerAges: 0 violations
+  squadSize: 0 violations
+  positionCoverage: 0 violations
+  finance: 0 violations
+  cupBracket: 0 violations
+  playoffBracket: 0 violations
+  noUndefined: 0 violations
+  matchdayMonotonic: 0 violations
+  pendingScreenConsistency: 0 violations
+  saveGameSize: 0 violations
+  noNaN: 0 violations
+  staleContracts: 0 violations
+  uniquePlayerIds: 0 violations
+
+Failure dumps: scripts/stress/failures/

@@ -811,6 +811,7 @@ export function MatchLiveScreen() {
       initialHomeSuspensionTimers: currentStepData.activeSuspensions.homeTimers,
       initialAwaySuspensionTimers: currentStepData.activeSuspensions.awayTimers,
       matchProfile: currentStepData.matchProfile,
+      commentaryMemory: currentStepData.commentaryMemory,
       managedIsHome,
       livePressChoice: pressChoice ?? getChosenLivePress(steps),
     }, fromStep, inSecondHalf)
@@ -1222,6 +1223,7 @@ export function MatchLiveScreen() {
       initialHomeSuspensionTimers: halftimeStep?.activeSuspensions.homeTimers ?? [],
       initialAwaySuspensionTimers: halftimeStep?.activeSuspensions.awayTimers ?? [],
       matchProfile: halftimeStep?.matchProfile,
+      commentaryMemory: halftimeStep?.commentaryMemory,
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
       pauseLean: effectiveLean,
@@ -1305,6 +1307,7 @@ export function MatchLiveScreen() {
       initialHomeSuspensionTimers: currentMatchStep.activeSuspensions.homeTimers,
       initialAwaySuspensionTimers: currentMatchStep.activeSuspensions.awayTimers,
       matchProfile: currentMatchStep.matchProfile,
+      commentaryMemory: currentMatchStep.commentaryMemory,
       managedIsHome,
       livePressChoice: getChosenLivePress(steps),
     }, fromStep, inSecondHalf)
