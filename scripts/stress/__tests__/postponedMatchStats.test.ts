@@ -32,4 +32,24 @@ describe('stressloggen — inställda matcher', () => {
     expect(row).not.toHaveProperty('homeScore')
     expect(newSeasonStats(8, 1, 'club-a', 50).postponedMatches).toEqual([])
   })
+
+  it('kallar inte en ospelad slutspelsfixtur för väderinställd', () => {
+    const fixture = {
+      id: 'unneeded-qf-3',
+      season: 2026,
+      matchday: 29,
+      roundNumber: 29,
+      homeClubId: 'club-a',
+      awayClubId: 'club-b',
+      status: FixtureStatus.Postponed,
+      isCup: false,
+      isKnockout: true,
+    } as Fixture
+
+    expect(extractPostponedMatchStat(fixture, 2, 1)).toMatchObject({
+      phase: 'playoff_qf',
+      status: 'postponed',
+      reason: 'playoff_series_decided',
+    })
+  })
 })

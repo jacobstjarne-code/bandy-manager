@@ -124,6 +124,16 @@ Historisk elitserie jämförs med spelets fiktiva liga av verkliga klubbar. Lags
 
 Karriärprovet nedan är ett **diagnostiskt spelprov**, inte den formella kalibreringsgrinden. Det följer 12 karriärer genom tre säsonger med väder, säsongsutveckling, beslut, förändrade trupper och den hanterade klubbens särskilda motståndsurval. Därför kan dess 9,09 % matcher med minst 15 mål vara sant samtidigt som den låsta motorgrinden ger 6,09 %. Motorgrinden är `scripts/audit-score-distribution.ts --assert-gates`: 24 frysta världar, spelets 132 faktiska grundseriefixturer per värld och samma starttrupper/frön i snabb- och liveläge, totalt 3 168 matcher per läge. Det är **6,09 % mot referensens 5,43 %** och **6,06 % med högst fyra mål mot 5,87 %** som gäller för toleransen ±1,5 procentenheter. Kommentarsprovet 12 världar × 5 kontexter × 40 frön mäter textsanning och är inte en resultatfördelningsgrind. Om ett nytt karriärprov fortfarande ligger runt 9 % ska avvikelsen därför utredas som en egen spelarkarriärfråga — motståndsurval, taktik och den egna klubbens styrka — inte som bevis för att ligamotorn missar sin kalibrering.
 
+### Mindre uppföljning på pushad motor
+
+Samma 12 × 3-protokoll kördes om på `43d48b35`, efter kalibreringen. Tre karriärer avslutades före tre kompletta grundserier, så den råa populationen krymper från 12 karriärer i säsong 1 till 10 i säsong 2 och 9 i säsong 3. Råa säsongsandelar är därför inte ett rent longitudinellt prov. Den jämförbara kohorten är de **nio karriärer som spelar samtliga tre grundserier**; varje säsongsindex innehåller då 1 188 ligamatcher, varav 198 med och 990 utan den styrda klubben.
+
+- Säsong 1: totalt **3,96 %**, med styrd klubb **1,01 %**, utan styrd klubb **4,55 %**.
+- Säsong 2: totalt **4,97 %**, med styrd klubb **5,56 %**, utan styrd klubb **4,85 %**.
+- Säsong 3: totalt **4,21 %**, med styrd klubb **3,54 %**, utan styrd klubb **4,34 %**.
+
+Det finns alltså **ingen växande isärglidning** över säsongsindex i detta prov. Matcherna utan den styrda klubben ligger 4,55 → 4,85 → 4,34 %, och den styrda klubben driver inte svansen systematiskt. Säsong 2 har en liten spelarspik, men den vänder i säsong 3 och omfattar bara 11 matcher med 15+ mål. Rådata och både rå/fast kohort finns i `audit-2026-09-19/career-15plus-by-season-43d48b35.json`.
+
 - **Målsnitt:** spel 9,08; referens 9,12.
 - **Oavgjort:** 10,10 %; 11,57 %.
 - **Hemmavinst:** 51,55 %; 50,18 %.

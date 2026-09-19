@@ -1,0 +1,48 @@
+{
+  "commit": "43d48b35",
+  "protocol": {
+    "seeds": 12,
+    "seasonsPerSeed": 3,
+    "generatedAt": "2026-09-19T12:57:52.641Z",
+    "note": "raw cohorts shrink after manager firing; balanced cohort contains the nine seeds with 132 resolved regular-season fixtures in every season index"
+  },
+  "raw": {
+    "season1": {
+      "careers": 12,
+      "all": { "n": 1583, "count15plus": 79, "pct15plus": 4.990524320909665 },
+      "managed": { "n": 263, "count15plus": 5, "pct15plus": 1.9011406844106464 },
+      "other": { "n": 1320, "count15plus": 74, "pct15plus": 5.606060606060606 },
+      "weatherPostponed": 1
+    },
+    "season2": {
+      "careers": 10,
+      "all": { "n": 1320, "count15plus": 65, "pct15plus": 4.924242424242424 },
+      "managed": { "n": 220, "count15plus": 12, "pct15plus": 5.454545454545454 },
+      "other": { "n": 1100, "count15plus": 53, "pct15plus": 4.818181818181818 }
+    },
+    "season3": {
+      "careers": 9,
+      "all": { "n": 1188, "count15plus": 50, "pct15plus": 4.2087542087542085 },
+      "managed": { "n": 198, "count15plus": 7, "pct15plus": 3.5353535353535355 },
+      "other": { "n": 990, "count15plus": 43, "pct15plus": 4.343434343434343 }
+    }
+  },
+  "balancedCohort": {
+    "seedIndexes": [0, 1, 2, 4, 5, 6, 7, 10, 11],
+    "season1": {
+      "all": { "n": 1188, "count15plus": 47, "pct15plus": 3.9562289562289563 },
+      "managed": { "n": 198, "count15plus": 2, "pct15plus": 1.0101010101010102 },
+      "other": { "n": 990, "count15plus": 45, "pct15plus": 4.545454545454546 }
+    },
+    "season2": {
+      "all": { "n": 1188, "count15plus": 59, "pct15plus": 4.966329966329966 },
+      "managed": { "n": 198, "count15plus": 11, "pct15plus": 5.555555555555555 },
+      "other": { "n": 990, "count15plus": 48, "pct15plus": 4.848484848484849 }
+    },
+    "season3": {
+      "all": { "n": 1188, "count15plus": 50, "pct15plus": 4.2087542087542085 },
+      "managed": { "n": 198, "count15plus": 7, "pct15plus": 3.5353535353535355 },
+      "other": { "n": 990, "count15plus": 43, "pct15plus": 4.343434343434343 }
+    }
+  }
+}

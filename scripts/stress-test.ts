@@ -300,17 +300,23 @@ async function main(): Promise<void> {
   const statsFile = resolve(__dirname, 'stress/season_stats.json')
   const totalMatches = allSeasonStats.flatMap(s => s.matches).length
   const totalPostponedMatches = allSeasonStats.flatMap(s => s.postponedMatches).length
+  const totalWeatherPostponedMatches = allSeasonStats
+    .flatMap(s => s.postponedMatches)
+    .filter(match => match.reason === 'weather').length
+  const totalPlayoffFixturesNotPlayed = totalPostponedMatches - totalWeatherPostponedMatches
   writeFileSync(statsFile, JSON.stringify({
     _meta: {
       seeds,
       seasonsPerSeed: seasons,
       totalMatches,
       totalPostponedMatches,
+      totalWeatherPostponedMatches,
+      totalPlayoffFixturesNotPlayed,
       generatedAt: new Date().toISOString(),
     },
     seasons: allSeasonStats,
   }, null, 2))
-  console.log(`\nSkriven ${statsFile} (${totalMatches} spelade, ${totalPostponedMatches} inställda matcher)`)
+  console.log(`\nSkriven ${statsFile} (${totalMatches} spelade, ${totalWeatherPostponedMatches} väderinställda, ${totalPlayoffFixturesNotPlayed} ej behövda slutspelsfixturer)`)
 
   // B6: textmått — aggregerat över alla säsonger som körts
   const seasonsWithText = allSeasonStats.filter(s => s.textMetrics)

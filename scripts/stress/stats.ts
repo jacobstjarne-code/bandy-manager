@@ -54,7 +54,7 @@ export interface PostponedMatchStat {
   homeClubId: string
   awayClubId: string
   status: 'postponed'
-  reason: 'weather'
+  reason: 'weather' | 'playoff_series_decided'
 }
 
 export interface EconSnapshot {
@@ -180,15 +180,16 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
 }
 
 export function extractPostponedMatchStat(fix: Fixture, seed: number, season: number): PostponedMatchStat {
+  const phase = getPhase(fix)
   return {
     seed,
     season,
     round: fix.roundNumber,
-    phase: getPhase(fix),
+    phase,
     homeClubId: fix.homeClubId,
     awayClubId: fix.awayClubId,
     status: 'postponed',
-    reason: 'weather',
+    reason: phase === 'regular' ? 'weather' : 'playoff_series_decided',
   }
 }
 
