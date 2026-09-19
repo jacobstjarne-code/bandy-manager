@@ -20,6 +20,7 @@ import { checkForMatchInjury } from '../../../domain/services/matchInjuryService
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 import { getResolvedStorylineProjections } from '../../../domain/services/storylineLedgerService'
 import { pickBestEleven } from '../../../domain/services/squadEvaluator'
+import { getWelcomeSong } from '../../../domain/services/supporterRituals'
 
 // docs/dom/DOM_FORMATIONER_V2_2026-09-04.md: samma stil→formation-mappning som
 // worldGenerator.ts's buildTactic, för konsekvens (bevarar heightMode-hinken
@@ -33,6 +34,19 @@ const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
 }
 
 /** DOM_O12_DOMARMOTE_AVVAGNING_2026-09-11 — en kanonisk valkatalog. */
+/**
+ * DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 3 — är detta klubbens FÖRSTA hemmamatch
+ * i seriespelet denna säsong? Cup och slutspel räknas inte; hälsningen hör till
+ * seriepremiären hemma. En gång per säsong, aldrig oftare.
+ */
+function isSeasonHomeOpener(game: SaveGame, fixture: Fixture): boolean {
+  if (fixture.isCup || fixture.isKnockout) return false
+  const firstHome = game.fixtures
+    .filter(f => f.homeClubId === game.managedClubId && !f.isCup && !f.isKnockout && f.season === fixture.season)
+    .sort((a, b) => a.matchday - b.matchday)[0]
+  return firstHome?.id === fixture.id
+}
+
 export function buildRefereeMeetingChoices(refereeId: string): GameEvent['choices'] {
   return [
     {
@@ -362,6 +376,13 @@ export function simulateRound(
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
       refStyle: referee.style,
       refereeName: getRefereeDisplayName(referee),
+      // DOM_DÖDA_TEXTPOOLER_2026-09-18, pool 3 — klackens arenahälsning vid
+      // hemmapremiären. En gång per säsong, aldrig oftare: villkoret är
+      // managed klubbs FÖRSTA hemmamatch i seriespelet. Motorn får raden
+      // färdig; den känner inte till säsongsstruktur.
+      welcomeSongLine: isManagedHome && isSeasonHomeOpener(game, fixture)
+        ? (getWelcomeSong(game) ?? undefined)
+        : undefined,
       refereeClubReaction: refereeClubReactionForMatch,
       underdogBoost: game.currentSeasonSignature?.modifiers.underdogBoost,
       homeChemistry: isManagedHome ? managedChem : undefined,

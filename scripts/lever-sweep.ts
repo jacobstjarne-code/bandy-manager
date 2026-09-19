@@ -31,6 +31,7 @@ type Policy = {
   contracts?: 'meetAll' | 'meetNone'
   events?: 'noOp' | 'first' | 'last' | 'ignore'
   lineup?: 'best' | 'rosterOrder' | 'weakest' | 'neverRotate'
+  schedule?: 'a' | 'b'
 }
 
 const CONFIGS: Record<string, Policy> = {
@@ -63,6 +64,10 @@ const CONFIGS: Record<string, Policy> = {
   per_hall: { periodisation: 'hall' },
   per_toppa: { periodisation: 'toppa' },
   per_vila: { periodisation: 'vila' },
+  per_schema_a: { schedule: 'a' },
+  per_schema_b: { schedule: 'b' },
+  per_schema_a_light: { schedule: 'a', training: { type: TrainingType.Physical, intensity: TrainingIntensity.Light } },
+  per_hall_light: { periodisation: 'hall', training: { type: TrainingType.Physical, intensity: TrainingIntensity.Light } },
   // budget
   bud_squad: { budgetPriority: 'squad' },
   bud_youth: { budgetPriority: 'youth' },
@@ -102,6 +107,23 @@ function applyPolicyEachRound(game: SaveGame, p: Policy, firstLineup: string[] |
     g = { ...g, managedClubPeriodisation: p.periodisation, managedClubPeriodisationSince: g.currentMatchday }
   }
   if (p.budgetPriority) g = { ...g, budgetPriority: p.budgetPriority }
+  if (p.schedule) {
+    const mine = g.fixtures.filter(f => !f.isCup && (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId) && f.season === g.currentSeason)
+    const leagueTotal = mine.filter(f => (f.roundNumber ?? 0) <= 22).length || 22
+    const played = mine.filter(f => f.status === 'completed' && (f.roundNumber ?? 0) <= 22).length
+    const next = played + 1 // nästa ligaomgång
+    let mode: 'bygg' | 'hall' | 'toppa' | 'vila' = 'hall'
+    if (next <= 8) mode = 'bygg'
+    else if (next >= leagueTotal - 2 && next <= leagueTotal) mode = 'toppa'
+    if (p.schedule === 'b') {
+      const cb: any = g.cupBracket
+      const out = !!cb && cb.matches.some((m: any) => m.winnerId && !m.isBye && (m.homeClubId === g.managedClubId || m.awayClubId === g.managedClubId) && m.winnerId !== g.managedClubId)
+      const outRound = (g as any).__cupOutRound
+      if (out && outRound === undefined) (g as any).__cupOutRound = g.currentMatchday
+      if (outRound !== undefined && g.currentMatchday - outRound < 3 && mode === 'hall') mode = 'vila'
+    }
+    if (g.managedClubPeriodisation !== mode) g = { ...g, managedClubPeriodisation: mode, managedClubPeriodisationSince: g.currentMatchday }
+  }
   return g
 }
 
