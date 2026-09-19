@@ -41,6 +41,7 @@ import HallProvningScreen from '../screens/HallProvningScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { PlayoffIntroScreen } from '../screens/PlayoffIntroScreen'
 import { QFSummaryScreen } from '../screens/QFSummaryScreen'
+import { CorridorStopScreen } from '../screens/CorridorStopScreen'
 import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
@@ -183,6 +184,9 @@ export function AppRouter() {
           <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
           <Route path="playoff-intro" element={<PlayoffIntroScreen />} />
           <Route path="qf-summary" element={<QFSummaryScreen />} />
+          {/* TEXTLEVERANS §D — korridorens två stopp */}
+          <Route path="week-after" element={<CorridorStopScreen kind={PendingScreen.WeekAfter} />} />
+          <Route path="final-day" element={<CorridorStopScreen kind={PendingScreen.FinalDay} />} />
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
           <Route path="review" element={<Suspense fallback={<EmptyFallback />}><GranskaScreen /></Suspense>} />

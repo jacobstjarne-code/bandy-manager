@@ -129,6 +129,11 @@ export interface ResolveResult {
 }
 
 const KNOWN_SCREENS = new Set([
+  // LESSONS #62, fjärde instansen förebyggd: en ny pendingScreen som saknas
+  // här gör att harnessen rapporterar `unresolvable` och varje mätning stannar.
+  // Korridorens två stopp (TEXTLEVERANS §D) hör hit från dag ett.
+  'week_after',
+  'final_day',
   'season_summary',
   'contract_demands',
   'board_meeting',

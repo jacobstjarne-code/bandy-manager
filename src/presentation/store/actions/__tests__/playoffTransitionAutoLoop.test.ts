@@ -82,7 +82,7 @@ function withAutoLineup(game: SaveGame): SaveGame {
 }
 
 describe('advance() — playoffStarted-signalen ska aldrig svalts av auto-skip-loopen', () => {
-  it('efter grundseriens sista omgång: pendingScreen är playoff_intro direkt, oavsett om hanterad klubb kvalar till slutspel', async () => {
+  it('efter grundseriens sista omgång: ett stopp visas direkt, oavsett om hanterad klubb kvalar till slutspel', async () => {
     // club_slottsbron/seed=7 slutar konsekvent sist (plats 12) i denna
     // simuleringsbana — måste INTE kvala till slutspel för att buggen
     // (auto-loopen svalde playoffStarted-signalen) ska reproduceras. En
@@ -122,7 +122,13 @@ describe('advance() — playoffStarted-signalen ska aldrig svalts av auto-skip-l
 
     expect(result?.playoffStarted).toBe(true)
     expect(result?.game.playoffBracket).toBeDefined()
-    expect(result?.game.pendingScreen).toBe(PendingScreen.PlayoffIntro)
-    expect(useGameStore.getState().game!.pendingScreen).toBe(PendingScreen.PlayoffIntro)
+    // TEXTLEVERANS §D (2026-09-19): en klubb som INTE kvalar får numera
+    // korridorens första stopp (Veckan efter) i stället för en slutspelsintro
+    // den inte är med i. Testets invariant är att övergången SURFAR direkt —
+    // att auto-loopen inte sväljer playoffStarted-signalen — inte vilken av
+    // de två skärmarna det blir. Seeden här är just en klubb som slutar sist.
+    const STOP_SCREENS = [PendingScreen.PlayoffIntro, PendingScreen.WeekAfter]
+    expect(STOP_SCREENS).toContain(result?.game.pendingScreen)
+    expect(STOP_SCREENS).toContain(useGameStore.getState().game!.pendingScreen)
   }, 60000)
 })

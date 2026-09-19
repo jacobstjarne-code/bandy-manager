@@ -68,7 +68,9 @@ import { ClubSelectionScreen } from '../ClubSelectionScreen'
 import { CallupModal } from '../../components/portal/CallupModal'
 import { ChampionScreen } from '../ChampionScreen'
 import { PlayoffIntroScreen } from '../PlayoffIntroScreen'
+import { PendingScreen } from '../../../domain/enums'
 import { QFSummaryScreen } from '../QFSummaryScreen'
+import { CorridorStopScreen } from '../CorridorStopScreen'
 import { SeasonContractDemandsScreen } from '../SeasonContractDemandsScreen'
 import { CareerBreakScreen } from '../CareerBreakScreen'
 import { InboxScreen } from '../InboxScreen'
@@ -216,6 +218,7 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // Route-ratchet 2026-09-01: tre slutspelsrutter som tidigare bara gick att
   // nå genom en hel säsong, nu byggda på samma deterministiska slutspelsresa.
   | 'playoff-intro' | 'qf-summary' | 'champion'
+  | 'korridor-veckan-efter' | 'korridor-finaldagen'
   // Route-ratchet 2026-09-02: de fem sista /game-rutterna. Alla använder
   // riktiga produktskärmar och deterministisk state, inte ytkopior.
   | 'contract-demands' | 'career-break' | 'inbox' | 'sim-summary' | 'hall-provning'
@@ -330,6 +333,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'callup-modal', label: 'Landslagsuttagning — två spelare' },
   { id: 'playoff-intro', label: 'Slutspel — grundserien avklarad' },
   { id: 'qf-summary', label: 'Slutspel — kvartsfinalerna avgjorda' },
+  { id: 'korridor-veckan-efter', label: 'Korridoren — Veckan efter' },
+  { id: 'korridor-finaldagen',  label: 'Korridoren — Finaldagen' },
   { id: 'champion', label: 'Slutspel — svenska mästare' },
   { id: 'contract-demands', label: 'Lönekrav — två spelare, ett mött' },
   { id: 'career-break', label: 'Karriäruppehåll — säsongen utan dig' },
@@ -913,6 +918,46 @@ const championGame = {
     champion: finalSeries.winnerId,
   },
 } as SaveGame
+
+/**
+ * TEXTLEVERANS §D — korridorens två stopp. Båda kräver att den hanterade
+ * klubben är UTE ur slutspelet, annars bygger generatorn inget och skärmen
+ * skickar spelaren vidare. Basen är championGame med den hanterade klubben
+ * bortplockad ur varje serie.
+ */
+const korridorBracketBase = {
+  ...qfSummaryBracket,
+  semiFinals: decidedSemiFinals,
+  final: finalSeries,
+}
+const withoutManaged = (sx: typeof finalSeries) =>
+  sx.homeClubId === HOME_ID || sx.awayClubId === HOME_ID
+    ? { ...sx, homeClubId: 'dev-rival', awayClubId: 'dev-other' }
+    : sx
+const korridorVeckanEfterGame = {
+  ...factoryMidSeasonGame,
+  playoffBracket: {
+    ...korridorBracketBase,
+    status: PlayoffStatus.QuarterFinals,
+    quarterFinals: korridorBracketBase.quarterFinals.map(withoutManaged),
+    semiFinals: [],
+    final: null,
+    champion: null,
+  },
+  cupBracket: undefined,
+} as unknown as SaveGame
+const korridorFinaldagenGame = {
+  ...factoryMidSeasonGame,
+  playoffBracket: {
+    ...korridorBracketBase,
+    status: PlayoffStatus.Completed,
+    quarterFinals: korridorBracketBase.quarterFinals.map(withoutManaged),
+    semiFinals: decidedSemiFinals.map(withoutManaged),
+    final: withoutManaged(finalSeries),
+    champion: withoutManaged(finalSeries).winnerId ?? 'dev-rival',
+  },
+  cupBracket: undefined,
+} as unknown as SaveGame
 
 const truppBlandatGame = withExpiringContracts(withInjuries(factoryMidSeasonGame, 1), 1)
 const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInjuries(factoryMidSeasonGame, 1), 1), 1), 1)
@@ -2324,6 +2369,8 @@ export function DevScenesScreen() {
       : scene === 'callup-modal' ? callupGame
       : scene === 'playoff-intro' ? playoffIntroGame
       : scene === 'qf-summary' ? qfSummaryGame
+      : scene === 'korridor-veckan-efter' ? korridorVeckanEfterGame
+      : scene === 'korridor-finaldagen' ? korridorFinaldagenGame
       : scene === 'champion' ? championGame
       : scene === 'contract-demands' ? contractDemandsGame
       : scene === 'career-break' ? careerBreakGame
@@ -2611,6 +2658,18 @@ export function DevScenesScreen() {
         {scene === 'qf-summary' && (
           <div style={{ height: '844px', overflow: 'hidden', position: 'relative' }}>
             <QFSummaryScreen />
+          </div>
+        )}
+
+        {scene === 'korridor-veckan-efter' && (
+          <div style={{ height: '844px', overflow: 'auto', position: 'relative' }}>
+            <CorridorStopScreen kind={PendingScreen.WeekAfter} />
+          </div>
+        )}
+
+        {scene === 'korridor-finaldagen' && (
+          <div style={{ height: '844px', overflow: 'auto', position: 'relative' }}>
+            <CorridorStopScreen kind={PendingScreen.FinalDay} />
           </div>
         )}
         {scene === 'champion' && (

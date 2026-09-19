@@ -476,6 +476,13 @@ export function gameFlowActions(get: Get, set: Set) {
       set({ game: { ...game, pendingScreen: null } })
     },
 
+    /** TEXTLEVERANS §D — korridorens två stopp stängs som varje annan skärm. */
+    clearCorridorStop: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, pendingScreen: null } })
+    },
+
     clearSeasonSummary: () => {
       const { game } = get()
       if (!game) return

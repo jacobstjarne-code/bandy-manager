@@ -7,7 +7,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../domain/enums'
 import { resolveEvent } from '../../domain/services/events/eventResolver'
 import { getBurnoutEscalation, assistantTookOverBody } from '../../domain/services/burnoutReliefService'
-import { generateCorridorPost } from '../../domain/services/corridorService'
+import { buildFinalDayStop, stopUsedKeys, isOutOfEverything } from '../../domain/services/corridorService'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -121,7 +121,8 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
   const simulatedFixtures: Fixture[] = []
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
-  let corridorLineUsed: string | null = null
+  let corridorKeysUsed: string[] = []
+  let corridorStopScreen: PendingScreen | null = null
   const newMoments: Moment[] = []
 
   // Detect if there is a pending (unplayed) cup match for the managed club this round
@@ -263,15 +264,14 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
     } as InboxItem)
   }
 
-  // TEXTLEVERANS §D / TILLÄGG 4 — korridoren omgång 28–36. En klubb som åkt ut
-  // ur både slutspel och cup fick tidigare ingenting alls där: 9–43 ord per
-  // omgång, och nästan alla tomma omgångar i hela säsongen låg i det spannet.
-  const corridorPost = generateCorridorPost(gameAfterRipples, nextMatchday)
-  if (corridorPost) {
-    newInboxItems.push(corridorPost.item)
-    corridorLineUsed = corridorPost.usedKey
-  }
-
+  // TEXTLEVERANS §D / Jacobs beslut 2026-09-19 — korridorens två stopp.
+  // Ett stopp är en pendingScreen MELLAN sista spelade omgång och omgång 37,
+  // inte en omgång: räknaren, matchens rand och alla omgångsbaserade
+  // mätningar lämnas orörda. Stoppen ersätter den per-omgångs-generator som
+  // inte kunde fyra, eftersom en utslagen klubb aldrig får omgångarna 28–36.
+  //
+  // Veckan efter triggas EN gång, den omgång klubben blir slutgiltigt ute:
+  // `wasOutBefore` skiljer övergången från tillståndet.
   newInboxItems.push(...processRoundMilestoneInbox(
     game,
     standings,
@@ -393,6 +393,22 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
     completedThisRound,
   )
   const updatedBracket = playoffResult.updatedBracket
+
+  // TEXTLEVERANS §D — korridorens andra stopp, Finaldagen.
+  //
+  // Triggern är att MÄSTAREN koras, inte att en isFinaldag-fixtur spelas: den
+  // fixturen skapas aldrig i en utslagen klubbs save (mätt, 0 träffar över en
+  // hel säsong). Och kontrollen måste ligga EFTER updatedBracket — läst ur
+  // gameAfterRipples hade den missat, eftersom bracketen appliceras först på
+  // det returnerade spelet. Samma fälla som burnout-övertagandet gick i.
+  if (!game.playoffBracket?.champion && !!updatedBracket?.champion && isOutOfEverything(game)) {
+    const stop = buildFinalDayStop({ ...gameAfterRipples, playoffBracket: updatedBracket })
+    if (stop) {
+      corridorStopScreen = PendingScreen.FinalDay
+      corridorKeysUsed = stopUsedKeys(stop)
+    }
+  }
+
   const bracketNewFixtures = playoffResult.bracketNewFixtures
   const playoffCsBoost = playoffResult.playoffCsBoost
   const triggerQFSummary = playoffResult.triggerQFSummary
@@ -961,7 +977,7 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
     visitedScreensThisRound: [],
-    pendingScreen: triggerQFSummary ? PendingScreen.QFSummary : game.pendingScreen,
+    pendingScreen: corridorStopScreen ?? (triggerQFSummary ? PendingScreen.QFSummary : game.pendingScreen),
     lastProcessedMatchday: hasManagedCupPending ? (game.lastProcessedMatchday ?? undefined) : nextMatchday,
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
     chemistryStats: updatedChemistryStats,
@@ -979,8 +995,8 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
     transferBids: trimmedBids,
     // §D: raden är förbrukad för resten av karriären. Capad som
     // resolvedEventIds — registret ska inte växa obegränsat.
-    corridorLinesUsed: corridorLineUsed
-      ? [...(game.corridorLinesUsed ?? []), corridorLineUsed].slice(-200)
+    corridorLinesUsed: corridorKeysUsed.length > 0
+      ? [...(game.corridorLinesUsed ?? []), ...corridorKeysUsed].slice(-200)
       : game.corridorLinesUsed,
     pendingEvents: [
       ...(game.pendingEvents ?? []).filter(e =>

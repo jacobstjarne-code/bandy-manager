@@ -206,6 +206,8 @@ interface GameState {
   applyHalftimeDecision: (decision: 'lugna' | 'pressa' | 'prata') => void
   clearPlayoffIntro: () => void
   clearQFSummary: () => void
+  /** TEXTLEVERANS §D — korridorens två stopp. */
+  clearCorridorStop: () => void
   setPeriodisation: (mode: 'bygg' | 'hall' | 'toppa' | 'vila') => void
   setPlayerPeriodisationOverride: (playerId: string, mode: 'hall' | 'vila' | null) => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void

@@ -90,6 +90,17 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
     }
   }
 
+  // TEXTLEVERANS §D / Jacobs beslut 2026-09-19 — korridorens första stopp.
+  // Den här funktionen returnerar tidigt (roundPlayed: null) och går aldrig
+  // genom rundprocessorn, så stoppet måste sättas här. Missade klubben
+  // slutspelet är det dessutom rätt skärm: en slutspelsintro för ett lag som
+  // inte är med hör inte hemma.
+  const managedInBracket = [
+    ...bracketWithFixtures.quarterFinals,
+    ...bracketWithFixtures.semiFinals,
+    ...(bracketWithFixtures.final ? [bracketWithFixtures.final] : []),
+  ].some(sx => sx.homeClubId === game.managedClubId || sx.awayClubId === game.managedClubId)
+
   const updatedGame: SaveGame = {
     ...game,
     fixtures: [...game.fixtures, ...allQFFixtures],
@@ -98,7 +109,9 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
     inbox: [...game.inbox, ...newInboxItems],
     pendingEvents: [...(game.pendingEvents ?? []), ...newPendingEvents],
     currentDate: newDate,
-    ...(getSeasonEndPhase(game) === 'regular_done' && { pendingScreen: PendingScreen.PlayoffIntro }),
+    ...(getSeasonEndPhase(game) === 'regular_done' && {
+      pendingScreen: managedInBracket ? PendingScreen.PlayoffIntro : PendingScreen.WeekAfter,
+    }),
   }
 
   // If managed club didn't make playoffs, we have scheduled fixtures for other teams

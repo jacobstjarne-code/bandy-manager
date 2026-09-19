@@ -6,6 +6,10 @@ const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
   [PendingScreen.QFSummary]: '/game/qf-summary',
   [PendingScreen.SeasonSummary]: '/game/season-summary',
   [PendingScreen.ContractDemands]: '/game/contract-demands',
+  // TEXTLEVERANS §D — korridorens två stopp. Utan raderna här sätts
+  // pendingScreen men ingen route öppnas, och stoppet blir byggt-men-onåbart.
+  [PendingScreen.WeekAfter]: '/game/week-after',
+  [PendingScreen.FinalDay]: '/game/final-day',
 }
 
 /**

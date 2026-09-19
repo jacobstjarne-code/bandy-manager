@@ -235,4 +235,15 @@ export enum PendingScreen {
   HalfTimeSummary = 'half_time_summary',
   PlayoffIntro = 'playoff_intro',
   QFSummary = 'qf_summary',
+  /**
+   * TEXTLEVERANS §D / Jacobs beslut 2026-09-19 — korridorens två stopp.
+   *
+   * Korridoren (omgång 28–36) kunde inte fyllas per omgång: en utslagen klubb
+   * FÅR inte de omgångarna, advance svansrekurserar förbi dem och roundPlayed
+   * hoppar från ~26 till 37 (mätt). Beslutet blev två STOPP i stället för nio
+   * omgångar — en pendingScreen mellan sista spelade omgång och omgång 37.
+   * Räknaren, matchens rand och alla omgångsbaserade mätningar lämnas orörda.
+   */
+  WeekAfter = 'week_after',
+  FinalDay = 'final_day',
 }
