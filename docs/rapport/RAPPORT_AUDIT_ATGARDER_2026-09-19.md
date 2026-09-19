@@ -58,7 +58,7 @@ Alla fyra grindar passerar. `scripts/audit-score-distribution.ts --assert-gates`
 
 Fyndet reproducerades exakt: seed 8, säsong 1, serieomgång 3 har fem färdigspelade matcher. Ingen färdigspelad match tappas dock mellan lager. Den sjätte fixturen fick `FixtureStatus.Postponed` eftersom isen ställde in matchen; spelets uttryckliga säsongsregel räknar både `Completed` och `Postponed` som avgjorda för serieschemat, medan karriärstatistiken med rätta bara loggar faktiskt spelade matcher.
 
-Detta är alltså **inte ett loggfel**. 4 751 färdigspelade + 1 inställd = de förväntade 4 752 serie-fixturerna i provet. Ingen falsk matchpost ska läggas till. Den äldre rapportens datakvalitetsreservation är därmed stängd.
+Detta är alltså **inte ett loggfel**. 4 751 färdigspelade + 1 inställd = de förväntade 4 752 serie-fixturerna i provet. Ingen falsk resultatpost ska läggas till. Stressloggen redovisar i stället inställda fixturer separat i `postponedMatches`, så hela schemat kan stämmas av utan att resultatfördelningen förorenas. Den äldre rapportens datakvalitetsreservation är därmed stängd.
 
 ## Verifiering
 

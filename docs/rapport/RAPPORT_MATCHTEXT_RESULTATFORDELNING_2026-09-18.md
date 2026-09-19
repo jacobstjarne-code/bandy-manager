@@ -122,6 +122,8 @@ Historisk elitserie jämförs med spelets fiktiva liga av verkliga klubbar. Lags
 
 ### Karriärprovet mot hela referensen
 
+Karriärprovet nedan är ett **diagnostiskt spelprov**, inte den formella kalibreringsgrinden. Det följer 12 karriärer genom tre säsonger med väder, säsongsutveckling, beslut, förändrade trupper och den hanterade klubbens särskilda motståndsurval. Därför kan dess 9,09 % matcher med minst 15 mål vara sant samtidigt som den låsta motorgrinden ger 6,09 %. Motorgrinden är `scripts/audit-score-distribution.ts --assert-gates`: 24 frysta världar, spelets 132 faktiska grundseriefixturer per värld och samma starttrupper/frön i snabb- och liveläge, totalt 3 168 matcher per läge. Det är **6,09 % mot referensens 5,43 %** och **6,06 % med högst fyra mål mot 5,87 %** som gäller för toleransen ±1,5 procentenheter. Kommentarsprovet 12 världar × 5 kontexter × 40 frön mäter textsanning och är inte en resultatfördelningsgrind. Om ett nytt karriärprov fortfarande ligger runt 9 % ska avvikelsen därför utredas som en egen spelarkarriärfråga — motståndsurval, taktik och den egna klubbens styrka — inte som bevis för att ligamotorn missar sin kalibrering.
+
 - **Målsnitt:** spel 9,08; referens 9,12.
 - **Oavgjort:** 10,10 %; 11,57 %.
 - **Hemmavinst:** 51,55 %; 50,18 %.
@@ -157,7 +159,7 @@ JSON-underlaget innehåller beskrivande Wilson-intervall per match. Dessa antar 
 
 ### Datakvalitetsnot
 
-Karriärloggen har 4 751 i stället för 4 752 spelade seriematcher: seed 8 (loggens nollbaserade id), säsong 1, omgång 3 har fem poster. Det är före deduplicering. Uppföljningen reproducerade och stängde fyndet: den sjätte fixturen är uttryckligt inställd av väder och har status `Postponed`; ingen färdigspelad matchpost har tappats.
+Karriärloggen har 4 751 spelade seriematcher och en väderinställd fixtur: seed 8 (loggens nollbaserade id), säsong 1, omgång 3 har fem spelade poster och en post med status `Postponed`. Uppföljningen reproducerade och stängde fyndet; ingen färdigspelad matchpost har tappats. Stressloggens `postponedMatches` redovisar nu inställda fixturer separat, så nästa kontroll kan stämma av hela schemat utan att blanda in ospelade matcher i resultatfördelningen.
 
 ## Föreslagen nästa ordning
 

@@ -20,7 +20,7 @@ import { mulberry32 } from '../src/domain/utils/random'
 import { checkInvariants, checkFinanceLogGap } from '../src/domain/services/gameInvariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
-import { extractMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'
+import { extractMatchStat, extractPostponedMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'
 import type { SeasonStats } from './stress/stats'
 import { newTextMetricsAccumulator, recordInboxTextMetrics, summarizeTextMetrics } from './stress/textMetrics'
 
@@ -147,6 +147,9 @@ async function main(): Promise<void> {
       let previouslyCompletedIds = new Set<string>(
         game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
       )
+      let previouslyPostponedIds = new Set<string>(
+        game.fixtures.filter(f => f.status === FixtureStatus.Postponed).map(f => f.id)
+      )
       // B6: textmått — diffa inbox varje varv för att hitta NYA texter denna omgång.
       const textMetricsAcc = newTextMetricsAccumulator()
       let previousInboxIds = new Set<string>(game.inbox.map(i => i.id))
@@ -184,8 +187,17 @@ async function main(): Promise<void> {
           for (const fix of newlyCompleted) {
             seasonStats.matches.push(extractMatchStat(fix, result.game, seedIdx, season))
           }
+          const newlyPostponed = result.game.fixtures.filter(f =>
+            f.status === FixtureStatus.Postponed && !previouslyPostponedIds.has(f.id)
+          )
+          for (const fix of newlyPostponed) {
+            seasonStats.postponedMatches.push(extractPostponedMatchStat(fix, seedIdx, season))
+          }
           previouslyCompletedIds = new Set(
             result.game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
+          )
+          previouslyPostponedIds = new Set(
+            result.game.fixtures.filter(f => f.status === FixtureStatus.Postponed).map(f => f.id)
           )
 
           // Capture economy + puls snapshot once per round (not per advance call)
@@ -287,16 +299,18 @@ async function main(): Promise<void> {
   // Write season stats JSON (written even if seeds crashed — includes all matches that ran)
   const statsFile = resolve(__dirname, 'stress/season_stats.json')
   const totalMatches = allSeasonStats.flatMap(s => s.matches).length
+  const totalPostponedMatches = allSeasonStats.flatMap(s => s.postponedMatches).length
   writeFileSync(statsFile, JSON.stringify({
     _meta: {
       seeds,
       seasonsPerSeed: seasons,
       totalMatches,
+      totalPostponedMatches,
       generatedAt: new Date().toISOString(),
     },
     seasons: allSeasonStats,
   }, null, 2))
-  console.log(`\nSkriven ${statsFile} (${totalMatches} matcher)`)
+  console.log(`\nSkriven ${statsFile} (${totalMatches} spelade, ${totalPostponedMatches} inställda matcher)`)
 
   // B6: textmått — aggregerat över alla säsonger som körts
   const seasonsWithText = allSeasonStats.filter(s => s.textMetrics)

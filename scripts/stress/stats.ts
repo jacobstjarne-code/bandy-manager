@@ -41,6 +41,22 @@ export interface MatchStat {
   matchProfile?: string
 }
 
+/**
+ * A scheduled fixture that was resolved without being played. Kept separate
+ * from MatchStat so score-distribution audits cannot accidentally count a
+ * weather cancellation as a 0–0 result.
+ */
+export interface PostponedMatchStat {
+  seed: number
+  season: number
+  round: number
+  phase: MatchStat['phase']
+  homeClubId: string
+  awayClubId: string
+  status: 'postponed'
+  reason: 'weather'
+}
+
 export interface EconSnapshot {
   round: number
   finances: number  // managed club finances after this round
@@ -54,6 +70,7 @@ export interface SeasonStats {
   clubId: string
   clubRep: number
   matches: MatchStat[]
+  postponedMatches: PostponedMatchStat[]
   econSnapshots: EconSnapshot[]
   /** B6 (2026-07-19): textmått — se textMetrics.ts. Saknas för säsonger körda före detta. */
   textMetrics?: TextMetricsSummary
@@ -162,8 +179,21 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
   }
 }
 
+export function extractPostponedMatchStat(fix: Fixture, seed: number, season: number): PostponedMatchStat {
+  return {
+    seed,
+    season,
+    round: fix.roundNumber,
+    phase: getPhase(fix),
+    homeClubId: fix.homeClubId,
+    awayClubId: fix.awayClubId,
+    status: 'postponed',
+    reason: 'weather',
+  }
+}
+
 export function newSeasonStats(seed: number, season: number, clubId: string, clubRep: number): SeasonStats {
-  return { seed, season, clubId, clubRep, matches: [], econSnapshots: [] }
+  return { seed, season, clubId, clubRep, matches: [], postponedMatches: [], econSnapshots: [] }
 }
 
 export function extractEconSnapshot(
