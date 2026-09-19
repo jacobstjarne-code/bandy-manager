@@ -165,8 +165,21 @@ describe('generateBurnoutReliefEvent', () => {
     const sub = JSON.parse(event.choices[0].effect.subEffects!)
     expect(sub).toEqual([
       { type: 'reduceBurnout', amount: -12 },
-      { type: 'journalistRelationship', amount: -10 },
+      // TILLÄGG 4 (2026-09-18): första delegeringen per säsong kostar −5, inte
+      // −10. Priset var tidigare platt, vilket gjorde kortet dyrt att SVARA på
+      // och gratis att ignorera.
+      { type: 'journalistRelationship', amount: -5 },
     ])
+  })
+
+  it('andra delegeringen samma säsong kostar dubbelt (TILLÄGG 4)', () => {
+    const first = generateBurnoutReliefEvent(10, 3, 'hog', false, 0)
+    const second = generateBurnoutReliefEvent(18, 3, 'hog', false, 1)
+    const deltaOf = (e: typeof first) =>
+      JSON.parse(e.choices[0].effect.subEffects!)
+        .find((x: { type: string }) => x.type === 'journalistRelationship').amount
+    expect(deltaOf(first)).toBe(-5)
+    expect(deltaOf(second)).toBe(-10)
   })
 
   it('träningsvalet sänker burnout OCH startar en träningssaktmatta (multiEffect)', () => {

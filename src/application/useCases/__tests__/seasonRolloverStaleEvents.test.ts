@@ -209,7 +209,16 @@ describe('season rollover — stale event cleanup (final → ceremoni → årsbo
       i => i.type === InboxItemType.DecisionRollover && !inboxIdsBeforeRollover.has(i.id)
     )
     expect(rolloverLines).toHaveLength(1)
-    expect(rolloverLines[0].sourceEventIds).toEqual(expect.arrayContaining(deferredJustBeforeRollover))
+    // TILLÄGG 4 (2026-09-18): ett deferrat kort kan numera lämna kön på TVÅ
+    // sätt under samma advance — rollovern tömmer det, eller assistenten löser
+    // burnoutRelief efter fyra omgångars tystnad. Invarianten är att inget
+    // försvinner TYST, inte att allt hamnar i just rollover-raden. Ett
+    // assistent-löst kort bär sitt kvitto i resolvedEventIds i stället.
+    const reported = new Set(rolloverLines[0].sourceEventIds ?? [])
+    const receipted = new Set(game.resolvedEventIds ?? [])
+    for (const id of deferredJustBeforeRollover) {
+      expect(reported.has(id) || receipted.has(id)).toBe(true)
+    }
     expect(new Set(rolloverLines[0].sourceEventIds ?? []).size).toBe(rolloverLines[0].sourceEventIds?.length)
     expect(game.resolvedEventIds).toEqual(expect.arrayContaining(deferredJustBeforeRollover))
     // Icke-vakuum-grind: kön ska faktiskt ha innehållit något vid rollovern,

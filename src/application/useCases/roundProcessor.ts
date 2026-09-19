@@ -5,6 +5,8 @@ import type { Player } from '../../domain/entities/Player'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../domain/enums'
+import { resolveEvent } from '../../domain/services/events/eventResolver'
+import { getBurnoutEscalation, assistantTookOverBody } from '../../domain/services/burnoutReliefService'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -69,7 +71,32 @@ import { finalizeInboxDelivery } from '../../domain/services/inboxDeliveryServic
 
 export type { AdvanceResult }
 
-export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult {
+
+/**
+ * TILLÄGG 4: assistentens övertagande. Returnerar spelet oförändrat när inget
+ * kort väntat tillräckligt länge.
+ */
+function applyBurnoutAutoResolution(game: SaveGame): { game: SaveGame; assistantTookOver: string | null } {
+  const escalation = getBurnoutEscalation(game)
+  if (!escalation?.autoResolve) return { game, assistantTookOver: null }
+  // madeByPlayer: false — det är assistentens beslut, inte spelarens, och
+  // beslutsstatistiken ska inte tro något annat.
+  const resolved = resolveEvent(game, escalation.event.id, 'delegate', Math.random, false)
+  if (resolved === game) return { game, assistantTookOver: null }
+  return { game: resolved, assistantTookOver: escalation.event.id }
+}
+
+export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceResult {
+  // TILLÄGG 4 (2026-09-18) — assistenten tar beslutet efter fyra omgångars
+  // tystnad. Tystnad hade tidigare varken pris eller slut: kortet löpte ut
+  // gratis OCH blockerade alla följande burnout-kort, så hela systemet kunde
+  // stängas av genom att inte svara.
+  //
+  // Resolutionen görs FÖRST i rundan, inte i mitten: `pendingEvents` byggs om
+  // längre ner ur det INKOMMANDE spelet, så ett kort som resolveras på en
+  // senare kopia kommer tillbaka nästa omgång. (Hittat genom mätning —
+  // kortet låg kvar 27 omgångar och moralen drenerades hela säsongen.)
+  const { game, assistantTookOver } = applyBurnoutAutoResolution(inputGame)
   const preRound = derivePreRoundContext(game, seed)
   if (preRound.kind === 'earlyReturn') return preRound.result
   const {
@@ -220,6 +247,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const roundLedgerEntries = notificationResult.ledgerEntries
   newInboxItems.push(...notificationResult.inboxItems)
   newMoments.push(...notificationResult.moments)
+
+  if (assistantTookOver) {
+    newInboxItems.push({
+      id: `inbox_burnout_assistant_${assistantTookOver}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      fromRole: 'assistenttränare',
+      title: 'Assistenten tog pressen',
+      // Fables text (TILLÄGG 4), kopierad ordagrant.
+      body: assistantTookOverBody(game.journalist?.name ?? 'Journalisten'),
+      isRead: false,
+    } as InboxItem)
+  }
 
   newInboxItems.push(...processRoundMilestoneInbox(
     game,

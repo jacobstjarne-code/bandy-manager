@@ -17,7 +17,7 @@ import { checkEconomicCrisis } from '../../../domain/services/economicCrisisServ
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 import { getBurnoutZone, isBurnoutRelapse, shouldTriggerBurnoutCeilingChoice } from '../../../domain/services/managerProfileService'
-import { generateBurnoutReliefEvent } from '../../../domain/services/burnoutReliefService'
+import { generateBurnoutReliefEvent, countBurnoutDelegationsThisSeason } from '../../../domain/services/burnoutReliefService'
 import { generateBurnoutCeilingEvent } from '../../../domain/services/burnoutCeilingService'
 import { generateCommunityRenewalEvent } from '../../../domain/services/communityRenewalService'
 import { getInjurySeverity } from '../../../domain/data/injuryDoctorText'
@@ -483,6 +483,8 @@ export function processGameEvents(
       game.currentSeason,
       burnoutZone,
       !!managerProfile && isBurnoutRelapse(managerProfile, game.currentSeason, game.eventLedger),
+      // TILLÄGG 4: andra delegeringen samma säsong kostar dubbelt.
+      countBurnoutDelegationsThisSeason(game),
     ))
   }
 

@@ -32,6 +32,11 @@ import { recoveryGain, FITNESS_RECOVERY_CEILING } from '../../../domain/services
 import type { PeriodisationMode } from '../../../domain/services/periodisationService'
 import { clamp } from '../../../domain/utils/clamp'
 import { FATIGUE_AVAILABILITY_FLOOR } from '../../../domain/services/squadEvaluator'
+import {
+  getBurnoutEscalation,
+  BURNOUT_PRESSURE_INJURY_MULT,
+  BURNOUT_PRESSURE_MORALE_PER_ROUND,
+} from '../../../domain/services/burnoutReliefService'
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]
@@ -89,6 +94,8 @@ export function applyPlayerStateUpdates(
   const periodisationSince = game.managedClubPeriodisationSince ?? 0
   const currentMatchday = game.currentMatchday
   const localRand = mulberry32(baseSeed + 9999)
+  // TILLÄGG 4: ligger ett burnoutRelief obesvarat tillräckligt länge?
+  const burnoutPressure = getBurnoutEscalation(game)?.applyPressure === true
 
   // B9 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, Jacobs dom 2026-08-19): mittfältare kan inte välja bort
   // ett anfall som en ytterhalv kan (Liw), men fatigueRate idag är lagvis —
@@ -141,6 +148,15 @@ export function applyPlayerStateUpdates(
           updated.diary = [...(updated.diary ?? []), recoveryEntry].slice(-20)
         }
       }
+    }
+
+    // TILLÄGG 4 — moralen faller varje omgång kortet ligger obesvarat. Gäller
+    // HELA den hanterade truppen: det är managerns tystnad som märks, inte den
+    // enskildes kondition. (Jag prövade den smalare läsningen — bara de
+    // utmattade — men mätningen visade att den gjorde priset dekorativt:
+    // eskaleringens hela bidrag blev −0,31 moral. Specens ordalydelse står.)
+    if (burnoutPressure && player.clubId === game.managedClubId) {
+      updated.morale = clamp(updated.morale + BURNOUT_PRESSURE_MORALE_PER_ROUND, 0, 100)
     }
 
     // ── Suspension recovery (decrement every round for all suspended players) ──
@@ -414,7 +430,14 @@ export function applyPlayerStateUpdates(
     const isStarterManaged = player.clubId === game.managedClubId
     const byggInjuryMult = isStarterManaged && getEffectiveMode(player, teamMode) === 'bygg'
       ? BYGG_INJURY_MULT : 1.0
-    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult * byggInjuryMult
+    // TILLÄGG 4 (2026-09-18) — tystnadens pris. Ett obesvarat burnoutRelief
+    // höjer de UTMATTADES skaderisk efter två omgångar. Samma
+    // multiplikatormönster som BYGG_INJURY_MULT, och bara för spelare under
+    // golvet: trycket faller på dem som redan är slitna, inte på hela truppen.
+    const burnoutPressureMult = burnoutPressure && isStarterManaged
+      && player.fitness < FATIGUE_AVAILABILITY_FLOOR
+      ? BURNOUT_PRESSURE_INJURY_MULT : 1.0
+    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult * byggInjuryMult * burnoutPressureMult
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks

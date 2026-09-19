@@ -254,7 +254,18 @@ export function suppressTacticRecommendation(analysis: OpponentAnalysis | undefi
 const BURNOUT_DELEGATE_SCORE_DELTA = -12
 const BURNOUT_TRAIN_SCORE_DELTA = -15
 const BURNOUT_BOARD_SCORE_DELTA = -25 // "sjunker mest" (domen)
-const BURNOUT_DELEGATE_JOURNALIST_DELTA = -10
+/**
+ * TILLÄGG 4 (2026-09-18) — delegeringens pris är inte längre platt.
+ *
+ * ROT: −10 varje gång gjorde kortet dyrt att SVARA på och gratis att ignorera
+ * (ett obesvarat kort löpte ut utan utfall). Den enkla vägen hade varit att
+ * sänka till −4 och kalla det balanserat; det gör kortet billigare men inte
+ * meningsfullt. Nu: första delegeringen per säsong kostar −5, andra och
+ * följande kostar −10. Journalisten tröttnar på att aldrig få tränaren, och
+ * det är den avvägning kortet saknade.
+ */
+const BURNOUT_DELEGATE_JOURNALIST_FIRST = -5
+const BURNOUT_DELEGATE_JOURNALIST_REPEAT = -10
 const BURNOUT_BOARD_PATIENCE_DELTA = -10
 const BURNOUT_TRAINING_SLOWDOWN_ROUNDS = 4
 
@@ -312,7 +323,19 @@ export function pickBurnoutOpponentReadIndex(game: Pick<SaveGame, 'currentSeason
   return pickPoolIndexAvoidingCooldown(game as SaveGame, game.currentSeason, poolLength, `${BURNOUT_OPPONENT_READ_PREFIX}${zone}_`, game.currentMatchday, 1)
 }
 
-export function generateBurnoutReliefEvent(matchday: number, season: number, zone: 'markbar' | 'hog', relapse = false): GameEvent {
+export function generateBurnoutReliefEvent(
+  matchday: number,
+  season: number,
+  zone: 'markbar' | 'hog',
+  relapse = false,
+  /** TILLÄGG 4: antal delegeringar redan gjorda denna säsong. Priset sätts vid
+   *  GENERERINGEN, så kortet bär sin egen kostnad och resolutionen slipper
+   *  räkna om historiken. */
+  delegationsThisSeason = 0,
+): GameEvent {
+  const journalistDelta = delegationsThisSeason === 0
+    ? BURNOUT_DELEGATE_JOURNALIST_FIRST
+    : BURNOUT_DELEGATE_JOURNALIST_REPEAT
   return {
     id: `event_burnout_relief_${season}_${matchday}`,
     type: 'burnoutRelief',
@@ -336,7 +359,7 @@ export function generateBurnoutReliefEvent(matchday: number, season: number, zon
           type: 'multiEffect',
           subEffects: JSON.stringify([
             { type: 'reduceBurnout', amount: BURNOUT_DELEGATE_SCORE_DELTA },
-            { type: 'journalistRelationship', amount: BURNOUT_DELEGATE_JOURNALIST_DELTA },
+            { type: 'journalistRelationship', amount: journalistDelta },
           ]),
         },
       },
@@ -367,4 +390,73 @@ export function generateBurnoutReliefEvent(matchday: number, season: number, zon
     ],
     resolved: false,
   }
+}
+
+// ── TILLÄGG 4: eskalering av ett obesvarat kort ──────────────────────────────
+
+/**
+ * ROT (KÖRORDER §5.3-diagnosen): ett obesvarat `burnoutRelief` löpte ut helt
+ * gratis (`deferredRolloverService: 'expire'`) OCH det första obesvarade
+ * blockerade alla följande burnout-kort. Att tiga var därmed strikt bättre än
+ * varje val — systemet kunde stängas av genom att inte svara.
+ *
+ * Tystnad har nu ett pris och ett slut:
+ *   efter BURNOUT_PRESSURE_ROUNDS omgångar stiger de utmattades skaderisk och
+ *   moralen faller varje omgång, och efter BURNOUT_AUTO_ROUNDS tar assistenten
+ *   beslutet själv.
+ *
+ * Väntetiden härleds ur kortets id (`event_burnout_relief_{säsong}_{matchdag}`),
+ * som redan är deterministiskt satt vid genereringen — inget nytt fält behövs.
+ */
+export const BURNOUT_PRESSURE_ROUNDS = 2
+export const BURNOUT_AUTO_ROUNDS = 4
+/** Samma mönster som BYGG_INJURY_MULT: en multiplikator, inte ett påslag. */
+export const BURNOUT_PRESSURE_INJURY_MULT = 1.25
+export const BURNOUT_PRESSURE_MORALE_PER_ROUND = -2
+
+const BURNOUT_ID_PREFIX = 'event_burnout_relief_'
+
+/** Matchdagen kortet skapades, eller null om id:t inte är ett burnout-id. */
+export function burnoutReliefQueuedMatchday(eventId: string): number | null {
+  if (!eventId.startsWith(BURNOUT_ID_PREFIX)) return null
+  const parts = eventId.slice(BURNOUT_ID_PREFIX.length).split('_')
+  const matchday = Number(parts[1])
+  return Number.isFinite(matchday) ? matchday : null
+}
+
+export interface BurnoutEscalation {
+  event: GameEvent
+  roundsWaiting: number
+  /** Skaderisk och moral biter från och med BURNOUT_PRESSURE_ROUNDS. */
+  applyPressure: boolean
+  /** Assistenten tar beslutet vid BURNOUT_AUTO_ROUNDS. */
+  autoResolve: boolean
+}
+
+export function getBurnoutEscalation(game: SaveGame): BurnoutEscalation | null {
+  const pending = [...(game.pendingEvents ?? []), ...(game.deferredDecisions ?? [])]
+    .find(e => e.type === 'burnoutRelief' && !e.resolved)
+  if (!pending) return null
+  const queuedAt = burnoutReliefQueuedMatchday(pending.id)
+  if (queuedAt === null) return null
+  const roundsWaiting = Math.max(0, (game.currentMatchday ?? 0) - queuedAt)
+  return {
+    event: pending,
+    roundsWaiting,
+    applyPressure: roundsWaiting >= BURNOUT_PRESSURE_ROUNDS,
+    autoResolve: roundsWaiting >= BURNOUT_AUTO_ROUNDS,
+  }
+}
+
+/** Antal delegeringar den här säsongen, ur spelarens egna kvitton. */
+export function countBurnoutDelegationsThisSeason(game: SaveGame): number {
+  const prefix = `${BURNOUT_ID_PREFIX}${game.currentSeason}_`
+  return (game.resolvedChoices ?? [])
+    .filter(c => c.choiceId === 'delegate' && c.eventId.startsWith(prefix))
+    .length
+}
+
+/** Fables text (TILLÄGG 4), kopierad ordagrant. */
+export function assistantTookOverBody(journalistName: string): string {
+  return `Du svarade inte, så jag tog pressen själv den här veckan. ${journalistName} märkte det. Nästa gång får du säga till innan.`
 }
