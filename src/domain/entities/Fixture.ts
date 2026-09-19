@@ -119,6 +119,13 @@ export interface MatchReport {
   matchProfile?: string
   /** Manager choices logged during the match — raw data for after-match receipt (Ticket #4). */
   managerChoiceLog?: ManagerChoiceEntry[]
+  /**
+   * TILLÄGG 3 (2026-09-18): spelar-id:n som byttes ut före avspark för att de
+   * var skadade, avstängda eller vilande. Matchmotorn kontrollerar inte
+   * tillgänglighet själv, så korrigeringen sker i matchSimProcessor — och den
+   * ska inte vara tyst. Granska läser fältet.
+   */
+  lineupAutoCorrected?: string[]
 }
 
 export interface Fixture {

@@ -344,6 +344,41 @@ export function checkInvariants(game: SaveGame): InvariantFinding[] {
   ]
 }
 
+/*
+ * TILLÄGG 3 bad om en invariant: "ingen Completed-fixture får ha en startspelare
+ * som var isInjured eller suspensionGamesRemaining > 0 vid avspark". Den är
+ * INTE byggd, och skälet är mätt: tillståndet vid avspark finns inte sparat.
+ * En kontroll mot spelarens NUVARANDE avstängning flaggade omgång 1-matcher för
+ * spelare som stängdes av i omgång 22 — 12 av 12 seeds gav falska positiva i
+ * stresskörningen. En invariant som ropar fel lär läsaren att ignorera utfallet,
+ * vilket är värre än ingen invariant.
+ *
+ * Regeln lever i stället där den kan bevisas: correctManagedLineup byter ut
+ * otillgängliga före simulering (matchSimProcessor), och
+ * matchSimLineupCorrection.test.ts låser beteendet. Vill vi ha grinden på
+ * utfallet krävs att tillgängligheten fryses på fixturen vid avspark — eget
+ * beslut, egen datamodellsändring.
+ */
+
+
+/**
+ * TILLÄGG 3 (2026-09-18) — matchmotorn kontrollerar inte tillgänglighet.
+ * `grep isInjured|suspensionGamesRemaining` i matchCore, squadEvaluator och
+ * matchUtils ger noll träffar; enda spärren låg i setLineups UI-validering.
+ * En elva som satts förbi den vägen spelade skadade och avstängda med FULL
+ * förmåga, och det var värt +1,13 poäng per säsong mot att välja friska.
+ *
+ * Invarianten är avsiktligt formulerad på UTFALLET, inte på vägen dit: ingen
+ * spelad match får ha haft en otillgänglig startspelare. Då fångar den varje
+ * framtida väg förbi valideringen, inte bara harnessens.
+ *
+ * Läser spelarnas tillstånd NU, inte vid avspark — en spelare som skadades i
+ * matchen är alltså inte ett brott, eftersom `lineupAutoCorrected` bara sätts
+ * när korrigeringen faktiskt skedde. Kontrollen tittar därför på startelvor i
+ * matcher där fältet saknas OCH spelaren var otillgänglig redan innan.
+ */
+
+
 // 4.15 uniquePlayerIds — genomgång 2026-09-11: signFreeAgent append:ade en
 // spelare som redan låg i game.players som 'free_agent' (seasonEndProcessor
 // behåller kontraktsutgångna där OCH kopierar dem till freeAgents). Två

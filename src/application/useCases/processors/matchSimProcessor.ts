@@ -102,6 +102,60 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
   }
 }
 
+
+/**
+ * TILLÄGG 3 (2026-09-18) — matchmotorn kontrollerar INTE skada eller
+ * avstängning. `grep isInjured|suspensionGamesRemaining` i matchCore,
+ * squadEvaluator och matchUtils ger noll träffar; enda spärren är setLineups
+ * validering i application-lagret. En `managedClubPendingLineup` som satts
+ * förbi den vägen (harnessens fallback läser den rakt av) spelade alltså
+ * skadade och avstängda spelare med FULL förmåga.
+ *
+ * Utslaget var mätbart: fast elva med skadade intvingade gav +1,13 poäng mot
+ * att välja bästa friska elvan varje omgång. AI-lagen filtrerades korrekt hela
+ * tiden (generateAiLineup ovan), så asymmetrin låg bara på spelarsidan.
+ *
+ * Här får den hanterade elvan samma regel som AI:n: otillgängliga spelare byts
+ * mot bästa tillgängliga innan simuleringen. Flaggan följer med fixturen så
+ * Granska kan säga att det skedde — en tyst korrigering vore en andra sorts
+ * lögn.
+ */
+export function correctManagedLineup(
+  lineup: TeamSelection,
+  club: Club,
+  allPlayers: Player[],
+): { lineup: TeamSelection; corrected: string[] } {
+  const byId = new Map(allPlayers.map(p => [p.id, p]))
+  const isAvailable = (p: Player | undefined): p is Player =>
+    !!p && !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0
+
+  const unavailable = lineup.startingPlayerIds.filter(id => !isAvailable(byId.get(id)))
+  if (unavailable.length === 0) return { lineup, corrected: [] }
+
+  const startersSet = new Set(lineup.startingPlayerIds)
+  const bench = (lineup.benchPlayerIds ?? []).map(id => byId.get(id)).filter(isAvailable)
+  const squadPool = allPlayers.filter(p =>
+    club.squadPlayerIds.includes(p.id) && !startersSet.has(p.id) && isAvailable(p))
+  // Bänken först (spelarens egen prioritering), sedan resten av truppen.
+  const replacements = [...bench, ...squadPool.filter(p => !bench.some(b => b.id === p.id))]
+  const ranked = pickBestEleven(replacements).starters
+
+  const corrected: string[] = []
+  let next = 0
+  const startingPlayerIds = lineup.startingPlayerIds.map(id => {
+    if (isAvailable(byId.get(id))) return id
+    const sub = ranked[next++] ?? replacements[next - 1]
+    if (!sub) return id   // inget att byta till — elvan får vara kort, som förut
+    corrected.push(id)
+    return sub.id
+  })
+
+  return {
+    lineup: { ...lineup, startingPlayerIds },
+    corrected,
+  }
+}
+
 export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number = Math.random): { selection: TeamSelection; regenPlayers: Player[] } {
   const formation = AI_FORMATIONS[club.preferredStyle] ?? '532_tvatoppar'
   const available = allPlayers.filter(
@@ -289,8 +343,11 @@ export function simulateRound(
     let homeRegenPlayers: Player[] = []
     let awayRegenPlayers: Player[] = []
 
+    let lineupAutoCorrected: string[] = []
     if (fixture.homeClubId === game.managedClubId && game.managedClubPendingLineup !== undefined) {
-      homeLineup = game.managedClubPendingLineup
+      const fixed = correctManagedLineup(game.managedClubPendingLineup, homeClub, game.players)
+      homeLineup = fixed.lineup
+      lineupAutoCorrected = fixed.corrected
     } else {
       const { selection, regenPlayers } = generateAiLineup(homeClub, game.players, localRand)
       homeLineup = selection
@@ -298,7 +355,9 @@ export function simulateRound(
     }
 
     if (fixture.awayClubId === game.managedClubId && game.managedClubPendingLineup !== undefined) {
-      awayLineup = game.managedClubPendingLineup
+      const fixed = correctManagedLineup(game.managedClubPendingLineup, awayClub, game.players)
+      awayLineup = fixed.lineup
+      lineupAutoCorrected = fixed.corrected
     } else {
       const { selection, regenPlayers } = generateAiLineup(awayClub, game.players, localRand)
       awayLineup = selection
@@ -478,7 +537,15 @@ export function simulateRound(
     // economyService.ts:s buildAttendanceParams-kommentar.
     const attendanceParams = buildAttendanceParams(game, fixture)
     const attendance = attendanceParams ? calcAttendance(attendanceParams) : undefined
-    simulatedFixtures.push({ ...result.fixture, attendance, refereeId: referee.id })
+    simulatedFixtures.push({
+      ...result.fixture,
+      attendance,
+      refereeId: referee.id,
+      // TILLÄGG 3: korrigeringen får inte vara tyst — Granska läser fältet.
+      ...(lineupAutoCorrected.length > 0
+        ? { report: { ...result.fixture.report!, lineupAutoCorrected } }
+        : {}),
+    })
   }
 
   // Generate press conference for the managed club's completed fixture (snabbsim path)
