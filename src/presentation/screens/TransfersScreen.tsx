@@ -28,6 +28,7 @@ import { TabIntro } from '../components/shared/TabIntro'
 import { TAB_INTROS } from '../../domain/data/tabIntros'
 import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
 import { FEATURE_INTRODUCTIONS } from '../../domain/data/featureIntroductions'
+import { trackFeatureOpened } from '../../infrastructure/attention/analyticsLifecycle'
 
 /**
  * Å4 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-18): sorterar inkommande bud efter svarsfrist
@@ -69,6 +70,11 @@ export function TransfersScreen({ initialTab = 'marknad' }: { initialTab?: 'mark
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
   const location = useLocation()
+
+  useEffect(() => {
+    if (!game || game.onboardingComplete !== true) return
+    trackFeatureOpened(game.id, activeTab === 'scouting' ? 'scouting' : 'transfers')
+  }, [game?.id, game?.onboardingComplete, activeTab])
 
   useEffect(() => { setBidError(null) }, [biddingPlayerId])
   useEffect(() => { setFreeAgentError(null) }, [contractingFreeAgentId])

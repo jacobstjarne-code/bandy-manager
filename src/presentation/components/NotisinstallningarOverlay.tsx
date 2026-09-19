@@ -21,10 +21,9 @@ import { seasonSpanLabel } from '../../domain/utils/seasonYear'
  *
  * stickiness-avregistrering-yta (Jacob 2026-09-07, "hoppa mocken, ge Code
  * raden direkt"): "Tysta"-knappen längst ner, text låst i
- * STICKINESS_COPY_REGISTER_2026-09-04.md §7 "Avregistrering". Irreversibel
- * (raderar allt server-side, se attentionClient.ts/store.js "local-first-
- * domen") — bekräftas i två steg innan `unsubscribeFromClubNotifications()`
- * anropas, samma försiktighet som andra hård-att-ångra åtgärder i appen.
+ * STICKINESS_COPY_REGISTER_2026-09-04.md §7 "Avregistrering". Sedan beta-auditen
+ * 2026-09-19 raderas notisdata separat; tillträde och statistikval behålls.
+ * Bekräftas i två steg före `unsubscribeFromClubNotifications()`.
  */
 
 interface NotisinstallningarOverlayProps {
@@ -91,9 +90,9 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
       await unsubscribeFromClubNotifications()
     } catch {
       // unsubscribeFromClubNotifications() städar redan lokalt state i sin
-      // egen finally-gren (subscription/identity) oavsett nätverksutfall —
+      // egen finally-gren (push, inte betaidentiteten) oavsett nätverksutfall —
       // en misslyckad server-radering ska inte hindra spelaren från att
-      // stänga ytan. Serverns kvarvarande installation raderas av samma
+      // stänga ytan. Serverns kvarvarande notisdata raderas av samma
       // anrop nästa gång det lyckas (idempotent DELETE).
     } finally {
       setIsMuting(false)
@@ -294,7 +293,7 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
               Vi skickar högst en om dagen, högst tre i veckan, aldrig mellan halv tio på kvällen och åtta på morgonen.
             </p>
             <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 9px' }}>
-              Stänger du av raderas allt vi sparat om installationen. Har vi inte hört från din enhet på tre månader raderas det ändå.
+              Stänger du av raderas dina notisuppgifter. Betatillträde och ditt separata val för användningsstatistik påverkas inte. Efter tre månaders inaktivitet raderas installationen hos oss.
             </p>
             <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', margin: 0 }}>
               Vi säljer inget och delar inget.
@@ -323,7 +322,7 @@ export function NotisinstallningarOverlay({ game, onClose }: NotisinstallningarO
                 color: 'var(--text-primary)', margin: '0 0 6px',
               }}>Klubben tystnar.</p>
               <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 12px' }}>
-                Inga fler notiser. Allt om den här installationen raderas hos oss.
+                Inga fler notiser. Dina notisuppgifter raderas hos oss. Betatillträdet och ditt val för användningsstatistik behålls.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button

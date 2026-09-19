@@ -10,6 +10,7 @@ const SENT_KEY = 'bandy-analytics-sent-v1'
 const BASELINE_KEY = 'bandy-analytics-baseline-v1'
 const inFlight = new Map<string, Promise<void>>()
 let activeSession: { ended: boolean; end: () => void } | null = null
+export type BetaFeature = 'training' | 'tactics' | 'scouting' | 'transfers' | 'community'
 
 function readSent(): Set<string> {
   try {
@@ -58,6 +59,10 @@ function platformLabel(): string {
   return 'desktop'
 }
 
+export function endAnalyticsSession(): void {
+  activeSession?.end()
+}
+
 export function startAnalyticsSession(): () => void {
   if (activeSession && !activeSession.ended) return activeSession.end
   sendOnce('installation', 'install', {
@@ -91,6 +96,17 @@ function gameOverReason(game: SaveGame): 'dismissed' | 'license' | 'bankruptcy' 
   return 'dismissed'
 }
 
+function firstSeasonLeagueProgress(game: SaveGame): { completed: number; halfwayAt: number } {
+  const leagueFixtures = game.fixtures.filter(fixture =>
+    fixture.season === game.currentSeason && !fixture.isCup && !fixture.isKnockout &&
+    (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+  )
+  return {
+    completed: leagueFixtures.filter(fixture => fixture.status === 'completed').length,
+    halfwayAt: Math.ceil(leagueFixtures.length / 2),
+  }
+}
+
 /**
  * Första releasen får inte tidsstämpla gamla karriärmilstolpar som om de
  * hände i dag. Efter avslutad Zustand-hydrering baslinas därför det state
@@ -106,6 +122,13 @@ export function initializeAnalyticsBaseline(game: SaveGame | null): void {
         fixture.status === 'completed' &&
         (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
       )) remember(`first_match:${game.id}`)
+      if ((game.seasonSummaries?.length ?? 0) === 0) {
+        const progress = firstSeasonLeagueProgress(game)
+        if (progress.completed >= 5) remember(`five_league_matches:${game.id}`)
+        if (progress.halfwayAt > 0 && progress.completed >= progress.halfwayAt) {
+          remember(`half_league_matches:${game.id}`)
+        }
+      }
       for (const summary of game.seasonSummaries ?? []) {
         remember(`season_completed:${game.id}:${summary.season}`)
       }
@@ -136,9 +159,21 @@ export function syncGameAnalytics(game: SaveGame): void {
   )) {
     sendOnce(`first_match:${game.id}`, 'first_match')
   }
-  for (const summary of game.seasonSummaries ?? []) {
+  if ((game.seasonSummaries?.length ?? 0) === 0) {
+    const progress = firstSeasonLeagueProgress(game)
+    if (progress.completed >= 5) sendOnce(`five_league_matches:${game.id}`, 'season_checkpoint', {
+      season: game.currentSeason, careerSeason: 1, milestone: 'five_league_matches',
+    })
+    if (progress.halfwayAt > 0 && progress.completed >= progress.halfwayAt) {
+      sendOnce(`half_league_matches:${game.id}`, 'season_checkpoint', {
+        season: game.currentSeason, careerSeason: 1, milestone: 'half_league_matches',
+      })
+    }
+  }
+  for (const [index, summary] of (game.seasonSummaries ?? []).entries()) {
     sendOnce(`season_completed:${game.id}:${summary.season}`, 'season_completed', {
       season: summary.season,
+      careerSeason: index + 1,
       placement: summary.finalPosition,
     })
   }
@@ -148,4 +183,20 @@ export function syncGameAnalytics(game: SaveGame): void {
       seasonsSurvived: game.seasonSummaries?.length ?? 0,
     })
   }
+}
+
+/** First opening of a feature, not a claim that its controls were used. */
+export function trackFeatureOpened(gameId: string, feature: BetaFeature): void {
+  sendOnce(`feature_opened:${gameId}:${feature}`, 'feature_opened', { feature })
+}
+
+export function recordClientIssue(kind: 'render_error' | 'save_failure'): void {
+  if (typeof window === 'undefined' || !isAnalyticsEnabled()) return
+  const route = window.location.pathname
+  if (!/^\/[a-z0-9/-]{0,80}$/.test(route)) return
+  sendOnce(`client_issue:${kind}:${new Date().toISOString().slice(0, 10)}:${route}`, 'client_issue', {
+    kind,
+    appVersion: typeof __GIT_HASH__ === 'string' ? __GIT_HASH__ : 'unknown',
+    route,
+  })
 }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createNewGame } from '../../../application/useCases/createNewGame'
-import { initializeAnalyticsBaseline, syncGameAnalytics } from '../analyticsLifecycle'
+import { initializeAnalyticsBaseline, syncGameAnalytics, trackFeatureOpened } from '../analyticsLifecycle'
+import { FixtureStatus } from '../../../domain/enums'
 
 function createLocalStorageMock() {
   let store: Record<string, string> = {}
@@ -95,7 +96,29 @@ describe('analyticsLifecycle', () => {
     syncGameAnalytics(game)
     await vi.waitFor(() => expect(analyticsBodies(vi.mocked(fetch))).toHaveLength(1))
     expect(analyticsBodies(vi.mocked(fetch))[0]).toMatchObject({
-      event: 'season_completed', payload: { season: 2, placement: 4 },
+      event: 'season_completed', payload: { season: 2, careerSeason: 2, placement: 4 },
     })
+  })
+
+  it('reports first-season checkpoints from completed league matches and not from cup fixtures', async () => {
+    const game = createNewGame({ managerName: 'Test', clubId: 'club_slottsbron', seed: 46 })
+    const leagueFixtures = game.fixtures.filter(fixture =>
+      fixture.season === game.currentSeason && !fixture.isCup && !fixture.isKnockout &&
+      (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+    )
+    expect(leagueFixtures.length).toBeGreaterThanOrEqual(11)
+    for (const fixture of leagueFixtures.slice(0, 11)) fixture.status = FixtureStatus.Completed
+    syncGameAnalytics(game)
+    syncGameAnalytics(game)
+    await vi.waitFor(() => expect(analyticsBodies(vi.mocked(fetch))).toHaveLength(4))
+    expect(analyticsBodies(vi.mocked(fetch)).filter(body => body.event === 'season_checkpoint')
+      .map(body => body.payload.milestone).sort()).toEqual(['five_league_matches', 'half_league_matches'])
+  })
+
+  it('counts the first observed feature opening once, not every visit', async () => {
+    trackFeatureOpened('career-123', 'scouting')
+    trackFeatureOpened('career-123', 'scouting')
+    await vi.waitFor(() => expect(analyticsBodies(vi.mocked(fetch))).toHaveLength(1))
+    expect(analyticsBodies(vi.mocked(fetch))[0]).toMatchObject({ event: 'feature_opened', payload: { feature: 'scouting' } })
   })
 })

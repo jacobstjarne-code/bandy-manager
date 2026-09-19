@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { RECOVER_PENDING_FLAG } from '../store/gameStore'
+import { recordClientIssue } from '../../infrastructure/attention/analyticsLifecycle'
 
 declare const __GIT_HASH__: string
 
@@ -14,6 +15,12 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, message: '' }
+
+  componentDidCatch(): void {
+    // Only a fixed category, route and build hash leave the device; never the
+    // exception text, stack or save data.
+    recordClientIssue('render_error')
+  }
 
   static getDerivedStateFromError(error: unknown): State {
     const message = error instanceof Error ? error.message : 'Okänt fel'

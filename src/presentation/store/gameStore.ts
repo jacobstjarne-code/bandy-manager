@@ -27,6 +27,7 @@ import {
 import { migrateSaveGame } from '../../infrastructure/persistence/saveGameMigration'
 import { isDeliverableInboxItem } from '../../domain/services/inboxPresentationService'
 import { subscribeToSaveWrites } from '../../infrastructure/persistence/saveConflictChannel'
+import { recordClientIssue } from '../../infrastructure/attention/analyticsLifecycle'
 import { applyFinanceChange, appendFinanceLog } from '../../domain/services/economyService'
 import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { canStartBuild, startFacilityBuild, canDecommission, decommissionFacilityNode, getFinancingOptions, DECOMMISSION_COMMUNITY_STANDING_COST, FACILITY_NODE_DEFS, type FinancingContext } from '../../domain/services/facilityService'
@@ -380,6 +381,7 @@ function persistGameSnapshot(
       set({ saveConflict: true })
     } else {
       set({ lastSaveError: result.error ?? 'Kunde inte spara spelet' })
+      recordClientIssue('save_failure')
     }
     return result
   })

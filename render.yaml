@@ -44,6 +44,8 @@ services:
         value: "false"
       - key: ATTENTION_CRON_SECRET
         sync: false
+      - key: BETA_ADMIN_SECRET
+        sync: false
       - key: VAPID_SUBJECT
         sync: false
       - key: VAPID_PUBLIC_KEY

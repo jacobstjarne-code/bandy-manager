@@ -92,6 +92,7 @@ export class InMemoryAttentionStore {
   #deliveries = new Map()
   #events = []
   #analyticsEvents = []
+  #betaInvites = new Map()
 
   authenticateInstallation(installationId, token) {
     const installation = this.#installations.get(installationId)
@@ -145,18 +146,39 @@ export class InMemoryAttentionStore {
     return installation?.preferences ?? DEFAULT_PREFERENCES
   }
 
+  disablePush(installationId, token) {
+    const installation = this.#installations.get(installationId)
+    if (!installation || !secretsMatch(token, installation.tokenHash)) return false
+    installation.subscription = null
+    installation.snapshot = null
+    installation.activeCandidates.clear()
+    installation.sentDedupeKeys.clear()
+    installation.deliveryTimes = []
+    installation.preferences = { ...DEFAULT_PREFERENCES, analytics: installation.preferences?.analytics ?? DEFAULT_PREFERENCES.analytics }
+    installation.updatedAt = new Date().toISOString()
+    this.#deletePushHistory(installationId)
+    return true
+  }
+
   removeSubscription(installationId, token) {
     const installation = this.#installations.get(installationId)
     if (!installation || !secretsMatch(token, installation.tokenHash)) return false
-    // Local-first-domen: avregistrering är också radering. När en spelare
-    // stänger av push ska snapshot, kandidater, leveranser och installation
-    // inte ligga kvar i den framtida persistenta adaptern.
+    // Legacy clients were promised full deletion on this endpoint. New clients
+    // use disablePush so muting notifications does not revoke beta access.
     this.#deleteInstallation(installationId)
     return true
   }
 
   #deleteInstallation(installationId) {
     this.#installations.delete(installationId)
+    for (const invite of this.#betaInvites.values()) {
+      if (invite.redeemedInstallationId === installationId) invite.redeemedInstallationId = null
+    }
+    this.#deletePushHistory(installationId)
+    this.#analyticsEvents = this.#analyticsEvents.filter(event => event.installationId !== installationId)
+  }
+
+  #deletePushHistory(installationId) {
     const removedDeliveryIds = new Set()
     for (const [deliveryId, delivery] of this.#deliveries) {
       if (delivery.installationId === installationId) {
@@ -167,9 +189,6 @@ export class InMemoryAttentionStore {
     this.#events = this.#events.filter(event =>
       event.installationId !== installationId &&
       (!event.deliveryId || !removedDeliveryIds.has(event.deliveryId)),
-    )
-    this.#analyticsEvents = this.#analyticsEvents.filter(event =>
-      event.installationId !== installationId
     )
   }
 
@@ -322,6 +341,51 @@ export class InMemoryAttentionStore {
 
   listAnalyticsEvents(installationId) {
     return this.#analyticsEvents.filter(event => event.installationId === installationId)
+  }
+
+  listAllAnalyticsEvents(since) {
+    const sinceMs = since.getTime()
+    return this.#analyticsEvents.filter(event => Date.parse(event.recordedAt) >= sinceMs)
+  }
+
+  createBetaInvite({ id, codeHash, expiresAt }) {
+    this.#betaInvites.set(id, {
+      id, codeHash, expiresAt: new Date(expiresAt).toISOString(),
+      createdAt: new Date().toISOString(), revokedAt: null,
+      redeemedAt: null, redeemedInstallationId: null,
+    })
+  }
+
+  redeemBetaInvite(codeHash, installationId) {
+    const invite = [...this.#betaInvites.values()].find(item => item.codeHash === codeHash)
+    if (!invite || invite.revokedAt || Date.parse(invite.expiresAt) <= Date.now() ||
+      (invite.redeemedAt && invite.redeemedInstallationId !== installationId)) return false
+    invite.redeemedInstallationId = installationId
+    invite.redeemedAt ??= new Date().toISOString()
+    return true
+  }
+
+  hasBetaAccess(installationId) {
+    return [...this.#betaInvites.values()].some(item =>
+      item.redeemedInstallationId === installationId && !item.revokedAt)
+  }
+
+  listBetaInvites() {
+    return [...this.#betaInvites.values()].map(({ id, createdAt, expiresAt, revokedAt, redeemedAt }) =>
+      ({ id, createdAt, expiresAt, revokedAt, redeemedAt }))
+  }
+
+  listBetaRedeemedInstallations() {
+    return [...new Set([...this.#betaInvites.values()]
+      .filter(item => item.redeemedInstallationId && !item.revokedAt)
+      .map(item => item.redeemedInstallationId))]
+  }
+
+  revokeBetaInvite(id) {
+    const invite = this.#betaInvites.get(id)
+    if (!invite || invite.revokedAt) return false
+    invite.revokedAt = new Date().toISOString()
+    return true
   }
 
   pruneAnalyticsEvents(before) {

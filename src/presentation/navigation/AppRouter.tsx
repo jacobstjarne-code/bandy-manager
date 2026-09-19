@@ -6,10 +6,12 @@ import { SaveRecoveryBanner } from '../components/SaveRecoveryBanner'
 import { RuleVersionNotice } from '../components/RuleVersionNotice'
 import { AttentionBridge } from '../components/AttentionBridge'
 import { AnalyticsBridge } from '../components/AnalyticsBridge'
+import { BetaInviteGate } from '../components/BetaInviteGate'
 
 const DevScenesScreen = import.meta.env.DEV
   ? lazy(() => import('../screens/dev/DevScenesScreen').then(m => ({ default: m.DevScenesScreen })))
   : null
+const BetaStatsScreen = lazy(() => import('../screens/BetaStatsScreen').then(m => ({ default: m.BetaStatsScreen })))
 import { setGlobalNavigate } from './globalNavigate'
 
 function NavigateSetter() {
@@ -149,10 +151,12 @@ function DashboardOrPortal() {
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <BetaInviteGate>
       <NavigateSetter />
       <AttentionBridge />
       <AnalyticsBridge />
       <Routes>
+        <Route path="/admin/beta" element={<Suspense fallback={<EmptyFallback />}><BetaStatsScreen /></Suspense>} />
         <Route path="/" element={<IntroSequence />} />
         <Route path="/saves" element={<SaveManagerScreen />} />
         <Route path="/new-game" element={<NameInputScreen />} />
@@ -217,6 +221,7 @@ export function AppRouter() {
           helst (GameShell/GameGuard täcker bara /game/*, inte t.ex. /saves
           eller /intro). Läser saveConflict direkt ur gameStore. */}
       <SaveConflictModal />
+      </BetaInviteGate>
     </BrowserRouter>
   )
 }

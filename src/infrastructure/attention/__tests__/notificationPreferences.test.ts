@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getNotificationPreferences,
   setNotificationPreferences,
+  unsubscribeFromClubNotifications,
 } from '../attentionClient'
 import { DEFAULT_NOTIFICATION_PREFERENCES } from '../../../domain/attention/types'
 
@@ -46,6 +47,18 @@ describe('getNotificationPreferences / setNotificationPreferences', () => {
 
   it('returns the mock-locked defaults when nothing is stored yet', () => {
     expect(getNotificationPreferences()).toEqual(DEFAULT_NOTIFICATION_PREFERENCES)
+  })
+
+  it('muting push preserves beta identity and the separate statistics preference', async () => {
+    const identity = { installationId: 'installation-beta', token: 'token-beta' }
+    localStorage.setItem('bandy-attention-installation-v1', JSON.stringify(identity))
+    localStorage.setItem('bandy-attention-preferences-v1', JSON.stringify({ ...DEFAULT_NOTIFICATION_PREFERENCES, analytics: false }))
+    vi.stubGlobal('sessionStorage', createLocalStorageMock())
+    vi.stubGlobal('navigator', {})
+    await unsubscribeFromClubNotifications()
+    expect(JSON.parse(localStorage.getItem('bandy-attention-installation-v1')!)).toEqual(identity)
+    expect(getNotificationPreferences().analytics).toBe(false)
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/api/notifications/push/installation-beta'), expect.objectContaining({ method: 'DELETE' }))
   })
 
   it('setNotificationPreferences writes to localStorage immediately, readable via getNotificationPreferences', async () => {

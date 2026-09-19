@@ -50,6 +50,25 @@ describe('PostgresAttentionStore', () => {
     await store.initialize()
   })
 
+  it('låter en inbjudan användas en gång och återkallas utan att lagra koden i klartext', async () => {
+    await store.ensureInstallation('installation-one', 'token-one')
+    await store.ensureInstallation('installation-two', 'token-two')
+    const codeHash = createHash('sha256').update('secret-invite-code').digest('hex')
+    await store.createBetaInvite({
+      id: 'invite-12345', codeHash,
+      expiresAt: new Date(Date.now() + 86_400_000),
+    })
+    expect(await store.redeemBetaInvite(codeHash, 'installation-one')).toBe(true)
+    expect(await store.redeemBetaInvite(codeHash, 'installation-two')).toBe(false)
+    expect(await store.hasBetaAccess('installation-one')).toBe(true)
+    expect(await store.listBetaRedeemedInstallations()).toEqual(['installation-one'])
+    expect(await store.listBetaInvites()).toMatchObject([{ id: 'invite-12345' }])
+    expect(JSON.stringify(await store.listBetaInvites())).not.toContain('secret-invite-code')
+    expect(await store.revokeBetaInvite('invite-12345')).toBe(true)
+    expect(await store.hasBetaAccess('installation-one')).toBe(false)
+    expect(await store.listBetaRedeemedInstallations()).toEqual([])
+  })
+
   it('behåller subscription, snapshot och kandidat över en ny store-instans', async () => {
     await store.setSubscription(INSTALLATION_ID, TOKEN, {
       endpoint: 'https://push.test', keys: { p256dh: 'key', auth: 'auth' },

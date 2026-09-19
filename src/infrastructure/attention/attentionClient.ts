@@ -26,6 +26,9 @@ export type AnalyticsEvent =
   | 'game_over'
   | 'session_start'
   | 'session_end'
+  | 'season_checkpoint'
+  | 'feature_opened'
+  | 'client_issue'
 
 /**
  * stickiness-copy-roster (2026-09-06) — per-installation "senast visad röst
@@ -244,7 +247,7 @@ export async function unsubscribeFromClubNotifications(): Promise<void> {
   try {
     if (identity) {
       await recordNotificationEvent('subscription_removed').catch(() => {})
-      await api(`/api/notifications/subscriptions/${identity.installationId}`, {
+      await api(`/api/notifications/push/${identity.installationId}`, {
         method: 'DELETE',
         headers: authHeaders(identity),
       })
@@ -252,7 +255,7 @@ export async function unsubscribeFromClubNotifications(): Promise<void> {
   } finally {
     await subscription?.unsubscribe()
     localStorage.removeItem(ENABLED_KEY)
-    localStorage.removeItem(IDENTITY_KEY)
+    // Beta access and gameplay analytics keep their identity when push is muted.
     sessionStorage.removeItem(ATTRIBUTION_KEY)
   }
 }
@@ -397,6 +400,25 @@ export async function recordAnalyticsEvent(
     keepalive: true,
   })
   return true
+}
+
+/** Beta access is operational access control, not part of opt-out analytics. */
+export async function checkBetaAccess(): Promise<boolean> {
+  const identity = getOrCreateIdentity()
+  await ensureAttentionInstallation(identity)
+  const response = await api(`/api/beta/access/${identity.installationId}`, {
+    headers: authHeaders(identity), cache: 'no-store',
+  })
+  return (await response.json() as { granted: boolean }).granted === true
+}
+
+export async function redeemBetaInvite(code: string): Promise<void> {
+  const identity = getOrCreateIdentity()
+  await ensureAttentionInstallation(identity)
+  await api('/api/beta/invites/redeem', {
+    method: 'POST', headers: authHeaders(identity),
+    body: JSON.stringify({ installationId: identity.installationId, code: code.trim() }),
+  })
 }
 
 /**

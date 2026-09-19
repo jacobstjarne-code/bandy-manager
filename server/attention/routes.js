@@ -1,7 +1,8 @@
 import { Router } from 'express'
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
 import { InMemoryAttentionStore } from './store.js'
 import { createAttentionDispatcher } from './dispatcher.js'
+import { summarizeBetaAnalytics } from '../beta/analyticsSummary.js'
 
 const ALLOWED_CATEGORIES = new Set([
   'match_preparation', 'calendar_anchor', 'season_context', 'narrative_return',
@@ -21,6 +22,7 @@ const ALLOWED_MEANINGFUL_ACTIONS = new Set([
 const ALLOWED_ANALYTICS_EVENTS = new Set([
   'install', 'game_created', 'onboarding_done', 'first_match',
   'season_completed', 'game_over', 'session_start', 'session_end',
+  'season_checkpoint', 'feature_opened', 'client_issue',
 ])
 const ANALYTICS_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
 const INSTALLATION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000
@@ -44,6 +46,19 @@ function secretMatches(provided, expected) {
   const a = Buffer.from(provided)
   const b = Buffer.from(expected)
   return a.length === b.length && timingSafeEqual(a, b)
+}
+
+function betaAdminAuthorized(req, env) {
+  return typeof env.BETA_ADMIN_SECRET === 'string' && env.BETA_ADMIN_SECRET.length >= 32 &&
+    secretMatches(req.headers.authorization, `Bearer ${env.BETA_ADMIN_SECRET}`)
+}
+
+function betaAdminConfigured(env) {
+  return typeof env.BETA_ADMIN_SECRET === 'string' && env.BETA_ADMIN_SECRET.length >= 32
+}
+
+function betaCodeHash(code) {
+  return createHash('sha256').update(code).digest('hex')
 }
 
 function asyncRoute(handler) {
@@ -112,21 +127,27 @@ export function validAnalyticsEvent(event, payload) {
     game_created: ['club', 'difficulty'],
     onboarding_done: [],
     first_match: [],
-    season_completed: ['season', 'placement'],
+    season_completed: ['season', 'careerSeason', 'placement'],
     game_over: ['reason', 'seasonsSurvived'],
     session_start: ['sessionId'],
     session_end: ['sessionId', 'durationSeconds'],
+    season_checkpoint: ['season', 'careerSeason', 'milestone'],
+    feature_opened: ['feature'],
+    client_issue: ['kind', 'appVersion', 'route'],
   }[event] ?? [])) return false
 
   const shortString = (value, max = 128) => typeof value === 'string' && value.length > 0 && value.length <= max
   const nonNegativeInt = value => Number.isInteger(value) && value >= 0 && value <= 1_000
+  const validCalendarSeason = value => Number.isInteger(value) && value >= 1 && value <= 3_000
+  const validCareerSeason = value => Number.isInteger(value) && value >= 1 && value <= 100
   switch (event) {
     case 'install':
       return shortString(payload.appVersion, 64) && shortString(payload.platform, 32) && shortString(payload.locale, 35)
     case 'game_created':
       return shortString(payload.club) && ['easy', 'medium', 'hard'].includes(payload.difficulty)
     case 'season_completed':
-      return nonNegativeInt(payload.season) && payload.season >= 1 &&
+      return validCalendarSeason(payload.season) &&
+        (payload.careerSeason === undefined || validCareerSeason(payload.careerSeason)) &&
         nonNegativeInt(payload.placement) && payload.placement >= 1
     case 'game_over':
       return ['dismissed', 'license', 'bankruptcy'].includes(payload.reason) &&
@@ -134,8 +155,16 @@ export function validAnalyticsEvent(event, payload) {
     case 'session_start':
       return validId(payload.sessionId)
     case 'session_end':
-      return validId(payload.sessionId) && nonNegativeInt(payload.durationSeconds) &&
+      return validId(payload.sessionId) && Number.isInteger(payload.durationSeconds) && payload.durationSeconds >= 0 &&
         payload.durationSeconds <= 24 * 60 * 60
+    case 'season_checkpoint':
+      return validCalendarSeason(payload.season) && payload.careerSeason === 1 &&
+        ['five_league_matches', 'half_league_matches'].includes(payload.milestone)
+    case 'feature_opened':
+      return ['training', 'tactics', 'scouting', 'transfers', 'community'].includes(payload.feature)
+    case 'client_issue':
+      return ['render_error', 'save_failure'].includes(payload.kind) && shortString(payload.appVersion, 64) &&
+        typeof payload.route === 'string' && /^\/[a-z0-9/-]{0,80}$/.test(payload.route)
     default:
       return Object.keys(payload).length === 0
   }
@@ -203,6 +232,13 @@ export function createAttentionRouter({
 
   router.delete('/notifications/subscriptions/:installationId', asyncRoute(async (req, res) => {
     const removed = await store.removeSubscription(req.params.installationId, tokenFrom(req))
+    return removed ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
+  }))
+
+  // Push has a separate lifecycle from beta access and opt-in gameplay analytics.
+  // Keep the legacy deletion endpoint above for older clients' privacy contract.
+  router.delete('/notifications/push/:installationId', asyncRoute(async (req, res) => {
+    const removed = await store.disablePush(req.params.installationId, tokenFrom(req))
     return removed ? res.status(204).end() : res.status(403).json({ error: 'forbidden' })
   }))
 
@@ -285,6 +321,76 @@ export function createAttentionRouter({
     // kunna använda svaret för att avläsa serverns preferenskopia.
     await store.recordAnalyticsEvent({ installationId, event, payload })
     return res.status(204).end()
+  }))
+
+  router.get('/admin/beta-stats', asyncRoute(async (req, res) => {
+    if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
+    if (!betaAdminAuthorized(req, env)) {
+      return res.status(401).json({ error: 'unauthorized' })
+    }
+    const rows = await store.listAllAnalyticsEvents(new Date(Date.now() - ANALYTICS_RETENTION_MS))
+    const invites = await store.listBetaInvites()
+    const invitedInstallations = new Set(await store.listBetaRedeemedInstallations())
+    const withEvent = event => new Set(rows.filter(row => row.event === event &&
+      invitedInstallations.has(row.installationId)).map(row => row.installationId)).size
+    res.set('Cache-Control', 'no-store')
+    return res.json({
+      ...summarizeBetaAnalytics(rows),
+      invites: {
+        issued: invites.length,
+        redeemed: invites.filter(invite => invite.redeemedAt && !invite.revokedAt).length,
+        revoked: invites.filter(invite => invite.revokedAt).length,
+        startedCareer: withEvent('game_created'),
+        playedFirstMatch: withEvent('first_match'),
+      },
+    })
+  }))
+
+  router.post('/admin/beta-invites', asyncRoute(async (req, res) => {
+    if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
+    if (!betaAdminAuthorized(req, env)) return res.status(401).json({ error: 'unauthorized' })
+    const code = randomBytes(24).toString('base64url')
+    const id = randomUUID()
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    await store.createBetaInvite({ id, codeHash: betaCodeHash(code), expiresAt })
+    res.set('Cache-Control', 'no-store')
+    return res.status(201).json({ id, code, expiresAt: expiresAt.toISOString() })
+  }))
+
+  router.get('/admin/beta-invites', asyncRoute(async (req, res) => {
+    if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
+    if (!betaAdminAuthorized(req, env)) return res.status(401).json({ error: 'unauthorized' })
+    res.set('Cache-Control', 'no-store')
+    return res.json({ invites: await store.listBetaInvites() })
+  }))
+
+  router.delete('/admin/beta-invites/:id', asyncRoute(async (req, res) => {
+    if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
+    if (!betaAdminAuthorized(req, env)) return res.status(401).json({ error: 'unauthorized' })
+    if (!validId(req.params.id)) return res.status(400).json({ error: 'invalid_invite' })
+    const revoked = await store.revokeBetaInvite(req.params.id)
+    return revoked ? res.status(204).end() : res.status(404).json({ error: 'not_found' })
+  }))
+
+  router.post('/beta/invites/redeem', asyncRoute(async (req, res) => {
+    const { installationId, code } = req.body ?? {}
+    if (!validId(installationId) || typeof code !== 'string' || !/^[A-Za-z0-9_-]{32}$/.test(code)) {
+      return res.status(400).json({ error: 'invalid_invite' })
+    }
+    if (!await store.authenticateInstallation(installationId, tokenFrom(req))) {
+      return res.status(403).json({ error: 'forbidden' })
+    }
+    const redeemed = await store.redeemBetaInvite(betaCodeHash(code), installationId)
+    return redeemed ? res.status(204).end() : res.status(404).json({ error: 'invalid_invite' })
+  }))
+
+  router.get('/beta/access/:installationId', asyncRoute(async (req, res) => {
+    if (!validId(req.params.installationId) ||
+      !await store.authenticateInstallation(req.params.installationId, tokenFrom(req))) {
+      return res.status(403).json({ error: 'forbidden' })
+    }
+    res.set('Cache-Control', 'no-store')
+    return res.json({ granted: await store.hasBetaAccess(req.params.installationId) })
   }))
 
   router.post('/attention/run', asyncRoute(async (req, res) => {

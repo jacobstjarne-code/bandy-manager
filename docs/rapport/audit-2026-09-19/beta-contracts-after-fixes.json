@@ -1,0 +1,222 @@
+{
+  "checks": [
+    {
+      "name": "unauthorized GET /admin/beta-stats",
+      "actual": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "name": "unauthorized GET /admin/beta-invites",
+      "actual": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "name": "unauthorized POST /admin/beta-invites",
+      "actual": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "name": "unauthorized DELETE /admin/beta-invites/invite-one",
+      "actual": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "name": "create invitation",
+      "actual": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "name": "no cache on code",
+      "actual": "no-store",
+      "expected": "no-store",
+      "pass": true
+    },
+    {
+      "name": "192-bit base64url code shape",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "wrong installation token",
+      "actual": 403,
+      "expected": 403,
+      "pass": true
+    },
+    {
+      "name": "two simultaneous redemptions, one winner (pg-mem)",
+      "actual": [
+        204,
+        404
+      ],
+      "expected": [
+        204,
+        404
+      ],
+      "pass": true
+    },
+    {
+      "name": "same owner retry idempotent",
+      "actual": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "name": "access survives new store instance",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "list excludes code/hash/installation",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 0",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 999",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 1000",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 1001",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 1800",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 3600",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 86400",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "session duration 86401",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "session duration -1",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "extra analytics payload field rejected",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "analytics opt-out honored server-side",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "analytics opt-out preserves access",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "30-minute session API",
+      "actual": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "name": "gameplay summary includes opted-in non-invited gameplay",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "expired unused invite denied",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "redemption expiry does not end existing access",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "push mute endpoint",
+      "actual": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "name": "turning push off preserves beta access",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "used code stays spent after push removal",
+      "actual": 404,
+      "expected": 404,
+      "pass": true
+    },
+    {
+      "name": "revocation succeeds",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "revoked access denied",
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "name": "revoked code denied",
+      "actual": 404,
+      "expected": 404,
+      "pass": true
+    }
+  ],
+  "observations": {
+    "nonInvitedAdminCountedActive": 1,
+    "afterDeletionAndReredeem": {
+      "redeemed_at": "2026-09-18T23:11:22.048Z",
+      "redeemed_installation_id": "installation-one"
+    },
+    "memoryRetainsDeletedOwner": false
+  }
+}

@@ -17,6 +17,7 @@ import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService
 import { getArcMoodText } from '../../domain/services/trainerArcService'
 import { FeatureIntroduction } from '../components/shared/FeatureIntroduction'
 import { FEATURE_INTRODUCTIONS, getCommunityFeatureIntroductionSpeaker } from '../../domain/data/featureIntroductions'
+import { trackFeatureOpened } from '../../infrastructure/attention/analyticsLifecycle'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -59,6 +60,11 @@ export function ClubScreen() {
   )
 
   useEffect(() => { markScreenVisited('club') }, [])
+  useEffect(() => {
+    if (!game || game.onboardingComplete !== true) return
+    if (activeTab === 'training') trackFeatureOpened(game.id, 'training')
+    if (activeTab === 'orten') trackFeatureOpened(game.id, 'community')
+  }, [game?.id, game?.onboardingComplete, activeTab])
 
   if (!club || !game) return null
 

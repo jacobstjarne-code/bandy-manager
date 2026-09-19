@@ -83,6 +83,19 @@ CREATE INDEX IF NOT EXISTS analytics_events_install_idx
   ON analytics_events (installation_id, recorded_at);
 CREATE INDEX IF NOT EXISTS analytics_events_event_idx
   ON analytics_events (event, recorded_at);
+
+CREATE TABLE IF NOT EXISTS beta_invites (
+  id varchar(128) PRIMARY KEY,
+  code_hash varchar(64) NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  revoked_at timestamptz,
+  redeemed_at timestamptz,
+  redeemed_installation_id varchar(128) REFERENCES attention_installations(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS beta_invites_redeemed_install_idx
+  ON beta_invites (redeemed_installation_id);
 `
 
 function iso(value) {
@@ -258,6 +271,20 @@ export class PostgresAttentionStore {
       [installationId],
     )
     return asObject(result.rows[0]?.preferences) ?? DEFAULT_PREFERENCES
+  }
+
+  async disablePush(installationId, token) {
+    return this.#withTransaction(async client => {
+      const result = await client.query('SELECT token_hash, preferences FROM attention_installations WHERE id = $1 FOR UPDATE', [installationId])
+      if (!result.rows[0] || !storedSecretMatches(token, result.rows[0].token_hash)) return false
+      await client.query('DELETE FROM attention_events WHERE installation_id = $1', [installationId])
+      await client.query('DELETE FROM attention_deliveries WHERE installation_id = $1', [installationId])
+      await client.query('DELETE FROM attention_candidates WHERE installation_id = $1', [installationId])
+      await client.query('DELETE FROM attention_sent_dedupe WHERE installation_id = $1', [installationId])
+      const preferences = { ...DEFAULT_PREFERENCES, analytics: asObject(result.rows[0].preferences)?.analytics ?? DEFAULT_PREFERENCES.analytics }
+      await client.query('UPDATE attention_installations SET subscription = NULL, snapshot = NULL, preferences = $2::jsonb, last_snapshot_at = NULL, updated_at = now() WHERE id = $1', [installationId, JSON.stringify(preferences)])
+      return true
+    })
   }
 
   async removeSubscription(installationId, token) {
@@ -533,6 +560,76 @@ export class PostgresAttentionStore {
       [event.installationId, event.event, JSON.stringify(event.payload ?? {}), recordedAt],
     )
     return true
+  }
+
+  async listAllAnalyticsEvents(since) {
+    const result = await this.pool.query(
+      `SELECT installation_id, event, payload, recorded_at
+       FROM analytics_events WHERE recorded_at >= $1`,
+      [since],
+    )
+    return result.rows.map(row => ({
+      installationId: row.installation_id,
+      event: row.event,
+      payload: asObject(row.payload, {}),
+      recordedAt: iso(row.recorded_at),
+    }))
+  }
+
+  async createBetaInvite({ id, codeHash, expiresAt }) {
+    await this.pool.query(
+      `INSERT INTO beta_invites (id, code_hash, expires_at) VALUES ($1, $2, $3)`,
+      [id, codeHash, expiresAt],
+    )
+  }
+
+  async redeemBetaInvite(codeHash, installationId) {
+    const result = await this.pool.query(
+      `UPDATE beta_invites SET redeemed_installation_id = $2,
+         redeemed_at = COALESCE(redeemed_at, now())
+       WHERE code_hash = $1 AND revoked_at IS NULL AND expires_at > now()
+         AND ((redeemed_installation_id IS NULL AND redeemed_at IS NULL) OR redeemed_installation_id = $2)
+       RETURNING id`,
+      [codeHash, installationId],
+    )
+    return result.rowCount > 0
+  }
+
+  async hasBetaAccess(installationId) {
+    const result = await this.pool.query(
+      `SELECT 1 FROM beta_invites
+       WHERE redeemed_installation_id = $1 AND revoked_at IS NULL
+       LIMIT 1`,
+      [installationId],
+    )
+    return result.rowCount > 0
+  }
+
+  async listBetaInvites() {
+    const result = await this.pool.query(
+      `SELECT id, created_at, expires_at, revoked_at, redeemed_at
+       FROM beta_invites ORDER BY created_at DESC`,
+    )
+    return result.rows.map(row => ({
+      id: row.id, createdAt: iso(row.created_at), expiresAt: iso(row.expires_at),
+      revokedAt: iso(row.revoked_at), redeemedAt: iso(row.redeemed_at),
+    }))
+  }
+
+  async listBetaRedeemedInstallations() {
+    const result = await this.pool.query(
+      `SELECT DISTINCT redeemed_installation_id FROM beta_invites
+       WHERE redeemed_installation_id IS NOT NULL AND revoked_at IS NULL`,
+    )
+    return result.rows.map(row => row.redeemed_installation_id)
+  }
+
+  async revokeBetaInvite(id) {
+    const result = await this.pool.query(
+      `UPDATE beta_invites SET revoked_at = now()
+       WHERE id = $1 AND revoked_at IS NULL RETURNING id`, [id],
+    )
+    return result.rowCount > 0
   }
 
   async pruneAnalyticsEvents(before) {

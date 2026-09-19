@@ -1,0 +1,74 @@
+{
+  "checks": [
+    {
+      "name": "deep-link requires invitation",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "no analytics before gate",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "invalid code feedback",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "valid invitation opens application",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "reload retains access",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "reload detects revocation",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "network failure gives retry",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "retry recovers",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "admin login page does not create gameplay analytics",
+      "actual": [
+        "install",
+        "session_start"
+      ],
+      "expected": [],
+      "pass": false
+    },
+    {
+      "name": "double click creates only one invitation",
+      "actual": 2,
+      "expected": 1,
+      "pass": false
+    },
+    {
+      "name": "lock survives in-flight response",
+      "actual": false,
+      "expected": true,
+      "pass": false
+    }
+  ],
+  "errors": []
+}
