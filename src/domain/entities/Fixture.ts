@@ -120,12 +120,19 @@ export interface MatchReport {
   /** Manager choices logged during the match — raw data for after-match receipt (Ticket #4). */
   managerChoiceLog?: ManagerChoiceEntry[]
   /**
-   * TILLÄGG 3 (2026-09-18): spelar-id:n som byttes ut före avspark för att de
-   * var skadade, avstängda eller vilande. Matchmotorn kontrollerar inte
+   * TILLÄGG 3 (2026-09-18): spelare som byttes ut före avspark för att de var
+   * skadade, avstängda eller vilande. Matchmotorn kontrollerar inte
    * tillgänglighet själv, så korrigeringen sker i matchSimProcessor — och den
-   * ska inte vara tyst. Granska läser fältet.
+   * ska inte vara tyst.
+   *
+   * TILLÄGG 8 (2026-09-20): omtypad från `string[]` (bara den utbytta
+   * spelaren) till par — utan `inId` går det inte att säga "{Spelare}
+   * ersattes av {Ersättare}", bara att någon byttes ut. Ingen UI läste
+   * fältet än när detta skrevs (kontrollerat, `grep lineupAutoCorrected
+   * src/presentation` gav noll träffar) — raden i Granska/Förbered är
+   * textleverans, inte byggd här.
    */
-  lineupAutoCorrected?: string[]
+  lineupAutoCorrected?: { outId: string; inId: string }[]
 }
 
 export interface Fixture {

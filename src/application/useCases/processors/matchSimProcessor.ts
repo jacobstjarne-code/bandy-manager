@@ -124,7 +124,7 @@ export function correctManagedLineup(
   lineup: TeamSelection,
   club: Club,
   allPlayers: Player[],
-): { lineup: TeamSelection; corrected: string[] } {
+): { lineup: TeamSelection; corrected: { outId: string; inId: string }[] } {
   const byId = new Map(allPlayers.map(p => [p.id, p]))
   const isAvailable = (p: Player | undefined): p is Player =>
     !!p && !p.isInjured && p.suspensionGamesRemaining <= 0 && (p.restGamesRemaining ?? 0) === 0
@@ -140,13 +140,13 @@ export function correctManagedLineup(
   const replacements = [...bench, ...squadPool.filter(p => !bench.some(b => b.id === p.id))]
   const ranked = pickBestEleven(replacements).starters
 
-  const corrected: string[] = []
+  const corrected: { outId: string; inId: string }[] = []
   let next = 0
   const startingPlayerIds = lineup.startingPlayerIds.map(id => {
     if (isAvailable(byId.get(id))) return id
     const sub = ranked[next++] ?? replacements[next - 1]
     if (!sub) return id   // inget att byta till — elvan får vara kort, som förut
-    corrected.push(id)
+    corrected.push({ outId: id, inId: sub.id })
     return sub.id
   })
 
@@ -343,7 +343,7 @@ export function simulateRound(
     let homeRegenPlayers: Player[] = []
     let awayRegenPlayers: Player[] = []
 
-    let lineupAutoCorrected: string[] = []
+    let lineupAutoCorrected: { outId: string; inId: string }[] = []
     if (fixture.homeClubId === game.managedClubId && game.managedClubPendingLineup !== undefined) {
       const fixed = correctManagedLineup(game.managedClubPendingLineup, homeClub, game.players)
       homeLineup = fixed.lineup

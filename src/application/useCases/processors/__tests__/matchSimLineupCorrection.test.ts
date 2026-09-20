@@ -64,7 +64,9 @@ describe('TILLÄGG 3 — otillgängliga byts ut före avspark', () => {
   it('en skadad startspelare byts mot en tillgänglig', () => {
     const { players, club, lineup } = setup([{ isInjured: true, injuryDaysRemaining: 14 }])
     const out = correctManagedLineup(lineup, club, players)
-    expect(out.corrected).toEqual(['s0'])
+    expect(out.corrected).toHaveLength(1)
+    expect(out.corrected[0].outId).toBe('s0')
+    expect(out.corrected[0].inId).toBe(out.lineup.startingPlayerIds.find(id => !lineup.startingPlayerIds.includes(id)))
     expect(out.lineup.startingPlayerIds).not.toContain('s0')
     expect(out.lineup.startingPlayerIds).toHaveLength(11)
   })
@@ -72,14 +74,16 @@ describe('TILLÄGG 3 — otillgängliga byts ut före avspark', () => {
   it('en avstängd startspelare byts ut', () => {
     const { players, club, lineup } = setup([{ suspensionGamesRemaining: 2 }])
     const out = correctManagedLineup(lineup, club, players)
-    expect(out.corrected).toEqual(['s0'])
+    expect(out.corrected).toHaveLength(1)
+    expect(out.corrected[0].outId).toBe('s0')
     expect(out.lineup.startingPlayerIds).not.toContain('s0')
   })
 
   it('en vilande spelare (A-H3 ben 2) byts ut — samma regel som AI:n', () => {
     const { players, club, lineup } = setup([{ restGamesRemaining: 1 }])
     const out = correctManagedLineup(lineup, club, players)
-    expect(out.corrected).toEqual(['s0'])
+    expect(out.corrected).toHaveLength(1)
+    expect(out.corrected[0].outId).toBe('s0')
   })
 
   it('ersättaren hämtas från bänken, inte utanför truppen', () => {
@@ -88,6 +92,7 @@ describe('TILLÄGG 3 — otillgängliga byts ut före avspark', () => {
     const added = out.lineup.startingPlayerIds.filter(id => !lineup.startingPlayerIds.includes(id))
     expect(added).toHaveLength(1)
     expect(added[0].startsWith('b')).toBe(true)
+    expect(out.corrected).toEqual([{ outId: 's0', inId: added[0] }])
   })
 
   it('flera otillgängliga byts alla, utan dubbletter i elvan', () => {
@@ -96,6 +101,8 @@ describe('TILLÄGG 3 — otillgängliga byts ut före avspark', () => {
     ])
     const out = correctManagedLineup(lineup, club, players)
     expect(out.corrected).toHaveLength(3)
+    expect(new Set(out.corrected.map(c => c.outId))).toEqual(new Set(['s0', 's1', 's2']))
+    expect(out.corrected.every(c => out.lineup.startingPlayerIds.includes(c.inId))).toBe(true)
     expect(new Set(out.lineup.startingPlayerIds).size).toBe(11)
   })
 
