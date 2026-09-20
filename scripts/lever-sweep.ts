@@ -67,6 +67,11 @@ const CONFIGS: Record<string, Policy> = {
   per_schema_a: { schedule: 'a' },
   per_schema_b: { schedule: 'b' },
   per_schema_a_light: { schedule: 'a', training: { type: TrainingType.Physical, intensity: TrainingIntensity.Light } },
+  // §0-gränsfall (HANDOVER 2026-09-20): per_schema_a_light mätte +2,10 mot
+  // baseline, marginellt över grindregelns 2,0. Explicit Normal-variant här
+  // isolerar schema a:s EGEN effekt från trainingens, med samma seeds/skala
+  // — utan att förlita sig på att createNewGame råkar defaulta till Normal.
+  per_schema_a_normal: { schedule: 'a', training: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal } },
   per_hall_light: { periodisation: 'hall', training: { type: TrainingType.Physical, intensity: TrainingIntensity.Light } },
   // budget
   bud_squad: { budgetPriority: 'squad' },
