@@ -169,8 +169,17 @@ type AssertNoMissingIds<AllIds extends string, Covered extends readonly AllIds[]
   [Exclude<AllIds, Covered[number]>] extends [never] ? true : { MISSING_CONTENT_CONTRACT_IDS: Exclude<AllIds, Covered[number]> }
 // export, inte lokal const — tsconfig har noUnusedLocals:true, och dessa
 // tre existerar ENDAST för sin typkontroll-sidoeffekt (aldrig lästa).
+//
+// TILLÄGG 5 (2026-09-19), errata till DOM_DÖDA_TEXTPOOLER: en tidigare
+// dödkodsaudit dömde de här tre STRYK, felaktigt — en knip-körning ser
+// "aldrig läst" och drar samma slutsats en läsare gör, men det ÄR poängen:
+// de är kompileringstidsvakter, inte data. `// knip-ignore` nedan så nästa
+// knip-körning (och nästa läsare av dess rapport) inte gör samma miss igen.
+// knip-ignore
 export const _gameEventTypeIdsCoverAllTypes: AssertNoMissingIds<GameEventType, typeof GAME_EVENT_TYPE_IDS> = true
+// knip-ignore
 export const _storylineTypeIdsCoverAllTypes: AssertNoMissingIds<StorylineType, typeof STORYLINE_TYPE_IDS> = true
+// knip-ignore
 export const _arcTypeIdsCoverAllTypes: AssertNoMissingIds<ArcType, typeof ARC_TYPE_IDS> = true
 
 // Egen lista (inte importerad från portalBeats.ts) — samma motiv som O6/B12
