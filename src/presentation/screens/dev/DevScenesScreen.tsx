@@ -108,7 +108,7 @@ import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { useGameStore } from '../../store/gameStore'
 import { getNextManagedFixture } from '../../../domain/services/portal/triggers/matchTriggers'
 import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
-import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent } from './gameStateFactory'
+import { makeBaseGame, atRound, withInjuries, withSuspended, withLowMorale, withExpiringContracts, withLongestSurnames, withLineupSlots, withoutPendingLineup, withActiveBeat, withAnniversary, withObjectiveAlertWarning, withPendingWeeklyDecision, withTransferWindowClosed, withTransferWindowOpen, withIncomingBids, withActiveIncomingBidEvent, withMatchWeather } from './gameStateFactory'
 import { CUP_FINAL_VENUE, SM_FINAL_VENUE } from '../../../domain/data/specialDateStrings'
 import { generatePlayoffBracket } from '../../../domain/services/playoffService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
@@ -141,6 +141,14 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // bara nåbar vid ett genuint första möte (färsk säsong 1, ingen spelad
   // fixture mot motståndaren) — ingen befintlig scen var det.
   | 'forbered-vignette'
+  // TILLÄGG 7 (docs/CODE_KORORDER_SPAKBALANS_2026-09-18.md), landningssidans
+  // fyra skärmdumpar. "Förbered omgång 1" (skärm 1) återanvänder lineup-filled
+  // — omgång 1 visar ovillkorligen OpponentVignetteScene (isFirstMeetingWithOpponent
+  // är sant för varje omgång 1-motståndare, se opponentVignetteTrigger.ts), inte
+  // Uppställningsgriden Fable bad om, så en äkta "omgång 1" hade blivit fel skärm.
+  // landing-portal (färsk säsong, kö+väder) och landing-lineup-open (exakt en
+  // tom slot, mot lineup-empty/lineup-filled som ligger på 3/0) saknade båda motsvarighet.
+  | 'landing-portal' | 'landing-lineup-open'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed' | 'opponent-form'
   // design-b4-simulera-bar-fotkrock (2026-09-04): canSimulateRemaining kräver
@@ -289,6 +297,8 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'lineup-empty',  label: 'Uppställningen — 3 tomma slots' },
   { id: 'lineup-filled', label: 'Uppställningen — fylld, längsta efternamn' },
   { id: 'forbered-vignette', label: 'FÖRBERED — förmatchvinjett (första mötet)' },
+  { id: 'landing-portal', label: 'Landningssidan — Portal, kö + väderrad' },
+  { id: 'landing-lineup-open', label: 'Landningssidan — Uppställningen, en spelare öppen' },
   { id: 'portal-tom',    label: 'Portal — tom omgång' },
   { id: 'portal-normal', label: 'Portal — normal (1 atmosfärsrad)' },
   { id: 'portal-full',   label: 'Portal — full (beat+eko+upptakt)' },
@@ -979,6 +989,17 @@ const truppKrisGame = withExpiringContracts(withLowMorale(withSuspended(withInju
 // rensar den explicit så nudgeData faktiskt får chansen att beräknas.
 const lineupEmptyGame = withoutPendingLineup(factoryMidSeasonGame)
 const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGame), { emptyCount: 0, formation: '532_tvatoppar' })
+
+// TILLÄGG 7 (docs/CODE_KORORDER_SPAKBALANS_2026-09-18.md), landningssidans
+// fyra skärmdumpar, punkt 2. landingFreshGame (makeBaseGame utan atRound) är
+// den enda fixture som genuint är "omgång 1, inget spelat än" — factory-
+// MidSeasonGame (omgång 18, all portalens portal-*-scener) har redan mecenat/
+// transferdeadline/vinterkris aktiva, och de trumfar alltid NextMatchPrimary
+// (weight 10, lägst av portalens primärkort — initCardBag.ts) så väderraden
+// aldrig syns. En färsk säsong har inget av det.
+const landingFreshGame = makeBaseGame({ seed: 44 })
+const landingPortalGame = withMatchWeather(withPendingWeeklyDecision(landingFreshGame))
+const landingLineupOpenGame = withLineupSlots(factoryMidSeasonGame, { emptyCount: 1, formation: '532_tvatoppar' })
 
 // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen läser fixture/
 // homeLineup/awayLineup via react-router location.state (MatchScreen.tsx:s
@@ -2342,6 +2363,8 @@ export function DevScenesScreen() {
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
       : scene === 'forbered-vignette' ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
+      : scene === 'landing-portal' ? landingPortalGame
+      : scene === 'landing-lineup-open' ? landingLineupOpenGame
       : scene === 'match-live' ? matchLiveGame
       : scene === 'navgate-laddning-band' ? matchLaddningBandGame
       : scene === 'portal-tom' ? portalTomGame
@@ -2623,7 +2646,8 @@ export function DevScenesScreen() {
           || scene === 'portal-facility-completed' || scene === 'opponent-form' || scene === 'portal-midseason'
           || scene === 'portal-bid-single' || scene === 'portal-bid-multi'
           || scene === 'portal-month-decisions' || scene === 'portal-interruption-budget' || scene === 'sponsor-motbud'
-          || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell') && (
+          || scene === 'primary-smfinal-vs-deadline' || scene === 'primary-event-vs-farewell'
+          || scene === 'landing-portal') && (
           <div style={{ height: '1400px', overflow: 'hidden', position: 'relative' }}>
             <PortalScreen />
           </div>
@@ -2934,7 +2958,8 @@ export function DevScenesScreen() {
             <SquadScreen />
           </div>
         )}
-        {(scene === 'lineup-empty' || scene === 'lineup-filled' || scene === 'forbered-vignette') && (
+        {(scene === 'lineup-empty' || scene === 'lineup-filled' || scene === 'forbered-vignette'
+          || scene === 'landing-lineup-open') && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />
           </div>

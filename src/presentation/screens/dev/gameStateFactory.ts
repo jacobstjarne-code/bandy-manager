@@ -26,6 +26,7 @@ import { FORMATIONS, type FormationType } from '../../../domain/entities/Formati
 import { mulberry32 } from '../../../domain/utils/random'
 import { CLUB_TEMPLATES } from '../../../domain/services/worldGenerator'
 import { generateWeeklyDecision } from '../../../domain/services/weeklyDecisionService'
+import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { computeNextAnslag, type AnslagKey } from '../../../domain/services/anslagService'
 import type { ActiveAnniversary, MemoryEventType } from '../../../domain/services/clubMemoryService'
 import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
@@ -310,6 +311,35 @@ export function withAnniversary(game: SaveGame): SaveGame {
 export function withPendingWeeklyDecision(game: SaveGame): SaveGame {
   const decision = generateWeeklyDecision(game, game.currentMatchday)
   return decision ? { ...game, pendingWeeklyDecision: decision } : game
+}
+
+/**
+ * generateMatchWeather för managedClubs nästa schemalagda fixture — samma
+ * domänfunktion roundProcessor.ts använder för att förgenerera väder inför
+ * kommande omgång (se roundProcessor.ts "Pre-generate weather for next
+ * matchday"), inte en handskriven MatchWeather-literal. Utan detta har ingen
+ * dev-scene-fixture väder i matchWeathers, eftersom makeBaseGame/atRound bara
+ * bygger statisk historik och aldrig kör roundProcessor-stegen som annars
+ * fyller på den.
+ */
+export function withMatchWeather(game: SaveGame): SaveGame {
+  const nextFixture = game.fixtures
+    .filter(f => f.status === FixtureStatus.Scheduled &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => a.matchday - b.matchday)[0]
+  if (!nextFixture) return game
+  const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
+  if (!homeClub) return game
+  const weather = generateMatchWeather(
+    game.currentSeason,
+    nextFixture.matchday,
+    homeClub,
+    nextFixture.id,
+    1,
+    game.currentSeasonSignature,
+    nextFixture.date,
+  )
+  return { ...game, matchWeathers: [...(game.matchWeathers ?? []), weather] }
 }
 
 // ── Transfers ────────────────────────────────────────────────────────────────
