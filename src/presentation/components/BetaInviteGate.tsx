@@ -39,7 +39,7 @@ export function BetaInviteGate({ children }: { children: ReactNode }) {
       setCode('')
       setGranted(true)
     } catch {
-      setMessage('Koden kunde inte användas. Kontrollera den eller be om en ny inbjudan.')
+      setMessage('Koden gick inte att använda. Kolla tecknen, eller be om en ny om du redan använt den på en annan telefon.')
     } finally {
       setRedeeming(false)
     }
@@ -50,7 +50,7 @@ export function BetaInviteGate({ children }: { children: ReactNode }) {
     <section className="beta-access__gate-card" aria-labelledby="beta-gate-title">
       <p className="beta-access__eyebrow">BETATEST · INBJUDAN</p>
       <h1 id="beta-gate-title">Betatestet.</h1>
-      <p className="beta-access__lead">Du behöver en inbjudningskod för att spela.</p>
+      <p className="beta-access__lead">Betan är stängd. Skriv in din kod så öppnar vi.</p>
       {checking ? <p className="beta-access__checking" role="status">Kontrollerar tillträde…</p> :
         connectionError ? <>
           <p className="beta-access__message" role="alert">{message}</p>
@@ -61,6 +61,7 @@ export function BetaInviteGate({ children }: { children: ReactNode }) {
           <input className="beta-access__input" id="beta-code" value={code} onChange={event => setCode(event.target.value)}
             autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
             aria-describedby={message ? 'beta-gate-message' : undefined} />
+          <p className="beta-access__hint">Har du ingen kod? Kön finns på bandymanager.se.</p>
           <button className="btn btn-primary beta-access__primary" type="submit" disabled={!code.trim() || redeeming}>
             {redeeming ? 'KONTROLLERAR…' : 'GÅ VIDARE →'}
           </button>

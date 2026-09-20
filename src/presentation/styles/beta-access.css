@@ -91,6 +91,13 @@
   outline-offset: 2px;
 }
 
+.beta-access__hint {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .beta-access__primary {
   width: 100%;
   min-height: 55px;
@@ -308,7 +315,7 @@
 
 .beta-access__invite-counts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 11px;
 }

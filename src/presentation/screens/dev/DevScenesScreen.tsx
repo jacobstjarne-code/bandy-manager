@@ -146,9 +146,9 @@ type SceneId = 'cup-victory' | 'sm-victory' | 'season-arc' | 'portal-cards' | 'e
   // — omgång 1 visar ovillkorligen OpponentVignetteScene (isFirstMeetingWithOpponent
   // är sant för varje omgång 1-motståndare, se opponentVignetteTrigger.ts), inte
   // Uppställningsgriden Fable bad om, så en äkta "omgång 1" hade blivit fel skärm.
-  // landing-portal (färsk säsong, kö+väder) och landing-lineup-open (exakt en
-  // tom slot, mot lineup-empty/lineup-filled som ligger på 3/0) saknade båda motsvarighet.
-  | 'landing-portal' | 'landing-lineup-open'
+  // Landningssidans tre produktionslika lägen saknade egna motsvarigheter:
+  // omgång 1 hemma, mittsäsongsportal med kö+väder och öppnad spelarväljare.
+  | 'landing-prepare' | 'landing-portal' | 'landing-lineup-open'
   // PORTAL-TAKREGEL (2026-08-09): fyra baseline-tillstånd, §5 i ordern
   | 'portal-tom' | 'portal-normal' | 'portal-full' | 'portal-grind' | 'portal-facility-completed' | 'opponent-form'
   // design-b4-simulera-bar-fotkrock (2026-09-04): canSimulateRemaining kräver
@@ -297,6 +297,7 @@ const SCENES: { id: SceneId; label: string }[] = [
   { id: 'lineup-empty',  label: 'Uppställningen — 3 tomma slots' },
   { id: 'lineup-filled', label: 'Uppställningen — fylld, längsta efternamn' },
   { id: 'forbered-vignette', label: 'FÖRBERED — förmatchvinjett (första mötet)' },
+  { id: 'landing-prepare', label: 'Landningssidan — Förbered, omgång 1 hemma' },
   { id: 'landing-portal', label: 'Landningssidan — Portal, kö + väderrad' },
   { id: 'landing-lineup-open', label: 'Landningssidan — Uppställningen, en spelare öppen' },
   { id: 'portal-tom',    label: 'Portal — tom omgång' },
@@ -996,10 +997,18 @@ const lineupFilledGame = withLineupSlots(withLongestSurnames(factoryMidSeasonGam
 // MidSeasonGame (omgång 18, all portalens portal-*-scener) har redan mecenat/
 // transferdeadline/vinterkris aktiva, och de trumfar alltid NextMatchPrimary
 // (weight 10, lägst av portalens primärkort — initCardBag.ts) så väderraden
-// aldrig syns. En färsk säsong har inget av det.
-const landingFreshGame = makeBaseGame({ seed: 44 })
-const landingPortalGame = withMatchWeather(withPendingWeeklyDecision(landingFreshGame))
-const landingLineupOpenGame = withLineupSlots(factoryMidSeasonGame, { emptyCount: 1, formation: '532_tvatoppar' })
+// aldrig syns. En färsk säsong har inget av det. Separata fixtures ger en
+// riktig hemmaförberedelse, en mittsäsongsportal med kö och en komplett
+// laguttagning där skärmdumpssteget öppnar en faktisk spelare.
+const landingFreshGame = { ...makeBaseGame({ seed: 2 }), managerName: 'Jacob' }
+const landingPrepareGame = withMatchWeather(
+  withLineupSlots(landingFreshGame, { emptyCount: 0, formation: '532_tvatoppar' }),
+)
+const landingPortalBase = withMatchWeather(atRound(landingFreshGame, 14))
+const landingLineupOpenGame = withLineupSlots(
+  { ...factoryMidSeasonGame, managerName: 'Jacob' },
+  { emptyCount: 0, formation: '532_tvatoppar' },
+)
 
 // Skutskär-auditen, test 21 (2026-08-23): MatchLiveScreen läser fixture/
 // homeLineup/awayLineup via react-router location.state (MatchScreen.tsx:s
@@ -1440,6 +1449,15 @@ const mobileDecisionEvents = [
     ],
   },
 ]
+const landingPortalGame = {
+  ...landingPortalBase,
+  pendingEvents: [],
+  deferredDecisions: mobileDecisionEvents.slice(0, 2).map((event, index) => ({
+    ...event,
+    deferredAt: Math.max(1, landingPortalBase.currentMatchday - index - 1),
+    source: event.type,
+  })),
+} as unknown as SaveGame
 const portalMonthDecisionsGame = {
   ...factoryMidSeasonGame,
   pendingEvents: mobileDecisionEvents,
@@ -2363,6 +2381,7 @@ export function DevScenesScreen() {
       : scene === 'lineup-empty' ? lineupEmptyGame
       : scene === 'lineup-filled' ? lineupFilledGame
       : scene === 'forbered-vignette' ? makeBaseGame({ seed: 31, clubId: 'club_skutskar' })
+      : scene === 'landing-prepare' ? landingPrepareGame
       : scene === 'landing-portal' ? landingPortalGame
       : scene === 'landing-lineup-open' ? landingLineupOpenGame
       : scene === 'match-live' ? matchLiveGame
@@ -2958,7 +2977,7 @@ export function DevScenesScreen() {
             <SquadScreen />
           </div>
         )}
-        {(scene === 'lineup-empty' || scene === 'lineup-filled' || scene === 'forbered-vignette'
+        {(scene === 'lineup-empty' || scene === 'lineup-filled' || scene === 'forbered-vignette' || scene === 'landing-prepare'
           || scene === 'landing-lineup-open') && (
           <div style={{ height: '812px', overflow: 'hidden', position: 'relative' }}>
             <MatchScreen />

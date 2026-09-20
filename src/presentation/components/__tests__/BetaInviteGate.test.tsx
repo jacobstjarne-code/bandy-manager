@@ -17,6 +17,10 @@ describe('beta invitation launch flag', () => {
     vi.stubEnv('VITE_BETA_INVITES_ENABLED', 'true')
     const markup = renderToStaticMarkup(<MemoryRouter><BetaInviteGate><p>Spelet</p></BetaInviteGate></MemoryRouter>)
     expect(markup).toContain('Betatestet.')
+    expect(markup).toContain('Betan är stängd. Skriv in din kod så öppnar vi.')
+    // Serverrenderingen stannar avsiktligt i tillträdeskontrollen. Fältets
+    // hjälprad visas först när kontrollen svarat, så den hör inte till detta
+    // SSR-kontrakt.
     expect(markup).not.toContain('<p>Spelet</p>')
   })
 })
