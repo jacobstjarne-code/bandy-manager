@@ -225,13 +225,13 @@ export function ArrivalScene() {
   const advanceOnboardingToTilltrade = useGameStore(s => s.advanceOnboardingToTilltrade)
 
   if (!game) {
-    navigate('/', { replace: true })
+    navigate('/spela', { replace: true })
     return null
   }
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub) {
-    navigate('/', { replace: true })
+    navigate('/spela', { replace: true })
     return null
   }
   // KF4 (2026-06-21): styrelsen bor på game.board (EN modell), inte club.board.

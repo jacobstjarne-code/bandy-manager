@@ -5,6 +5,9 @@
     }
   },
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://bandy-manager-attention-api.onrender.com/api/:path*" },
+    { "source": "/", "destination": "/landing/index.html" },
+    { "source": "/spela", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

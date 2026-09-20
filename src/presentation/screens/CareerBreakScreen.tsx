@@ -100,7 +100,7 @@ export function CareerBreakScreen() {
 
   function handleNewCareer() {
     clearFiredGame()
-    navigate('/', { replace: true })
+    navigate('/spela', { replace: true })
   }
 
   function handleAccept(clubId: string) {

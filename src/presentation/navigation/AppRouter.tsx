@@ -158,7 +158,10 @@ export function AppRouter() {
       <AnalyticsBridge />
       <Routes>
         <Route path="/admin/beta" element={<Suspense fallback={<EmptyFallback />}><BetaStatsScreen /></Suspense>} />
-        <Route path="/" element={<IntroSequence />} />
+        {/* / serveras som landningssida i produktion. Redirecten skyddar
+            gamla service-worker-skal som fortfarande startar SPA:n på /. */}
+        <Route path="/" element={<Navigate to="/spela" replace />} />
+        <Route path="/spela" element={<IntroSequence />} />
         <Route path="/saves" element={<SaveManagerScreen />} />
         <Route path="/new-game" element={<NameInputScreen />} />
         <Route path="/club-selection" element={<ClubSelectionScreen />} />
@@ -210,7 +213,7 @@ export function AppRouter() {
             <Suspense fallback={null}><DevScenesScreen /></Suspense>
           } />
         )}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/spela" replace />} />
       </Routes>
       {/* DOM_FEEDBACKKNAPP_PLACERING_2026-09-08: FeedbackButton monteras inte
           längre globalt här — den är nu en dockad sidfotsrad, och behöver

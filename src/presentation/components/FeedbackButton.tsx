@@ -30,6 +30,7 @@ function buildHash(): string {
 
 export function isFeedbackHiddenOnRoute(pathname: string): boolean {
   return pathname === '/'
+    || pathname === '/spela'
     || pathname === '/saves'
     || pathname === '/new-game'
     || pathname === '/club-selection'

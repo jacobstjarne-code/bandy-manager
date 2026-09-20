@@ -17,7 +17,7 @@ export function GameOverScreen() {
   const [simulating, setSimulating] = useState(false)
 
   if (!game) {
-    navigate('/', { replace: true })
+    navigate('/spela', { replace: true })
     return null
   }
 
@@ -120,7 +120,7 @@ export function GameOverScreen() {
 
   function handleNewGame() {
     clearFiredGame()
-    navigate('/', { replace: true })
+    navigate('/spela', { replace: true })
   }
 
   // O13 (DOM_TRANARMARKNADEN_2026-08-26): den tredje vägen. Knappen lovar

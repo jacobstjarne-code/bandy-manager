@@ -48,7 +48,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(cors({ origin: allowedOrigins }))
 
 app.use(express.json({ limit: '50kb' }))
-app.use(express.static(path.join(__dirname, 'dist')))
+app.use(express.static(path.join(__dirname, 'dist'), { index: false }))
 
 // ── Global rate limit ───────────────────────────
 const globalLimiter = rateLimit({
@@ -74,7 +74,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', version: BUILD_VERSION })
 })
 
-// ── SPA fallback ────────────────────────────────
+// ── Publika ingångar och SPA fallback ───────────
+// Roten är den statiska landningssidan. Spelet har en egen stabil ingång så
+// installerade PWA:er och interna "börja om"-vägar aldrig hamnar på sajten.
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'landing', 'index.html'))
+})
+app.get('/spela', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })

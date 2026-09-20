@@ -28,7 +28,7 @@ const { GameShell, routeOwnsLedgerChrome, shouldHideBottomNavigation, shouldShow
  * bara i GameGuard (bara /game/game-over*) och DashboardOrPortal (bara
  * /game/dashboard). GameShell — den faktiska föräldern till /game/history,
  * /game/match, /game/club och alla andra huvudrutter (AppRouter.tsx:136) —
- * kollar fortfarande bara `if (!game) return <Navigate to="/" replace/>`
+ * kollar fortfarande bara `if (!game) return <Navigate to="/spela" replace/>`
  * UTAN att vänta på hasHydrated. `game` är `null` under persist-middlewarens
  * asynkrona rehydrering (samma ögonblick oavsett om en giltig sparning
  * finns) — GameShell redirectar bort INNAN hydreringen hunnit klart, exakt
@@ -63,7 +63,7 @@ function renderAtHistory() {
     root!.render(
       <MemoryRouter initialEntries={['/game/history']}>
         <Routes>
-          <Route path="/" element={<div data-testid="titlescreen">TITEL</div>} />
+          <Route path="/spela" element={<div data-testid="titlescreen">TITEL</div>} />
           <Route path="/game/game-over" element={<div data-testid="game-over">AVSKED</div>} />
           <Route path="/game" element={<GameShell />}>
             <Route path="history" element={<div data-testid="history">HISTORIK</div>} />
@@ -90,7 +90,7 @@ describe('GameShell — deep-link rehydration (Skutskär-audit test 20)', () => 
     }
   })
 
-  it('redirectar INTE till "/" medan persist-rehydreringen fortfarande pågår, även om en giltig sparning finns', () => {
+  it('redirectar INTE till "/spela" medan persist-rehydreringen fortfarande pågår, även om en giltig sparning finns', () => {
     const originalHasHydrated = useGameStore.persist.hasHydrated
     const originalOnFinish = useGameStore.persist.onFinishHydration
     useGameStore.persist.hasHydrated = () => false
@@ -139,7 +139,7 @@ describe('GameShell — deep-link rehydration (Skutskär-audit test 20)', () => 
     }
   })
 
-  it('redirectar till "/" om rehydreringen är klar och verkligen ingen sparning finns', () => {
+  it('redirectar till "/spela" om rehydreringen är klar och verkligen ingen sparning finns', () => {
     const originalHasHydrated = useGameStore.persist.hasHydrated
     useGameStore.persist.hasHydrated = () => true
     useGameStore.setState({ game: null })

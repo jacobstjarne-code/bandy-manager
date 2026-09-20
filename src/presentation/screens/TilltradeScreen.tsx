@@ -92,7 +92,7 @@ export function TilltradeScreen() {
   // effekt, aldrig i render self; return null-grenarna nedan är fortfarande
   // rätt (bara renderingen som pausas, inte navigeringen).
   useEffect(() => {
-    if (!game) { navigate('/', { replace: true }); return }
+    if (!game) { navigate('/spela', { replace: true }); return }
     if (game.onboardingComplete) { navigate('/game/dashboard', { replace: true }); return }
     if (!game.assistantCoach) { navigate('/game/dashboard', { replace: true }); return }
   }, [game, navigate])

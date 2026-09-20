@@ -3,7 +3,7 @@
   "short_name": "Bandy Mgr",
   "id": "/",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/spela",
   "display": "standalone",
   "background_color": "#0D1B2A",
   "theme_color": "#0D1B2A",

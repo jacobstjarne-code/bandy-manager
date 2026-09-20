@@ -63,7 +63,7 @@ export default defineConfig({
         background_color: '#0D1B2A',
         display: 'standalone',
         scope: '/',
-        start_url: '/',
+        start_url: '/spela',
         orientation: 'portrait',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
@@ -112,7 +112,7 @@ export default defineConfig({
             },
           },
         ],
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/$/, /^\/landing(?:\/|$)/],
       },
     }),
   ],

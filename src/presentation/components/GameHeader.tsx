@@ -313,7 +313,7 @@ export function GameHeader() {
             { label: unreadInbox > 0 ? `Inkorg (${unreadInbox})` : 'Inkorg', icon: Mail, action: () => navigate('/game/inbox') },
             { label: 'Notiser', icon: Bell, action: () => setShowNotisinstallningar(true) },
             { label: 'Spara spel', icon: Save, action: handleSaveGame },
-            { label: 'Ladda spel', icon: FolderOpen, action: () => navigate('/') },
+            { label: 'Ladda spel', icon: FolderOpen, action: () => navigate('/spela') },
             { label: 'Exportera säkerhetskopia', icon: Download, action: handleExportSave },
             { label: 'Exportera återställningsrapport', icon: Download, action: handleExportRecoveryReport },
             { label: 'Importera säkerhetskopia', icon: Upload, action: handleImportSave },

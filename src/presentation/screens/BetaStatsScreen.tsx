@@ -13,9 +13,10 @@ type BetaSummary = {
   session30: { starts: number; ends: number; medianCompletedMinutes: number | null }
   features90: Record<string, number>
   issues30: { renderErrors: number; saveFailures: number }
-  invites: { issued: number; redeemed: number; revoked: number; startedCareer: number; playedFirstMatch: number }
+  invites: { issued: number; redeemed: number; revoked: number; startedCareer: number; playedFirstMatch: number; queued: number }
 }
 type Invite = { id: string; createdAt: string; expiresAt: string; revokedAt: string | null; redeemedAt: string | null }
+type WaitlistEntry = { email: string; createdAt: string }
 
 const funnelLabels: Record<string, string> = {
   installed: 'Installationer', gameCreated: 'Startat karriär',
@@ -34,7 +35,9 @@ export function BetaStatsScreen() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [invites, setInvites] = useState<Invite[]>([])
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([])
   const [newCode, setNewCode] = useState('')
+  const [newCodeRecipient, setNewCodeRecipient] = useState('')
   const [copied, setCopied] = useState(false)
   const [creating, setCreating] = useState(false)
   const generation = useRef(0)
@@ -49,7 +52,9 @@ export function BetaStatsScreen() {
     setSummary(null)
     setSecret('')
     setNewCode('')
+    setNewCodeRecipient('')
     setInvites([])
+    setWaitlist([])
     setCopied(false)
     setError('')
   }
@@ -66,6 +71,16 @@ export function BetaStatsScreen() {
     if (epoch === generation.current) setInvites(result.invites)
   }
 
+  async function loadWaitlist(epoch: number) {
+    if (epoch !== generation.current) return
+    const response = await fetch(attentionApiUrl('/api/admin/beta-waitlist'), {
+      headers: adminHeaders(), cache: 'no-store',
+    })
+    if (!response.ok) throw new Error('Väntelistan kunde inte hämtas.')
+    const result = await response.json() as { waitlist: WaitlistEntry[] }
+    if (epoch === generation.current) setWaitlist(result.waitlist)
+  }
+
   async function loadStats(preserveSummary = false, epoch = generation.current) {
     if (epoch !== generation.current) return
     setLoading(true)
@@ -80,6 +95,7 @@ export function BetaStatsScreen() {
       if (epoch !== generation.current) return
       setSummary(result)
       await loadInvites(epoch)
+      await loadWaitlist(epoch)
     } catch (cause) {
       if (epoch !== generation.current) return
       if (!preserveSummary) setSummary(null)
@@ -89,7 +105,7 @@ export function BetaStatsScreen() {
     }
   }
 
-  async function createInvite() {
+  async function createInvite(waitlistEmail?: string) {
     if (createInFlight.current || newCode) return
     createInFlight.current = true
     const epoch = generation.current
@@ -97,12 +113,17 @@ export function BetaStatsScreen() {
     setError('')
     try {
       const response = await fetch(attentionApiUrl('/api/admin/beta-invites'), {
-        method: 'POST', headers: adminHeaders(),
+        method: 'POST',
+        headers: waitlistEmail
+          ? { ...adminHeaders(), 'Content-Type': 'application/json' }
+          : adminHeaders(),
+        body: waitlistEmail ? JSON.stringify({ waitlistEmail }) : undefined,
       })
       if (!response.ok) throw new Error('Inbjudan kunde inte skapas.')
       const result = await response.json() as { code: string }
       if (epoch !== generation.current) return
       setNewCode(result.code)
+      setNewCodeRecipient(waitlistEmail ?? '')
       setCopied(false)
       await loadStats(true, epoch)
     } catch (cause) {
@@ -229,6 +250,7 @@ export function BetaStatsScreen() {
             <div><strong>{summary.invites.issued}</strong><span>Utfärdade</span></div>
             <div><strong>{summary.invites.redeemed}</strong><span>Använda</span></div>
             <div><strong>{summary.invites.revoked}</strong><span>Återkallade</span></div>
+            <div><strong>{summary.invites.queued}</strong><span>I kö</span></div>
           </div>
           <div className="beta-access__rows">
             {statRow('Inbjudna som startat karriär', summary.invites.startedCareer)}
@@ -239,13 +261,26 @@ export function BetaStatsScreen() {
             disabled={creating || Boolean(newCode)} onClick={() => void createInvite()}>{creating ? 'SKAPAR…' : 'SKAPA INBJUDAN →'}</button>
           {newCode && <div className="beta-access__code-panel" role="status">
             <strong>Ny inbjudningskod</strong>
-            <p>Koden visas bara nu. Skicka den direkt till den du vill bjuda in.</p>
+            <p>{newCodeRecipient
+              ? <>Koden visas bara nu. Skicka den till <strong>{newCodeRecipient}</strong>.</>
+              : 'Koden visas bara nu. Skicka den direkt till den du vill bjuda in.'}</p>
             <code>{newCode}</code>
             <div className="beta-access__code-actions">
               <button className="btn btn-outline" type="button" onClick={() => void copyCode()}>{copied ? 'KOPIERAD ✓' : 'KOPIERA KOD'}</button>
-              <button className="btn btn-ghost" type="button" onClick={() => { setNewCode(''); setCopied(false) }}>KLAR</button>
+              <button className="btn btn-ghost" type="button" onClick={() => {
+                setNewCode(''); setNewCodeRecipient(''); setCopied(false)
+              }}>KLAR</button>
             </div>
           </div>}
+          <details className="beta-access__invite-details" open={waitlist.length > 0}>
+            <summary>VISA VÄNTELISTA <span>{waitlist.length}</span></summary>
+            {waitlist.length === 0 && <p className="beta-access__note">Ingen står i kö.</p>}
+            {waitlist.map(entry => <div className="beta-access__invite-item" key={entry.email}>
+              <div><strong>{entry.email}</strong><span>{new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short' }).format(new Date(entry.createdAt))}</span></div>
+              <button className="beta-access__text-button" type="button"
+                disabled={creating || Boolean(newCode)} onClick={() => void createInvite(entry.email)}>SKAPA KOD</button>
+            </div>)}
+          </details>
           <details className="beta-access__invite-details">
             <summary>VISA INBJUDNINGAR <span>{invites.length}</span></summary>
             {invites.length === 0 && <p className="beta-access__note">Inga inbjudningar ännu.</p>}

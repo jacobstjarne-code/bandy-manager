@@ -21,7 +21,7 @@ export function GameGuard() {
   // Rendera ingenting under väntan (inte en redirect) — den begärda routen
   // ligger redan kvar när hydreringen blir klar.
   if (!hasHydrated) return null
-  if (!game) return <Navigate to="/" replace />
+  if (!game) return <Navigate to="/spela" replace />
   const attention = getCurrentAttention(game)
   // Bara overlay för kritiska icke-ambienta events — medium/atmospheric visas
   // av PortalEventSlot, ambienta (D1 punkt 2) visas ALDRIG som overlay.
@@ -105,7 +105,7 @@ export function GameShell() {
   // giltig sparning fanns. Vänta ut hydreringen — rendera ingenting, inte
   // en redirect — så att den begärda routen ligger kvar när den blir klar.
   if (!hasHydrated) return null
-  if (!game) return <Navigate to="/" replace />
+  if (!game) return <Navigate to="/spela" replace />
   // 3.1 (docs/archive/historiska-statuskallor/SLUTTEST_KO.md, 2026-08-17): GameShell täckte bara "inget game"-fallet.
   // En sparkad manager kunde nå tillbaka till dashboard/squad/etc via bakåtknapp
   // eller en stale route-återinträde (t.ex. app-reload mellan avsked och

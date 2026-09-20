@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
   // samma trasiga state (vilket bara återskapar felet).
   private recoverToMenu = () => {
     try { localStorage.setItem(RECOVER_PENDING_FLAG, '1') } catch { /* localStorage otillgänglig */ }
-    window.location.assign('/')
+    window.location.assign('/spela')
   }
 
   render() {
