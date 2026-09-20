@@ -58,4 +58,35 @@ describe('closed beta routes', () => {
     })).status).toBe(204)
     expect((await (await access()).json()).granted).toBe(false)
   })
+
+  it('queues a normalized email once without an installation identity', async () => {
+    const join = email => fetch(`${base}/beta/waitlist`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, installationId: 'must-not-be-stored' }),
+    })
+    expect((await join(' Testare@Example.SE ')).status).toBe(200)
+    expect((await join('testare@example.se')).status).toBe(409)
+    expect((await join('inte-en-adress')).status).toBe(400)
+
+    expect((await fetch(`${base}/admin/beta-waitlist`)).status).toBe(401)
+    const listed = await fetch(`${base}/admin/beta-waitlist`, { headers: admin })
+    expect(listed.status).toBe(200)
+    expect(await listed.json()).toEqual({
+      waitlist: [{ email: 'testare@example.se', createdAt: expect.any(String) }],
+    })
+  })
+
+  it('deletes the waitlist address when its invitation code is issued', async () => {
+    await fetch(`${base}/beta/waitlist`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'beta@example.se' }),
+    })
+    const created = await fetch(`${base}/admin/beta-invites`, {
+      method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ waitlistEmail: 'beta@example.se' }),
+    })
+    expect(created.status).toBe(201)
+    const listed = await fetch(`${base}/admin/beta-waitlist`, { headers: admin })
+    expect(await listed.json()).toEqual({ waitlist: [] })
+  })
 })

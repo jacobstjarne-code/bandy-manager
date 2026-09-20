@@ -93,6 +93,7 @@ export class InMemoryAttentionStore {
   #events = []
   #analyticsEvents = []
   #betaInvites = new Map()
+  #betaWaitlist = new Map()
 
   authenticateInstallation(installationId, token) {
     const installation = this.#installations.get(installationId)
@@ -386,6 +387,33 @@ export class InMemoryAttentionStore {
     if (!invite || invite.revokedAt) return false
     invite.revokedAt = new Date().toISOString()
     return true
+  }
+
+  /**
+   * Väntelistan (TILLÄGG 7, landningssidan): samma hygien som beta_invites —
+   * adressen är den enda datan, lagrad för ett utskick, gallras (raderas, inte
+   * flaggas) när koden skickats. addToBetaWaitlist returnerar false om
+   * adressen redan står i kön (409-vägen i routes.js), true om den lades till.
+   */
+  addToBetaWaitlist(email) {
+    if (this.#betaWaitlist.has(email)) return false
+    this.#betaWaitlist.set(email, new Date().toISOString())
+    return true
+  }
+
+  listBetaWaitlist() {
+    return [...this.#betaWaitlist.entries()]
+      .map(([email, createdAt]) => ({ email, createdAt }))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  }
+
+  removeFromBetaWaitlist(email) {
+    return this.#betaWaitlist.delete(email)
+  }
+
+  createBetaInviteForWaitlist({ id, codeHash, expiresAt, email }) {
+    this.createBetaInvite({ id, codeHash, expiresAt })
+    this.#betaWaitlist.delete(email)
   }
 
   pruneAnalyticsEvents(before) {

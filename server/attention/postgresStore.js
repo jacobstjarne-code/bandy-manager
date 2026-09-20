@@ -96,6 +96,15 @@ CREATE TABLE IF NOT EXISTS beta_invites (
 
 CREATE INDEX IF NOT EXISTS beta_invites_redeemed_install_idx
   ON beta_invites (redeemed_installation_id);
+
+-- Väntelistan (TILLÄGG 7, landningssidan): adressen är den enda datan, lagrad
+-- för ett utskick — den ÄR primärnyckeln, inget separat id. Ingen redeemed/
+-- revoked-status som beta_invites — raden RADERAS (removeFromBetaWaitlist)
+-- när koden skickats, den flaggas inte.
+CREATE TABLE IF NOT EXISTS beta_waitlist (
+  email varchar(254) PRIMARY KEY,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 `
 
 function iso(value) {
@@ -630,6 +639,52 @@ export class PostgresAttentionStore {
        WHERE id = $1 AND revoked_at IS NULL RETURNING id`, [id],
     )
     return result.rowCount > 0
+  }
+
+  async addToBetaWaitlist(email) {
+    // Bar `ON CONFLICT DO NOTHING` (inget kolumnmål) — beta_waitlist har bara
+    // en constraint (email PRIMARY KEY) så den är entydig, och pg-mem (testens
+    // emulator) missar konflikten med ett explicit `ON CONFLICT (email)` men
+    // hanterar den bara-formen rätt (verifierat isolerat, node -e-repro).
+    const result = await this.pool.query(
+      `INSERT INTO beta_waitlist (email) VALUES ($1)
+       ON CONFLICT DO NOTHING RETURNING email`,
+      [email],
+    )
+    return result.rowCount > 0
+  }
+
+  async removeFromBetaWaitlist(email) {
+    const result = await this.pool.query(
+      'DELETE FROM beta_waitlist WHERE email = $1 RETURNING email',
+      [email],
+    )
+    return result.rowCount > 0
+  }
+
+  async listBetaWaitlist() {
+    const result = await this.pool.query(
+      'SELECT email, created_at FROM beta_waitlist ORDER BY created_at ASC',
+    )
+    return result.rows.map(row => ({ email: row.email, createdAt: iso(row.created_at) }))
+  }
+
+  async createBetaInviteForWaitlist({ id, codeHash, expiresAt, email }) {
+    const client = await this.pool.connect()
+    try {
+      await client.query('BEGIN')
+      await client.query(
+        'INSERT INTO beta_invites (id, code_hash, expires_at) VALUES ($1, $2, $3)',
+        [id, codeHash, expiresAt],
+      )
+      await client.query('DELETE FROM beta_waitlist WHERE email = $1', [email])
+      await client.query('COMMIT')
+    } catch (error) {
+      await client.query('ROLLBACK')
+      throw error
+    } finally {
+      client.release()
+    }
   }
 
   async pruneAnalyticsEvents(before) {

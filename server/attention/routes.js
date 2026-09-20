@@ -61,6 +61,13 @@ function betaCodeHash(code) {
   return createHash('sha256').update(code).digest('hex')
 }
 
+function normalizeWaitlistEmail(value) {
+  if (typeof value !== 'string') return null
+  const email = value.trim().toLowerCase()
+  if (email.length < 3 || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return null
+  return email
+}
+
 function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
 }
@@ -323,6 +330,13 @@ export function createAttentionRouter({
     return res.status(204).end()
   }))
 
+  router.post('/beta/waitlist', asyncRoute(async (req, res) => {
+    const email = normalizeWaitlistEmail(req.body?.email)
+    if (!email) return res.status(400).json({ error: 'invalid_email' })
+    const added = await store.addToBetaWaitlist(email)
+    return added ? res.status(200).json({ queued: true }) : res.status(409).json({ error: 'already_queued' })
+  }))
+
   router.get('/admin/beta-stats', asyncRoute(async (req, res) => {
     if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
     if (!betaAdminAuthorized(req, env)) {
@@ -330,6 +344,7 @@ export function createAttentionRouter({
     }
     const rows = await store.listAllAnalyticsEvents(new Date(Date.now() - ANALYTICS_RETENTION_MS))
     const invites = await store.listBetaInvites()
+    const waitlist = await store.listBetaWaitlist()
     const invitedInstallations = new Set(await store.listBetaRedeemedInstallations())
     const withEvent = event => new Set(rows.filter(row => row.event === event &&
       invitedInstallations.has(row.installationId)).map(row => row.installationId)).size
@@ -342,6 +357,7 @@ export function createAttentionRouter({
         revoked: invites.filter(invite => invite.revokedAt).length,
         startedCareer: withEvent('game_created'),
         playedFirstMatch: withEvent('first_match'),
+        queued: waitlist.length,
       },
     })
   }))
@@ -352,9 +368,26 @@ export function createAttentionRouter({
     const code = randomBytes(24).toString('base64url')
     const id = randomUUID()
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    await store.createBetaInvite({ id, codeHash: betaCodeHash(code), expiresAt })
+    const waitlistEmail = req.body?.waitlistEmail === undefined
+      ? null
+      : normalizeWaitlistEmail(req.body.waitlistEmail)
+    if (req.body?.waitlistEmail !== undefined && !waitlistEmail) {
+      return res.status(400).json({ error: 'invalid_email' })
+    }
+    if (waitlistEmail) {
+      await store.createBetaInviteForWaitlist({ id, codeHash: betaCodeHash(code), expiresAt, email: waitlistEmail })
+    } else {
+      await store.createBetaInvite({ id, codeHash: betaCodeHash(code), expiresAt })
+    }
     res.set('Cache-Control', 'no-store')
     return res.status(201).json({ id, code, expiresAt: expiresAt.toISOString() })
+  }))
+
+  router.get('/admin/beta-waitlist', asyncRoute(async (req, res) => {
+    if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
+    if (!betaAdminAuthorized(req, env)) return res.status(401).json({ error: 'unauthorized' })
+    res.set('Cache-Control', 'no-store')
+    return res.json({ waitlist: await store.listBetaWaitlist() })
   }))
 
   router.get('/admin/beta-invites', asyncRoute(async (req, res) => {

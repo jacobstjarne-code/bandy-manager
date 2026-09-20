@@ -69,6 +69,23 @@ describe('PostgresAttentionStore', () => {
     expect(await store.listBetaRedeemedInstallations()).toEqual([])
   })
 
+  it('lagrar väntelistan separat och gallrar adressen atomiskt när en kod utfärdas', async () => {
+    expect(await store.addToBetaWaitlist('beta@example.se')).toBe(true)
+    expect(await store.addToBetaWaitlist('beta@example.se')).toBe(false)
+    expect(await store.listBetaWaitlist()).toEqual([
+      { email: 'beta@example.se', createdAt: expect.any(String) },
+    ])
+
+    await store.createBetaInviteForWaitlist({
+      id: 'invite-waitlist',
+      codeHash: createHash('sha256').update('waitlist-code').digest('hex'),
+      expiresAt: new Date(Date.now() + 86_400_000),
+      email: 'beta@example.se',
+    })
+    expect(await store.listBetaWaitlist()).toEqual([])
+    expect(await store.listBetaInvites()).toMatchObject([{ id: 'invite-waitlist' }])
+  })
+
   it('behåller subscription, snapshot och kandidat över en ny store-instans', async () => {
     await store.setSubscription(INSTALLATION_ID, TOKEN, {
       endpoint: 'https://push.test', keys: { p256dh: 'key', auth: 'auth' },
