@@ -7,7 +7,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../domain/enums'
 import { resolveEvent } from '../../domain/services/events/eventResolver'
 import { getBurnoutEscalation, assistantTookOverBody } from '../../domain/services/burnoutReliefService'
-import { buildFinalDayStop, stopUsedKeys, isOutOfEverything } from '../../domain/services/corridorService'
+import { buildFinalDayStop, buildWeekAfterStop, stopUsedKeys, isOutOfEverything } from '../../domain/services/corridorService'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -416,6 +416,33 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
   // A2 (2026-08-17): only overwritten in the round the managed club is eliminated
   // — otherwise carries forward, same accumulator pattern as lastRivalSaleInfo above.
   const lastPlayoffElimination = playoffResult.lastPlayoffElimination ?? game.lastPlayoffElimination ?? null
+
+  // TEXTLEVERANS §D5 — Veckan efter för en klubb som åker ut UNDER slutspelet
+  // (kvartsfinal, semifinal, eller en FÖRLORAD final). playoffTransition.ts
+  // täcker bara klubbar som aldrig kvalade in; utan den här grenen fanns ingen
+  // trigger alls för elimination mitt i slutspelet, och tre av
+  // weekAfterFactLines sex villkor (kvartsfinal/semifinal/förlorad final)
+  // vore död kod — aldrig nådd i ett riktigt spel. `playoffResult.lastPlayoffElimination`
+  // (INTE den ärvda `lastPlayoffElimination` ovan) är signalen: satt EN gång,
+  // precis den runda elimineringen sker (samma A2-mönster).
+  //
+  // Förlorad final krockar aldrig med Finaldagen-triggern ovan: den läser
+  // game (FÖRE denna runda), där finalseriens loserId ännu inte var satt, så
+  // isOutOfEverything(game) är false för den just eliminerade finalisten.
+  //
+  // `!triggerQFSummary`: en kvartsfinalomgång kan avgöra ALLA fyra serierna
+  // samtidigt, inklusive vår egen — då konkurrerar det etablerade QFSummary-
+  // flödet med Veckan efter om samma pendingScreen. QFSummary vinner (befintligt,
+  // testat beteende, oförändrat av den här ordern); Veckan efter för just den
+  // smala kollisionsrundan uteblir hellre än att en redan verifierad skärm
+  // tystas.
+  if (playoffResult.lastPlayoffElimination && !triggerQFSummary) {
+    const stop = buildWeekAfterStop({ ...gameAfterRipples, playoffBracket: updatedBracket })
+    if (stop) {
+      corridorStopScreen = PendingScreen.WeekAfter
+      corridorKeysUsed = stopUsedKeys(stop)
+    }
+  }
   // playoff narrative events collected here, pushed to allNewEvents after it's declared below
 
   // Apply playoff fixture cancellations to allFixtures
@@ -1393,12 +1420,24 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
   }
 
   // Auto-advance playoff rounds when managed club is eliminated
+  //
+  // TEXTLEVERANS §D5 (2026-09-20) fynd: den här rekursionen sprang rakt igenom
+  // det nya WeekAfter-stoppet. Den kontrollerade bara om klubben hade fler
+  // slutspelsmatcher kvar, aldrig om DENNA runda just satt en pendingScreen
+  // spelaren behöver se. Mätt: en klubb eliminerad i kvartsfinalen fick
+  // `pendingScreen: 'week_after'` satt korrekt, men rekursionen körde vidare
+  // förbi det direkt, och skärmen syntes aldrig — nästa gång pendingScreen
+  // sattes var vid Finaldagen, flera rundor senare, som skrev över det tysta
+  // week_after-värdet. Tre av weekAfterFactLines sex villkor (kvartsfinal/
+  // semifinal/förlorad final) hade alltså text som aldrig nådde spelaren,
+  // trots att triggern fanns — exakt den klass av fel §1 grundade sig på.
+  // `!corridorStopScreen` stoppar rekursionen den runda ett stopp sattes.
   if (isPlayoffRound && updatedBracket !== null && updatedBracket.status !== PlayoffStatus.Completed) {
     const managedHasMorePlayoffFixtures = finalAllFixtures.some(f =>
       f.status === FixtureStatus.Scheduled && !f.isCup && f.matchday > 26 &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
-    if (!managedHasMorePlayoffFixtures) {
+    if (!managedHasMorePlayoffFixtures && !corridorStopScreen) {
       return advanceToNextEvent(updatedGame, (seed ?? baseSeed) + 1)
     }
   }

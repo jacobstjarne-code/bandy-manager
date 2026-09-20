@@ -26,26 +26,36 @@ export const CORRIDOR_CONTRACT_LINES = [
   '{Namn} sitter kvar längst i omklädningsrummet nu för tiden. Han väntar på att någon ska säga något om nästa år.',
 ] as const
 
-/** D2 — andras slutspel. `{Vinnare}`, `{Förlorare}`, `{Resultat}`. */
+/**
+ * D2 — Finaldagens kommentar (TEXTLEVERANS §D5, 2026-09-20 — ersätter hela den
+ * tidigare poolen). `{Vinnare}`, `{Förlorare}`. INGEN `{Resultat}`: poolen
+ * skrevs ursprungligen för slutspelsrundor i gång ("vidare", "ute"), men visas
+ * numera bara på Finaldagen, om FINALEN — och finalens målsiffror finns inte i
+ * en utslagen klubbs save. SM-finalen spelas dessutom som EN match, så
+ * seriesiffran (1–0) hade lästs som ett riktigt matchresultat i stället för
+ * matcher vunna.
+ *
+ * `CORRIDOR_OTHERS_FINAL` är borttagen — dess enda rad ("Vi såg det från
+ * soffan...") lever vidare som den första neutrala raden nedan.
+ */
 export const CORRIDOR_OTHERS_NEUTRAL = [
-  '{Vinnare} slog {Förlorare} med {Resultat}. Halva bygden såg det på telefonen i kafferummet.',
-  '{Vinnare} vidare. {Förlorare} åker hem samma buss som vi gjorde för tre veckor sedan.',
-  '{Resultat} till {Vinnare}. Det var en match vi hade velat vara med i.',
-  '{Förlorare} ute. Deras tränare sa i tidningen att säsongen var bra ändå. Man känner igen tonen.',
+  'Vi såg det från soffan, som alla andra. {Vinnare} såg ut som ett lag som visste att det skulle vinna redan i uppvärmningen.',
+  '{Förlorare} hade chanserna. {Vinnare} hade målvakten. Så är det oftast i finaler.',
+  'Halva kafferummet höll på {Förlorare}, för att de inte är {Vinnare}. Det hjälpte inte.',
+  'Studenternas var fullt. Ingen därifrån var här. Det är så det ska vara ett år som det här.',
 ] as const
 
+/** Rivalen eller Nemesis-klubben vann guldet. */
 export const CORRIDOR_OTHERS_RIVAL_ALIVE = [
-  '{Vinnare} vidare igen. De vi slog i höstas spelar i mars. Det svider mer än det borde.',
-  '{Vinnare} vann. Klacken har bestämt sig för att hålla på {Förlorare} nästa gång.',
+  '{Vinnare} är svenska mästare. Vi slog dem i höstas. Ingen nämner det, för det gör saken värre.',
+  'Sture sa ingenting på Konsum. Han log bara, och det var värre än om han hade sagt något.',
+  'Klacken har bestämt sig för att det var domarens fel. Det var det inte. {Vinnare} var bäst i mars, och vi var inte där.',
 ] as const
 
+/** Rivalen eller Nemesis-klubben förlorade finalen. */
 export const CORRIDOR_OTHERS_RIVAL_OUT = [
-  '{Förlorare} åkte ut. Sture sa ingenting på Konsum. Han log bara.',
-  '{Resultat}. {Förlorare} är ute. Det var första gången på länge som någon här hejade på {Vinnare}.',
-] as const
-
-export const CORRIDOR_OTHERS_FINAL = [
-  '{Vinnare} är svenska mästare. På Studenternas. Vi såg det från soffan, som alla andra.',
+  '{Förlorare} tog silver. Det var första gången på länge som någon här hejade på {Vinnare}, och det kändes fel hela vägen.',
+  'Silver till {Förlorare}. I kafferummet var man överens om att det var rätt, på ett sätt ingen ville förklara.',
 ] as const
 
 /** D3 — sommaren skymtar, omgång 31–34. Ett ämne per omgång i den här ordningen. */

@@ -41,13 +41,13 @@
  */
 import type { SaveGame } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
+import { PlayoffRound } from '../enums'
 import { getCharacterName } from './supporterService'
 import {
   CORRIDOR_CONTRACT_LINES,
   CORRIDOR_OTHERS_NEUTRAL,
   CORRIDOR_OTHERS_RIVAL_ALIVE,
   CORRIDOR_OTHERS_RIVAL_OUT,
-  CORRIDOR_OTHERS_FINAL,
   CORRIDOR_SUMMER_ACADEMY,
   CORRIDOR_SUMMER_RETIREMENT,
   CORRIDOR_SUMMER_SPONSOR,
@@ -94,8 +94,17 @@ export function isOutOfEverything(game: SaveGame): boolean {
   const series = bracket
     ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
     : []
+  // TEXTLEVERANS §D5 (2026-09-20) fynd, mätt: en klubb som VANN sin
+  // kvartsfinal och sedan åkte ut i semifinalen lästes som "fortfarande i
+  // slutspel" hela vägen till Finaldagen. `s.loserId !== managedId` är sant
+  // både för en PÅGÅENDE serie (loserId null) OCH för en klubbens EGEN VUNNA
+  // serie (loserId = motståndaren, aldrig oss) — den vunna kvartsfinalen
+  // ligger kvar i bracketen för alltid, så "inte förlorare i NÅGON serie
+  // klubben nånsin var med i" är fel fråga. Rätt fråga: har klubben en
+  // PÅGÅENDE (oavgjord) serie just nu? `winnerId === null` fångar det —
+  // en vunnen serie räknas inte, en pågående gör, och en förlorad gör inte.
   const inPlayoff = series.some(s =>
-    (s.homeClubId === managedId || s.awayClubId === managedId) && s.loserId !== managedId)
+    (s.homeClubId === managedId || s.awayClubId === managedId) && s.winnerId === null)
   if (inPlayoff) return false
   // Bugg fångad vid mätningen: efter säsongsrullningen finns NÄSTA säsongs
   // cupbracket med ospelade matcher, och utan säsongsgrinden läste funktionen
@@ -104,6 +113,65 @@ export function isOutOfEverything(game: SaveGame): boolean {
   const cupAlive = !!cup && cup.season === game.currentSeason && cup.matches.some(m =>
     !m.winnerId && (m.homeClubId === managedId || m.awayClubId === managedId))
   return !cupAlive
+}
+
+/**
+ * TEXTLEVERANS §D5 (2026-09-20) — Veckan efters faktarad, sex villkor. Ersätter
+ * den generiska "Serien slutade på plats N av 12 …"-raden, som inte skiljde på
+ * klubben som MISSADE slutspelet och klubben som ÅKTE UT i det, och som bar
+ * GF–GA trots att den siffran redan står i tabellen (en mening med tre tal är
+ * en tabellrad, inte en replik).
+ *
+ * Ordningen (första träff vinner):
+ *   1–3. Bracket-serien har vår klubb som `loserId` — förlorad final, ute i
+ *        semifinalen, ute i kvartsfinalen. Runda och motståndare kommer ur
+ *        serien.
+ *   4–6. Ingen sådan serie hittas → vi missade slutspelet helt. Då är det
+ *        tabellen: plats 9 (en plats ifrån), plats 10–11 (stängd), plats 12
+ *        (sist).
+ *
+ * `{Diff}` (plats 9) är poängskillnaden till åttan. Är den 0 (samma poäng,
+ * lägre placering på inbördes möte/målskillnad) skrivs "på sämre målskillnad"
+ * i stället för "0 poäng ifrån" — 0 poäng ifrån läser fel.
+ */
+export function weekAfterFactLine(game: SaveGame): string | null {
+  const standings = game.standings ?? []
+  const row = standings.find(st => st.clubId === game.managedClubId)
+  if (!row) return null
+
+  const managedId = game.managedClubId
+  const bracket = game.playoffBracket
+  const series = bracket
+    ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
+        .find(s => s.loserId === managedId)
+    : undefined
+
+  if (series) {
+    const opponentId = series.homeClubId === managedId ? series.awayClubId : series.homeClubId
+    const opponent = game.clubs.find(c => c.id === opponentId)?.name ?? '?'
+    if (series.round === PlayoffRound.Final) {
+      const champName = game.clubs.find(c => c.id === series.winnerId)?.name ?? opponent
+      return `Silver. ${champName} vann finalen. Det får stå ett tag innan det känns som något.`
+    }
+    if (series.round === PlayoffRound.SemiFinal) {
+      return `Semifinal. ${opponent} var bättre de dagar det gällde. Plats ${row.position} i serien, och en vår som tog slut en vecka för tidigt.`
+    }
+    return `Ute i kvartsfinalen mot ${opponent}. I serien blev det plats ${row.position}. Det ena förklarar inte det andra.`
+  }
+
+  if (row.position === 9) {
+    const eighth = standings.find(st => st.position === 8)
+    const diff = eighth ? eighth.points - row.points : 0
+    const diffText = diff <= 0 ? 'på sämre målskillnad' : `${diff} poäng ifrån`
+    return `Plats nio. En plats från slutspel, ${diffText}. Det kommer att nämnas i kafferummet till mars.`
+  }
+  if (row.position === 10 || row.position === 11) {
+    return `Tabellen är stängd. Plats ${row.position} av ${standings.length}, ${row.points} poäng. Slutspelet går utan oss.`
+  }
+  if (row.position === 12) {
+    return `Sist. ${row.points} poäng. Ingen säger något om det, vilket är värre än om de gjorde det.`
+  }
+  return null
 }
 
 function volunteerNames(game: SaveGame): [string, string] {
@@ -218,14 +286,9 @@ export function buildWeekAfterStop(game: SaveGame): CorridorStop | null {
   const volunteer = volunteerLine(game, used)
   if (volunteer) { lines.push(volunteer); if (volunteer.usedKey) used.add(volunteer.usedKey) }
 
-  // Tabellens slutplacering som FAKTUM — inte en Fable-rad, ett tal spelet vet.
-  const row = (game.standings ?? []).find(st => st.clubId === game.managedClubId)
-  if (row) {
-    lines.push({
-      text: `Serien slutade på plats ${row.position} av ${(game.standings ?? []).length}. ${row.points} poäng, ${row.goalsFor}–${row.goalsAgainst} i mål.`,
-      usedKey: null,
-    })
-  }
+  // Klubbens faktiska utfall — sex villkor, se weekAfterFactLine (§D5).
+  const fact = weekAfterFactLine(game)
+  if (fact) lines.push({ text: fact, usedKey: null })
 
   if (lines.length === 0) return null
   return { kind: 'week_after', ...STOP_HEADINGS.week_after, lines }
@@ -247,29 +310,31 @@ export function buildFinalDayStop(game: SaveGame): CorridorStop | null {
   if (!series || !champId) return null
   const loserId = series.winnerId === series.homeClubId ? series.awayClubId : series.homeClubId
 
-  // Finalens utfall som FAKTUM, inte som prosa. Medvetet en etikett och två
-  // namn: SM-finalen spelas som EN match, så seriesiffran (1–0) hade
-  // misslett om den presenterats som ett resultat — och Code skriver ingen
-  // svensk speltext. Resultatmeningen bärs av Fables D2-rad nedan.
+  // TEXTLEVERANS §D5 — defensivt: den som spelade finalen (vann eller
+  // förlorade den) kan strukturellt inte nå Finaldagen (isOutOfEverything
+  // läser FÖRRA rundans bracket, som ännu inte hade loserId satt när finalen
+  // avgörs), men skärmen ska aldrig kunna säga "vi är åskådare" till laget som
+  // just spelade finalen om den vägen någonsin öppnas.
+  if (champId === game.managedClubId || loserId === game.managedClubId) return null
+
   const champName = game.clubs.find(c => c.id === champId)?.name ?? '?'
   const runnerUp = game.clubs.find(c => c.id === loserId)?.name ?? '?'
-  lines.push({ text: `SM-guld: ${champName}. Tvåa: ${runnerUp}.`, usedKey: null })
+  // TEXTLEVERANS §D5 — guldraden ersätter "SM-guld: X. Tvåa: Y.": ingen säger
+  // tvåa om en förlorad final, det heter silver, och raden är prosa, inte
+  // en etikett.
+  lines.push({ text: `${champName} är svenska mästare. ${runnerUp} tog silver.`, usedKey: null })
+
   const rivalClubIds = rivalAndNemesisClubs(game)
   const rivalIsChampion = rivalClubIds.has(champId)
   const rivalInvolved = rivalIsChampion || rivalClubIds.has(loserId)
   const pool: [Pool, string] = rivalInvolved
     ? (rivalIsChampion ? [CORRIDOR_OTHERS_RIVAL_ALIVE, 'others_rival_alive'] : [CORRIDOR_OTHERS_RIVAL_OUT, 'others_rival_out'])
-    : [CORRIDOR_OTHERS_FINAL, 'others_final']
+    : [CORRIDOR_OTHERS_NEUTRAL, 'others_neutral']
   const picked = pickUnused(pool[0], pool[1], used)
     ?? pickUnused(CORRIDOR_OTHERS_NEUTRAL, 'others_neutral', used)
   if (picked) {
     lines.push({
-      text: fill(picked.line, {
-        'Vinnare': game.clubs.find(c => c.id === champId)?.name ?? '?',
-        'Förlorare': game.clubs.find(c => c.id === loserId)?.name ?? '?',
-        // Enmatchsfinal: seriesiffran ÄR matchresultatet i matcher vunna.
-        'Resultat': `${Math.max(series.homeWins, series.awayWins)}–${Math.min(series.homeWins, series.awayWins)}`,
-      }),
+      text: fill(picked.line, { 'Vinnare': champName, 'Förlorare': runnerUp }),
       usedKey: picked.key,
     })
     used.add(picked.key)
