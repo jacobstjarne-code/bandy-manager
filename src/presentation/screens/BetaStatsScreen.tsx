@@ -199,6 +199,24 @@ export function BetaStatsScreen() {
   const statRow = (label: string, value: number | string) =>
     <div className="beta-access__stat-row" key={label}><span>{label}</span><strong>{value}</strong></div>
 
+  if (!summary) return <main className="beta-access beta-access--admin-login">
+    <section className="beta-access__panel beta-access__login beta-access__login-card">
+      <p className="beta-access__eyebrow">BANDY MANAGER · INTERN VY</p>
+      <h1>Betaadministration</h1>
+      <label className="beta-access__label" htmlFor="beta-admin-key">ADMINISTRATÖRSNYCKEL</label>
+      <input className="beta-access__input" id="beta-admin-key" type="password" autoComplete="off"
+        value={secret} onChange={event => setSecret(event.target.value)}
+        onKeyDown={event => { if (event.key === 'Enter' && secret && !loading) void loadStats() }} />
+      <button className="btn btn-primary beta-access__primary" type="button"
+        onClick={() => void loadStats()} disabled={!secret || loading}>
+        {loading ? 'ÖPPNAR…' : 'ÖPPNA ADMIN →'}
+      </button>
+      {/* adherence-semantic-key: authentication/read failure requiring admin action */}
+      {error && <p className="beta-access__message" role="alert">{error}</p>}
+      <p className="beta-access__login-note">Endast för administratörer av det slutna betatestet.</p>
+    </section>
+  </main>
+
   return <main className="beta-access beta-access--admin">
     <div className="beta-access__admin-inner">
       <header className="beta-access__admin-header">
@@ -210,20 +228,6 @@ export function BetaStatsScreen() {
         <h1>Betatestet i siffror.</h1>
         <p>Måtten avser installationer, inte personer. Spelmåtten omfattar alla som tillåter användningsstatistik, även spelare utan betainbjudan. Inbjudna redovisas separat längre ner.</p>
       </header>
-
-      {!summary && <section className="beta-access__panel beta-access__login">
-        <h2>Öppna översikten</h2>
-        <label className="beta-access__label" htmlFor="beta-admin-key">ADMINISTRATÖRSNYCKEL</label>
-        <input className="beta-access__input" id="beta-admin-key" type="password" autoComplete="off"
-          value={secret} onChange={event => setSecret(event.target.value)}
-          onKeyDown={event => { if (event.key === 'Enter' && secret && !loading) void loadStats() }} />
-        <button className="btn btn-primary beta-access__primary" type="button"
-          onClick={() => void loadStats()} disabled={!secret || loading}>
-          {loading ? 'HÄMTAR…' : 'VISA STATISTIK →'}
-        </button>
-        {/* adherence-semantic-key: authentication/read failure requiring admin action */}
-        {error && <p className="beta-access__message" role="alert">{error}</p>}
-      </section>}
 
       {summary && <>
         <section className="beta-access__overview" aria-label="Viktigaste måtten">
