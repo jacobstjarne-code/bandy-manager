@@ -339,7 +339,58 @@
   font-size: 10px;
 }
 
-.beta-access__create { margin: 22px 0 0; }
+.beta-access__refresh {
+  display: block;
+  min-height: 42px;
+  margin: 15px 0 0 auto;
+  padding: 8px 0;
+  background: transparent;
+  color: var(--accent-dark);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.beta-access__invite-form {
+  margin-top: 22px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+
+.beta-access__invite-form-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 16px;
+}
+
+.beta-access__invite-form-head strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+}
+
+.beta-access__invite-form-head span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.beta-access__invite-form .beta-access__label:not(:first-of-type) { margin-top: 14px; }
+.beta-access__invite-form .beta-access__input { min-height: 48px; }
+.beta-access__create { margin: 0; }
+
+.beta-access__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: 17px;
+}
+
+.beta-access__form-actions .beta-access__primary { flex: 1 1 230px; }
 
 .beta-access__code-panel {
   margin-top: 16px;
@@ -433,6 +484,11 @@
 .beta-access__invite-item span {
   color: var(--text-secondary);
   font-size: 11px;
+}
+
+.beta-access__invite-item .beta-access__activated {
+  color: var(--success-text, #3f6b42);
+  font-weight: 700;
 }
 
 .beta-access__invite-item button {

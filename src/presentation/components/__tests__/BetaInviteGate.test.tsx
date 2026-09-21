@@ -23,4 +23,13 @@ describe('beta invitation launch flag', () => {
     // SSR-kontrakt.
     expect(markup).not.toContain('<p>Spelet</p>')
   })
+
+  it('uses the canonical hyphenated domain in the invite help', async () => {
+    const [{ readFile }, { resolve }] = await Promise.all([
+      import('node:fs/promises'), import('node:path'),
+    ])
+    const source = await readFile(resolve(process.cwd(), 'src/presentation/components/BetaInviteGate.tsx'), 'utf8')
+    expect(source).toContain('bandy-manager.se')
+    expect(source).not.toContain('bandymanager.se')
+  })
 })

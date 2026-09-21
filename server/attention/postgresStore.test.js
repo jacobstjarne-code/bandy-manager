@@ -57,12 +57,16 @@ describe('PostgresAttentionStore', () => {
     await store.createBetaInvite({
       id: 'invite-12345', codeHash,
       expiresAt: new Date(Date.now() + 86_400_000),
+      recipientLabel: 'Erik', recipientContact: 'erik@example.se',
     })
     expect(await store.redeemBetaInvite(codeHash, 'installation-one')).toBe(true)
     expect(await store.redeemBetaInvite(codeHash, 'installation-two')).toBe(false)
     expect(await store.hasBetaAccess('installation-one')).toBe(true)
     expect(await store.listBetaRedeemedInstallations()).toEqual(['installation-one'])
-    expect(await store.listBetaInvites()).toMatchObject([{ id: 'invite-12345' }])
+    expect(await store.listBetaInvites()).toMatchObject([{
+      id: 'invite-12345', recipientLabel: 'Erik', recipientContact: null,
+      redeemedAt: expect.any(String),
+    }])
     expect(JSON.stringify(await store.listBetaInvites())).not.toContain('secret-invite-code')
     expect(await store.revokeBetaInvite('invite-12345')).toBe(true)
     expect(await store.hasBetaAccess('installation-one')).toBe(false)
@@ -81,9 +85,12 @@ describe('PostgresAttentionStore', () => {
       codeHash: createHash('sha256').update('waitlist-code').digest('hex'),
       expiresAt: new Date(Date.now() + 86_400_000),
       email: 'beta@example.se',
+      recipientLabel: 'Beta Testare', recipientContact: 'beta@example.se',
     })
     expect(await store.listBetaWaitlist()).toEqual([])
-    expect(await store.listBetaInvites()).toMatchObject([{ id: 'invite-waitlist' }])
+    expect(await store.listBetaInvites()).toMatchObject([{
+      id: 'invite-waitlist', recipientLabel: 'Beta Testare', recipientContact: 'beta@example.se',
+    }])
   })
 
   it('behåller subscription, snapshot och kandidat över en ny store-instans', async () => {

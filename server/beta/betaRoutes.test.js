@@ -36,7 +36,10 @@ describe('closed beta routes', () => {
   it('redeems a single-use code, blocks a second installation, then revokes access', async () => {
     await store.ensureInstallation('installation-one', 'token-one')
     await store.ensureInstallation('installation-two', 'token-two')
-    const created = await fetch(`${base}/admin/beta-invites`, { method: 'POST', headers: admin })
+    const created = await fetch(`${base}/admin/beta-invites`, {
+      method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipientLabel: 'Erik', recipientContact: 'erik@example.se' }),
+    })
     expect(created.status).toBe(201)
     const { id, code } = await created.json()
     expect(code).toMatch(/^[A-Za-z0-9_-]{32}$/)
@@ -53,6 +56,10 @@ describe('closed beta routes', () => {
     })
     expect((await access()).status).toBe(200)
     expect((await (await access()).json()).granted).toBe(true)
+    const invites = await (await fetch(`${base}/admin/beta-invites`, { headers: admin })).json()
+    expect(invites.invites[0]).toMatchObject({
+      recipientLabel: 'Erik', recipientContact: null, redeemedAt: expect.any(String),
+    })
     expect((await fetch(`${base}/admin/beta-invites/${id}`, {
       method: 'DELETE', headers: admin,
     })).status).toBe(204)
@@ -83,10 +90,27 @@ describe('closed beta routes', () => {
     })
     const created = await fetch(`${base}/admin/beta-invites`, {
       method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ waitlistEmail: 'beta@example.se' }),
+      body: JSON.stringify({
+        waitlistEmail: 'beta@example.se', recipientLabel: 'Beta Testare',
+        recipientContact: 'beta@example.se',
+      }),
     })
     expect(created.status).toBe(201)
     const listed = await fetch(`${base}/admin/beta-waitlist`, { headers: admin })
     expect(await listed.json()).toEqual({ waitlist: [] })
+  })
+
+  it('kräver en mottagaretikett och gallrar kontaktuppgiften vid återkallelse', async () => {
+    expect((await fetch(`${base}/admin/beta-invites`, { method: 'POST', headers: admin })).status).toBe(400)
+    const created = await fetch(`${base}/admin/beta-invites`, {
+      method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipientLabel: 'Erik', recipientContact: '+46 70 123 45 67' }),
+    })
+    const { id } = await created.json()
+    expect((await fetch(`${base}/admin/beta-invites/${id}`, { method: 'DELETE', headers: admin })).status).toBe(204)
+    const invites = await (await fetch(`${base}/admin/beta-invites`, { headers: admin })).json()
+    expect(invites.invites[0]).toMatchObject({
+      recipientLabel: 'Erik', recipientContact: null, revokedAt: expect.any(String),
+    })
   })
 })

@@ -61,7 +61,7 @@ export function BetaInviteGate({ children }: { children: ReactNode }) {
           <input className="beta-access__input" id="beta-code" value={code} onChange={event => setCode(event.target.value)}
             autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
             aria-describedby={message ? 'beta-gate-message' : undefined} />
-          <p className="beta-access__hint">Har du ingen kod? Kön finns på bandymanager.se.</p>
+          <p className="beta-access__hint">Har du ingen kod? Kön finns på bandy-manager.se.</p>
           <button className="btn btn-primary beta-access__primary" type="submit" disabled={!code.trim() || redeeming}>
             {redeeming ? 'KONTROLLERAR…' : 'GÅ VIDARE →'}
           </button>

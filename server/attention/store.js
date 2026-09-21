@@ -349,11 +349,12 @@ export class InMemoryAttentionStore {
     return this.#analyticsEvents.filter(event => Date.parse(event.recordedAt) >= sinceMs)
   }
 
-  createBetaInvite({ id, codeHash, expiresAt }) {
+  createBetaInvite({ id, codeHash, expiresAt, recipientLabel = null, recipientContact = null }) {
     this.#betaInvites.set(id, {
       id, codeHash, expiresAt: new Date(expiresAt).toISOString(),
       createdAt: new Date().toISOString(), revokedAt: null,
       redeemedAt: null, redeemedInstallationId: null,
+      recipientLabel, recipientContact,
     })
   }
 
@@ -363,6 +364,7 @@ export class InMemoryAttentionStore {
       (invite.redeemedAt && invite.redeemedInstallationId !== installationId)) return false
     invite.redeemedInstallationId = installationId
     invite.redeemedAt ??= new Date().toISOString()
+    invite.recipientContact = null
     return true
   }
 
@@ -372,8 +374,12 @@ export class InMemoryAttentionStore {
   }
 
   listBetaInvites() {
-    return [...this.#betaInvites.values()].map(({ id, createdAt, expiresAt, revokedAt, redeemedAt }) =>
-      ({ id, createdAt, expiresAt, revokedAt, redeemedAt }))
+    const now = Date.now()
+    return [...this.#betaInvites.values()].map(invite => {
+      if (Date.parse(invite.expiresAt) <= now) invite.recipientContact = null
+      const { id, createdAt, expiresAt, revokedAt, redeemedAt, recipientLabel, recipientContact } = invite
+      return { id, createdAt, expiresAt, revokedAt, redeemedAt, recipientLabel, recipientContact }
+    })
   }
 
   listBetaRedeemedInstallations() {
@@ -386,6 +392,7 @@ export class InMemoryAttentionStore {
     const invite = this.#betaInvites.get(id)
     if (!invite || invite.revokedAt) return false
     invite.revokedAt = new Date().toISOString()
+    invite.recipientContact = null
     return true
   }
 
@@ -411,8 +418,8 @@ export class InMemoryAttentionStore {
     return this.#betaWaitlist.delete(email)
   }
 
-  createBetaInviteForWaitlist({ id, codeHash, expiresAt, email }) {
-    this.createBetaInvite({ id, codeHash, expiresAt })
+  createBetaInviteForWaitlist({ id, codeHash, expiresAt, email, recipientLabel, recipientContact }) {
+    this.createBetaInvite({ id, codeHash, expiresAt, recipientLabel, recipientContact })
     this.#betaWaitlist.delete(email)
   }
 

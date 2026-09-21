@@ -87,12 +87,17 @@ CREATE INDEX IF NOT EXISTS analytics_events_event_idx
 CREATE TABLE IF NOT EXISTS beta_invites (
   id varchar(128) PRIMARY KEY,
   code_hash varchar(64) NOT NULL UNIQUE,
+  recipient_label varchar(120),
+  recipient_contact varchar(254),
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   revoked_at timestamptz,
   redeemed_at timestamptz,
   redeemed_installation_id varchar(128) REFERENCES attention_installations(id) ON DELETE SET NULL
 );
+
+ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS recipient_label varchar(120);
+ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS recipient_contact varchar(254);
 
 CREATE INDEX IF NOT EXISTS beta_invites_redeemed_install_idx
   ON beta_invites (redeemed_installation_id);
@@ -585,17 +590,19 @@ export class PostgresAttentionStore {
     }))
   }
 
-  async createBetaInvite({ id, codeHash, expiresAt }) {
+  async createBetaInvite({ id, codeHash, expiresAt, recipientLabel = null, recipientContact = null }) {
     await this.pool.query(
-      `INSERT INTO beta_invites (id, code_hash, expires_at) VALUES ($1, $2, $3)`,
-      [id, codeHash, expiresAt],
+      `INSERT INTO beta_invites
+         (id, code_hash, expires_at, recipient_label, recipient_contact)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [id, codeHash, expiresAt, recipientLabel, recipientContact],
     )
   }
 
   async redeemBetaInvite(codeHash, installationId) {
     const result = await this.pool.query(
       `UPDATE beta_invites SET redeemed_installation_id = $2,
-         redeemed_at = COALESCE(redeemed_at, now())
+         redeemed_at = COALESCE(redeemed_at, now()), recipient_contact = NULL
        WHERE code_hash = $1 AND revoked_at IS NULL AND expires_at > now()
          AND ((redeemed_installation_id IS NULL AND redeemed_at IS NULL) OR redeemed_installation_id = $2)
        RETURNING id`,
@@ -615,13 +622,19 @@ export class PostgresAttentionStore {
   }
 
   async listBetaInvites() {
+    await this.pool.query(
+      `UPDATE beta_invites SET recipient_contact = NULL
+       WHERE expires_at <= now() AND recipient_contact IS NOT NULL`,
+    )
     const result = await this.pool.query(
-      `SELECT id, created_at, expires_at, revoked_at, redeemed_at
+      `SELECT id, recipient_label, recipient_contact,
+         created_at, expires_at, revoked_at, redeemed_at
        FROM beta_invites ORDER BY created_at DESC`,
     )
     return result.rows.map(row => ({
       id: row.id, createdAt: iso(row.created_at), expiresAt: iso(row.expires_at),
       revokedAt: iso(row.revoked_at), redeemedAt: iso(row.redeemed_at),
+      recipientLabel: row.recipient_label, recipientContact: row.recipient_contact,
     }))
   }
 
@@ -635,7 +648,7 @@ export class PostgresAttentionStore {
 
   async revokeBetaInvite(id) {
     const result = await this.pool.query(
-      `UPDATE beta_invites SET revoked_at = now()
+      `UPDATE beta_invites SET revoked_at = now(), recipient_contact = NULL
        WHERE id = $1 AND revoked_at IS NULL RETURNING id`, [id],
     )
     return result.rowCount > 0
@@ -669,13 +682,15 @@ export class PostgresAttentionStore {
     return result.rows.map(row => ({ email: row.email, createdAt: iso(row.created_at) }))
   }
 
-  async createBetaInviteForWaitlist({ id, codeHash, expiresAt, email }) {
+  async createBetaInviteForWaitlist({ id, codeHash, expiresAt, email, recipientLabel, recipientContact }) {
     const client = await this.pool.connect()
     try {
       await client.query('BEGIN')
       await client.query(
-        'INSERT INTO beta_invites (id, code_hash, expires_at) VALUES ($1, $2, $3)',
-        [id, codeHash, expiresAt],
+        `INSERT INTO beta_invites
+           (id, code_hash, expires_at, recipient_label, recipient_contact)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [id, codeHash, expiresAt, recipientLabel, recipientContact],
       )
       await client.query('DELETE FROM beta_waitlist WHERE email = $1', [email])
       await client.query('COMMIT')

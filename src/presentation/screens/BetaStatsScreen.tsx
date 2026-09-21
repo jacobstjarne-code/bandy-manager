@@ -15,7 +15,15 @@ type BetaSummary = {
   issues30: { renderErrors: number; saveFailures: number }
   invites: { issued: number; redeemed: number; revoked: number; startedCareer: number; playedFirstMatch: number; queued: number }
 }
-type Invite = { id: string; createdAt: string; expiresAt: string; revokedAt: string | null; redeemedAt: string | null }
+type Invite = {
+  id: string
+  createdAt: string
+  expiresAt: string
+  revokedAt: string | null
+  redeemedAt: string | null
+  recipientLabel: string | null
+  recipientContact: string | null
+}
 type WaitlistEntry = { email: string; createdAt: string }
 
 const funnelLabels: Record<string, string> = {
@@ -38,7 +46,10 @@ export function BetaStatsScreen() {
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([])
   const [newCode, setNewCode] = useState('')
   const [newCodeRecipient, setNewCodeRecipient] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [recipientLabel, setRecipientLabel] = useState('')
+  const [recipientContact, setRecipientContact] = useState('')
+  const [waitlistEmail, setWaitlistEmail] = useState('')
+  const [copied, setCopied] = useState<'code' | 'sms' | 'email' | ''>('')
   const [creating, setCreating] = useState(false)
   const generation = useRef(0)
   const createInFlight = useRef(false)
@@ -53,9 +64,12 @@ export function BetaStatsScreen() {
     setSecret('')
     setNewCode('')
     setNewCodeRecipient('')
+    setRecipientLabel('')
+    setRecipientContact('')
+    setWaitlistEmail('')
     setInvites([])
     setWaitlist([])
-    setCopied(false)
+    setCopied('')
     setError('')
   }
 
@@ -105,7 +119,7 @@ export function BetaStatsScreen() {
     }
   }
 
-  async function createInvite(waitlistEmail?: string) {
+  async function createInvite() {
     if (createInFlight.current || newCode) return
     createInFlight.current = true
     const epoch = generation.current
@@ -114,17 +128,19 @@ export function BetaStatsScreen() {
     try {
       const response = await fetch(attentionApiUrl('/api/admin/beta-invites'), {
         method: 'POST',
-        headers: waitlistEmail
-          ? { ...adminHeaders(), 'Content-Type': 'application/json' }
-          : adminHeaders(),
-        body: waitlistEmail ? JSON.stringify({ waitlistEmail }) : undefined,
+        headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientLabel: recipientLabel.trim(),
+          recipientContact: recipientContact.trim(),
+          ...(waitlistEmail ? { waitlistEmail } : {}),
+        }),
       })
       if (!response.ok) throw new Error('Inbjudan kunde inte skapas.')
       const result = await response.json() as { code: string }
       if (epoch !== generation.current) return
       setNewCode(result.code)
-      setNewCodeRecipient(waitlistEmail ?? '')
-      setCopied(false)
+      setNewCodeRecipient(recipientLabel.trim())
+      setCopied('')
       await loadStats(true, epoch)
     } catch (cause) {
       if (epoch === generation.current) setError(cause instanceof Error ? cause.message : 'Något gick fel.')
@@ -151,15 +167,34 @@ export function BetaStatsScreen() {
     }
   }
 
-  async function copyCode() {
+  function invitationText(kind: 'sms' | 'email') {
+    const hello = newCodeRecipient ? `Hej ${newCodeRecipient}!` : 'Hej!'
+    const body = `${hello}\n\nDu är inbjuden att betatesta Bandy Manager.\n\n1. Öppna https://bandy-manager.se\n2. Förhandskod till webbplatsen: slottsbron1945\n3. Följ stegen och lägg spelet på hemskärmen.\n4. Din personliga spelkod: ${newCode}\n\nSkriv in spelkoden först när du öppnat spelet från hemskärmen. Koden gäller en installation.`
+    return kind === 'email' ? `Ämne: Inbjudan till Bandy Manager\n\n${body}` : body
+  }
+
+  async function copyInvite(value: 'code' | 'sms' | 'email') {
     const epoch = generation.current
     try {
-      await navigator.clipboard.writeText(newCode)
-      if (epoch === generation.current) setCopied(true)
+      await navigator.clipboard.writeText(value === 'code' ? newCode : invitationText(value))
+      if (epoch === generation.current) setCopied(value)
     } catch {
       if (epoch === generation.current) setError('Kopiering misslyckades. Markera och kopiera koden manuellt.')
     }
   }
+
+  function prepareWaitlistInvite(email: string) {
+    setWaitlistEmail(email)
+    setRecipientLabel('')
+    setRecipientContact(email)
+    setNewCode('')
+    setCopied('')
+    document.getElementById('beta-recipient-label')?.focus()
+  }
+
+  const dateTime = (value: string) => new Intl.DateTimeFormat('sv-SE', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+  }).format(new Date(value))
 
   const statRow = (label: string, value: number | string) =>
     <div className="beta-access__stat-row" key={label}><span>{label}</span><strong>{value}</strong></div>
@@ -257,18 +292,39 @@ export function BetaStatsScreen() {
             {statRow('Inbjudna som spelat första matchen', summary.invites.playedFirstMatch)}
           </div>
           <p className="beta-access__note">De två spelmåtten inkluderar bara installationer som tillåter användningsstatistik.</p>
-          <button className="btn btn-primary beta-access__primary beta-access__create" type="button"
-            disabled={creating || Boolean(newCode)} onClick={() => void createInvite()}>{creating ? 'SKAPAR…' : 'SKAPA INBJUDAN →'}</button>
+          <button className="beta-access__refresh" type="button" onClick={() => void loadStats(true)} disabled={loading}>
+            {loading ? 'UPPDATERAR…' : 'UPPDATERA STATUS ↻'}
+          </button>
+          <form className="beta-access__invite-form" onSubmit={event => { event.preventDefault(); void createInvite() }}>
+            <div className="beta-access__invite-form-head">
+              <strong>Ny inbjudan</strong>
+              {waitlistEmail && <span>Från kön · {waitlistEmail}</span>}
+            </div>
+            <label className="beta-access__label" htmlFor="beta-recipient-label">MOTTAGARE</label>
+            <input className="beta-access__input" id="beta-recipient-label" value={recipientLabel}
+              onChange={event => setRecipientLabel(event.target.value)} placeholder="Till exempel Erik" maxLength={120} />
+            <label className="beta-access__label" htmlFor="beta-recipient-contact">KONTAKTUPPGIFT · FRIVILLIG</label>
+            <input className="beta-access__input" id="beta-recipient-contact" value={recipientContact}
+              onChange={event => setRecipientContact(event.target.value)} placeholder="Mejl eller telefon" maxLength={254} />
+            <p className="beta-access__note">Kontaktuppgiften gallras när koden används, återkallas eller löper ut. Namnet ligger kvar i historiken.</p>
+            <div className="beta-access__form-actions">
+              <button className="btn btn-primary beta-access__primary beta-access__create" type="submit"
+                disabled={creating || Boolean(newCode) || !recipientLabel.trim()}>{creating ? 'SKAPAR…' : 'SKAPA INBJUDAN →'}</button>
+              {waitlistEmail && <button className="btn btn-ghost" type="button" onClick={() => {
+                setWaitlistEmail(''); setRecipientLabel(''); setRecipientContact('')
+              }}>AVBRYT</button>}
+            </div>
+          </form>
           {newCode && <div className="beta-access__code-panel" role="status">
             <strong>Ny inbjudningskod</strong>
-            <p>{newCodeRecipient
-              ? <>Koden visas bara nu. Skicka den till <strong>{newCodeRecipient}</strong>.</>
-              : 'Koden visas bara nu. Skicka den direkt till den du vill bjuda in.'}</p>
+            <p>Koden visas bara nu. Skicka den till <strong>{newCodeRecipient}</strong>.</p>
             <code>{newCode}</code>
             <div className="beta-access__code-actions">
-              <button className="btn btn-outline" type="button" onClick={() => void copyCode()}>{copied ? 'KOPIERAD ✓' : 'KOPIERA KOD'}</button>
+              <button className="btn btn-outline" type="button" onClick={() => void copyInvite('sms')}>{copied === 'sms' ? 'SMS KOPIERAT ✓' : 'KOPIERA SMS'}</button>
+              <button className="btn btn-outline" type="button" onClick={() => void copyInvite('email')}>{copied === 'email' ? 'MEJL KOPIERAT ✓' : 'KOPIERA MEJL'}</button>
+              <button className="btn btn-ghost" type="button" onClick={() => void copyInvite('code')}>{copied === 'code' ? 'KOD KOPIERAD ✓' : 'BARA KODEN'}</button>
               <button className="btn btn-ghost" type="button" onClick={() => {
-                setNewCode(''); setNewCodeRecipient(''); setCopied(false)
+                setNewCode(''); setNewCodeRecipient(''); setRecipientLabel(''); setRecipientContact(''); setWaitlistEmail(''); setCopied('')
               }}>KLAR</button>
             </div>
           </div>}
@@ -278,7 +334,7 @@ export function BetaStatsScreen() {
             {waitlist.map(entry => <div className="beta-access__invite-item" key={entry.email}>
               <div><strong>{entry.email}</strong><span>{new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short' }).format(new Date(entry.createdAt))}</span></div>
               <button className="beta-access__text-button" type="button"
-                disabled={creating || Boolean(newCode)} onClick={() => void createInvite(entry.email)}>SKAPA KOD</button>
+                disabled={creating || Boolean(newCode)} onClick={() => prepareWaitlistInvite(entry.email)}>FÖRBERED KOD</button>
             </div>)}
           </details>
           <details className="beta-access__invite-details">
@@ -287,7 +343,12 @@ export function BetaStatsScreen() {
             {invites.map(invite => {
               const status = invite.revokedAt ? 'Återkallad' : invite.redeemedAt ? 'Använd' : Date.parse(invite.expiresAt) <= Date.now() ? 'Utgången' : 'Oanvänd'
               return <div className="beta-access__invite-item" key={invite.id}>
-                <div><strong>Inbjudan · {invite.id.slice(-6)}</strong><span>{new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short' }).format(new Date(invite.createdAt))} · {status}</span></div>
+                <div>
+                  <strong>{invite.recipientLabel ?? `Inbjudan · ${invite.id.slice(-6)}`}</strong>
+                  {invite.recipientContact && <span>{invite.recipientContact}</span>}
+                  <span>Skapad {dateTime(invite.createdAt)} · {status}</span>
+                  {invite.redeemedAt && <span className="beta-access__activated">Aktiverad {dateTime(invite.redeemedAt)}</span>}
+                </div>
                 {!invite.revokedAt && <button className="beta-access__text-button" type="button" onClick={() => void revokeInvite(invite.id)}>ÅTERKALLA</button>}
               </div>
             })}

@@ -68,6 +68,13 @@ function normalizeWaitlistEmail(value) {
   return email
 }
 
+function normalizeInviteText(value, maxLength) {
+  if (value === undefined || value === null || value === '') return null
+  if (typeof value !== 'string') return null
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  return normalized && normalized.length <= maxLength ? normalized : null
+}
+
 function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
 }
@@ -374,10 +381,21 @@ export function createAttentionRouter({
     if (req.body?.waitlistEmail !== undefined && !waitlistEmail) {
       return res.status(400).json({ error: 'invalid_email' })
     }
+    const recipientLabel = normalizeInviteText(req.body?.recipientLabel, 120)
+    const recipientContact = normalizeInviteText(req.body?.recipientContact, 254)
+    if (!recipientLabel) return res.status(400).json({ error: 'recipient_required' })
+    if (req.body?.recipientContact !== undefined && req.body.recipientContact !== '' && !recipientContact) {
+      return res.status(400).json({ error: 'invalid_recipient_contact' })
+    }
     if (waitlistEmail) {
-      await store.createBetaInviteForWaitlist({ id, codeHash: betaCodeHash(code), expiresAt, email: waitlistEmail })
+      await store.createBetaInviteForWaitlist({
+        id, codeHash: betaCodeHash(code), expiresAt, email: waitlistEmail,
+        recipientLabel, recipientContact: recipientContact ?? waitlistEmail,
+      })
     } else {
-      await store.createBetaInvite({ id, codeHash: betaCodeHash(code), expiresAt })
+      await store.createBetaInvite({
+        id, codeHash: betaCodeHash(code), expiresAt, recipientLabel, recipientContact,
+      })
     }
     res.set('Cache-Control', 'no-store')
     return res.status(201).json({ id, code, expiresAt: expiresAt.toISOString() })
