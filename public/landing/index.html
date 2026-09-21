@@ -198,6 +198,10 @@
   .opponent-copy h3{font-size:30px;line-height:1.05;color:#fff;margin-bottom:5px}
   .opponent-copy p{font-family:var(--serif);font-size:15px;font-style:italic;color:rgba(255,255,255,.82);margin:0;max-width:48em}
   .match-live-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.6fr);gap:24px;align-items:stretch}
+  .match-panel{display:flex;min-width:0;flex-direction:column;gap:14px;margin:0}
+  .match-panel>.live-stage,.match-panel>.corner-stage{flex:1}
+  .match-panel figcaption{padding:0 4px;color:var(--muted-2);font-size:14px;line-height:1.55}
+  .match-panel figcaption strong{display:block;margin-bottom:3px;color:var(--paper);font-family:var(--sans);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
   .live-stage,.corner-stage{background:#0a0908;border:1px solid #342b23;border-radius:14px;overflow:hidden}
   .live-stage{padding:22px}
   .live-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:0 2px 16px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -232,13 +236,6 @@
     .live-stage,.corner-stage{padding:16px}
     .live-stage .board{padding:18px 14px}
   }
-
-  /* Bury Fen */
-  .bf{background:var(--ink-4);text-align:center}
-  .bf h2{margin-bottom:18px}
-  .bf p{max-width:40em;margin-left:auto;margin-right:auto;color:var(--muted-2)}
-  .bf a.link{display:inline-flex;align-items:center;gap:12px;color:var(--amber);text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-top:14px;padding:10px 14px;border:1px solid rgba(221,149,85,.25);border-radius:999px}
-  .bf a.link img{width:34px;opacity:.95}
 
   /* Så spelar du */
   .play{background:radial-gradient(60% 50% at 50% 100%,rgba(221,149,85,.14),transparent 70%),var(--ink)}
@@ -388,6 +385,7 @@
     <div class="section-head">
       <p class="kicker">Matchdagen</p>
       <h2>Matchen, minut för minut</h2>
+      <p class="section-intro">Varje match börjar med platsen och motståndet. När spelet är igång följer du tavlan, läser matchen och kliver in när ett läge kräver ett beslut.</p>
     </div>
 
     <figure class="opponent-stage">
@@ -403,54 +401,60 @@
     </figure>
 
     <div class="match-live-grid">
-      <div class="live-stage" aria-label="Exempel på livematch">
-        <div class="live-head"><span><span class="live-dot">●</span> Live · Kolbottnen</span><span>Matchflöde</span></div>
-        <div class="board" aria-label="Resultattavla">
-          <div class="row">
-            <div class="home"><div class="team">Lesjöfors</div><div class="score">2</div></div>
-            <div class="dot"></div>
-            <div class="away"><div class="team">Forsbacka</div><div class="score">3</div></div>
-            <div class="clock"><small>HL 2</small><b>74:22</b></div>
+      <figure class="match-panel">
+        <div class="live-stage" aria-label="Exempel på livematch">
+          <div class="live-head"><span><span class="live-dot">●</span> Live · Kolbottnen</span><span>Matchflöde</span></div>
+          <div class="board" aria-label="Resultattavla">
+            <div class="row">
+              <div class="home"><div class="team">Lesjöfors</div><div class="score">2</div></div>
+              <div class="dot"></div>
+              <div class="away"><div class="team">Forsbacka</div><div class="score">3</div></div>
+              <div class="clock"><small>HL 2</small><b>74:22</b></div>
+            </div>
+            <div class="weather">−14° · lätt snö · vind 2 m/s</div>
+            <div class="ticker"><span class="tag">MÅL · HOLMGREN 74'</span><i>Klacken tystnar.</i></div>
           </div>
-          <div class="weather">−14° · lätt snö · vind 2 m/s</div>
-          <div class="ticker"><span class="tag">MÅL · HOLMGREN 74'</span><i>Klacken tystnar.</i></div>
+          <div class="feed">
+            <div class="feed-row"><span class="minute">74'</span><span class="event"><b>MÅL</b>En perfekt passning mot mitten. Holmgren stod klar.</span></div>
+            <div class="feed-row"><span class="minute">68'</span><span class="event"><b>RÄDD</b>Granqvist står i vägen.</span></div>
+            <div class="feed-row atmosphere"><span class="minute">—</span><span class="event">Snön tätnar över Kolbottnen.</span></div>
+          </div>
         </div>
-        <div class="feed">
-          <div class="feed-row"><span class="minute">74'</span><span class="event"><b>MÅL</b>En perfekt passning mot mitten. Holmgren stod klar.</span></div>
-          <div class="feed-row"><span class="minute">68'</span><span class="event"><b>RÄDD</b>Granqvist står i vägen.</span></div>
-          <div class="feed-row atmosphere"><span class="minute">—</span><span class="event">Snön tätnar över Kolbottnen.</span></div>
-        </div>
-      </div>
+        <figcaption><strong>Följ matchen</strong>Resultattavlan, vädret och matchflödet visar vad som händer, minut för minut.</figcaption>
+      </figure>
 
-      <aside class="corner-stage" aria-label="Exempel på hörnval">
-        <div class="corner-meta">Hörna · 76'</div>
-        <h3>Välj läge</h3>
-        <div class="corner-pitch">
-          <svg viewBox="0 0 220 130" aria-hidden="true">
-            <rect width="220" height="130" rx="3" fill="#17282e"/>
-            <path d="M70 0 A70 65 0 0 1 70 130" fill="none" stroke="rgba(190,215,225,.26)"/>
-            <rect x="0" y="46" width="6" height="38" fill="none" stroke="#91adba"/>
-            <circle cx="15" cy="65" r="6" fill="#0a151a" stroke="#7eb3d4"/>
-            <circle cx="18" cy="49" r="3.5" fill="#d65f57"/><circle cx="24" cy="59" r="3.5" fill="#d65f57"/><circle cx="24" cy="71" r="3.5" fill="#d65f57"/><circle cx="18" cy="81" r="3.5" fill="#d65f57"/>
-            <rect x="34" y="14" width="43" height="28" rx="2" fill="rgba(190,215,225,.03)" stroke="rgba(190,215,225,.28)" stroke-dasharray="3 2"/>
-            <rect x="34" y="48" width="43" height="34" rx="2" fill="rgba(112,177,94,.13)" stroke="#70b15e"/>
-            <rect x="34" y="88" width="43" height="28" rx="2" fill="rgba(190,215,225,.03)" stroke="rgba(190,215,225,.28)" stroke-dasharray="3 2"/>
-            <text x="55" y="31" text-anchor="middle" font-size="7" fill="#78909b" font-family="monospace">NÄRA</text>
-            <text x="55" y="68" text-anchor="middle" font-size="7" fill="#9bd489" font-family="monospace">MITT</text>
-            <text x="55" y="105" text-anchor="middle" font-size="7" fill="#78909b" font-family="monospace">BORTRE</text>
-            <path d="M5 5 Q18 38 34 65" fill="none" stroke="#70b15e" stroke-width="2" stroke-dasharray="4 3"/>
-            <polygon points="34,65 28,62 30,69" fill="#70b15e"/>
-            <circle cx="145" cy="28" r="5" fill="#dd9555"/><circle cx="164" cy="65" r="5" fill="#dd9555"/><circle cx="145" cy="102" r="5" fill="#dd9555"/>
-            <line x1="140" y1="28" x2="82" y2="28" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
-            <line x1="159" y1="65" x2="82" y2="65" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
-            <line x1="140" y1="102" x2="82" y2="102" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
-          </svg>
-        </div>
-        <div class="corner-zone-row"><span class="corner-zone">NÄRA</span><span class="corner-zone selected">MITT</span><span class="corner-zone">BORTRE</span></div>
-        <div class="corner-delivery-row"><span class="corner-delivery">HÅRT</span><span class="corner-delivery selected">LÅGT</span><span class="corner-delivery">KORT</span></div>
-        <div class="corner-readout">MITT · LÅGT</div>
-        <div class="corner-cta">Slå hörnan →</div>
-      </aside>
+      <figure class="match-panel">
+        <aside class="corner-stage" aria-label="Exempel på hörnval">
+          <div class="corner-meta">Hörna · 76'</div>
+          <h3>Välj läge</h3>
+          <div class="corner-pitch">
+            <svg viewBox="0 0 220 130" aria-hidden="true">
+              <rect width="220" height="130" rx="3" fill="#17282e"/>
+              <path d="M70 0 A70 65 0 0 1 70 130" fill="none" stroke="rgba(190,215,225,.26)"/>
+              <rect x="0" y="46" width="6" height="38" fill="none" stroke="#91adba"/>
+              <circle cx="15" cy="65" r="6" fill="#0a151a" stroke="#7eb3d4"/>
+              <circle cx="18" cy="49" r="3.5" fill="#d65f57"/><circle cx="24" cy="59" r="3.5" fill="#d65f57"/><circle cx="24" cy="71" r="3.5" fill="#d65f57"/><circle cx="18" cy="81" r="3.5" fill="#d65f57"/>
+              <rect x="34" y="14" width="43" height="28" rx="2" fill="rgba(190,215,225,.03)" stroke="rgba(190,215,225,.28)" stroke-dasharray="3 2"/>
+              <rect x="34" y="48" width="43" height="34" rx="2" fill="rgba(112,177,94,.13)" stroke="#70b15e"/>
+              <rect x="34" y="88" width="43" height="28" rx="2" fill="rgba(190,215,225,.03)" stroke="rgba(190,215,225,.28)" stroke-dasharray="3 2"/>
+              <text x="55" y="31" text-anchor="middle" font-size="7" fill="#78909b" font-family="monospace">NÄRA</text>
+              <text x="55" y="68" text-anchor="middle" font-size="7" fill="#9bd489" font-family="monospace">MITT</text>
+              <text x="55" y="105" text-anchor="middle" font-size="7" fill="#78909b" font-family="monospace">BORTRE</text>
+              <path d="M5 5 Q18 38 34 65" fill="none" stroke="#70b15e" stroke-width="2" stroke-dasharray="4 3"/>
+              <polygon points="34,65 28,62 30,69" fill="#70b15e"/>
+              <circle cx="145" cy="28" r="5" fill="#dd9555"/><circle cx="164" cy="65" r="5" fill="#dd9555"/><circle cx="145" cy="102" r="5" fill="#dd9555"/>
+              <line x1="140" y1="28" x2="82" y2="28" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
+              <line x1="159" y1="65" x2="82" y2="65" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
+              <line x1="140" y1="102" x2="82" y2="102" stroke="#dd9555" stroke-dasharray="3 3" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="corner-zone-row"><span class="corner-zone">NÄRA</span><span class="corner-zone selected">MITT</span><span class="corner-zone">BORTRE</span></div>
+          <div class="corner-delivery-row"><span class="corner-delivery">HÅRT</span><span class="corner-delivery selected">LÅGT</span><span class="corner-delivery">KORT</span></div>
+          <div class="corner-readout">MITT · LÅGT</div>
+          <div class="corner-cta">Slå hörnan →</div>
+        </aside>
+        <figcaption><strong>Ta besluten</strong>Vid hörnor och andra avgörande lägen bestämmer du hur laget ska agera.</figcaption>
+      </figure>
     </div>
   </div>
 </section>
@@ -470,15 +474,6 @@
   </div>
 </section>
 
-<section class="bf">
-  <div class="wrap">
-    <p class="kicker">Ett särskilt släkte</p>
-    <h2>För den som gnäller mer<br>på domaren än på vädret</h2>
-    <p>Bandy Manager görs tillsammans med Bury Fen, som klär bandyfolk för läktaren och vet vad tjugo minusgrader gör med humöret. Namnet är lånat från platsen i England där bandyn en gång sägs ha börjat. Här slutar den inte.</p>
-    <a class="link" href="https://buryfen.com/" rel="noopener"><img src="/landing/buryfen-logo.png" alt="">buryfen.com →</a>
-  </div>
-</section>
-
 <section class="play" id="spela">
   <div class="wrap">
 
@@ -489,9 +484,9 @@
         <p class="section-intro">Bandy Manager är gjort för telefonen och spelas därifrån, en omgång i taget. Öppna adressen i mobilens webbläsare, lägg till spelet på hemskärmen och skriv in din kod där.</p>
       </div>
       <div class="qrbox">
-        <img src="/landing/qr-spela.png" alt="QR-kod till bandymanager.se/spela">
+        <img src="/landing/qr-spela.png" alt="QR-kod till bandy-manager.se/spela">
         <div>
-          <p class="url">bandymanager.se/spela</p>
+          <p class="url">bandy-manager.se/spela</p>
           <p>Rikta mobilkameran mot koden. Lägg sedan till spelet på hemskärmen innan du skriver in din kod; koden gäller den installationen.</p>
         </div>
       </div>
@@ -504,7 +499,7 @@
       </div>
       <ol class="steps">
         <li>
-          <div><h3>Öppna spelet</h3><a class="btn btn-amber" href="/spela">Öppna bandymanager.se/spela</a></div>
+          <div><h3>Öppna spelet</h3><a class="btn btn-amber" href="/spela">Öppna bandy-manager.se/spela</a></div>
         </li>
         <li>
           <div><h3>Lägg till på hemskärmen</h3>
