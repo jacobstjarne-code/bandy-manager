@@ -64,10 +64,6 @@ export function TilltradeScreen() {
     void setTilltradeStepPersist(n)
   }
   const [cornerOutcome, setCornerOutcome] = useState<CornerOutcome | null>(null)
-  // T5a (SF-2, 2026-07-13/14): F2:s beat-progression ägs här, inte i LineupStep
-  // — sidfoten dockas i .scene-cta-area (F1/F3/F4:s position), inte inline i kortet.
-  const [lineupBeat, setLineupBeat] = useState(0)
-
   // F2 — useLineupEditor ovillkorligt (hooks-regel)
   const managedClub = game?.clubs.find(c => c.id === game?.managedClubId)
   const lineupEditor = useLineupEditor(game, managedClub)
@@ -287,7 +283,10 @@ export function TilltradeScreen() {
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
               <LineupStep
                 practice
-                practiceBeat={lineupBeat}
+                // Visa färgförklaringen direkt. Tidigare krävdes tre identiska
+                // FORTSÄTT-tryck för att stega genom dolda repliker innan det
+                // fjärde trycket faktiskt öppnade hörnan.
+                practiceBeat={1}
                 opponent={null}
                 nextFixture={null}
                 game={game}
@@ -350,9 +349,8 @@ export function TilltradeScreen() {
         )}
       </div>
 
-      {/* F2 CTA — T5a (SF-2, 2026-07-13/14): dockad sidfotsmall, samma position
-          som F1/F3/F4 (var tidigare inline i LineupSteps scrollande kort).
-          Beat-progressionen (0-2 avslöjar coach-repliker, 3 committar) ägs här.
+      {/* F2 CTA — dockad sidfotsmall, samma position som F1/F3/F4.
+          Ett tryck ska vara en handling: spara elvan och öppna hörnan.
           disabled läser canPlay — README-regel 15 (.btn:disabled = 40% opacitet,
           ingen bespoke gråton). */}
       {step === 2 && (
@@ -360,12 +358,9 @@ export function TilltradeScreen() {
           <button
             className="btn-scene-cta"
             disabled={!lineupEditor.canPlay}
-            onClick={() => {
-              if (lineupBeat < 3) setLineupBeat(b => Math.min(3, b + 1))
-              else commitLineupAndAdvance()
-            }}
+            onClick={commitLineupAndAdvance}
           >
-            FORTSÄTT
+            TILL HÖRNAN
           </button>
         </div>
       )}
