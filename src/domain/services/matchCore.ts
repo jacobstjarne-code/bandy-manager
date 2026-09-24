@@ -2224,7 +2224,7 @@ function* simulateMatchCore(
       let isRefCommentary = false
       if (suspensionOccurred && rand() < 0.20) {
         const refPool  = refStyle === 'strict' ? commentary.referee_strict
-                       : refStyle === 'lenient' ? commentary.referee_lenient
+                       : refStyle === 'lenient' ? commentary.referee_lenient_after_suspension
                        : commentary.referee_inconsistent
         commentaryText = fillTemplate(pickCommentary(refPool, rand, commentaryHistory), templateVars)
         isRefCommentary = true

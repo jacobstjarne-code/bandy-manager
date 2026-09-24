@@ -371,8 +371,13 @@ export const commentary = {
     "Domaren blåser. Frosten är borta från mornan men kvar i bollen.",
   ],
 
+  // BETATEST_TEXTDOM C4.6: en rad blev fyra. Den gamla påstod att öppningsmålet
+  // "ofta kommer tidigt" — poolen spelas oavsett minut.
   cup_goalOpener: [
-    "Det första målet i cupen kommer ofta överraskande tidigt. {player}. {score}.",
+    "{player} öppnar målskyttet. {score}.",
+    "Första målet i cupmatchen. {player}. {score}.",
+    "{player} bryter nollan. {score}. Nu måste det andra laget öppna upp.",
+    "Nollan är borta. {player} med {score}.",
   ],
 
   cup_goal: [
@@ -759,10 +764,14 @@ export const commentary = {
     'Hårt hållen match av domaren. Inga gratisdueller idag.',
   ],
 
-  referee_lenient: [
-    'Domaren viftar vidare. Den gick igenom — men det var nära.',
-    'Ingen pipa. Domaren låter spelet flöda. Det uppskattas på planen.',
-    'Fri duell. Domaren låter det hållas. Spelarna uppskattar det.',
+  // BETATEST_TEXTDOM C5.1: poolens enda konsument är raden direkt EFTER en
+  // registrerad utvisning (matchCore, "Referee line (after suspension)").
+  // De gamla raderna sa "ingen pipa" om en situation som just gett utvisning.
+  // Rösten är fortfarande den generösa domarens, men varje rad bekräftar kortet.
+  referee_lenient_after_suspension: [
+    'Den här domaren släpper mycket. Den här släppte han inte.',
+    'Han har låtit det mesta gå ikväll. Då måste det ha varit tydligt.',
+    'Så här generös domare blåser inte i onödan.',
   ],
 
   referee_inconsistent: [
@@ -964,25 +973,39 @@ export function getTraitCommentary(
   if (!traitKey) return null
 
   const traitGoals: Record<string, string[]> = {
+    // BETATEST_TEXTDOM C4.8: 3 → 6 per egenskap (spelas vid varje mål av
+    // en egenskapsbärare). Befintliga rader orörda.
     hungrig: [
       `Den hungriga forwarden slår igenom! ${name} har väntat på det här.`,
       `${name} ger sig aldrig. Hungern driver honom framåt.`,
       `Där satt den! ${name} har jagat det här målet i veckor.`,
+      `${name} vill ha bollen varje gång. Den här gången lönade det sig.`,
+      `${name} åker på returen som om det vore det sista han gjorde. Mål.`,
+      `${name} firar kort och åker tillbaka mot mitten. Han vill ha ett till.`,
     ],
     joker: [
       `${name} ur ingenstans! Oförutsägbar som alltid.`,
       `Geni eller galenskap? ${name} bestämde sig för geni ikväll.`,
       `Ingen visste vad ${name} tänkte — inte ens han själv. Men bollen gick in.`,
+      `${name} slår den från en vinkel ingen annan hade provat. Den går in.`,
+      `Alla väntar på passningen. ${name} skjuter. Mål.`,
+      `${name} åker förbi två och sätter den i bortre. Ingen på bänken såg det komma.`,
     ],
     veteran: [
       `Rutin i avgörande läge. ${name} har gjort det här hundra gånger.`,
       `${name} med den gamla vanliga. Klass är permanent.`,
       `Veteranen levererar. ${name} visar vägen.`,
+      `${name} står rätt, som han brukar. Bollen kommer, bollen går in.`,
+      `Inget krångel. ${name} placerar den där målvakten inte når.`,
+      `${name} har sett den här situationen förut. Han skjuter innan backarna hunnit tänka.`,
     ],
     lokal: [
       `Hela orten jublar! ${name} — en av deras egna.`,
       `Lokalhjälten ${name}! Sånt bär han med sig vart laget än spelar.`,
       `${name} med ett mål som orten kommer prata om länge.`,
+      `Mål av ${name}. Läktaren ropar förnamnet, inte efternamnet.`,
+      `${name} sätter den, och ropen från vallen kommer innan bollen stannat i nätet.`,
+      `Ett av ortens egna namn på resultattavlan. ${name}.`,
     ],
     ledare: [
       `Kaptenen kliver fram! ${name} tar ansvar när det behövs.`,
@@ -995,33 +1018,43 @@ export function getTraitCommentary(
     joker: [
       `${name} gör det igen. Briljant ena sekunden, utvisad nästa.`,
       `{minuter} minuter utanför. ${name}s temperament kostar laget.`,
-      `${name} med en tackling ingen förstår. Domaren blåser. Solklart.`,
+      `${name} med en brytning ingen förstår. Domaren blåser. Solklart.`,
       `Karaktäristiskt ${name}. Genialitet och utvisning samma kvart.`,
       `${name} ut. Han skrattar. Det är värre.`,
       `{minuter} minuter för ${name}. Han kommer tillbaka och gör något galet ändå.`,
     ],
     hungrig: [
-      `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
+      `Frustrationen kokar över. ${name} åker ut efter en onödig hakning.`,
       `${name} tappar kontrollen. Hungern att vinna blir hans fiende.`,
       `{minuter} minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
       `${name} kastar sig in i en duell han inte kunde vinna. {minuter} minuter att fundera på det.`,
       `Det syntes komma. ${name} har gått på överväxel hela halvleken. Domaren hade fått nog.`,
       `${name} slår klubban i sargen på väg ut. För hård vilja, fel ögonblick.`,
     ],
+    // BETATEST_TEXTDOM C4.9: 3 → 6, samma nivå som joker/hungrig.
     veteran: [
       `${name} borde veta bättre. Erfarenheten räckte inte den här gången.`,
       `Oväntat av en veteran. ${name} åker ut — laget spelar i numerärt underläge.`,
-      `${name} med en tackling man inte trodde var hans. {minuter} minuter på bänken.`,
+      `${name} med en fasthållning man inte trodde var hans. {minuter} minuter på bänken.`,
+      `${name} kommer ett steg för sent in i duellen. Benen hann inte med. {minuter} minuter.`,
+      `Domaren pekar mot båset. ${name} protesterar inte. Han visste det innan armen gick upp.`,
+      `{minuter} minuter för ${name}. Han sätter sig i båset och tittar rakt fram.`,
     ],
     lokal: [
       `Läktaren reagerar. ${name} åker ut och laget spelar numerärt underlägset.`,
       `${name} låter känslorna ta överhanden. Totalt onödigt.`,
       `Det var inte så lokalhjälten ville skriva in sig i kväll. ${name} ut.`,
+      `${name} tar det personligt och får betala för det. {minuter} minuter.`,
+      `Tyst på läktaren när ${name} åker mot båset. Det är deras kille.`,
+      `${name} säger ett ord för mycket till en motspelare. {minuter} minuter.`,
     ],
     ledare: [
       `Kaptenen åker ut. Inte läge för det här nu.`,
       `${name} tappar disciplinen — precis det laget behöver minst just nu.`,
       `Laget tittar efter ${name} som går mot bänken. Ledarskapet sätts på prov.`,
+      `Bindeln åker med till båset. ${name} har {minuter} minuter att tänka.`,
+      `${name} ut. Någon annan får ta ordet på isen en stund.`,
+      `${name} sätter sig i båset utan ett ord till domaren. Laget har tappat sin röst på isen.`,
     ],
   }
 

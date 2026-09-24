@@ -33,6 +33,8 @@ export const PROVNING_AMBIENT: Partial<Record<HallTrialStage, { kafferum: string
     ],
     klack: [
       'Klacken vet att den räknas i kravlistan. Den sjunger därefter.',
+      'Birger räknar huvuden på läktaren före avslag. Siffran skriver han på baksidan av programmet.',
+      'Klacken tar med grannarna nu. Varje person på läktaren ska synas i papperen till förbundet.',
     ],
   },
   forhandling: {
@@ -45,6 +47,8 @@ export const PROVNING_AMBIENT: Partial<Record<HallTrialStage, { kafferum: string
     ],
     klack: [
       'Västra Sidan har skickat ett eget brev till kommunen. Birger skrev under först.',
+      'Klacken har målat en banderoll till kommunen. Den hänger rakt framför hedersplatserna.',
+      'Klacken sjunger om hallen nu, inte bara om laget. Det rimmar dåligt. Ingen bryr sig.',
     ],
   },
   bygge: {
