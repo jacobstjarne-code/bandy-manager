@@ -118,7 +118,7 @@ export function resolveCorner(
 
 export function shouldBeInteractive(
   minute: number, homeScore: number, awayScore: number,
-  isManaged: boolean, cornersThisMatch: number, interactiveSoFar: number,
+  isManaged: boolean, managedCornersThisMatch: number, interactiveSoFar: number,
   rand: () => number,
 ): boolean {
   if (!isManaged) return false
@@ -126,8 +126,9 @@ export function shouldBeInteractive(
   const MAX_INTERACTIVE = 3
   if (interactiveSoFar >= MAX_INTERACTIVE) return false
 
-  // First corner of the match: always interactive
-  if (cornersThisMatch === 0) return true
+  // Det hanterade lagets första hörna: alltid interaktiv. Motståndarens
+  // tidigare hörnor får inte förbruka spelarens garanterade matchval.
+  if (managedCornersThisMatch === 0) return true
 
   // Critical moment: last 10 minutes AND close score
   const scoreDiff = Math.abs(homeScore - awayScore)

@@ -748,6 +748,52 @@ function* simulateMatchCore(
     return Math.min(0.95, base + bonus)
   }
 
+  // Alla hörnor måste passera samma interaktionsgrind. Motorn skapar hörnor
+  // både som egen sekvenstyp och som retur efter ett anfall; returvägen ökade
+  // tidigare bara räknaren och hoppade över spelarvalet helt.
+  const buildManagedCornerChoice = (
+    attackingStarters: Player[],
+    defendingStarters: Player[],
+    isHomeAttacking: boolean,
+    minute: number,
+    currentHomeScore: number,
+    currentAwayScore: number,
+  ): CornerInteractionData | undefined => {
+    if (isFast) return undefined
+    const isManagedCorner = managedIsHome !== undefined && managedIsHome === isHomeAttacking
+    if (!isManagedCorner) return undefined
+
+    // Hörnräknaren har redan registrerat den pågående hörnan.
+    const previousManagedCorners = (isHomeAttacking ? cornersHome : cornersAway) - 1
+    if (!shouldBeInteractive(
+      minute,
+      currentHomeScore,
+      currentAwayScore,
+      true,
+      previousManagedCorners,
+      interactiveCornersUsed,
+      rand,
+    )) return undefined
+
+    const cornerTaker = attackingStarters
+      .filter(p => p.position !== PlayerPosition.Goalkeeper)
+      .sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
+    if (!cornerTaker) return undefined
+
+    interactiveCornersUsed++
+    const supporterMood = (input as MatchCoreInput & { supporterMood?: number }).supporterMood ?? 50
+    return buildCornerInteractionData(
+      cornerTaker,
+      attackingStarters,
+      defendingStarters,
+      isHomeAttacking,
+      supporterMood,
+      minute,
+      currentHomeScore,
+      currentAwayScore,
+    )
+  }
+
   // Kvitterings-momentum (Fas 2, struktur): när ett lag kvitterar från underläge
   // till lika behåller det momentum i stället för att direkt falla till
   // even_battle (den "dragning mot lika" som överproducerade oavgjorda och
@@ -1020,7 +1066,15 @@ function* simulateMatchCore(
     // AI auto-resolve
     const mentality  = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
     const keeperDive = resolveAIPenaltyKeeperDive(mentality ?? 'offensive', rand)
-    const aiDir      = rand() < 0.4 ? 'left' : rand() < 0.7 ? 'right' : 'center'
+    // CODE-ORDER B2 STRAFFKALIBRERING (2026-09-24) — rotorsak: två separata
+    // rand()-uttag i samma villkor. Det andra uttaget rullas bara när det
+    // första missade "left" (60% av fallen), vilket gav en OAVSIKTLIG
+    // fördelning (~40/42/18 vänster/höger/mitten) i stället för den tänkta
+    // — och att båda grenar konsumerar rand() olika många gånger gör hela
+    // sekvensen svårrevisionerad. Ett enda uttag, en uttryckligen satt
+    // tredjedelsfördelning (samma vikt vänster/mitten/höger).
+    const aiDirRoll  = rand()
+    const aiDir      = aiDirRoll < 1 / 3 ? 'left' : aiDirRoll < 2 / 3 ? 'right' : 'center'
     const aiHeight   = rand() < 0.65 ? 'low' : 'high'
     const penData: PenaltyInteractionData = {
       minute,
@@ -1400,6 +1454,14 @@ function* simulateMatchCore(
           if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
           const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking), origin: 'OPEN_PLAY' }
           stepEvents.push(ev); allEvents.push(ev)
+          cornerInteractionData = buildManagedCornerChoice(
+            attackingStarters,
+            defendingStarters,
+            isHomeAttacking,
+            minute,
+            homeScore,
+            awayScore,
+          )
         }
       }
     } else if (seqType === 'transition') {
@@ -1468,29 +1530,20 @@ function* simulateMatchCore(
     } else if (seqType === 'corner') {
       if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
 
-      // Interactive corner (full mode, managed club only)
-      if (!isFast) {
-        const isManagedCorner = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
-        // Räknaren ovan har redan registrerat den pågående hörnan. Tjänsten
-        // förväntar sig antalet hörnor FÖRE den aktuella, så att matchens första
-        // hörna verkligen träffar sin garanterade interaktionsregel.
-        const previousCornersThisMatch = cornersHome + cornersAway - 1
-        if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, previousCornersThisMatch, interactiveCornersUsed, rand)) {
-          interactiveCornersUsed++
-          const gk         = getGK(defendingStarters)
-          const cornerTaker = attackingStarters.filter(p => p.position !== PlayerPosition.Goalkeeper).sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
-          if (cornerTaker) {
-            const sgMood = (input as MatchCoreInput & { supporterMood?: number }).supporterMood ?? 50
-            cornerInteractionData = buildCornerInteractionData(
-              cornerTaker, attackingStarters, defendingStarters,
-              isHomeAttacking, sgMood, minute, homeScore, awayScore,
-            )
-            cornerOccurred = true
-            const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörna', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking), origin: 'CORNER' }
-            stepEvents.push(ev); allEvents.push(ev)
-            void gk
-          }
-        }
+      // Interactive corner (full mode, managed club only). Samma grind som
+      // anfallsreturerna ovan, så ingen hörnkälla kan förbigå spelarvalet.
+      cornerInteractionData = buildManagedCornerChoice(
+        attackingStarters,
+        defendingStarters,
+        isHomeAttacking,
+        minute,
+        homeScore,
+        awayScore,
+      )
+      if (cornerInteractionData) {
+        cornerOccurred = true
+        const ev: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörna', manpowerState: currentManpowerState(isHomeAttacking), tacticalFactors: currentTacticalFactors(isHomeAttacking), contributingFactors: currentContributingFactors(isHomeAttacking), origin: 'CORNER' }
+        stepEvents.push(ev); allEvents.push(ev)
       }
 
       if (!cornerInteractionData) {

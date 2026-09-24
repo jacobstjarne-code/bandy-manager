@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { shouldBeInteractive } from '../cornerInteractionService'
 
 describe('shouldBeInteractive', () => {
-  it('gör matchens första hörna interaktiv i full-läge oavsett slump', () => {
+  it('gör det hanterade lagets första hörna interaktiv oavsett slump', () => {
     expect(shouldBeInteractive(5, 0, 0, true, 0, 0, () => 0.99)).toBe(true)
   })
 
