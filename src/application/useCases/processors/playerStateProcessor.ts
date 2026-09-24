@@ -234,14 +234,50 @@ export function applyPlayerStateUpdates(
       // återhämtningstak — en bänkspelare ÖVER klampen drogs NER av att sitta på
       // bänken. Taket lever kvar där det hör hemma: på EFFEKTEN, i playerModifier
       // (squadEvaluator.ts:42), som är SKYDDAT i domen och orört.
-      updated.fitness = Math.min(
-        FITNESS_RECOVERY_CEILING,
-        updated.fitness + recoveryGain(updated.fitness, 'bench', {
-          stamina: player.attributes?.stamina,
-          daysBetweenFixtures,
-        }),
-      )
-      updated.sharpness = Math.max(0, updated.sharpness - 5)
+      //
+      // BETATEST_ERIK_2026-09-24 B3 — rot: statsProcessor.ts:s "flygande byten"
+      // krediterar UTESPELARE på bänken 30-40 minuters speltid i seasonStats
+      // (bandy har löpande byten, ingen sitter av en hel match), men den här
+      // grenen behandlade ALLA bänkspelare som om de aldrig klivit in: ren
+      // återhämtning, ingen konditionskostnad, OCH ett skärpe-STRAFF (-5) trots
+      // att de enligt statistiken just spelat. Två sanningar om samma
+      // 30-40 minuter som inte kunde stämma samtidigt.
+      //
+      // Målvakten hålls UTANFÖR (körorderns egen instruktion, "behandlas
+      // separat") — en reservmålvakt byts inte löpande i bandy och får sedan
+      // B3-fixen i statsProcessor.ts ingen minutkredit alls, så hon ska inte
+      // heller bära en konditionskostnad här.
+      //
+      // Minimal modell: samma deterministiska minutberäkning som
+      // statsProcessor.ts (samma frö, ingen delad state att tråda igenom) —
+      // konditionskostnad och skärpeökning skalas proportionellt mot de
+      // krediterade minuterna (30-40 av 90), i stället för antingen
+      // startspelarens fulla kostnad eller ingen kostnad alls.
+      if (player.position === PlayerPosition.Goalkeeper) {
+        updated.fitness = Math.min(
+          FITNESS_RECOVERY_CEILING,
+          updated.fitness + recoveryGain(updated.fitness, 'bench', {
+            stamina: player.attributes?.stamina,
+            daysBetweenFixtures,
+          }),
+        )
+        updated.sharpness = Math.max(0, updated.sharpness - 5)
+      } else {
+        const benchRand = mulberry32(nextRound * 7919 + player.id.charCodeAt(0) * 31 + player.id.charCodeAt(player.id.length - 1))
+        const benchMinutes = 30 + Math.floor(benchRand() * 11)  // 30-40 min — måste matcha statsProcessor.ts:s formel exakt
+        const minutesShare = benchMinutes / 90
+        const tacticFatigue = managedTacticMods && isManaged ? managedTacticMods.fatigueRate : 1.0
+        const baseFitnessLoss = Math.round((13 + Math.floor(benchRand() * 8)) * minutesShare * tacticFatigue)
+        const afterMatchCost = Math.max(0, updated.fitness - baseFitnessLoss)
+        updated.fitness = Math.min(
+          FITNESS_RECOVERY_CEILING,
+          afterMatchCost + recoveryGain(afterMatchCost, 'bench', {
+            stamina: player.attributes?.stamina,
+            daysBetweenFixtures,
+          }),
+        )
+        updated.sharpness = Math.min(100, updated.sharpness + Math.round(10 * minutesShare))
+      }
     } else {
       // Did not play — proportionell, kalenderskalad återhämtning (A3).
       // Periodiseringens extrapoäng är fortsatt ADDITIVA ovanpå den

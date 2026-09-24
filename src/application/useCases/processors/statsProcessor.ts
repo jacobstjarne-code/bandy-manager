@@ -2,7 +2,7 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player, CareerMilestone, PlayerSeasonStats } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { EventLedgerEntry } from '../../../domain/entities/Narrative'
-import { FixtureStatus, MatchEventType, InboxItemType } from '../../../domain/enums'
+import { FixtureStatus, MatchEventType, InboxItemType, PlayerPosition } from '../../../domain/enums'
 import { mulberry32 } from '../../../domain/utils/random'
 import { buildPlayerMilestoneLedgerEntry } from '../../../domain/services/clubHistoryLedgerService'
 
@@ -322,6 +322,13 @@ export function updatePlayerMatchStats(
       if (allStarters.includes(benchId)) continue
       const idx = finalPlayers.findIndex(p => p.id === benchId)
       if (idx === -1) continue
+      // BETATEST_ERIK_2026-09-24 B3 — rot: målvakten byts inte löpande i bandy
+      // (till skillnad från utespelarna löpande-byten-modellen beskriver), men
+      // saknade filter här gav ändå reservmålvakten 30-40 "flygande"-minuter
+      // och gamesPlayed++/careerStats.totalGames++ varje match hen satt på
+      // bänken, oavsett om hon någonsin var med. Målvakten behandlas separat
+      // (körorderns egen instruktion) — ingen speltidskredit alls här.
+      if (finalPlayers[idx].position === PlayerPosition.Goalkeeper) continue
       const benchRand = mulberry32(nextRound * 7919 + benchId.charCodeAt(0) * 31 + benchId.charCodeAt(benchId.length - 1))
       const benchMinutes = 30 + Math.floor(benchRand() * 11)  // 30-40 min
       const benchPlayer = finalPlayers[idx]
