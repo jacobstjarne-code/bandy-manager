@@ -18,12 +18,12 @@ Tre påståenden i svepet visade sig fel vid anropsverifiering: `assistantFFStri
 
 ## Commits
 
-- **K1 text och terminologi** — C1, C2 (utom C2.7–C2.9), C6, C7, C2.22.
-- **K2 repetitionspooler** — `matchCommentary.ts` (C1.1, C4.6, C4.8, C4.9 och C5.1-poolen), `matchCore.ts` (C5.1-dirigeringen), `hallProvningData.ts` (C4.7-texten). C1.1 och C5.1 ligger här eftersom de delar fil med poolerna och en delad fil inte kan delas utan att bygget bryts mellan commits.
-- **K3 mekanik och villkor** — förekomstindex, liggarmallarnas pooler (C2.7–C2.9, C4.1–C4.3), landslaget (C4.4–C4.5), hallprövningens spärr (C4.7), riktade tester.
-- **K4 dokumentation** — denna fil, STRINGS_POOL_INVENTORY, TEXT-AUDIT-PROTOKOLL.
+- **K1 text och terminologi** (`5377451c`) — C1, C2 (utom C2.7–C2.9), C6, C7, C2.22.
+- **K2 repetitionspooler** (`bbec4b96`) — `matchCommentary.ts` (C1.1, C4.6, C4.8, C4.9 och C5.1-poolen), `matchCore.ts` (C5.1-dirigeringen), `hallProvningData.ts` (C4.7-texten). C1.1 och C5.1 ligger här eftersom de delar fil med poolerna och en delad fil inte kan delas utan att bygget bryts mellan commits.
+- **K3 mekanik och villkor** (`b9d524e1`) — förekomstindex, liggarmallarnas pooler (C2.7–C2.9, C4.1–C4.3), landslaget (C4.4–C4.5), hallprövningens spärr (C4.7), riktade tester.
+- **K4 dokumentation** (`abe517b0`) — denna fil, STRINGS_POOL_INVENTORY, TEXT-AUDIT-PROTOKOLL.
 
-Commit-id står i handover efter `git am` på huvudrepot; patcharna bär samma ordning.
+Commit-id är de som landade på main via bundle och fast-forward (2026-09-24), i samma ordning som K1–K4.
 
 ## C1. Terminologi
 
