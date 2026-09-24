@@ -51,7 +51,8 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
     <div
       style={{
         background: 'var(--bg-scene)',
-        minHeight: '100vh',
+        height: '100%',
+        minHeight: 0,
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
@@ -76,8 +77,12 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
 
       <div style={{
         margin: '4px 16px 0',
+        flex: '1 1 auto',
+        minHeight: 0,
         position: 'relative',
         zIndex: 1,
+        display: 'flex',
+        flexDirection: 'column',
         background: 'color-mix(in srgb, var(--bg-scene-deep) 88%, transparent)',
         border: '1px solid color-mix(in srgb, var(--accent) 24%, transparent)',
         borderRadius: 'var(--radius-lg)',
@@ -87,6 +92,10 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
         <div
           style={{
             padding: '18px 18px 16px',
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
             display: 'flex',
             flexDirection: 'column',
             gap: 18,
@@ -262,7 +271,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
         )}
         </div>
 
-        <div style={{ padding: '0 18px 18px' }}>
+        <div style={{ padding: '10px 18px 18px', flexShrink: 0 }}>
           <SceneCTA label={footerLabel} onClick={footerAction} />
         </div>
       </div>

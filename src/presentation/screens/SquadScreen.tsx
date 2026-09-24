@@ -427,9 +427,8 @@ export function SquadScreen() {
   const recallLoan = useGameStore(s => s.recallLoan)
   const expiringCount = useExpiringContracts()
   const [screenTab, setScreenTab] = useState<'nu' | 'trupp' | 'taktik' | 'värvning'>('nu')
-  // klubb-flikar-overflod (DOM 2026-09-03, Jacob): Akademi flyttade hit från
-  // Klubb 2026-09-06 — en toggle inuti Trupp-fliken, inte ett eget top-level
-  // screenTab (skulle tvinga NU/Taktik/Kontrakt in i samma segment).
+  // Betatest 2026-09-24: Akademi är en egen synlig toppflik. Intern state är
+  // fortfarande samma truppdomän så djuplänkar och innehåll inte dupliceras.
   const [truppView, setTruppView] = useState<'alag' | 'akademi'>('alag')
   // B1-nav Fas 2: deep-link från PlayerCard "Förläng" → öppna Värvning + renew-modal.
   const [renewDeepLinkId, setRenewDeepLinkId] = useState<string | null>(null)
@@ -581,11 +580,20 @@ export function SquadScreen() {
           tabs={[
             { id: 'nu', label: 'Nu' },
             { id: 'trupp', label: 'Trupp' },
+            { id: 'akademi', label: 'Akademi' },
             { id: 'taktik', label: 'Taktik' },
-            { id: 'värvning', label: 'Kontrakt', dot: expiringCount > 0 ? 'danger' : null },
+            { id: 'värvning', label: 'Värvning', dot: expiringCount > 0 ? 'danger' : null },
           ]}
-          activeId={screenTab}
-          onSelect={(id) => setScreenTab(id as typeof screenTab)}
+          activeId={screenTab === 'trupp' && truppView === 'akademi' ? 'akademi' : screenTab}
+          onSelect={(id) => {
+            if (id === 'akademi') {
+              setScreenTab('trupp')
+              setTruppView('akademi')
+              return
+            }
+            if (id === 'trupp') setTruppView('alag')
+            setScreenTab(id as typeof screenTab)
+          }}
         />
       </div>
       {!guidedIntroVisible && <TabIntro entry={TAB_INTROS[screenTab]} />}
@@ -760,32 +768,6 @@ export function SquadScreen() {
       })()}
       {/* Header */}
       {screenTab === 'trupp' && <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-        {/* A-lag / Akademi — klubb-flikar-overflod (DOM 2026-09-03) */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-          {([
-            { key: 'alag' as const, label: 'A-lag' },
-            { key: 'akademi' as const, label: 'Akademi' },
-          ]).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setTruppView(tab.key)}
-              style={{
-                flex: 1,
-                padding: '7px 8px',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 11,
-                fontWeight: 600,
-                border: truppView === tab.key ? 'none' : '1px solid var(--accent)',
-                background: truppView === tab.key ? 'var(--accent)' : 'transparent',
-                color: truppView === tab.key ? 'var(--text-light)' : 'var(--accent)',
-                cursor: 'pointer',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
         {truppView === 'alag' && <>
         {/* Lineup hint */}
         {!hasPendingLineup && (
