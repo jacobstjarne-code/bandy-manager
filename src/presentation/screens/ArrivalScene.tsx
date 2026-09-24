@@ -157,11 +157,10 @@ function ArrivalSceneInner({ clubId, clubName, board, objectives, contractsExpir
       }}>
         {/* Narrativ-panel — mörk backing så texten blir läsbar mot den ljusa
             illustrationen, även när tidigare repliker dimmats. */}
-        <div style={{
+        <div className="arrival-dialogue-panel" style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 18,
-          background: 'rgba(10,8,12,0.52)',
           border: '1px solid rgba(245,241,235,0.06)',
           borderRadius: 'var(--radius)',
           padding: '20px 18px',

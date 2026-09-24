@@ -1575,6 +1575,25 @@ a {
 .scene-replica.in { opacity: 1; transform: translateY(0); }
 .scene-replica.in.dimmed { opacity: 0.68; transform: translateY(0); }
 
+/* Ankomsten ligger ovanpå en ljus, detaljrik illustration. Panelen behöver
+   därför bära kontrasten själv, och talaretiketten får inte ärva den
+   dubbla dimningen från den avslutade repliken. */
+.arrival-dialogue-panel {
+  background: rgba(10, 8, 12, 0.68);
+}
+.arrival-dialogue-panel .scene-replica.in.dimmed {
+  opacity: 1;
+}
+.arrival-dialogue-panel .scene-replica.in.dimmed .h-scene-quote {
+  color: var(--text-light-secondary);
+  opacity: 0.82;
+}
+.arrival-dialogue-panel .h-scene-speaker {
+  color: var(--gold-soft);
+  opacity: 1;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
 /* Speaker label — "MARGARETA · KASSÖR" */
 .h-scene-speaker {
   font-family: var(--font-body);
