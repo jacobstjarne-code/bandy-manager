@@ -2,6 +2,15 @@
 
 2026-09-24, Code. Körorder: `docs/CODE_KORORDER_BETATEST_ERIK_2026-09-24.md` §B1.
 
+> **Korrigering efter spelarens fullmatchsprov:** Rapportens slutsats nedan är
+> ersatt. Erik använde fulläge hela säsongen, inte bulk-simulering. Ett
+> deterministiskt fullmatchsprov visade två verkliga kodfel: motståndarens
+> hörnor kunde förbruka garantin för det hanterade lagets första hörnval, och
+> hörnor som uppstod efter en anfallsretur gick förbi interaktionsgrinden helt.
+> Rättningen och regressionstestet finns i commit `e2d714bc`. Den separata
+> observationen om att bulk-simulering kör snabbläge är fortfarande sann, men
+> förklarar inte Eriks felrapport.
+
 ## Slutsats i förväg
 
 **Ingen tillstånds-/dedupe-bugg hittad** i själva interaktionsgrinden
