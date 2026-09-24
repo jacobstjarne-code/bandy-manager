@@ -371,7 +371,7 @@ describe('liggare-k9 — transfer_signed/transfer_sold TEXT LÅST + ledgerEntryB
     const result = getClubMemory(game)
     const event = result.seasons[0].events.find(e => e.type === 'transfer_signed')
     expect(event).toBeDefined()
-    expect(event!.text).toBe('Från Säljarklubben. Ett namn på ett papper i klubbstugan och en förväntan som ännu inte kostat något. Det kommer den att göra, åt ena eller andra hållet.')
+    expect(event!.text).toBe('Från Säljarklubben. Ett namn på ett papper i klubbstugan. Om det var rätt namn vet vi först framåt vårkanten.')
   })
 
   it('transfer_sold: subject2 är KÖPARKLUBBEN (inte managed) — hade tidigare uteslutits ovillkorat av subject2-clubben-checken, ska nu synas', () => {

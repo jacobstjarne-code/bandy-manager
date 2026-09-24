@@ -17,10 +17,12 @@ export const CALLUP_NOTICE_LINES = {
   single: [
     '{spelare} är uttagen till VM-truppen. Förbundskaptenen ringde i morse.',
     '{spelare} har fått VM-kallelsen. Orten lär prata om inget annat på en vecka.',
+    'Förbundet har skickat truppen. {spelare} står med.',
   ],
   multi: [
     '{spelare_lista} är uttagna till VM-truppen.',
     '{spelare_lista} kallas till VM. Flera från samma bygd — det händer inte ofta.',
+    'Förbundet har skickat truppen. {spelare_lista} står med.',
   ],
 }
 
@@ -88,7 +90,11 @@ export const LOBBY_PRESS_FLAVOUR = [
 ]
 
 /** MemoryEvent (klubbminne, sig 60) vid första uttagningen någonsin för en spelare. */
+// {spelare}s löses via swedishGenitive (Holmgrens, men Nyberg-Fors) — se
+// clubMemoryService. Posten skrivs bara vid spelarens första uttagning
+// (nationalTeamService: !p.nationalTeamCallups), så "första" är belagt.
 export const FIRST_CALLUP_MEMORY_LINES: string[] = [
   '{spelare}s första landslagsuttagning. Han bar bygdens namn till VM.',
   '{spelare} kallades till landslaget för första gången. Orten glömmer det inte.',
+  '{spelare} fick förbundskaptenens samtal för första gången. Kafferummet visste det före lunch.',
 ]

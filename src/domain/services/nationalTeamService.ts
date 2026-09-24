@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import type { EventLedgerEntry } from '../entities/Narrative'
 import { InboxItemType } from '../enums'
+import { stringHashUnsigned } from '../utils/random'
 import { CALLUP_NOTICE_LINES, RETURN_SCENE_LINES, LOBBY_PRESS_FLAVOUR } from '../data/landslagText'
 import { buildNationalTeamCallupLedgerEntry } from './clubHistoryLedgerService'
 
@@ -74,7 +75,10 @@ export function applyCallupEffects(
   const bonusTkr = CALLUP_BONUS_PER_PLAYER_TKR * playerIds.length
 
   const noticeTemplates = playerIds.length === 1 ? CALLUP_NOTICE_LINES.single : CALLUP_NOTICE_LINES.multi
-  const noticeTemplate = noticeTemplates[game.currentSeason % noticeTemplates.length]
+  // BETATEST_TEXTDOM C4.5: nycklat på säsong OCH vilka som togs ut, inte
+  // bara på säsongens paritet (som gav samma två rader i evig växling).
+  const noticeKey = `${game.currentSeason}:${[...playerIds].sort().join(',')}`
+  const noticeTemplate = noticeTemplates[stringHashUnsigned(noticeKey) % noticeTemplates.length]
   const noticeBody = noticeTemplate
     .replace('{spelare}', nameStr)
     .replace('{spelare_lista}', nameStr)

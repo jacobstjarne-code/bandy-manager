@@ -29,6 +29,37 @@ function hashSeed(n: number): number {
   return (x ^ (x >>> 16)) >>> 0
 }
 
+
+/**
+ * BETATEST_TEXTDOM C4.7 — hallprövningens kafferumsrad. Samma gate (~35 %)
+ * och samma seed som tidigare, men utan direkt upprepning: senaste matchdag
+ * som faktiskt visade en rad räknas fram tillståndslöst, och blir valet
+ * samma rad flyttas det ett steg. Ingen historik behöver sparas i saven.
+ */
+export function pickHallAmbientLine(pool: readonly string[], matchday: number, season: number): string | null {
+  if (pool.length === 0) return null
+  const raw = (md: number): number | null => {
+    const seed = md * 53 + season * 19
+    if (hashSeed(seed) % 100 >= 35) return null
+    return hashSeed(seed * 3) % pool.length
+  }
+  // Visad rad för en matchdag = rå rad, flyttad ett steg om den är samma som
+  // föregående VISADE rad. Räknas framifrån i ett fönster så flyttningar
+  // fortplantar sig korrekt.
+  const from = Math.max(0, matchday - 30)
+  let lastShown: number | null = null
+  let shown: number | null = null
+  for (let md = from; md <= matchday; md++) {
+    let idx = raw(md)
+    if (idx !== null && lastShown !== null && idx === lastShown && pool.length > 1) {
+      idx = (idx + 1) % pool.length
+    }
+    shown = idx
+    if (idx !== null) lastShown = idx
+  }
+  return shown === null ? null : pool[shown]
+}
+
 export function getCoffeeRoomReturnDueMatchday(questionId: string, answeredMatchday: number): number {
   const delay = 2 + (hashSeed(questionId.length * 13 + answeredMatchday * 7) % 5)
   return answeredMatchday + delay
@@ -799,19 +830,17 @@ function buildCoffeeRoomScene(game: SaveGame): LegacyCoffeeScene | null {
   // fas kryddas, inte domineras (samma idiom som §11.2 ovan).
   const hallTrial = game.facilityState?.hallTrial
   if (hallTrial) {
-    const hallMatchday = game.currentMatchday ?? 0
-    const hallSeed = hallMatchday * 53 + game.currentSeason * 19
     const stagePool = PROVNING_AMBIENT[hallTrial.stage]
     const hallPool = stagePool ? [...stagePool.kafferum, ...stagePool.klack]
       : hallTrial.stage === 'klar' ? HALL_KLACK_BASE
       : null
-    if (hallPool && hallPool.length > 0 && hashSeed(hallSeed) % 100 < 35) {
-      const idx = hashSeed(hallSeed * 3) % hallPool.length
+    const line = hallPool ? pickHallAmbientLine(hallPool, game.currentMatchday ?? 0, game.currentSeason) : null
+    if (line) {
       return {
         exchanges: [],
         pickedIndices: [],
         meta: { title: 'Kafferummet' },
-        narratorLine: { text: hallPool[idx] },
+        narratorLine: { text: line },
       }
     }
   }

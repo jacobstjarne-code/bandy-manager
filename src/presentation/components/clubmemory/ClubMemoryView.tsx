@@ -3,7 +3,7 @@ import type { MomentSource } from '../../../domain/entities/Moment'
 import type { MomentLedgerEntry } from '../../../domain/services/momentLedgerService'
 import { getClubMemory, momentKind } from '../../../domain/services/clubMemoryService'
 import { getRecentMomentsFromLedger, resolveSubjectName } from '../../../domain/services/momentLedgerService'
-import { renderMomentViewFromLedger } from '../../../domain/data/momentViewTemplates'
+import { renderMomentViewFromLedger, ledgerOccurrenceIndex } from '../../../domain/data/momentViewTemplates'
 import { swedishGenitive } from '../../../domain/data/matchCommentary'
 import { ClubMemorySeasonSection } from './ClubMemorySeasonSection'
 import { ClubMemoryLegendsBlock } from './ClubMemoryLegendsBlock'
@@ -146,6 +146,7 @@ export function ClubMemoryView({ game }: Props) {
               eraLabel: entry.eraLabel,
               transferRole: entry.transferRole,
               matchCategory: entry.matchCategory,
+              occurrence: ledgerOccurrenceIndex(game.eventLedger, entry),
             })
             if (!text) return null
             const { title, body } = text
@@ -203,7 +204,7 @@ export function ClubMemoryView({ game }: Props) {
           {blodslinjeItems.length > 0 && (
             <div className="card-sharp" style={{ padding: '14px 16px', margin: '0 12px' }}>
               <div className="h-label" style={{ marginBottom: 12 }}>
-                🩸 BLODSLINJE
+                🩸 Blodslinje
               </div>
               <Spine items={blodslinjeItems} />
             </div>

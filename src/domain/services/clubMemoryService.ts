@@ -8,6 +8,7 @@ import {
   deriveMatchMemoryText,
 } from './clubMemoryEventBuilders'
 import { FIRST_CALLUP_MEMORY_LINES } from '../data/landslagText'
+import { fillTemplate } from '../data/matchCommentary'
 import { FACILITY_NODE_DEFS } from '../data/facilityNodes'
 import { FACILITY_COMPLETED_BEATS, FACILITY_COMPLETED_FALLBACK } from '../data/facilityPortalBeats'
 import {
@@ -18,6 +19,7 @@ import { getResolvedStorylineProjections } from './storylineLedgerService'
 import {
   hasMomentViewClaimContract,
   renderMomentViewFromLedger,
+  ledgerOccurrenceIndex,
 } from '../data/momentViewTemplates'
 import { resolveSubjectName, MOMENT_LEDGER_TYPES } from './momentLedgerService'
 import { composeSeasonDecisionSentence } from './seasonDecisionCaptureService'
@@ -410,10 +412,15 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
       }
     case 'national_team_callup': {
       if (!playerName) return null
-      const template = FIRST_CALLUP_MEMORY_LINES[entry.season % FIRST_CALLUP_MEMORY_LINES.length]
+      // BETATEST_TEXTDOM C4.4: valet nycklas på postens plats bland karriärens
+      // uttagningar, inte på säsongen — två spelare samma år fick annars
+      // ordagrant samma mening.
+      const template = FIRST_CALLUP_MEMORY_LINES[
+        ledgerOccurrenceIndex(game.eventLedger, entry) % FIRST_CALLUP_MEMORY_LINES.length
+      ]
       return {
         type: 'national_team_callup', season: entry.season, matchday: entry.matchday,
-        text: template.replace('{spelare}', playerName),
+        text: fillTemplate(template, { spelare: playerName }),
         emoji: '⭐', significance: entry.significance, subjectPlayerId: playerId,
       }
     }
@@ -515,6 +522,7 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
         eraLabel: entry.eraLabel,
         transferRole: entry.transferRole,
         matchCategory: entry.matchCategory,
+        occurrence: ledgerOccurrenceIndex(game.eventLedger, entry),
       }
       if (!hasMomentViewClaimContract(entry.type)) return null
       const text = renderMomentViewFromLedger(entry, ctx)

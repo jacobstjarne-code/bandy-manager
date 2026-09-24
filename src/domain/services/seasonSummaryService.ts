@@ -17,6 +17,7 @@ import {
   hasMomentViewClaimContract,
   isMomentViewClaimProven,
   renderMomentViewFromLedger,
+  ledgerOccurrenceIndex,
 } from '../data/momentViewTemplates'
 import type { MomentViewTemplateSource } from '../data/momentViewTemplates'
 import { resolveSubjectName } from './momentLedgerService'
@@ -317,6 +318,7 @@ function computeLedgerKeyMoments(game: SaveGame, existing: KeyMomentEntry[]): Ke
       eraLabel: entry.eraLabel,
       transferRole: entry.transferRole,
       matchCategory: entry.matchCategory,
+      occurrence: ledgerOccurrenceIndex(game.eventLedger, entry),
     }
     const text = renderMomentViewFromLedger(entry, ctx)
     if (!text) return []
