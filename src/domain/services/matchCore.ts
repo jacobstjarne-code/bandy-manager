@@ -6,6 +6,12 @@
 // (15+ mål och högst 4 mål) lades bredvid målsnittet.
 const GOAL_RATE_MOD = 0.906
 
+// CODE-ORDER B2 STRAFFKALIBRERING (2026-09-24) — se penaltyFiredThisStep-
+// anropet nedan för den fulla motiveringen. Sänkt tillsammans med
+// resolvePenalty-konverteringens höjning (penaltyInteractionService.ts),
+// uppmätt gemensamt, inte var för sig. Tidigare värde 0.19.
+const PENALTY_TRIGGER_BASE = 0.114
+
 // M15 (regelboksanpassning 2026-07-03): basfördelning 10-minutersutvisning vs
 // 5-minutersutvisning. Källa: docs/kunskapsbas/DATA.md §7 (schemaVersion 5,
 // 2019-2026, 100% täckning) — 7,7% 5-min / 92,1% 10-min över hela datasetet.
@@ -176,7 +182,7 @@ import type { MatchStep, StepByStepInput, SecondHalfInput } from './matchUtils'
 import type { PairChemistry } from './chemistryService'
 import { shouldBeInteractive, buildCornerInteractionData } from './cornerInteractionService'
 import type { CornerInteractionData } from './cornerInteractionService'
-import { resolveAIPenaltyKeeperDive, resolvePenalty } from './penaltyInteractionService'
+import { resolveAIPenaltyKeeperDive, resolveAIPenaltyShot, resolvePenalty } from './penaltyInteractionService'
 import type { PenaltyInteractionData } from './penaltyInteractionService'
 import type { CounterInteractionData } from './counterAttackInteractionService'
 import type { FreeKickInteractionData } from './freeKickInteractionService'
@@ -1066,16 +1072,11 @@ function* simulateMatchCore(
     // AI auto-resolve
     const mentality  = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
     const keeperDive = resolveAIPenaltyKeeperDive(mentality ?? 'offensive', rand)
-    // CODE-ORDER B2 STRAFFKALIBRERING (2026-09-24) — rotorsak: två separata
-    // rand()-uttag i samma villkor. Det andra uttaget rullas bara när det
-    // första missade "left" (60% av fallen), vilket gav en OAVSIKTLIG
-    // fördelning (~40/42/18 vänster/höger/mitten) i stället för den tänkta
-    // — och att båda grenar konsumerar rand() olika många gånger gör hela
-    // sekvensen svårrevisionerad. Ett enda uttag, en uttryckligen satt
-    // tredjedelsfördelning (samma vikt vänster/mitten/höger).
-    const aiDirRoll  = rand()
-    const aiDir      = aiDirRoll < 1 / 3 ? 'left' : aiDirRoll < 2 / 3 ? 'right' : 'center'
-    const aiHeight   = rand() < 0.65 ? 'low' : 'high'
+    // CODE-ORDER B2 STRAFFKALIBRERING (2026-09-24) — extraherad till
+    // penaltyInteractionService.ts:s resolveAIPenaltyShot (rotorsak +
+    // motivering där) så valet är enhetstestbart och inte bara nåbart via
+    // en fullständig matchkörning.
+    const { dir: aiDir, height: aiHeight } = resolveAIPenaltyShot(rand)
     const penData: PenaltyInteractionData = {
       minute,
       shooterName:  `${shooter.firstName} ${shooter.lastName}`,
@@ -1388,14 +1389,22 @@ function* simulateMatchCore(
       const chanceQuality = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
       // Standalone penalty trigger — fires before shot resolution for high-quality chances.
-      // Base 0.19 calibrated for ~5.4% penaltyGoalPct (finding:047 — 0.13 gav 3.6%, skalat 1.46x).
+      // CODE-ORDER B2 STRAFFKALIBRERING (2026-09-24): 0.19 var kalibrerad mot
+      // den GAMLA resolvePenalty (~54-57% konvertering) för att träffa
+      // ~5.4% penaltyGoalPct — uppmätt 2026-09-24 till faktiska 7.11%, dvs
+      // redan för högt INNAN konverteringen höjdes. B2 höjde konverteringen
+      // mot 70% (dokumenterad sanningskälla, SCORELINE_REFERENCE.md §1.3) —
+      // att bara göra det hade knuffat penaltyGoalPct ännu högre (mätt till
+      // ~9% under justeringen). Frekvensbasen sänkt i takt, uppmätt om
+      // tillsammans med konverteringen (se docs/BETATEST_B2_
+      // STRAFFKALIBRERING_2026-09-24.md för fullständig före/efter-tabell).
       // Spec sanity check assumed 150 steps; engine runs 60 → 10x correction over spec's 0.012.
       // Period and scoreline mods applied per bandygrytan distribution.
       // Flag skips normal shot resolution for this step (penalty replaces shot).
       let penaltyFiredThisStep = false
       if (chanceQuality > 0.40) {
         const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
-        const penProb = 0.19 * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff) * refereeFoulMult
+        const penProb = PENALTY_TRIGGER_BASE * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff) * refereeFoulMult
         if (rand() < penProb) {
           const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore, currentContributingFactors(isHomeAttacking))
           for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }
