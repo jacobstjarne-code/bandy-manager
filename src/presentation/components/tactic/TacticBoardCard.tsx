@@ -110,6 +110,7 @@ export function TacticBoardCard({
                 <button
                   key={values.join('-')}
                   data-testid="tactic-option"
+                  className="tactic-control-option"
                   // Klick på en redan aktiv sammanslagen knapp ska INTE tyst skriva om
                   // t.ex. 'low' → 'medium' — det vore en spöklik ändring i tactic-
                   // change-loggen (diffTactics ser råvärdet, inte UI-blocket).

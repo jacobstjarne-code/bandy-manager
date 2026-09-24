@@ -77,7 +77,7 @@ export function CorridorStopScreen({ kind }: { kind: PendingScreen.WeekAfter | P
       </div>
 
       <div style={{ padding: '16px 0 24px' }}>
-        <button className="btn-cta" style={{ width: '100%' }} onClick={handleContinue}>
+        <button className="btn btn-primary btn-cta" style={{ width: '100%' }} onClick={handleContinue}>
           Vidare
         </button>
       </div>
