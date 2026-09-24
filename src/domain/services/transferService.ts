@@ -517,6 +517,37 @@ export function executeTransfer(
   const soldPlayerName = soldPlayer ? `${soldPlayer.firstName} ${soldPlayer.lastName}` : 'spelaren'
   const buyingClubName = game.clubs.find(c => c.id === buyingClubId)?.name ?? 'köparklubben'
 
+  // BETATEST_ERIK_2026-09-24 A3 — rot: spelaren fick bara ett kvitto på GENOMFÖRD
+  // affär om den råkade vara "historisk" (storyInboxItems ovan, kräver kapten/
+  // fanfavorit/legend/akademiprodukt). En vanlig värvning eller försäljning gav
+  // ingen bekräftelse alls efter "Bud accepterat" (som är budNIVÅN, inte
+  // affärens fullbordan — den kan fortfarande fallera på spelarens egen accept,
+  // se playerAcceptsTransfer/processTransferBids). Ovillkorligt kvitto här, vid
+  // den faktiska ägarbytespunkten (clubId skrivs om ovan i updatedPlayers), en
+  // gång per bud-id — samma dedup-mönster (deterministiskt id, bara detta
+  // anropsställe skriver det) som storyInboxItems/fanInboxItems redan använder.
+  const receiptInboxItems = (isSoldFromManagedClub && soldPlayer)
+    ? [{
+        id: `inbox_transfer_receipt_${bid.id}`,
+        date: game.currentDate,
+        type: InboxItemType.Transfer,
+        title: `Klart: ${soldPlayerName} säljs`,
+        body: `${soldPlayerName} klar för ${buyingClubName}. ${offerAmount.toLocaleString('sv-SE')} kr.`,
+        isRead: false,
+        relatedPlayerId: soldPlayer.id,
+      }]
+    : (buyingClubId === game.managedClubId && soldPlayer)
+      ? [{
+          id: `inbox_transfer_receipt_${bid.id}`,
+          date: game.currentDate,
+          type: InboxItemType.Transfer,
+          title: `Klart: ${soldPlayerName} värvad`,
+          body: `${soldPlayerName} värvad från ${game.clubs.find(c => c.id === sellingClubId)?.name ?? 'säljande klubb'}. ${offerAmount.toLocaleString('sv-SE')} kr.`,
+          isRead: false,
+          relatedPlayerId: soldPlayer.id,
+        }]
+      : []
+
   // Framgångskurvan steg 3 fix (2026-08-28): dedikerad, ocappad säsongsräknare
   // för investSurplus — financeLog-posterna nedan trängs ut av FINANCE_LOG_MAX
   // (50) i en händelserik säsong, se SaveGame.ts's kommentar på fältet.
@@ -584,7 +615,7 @@ export function executeTransfer(
       ? [...(game.pendingFollowUps ?? []), ...nemesisFollowUps]
       : game.pendingFollowUps,
     inbox: (() => {
-      const extra = [...storyInboxItems, ...fanInboxItems]
+      const extra = [...storyInboxItems, ...fanInboxItems, ...receiptInboxItems]
       return extra.length > 0 ? [...extra, ...game.inbox] : game.inbox
     })(),
     fanMood: fanMoodPenalty !== 0 ? Math.max(0, (game.fanMood ?? 50) + fanMoodPenalty) : game.fanMood,

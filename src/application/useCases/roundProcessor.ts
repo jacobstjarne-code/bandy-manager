@@ -740,6 +740,7 @@ export function advanceToNextEvent(inputGame: SaveGame, seed?: number): AdvanceR
   sponsorNetworkMoodDelta += boardObjSponsorDelta
   newMoments.push(...transferExecResult.moments)
   roundLedgerEntries.push(...transferExecResult.ledgerEntries)
+  newInboxItems.push(...transferExecResult.inboxItems)
 
   // C-T1/T9 — Transfer consequence fan mood deltas
   let lastRivalSaleMatchday = game.lastRivalSaleMatchday

@@ -502,6 +502,7 @@ export interface TransferExecutionResult {
   sponsorNetworkMoodDelta: number
   moments: Moment[]
   ledgerEntries: EventLedgerEntry[]
+  inboxItems: InboxItem[]
 }
 
 export function executeAcceptedTransfers(input: TransferExecutionInput): TransferExecutionResult {
@@ -512,6 +513,16 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
   let sponsorNetworkMoodDelta = 0
   const moments: Moment[] = []
   const ledgerEntries: EventLedgerEntry[] = []
+  // BETATEST_ERIK_2026-09-24 A3 — rot: executeTransfer bygger redan
+  // storyInboxItems/fanInboxItems/receiptInboxItems och returnerar dem i
+  // result.inbox, men den här batch-vägen (rundprocessorns vanliga köp-flöde,
+  // till skillnad från acceptTransfer-eventet i eventResolver.ts som SPRIDER
+  // hela resultatet) plockade bara ut .players/.clubs — inboxen kastades tyst.
+  // Ett vanligt köp (varje "bud accepterat efter väntetid") gav alltså ALDRIG
+  // någon bekräftelse, oavsett om texten fanns. Diffas mot preEventGame.inbox
+  // (konstant genom loopen) eftersom executeTransfer returnerar HELA inboxen
+  // med den här körningens nya poster prependade, inte bara de nya.
+  const inboxItems: InboxItem[] = []
 
   for (const bid of resolvedBids) {
     if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
@@ -521,6 +532,7 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
     const result = executeTransfer(tmpGame, bid)
     players = result.players
     clubs = result.clubs
+    inboxItems.push(...result.inbox.slice(0, result.inbox.length - preEventGame.inbox.length))
     ledgerEntries.push({
       type: 'transfer_signed',
       semanticKey: `transfer_signed:${bid.id}`,
@@ -667,5 +679,5 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
     }
   }
 
-  return { players, clubs, nemesisTracker, sponsorNetworkMoodDelta, moments, ledgerEntries }
+  return { players, clubs, nemesisTracker, sponsorNetworkMoodDelta, moments, ledgerEntries, inboxItems }
 }

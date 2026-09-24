@@ -299,6 +299,55 @@ describe('executeTransfer', () => {
     expect(seller.squadPlayerIds).not.toContain('p1')
   })
 
+  // BETATEST_ERIK_2026-09-24 A3 — köp/försäljning ska ge spelaren ett
+  // ovillkorligt kvitto (spelarnamn, motpart, slutlig summa), inte bara vid
+  // "historiska" försäljningar (kapten/fanfavorit/legend/akademiprodukt).
+  it('A3: köp ger ett kvitto med spelarnamn, säljande klubb och slutlig kostnad', () => {
+    const game = makeGame()
+    const bid: TransferBid = {
+      id: 'b1', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: 200000, offeredSalary: 15000, contractYears: 3,
+      direction: 'outgoing', status: 'accepted', createdRound: 3, expiresRound: 4,
+    }
+    const result = executeTransfer(game, bid)
+    const receipt = result.inbox.find(i => i.id === 'inbox_transfer_receipt_b1')!
+    expect(receipt).toBeDefined()
+    expect(receipt.title).toContain('Test Player')
+    expect(receipt.body).toContain('Test Player')
+    expect(receipt.body).toContain('Other FK')
+    expect(receipt.body).toContain((200000).toLocaleString('sv-SE'))
+  })
+
+  it('A3: försäljning ger ett kvitto med spelarnamn, köpande klubb och slutlig intäkt', () => {
+    const game = makeGame()
+    const bid: TransferBid = {
+      id: 'b2', playerId: 'own1', buyingClubId: 'c2', sellingClubId: 'c1',
+      offerAmount: 150000, offeredSalary: 12000, contractYears: 2,
+      direction: 'incoming', status: 'accepted', createdRound: 3, expiresRound: 4,
+    }
+    const result = executeTransfer(game, bid)
+    const receipt = result.inbox.find(i => i.id === 'inbox_transfer_receipt_b2')!
+    expect(receipt).toBeDefined()
+    expect(receipt.title).toContain('Test Player')
+    expect(receipt.body).toContain('Test Player')
+    expect(receipt.body).toContain('Other FK')
+    expect(receipt.body).toContain((150000).toLocaleString('sv-SE'))
+  })
+
+  it('A3: en spelare utan historisk status (ej kapten/fanfavorit/legend/akademi) får ändå ett kvitto vid försäljning', () => {
+    const game = makeGame()
+    const bid: TransferBid = {
+      id: 'b3', playerId: 'own1', buyingClubId: 'c2', sellingClubId: 'c1',
+      offerAmount: 50000, offeredSalary: 8000, contractYears: 1,
+      direction: 'incoming', status: 'accepted', createdRound: 3, expiresRound: 4,
+    }
+    const result = executeTransfer(game, bid)
+    // storyInboxItems (den "historiska" vägen) ska INTE ha triggat — own1 är
+    // varken kapten, fanfavorit, legend eller akademiprodukt i makeGame().
+    expect(result.inbox.some(i => i.id === `transfer_story_own1_${game.currentDate}`)).toBe(false)
+    expect(result.inbox.some(i => i.id === 'inbox_transfer_receipt_b3')).toBe(true)
+  })
+
 })
 
 describe('createOutgoingBid', () => {
