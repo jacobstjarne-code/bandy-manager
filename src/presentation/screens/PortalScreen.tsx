@@ -486,14 +486,31 @@ export function PortalScreen() {
           // en felträff simulerar bort resten av säsongen. marginBottom
           // oberoende av gap:6/cue-blockets varierande höjd, så avståndet
           // aldrig kan kollapsa under 44px oavsett cue-textens längd.
-          <button
-            onClick={handleSimulateRemaining}
-            disabled={isSimulatingRemaining}
-            className="btn btn-ghost"
-            style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24 }}
-          >
-            <Icon icon={FastForward} size={13} /> {isSimulatingRemaining ? '···' : 'Simulera resterande säsong'}
-          </button>
+          <div style={{ marginBottom: 24 }}>
+            <button
+              onClick={handleSimulateRemaining}
+              disabled={isSimulatingRemaining}
+              className="btn btn-ghost"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+              }}
+            >
+              <span style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <Icon icon={FastForward} size={13} /> {isSimulatingRemaining ? '···' : 'Snabbsimulera vidare'}
+              </span>
+              {!isSimulatingRemaining && (
+                <span className="h-body-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.25, textAlign: 'center' }}>
+                  Dina matcher snabbspelas utan hörn- och straffval.
+                </span>
+              )}
+            </button>
+          </div>
         )}
         {/* Drag 3 (§11 punkt 6) — "Vad nu?"-affordansen. Bildtext på handlingen,
             aldrig en tooltip/overlay. Färg = allvar: warning i grind-läge, annars
