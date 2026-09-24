@@ -530,6 +530,37 @@ export function buildMemoryEventFromLedger(game: SaveGame, entry: EventLedgerEnt
   }
 }
 
+/**
+ * BETATEST_ERIK_2026-09-24 A4 — en faktarad per säsong i stället för en rad
+ * per tröskelöverskridning. `entries` = säsongens community_shift-poster
+ * (redan filtrerade på säsong av anroparen). Ren fakta, ingen riktning
+ * påstås ("vände"/"drog sig undan") — start→slut plus spannets ytterlägen.
+ * Tom lista (ingen post skrevs den säsongen, orten stod still) → ingen rad;
+ * det finns ingen känd start-/slutnivå att redovisa utan att hitta på den.
+ */
+export function buildSeasonCommunityFactEvent(
+  entries: EventLedgerEntry[], season: number, managedClubId: string,
+): MemoryEvent | null {
+  if (entries.length === 0) return null
+  const sorted = [...entries].sort((a, b) => a.matchday - b.matchday)
+  const shifts = sorted.map(e => e.communityShift).filter((s): s is NonNullable<typeof s> => !!s)
+  if (shifts.length === 0) return null
+  const start = shifts[0].from
+  const end = shifts[shifts.length - 1].to
+  const allValues = shifts.flatMap(s => [s.from, s.to])
+  const min = Math.min(...allValues)
+  const max = Math.max(...allValues)
+  const spanText = min === max ? '' : ` Lägst ${min}, högst ${max}.`
+  const last = sorted[sorted.length - 1]
+  return {
+    type: 'community_shift', season, matchday: last.matchday,
+    text: `Orten: ${start} → ${end} under säsongen.${spanText}`,
+    emoji: momentFamily('community_shift'),
+    significance: Math.max(...sorted.map(e => e.significance)),
+    subjectClubId: managedClubId,
+  }
+}
+
 function collectSeasonEvents(game: SaveGame, season: number, managedClubId: string): MemoryEvent[] {
   const events: MemoryEvent[] = []
 
@@ -559,11 +590,22 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
   // De sex migrerade ClubMemory-källorna läses nu ur kanon. Fickorna ovan
   // fortsätter finnas för sina övriga roller, men får inte längre återskapa
   // samma historiska händelse parallellt.
+  //
+  // BETATEST_ERIK_2026-09-24 A4 — rot: community_shift skrevs en post per
+  // tröskelöverskridning (30/50/70-zonerna), och varje post blev en egen
+  // MemoryEvent med SAMMA efterled ("det märks på läktaren först"). En säsong
+  // med mycket pendling gav ett dussin nästan identiska rader. Aggregeras nu
+  // till EN faktarad per säsong (season-fact-lägre ned) i stället för en rad
+  // per tröskel — övriga typer opåverkade.
+  const communityShiftEntries: EventLedgerEntry[] = []
   for (const entry of readClubLedger(game, managedClubId)) {
     if (entry.season !== season || !LEDGER_CLUB_MEMORY_TYPES.has(entry.type)) continue
+    if (entry.type === 'community_shift') { communityShiftEntries.push(entry); continue }
     const event = buildMemoryEventFromLedger(game, entry, managedClubId)
     if (event) events.push(event)
   }
+  const communityFactEvent = buildSeasonCommunityFactEvent(communityShiftEntries, season, managedClubId)
+  if (communityFactEvent) events.push(communityFactEvent)
 
   // Resolved storylines: the ledger decides what happened. The retained
   // storyline object supplies only its frozen, already-approved view text.

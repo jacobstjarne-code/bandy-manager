@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { EventLedgerEntry } from '../../entities/Narrative'
 import type { SaveGame } from '../../entities/SaveGame'
-import { buildMemoryEventFromLedger, momentFamily, momentKind } from '../clubMemoryService'
+import { buildMemoryEventFromLedger, buildSeasonCommunityFactEvent, momentFamily, momentKind } from '../clubMemoryService'
 
 const CLUB_ID = 'club_a'
 
@@ -51,5 +51,44 @@ describe('Krönikan — community_shift (liggare-ny-community-shift, text LÅST 
     const entry = shiftPost()
     delete (entry as { communityShift?: unknown }).communityShift
     expect(buildMemoryEventFromLedger(makeGame(), entry, CLUB_ID)).toBeNull()
+  })
+})
+
+// BETATEST_ERIK_2026-09-24 A4 — rot: varje tröskelöverskridning (30/50/70-
+// zonerna) blev en egen rad med samma efterled ("det märks på läktaren
+// först"), så en säsong med mycket pendling gav upp till ett dussin nästan
+// identiska meningar. buildSeasonCommunityFactEvent aggregerar en säsongs
+// community_shift-poster till EN faktarad — start→slut plus spannets
+// ytterlägen, ingen riktning påstådd.
+describe('buildSeasonCommunityFactEvent — en faktarad, inte en rad per tröskel', () => {
+  it('Eriks exempel: 50 → 69 under säsongen, lägst 46, högst 71', () => {
+    const entries = [
+      shiftPost({ matchday: 5, communityShift: { from: 50, to: 46, direction: 'down' } }),
+      shiftPost({ matchday: 10, communityShift: { from: 46, to: 71, direction: 'up' } }),
+      shiftPost({ matchday: 15, communityShift: { from: 71, to: 60, direction: 'down' } }),
+      shiftPost({ matchday: 20, communityShift: { from: 60, to: 69, direction: 'up' } }),
+    ]
+    const event = buildSeasonCommunityFactEvent(entries, 3, CLUB_ID)
+    expect(event?.text).toBe('Orten: 50 → 69 under säsongen. Lägst 46, högst 71.')
+  })
+
+  it('helt oförändrad säsong (inga community_shift-poster alls): ingen rad, inget påstående', () => {
+    expect(buildSeasonCommunityFactEvent([], 3, CLUB_ID)).toBeNull()
+  })
+
+  it('en enda tröskelöverskridning: start→slut från den posten, lägst/högst från samma par', () => {
+    const entries = [shiftPost({ matchday: 12, communityShift: { from: 48, to: 52, direction: 'up' } })]
+    const event = buildSeasonCommunityFactEvent(entries, 3, CLUB_ID)
+    expect(event?.text).toBe('Orten: 48 → 52 under säsongen. Lägst 48, högst 52.')
+  })
+
+  it('påstår aldrig riktning ("vände"/"drog sig undan") — ren fakta', () => {
+    const entries = [
+      shiftPost({ matchday: 5, communityShift: { from: 60, to: 40, direction: 'down' } }),
+      shiftPost({ matchday: 18, communityShift: { from: 40, to: 60, direction: 'up' } }),
+    ]
+    const event = buildSeasonCommunityFactEvent(entries, 3, CLUB_ID)
+    expect(event?.text).not.toMatch(/vände|drog sig undan|märks på läktaren/)
+    expect(event?.text).toBe('Orten: 60 → 60 under säsongen. Lägst 40, högst 60.')
   })
 })
