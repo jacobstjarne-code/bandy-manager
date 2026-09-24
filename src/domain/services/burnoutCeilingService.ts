@@ -25,24 +25,27 @@ export function generateBurnoutCeilingEvent(
   matchday: number,
   season: number,
   priorScar?: 'hardened' | 'stepped_back',
+  /** BETATEST_TEXTDOM C6.5: assistentens namn; reserv "Assistenten" för äldre sparfiler. */
+  assistantCoachName?: string,
 ): GameEvent {
+  const coach = assistantCoachName?.trim() || 'Assistenten'
   const relapseTitle = 'Du är vid samma gräns igen'
   const relapseBody = priorScar === 'stepped_back'
-    ? 'Du klev tillbaka förra gången och tog dig ur det. Nu står du vid samma gräns igen. Assistenten säger samma sak, men den här gången vet ni båda vad varje väg faktiskt kostar.'
+    ? `Du klev tillbaka förra gången och tog dig ur det. Nu står du vid samma gräns igen. ${coach} säger samma sak, men den här gången vet ni båda vad varje väg faktiskt kostar.`
     : priorScar === 'hardened'
-    ? 'Du körde vidare förra gången. Det bar dig genom våren, men det skyddade dig inte från att hamna här igen. Assistenten väntar på om du gör samma val en gång till.'
+    ? `Du körde vidare förra gången. Det bar dig genom våren, men det skyddade dig inte från att hamna här igen. ${coach} väntar på om du gör samma val en gång till.`
     : undefined
 
   return {
     id: `event_burnout_ceiling_${season}_${matchday}`,
     type: 'burnoutCeiling',
     title: relapseBody ? relapseTitle : 'Det går inte att köra så här längre',
-    body: relapseBody ?? 'Det har legat på max ett tag nu, och det släpper inte av sig självt. Assistenten har sagt det rakt ut: antingen kliver du tillbaka en period, eller så kör du vidare och ser vad som händer. Ingen av vägarna är gratis.',
+    body: relapseBody ?? `Det har legat på max ett tag nu, och det släpper inte av sig självt. ${coach} har sagt det rakt ut: antingen kliver du tillbaka en period, eller så kör du vidare och ser vad som händer. Ingen av vägarna är gratis.`,
     choices: [
       {
         id: 'step_back',
         label: 'Kliv tillbaka en period',
-        subtitle: 'Assistenten tar rodret, lätt träning tvingas fram, styrelsen gillar det inte — men det släpper på riktigt.',
+        subtitle: `${coach} tar rodret, lätt träning tvingas fram, styrelsen gillar det inte — men det släpper på riktigt.`,
         irreversible: true,
         effect: {
           type: 'multiEffect',

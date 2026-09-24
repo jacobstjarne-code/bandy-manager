@@ -84,7 +84,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
           borderRadius: 'var(--radius-md)',
           marginBottom: 8,
         }}>
-          <div className="h-label" style={{ color: 'var(--text-muted)', marginBottom: 4 }}>VÄDER</div>
+          <div className="h-label" style={{ color: 'var(--text-muted)', marginBottom: 4 }}>Väder</div>
           <div style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>{weatherStr}</div>
         </div>
       )}

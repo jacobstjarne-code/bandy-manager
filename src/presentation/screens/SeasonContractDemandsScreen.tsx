@@ -70,7 +70,7 @@ export function SeasonContractDemandsScreen() {
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 16px' }}>
         <p className="h-label" style={{ marginBottom: 12 }}>
-          💰 LÖNEKRAV
+          💰 Lönekrav
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
           {demands.length === 1 ? 'En spelare begär högre lön' : 'Spelarna begär högre lön'}

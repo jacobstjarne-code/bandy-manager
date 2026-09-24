@@ -1,7 +1,6 @@
 import type { AssistantCoach, CoachPersonality, CoachBackground } from '../entities/AssistantCoach'
 import type { NoteTag } from './playerNotesService'
 import { seededPick, stringHash } from '../utils/random'
-import { swedishGenitive } from '../data/matchCommentary'
 
 // Svenska förnamn + efternamn — speglar aiCoachService
 const FIRST_NAMES = ['Leif', 'Björn', 'Håkan', 'Stefan', 'Per', 'Johan', 'Anders', 'Mikael', 'Lars', 'Gunnar', 'Ulf', 'Rolf', 'Kent', 'Peter', 'Sven']
@@ -68,9 +67,9 @@ const WIN_QUOTES: Record<CoachPersonality, string[]> = {
     'Vi vann. Men vi måste prata om andra halvlek.',
   ],
   philosophical: [
-    'En vinst är aldrig en slump. Det finns alltid orsaker.',
-    'Laget presterade. Det är allt som räknas idag.',
-    'Seger och förlust är ögonblick. Det är vägen dit som formar laget.',
+    'Vi vann på sådant vi tränat på. Det håller längre än tur.',
+    'Laget gjorde jobbet. Resten får vänta till i morgon.',
+    'Njut i kväll. Isen ser likadan ut på tisdag oavsett.',
   ],
 }
 
@@ -96,9 +95,9 @@ const DRAW_QUOTES: Record<CoachPersonality, string[]> = {
     'Oavgjort hemma. Det duger inte i längden.',
   ],
   philosophical: [
-    'Ibland delar man rättvist på poängen. Det är bandyns natur.',
-    'En poäng. Inte mer, inte mindre. Frågan är vad vi gör nästa omgång.',
-    'Oavgjort berättar något om laget. Vad det berättar — det diskuterar vi imorgon.',
+    'Ibland delar man rättvist. Den här kvällen gjorde vi det.',
+    'En poäng. Vi tar den och tittar framåt.',
+    'Vad oavgjort säger om oss får vi prata om i morgon. Nu åker vi hem.',
   ],
 }
 
@@ -124,8 +123,8 @@ const LOSS_QUOTES: Record<CoachPersonality, string[]> = {
     'Det här var väntat. Tyvärr.',
   ],
   philosophical: [
-    'Alla gör förluster. Frågan är vad man gör dan efter.',
-    'En match är en match. En säsong är något helt annat.',
+    'Förluster kommer. Det som räknas är nästa träning.',
+    'Det var en match. Vintern är lång.',
     'Det där var inte vi. Vi hittar tillbaka.',
   ],
 }
@@ -152,9 +151,9 @@ const HALFTIME_LEADING_QUOTES: Record<CoachPersonality, string[]> = {
     'En halvlek är inte en match. Håll dig på tårna.',
   ],
   philosophical: [
-    'Ledning i halvtid är ett löfte, inte ett resultat.',
+    'Vi leder. Fyrtiofem minuter kvar att hålla i det.',
     'Vi är på rätt väg. Fortsätt vara det.',
-    'Halvtid är bara ett ögonblick i en längre berättelse.',
+    'Drick något varmt. Vi gör samma sak en halvlek till.',
   ],
 }
 
@@ -180,9 +179,9 @@ const HALFTIME_TRAILING_QUOTES: Record<CoachPersonality, string[]> = {
     'Ni är bättre än det här. Bevisa det i andra halvlek.',
   ],
   philosophical: [
-    'Underläge är inte slutet — det är en inbjudan att höja sig.',
-    'Motgång är en lärare. Låt oss lyssna.',
-    'Vi är bakom. Det är ett faktum. Vad vi gör med det — det är frågan.',
+    'Vi ligger under. Fyrtiofem minuter räcker långt i bandy.',
+    'Nu har vi sett vad de gör. Vi vet var luckorna finns.',
+    'Vi är bakom. Gå ut och spela som om det stod noll–noll.',
   ],
 }
 
@@ -208,9 +207,9 @@ const TACTIC_BOLD_QUOTES: Record<CoachPersonality, string[]> = {
     'Det är ett risktagande jag helst sluppit.',
   ],
   philosophical: [
-    'I bandyn, som i livet, ibland måste man bryta mönstret.',
-    'En stor förändring. Det kräver mod — av spelarna och av oss.',
-    'Taktik är en hypotes. Nu testar vi den.',
+    'Det vi gjorde fungerade inte. Då gör vi något annat.',
+    'Stort byte. Spelarna behöver några minuter att hitta rätt.',
+    'Vi provar det här en kvart och ser vad isen säger.',
   ],
 }
 
@@ -236,9 +235,9 @@ const TACTIC_MINOR_QUOTES: Record<CoachPersonality, string[]> = {
     'Rätt drag. Tråkigt att vi behövde vänta så länge.',
   ],
   philosophical: [
-    'Ibland är det de små förändringarna som avgör.',
-    'En subtil förändring. Det handlar om att läsa spelet rätt.',
-    'Det lilla steget kan leda till det stora.',
+    'En liten justering. Den märks mest i duellerna.',
+    'Lite förskjutning bara. Rätt läst kan det räcka.',
+    'Ett litet steg. Mer behövs kanske inte.',
   ],
 }
 
@@ -264,9 +263,9 @@ const WEEKLY_QUOTES: Record<CoachPersonality, string[]> = {
     'Det var väntat. Nu behöver vi ta tag i det.',
   ],
   philosophical: [
-    'Ibland är det de vardagliga besluten som formar en säsong.',
-    'En fråga utan enkelt svar. Men den måste ställas.',
-    'Det finns ett val att göra. Alla val har konsekvenser.',
+    'Det är sådana här veckor som säsongen byggs av.',
+    'Ingen enkel fråga. Sov på den om det behövs.',
+    'Vad du än väljer märks det på träningen nästa vecka.',
   ],
 }
 
@@ -292,9 +291,9 @@ const SEASON_SUMMARY_OVER_EXPECTATION: Record<CoachPersonality, string[]> = {
     'Det gick bra. Jag håller inte på att fira för tidigt.',
   ],
   philosophical: [
-    'Att överstiga förväntningar säger mer om ambition än om tur.',
+    'Vi kom längre än någon trodde i höstas. Det var inte tur.',
     'Vi höjde oss. Det är vad en säsong bör ge.',
-    'Resultatet är ett bevis. Nu vet vi vad som är möjligt.',
+    'Nu vet spelarna vad de klarar. Det tar de med sig till nästa höst.',
   ],
 }
 
@@ -320,9 +319,9 @@ const SEASON_SUMMARY_UNDER_EXPECTATION: Record<CoachPersonality, string[]> = {
     'Jag är inte nöjd. Det vet alla. Nu jobbar vi.',
   ],
   philosophical: [
-    'Misslyckanden är en del av resan. Frågan är vad vi gör av dem.',
-    'Under förväntan. Det är ett faktum vi måste förhålla oss till ärligt.',
-    'En säsong som inte gick som planerat lär oss mer än en framgångssäsong.',
+    'Det gick sämre än vi trodde. Sommaren får bli lång och ärlig.',
+    'Under förväntan. Vi ska inte låtsas något annat.',
+    'Såna här år lär man sig mest av, om man orkar titta på dem.',
   ],
 }
 
@@ -348,9 +347,9 @@ const PRESS_WIN_QUOTES: Record<CoachPersonality, string[]> = {
     'Två poäng. Vi tar dom och går vidare.',
   ],
   philosophical: [
-    'Segern är ett bevis på något djupare — lagets tillit till varandra.',
-    'Resultatet speglar arbetet ingen ser. Det är glädjande.',
-    'En seger välförtjänt av ett lag som förstår sitt syfte.',
+    'De litade på varandra i kväll. Det syntes i varje byte.',
+    'Det här är träningarna i mörkret som ger utdelning.',
+    'Välförtjänt. De visste vad de skulle göra hela kvällen.',
   ],
 }
 
@@ -376,9 +375,9 @@ const PRESS_LOSS_QUOTES: Record<CoachPersonality, string[]> = {
     'Förlust. Det är oacceptabelt på lång sikt.',
   ],
   philosophical: [
-    'Förluster är en del av resan. Frågan är vad vi gör härnäst.',
-    'En förlust berättar något om oss. Vi lyssnar.',
-    'Ibland förlorar man. Det viktigaste är att förstå varför.',
+    'Det svider. Vi går igenom det i morgon, inte i kväll.',
+    'Vi får titta på vad som gick fel. Det brukar gå att hitta.',
+    'Ibland förlorar man. Då vill jag åtminstone veta varför.',
   ],
 }
 
@@ -470,7 +469,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: `${n} orkar inte mer. Lägg det kort.`,
           jovial: `${n} har slitit — låt någon annan ta bollen!`,
           grumpy: `${n} borde byta ut sig. Kort hörna.`,
-          philosophical: `Trötthet är en signal. Lyssna på kroppen — gå kort.`,
+          philosophical: `Benen säger ifrån. Gå kort.`,
         }
         return MAP[p]
       }
@@ -480,7 +479,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: `${n} är glödhet. Centrera.`,
           jovial: `${n} flammar! Ge honom bollen — mitt i mål!`,
           grumpy: `${n} har tur idag. Utnyttja det.`,
-          philosophical: `Momentum är flyktigt. Ge ${n} bollen medan det varar.`,
+          philosophical: `${n} har det i klubban nu. Slå till honom medan det håller.`,
         }
         return MAP[p]
       }
@@ -490,7 +489,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Motståndaren läser oss. Byt taktik nu.',
           jovial: 'Vi missar hörnorna! Prova något annat!',
           grumpy: 'Samma sak om och om igen. Ändra.',
-          philosophical: 'Galenskap är att göra samma sak och vänta sig ett annat resultat.',
+          philosophical: 'Samma hörna en gång till ger samma svar. Prova något annat.',
         }
         return MAP[p]
       }
@@ -499,7 +498,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Analys klar. Välj och kör.',
         jovial: 'Det här är vår chans! Slå hårt!',
         grumpy: 'Välj rätt den här gången.',
-        philosophical: 'En hörna är en möjlighet som skapas av disciplin.',
+        philosophical: 'Hörnan sitter om alla står där de ska.',
       }
       return MAP[p]
     }
@@ -511,7 +510,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: `${n} har skuld att betala. Sikta lågt.`,
           jovial: `${n} vill ha revansch! Fokus — välj säkert!`,
           grumpy: `${n} missade senast. Hoppas det inte upprepas.`,
-          philosophical: `Misstag läker med tid. ${n} vet vad som krävs nu.`,
+          philosophical: `${n} vet vad som gick fel sist. Han behöver inte höra det från oss.`,
         }
         return MAP[p]
       }
@@ -521,7 +520,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Motståndets keeper tar höga bollar. Skjut lågt.',
           jovial: 'Målvakten är het — men vi är hetare! Välj hörn!',
           grumpy: 'Keepern är bra. Det här kommer inte gå bra.',
-          philosophical: 'En stark keeper är en utmaning — men alla val har sin risk.',
+          philosophical: 'Målvakten läser straffar bra. Lägg den där han inte står.',
         }
         return MAP[p]
       }
@@ -530,7 +529,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Kort approach, hård avslutning.',
         jovial: 'Stämningen är elektrisk! Välj ett hörn och kör!',
         grumpy: 'Slösa inte det här.',
-        philosophical: 'Straffens enkelhet är dess svårighet.',
+        philosophical: 'Tolv meter och en målvakt. Enklare blir det inte, och ändå missar folk.',
       }
       return MAP[p]
     }
@@ -542,7 +541,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: `${n} vinner loppet. Sprinta.`,
           jovial: `${n} är ett blixtsnabbt djur! Kör!`,
           grumpy: `${n} är snabbare, i alla fall.`,
-          philosophical: `Fart i de rätta ögonblicken är konst.`,
+          philosophical: `${n} är snabbast på isen. Åk när luckan öppnar sig.`,
         }
         return MAP[p]
       }
@@ -552,7 +551,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Underlägset. Spela säkert.',
           jovial: 'Det är tufft — men vi kämpar! Spela av!',
           grumpy: 'Dom är fler. Gör inte något dumt.',
-          philosophical: 'Att erkänna underlägsenhet är det klokaste valet.',
+          philosophical: 'De är fler här. Vänta in resten av laget.',
         }
         return MAP[p]
       }
@@ -561,7 +560,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Snabbt beslut — tveka inte.',
         jovial: 'Det är nu det händer! Välj!',
         grumpy: 'Välj nu.',
-        philosophical: 'Kontringen är bandyns renaste ögonblick.',
+        philosophical: 'Nu åker vi, innan de hinner hem.',
       }
       return MAP[p]
     }
@@ -572,7 +571,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Muren är klen. Skjut hårt och högt.',
           jovial: 'Liten mur — stor chans! Skjut!',
           grumpy: 'Muren är svag. Utnyttja det.',
-          philosophical: 'En liten barriär inbjuder till mod.',
+          philosophical: 'Muren är tunn. Skjut.',
         }
         return MAP[p]
       }
@@ -582,7 +581,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Långt bort — passa, skjut inte.',
           jovial: 'Lite långt — men vad tusan, prova!',
           grumpy: 'Det är för långt. Passa.',
-          philosophical: 'Avstånd är relativt. Klokhet är absolut.',
+          philosophical: 'Det är långt till mål. Spela in den hellre.',
         }
         return MAP[p]
       }
@@ -591,7 +590,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Snabb analys — välj och genomför.',
         jovial: 'Det här är vår chans! Kör!',
         grumpy: 'Gör rätt val för en gångs skull.',
-        philosophical: 'Frislag — ordningen återvinns ur kaos.',
+        philosophical: 'Ta det lugnt vid bollen. Muren flyttar sig inte.',
       }
       return MAP[p]
     }
@@ -602,7 +601,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: `${context.margin} måls försprång. Låt dem inte tillbaka.`,
           jovial: `Vi leder! Håll i det nu — hela vägen!`,
           grumpy: `Förstör inte det nu.`,
-          philosophical: `Segern är nära — men den kräver vaksamhet till sista visslingen.`,
+          philosophical: `Minuterna går åt vårt håll. Ingen behöver vara hjälte nu.`,
         }
         return MAP[p]
       }
@@ -612,7 +611,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           sharp: 'Kom igen — pressa upp dem.',
           jovial: 'Vi kan ta det! Allt in! Kör!',
           grumpy: 'Det är sent, men vi försöker.',
-          philosophical: 'Det sista är alltid det svåraste — och det viktigaste.',
+          philosophical: 'Det här är minuterna man minns efteråt. Framåt.',
         }
         return MAP[p]
       }
@@ -621,7 +620,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
         sharp: 'Lika. Nu avgörs det.',
         jovial: 'Allt att vinna! Kör på!',
         grumpy: 'Jämnt. Äckligt.',
-        philosophical: 'Oavgjort är ingen destination — det är en övergång.',
+        philosophical: 'Oavgjort nu. En boll kan ändra det åt båda hållen.',
       }
       return MAP[p]
     }
@@ -651,8 +650,8 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
           ],
           philosophical: [
             `${n} behöver vila — det är ingen skam i det.`,
-            `${n} har burit mycket den här hösten. Även det starka behöver ligga i träda.`,
-            `Trötthet är kroppens sätt att säga sanningen. ${n} bör lyssna.`,
+            `${n} har burit mycket. Ge honom en lätt vecka.`,
+            `${n} åker tyngre än vanligt. Kroppen brukar ha rätt.`,
           ],
         },
         'glödande': {
@@ -677,7 +676,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `${n} levererar nu, fråga mig inte hur länge.`,
           ],
           philosophical: [
-            `${n} har hittat sitt flöde. Störs det inte.`,
+            `${n} har hittat rätt. Stör honom inte.`,
             `${n} bär formen lätt just nu, sånt rör man inte i.`,
             `Det går i vågor, och ${n} är på toppen av sin.`,
           ],
@@ -707,8 +706,8 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `${n} är inte nöjd, och det blir sällan bättre av att vänta.`,
           ],
           philosophical: [
-            `${swedishGenitive(n)} missnöje är en signal. Lyssna innan det eskalerar.`,
-            `Missnöje gror i tystnad — ${n} säger mer med blicken än med orden.`,
+            `${n} har slutat skämta i omklädningsrummet. Prata med honom innan det växer.`,
+            `${n} säger inte mycket, men han sätter sig längst bak i bussen.`,
             `${n} bär på något som inte löser sig av sig självt.`,
           ],
         },
@@ -734,7 +733,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `${n} gör mål för tillfället, sånt brukar inte vara.`,
           ],
           philosophical: [
-            `Momentum är flyktigt. ${n} bär det just nu — bygg runt det.`,
+            `${n} hittar nätet just nu. Se till att bollen hittar honom.`,
             `En målform kommer och går, och ${n} är inne i sin.`,
             `${n} har siktet inställt — sånt ifrågasätter man inte.`,
           ],
@@ -761,8 +760,8 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `Ung spelare på bänken. ${n} lär inte stanna om det fortsätter så.`,
           ],
           philosophical: [
-            `Hunger är en resurs. ${n} har det. Använd det.`,
-            `${n} väntar på sin tur. Tålamod är en dygd — men bara till en gräns.`,
+            `${n} vill in på isen. Den viljan ska man inte låta kallna.`,
+            `${n} väntar på sin tur. Han väntar inte hur länge som helst.`,
             `Ungdom vill spela, inte titta på. ${n} är inget undantag.`,
           ],
         },
@@ -788,7 +787,7 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
             `Formen är borta för ${n}, frågan är om han vet om det själv.`,
           ],
           philosophical: [
-            `Svackor tillhör spelets natur. ${n} hittar tillbaka.`,
+            `${n} är i en svacka. De brukar gå över fortare än man tror.`,
             `${n} är i nedförsbacke just nu, och sånt möts med tålamod.`,
             `${n} har tappat något på vägen som går att hitta igen.`,
           ],

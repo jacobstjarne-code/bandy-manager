@@ -101,7 +101,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
       {/* Step 1: Choose training type */}
       <p className="h-label" style={{ marginBottom: 4 }}>
-        TRÄNINGSOMRÅDE
+        Träningsområde
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
         {TRAINING_TYPES.map(type => {
@@ -129,7 +129,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
       {/* Step 2: Choose intensity */}
       <p className="h-label" style={{ marginBottom: 4 }}>
-        INTENSITET
+        Intensitet
       </p>
       <div style={{ display: 'flex', gap: 3, background: 'var(--bg)', borderRadius: 8, padding: 3, marginBottom: 8 }}>
         {TRAINING_INTENSITIES.map(intensity => {

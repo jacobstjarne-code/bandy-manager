@@ -41,7 +41,7 @@ export function KlubbparmVisual({ game, chapterId, chapterLabel }: KlubbparmVisu
           style={{ ...imageStyle, height: 158, objectPosition: 'center' }}
         />
         <div style={{ padding: '12px 14px 4px', background: 'var(--bg-surface)' }}>
-          <p className="h-label" style={{ marginBottom: 7 }}>BYGDENS PULS</p>
+          <p className="h-label" style={{ marginBottom: 7 }}>Bygdens puls</p>
           <CommunityPulseMeter game={game} />
         </div>
       </>
@@ -57,7 +57,7 @@ export function KlubbparmVisual({ game, chapterId, chapterLabel }: KlubbparmVisu
       break
     case 'ekonomi':
       content = <div style={{ padding: '15px 16px 17px', background: 'var(--bg-surface)' }}>
-        <p className="h-label" style={{ marginBottom: 10 }}>KASSAÖVERSIKT</p>
+        <p className="h-label" style={{ marginBottom: 10 }}>Kassaöversikt</p>
         <div className="eco-row" style={{ paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Saldo</span>
           {/* adherence-semantic-key: rött saldo betyder att kassan är negativ. */}

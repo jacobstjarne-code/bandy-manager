@@ -93,7 +93,7 @@ export const PERSONALITY_REFUSAL: Record<PersonalityType, string[]> = {
   ],
   dream_club: [
     'Han väntar på en annan klubb. Han säger inte vilken.',
-    'Det är inte fel klubb. Det är fel klubb för honom.',
+    'Han tackar för intresset. Tröjan han vill ha har en annan färg.',
     'Han har bestämt sig sen länge. Det här var inte den.',
   ],
   default: [

@@ -85,7 +85,7 @@ export function StillnessSection({ game, receded = false }: Props) {
 
       {/* Lager 2 — Veckans rytm */}
       <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 12 }}>
-        <div className="h-label" style={{ marginBottom: 8 }}>📅 VECKANS RYTM</div>
+        <div className="h-label" style={{ marginBottom: 8 }}>📅 Veckans rytm</div>
         <div style={{ display: 'flex', gap: 4, marginBottom: trainingLabel || nextOpp ? 10 : 0 }}>
           {weekDays.map((d, i) => (
             <div key={i} style={{
@@ -116,7 +116,7 @@ export function StillnessSection({ game, receded = false }: Props) {
       {pulse.length >= 2 && (
         <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-            <div className="h-label">📈 STÄMNINGSKURVA</div>
+            <div className="h-label">📈 Stämningskurva</div>
             <span className="h-num" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
               {Math.round(pulse[pulse.length - 1])}
             </span>
@@ -147,7 +147,7 @@ export function StillnessSection({ game, receded = false }: Props) {
       {/* Lager 4 — Mikrohändelser */}
       {micros.length > 0 && (
         <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 12 }}>
-          <div className="h-label" style={{ marginBottom: 8 }}>🌾 RUNT OMKRING</div>
+          <div className="h-label" style={{ marginBottom: 8 }}>🌾 Runt omkring</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {micros.map((m, i) => (
               <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>

@@ -15,8 +15,10 @@ describe('CUP_FINAL_VENUE', () => {
 })
 
 describe('FINALDAG_COMMENTARY_PLAYING', () => {
-  it('böjer ett derby i neutrum', () => {
-    expect(FINALDAG_COMMENTARY_PLAYING.join(' ')).toContain('inte ens ett derby')
-    expect(FINALDAG_COMMENTARY_PLAYING.join(' ')).not.toContain('inte ens en derby')
+  // BETATEST_TEXTDOM C2.10: meningen om derbyt är struken ur finalraden.
+  // Genusvakten står kvar så "en derby" aldrig kommer tillbaka.
+  it('böjer aldrig derby i utrum', () => {
+    expect(FINALDAG_COMMENTARY_PLAYING.join(' ')).not.toMatch(/\ben derby\b/)
+    expect(FINALDAG_COMMENTARY_PLAYING.join(' ')).toContain('Ingen match den här säsongen har betytt lika mycket.')
   })
 })

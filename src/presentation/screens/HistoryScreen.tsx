@@ -522,7 +522,7 @@ export function HistoryScreen({ snapshot }: HistoryScreenProps = {}) {
           <div style={{ marginBottom: 32 }}>
             <div className="card-sharp" style={{ padding: '14px 16px' }}>
               <p className="h-label" style={{ marginBottom: 16 }}>
-                STAFETTEN
+                Stafetten
               </p>
               <Spine items={blodslinjeItems} />
             </div>

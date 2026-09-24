@@ -80,7 +80,7 @@ export const SCENE_TEXT: Record<LaddningOccasion, OccasionText> = {
     charge: [
       'En match. Studenternas. Uppsala.',
       'Hela säsongen mot den här enda matchen.',
-      'Det är hit alla vill, men få når ända fram.',
+      'Tolv lag började serien i höstas. Två är kvar.',
       'Var guldet hamnar avgörs i dag.',
       'För somliga klubbar är det här en gång i livet.',
     ],
@@ -112,7 +112,7 @@ export const BAND_TEXT: Record<LaddningState, { charge: string[] }> = {
       'Det rullar på, match efter match.',
       'Ingen säger det högt, men alla räknar raderna.',
       'Laget går nästan av sig självt nu.',
-      'Det är när det känns lätt man ska se upp.',
+      'Kaffet i kiosken smakar bättre när resultaten går vår väg.',
     ],
   },
 }

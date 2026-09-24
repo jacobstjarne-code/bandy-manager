@@ -101,7 +101,7 @@ export const NYARSBANDY_BRIEFING: string[] = [
 
 export const FINALDAG_COMMENTARY_PLAYING: string[] = [
   'SM-final. Det är vad allt gått ut på. Hela säsongen samlas i de här 90 minuterna.',
-  'Tredje lördagen i mars. {arenaName} är finalplats och vi är där. Det är inte en vanlig match. Det är inte ens ett derby. Det är finalen.',
+  'Tredje lördagen i mars. {arenaName} är finalplats och vi är där. Ingen match den här säsongen har betytt lika mycket.',
   'Det är finaldag. Något i benen vet det redan innan domaren blåser igång.',
 ]
 

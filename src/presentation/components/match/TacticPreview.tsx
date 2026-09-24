@@ -90,13 +90,13 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
         position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
         whiteSpace: 'nowrap',
       }}>
-        MOTSTÅNDARENS MÅL
+        Motståndarens mål
       </div>
       <div className="h-label" style={{
         position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
         whiteSpace: 'nowrap',
       }}>
-        VÅRT MÅL
+        Vårt mål
       </div>
 
       {/* Player dots */}

@@ -52,7 +52,7 @@ export const BURNOUT_MARK = {
     hog: [
       'Jag undrar hur länge jag orkar köra så här.',
       'Matcherna är det enkla — det är allt annat som tär.',
-      'Det är inte bandyn längre. Det är allt runtomkring.',
+      'Telefonen ringer varje gång jag ställer mig vid sargen. Jag hinner knappt följa arbetet på plan längre.',
       'Satt kvar i bilen utanför klubbstugan en bra stund i morse. Orkade inte gå in.',
       'Folk på Konsum har börjat fråga om jag mår bra. Det säger väl något.',
     ],
@@ -86,7 +86,7 @@ export const BURNOUT_MARK_RELAPSE = {
       'Jag känner igen det här nu. Det börjar som förra gången.',
       'Samma tyngd som förra gången. Jag känner igen mönstret.',
       'De sena kvällarna igen. Jag har sett vad de leder till.',
-      'Det är inte nytt längre. Det är det som oroar mig.',
+      'Jag har börjat räkna timmarna till nästa lediga kväll igen.',
       'Kroppen minns förra gången innan huvudet hinner med.',
     ],
     hog: [
@@ -128,7 +128,7 @@ export const BURNOUT_CAUSE_LINES: Record<'losses' | 'losses_eased' | 'inbox' | '
   inbox: [
     'Det ligger för mycket olöst på bordet.',
     'Högen växer fortare än den krymper.',
-    'Det är inte matcherna. Det är allt runtomkring som samlas på hög.',
+    'Styrelsen väntar på svar, sponsorn också. Jag skjuter på båda.',
     'För många beslut väntar på svar samtidigt.',
   ],
   fatigue: [
@@ -206,6 +206,6 @@ export const CONTRACT_STATUS = {
 }
 
 export const CONTRACT_OUTCOME = {
-  extended: 'Styrelsen förlängde. {manager} stannar — bygdens puls slår vidare.',
+  extended: 'Styrelsen förlängde. {manager} har kvar nycklarna till klubbstugan.',
   not_extended: 'Styrelsen valde att inte förlänga. Säsongen blir {manager}s sista här.',
 }

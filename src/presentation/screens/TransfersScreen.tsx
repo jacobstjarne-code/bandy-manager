@@ -270,7 +270,7 @@ export function TransfersScreen({ initialTab = 'marknad' }: { initialTab?: 'mark
         const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
         return (
           <div className="card-sharp transfers-state-copper">
-            Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
+            Scouten synar: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )
       })()}
@@ -304,7 +304,7 @@ export function TransfersScreen({ initialTab = 'marknad' }: { initialTab?: 'mark
       <TabBar
         tabs={[
           { id: 'marknad', label: 'Marknad', dot: marknadHasDot ? 'accent' : null },
-          { id: 'scouting', label: 'Scouting', dot: null },
+          { id: 'scouting', label: 'Spaning', dot: null },
           { id: 'freeagents', label: 'Fria', dot: null },
           { id: 'sell', label: 'Sälj', dot: saljHasDot ? 'accent' : null },
         ]}
@@ -470,7 +470,7 @@ export function TransfersScreen({ initialTab = 'marknad' }: { initialTab?: 'mark
                   onClick={() => setActiveTab('scouting')}
                   className="btn btn-primary"
                 >
-                  Gå till Scouting →
+                  Gå till spaningen →
                 </button>
               </div>
             ) : groups.map(group => (

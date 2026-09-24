@@ -52,7 +52,7 @@ export function PlayoffIntroScreen() {
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
         <p className="h-label" style={{ marginBottom: 12 }}>
-          ⚔️ SLUTSPEL
+          ⚔️ Slutspel
         </p>
         <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
           Grundserien avklarad
@@ -72,7 +72,7 @@ export function PlayoffIntroScreen() {
               {position}
             </span>
             <p className="h-label" style={{ margin: '2px 0 0' }}>
-              PLACERING
+              Placering
             </p>
           </div>
           <div style={{ flex: 1, borderLeft: '1px solid var(--border)', paddingLeft: 14 }}>
@@ -105,7 +105,7 @@ export function PlayoffIntroScreen() {
       {/* ── TOPP 8 TABELL ── */}
       <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
         <p className="h-label" style={{ marginBottom: 6 }}>
-          📊 TOPP 8 — SLUTSPELSKLARA
+          📊 Topp 8 — slutspelsklara
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
           <thead>

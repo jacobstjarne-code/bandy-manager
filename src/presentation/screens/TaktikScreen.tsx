@@ -84,7 +84,7 @@ export function TaktikScreen() {
           ← Tillbaka
         </button>
         <p className="h-label" style={{ marginLeft: 'auto', fontSize: 12 }}>
-          TAKTIKTAVLAN
+          Taktiktavlan
         </p>
       </div>
 

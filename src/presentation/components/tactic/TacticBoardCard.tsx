@@ -8,6 +8,7 @@ import { FormationView } from './FormationView'
 import { NotesView } from './NotesView'
 import { SlidersHorizontal } from 'lucide-react'
 import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
+import { swedishGenitive } from '../../../domain/data/matchCommentary'
 
 interface TacticBoardCardProps {
   club: Club
@@ -214,7 +215,7 @@ export function TacticBoardCard({
                     (SPELA OMGÅNG →) — inte den här, annars är det två register på
                     en knapp. */}
                 <button onClick={applyRecommendations} className="btn btn-primary" style={{ width: '100%', marginTop: 11 }}>
-                  ✓ Följ assistentens råd
+                  ✓ Följ {swedishGenitive(coach.name)} råd
                 </button>
               </div>
             )}

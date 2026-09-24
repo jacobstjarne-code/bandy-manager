@@ -87,7 +87,7 @@ export const TAB_INTROS = {
   },
   scouting: {
     icon: '🔭',
-    label: 'Scouting',
+    label: 'Spaning',
     text: 'Skicka ut en scout för att hitta spelare du annars inte ser. Rapporten tar några omgångar.',
   },
   freeagents: {

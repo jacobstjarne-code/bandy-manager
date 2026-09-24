@@ -1,3 +1,6 @@
+import type { AssistantCoach } from '../entities/AssistantCoach'
+import { fillTemplate } from './matchCommentary'
+
 // Röstrader för assistentens val under snabbspolning (corner/counter/frislag).
 // Opus levererar — se CLAUDE.md "SVENSK TEXT — CODE SKRIVER ALDRIG".
 // Nästlad struktur: rad väljs på FAKTISKT val (zon/choice), ingen råenum-interpolation.
@@ -10,55 +13,67 @@
 export const ASSISTANT_FF_LINES = {
   corner: {
     near: [
-      'Assistenten vinkade in den kort. Nära stolpen.',
-      'Kort hörna vid närmaste. Assistentens beslut.',
-      'Han tog den nära — trängde ihop det vid första stolpen.',
+      '{coach} vinkade in den kort. Nära stolpen.',
+      'Kort hörna vid närmaste. {coach}s beslut.',
+      '{coach} tog den nära och trängde ihop det vid första stolpen.',
     ],
     center: [
       'En perfekt passning mot mitten. Skytten stod klar.',
-      'Rakt ut till linjen — assistenten litade på skytten.',
-      'Han la den mot mitten. Direktskott eller inget.',
+      'Rakt ut till linjen. {coach} litade på skytten.',
+      '{coach} la den mot mitten. Direktskott eller inget.',
     ],
     far: [
-      'Assistenten sökte bortre stolpen.',
-      'Långt ut mot bortre. Assistentens val.',
-      'Han la den på bakre — sökte den fria mannen där ute.',
+      '{coach} sökte bortre stolpen.',
+      'Långt ut mot bortre. {coach}s val.',
+      '{coach} la den på bortre och sökte den fria mannen där ute.',
     ],
   },
   counter: {
     sprint: [
-      'Assistenten släppte iväg honom. Bara att åka.',
-      'Full fart framåt — assistenten släppte loss honom.',
-      'Han sa åt dem att dra. Rakt på mål.',
+      '{coach} släppte iväg honom. Bara att åka.',
+      'Full fart framåt. {coach} släppte loss honom.',
+      '{coach} sa åt dem att dra. Rakt på mål.',
     ],
     build: [
-      'Assistenten höll igen. Byggde upp den lugnt.',
-      'Ingen brådska — assistenten ville ha ordning först.',
-      'Han bromsade kontringen. Sökte rätt läge i stället.',
+      '{coach} höll igen och byggde upp den lugnt.',
+      'Ingen brådska. {coach} ville ha ordning först.',
+      '{coach} bromsade kontringen och sökte rätt läge i stället.',
     ],
     earlyBall: [
-      'Assistenten slog den tidigt. Innan de hann back.',
-      'Tidig boll framåt — assistenten läste luckan.',
-      'Han spelade den direkt. Bakom deras försvar.',
+      '{coach} ville ha den tidigt, innan de hann hem.',
+      'Tidig boll framåt. {coach} läste luckan.',
+      'Direkt bakom deras försvar. {coach}s idé.',
     ],
   },
   freekick: {
     shoot: [
-      'Assistenten vinkade fram skytten. Direkt mot mål.',
-      'Skott. Assistenten litade på klubban.',
-      'Han tog det själv, rakt på — inget krångel.',
+      '{coach} vinkade fram skytten. Direkt mot mål.',
+      'Skott. {coach} litade på klubban.',
+      'Rakt på, inget krångel. {coach}s val.',
     ],
     chipPass: [
-      'Assistenten lyfte den över muren.',
-      'Boll bakom muren — assistenten sökte en klubba där inne.',
-      'Han lyfte den mjukt. Sökte någon på bortre.',
+      '{coach} ville ha den över muren.',
+      'Boll bakom muren. {coach} sökte en klubba där inne.',
+      'Mjukt lyft. {coach} sökte någon på bortre.',
     ],
     layOff: [
-      'Assistenten la av den kort. Byggde vidare.',
-      'Kort variant — assistenten ville ha ett bättre läge.',
-      'Han rullade den i sidled. Ny vinkel mot mål.',
+      '{coach} ville ha den kort för att bygga vidare.',
+      'Kort variant. {coach} ville ha ett bättre läge.',
+      'I sidled för en ny vinkel mot mål. {coach}s beslut.',
     ],
   },
 } as const
+
+/**
+ * BETATEST_TEXTDOM_2026-09-24 C6.1 — assistenten har ett namn i spelet
+ * (game.assistantCoach) och ska heta det även när han väljer under
+ * snabbspolning. {coach} står alltid först i sin mening, så reservordet
+ * "Assistenten" (sparfiler utan assistent) blir grammatiskt i båda fallen.
+ * Genitiven går via fillTemplate/swedishGenitive: Holmgrens, men Mattias.
+ */
+export function renderAssistantFFLine(line: string, coach?: AssistantCoach | null): string {
+  const surname = coach?.name?.trim().split(/\s+/).pop()
+  return fillTemplate(line, { coach: surname || 'Assistenten' })
+}
 
 export type AssistantFFInteraction = keyof typeof ASSISTANT_FF_LINES

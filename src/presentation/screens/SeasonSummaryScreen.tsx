@@ -638,7 +638,7 @@ export function SeasonSummaryScreen() {
                 background: 'var(--accent)', color: 'var(--text-light)',
                 padding: '4px 16px', borderRadius: 99,
                 whiteSpace: 'nowrap', margin: '0 0 2px',
-              }}>⭐ SÄSONGENS MATCH</div>
+              }}>⭐ Säsongens match</div>
 
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '6px 0 12px', letterSpacing: 1, fontFamily: 'var(--font-body)' }}>
                 {/* HIGH 5: matchday är kronologi, inte ligaomgång — samma derby

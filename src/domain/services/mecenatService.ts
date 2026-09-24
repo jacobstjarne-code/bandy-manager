@@ -181,7 +181,7 @@ const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
     female: [
       'Började som mäklare 2003 och förstod snabbt att det lönsamma var att äga, inte sälja. Köpte sitt första hus 2006. Nu är det hon som anlitar mäklare.',
       'Formger ortens framtid med tålamod och precision. Köper när andra säljer, säljer när alla vill köpa. Har alltid haft rätt timing — eller arbetat sig till den.',
-      'Äger tretton fastigheter i fyra kommuner. Kontoret i centrum ser inte ut som det kostar vad det kostar. Det är poängen.',
+      'Äger tretton fastigheter i fyra kommuner. Kontoret i centrum ligger en trappa upp, utan skylt. Hon vill inte att hyresgästerna ska se vad hon tjänar.',
       'Renoverade sin första fastighet med egna händer. Nu har hon entreprenörer. Skillnaden är att hon vet exakt vad varje moment ska kosta — och vad det ska inbringa.',
     ],
   },
@@ -189,7 +189,7 @@ const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
     male: [
       'Tredje generationens handlare. Morfadern öppnade, fadern utvidgade, han moderniserade. Alla i orten känner honom — och han känner alla. Det är inte en kliché, det är ett levande kundregister.',
       'Öppnade sin butik när alla sa att e-handeln hade vunnit. Finns kvar. De som tvivlade handlar hos honom nu — han levererar och vet vad de heter.',
-      'Kombinerar dagligvaror med bredbandsförsäljning och postombud. Ortens nav. Om det stänger är det inte en butik som försvinner, det är infrastruktur.',
+      'Kombinerar dagligvaror med bredbandsförsäljning och postombud. Ortens nav. Stänger han får folk åka till stan för att hämta ett paket.',
       'Hans far sa att butiken var ett kall, inte ett jobb. Han trodde inte på det då. Tror på det nu. Stänger aldrig på sportlovet.',
     ],
     female: [

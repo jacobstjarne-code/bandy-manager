@@ -437,7 +437,7 @@ export function PlayerCard({
       {/* ═══ SÄSONGENS BÅGE: form + resultat ur loggen ═══ */}
       {seasonArc && (
         <div style={{ padding: '10px 13px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-          <p className="h-label">SÄSONGENS BÅGE</p>
+          <p className="h-label">Säsongens båge</p>
           {/* ds-exempt: 11.5px display narrative, not italic, no canon match */}
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
             {seasonArc}
@@ -479,9 +479,9 @@ export function PlayerCard({
         <div style={{ padding: '4px 13px 12px' }}>
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
             {[
-              { label: 'MÅL', value: String(player.seasonStats.goals) },
-              { label: 'AST', value: String(player.seasonStats.assists) },
-              { label: 'BGT', value: player.seasonStats.averageRating > 0 ? formatRating(player.seasonStats.averageRating) : '–' },
+              { label: 'mål', value: String(player.seasonStats.goals) },
+              { label: 'ass', value: String(player.seasonStats.assists) },
+              { label: '★', value: player.seasonStats.averageRating > 0 ? formatRating(player.seasonStats.averageRating) : '–' },
             ].map(c => (
               <span key={c.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 11, background: 'transparent' }}>
                 <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{c.value}</span>
@@ -520,7 +520,7 @@ export function PlayerCard({
       {/* ═══ ① STATUS → Attribut & status ═══ */}
       {isOwned && showAttribut && (
         <div style={SECTION_STYLE}>
-          <p className="h-label" style={{ marginBottom: 8 }}>💪 STATUS</p>
+          <p className="h-label" style={{ marginBottom: 8 }}>💪 Status</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 14px' }}>
             {[
               { label: 'Form', value: player.form },
@@ -573,7 +573,7 @@ export function PlayerCard({
       {/* ═══ ② DUBBELLIV → Attribut & status ═══ */}
       {isOwned && showAttribut && (
         <div style={SECTION_STYLE}>
-          <p className="h-label" style={{ marginBottom: 6 }}>💼 DUBBELLIV</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>💼 Dubbelliv</p>
           {player.isFullTimePro ? (
             <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>⭐ Heltidsproffs</p>
           ) : player.dayJob ? (
@@ -601,7 +601,7 @@ export function PlayerCard({
       {/* ═══ ③ SENASTE 5 MATCHER → Attribut & status ═══ */}
       {isOwned && showAttribut && recentRatings && recentRatings.length > 0 && (
         <div style={SECTION_STYLE}>
-          <p className="h-label" style={{ marginBottom: 6 }}>📈 SENASTE 5 MATCHER</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>📈 Senaste 5 matcher</p>
           {/* C-SY2 Våg 4: senaste matchrating som ScoreBlock (win ≥6.5 / loss ≤5.5 / subtle neutral) */}
           {(() => {
             const latest = recentRatings[recentRatings.length - 1]
@@ -624,7 +624,7 @@ export function PlayerCard({
       <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
           <p className="h-label" style={{ color: 'var(--accent)' }}>
-            EGENSKAPER
+            Egenskaper
           </p>
           {reportAge === 'aging' && (
             <span className="h-micro" style={{ color: 'var(--warning)', letterSpacing: '0.3px' }}>1 säsong sedan</span>
@@ -726,7 +726,7 @@ export function PlayerCard({
         )}
         {isOwned && (
           <>
-            <p className="h-label" style={{ marginBottom: 6 }}>🏒 SÄSONG</p>
+            <p className="h-label" style={{ marginBottom: 6 }}>🏒 Säsong</p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
               Marknadsvärde:{' '}
               <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{formatMarketValue(player.marketValue)}</span>
@@ -778,7 +778,7 @@ export function PlayerCard({
       {/* ═══ ⑥ RELATIONER → Karriär ═══ */}
       {isOwned && showKarriar && (
         <div style={SECTION_STYLE}>
-          <p className="h-label" style={{ marginBottom: 6 }}>🤝 RELATIONER</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>🤝 Relationer</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
             {/* Mentor-band — adept-raden */}
             {asAdept && game && (() => {
@@ -912,7 +912,7 @@ export function PlayerCard({
       {/* ═══ ⑧ KARRIÄR-TABELL → Karriär ═══ */}
       {isOwned && showKarriar && (player.seasonHistory ?? []).length > 0 && (
         <div style={SECTION_STYLE}>
-          <p className="h-label" style={{ marginBottom: 6 }}>📊 KARRIÄR</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>📊 Karriär</p>
           {[...(player.seasonHistory ?? [])].reverse().map(s => (
             <div key={s.season} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
               <span style={{ color: 'var(--text-muted)', minWidth: 40 }}>{s.season}</span>
@@ -928,7 +928,7 @@ export function PlayerCard({
       {/* ═══ ⑨ LEDARSKAP → öppnas av Översikt-knappen ═══ */}
       {isOwned && showOversikt && openAction === 'ledarskap' && leadershipAvailable && (
         <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
-          <p className="h-label" style={{ marginBottom: 8 }}>👑 LEDARSKAP</p>
+          <p className="h-label" style={{ marginBottom: 8 }}>👑 Ledarskap</p>
           {leadershipFeedback ? (
             <div style={{
               padding: '8px 12px', background: 'var(--bg-elevated)',
@@ -978,7 +978,7 @@ export function PlayerCard({
           padding: '10px 14px',
           borderTop: '1px solid var(--border)',
         }}>
-          <p className="h-label" style={{ marginBottom: 6 }}>🗣 PRATA MED SPELAREN</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>🗣 Prata med spelaren</p>
           {talkFeedback ? (
             <div style={{
               padding: '10px 14px', background: 'var(--bg-elevated)',

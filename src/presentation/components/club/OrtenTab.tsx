@@ -152,7 +152,7 @@ export function OrtenTab({ club, game, navigate, interactWithPolitician, recruit
             — falskt, motsagt av economyService.ts. Barnskolan, funktionärer
             och den avancerade skolan ger communityMatchIncome eller
             communityRoundIncome; Bandyplay påverkar sponsorintäkt och drift. */}
-        <p className="h-label" style={{ marginBottom: 6 }}>ENGAGEMANG</p>
+        <p className="h-label" style={{ marginBottom: 6 }}>Engagemang</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {/* EkonomiTab äger aktivering — read-only status här */}
           {([

@@ -109,7 +109,7 @@ export function SaveManagerScreen() {
                 </span>
                 {isActive && (
                   <span className="h-label" style={{ color: 'var(--accent)', letterSpacing: 1 }}>
-                    AKTIV
+                    Aktiv
                   </span>
                 )}
               </div>

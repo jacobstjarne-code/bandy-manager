@@ -87,10 +87,10 @@ const KEYLINE_POOL: Record<CoachPersonality, string[]> = {
     'Jag bryr mig inte om vad tidningarna skrev. Tidningar spelar inte bandy.',
   ],
   philosophical: [
-    'En final minns man hela livet. Åt ena hållet eller det andra. Det är det som gör den värd något.',
-    'Vi har rest hit på vårt sätt. De på sitt. Idag möts de två berättelserna. Bara den ena får slutet den ville ha.',
-    'Man vinner inte en final. Man förtjänar den, eller så gör man det inte. Idag får vi veta vilket.',
-    'Nittio minuter mot allt som lett hit. Det är en rättvis byteshandel.',
+    'Den här dagen kommer ni att minnas som gamla, hur det än går.',
+    'Vi tog oss hit på vårt sätt, de på sitt. I dag är det bara isen som räknas.',
+    'Ingen ger bort en final. Vi får ta den.',
+    'Nittio minuter kvar av säsongen. Lägg allt på isen.',
   ],
 }
 
@@ -125,7 +125,7 @@ const COPPER_KEYLINE_POOL: Record<CoachPersonality, string[]> = {
     'Vinn ikväll så slipper vi prata om det imorgon.',
   ],
   philosophical: [
-    'Serier belönar tålamod. Slutspel belönar mod. Vi får se vilka vi är.',
+    'Tabellen spelar ingen roll längre. Nu är det de här matcherna.',
     'Allt sedan oktober var för att få stå här. Nu står vi här.',
     'Fem matcher är en liten säsong. Den som håller ihop bäst går vidare.',
     'Det är nu det avgörs vilka som var på riktigt.',

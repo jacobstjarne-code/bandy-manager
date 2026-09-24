@@ -485,6 +485,7 @@ export function processGameEvents(
       !!managerProfile && isBurnoutRelapse(managerProfile, game.currentSeason, game.eventLedger),
       // TILLÄGG 4: andra delegeringen samma säsong kostar dubbelt.
       countBurnoutDelegationsThisSeason(game),
+      game.assistantCoach?.name,
     ))
   }
 
@@ -498,6 +499,7 @@ export function processGameEvents(
       nextMatchday,
       game.currentSeason,
       managerProfile?.burnoutScar,
+      game.assistantCoach?.name,
     ))
   }
 

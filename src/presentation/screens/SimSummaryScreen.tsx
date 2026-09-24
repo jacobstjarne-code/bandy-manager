@@ -103,7 +103,7 @@ export function SimSummaryScreen() {
 
         {/* ── Header ── */}
         <div className="card-sharp" style={{ padding: '10px 14px' }}>
-          <p className="h-label" style={{ marginBottom: 6 }}>⏩ SIMULERINGSRESULTAT</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>⏩ Simuleringsresultat</p>
           <p className="h-num-lg" style={{ color: 'var(--text-primary)', margin: '0 0 2px' }}>
             {sorted.length} matcher simulerade
           </p>
@@ -141,7 +141,7 @@ export function SimSummaryScreen() {
         {/* ── Results list ── */}
         {sorted.length > 0 && (
           <div className="card-sharp" style={{ padding: '10px 14px' }}>
-            <p className="h-label" style={{ marginBottom: 8 }}>MATCHRESULTAT</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>Matchresultat</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {sorted.map(f => {
                 const outcome = getOutcome(f)
@@ -179,7 +179,7 @@ export function SimSummaryScreen() {
         {/* ── Highlights ── */}
         {hasHighlights && (
           <div className="card-sharp" style={{ padding: '10px 14px' }}>
-            <p className="h-label" style={{ marginBottom: 8 }}>HÖJDPUNKTER</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>Höjdpunkter</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
               {biggestWin && (() => {

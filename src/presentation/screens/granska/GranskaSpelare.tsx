@@ -126,7 +126,7 @@ export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, r
       {bench.length > 0 && (
         <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
           <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
-            <span className="h-label">BÄNKEN</span>
+            <span className="h-label">Bänken</span>
           </div>
           {bench.map((p, i) => {
             const r = ratings[p.id] ?? 0

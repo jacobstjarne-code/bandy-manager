@@ -85,7 +85,7 @@ export default function HallProvningScreen() {
         {/* Stöd-mätare — regel 14: värde (Georgia) + dimensionsrad + läsning. Bara under förankring. */}
         {stage === 'forankring' && (
           <div className="card-sharp" style={{ padding: '14px 16px' }}>
-            <p className="h-label">STÖD I BYGDEN</p>
+            <p className="h-label">Stöd i bygden</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
               <span style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
                 {trial?.support ?? 0}
@@ -109,7 +109,7 @@ export default function HallProvningScreen() {
 
         {stage === 'forankring' && (
           <div className="card-sharp" style={{ padding: '14px 16px' }}>
-            <p className="h-label">NÄSTA STEG</p>
+            <p className="h-label">Nästa steg</p>
             <p style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: 8 }}>
               {nextForankringStep}
             </p>
@@ -122,7 +122,7 @@ export default function HallProvningScreen() {
         {/* Krav-checklista — computeKravStatus, samma rena funktion som gaten mot förhandlingen */}
         {stage === 'krav' && (
           <div className="card-sharp" style={{ padding: '14px 16px' }}>
-            <p className="h-label">KRAV</p>
+            <p className="h-label">Krav</p>
             {(() => {
               const krav = computeKravStatus(game)
               const rows: Array<[string, boolean]> = [
@@ -149,7 +149,7 @@ export default function HallProvningScreen() {
         {/* Förhandling — finansieringsläge om satt, annars väntar-status */}
         {stage === 'forhandling' && (
           <div className="card-sharp" style={{ padding: '14px 16px' }}>
-            <p className="h-label">FÖRHANDLING</p>
+            <p className="h-label">Förhandling</p>
             <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', marginTop: 6 }}>
               {trial?.finansiering
                 ? `Finansiering: ${trial.finansiering === 'kommun' ? 'Kommunen' : trial.finansiering === 'patron' ? 'Patronen' : 'Klubben själv'}`
@@ -161,7 +161,7 @@ export default function HallProvningScreen() {
         {/* Bygge — kostnad + eta */}
         {stage === 'bygge' && nodeDef && (
           <div className="card-sharp" style={{ padding: '14px 16px' }}>
-            <p className="h-label">BYGGE</p>
+            <p className="h-label">Bygge</p>
             <p className="h-quote-sm" style={{ color: 'var(--text-secondary)', marginTop: 6 }}>
               {tkr(nodeDef.cost)} · {subText}
             </p>

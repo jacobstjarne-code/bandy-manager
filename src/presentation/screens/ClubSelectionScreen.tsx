@@ -67,7 +67,7 @@ export function ClubSelectionScreen({ managerNameOverride, offerSeed }: ClubSele
   if (isStarting) {
     return (
       <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-        <span className="h-label">STARTAR...</span>
+        <span className="h-label">Startar...</span>
       </div>
     )
   }

@@ -248,7 +248,7 @@ export function TilltradeScreen() {
               background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
               border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
               borderRadius: 3, padding: '3px 8px',
-            }}>ÖVNING</span>
+            }}>Övning</span>
           )}
         </div>
         <BeatBars step={step} size="sm" />

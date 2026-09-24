@@ -57,7 +57,7 @@ export function ClubNotificationPrompt({ game }: { game: SaveGame }) {
         background: 'color-mix(in srgb, var(--accent) 5%, var(--bg-surface))',
       }}
     >
-      <p className="h-label" style={{ color: 'var(--accent-dark)', marginBottom: 5 }}>KLUBBEN UTANFÖR SPELET</p>
+      <p className="h-label" style={{ color: 'var(--accent-dark)', marginBottom: 5 }}>Klubben utanför spelet</p>
       <h3 id="club-notification-title" className="h-card" style={{ color: 'var(--text-primary)', marginBottom: 4 }}>
         Nästa match väntar på ditt lag, och du är inte klar än.
       </h3>

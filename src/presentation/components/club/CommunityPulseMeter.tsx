@@ -20,7 +20,7 @@ export function CommunityPulseMeter({ game }: { game: SaveGame }) {
           </>
         )}
         <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <p className="h-label">SÄSONG</p>
+          <p className="h-label">Säsong</p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{seasonSpanLabel(game.currentSeason)}</p>
         </div>
       </div>

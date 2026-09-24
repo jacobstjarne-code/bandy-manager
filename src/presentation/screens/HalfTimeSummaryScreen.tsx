@@ -62,7 +62,7 @@ export function HalfTimeSummaryScreen() {
 
         {/* ── TABELLÄGE ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-          <p className="h-label" style={{ marginBottom: 10 }}>📊 TABELLÄGE</p>
+          <p className="h-label" style={{ marginBottom: 10 }}>📊 Tabelläge</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: summary.position <= 8 ? 'var(--success)' : 'var(--text-primary)', lineHeight: 1 }}> {/* ds-exempt: fontSize:28 + color ternary */}
@@ -93,7 +93,7 @@ export function HalfTimeSummaryScreen() {
         {/* ── HÖSTENS STUNDER ── */}
         {summary.moments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-            <p className="h-label" style={{ marginBottom: 10 }}>⚡ HÖSTENS STUNDER</p>
+            <p className="h-label" style={{ marginBottom: 10 }}>⚡ Höstens stunder</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {summary.moments.map((m, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -111,7 +111,7 @@ export function HalfTimeSummaryScreen() {
         {/* ── ARC-UPPDATERING ── */}
         {summary.arcText && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-            <p className="h-label" style={{ marginBottom: 8 }}>🔔 SPELARSITUATION</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>🔔 Spelarsituation</p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {summary.arcText}
             </p>
@@ -120,7 +120,7 @@ export function HalfTimeSummaryScreen() {
 
         {/* ── TRÄNARTIPS ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-          <p className="h-label" style={{ marginBottom: 8 }}>💡 INFÖR VÅREN</p>
+          <p className="h-label" style={{ marginBottom: 8 }}>💡 Inför våren</p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {summary.coachTip}
           </p>
@@ -135,7 +135,7 @@ export function HalfTimeSummaryScreen() {
         background: 'var(--bg)',
         borderTop: '1px solid var(--border)',
       }}>
-        <p className="h-label" style={{ marginBottom: 8, textAlign: 'center' }}>🎯 INRIKTNING VÅRSÄSONGEN</p>
+        <p className="h-label" style={{ marginBottom: 8, textAlign: 'center' }}>🎯 Inriktning vårsäsongen</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
           {CHOICES.map(c => (
             <button

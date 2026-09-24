@@ -321,7 +321,7 @@ export function GranskaScreen() {
         />
         {/* Step label */}
         <p className="h-label" style={{ textAlign: 'center', paddingTop: 8, marginBottom: 2 }}>
-          FÖRDJUPA
+          Fördjupa
         </p>
 
         {/* Icon buttons */}

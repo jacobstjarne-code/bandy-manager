@@ -84,7 +84,7 @@ export const BOARD_MEETING_COPY: Record<BoardMeetingState, StatePool> = {
       'Vi har bevisat något. Frågan är om vi orkar bevisa det igen.',
       'Truppen är värd mer nu än för ett år sedan. Det är ett gott betyg och ett nytt problem.',
       'Önskelistan är längre än plånboken. Så är det även efter ett bra år.',
-      'Det är inte tid att gå försiktigt. Det är tid att se vart det leder.',
+      'Vi tänker inte hålla igen i år. Vi vill se hur långt det här bär.',
     ],
   },
   C: {
@@ -115,7 +115,7 @@ export const BOARD_MEETING_COPY: Record<BoardMeetingState, StatePool> = {
       'Vi lovade saker i den här lokalen för ett år sedan. För få av dem höll. Det är allvar.',
       'Det levererades för lite, rakt igenom. Det måste ändras.',
       'Spelarna är inte sämre än förra året. Vi har inte gjort vårt jobb tillräckligt bra.',
-      'Folkets förväntningar har sänkts. Det är inte en lättnad — det är ett varningstecken.',
+      'Folk har slutat prata om laget på Konsum. Det oroar mig mer än tabellen.',
       'Ett sånt här år är inte slutet. Men det är inte heller riktningen vi vill ha.',
     ],
   },

@@ -46,7 +46,7 @@ export function QFSummaryScreen() {
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 16px' }}>
         <p className="h-label" style={{ marginBottom: 12 }}>
-          ⚔️ KVARTSFINALERNA AVGJORDA
+          ⚔️ Kvartsfinalerna avgjorda
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
           Fyra lag kvar
@@ -114,7 +114,7 @@ export function QFSummaryScreen() {
       {sfMatchups.length > 0 && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
           <p className="h-label" style={{ marginBottom: 8 }}>
-            ⚔️ SEMIFINALER — BÄST AV 5
+            ⚔️ Semifinaler — bäst av 5
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {sfMatchups.map(series => {

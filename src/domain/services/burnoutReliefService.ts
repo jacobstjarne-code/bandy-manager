@@ -332,6 +332,8 @@ export function generateBurnoutReliefEvent(
    *  GENERERINGEN, så kortet bär sin egen kostnad och resolutionen slipper
    *  räkna om historiken. */
   delegationsThisSeason = 0,
+  /** BETATEST_TEXTDOM C6.3: assistentens namn när det finns i sparfilen. */
+  assistantCoachName?: string,
 ): GameEvent {
   const journalistDelta = delegationsThisSeason === 0
     ? BURNOUT_DELEGATE_JOURNALIST_FIRST
@@ -350,7 +352,7 @@ export function generateBurnoutReliefEvent(
     choices: [
       {
         id: 'delegate',
-        label: 'Låt assistenten ta pressen',
+        label: `Låt ${assistantCoachName?.trim() || 'assistenten'} ta pressen`,
         // Subtitle = domens exakta citat, ordagrant. Ingen egen effekt-
         // beskrivning tillagd (CLAUDE.md: Code skriver aldrig speltext) —
         // konsekvensen syns i inbox/Granska, samma mönster som O1/Medium 2.

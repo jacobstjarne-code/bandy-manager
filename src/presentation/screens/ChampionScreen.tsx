@@ -168,7 +168,7 @@ export function ChampionScreen() {
           textAlign: 'left',
         }}>
           <p className="h-label" style={{ marginBottom: 12 }}>
-            SLUTSPELSRESA
+            Slutspelsresa
           </p>
           {managedSeries.length > 0 ? managedSeries.map(s => {
             const isHome = s.homeClubId === game.managedClubId

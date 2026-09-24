@@ -51,7 +51,7 @@ import type { FreeKickChoice } from '../../../domain/services/freeKickInteractio
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { mulberry32, seededPick } from '../../../domain/utils/random'
-import { ASSISTANT_FF_LINES } from '../../../domain/data/assistantFFStrings'
+import { ASSISTANT_FF_LINES, renderAssistantFFLine } from '../../../domain/data/assistantFFStrings'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
 import { matchReducer, initialMatchState } from './matchReducer'
@@ -600,7 +600,7 @@ export function MatchLiveScreen() {
         const setup = assistantPickCorner(cd, game?.assistantCoach, cornerTaker, topRusher, gk)
         const pool = ASSISTANT_FF_LINES.corner[setup.zone]
         const voiceLine = pool && pool.length > 0
-          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'cornerVoice'))
+          ? renderAssistantFFLine(seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'cornerVoice')), game?.assistantCoach)
           : undefined
         handleCornerChoice(setup.zone, setup.delivery, cd, voiceLine)
         return
@@ -655,7 +655,7 @@ export function MatchLiveScreen() {
         const choice = assistantPickCounter(cd, game?.assistantCoach)
         const pool = ASSISTANT_FF_LINES.counter[choice]
         const voiceLine = pool && pool.length > 0
-          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'counterVoice'))
+          ? renderAssistantFFLine(seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'counterVoice')), game?.assistantCoach)
           : undefined
         handleCounterChoice(choice, cd, voiceLine)
         return
@@ -681,7 +681,7 @@ export function MatchLiveScreen() {
         const choice = assistantPickFreeKick(fd, game?.assistantCoach)
         const pool = ASSISTANT_FF_LINES.freekick[choice]
         const voiceLine = pool && pool.length > 0
-          ? seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'freekickVoice'))
+          ? renderAssistantFFLine(seededPick(pool, interactionSeed(fixture?.id ?? '', currentStep, 'freekickVoice')), game?.assistantCoach)
           : undefined
         handleFreeKickChoice(choice, fd, voiceLine)
         return

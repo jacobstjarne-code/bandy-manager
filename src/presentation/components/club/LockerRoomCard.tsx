@@ -122,7 +122,7 @@ export function LockerRoomCard({ players, captainId, onPlayerClick }: Props) {
     <div className="card-sharp" style={{ marginBottom: 12, overflow: 'hidden' }}>
       <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
         <span className="h-label">
-          👥 OMKLÄDNINGSRUMMET
+          👥 Omklädningsrummet
         </span>
       </div>
 

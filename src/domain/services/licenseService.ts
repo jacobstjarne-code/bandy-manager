@@ -146,7 +146,7 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
       'Licensnämnden: Inga vidare åtgärder',
     ],
     bodies: [
-      'Ni har vänt skutan. RF:s licensnämnd avslutar bevakningen av {KLUBB}s ekonomi. "Vi noterar att klubben har återgått till sund finansiell verksamhet", står det i beslutet. Det är inte en utmärkelse. Men det är inte ett problem heller.',
+      'Ni har vänt skutan. RF:s licensnämnd avslutar bevakningen av {KLUBB}s ekonomi. "Vi noterar att klubben har återgått till sund finansiell verksamhet", står det i beslutet. Mer än så står det inte.',
       'Bekräftelsen kom i ett kort brev. {KLUBB}s ekonomi är åter i balans. Licensnämnden kommer inte att vidta ytterligare åtgärder. "Vi förväntar oss att den positiva utvecklingen fortsätter."',
     ],
   },
@@ -159,7 +159,7 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
     bodies: [
       'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Två säsonger med underskott. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess. Planen nämnden vill se är inte komplicerad: lönerna ner eller intäkterna upp, före nästa bokslut.',
       'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: två förlustsäsonger i rad är inte acceptabelt. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader. Det som räknas är bokslutet — en lönelista kassan bär, eller sponsorer och publik som bär lönelistan.',
-      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Nästa förlustår kommer kosta poäng. Det enda nämnden lyssnar på är ett plus i bokslutet.',
+      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Ett förlustår till kan kosta poäng. Det enda nämnden lyssnar på är ett plus i bokslutet.',
     ],
   },
   point_deduction: {

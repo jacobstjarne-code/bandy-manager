@@ -32,7 +32,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
       overflow: 'hidden',
     }}>
       <div className="h-label" style={{ marginBottom: 8, color: 'var(--danger)' }}>
-        👤 PATRON KRÄVER
+        👤 Patron kräver
       </div>
       <div className="h-display-sm" style={{ color: 'var(--text-light)', marginBottom: 6 }}>
         {patron.name}

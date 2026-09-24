@@ -367,16 +367,18 @@ export function PlayerRow({ player, onClick, currentSeason, captainPlayerId, ann
       {/* Stat row */}
       {player.seasonStats.gamesPlayed > 0 && (
         <div style={{ display: 'flex', gap: 12, paddingLeft: 50, fontSize: 11, color: 'var(--text-muted)' }}>
-          <span>{player.seasonStats.gamesPlayed}M</span>
+          {/* BETATEST_TEXTDOM C7.3: samma schema som PlayerCard (mål · ass · ★).
+              Assist fick aldrig heta "A" — samma bokstav som Anfallare två rader upp. */}
+          <span>{player.seasonStats.gamesPlayed} {player.seasonStats.gamesPlayed === 1 ? 'match' : 'matcher'}</span>
           <span style={{ color: player.seasonStats.goals > 0 ? 'var(--text-primary)' : undefined }}>
-            {player.seasonStats.goals}G
+            {player.seasonStats.goals} mål
           </span>
-          <span>{player.seasonStats.assists}A</span>
+          <span>{player.seasonStats.assists} ass</span>
           <span style={{ color: ratingColor(player.seasonStats.averageRating) }}>
-            {formatRating(player.seasonStats.averageRating)}★
+            {formatRating(player.seasonStats.averageRating)} ★
           </span>
           {player.seasonStats.redCards > 0 && (
-            <span style={{ color: 'var(--danger)' }}>{player.seasonStats.redCards}utv</span>
+            <span style={{ color: 'var(--danger)' }}>{player.seasonStats.redCards} utv</span>
           )}
         </div>
       )}
@@ -712,22 +714,22 @@ export function SquadScreen() {
             ) : (
               <>
                 {injured.length > 0 && sectionWrap('var(--danger)', <>
-                  <div className="h-label" style={{ marginBottom: 8, color: injuryDanger ? 'var(--danger)' : undefined }}>🚑 SKADADE</div>
+                  <div className="h-label" style={{ marginBottom: 8, color: injuryDanger ? 'var(--danger)' : undefined }}>🚑 Skadade</div>
                   {injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
                 </>)}
                 {suspended.length > 0 && sectionWrap('var(--danger)', <>
-                  <div className="h-label" style={{ marginBottom: 8 }}>🚫 AVSTÄNGDA</div>
+                  <div className="h-label" style={{ marginBottom: 8 }}>🚫 Avstängda</div>
                   {suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause, game.currentSeason)))}
                 </>)}
                 {lowMorale.length > 0 && sectionWrap('var(--warm)', <>
-                  <div className="h-label" style={{ marginBottom: 8, color: moralDanger ? 'var(--danger)' : undefined }}>😟 LÅG MORAL</div>
+                  <div className="h-label" style={{ marginBottom: 8, color: moralDanger ? 'var(--danger)' : undefined }}>😟 Låg moral</div>
                   <div className="squad-section-note">
                     Låg moral i längden tär på formen, och det är formen som märks på isen. Ett samtal i tid brukar räcka för att vända det.
                   </div>
                   {lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}
                 </>)}
                 {expiringContracts.length > 0 && sectionWrap('var(--warm)', <>
-                  <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT UTGÅR</div>
+                  <div className="h-label" style={{ marginBottom: 8 }}>📄 Kontrakt utgår</div>
                   {expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
                 </>)}
                 {calmRowText && (
@@ -741,7 +743,7 @@ export function SquadScreen() {
               </>
             )}
             <div>
-              <div className="h-label" style={{ marginBottom: 8 }}>📋 FORMATION</div>
+              <div className="h-label" style={{ marginBottom: 8 }}>📋 Formation</div>
               <div className="card-sharp" style={{ padding: '12px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nuvarande</span>

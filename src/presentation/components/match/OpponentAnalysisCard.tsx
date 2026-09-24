@@ -50,7 +50,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <div>
           <p className="h-label" style={{ margin: 0 }}>
-            📋 MOTSTÅNDAREN
+            📋 Motståndaren
           </p>
           <p className="h-name" style={{ margin: 0 }}>{opponent.name}</p>
         </div>

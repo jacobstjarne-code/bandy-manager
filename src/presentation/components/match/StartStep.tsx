@@ -124,7 +124,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       {/* Klacken ritual */}
       {ritualText && (
         <div className="card-round" style={{ marginBottom: 8, padding: '8px 12px' }}>
-          <p className="h-label" style={{ marginBottom: 6 }}>📯 KLACKEN</p>
+          <p className="h-label" style={{ marginBottom: 6 }}>📯 Klacken</p>
           <p className="h-quote-sm" style={{ lineHeight: 1.5, margin: 0 }}>{ritualText}</p>
         </div>
       )}

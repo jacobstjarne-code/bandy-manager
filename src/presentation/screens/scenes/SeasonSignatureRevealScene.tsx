@@ -66,7 +66,7 @@ export function SeasonSignatureRevealScene({ game, onComplete }: Props) {
         position: 'relative',
         zIndex: 1,
       }}>
-        ⬩ I DETTA ÖGONBLICK ⬩
+        ⬩ I detta ögonblick ⬩
       </div>
 
       {/* Signaturmotiv — Lucide i hero-storlek; emoji hör bara hemma som kategori. */}

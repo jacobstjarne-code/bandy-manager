@@ -17,7 +17,7 @@ export const CLUB_OFFER_QUOTES: Record<string, ClubOfferQuote[]> = {
 
     },
     {
-      text: 'Det är en klubb som har funnits längre än din morfar. Det är inte samma sak.',
+      text: 'Klubben är äldre än din morfar. Den har klarat sämre tränare än dig.',
 
     },
     {
