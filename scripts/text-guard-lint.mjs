@@ -102,6 +102,12 @@ const RULES = [
     desc: '"period" om matchdel — bandy har HALVLEK. Hög falsk-positiv-risk ("formsvacka-period" etc), granska manuellt',
     re: /\bförsta\s+period(en)?\b|\bandra\s+period(en)?\b|\bperiod\s+\d\b/i,
   },
+  {
+    id: 'ice-term-sopa', ref: 'BETATEST_ERIK_2026-09-24 A1', severity: 'error',
+    desc: '"sopa"/böjningar om is-/banvård — bandy: spola banan, inte sopa. Metaforiskt "sopa(s) bort/undan" (t.ex. städa event-varianter i kod) är inte ismetaforen och undantas.',
+    re: /\bsopa(r|de|t|s)?\b/i,
+    exclude: /\bsopa(r|de|t|s)?\s+(bort|undan)\b/i,
+  },
 ]
 
 // ── Körning ───────────────────────────────────────────────────────────────────

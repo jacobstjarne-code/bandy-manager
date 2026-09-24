@@ -46,7 +46,7 @@ export const CLUB_EXTENDED_INFO: Record<string, ClubExtendedInfo> = {
   },
   'club_karlsborg': {
     clubId: 'club_karlsborg',
-    arenaNote: 'Vid pappersbruket nära älvmynningen. Sopas ofta.',
+    arenaNote: 'Vid pappersbruket nära älvmynningen. Spolas ofta.',
     patronType: 'Pappersbrukets fackordförande',
     klimateArchetype: 'arctic_coast',
     briefDescription: 'Längst norrut i bandysverige. Mörker och köld är vardag — men isen är alltid förberedd.',

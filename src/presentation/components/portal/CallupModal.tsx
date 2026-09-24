@@ -2,7 +2,7 @@ import { Diamond } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { CALLUP_MODAL_LINES } from '../../../domain/data/landslagText'
-import { positionShort } from '../../utils/formatters'
+import { positionShort, formatPlayerStat } from '../../utils/formatters'
 import { Icon } from '../primitives/Icon'
 import { Overlay } from '../primitives/Overlay'
 
@@ -85,7 +85,7 @@ export function CallupModal({ game }: Props) {
               {p.firstName} {p.lastName}
             </span>
             <span className="h-micro" style={{ fontFamily: 'ui-monospace, monospace', color: 'var(--gold)', fontWeight: 700 }}>
-              Styrka {p.currentAbility}
+              Styrka {formatPlayerStat(p.currentAbility)}
             </span>
           </div>
         ))}

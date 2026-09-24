@@ -49,7 +49,7 @@ export const STURE_PER_CLUB: Record<string, string> = {
   'club_slottsbron': 'Stormen från sjön ligger redan på. Det blir glest på östra läktaren.',
 
   // Skutskär — Dalälvens mynning vid Bottenhavet, banan byggd med egna händer
-  'club_skutskar': 'Banan byggde vi själva. Vi sopar den fortfarande själva.',
+  'club_skutskar': 'Banan byggde vi själva. Vi spolar den fortfarande själva.',
 
   // Heros — Smedjebacken, Norra Barkens strand, dimma från sjön
   'club_heros': 'Dimman kommer in från sjön kvart i sju. Folk vänjer sig.',

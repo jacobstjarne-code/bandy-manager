@@ -4,7 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
-import { positionShort } from '../../../domain/format'
+import { positionShort, formatPlayerStat } from '../../../domain/format'
 import { TACTIC_MENTALITY_LABELS, TACTIC_TEMPO_LABELS } from '../../../domain/data/enumLabels'
 import { PlayerDot } from './PlayerDot'
 import { BandyPitch } from '../BandyPitch'
@@ -414,7 +414,7 @@ export function FormationView({ tactic, players, onChange, chemistryStats = {}, 
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {p.lastName}
               </span>
-              <span className="h-micro" style={{ fontSize: 12 }}>{p.currentAbility}</span>
+              <span className="h-micro" style={{ fontSize: 12 }}>{formatPlayerStat(p.currentAbility)}</span>
             </button>
           ))}
           {benchPlayers.length === 0 && (

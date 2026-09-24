@@ -4,7 +4,7 @@ import { PlayerPosition } from '../../../domain/enums'
 import { FATIGUE_AVAILABILITY_FLOOR } from '../../../domain/services/squadEvaluator'
 import { getFitnessProjection } from '../../../domain/services/fitnessRecoveryService'
 import { useGameStore } from '../../store/gameStore'
-import { positionShort, positionLong } from '../../utils/formatters'
+import { positionShort, positionLong, formatPlayerStat } from '../../utils/formatters'
 import { AlertTriangle } from 'lucide-react'
 import { Icon } from '../primitives/Icon'
 import { Overlay } from '../primitives/Overlay'
@@ -213,7 +213,7 @@ export function FatigueFloorConfirm({ game, belowFloorStarters, onConfirm, onCan
                     {y.firstName} {y.lastName}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    {y.age} år · {positionLong(y.position)} · styrka ~{y.currentAbility}
+                    {y.age} år · {positionLong(y.position)} · styrka ~{formatPlayerStat(y.currentAbility)}
                   </div>
                 </div>
                 <button

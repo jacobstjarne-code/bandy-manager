@@ -3,7 +3,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType, TacticMentality, TacticTempo } from '../../../domain/enums'
-import { truncate, positionShort } from '../../utils/formatters'
+import { truncate, positionShort, formatPlayerStat } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { PAUSSNACK, PAUSSNACK_EYEBROW, PAUSSNACK_PREVIEW_LABEL } from '../../../domain/data/matchLiveText'
 import type { MatchSituation } from '../../../domain/data/matchLiveText'
@@ -174,7 +174,7 @@ export function HalftimeModal({
     if (!p) return id
     const base = `${p.firstName[0]}. ${p.lastName} (${positionShort(p.position)})`
     if (!showStats) return base
-    return `${base} · ${p.currentAbility} · ${Math.round(p.fitness ?? 80)}%`
+    return `${base} · ${formatPlayerStat(p.currentAbility)} · ${Math.round(p.fitness ?? 80)}%`
   }
 
   const sortedStarters = [...effectiveStarters].sort((a, b) => {

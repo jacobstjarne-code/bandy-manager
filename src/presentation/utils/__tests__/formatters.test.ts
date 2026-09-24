@@ -7,7 +7,7 @@
  * tillbaka isär om någon justerar en av skärmarna separat igen.
  */
 import { describe, it, expect } from 'vitest'
-import { playoffResultLabel, cupResultLabel, formatFinanceAbs, formatContractUntil, formatContractRemaining, contractSeasonsRemaining } from '../formatters'
+import { playoffResultLabel, cupResultLabel, formatFinanceAbs, formatContractUntil, formatContractRemaining, contractSeasonsRemaining, formatPlayerStat } from '../formatters'
 
 describe('playoffResultLabel', () => {
   it('mappar alla kända utfall', () => {
@@ -100,5 +100,35 @@ describe('formatContractRemaining', () => {
 
   it('"Kontrakt utgånget" för ett redan trasigt (invariant-brytande) tillstånd', () => {
     expect(formatContractRemaining(2025, 2026)).toBe('Kontrakt utgånget')
+  })
+})
+
+// BETATEST_ERIK_2026-09-24 A2: form/currentAbility drev decimaler efter några
+// spelade omgångar (träning/matcher ändrar dem med bråkdelar) — flera ytor
+// visade talet obehandlat. Testerna låser att ingen returnerad sträng
+// någonsin kan innehålla en decimalpunkt eller ett decimalkomma.
+describe('formatPlayerStat', () => {
+  it('rundar positiva decimaler nedåt/uppåt som Math.round', () => {
+    expect(formatPlayerStat(62.3)).toBe('62')
+    expect(formatPlayerStat(62.7)).toBe('63')
+  })
+
+  it('.5 rundar uppåt (Math.round-konventionen)', () => {
+    expect(formatPlayerStat(62.5)).toBe('63')
+  })
+
+  it('noll blir "0", inte tomt eller "-0"', () => {
+    expect(formatPlayerStat(0)).toBe('0')
+  })
+
+  it('ett värde som drivit decimaler över flera omgångars träning', () => {
+    // t.ex. currentAbility efter tre träningspass à +0,4
+    expect(formatPlayerStat(58 + 0.4 * 3)).toBe('59')
+  })
+
+  it('ingen returnerad sträng innehåller punkt eller komma', () => {
+    for (const v of [0, 0.5, 1.1, 58.4, 99.99, 100]) {
+      expect(formatPlayerStat(v)).not.toMatch(/[.,]/)
+    }
   })
 })

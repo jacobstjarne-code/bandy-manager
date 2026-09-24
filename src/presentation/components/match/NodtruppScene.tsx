@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { PlayerPosition } from '../../../domain/enums'
 import { useGameStore } from '../../store/gameStore'
-import { positionShort, positionLong, formatSalary } from '../../utils/formatters'
+import { positionShort, positionLong, formatSalary, formatPlayerStat } from '../../utils/formatters'
 import { computeContractMinSalary, computeLeaguePositionAverages } from '../../../domain/services/economyService'
 import { getContractSalaryRange } from '../../../domain/services/contractNegotiationService'
 import { resolveFreeAgents } from '../../../domain/services/transferService'
@@ -105,7 +105,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', minWidth: 22 }}>{positionShort(y.position)}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{y.firstName} {y.lastName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{y.age} år · {positionLong(y.position)} · styrka ~{y.currentAbility}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{y.age} år · {positionLong(y.position)} · styrka ~{formatPlayerStat(y.currentAbility)}</div>
                 </div>
                 <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => promoteYouthPlayer(y.id)}>
                   Kalla upp
@@ -126,7 +126,7 @@ export function NodtruppScene({ game, availableCount, nextFixtureId }: Props) {
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', minWidth: 22 }}>{positionShort(a.position)}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{a.firstName} {a.lastName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.age} år · {positionLong(a.position)} · styrka ~{a.currentAbility} · {formatSalary(emergencySalary(a))}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.age} år · {positionLong(a.position)} · styrka ~{formatPlayerStat(a.currentAbility)} · {formatSalary(emergencySalary(a))}</div>
                 </div>
                 <button className="btn btn-outline" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }} onClick={() => signFreeAgent(a.id, emergencySalary(a), 3)}>
                   Ring in

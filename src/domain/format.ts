@@ -85,6 +85,16 @@ export function formatRating(rating: number): string {
   return formatDecimalComma(rating)
 }
 
+// BETATEST_ERIK_2026-09-24 A2: form/currentAbility ("totalvärde") drev decimaler
+// efter några spelade omgångar (träning/matcher ändrar dem med bråkdelar), och
+// flera ytor visade det obehandlade talet rakt av. De flesta ställena rundade
+// redan ad-hoc med `Math.round(x)` — den här är den namngivna, delade versionen
+// nya ställen ska använda, så rundningsregeln inte kan glida isär igen.
+/** Spelarens 0–100-attribut i UI: alltid heltal, aldrig decimal. */
+export function formatPlayerStat(value: number): string {
+  return String(Math.round(value))
+}
+
 // ── Kontraktskronologi (SEXSÄSONGSAUDITEN 2026-08-26, SPÅR 2a) ──────────────
 // `contractUntilSeason` är den SISTA säsongen kontraktet gäller (inklusive) —
 // samma säsongstal som `game.currentSeason` (kalenderår, se createNewGame.ts
