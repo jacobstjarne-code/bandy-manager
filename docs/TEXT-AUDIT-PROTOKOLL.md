@@ -59,6 +59,13 @@ M17–M67a/M67c/M33/M31/M9 + BACKLOG-konsolideringen HELT AVKLARADE 2026-07-05
   run lint:text-guard` (1 varning kvar, ingen error — se AVGJORT).
 
 ### AVGJORT (referens, rör ej)
+- **BETATEST_TEXTSVEP 2026-09-24 AVGJORT** (Opus dömde, Jacob beslutade C6.4
+  behåll och C2.22 kör): 49 poster, 31 ÄNDRA, 11 BEHÅLL, 7 MEKANIK, 0 döda,
+  0 väntande. Fullständig dom och slutlig text i
+  `docs/BETATEST_TEXTDOM_2026-09-24.md`. Nya regler därifrån: liggarmallar med
+  varianter väljs på `ledgerOccurrenceIndex`, inte på säsong; assistentens
+  röst bär `{coach}` först i meningen med reserv "Assistenten"; `.h-label`-
+  källsträngar skrivs i gemener (CSS versalerar).
 - **M59, M62, M65, M67 + M63-texten AVGJORDA OCH UTFÖRDA 2026-07-05**
   (Jacobs beslutsomgång, Fable utförde):
   · **M59 (ja)** — arrivalDialogue: Målilla → 'Snart visar termometern på

@@ -7,6 +7,30 @@ _Scannar samtliga `*Strings.ts`-filer i `src/domain/data/` (10 st, mot 5 i maj-v
 
 ⚠️ = pool with ≤3 variants per random-selection category (repetition risk)
 
+## Uppdatering 2026-09-24 — BETATEST_TEXTDOM
+
+Gäller före tabellerna nedan där de skiljer sig. Källa: `docs/BETATEST_TEXTDOM_2026-09-24.md`.
+
+**Status, anropsverifierad (rättar textsvepets sekundärnoteringar):**
+- `assistantFFStrings.ts` — LEVANDE. Läses av `MatchLiveScreen.tsx` vid snabbspolad hörna, kontring och frislag, renderas via `renderAssistantFFLine` med assistentens efternamn (`{coach}`). Textsvepet kallade filen död; det stämde inte.
+- `preMatchContextStrings.ts` — LEVANDE. Läses av `PreMatchContext.tsx` och `OpponentVignetteScene.tsx`. Repetitionsflaggorna i avsnitt 3 gäller fortfarande.
+- `academyBreakthroughText.ts` (`academyBreakthroughQuote`) — LEVANDE, anropas från `youthProcessor.ts`.
+
+**Nya räkningar:**
+
+| Pool | Före | Nu |
+|---|---|---|
+| `cup_goalOpener` | 1 | 4 |
+| `referee_lenient` → `referee_lenient_after_suspension` | 3 | 3 (omdöpt, bara post-utvisningsrader) |
+| `traitGoals.hungrig/joker/veteran/lokal` | 3 | 6 |
+| `traitSuspensions.veteran/lokal/ledare` | 3 | 6 |
+| `PROVNING_AMBIENT.krav.klack` / `.forhandling.klack` | 1 / 1 | 3 / 3, plus spärr mot direkt upprepning (`pickHallAmbientLine`) |
+| `CALLUP_NOTICE_LINES.single/multi` | 2 / 2 | 3 / 3, nycklat på säsong + uttagna |
+| `FIRST_CALLUP_MEMORY_LINES` | 2 | 3, nycklat på förekomst i liggaren |
+| Liggarmallar `transfer_signed/transfer_sold/referee_feud/referee_trust/mecenat_withdrawal/patron_emerge/patron_withdrawal` | 1 vardera | 5/4/3/3/3/3/3, väljs på `ledgerOccurrenceIndex` |
+
+Kvar med ≤3: `traitGoals.ledare` (3) — ingen post i textsvepet, inte rörd.
+
 ---
 
 ## 1. eventCardInlineStrings.ts
