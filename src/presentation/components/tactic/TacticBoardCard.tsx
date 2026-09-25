@@ -215,7 +215,7 @@ export function TacticBoardCard({
                     (SPELA OMGÅNG →) — inte den här, annars är det två register på
                     en knapp. */}
                 <button onClick={applyRecommendations} className="btn btn-primary" style={{ width: '100%', marginTop: 11 }}>
-                  ✓ Följ {swedishGenitive(coach.name)} råd
+                  ✓ Följ {swedishGenitive(coach.name.trim().split(/\s+/).pop() || 'Assistenten')} råd
                 </button>
               </div>
             )}
