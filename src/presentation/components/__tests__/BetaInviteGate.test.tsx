@@ -4,7 +4,22 @@ import { MemoryRouter } from 'react-router-dom'
 import { BetaInviteGate } from '../BetaInviteGate'
 import { normalizeBetaCode } from '../../../infrastructure/attention/attentionClient'
 
-afterEach(() => vi.unstubAllEnvs())
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
+
+// Node 25 har en egen global localStorage som skuggar jsdoms och saknar
+// metoder utan --localstorage-file. Testet får en egen minneslagring, samma
+// mönster som saveRecoveryHydration.test.ts.
+function memoryStorage(): Storage {
+  const data = new Map<string, string>()
+  return {
+    get length() { return data.size },
+    clear: () => data.clear(),
+    getItem: key => data.get(key) ?? null,
+    key: index => [...data.keys()][index] ?? null,
+    removeItem: key => { data.delete(key) },
+    setItem: (key, value) => { data.set(key, String(value)) },
+  }
+}
 
 describe('beta invitation launch flag', () => {
   it('does not block the normal game while the flag is absent', () => {
@@ -27,6 +42,7 @@ describe('beta invitation launch flag', () => {
 
   it('betafynd 2: en installation med sparat tillträde släpps in direkt', () => {
     vi.stubEnv('VITE_BETA_INVITES_ENABLED', 'true')
+    vi.stubGlobal('localStorage', memoryStorage())
     localStorage.setItem('bandy-attention-installation-v1', JSON.stringify({ installationId: 'install-1', token: 't' }))
     localStorage.setItem('bandy-beta-access-v1', 'install-1')
     try {
