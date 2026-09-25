@@ -15,11 +15,12 @@ const app = express()
 // alla spelare delar en enda 100-req/min-hink — och `req.secure`/HSTS-
 // logiken tror att trafiken är okrypterad.
 //
-// Betafynd 8 (kodgranskning 2026-09-22), ÖPPET: bakom Vercels rewrite är det
-// troligen två hopp, och då delar alla spelare Vercels IP-hink. Värdet 2 är
-// ändå fel lösning — Render nås också direkt, och då väljer anroparen sin
-// egen hink via X-Forwarded-For och kringgår gränsen. Mät req.ips i drift
-// och nyckla gränsen på något bara Vercel kan sätta innan detta ändras.
+// Betafynd 8 (kodgranskning 2026-09-22), avgjort 2026-09-25: spelet anropar
+// API:t direkt på onrender.com (VITE_ATTENTION_API_BASE), så Renders edge är
+// enda hoppet och req.ip blir klientens riktiga IP. Bara landningssidans
+// väntelista går via Vercels /api-rewrite och delar därmed Vercels hink.
+// Höj inte värdet: 2 låter den som anropar Render direkt välja egen hink via
+// X-Forwarded-For.
 app.set('trust proxy', 1)
 
 // ── Säkerhetsheaders ───────────────────────────

@@ -5,6 +5,7 @@ import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../d
 import { IllustrationScene } from '../illustration/IllustrationScene'
 import { playoffRoundDefinite } from '../../../domain/roundLabel'
 import { Overlay } from '../primitives/Overlay'
+import { escapeHtml } from '../../utils/escapeHtml'
 
 // Anslag som bär en hero-band-illustration (band-läge). Bilden droppas i public/; tills
 // dess fallback-gradient + stämpel. Fler anslag (derby, nedflyttning) läggs till här.
@@ -37,7 +38,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       const opponentId = isHome ? finalFixture.awayClubId : finalFixture.homeClubId
       const opponent = game.clubs.find(c => c.id === opponentId)
       const vsLabel = isHome ? 'Hemma mot' : 'Borta mot'
-      const motståndare = opponent?.shortName ?? opponent?.name ?? 'okänd'
+      const motståndare = escapeHtml(opponent?.shortName ?? opponent?.name ?? 'okänd')
       variantBody = variantBody
         .replace('{vsLabel}', vsLabel)
         .replace('{motståndare}', motståndare)
@@ -62,7 +63,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       const opponentId = isHome ? round1Fixture.awayClubId : round1Fixture.homeClubId
       const opponent = game.clubs.find(c => c.id === opponentId)
       const vsLabel = isHome ? 'Hemma mot' : 'Borta mot'
-      const motståndare = opponent?.shortName ?? opponent?.name ?? 'okänd'
+      const motståndare = escapeHtml(opponent?.shortName ?? opponent?.name ?? 'okänd')
       variantBody = variantBody
         .replace('{vsLabel}', vsLabel)
         .replace('{motståndare}', motståndare)
@@ -90,9 +91,9 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
     const info = game.lastPlayoffElimination
     if (info) {
       variantBody = variantBody
-        .replace(/{motståndare}/g, info.opponentName)
+        .replace(/{motståndare}/g, escapeHtml(info.opponentName))
         .replace(/{rond}/g, getPlayoffRoundLabel(info.round))
-        .replace(/{resultat}/g, info.resultat)
+        .replace(/{resultat}/g, escapeHtml(info.resultat))
     } else {
       // Fallback för sparfiler äldre än lastPlayoffElimination-fältet.
       const allSeries = [
@@ -110,9 +111,9 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
           .filter((f): f is NonNullable<typeof f> => !!f && f.status === 'completed')
         const lastFixture = seriesFixtures.sort((a, b) => b.matchday - a.matchday)[0]
         variantBody = variantBody
-          .replace(/{motståndare}/g, opponent?.shortName ?? opponent?.name ?? 'motståndaren')
+          .replace(/{motståndare}/g, escapeHtml(opponent?.shortName ?? opponent?.name ?? 'motståndaren'))
           .replace(/{rond}/g, getPlayoffRoundLabel(eliminatingSeries.round))
-          .replace(/{resultat}/g, lastFixture ? `${lastFixture.homeScore}–${lastFixture.awayScore}` : '')
+          .replace(/{resultat}/g, lastFixture ? escapeHtml(`${lastFixture.homeScore}–${lastFixture.awayScore}`) : '')
       }
     }
   }
@@ -122,7 +123,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
     : false
   const finalBody = variantBody + (
     isDirektkvalad && anslag.bodyDirektkval && club
-      ? anslag.bodyDirektkval.replace('{clubName}', club.name)
+      ? anslag.bodyDirektkval.replace('{clubName}', escapeHtml(club.name))
       : ''
   )
 

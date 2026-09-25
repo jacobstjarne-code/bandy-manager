@@ -29,6 +29,11 @@ on:
       - 'docs/**'
       - '**/*.md'
 
+
+# Säkerhetsgenomgång 2026-09-25: minsta behörighet; inget jobb här skriver till repot.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

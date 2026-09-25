@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypt
 import { InMemoryAttentionStore } from './store.js'
 import { createAttentionDispatcher } from './dispatcher.js'
 import { summarizeBetaAnalytics } from '../beta/analyticsSummary.js'
+import { validPushEndpoint } from './pushEndpoint.js'
 
 const ALLOWED_CATEGORIES = new Set([
   'match_preparation', 'calendar_anchor', 'season_context', 'narrative_return',
@@ -214,11 +215,12 @@ export function validAnalyticsEvent(event, payload) {
 }
 
 function validSubscription(subscription) {
-  return subscription && typeof subscription.endpoint === 'string' &&
-    subscription.endpoint.startsWith('https://') && subscription.endpoint.length <= 2_048 &&
+  return subscription && validPushEndpoint(subscription.endpoint) &&
     subscription.keys && typeof subscription.keys.p256dh === 'string' &&
     typeof subscription.keys.auth === 'string'
 }
+
+export { validPushEndpoint }
 
 export function createAttentionRouter({
   store = new InMemoryAttentionStore(),
@@ -369,8 +371,10 @@ export function createAttentionRouter({
   router.post('/beta/waitlist', asyncRoute(async (req, res) => {
     const email = normalizeWaitlistEmail(req.body?.email)
     if (!email) return res.status(400).json({ error: 'invalid_email' })
-    const added = await store.addToBetaWaitlist(email)
-    return added ? res.status(200).json({ queued: true }) : res.status(409).json({ error: 'already_queued' })
+    // Säkerhetsgenomgång 2026-09-25: samma svar oavsett om adressen redan
+    // stod i kön, så att ingen kan pröva fram vilka adresser som finns där.
+    await store.addToBetaWaitlist(email)
+    return res.status(200).json({ queued: true })
   }))
 
   router.get('/admin/beta-stats', asyncRoute(async (req, res) => {

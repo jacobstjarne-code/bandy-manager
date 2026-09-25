@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../../domain/data/scenes/cupFinalVictoryScene'
 import { pickPoolIndexAvoidingCooldown, BIRGER_CUP_QUOTE_PREFIX } from '../../../../domain/services/narrativeLogService'
+import { escapeHtml } from '../../../utils/escapeHtml'
 
 export interface CupFinalData {
   homeScore: number
@@ -58,10 +59,10 @@ export function useCupFinalData(game: SaveGame): CupFinalData {
 
   const bodyText = academyHero
     ? CUP_FINAL_VICTORY_TEMPLATES.bodyText
-        .replace(/{playerName}/g, academyHero.lastName)
-        .replace('{minute}', String(academyHero.minute ?? '?'))
-        .replace('{promotionSeason}', String(academyHero.promotionSeason))
-        .replace('{yearsAgo}', String(academyHero.yearsAgo))
+        .replace(/{playerName}/g, escapeHtml(academyHero.lastName))
+        .replace('{minute}', escapeHtml(academyHero.minute ?? '?'))
+        .replace('{promotionSeason}', escapeHtml(academyHero.promotionSeason))
+        .replace('{yearsAgo}', escapeHtml(academyHero.yearsAgo))
     : CUP_FINAL_VICTORY_TEMPLATES.fallbackBodyText
 
   // A-H4a (SEXSÄSONGSAUDITEN 2026-08-26): samma rotorsak/fix som useSMFinalData.ts

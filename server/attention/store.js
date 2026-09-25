@@ -415,7 +415,7 @@ export class InMemoryAttentionStore {
    * Väntelistan (TILLÄGG 7, landningssidan): samma hygien som beta_invites —
    * adressen är den enda datan, lagrad för ett utskick, gallras (raderas, inte
    * flaggas) när koden skickats. addToBetaWaitlist returnerar false om
-   * adressen redan står i kön (409-vägen i routes.js), true om den lades till.
+   * adressen redan står i kön (routes.js svarar ändå 200, se säkerhetsgenomgången 2026-09-25), true om den lades till.
    */
   addToBetaWaitlist(email) {
     if (this.#betaWaitlist.has(email)) return false

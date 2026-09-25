@@ -1,6 +1,6 @@
 import express from 'express'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createAttentionRouter, normalizeBetaCode } from '../attention/routes.js'
+import { createAttentionRouter, normalizeBetaCode, validPushEndpoint } from '../attention/routes.js'
 import { InMemoryAttentionStore } from '../attention/store.js'
 
 describe('closed beta routes', () => {
@@ -112,13 +112,34 @@ describe('closed beta routes', () => {
     expect((await access.json()).granted).toBe(true)
   })
 
+  it('säkerhetsgenomgång: push-endpoint måste vara en känd push-tjänst', () => {
+    for (const ok of [
+      'https://fcm.googleapis.com/fcm/send/abc',
+      'https://updates.push.services.mozilla.com/wpush/v2/abc',
+      'https://web.push.apple.com/QAbc',
+      'https://wns2-db5p.notify.windows.com/w/?token=abc',
+    ]) expect(validPushEndpoint(ok)).toBe(true)
+    for (const bad of [
+      'https://127.0.0.1:8443/push',
+      'https://localhost/push',
+      'https://169.254.169.254/latest',
+      'https://fcm.googleapis.com.evil.example/x',
+      'https://evilfcm.googleapis.com.example/x',
+      'https://fcm.googleapis.com:8443/x',
+      'https://user:pw@fcm.googleapis.com/x',
+      'http://fcm.googleapis.com/x',
+      'inte en url',
+    ]) expect(validPushEndpoint(bad)).toBe(false)
+  })
+
   it('queues a normalized email once without an installation identity', async () => {
     const join = email => fetch(`${base}/beta/waitlist`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, installationId: 'must-not-be-stored' }),
     })
     expect((await join(' Testare@Example.SE ')).status).toBe(200)
-    expect((await join('testare@example.se')).status).toBe(409)
+    // Samma svar för en adress som redan står i kön (ingen uppräkning).
+    expect((await join('testare@example.se')).status).toBe(200)
     expect((await join('inte-en-adress')).status).toBe(400)
 
     expect((await fetch(`${base}/admin/beta-waitlist`)).status).toBe(401)

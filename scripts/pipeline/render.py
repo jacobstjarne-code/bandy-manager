@@ -18,8 +18,23 @@ def next_finding_number() -> int:
     return max(existing, default=0) + 1
 
 
+def _neutralize(value):
+    """Säkerhetsgenomgång 2026-09-25: texten kommer från en LLM (och indirekt
+    från issue-titlar). I en .astro-mall körs { … } som JavaScript vid bygget,
+    och " bryter attribut. Klamrar och citattecken görs till HTML-entiteter;
+    avsiktlig HTML i prosan (<strong>, <em>) lämnas orörd."""
+    if isinstance(value, str):
+        return value.replace("{", "&#123;").replace("}", "&#125;").replace('"', "&quot;")
+    if isinstance(value, list):
+        return [_neutralize(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _neutralize(v) for k, v in value.items()}
+    return value
+
+
 def render_finding(finding: dict, num: int) -> str:
     """Return Astro file content for a finding."""
+    finding = _neutralize(finding)
     num_str = str(num).zfill(3)
     today = date.today()
     date_sv = _sv_date(today)
@@ -183,7 +198,9 @@ def update_findings_index(findings_meta: list[dict]) -> None:
     """Rewrite the findings index page with all findings."""
     index_path = FINDINGS_DIR / "index.astro"
     def _esc(s):
-        return s.replace("'", "\\'")
+        # JSON-sträng utan omslutande citattecken: escapar \\, ', radbrytningar.
+        import json as _json
+        return _json.dumps(str(s), ensure_ascii=False)[1:-1].replace("'", "\\'")
     items = "\n".join(
         f"      {{ num: '{f['num']}', date: '{f['date']}', title: '{_esc(f['title'])}', excerpt: '{_esc(f['excerpt'])}' }},"
         for f in findings_meta

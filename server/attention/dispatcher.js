@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import webpush from 'web-push'
 import { DEFAULT_PREFERENCES } from './store.js'
+import { validPushEndpoint } from './pushEndpoint.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEK_MS = 7 * DAY_MS
@@ -122,8 +123,14 @@ export function createAttentionDispatcher({ store, env = process.env, now = () =
         })
 
         try {
+          // Prenumerationer sparade före värdkontrollen skickas inte.
+          // Loggas som misslyckad men raderas inte: en saknad värd i listan ska
+          // inte tyst ta bort riktiga prenumerationer.
+          if (!validPushEndpoint(installation.subscription?.endpoint)) throw Object.assign(new Error('invalid_endpoint'), { statusCode: 'invalid_endpoint' })
           await webpush.sendNotification(installation.subscription, payload, {
             TTL: 6 * 60 * 60,
+            // En push-tjänst som inte svarar får inte hålla hela körningen.
+            timeout: 10_000,
             urgency: candidate.importance === 'major' ? 'high' : 'normal',
             topic: createHash('sha256').update(candidate.dedupeKey).digest('base64url').slice(0, 32),
           })

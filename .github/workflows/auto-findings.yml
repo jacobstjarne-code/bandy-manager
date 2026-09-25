@@ -49,19 +49,24 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Säkerhetsgenomgång 2026-09-25: indata via env, aldrig interpolerat
+          # i skriptet, och validerat innan det används.
+          INPUT_LIMIT: ${{ github.event.inputs.limit }}
+          INPUT_QUESTION_ID: ${{ github.event.inputs.question_id }}
         run: |
-          ARGS=""
-          if [ -n "${{ github.event.inputs.limit }}" ]; then
-            ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+          ARGS=()
+          if [ -n "$INPUT_LIMIT" ]; then
+            [[ "$INPUT_LIMIT" =~ ^[0-9]{1,3}$ ]] || { echo "ogiltig limit"; exit 1; }
+            ARGS+=(--limit "$INPUT_LIMIT")
+          else
+            # Default max 5 per körning om inte annat anges
+            ARGS+=(--limit 5)
           fi
-          if [ -n "${{ github.event.inputs.question_id }}" ]; then
-            ARGS="$ARGS --id ${{ github.event.inputs.question_id }}"
+          if [ -n "$INPUT_QUESTION_ID" ]; then
+            [[ "$INPUT_QUESTION_ID" =~ ^Q[0-9]{1,4}$ ]] || { echo "ogiltigt fråge-id"; exit 1; }
+            ARGS+=(--id "$INPUT_QUESTION_ID")
           fi
-          # Default max 5 per körning om inte annat anges
-          if [ -z "${{ github.event.inputs.limit }}" ]; then
-            ARGS="$ARGS --limit 5"
-          fi
-          python3 scripts/findings_pipeline.py $ARGS
+          python3 scripts/findings_pipeline.py "${ARGS[@]}"
 
       - name: Check for new findings
         id: check

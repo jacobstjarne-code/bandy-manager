@@ -4,6 +4,7 @@
  */
 
 import type { SundayTrainingPlayer } from '../../../../domain/data/scenes/sundayTrainingScene'
+import { escapeHtml } from '../../../utils/escapeHtml'
 
 interface Props {
   players: SundayTrainingPlayer[]
@@ -52,7 +53,7 @@ export function SundayTrainingPlayerList({ players }: Props) {
               fontFamily: 'Georgia, serif',
             }}
             dangerouslySetInnerHTML={{
-              __html: `<strong style="color: var(--text-light); font-weight: 700;">${p.name}</strong> ${p.text}`,
+              __html: `<strong style="color: var(--text-light); font-weight: 700;">${escapeHtml(p.name)}</strong> ${p.text}`,
             }}
           />
         </div>

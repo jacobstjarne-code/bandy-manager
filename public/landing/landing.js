@@ -84,10 +84,6 @@
         body: JSON.stringify({ email: email }),
       })
         .then(function (response) {
-          if (response.status === 409) {
-            say('Den adressen står redan i kön. Vi hör av oss.', 'ok');
-            return;
-          }
           if (!response.ok) throw new Error('http ' + response.status);
           say('Du står i kö. Vi mejlar när det finns plats, och det är det enda vi mejlar.', 'ok');
           form.reset();

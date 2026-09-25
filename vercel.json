@@ -5,10 +5,36 @@
     }
   },
   "routes": [
-    { "src": "^/api/(.*)$", "dest": "https://bandy-manager-attention-api.onrender.com/api/$1" },
-    { "src": "^/$", "dest": "/landing/index.html" },
-    { "src": "^/spela/?$", "dest": "/index.html" },
-    { "handle": "filesystem" },
-    { "src": "^/(.*)$", "dest": "/index.html" }
+    {
+      "src": "/(.*)",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://bandy-manager-attention-api.onrender.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/api/(.*)$",
+      "dest": "https://bandy-manager-attention-api.onrender.com/api/$1"
+    },
+    {
+      "src": "^/$",
+      "dest": "/landing/index.html"
+    },
+    {
+      "src": "^/spela/?$",
+      "dest": "/index.html"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/index.html"
+    }
   ]
 }

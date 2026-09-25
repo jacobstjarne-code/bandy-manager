@@ -17,6 +17,7 @@ Exit-kod 1 = fel (API-nyckel saknas, parse-fel, etc.)
 """
 
 import argparse
+import html
 import json
 import os
 import sys
@@ -279,7 +280,9 @@ def get_existing_findings_meta() -> list[dict]:
         if title_m and meta_m:
             meta.append({
                 "num": d.name,
-                "title": title_m.group(1),
+                # render.py sparar " { } som entiteter; avkoda innan indexet
+                # escapar på nytt, annars syns &quot; för besökaren.
+                "title": html.unescape(title_m.group(1)),
                 "date": meta_m.group(2).strip(),
                 "excerpt": excerpt_m.group(1).strip()[:180].replace("\n", " ") if excerpt_m else "",
             })
