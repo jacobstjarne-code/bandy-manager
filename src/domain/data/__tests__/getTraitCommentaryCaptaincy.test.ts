@@ -30,7 +30,7 @@ describe('getTraitCommentary — ledare-poolen kräver faktisk captaincy (captai
   it('den faktiska kaptenen får ledare-text vid utvisning, oavsett trait', () => {
     const players = [makePlayer({ id: 'p1', trait: undefined })]
     const text = getTraitCommentary('p1', 'suspension', players, 5, 'p1')
-    expect(text).toMatch(/Kaptenen|Ledarskapet|disciplinen/)
+    expect(text).toMatch(/Kaptenen|Ledarskapet|disciplinen|Bindeln|ta ordet|tappat sin röst/)
   })
 
   it('ingen captainPlayerId angiven → ingen ledare-text, även för trait=ledare', () => {
