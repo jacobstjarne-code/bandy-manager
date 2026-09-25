@@ -34,6 +34,36 @@ for (const adapter of ['memory', 'postgres']) {
         expect(await store.redeemBetaInvite('hash-lifecycle', 'installation-owner')).toBe(false)
       } finally { await pool?.end() }
     })
+
+    it('betafynd 4: gallring efter uppehåll behåller tillträdet för samma id och token', async () => {
+      const pool = adapter === 'postgres' ? new (newDb().adapters.createPg().Pool)() : null
+      const store = pool ? new PostgresAttentionStore(pool) : new InMemoryAttentionStore()
+      try {
+        if (pool) await store.initialize()
+        await store.ensureInstallation('installation-away', 'token-away')
+        await store.ensureInstallation('installation-spy', 'token-spy')
+        await store.createBetaInvite({ id: 'invite-away', codeHash: 'hash-away', expiresAt: new Date(Date.now() + 86400000) })
+        await store.createBetaInvite({ id: 'invite-spy', codeHash: 'hash-spy', expiresAt: new Date(Date.now() + 86400000) })
+        expect(await store.redeemBetaInvite('hash-away', 'installation-away')).toBe(true)
+        expect(await store.redeemBetaInvite('hash-spy', 'installation-spy')).toBe(true)
+        expect(await store.pruneInactiveInstallations(new Date(Date.now() + 60_000))).toBe(2)
+        expect(await store.hasBetaAccess('installation-away')).toBe(false)
+        // Samma id med en annan token får ingenting.
+        await store.ensureInstallation('installation-spy', 'token-other')
+        expect(await store.hasBetaAccess('installation-spy')).toBe(false)
+        // Samma id och samma token: tillbaka i spelet utan ny kod.
+        await store.ensureInstallation('installation-away', 'token-away')
+        expect(await store.hasBetaAccess('installation-away')).toBe(true)
+        // Koden går fortfarande inte att ge vidare.
+        expect(await store.redeemBetaInvite('hash-away', 'installation-spy')).toBe(false)
+        // Uttrycklig avregistrering efter återkomsten återkallar fortfarande.
+        await store.pruneInactiveInstallations(new Date(Date.now() + 60_000))
+        await store.ensureInstallation('installation-away', 'token-away')
+        expect(await store.removeSubscription('installation-away', 'token-away')).toBe(true)
+        await store.ensureInstallation('installation-away', 'token-away')
+        expect(await store.hasBetaAccess('installation-away')).toBe(false)
+      } finally { await pool?.end() }
+    })
   })
 }
 

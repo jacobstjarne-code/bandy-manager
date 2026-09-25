@@ -71,7 +71,7 @@ export function generateMatchShareImage(summary: SeasonSummary, match: MatchHigh
   }
   ctx.fillStyle = '#8A857A'
   ctx.font = '600 25px system-ui'
-  ctx.fillText('bandymanager.se', WIDTH / 2, 1280)
+  ctx.fillText('bandy-manager.se', WIDTH / 2, 1280)
 
   return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
 }

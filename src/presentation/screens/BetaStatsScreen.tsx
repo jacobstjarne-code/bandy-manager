@@ -37,6 +37,25 @@ const featureLabels: Record<string, string> = {
   transfers: 'Värvning', community: 'Orten',
 }
 
+const PREVIEW_CODE_KEY = 'bandy-admin-preview-code-v1'
+
+function readPreviewCode(): string {
+  try {
+    return localStorage.getItem(PREVIEW_CODE_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function writePreviewCode(value: string): void {
+  try {
+    if (value.trim()) localStorage.setItem(PREVIEW_CODE_KEY, value.trim())
+    else localStorage.removeItem(PREVIEW_CODE_KEY)
+  } catch {
+    // Privat läge: fältet fungerar ändå för det här passet.
+  }
+}
+
 export function BetaStatsScreen() {
   const [secret, setSecret] = useState('')
   const [summary, setSummary] = useState<BetaSummary | null>(null)
@@ -50,6 +69,10 @@ export function BetaStatsScreen() {
   const [recipientContact, setRecipientContact] = useState('')
   const [waitlistEmail, setWaitlistEmail] = useState('')
   const [copied, setCopied] = useState<'code' | 'sms' | 'email' | ''>('')
+  // Betafynd 7 (kodgranskning 2026-09-22): förhandskoden låg i klartext i
+  // klientbunten och gjorde landningssidans hash meningslös. Den skrivs nu
+  // in här och sparas bara i admin-enhetens webbläsare.
+  const [previewCode, setPreviewCode] = useState(readPreviewCode)
   const [creating, setCreating] = useState(false)
   const generation = useRef(0)
   const createInFlight = useRef(false)
@@ -169,7 +192,13 @@ export function BetaStatsScreen() {
 
   function invitationText(kind: 'sms' | 'email') {
     const hello = newCodeRecipient ? `Hej ${newCodeRecipient}!` : 'Hej!'
-    const body = `${hello}\n\nDu är inbjuden att betatesta Bandy Manager.\n\n1. Öppna https://bandy-manager.se\n2. Förhandskod till webbplatsen: slottsbron1945\n3. Följ stegen och lägg spelet på hemskärmen.\n4. Din personliga spelkod: ${newCode}\n\nSkriv in spelkoden först när du öppnat spelet från hemskärmen. Koden gäller en installation.`
+    const steps = [
+      'Öppna https://bandy-manager.se',
+      `Förhandskod till webbplatsen: ${previewCode.trim()}`,
+      'Följ stegen och lägg spelet på hemskärmen.',
+      `Din personliga spelkod: ${newCode}`,
+    ].map((step, index) => `${index + 1}. ${step}`).join('\n')
+    const body = `${hello}\n\nDu är inbjuden att betatesta Bandy Manager.\n\n${steps}\n\nSkriv in spelkoden först när du öppnat spelet från hemskärmen. Koden gäller en installation.`
     return kind === 'email' ? `Ämne: Inbjudan till Bandy Manager\n\n${body}` : body
   }
 
@@ -311,6 +340,13 @@ export function BetaStatsScreen() {
             <input className="beta-access__input" id="beta-recipient-contact" value={recipientContact}
               onChange={event => setRecipientContact(event.target.value)} placeholder="Mejl eller telefon" maxLength={254} />
             <p className="beta-access__note">Kontaktuppgiften gallras när koden används, återkallas eller löper ut. Namnet ligger kvar i historiken.</p>
+            <label className="beta-access__label" htmlFor="beta-preview-code">FÖRHANDSKOD TILL WEBBPLATSEN</label>
+            <input className="beta-access__input" id="beta-preview-code" value={previewCode}
+              onChange={event => { setPreviewCode(event.target.value); writePreviewCode(event.target.value) }}
+              autoComplete="off" spellCheck={false} maxLength={120} />
+            <p className="beta-access__note">{previewCode.trim()
+              ? 'Följer med i sms och mejl. Sparas bara i den här webbläsaren.'
+              : 'Behövs för sms och mejl, annars stannar mottagaren på landningssidan.'}</p>
             <div className="beta-access__form-actions">
               <button className="btn btn-primary beta-access__primary beta-access__create" type="submit"
                 disabled={creating || Boolean(newCode) || !recipientLabel.trim()}>{creating ? 'SKAPAR…' : 'SKAPA INBJUDAN →'}</button>
@@ -324,8 +360,8 @@ export function BetaStatsScreen() {
             <p>Koden visas bara nu. Skicka den till <strong>{newCodeRecipient}</strong>.</p>
             <code>{newCode}</code>
             <div className="beta-access__code-actions">
-              <button className="btn btn-outline" type="button" onClick={() => void copyInvite('sms')}>{copied === 'sms' ? 'SMS KOPIERAT ✓' : 'KOPIERA SMS'}</button>
-              <button className="btn btn-outline" type="button" onClick={() => void copyInvite('email')}>{copied === 'email' ? 'MEJL KOPIERAT ✓' : 'KOPIERA MEJL'}</button>
+              <button className="btn btn-outline" type="button" disabled={!previewCode.trim()} onClick={() => void copyInvite('sms')}>{copied === 'sms' ? 'SMS KOPIERAT ✓' : 'KOPIERA SMS'}</button>
+              <button className="btn btn-outline" type="button" disabled={!previewCode.trim()} onClick={() => void copyInvite('email')}>{copied === 'email' ? 'MEJL KOPIERAT ✓' : 'KOPIERA MEJL'}</button>
               <button className="btn btn-ghost" type="button" onClick={() => void copyInvite('code')}>{copied === 'code' ? 'KOD KOPIERAD ✓' : 'BARA KODEN'}</button>
               <button className="btn btn-ghost" type="button" onClick={() => {
                 setNewCode(''); setNewCodeRecipient(''); setRecipientLabel(''); setRecipientContact(''); setWaitlistEmail(''); setCopied('')

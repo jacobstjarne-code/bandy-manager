@@ -98,6 +98,14 @@ CREATE TABLE IF NOT EXISTS beta_invites (
 
 ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS recipient_label varchar(120);
 ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS recipient_contact varchar(254);
+-- Betafynd 4 (kodgranskning 2026-09-22): 90-dagarsgallringen raderade
+-- installationen och därmed kopplingen till koden, så en betatestare som kom
+-- tillbaka efter ett uppehåll var utelåst för gott. Gallringen sparar nu
+-- installationens id och tokenhash på inbjudan; registreras samma id med
+-- samma token igen återfår den sitt tillträde. Uttrycklig avregistrering
+-- lämnar inget sådant spår och återkallar fortfarande tillträdet.
+ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS dormant_installation_id varchar(128);
+ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS dormant_token_hash varchar(64);
 
 CREATE INDEX IF NOT EXISTS beta_invites_redeemed_install_idx
   ON beta_invites (redeemed_installation_id);
@@ -224,7 +232,16 @@ export class PostgresAttentionStore {
        RETURNING *`,
       [installationId, hashSecret(token).toString('hex'), JSON.stringify(metadata)],
     )
-    if (inserted.rows[0]) return installationFromRow(inserted.rows[0])
+    if (inserted.rows[0]) {
+      await client.query(
+        `UPDATE beta_invites SET redeemed_installation_id = $1,
+           dormant_installation_id = NULL, dormant_token_hash = NULL
+         WHERE dormant_installation_id = $1 AND dormant_token_hash = $2
+           AND revoked_at IS NULL`,
+        [installationId, inserted.rows[0].token_hash],
+      )
+      return installationFromRow(inserted.rows[0])
+    }
 
     // En samtidig första registrering vann konflikten. Läs dess token under lås.
     const raced = await client.query(
@@ -309,6 +326,13 @@ export class PostgresAttentionStore {
       )
       if (!result.rows[0] || !storedSecretMatches(token, result.rows[0].token_hash)) return false
       // ON DELETE CASCADE verkställer kontraktet: hela installationens serverstate.
+      // Ett vilande spår från en tidigare gallring raderas också — uttrycklig
+      // avregistrering återkallar tillträdet (betafynd 4).
+      await client.query(
+        `UPDATE beta_invites SET dormant_installation_id = NULL, dormant_token_hash = NULL
+         WHERE dormant_installation_id = $1`,
+        [installationId],
+      )
       await client.query('DELETE FROM attention_installations WHERE id = $1', [installationId])
       return true
     })
@@ -713,11 +737,24 @@ export class PostgresAttentionStore {
   async pruneInactiveInstallations(before) {
     // Installationstabellen är ägare till all pseudonym serverstate. Samma
     // cascade-kontrakt som vid uttrycklig avregistrering gör gallringen hel.
-    const result = await this.pool.query(
-      'DELETE FROM attention_installations WHERE updated_at < $1',
-      [before],
-    )
-    return result.rowCount
+    return this.#withTransaction(async client => {
+      // Låst urval: en samtidig registrering som hinner uppdatera updated_at
+      // väntar på låset, och bara de rader som faktiskt raderas får ett
+      // vilande spår.
+      const inactive = await client.query(
+        'SELECT id, token_hash FROM attention_installations WHERE updated_at < $1 FOR UPDATE',
+        [before],
+      )
+      for (const row of inactive.rows) {
+        await client.query(
+          `UPDATE beta_invites SET dormant_installation_id = $1, dormant_token_hash = $2
+           WHERE redeemed_installation_id = $1 AND revoked_at IS NULL`,
+          [row.id, row.token_hash],
+        )
+        await client.query('DELETE FROM attention_installations WHERE id = $1', [row.id])
+      }
+      return inactive.rows.length
+    })
   }
 
   deliveryCountSince(installation, sinceMs) {

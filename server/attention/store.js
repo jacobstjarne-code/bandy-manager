@@ -122,6 +122,13 @@ export class InMemoryAttentionStore {
       updatedAt: new Date().toISOString(),
     }
     this.#installations.set(installationId, created)
+    const tokenHex = created.tokenHash.toString('hex')
+    for (const invite of this.#betaInvites.values()) {
+      if (invite.dormant?.installationId === installationId && invite.dormant.tokenHash === tokenHex && !invite.revokedAt) {
+        invite.redeemedInstallationId = installationId
+        invite.dormant = null
+      }
+    }
     return created
   }
 
@@ -170,10 +177,18 @@ export class InMemoryAttentionStore {
     return true
   }
 
-  #deleteInstallation(installationId) {
+  #deleteInstallation(installationId, { keepBetaAccess = false } = {}) {
+    const tokenHash = this.#installations.get(installationId)?.tokenHash
     this.#installations.delete(installationId)
     for (const invite of this.#betaInvites.values()) {
-      if (invite.redeemedInstallationId === installationId) invite.redeemedInstallationId = null
+      if (!keepBetaAccess && invite.dormant?.installationId === installationId) invite.dormant = null
+      if (invite.redeemedInstallationId !== installationId) continue
+      invite.redeemedInstallationId = null
+      // Betafynd 4: gallring (inte avregistrering) lämnar ett vilande spår så
+      // att samma id och token kan återfå tillträdet — se postgresStore.
+      if (keepBetaAccess && !invite.revokedAt && tokenHash) {
+        invite.dormant = { installationId, tokenHash: Buffer.from(tokenHash).toString('hex') }
+      }
     }
     this.#deletePushHistory(installationId)
     this.#analyticsEvents = this.#analyticsEvents.filter(event => event.installationId !== installationId)
@@ -437,7 +452,7 @@ export class InMemoryAttentionStore {
     const inactiveIds = [...this.#installations.values()]
       .filter(installation => Date.parse(installation.updatedAt) < beforeMs)
       .map(installation => installation.id)
-    for (const installationId of inactiveIds) this.#deleteInstallation(installationId)
+    for (const installationId of inactiveIds) this.#deleteInstallation(installationId, { keepBetaAccess: true })
     return inactiveIds.length
   }
 

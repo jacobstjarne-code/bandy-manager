@@ -1,6 +1,6 @@
 import express from 'express'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createAttentionRouter } from '../attention/routes.js'
+import { createAttentionRouter, normalizeBetaCode } from '../attention/routes.js'
 import { InMemoryAttentionStore } from '../attention/store.js'
 
 describe('closed beta routes', () => {
@@ -42,7 +42,8 @@ describe('closed beta routes', () => {
     })
     expect(created.status).toBe(201)
     const { id, code } = await created.json()
-    expect(code).toMatch(/^[A-Za-z0-9_-]{32}$/)
+    // Betafynd 5: tio tecken Crockford base32, visade som XXXXX-XXXXX.
+    expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{5}-[0-9A-HJKMNP-TV-Z]{5}$/)
     const redeem = (installationId, token) => fetch(`${base}/beta/invites/redeem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-installation-token': token },
@@ -64,6 +65,51 @@ describe('closed beta routes', () => {
       method: 'DELETE', headers: admin,
     })).status).toBe(204)
     expect((await (await access()).json()).granted).toBe(false)
+  })
+
+  it('betafynd 5: koden tål gemener, mellanslag och förväxlingsbara tecken', async () => {
+    expect(normalizeBetaCode(' abcde-fghjk ')).toBe('ABCDEFGHJK')
+    expect(normalizeBetaCode('0ILo1 23456')).toBe('0110123456')
+    expect(normalizeBetaCode('ABCDE-FGHJ')).toBeNull()
+    expect(normalizeBetaCode('ABCDE-FGHJU')).toBeNull()
+    const legacy = 'aB3_-xY9aB3_-xY9aB3_-xY9aB3_-xY9'
+    expect(normalizeBetaCode(`  ${legacy} `)).toBe(legacy)
+    expect(normalizeBetaCode(42)).toBeNull()
+
+    await store.ensureInstallation('installation-one', 'token-one')
+    const created = await fetch(`${base}/admin/beta-invites`, {
+      method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipientLabel: 'Birger' }),
+    })
+    const { code } = await created.json()
+    const typed = ` ${code.toLowerCase().replace('-', ' ')} `
+    const redeemed = await fetch(`${base}/beta/invites/redeem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-installation-token': 'token-one' },
+      body: JSON.stringify({ installationId: 'installation-one', code: typed }),
+    })
+    expect(redeemed.status).toBe(204)
+  })
+
+  it('betafynd 4: tillträdet överlever att installationen gallras', async () => {
+    await store.ensureInstallation('installation-one', 'token-one')
+    const created = await fetch(`${base}/admin/beta-invites`, {
+      method: 'POST', headers: { ...admin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipientLabel: 'Birger' }),
+    })
+    const { code } = await created.json()
+    const redeem = () => fetch(`${base}/beta/invites/redeem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-installation-token': 'token-one' },
+      body: JSON.stringify({ installationId: 'installation-one', code }),
+    })
+    expect((await redeem()).status).toBe(204)
+    expect(store.pruneInactiveInstallations(new Date(Date.now() + 1000))).toBe(1)
+    await store.ensureInstallation('installation-one', 'token-one')
+    const access = await fetch(`${base}/beta/access/installation-one`, {
+      headers: { 'x-installation-token': 'token-one' },
+    })
+    expect((await access.json()).granted).toBe(true)
   })
 
   it('queues a normalized email once without an installation identity', async () => {

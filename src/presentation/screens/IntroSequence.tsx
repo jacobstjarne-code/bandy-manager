@@ -224,8 +224,11 @@ export function IntroSequence() {
 
         {/* CTA + credit */}
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
+          {/* Betafynd 9 (kodgranskning 2026-09-22): med en sparad karriär är
+              FORTSÄTT det spelaren kom för. Den bär primären; en ny karriär är
+              det sekundära valet. Utan sparfil: som förut. */}
           <button
-            onClick={() => navigate('/new-game')}
+            onClick={() => navigate(hasSave ? '/game' : '/new-game')}
             className="btn btn-primary btn-cta"
             style={{
               maxWidth: 300,
@@ -235,15 +238,23 @@ export function IntroSequence() {
               transitionDelay: s1 ? '1600ms' : '0ms',
             }}
           >
-            STARTA KARRIÄREN
+            {hasSave ? 'FORTSÄTT KARRIÄREN' : 'STARTA KARRIÄREN'}
           </button>
           {hasSave && (
             <div style={{
               width: '100%', maxWidth: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
               opacity: s1 ? 1 : 0, transition: 'opacity 700ms ease', transitionDelay: s1 ? '1800ms' : '0ms',
             }}>
+              {coldReturnLine && (
+                <p style={{
+                  fontSize: 11, color: 'rgba(245,241,235,0.6)', textAlign: 'center',
+                  letterSpacing: '0.5px', margin: 0,
+                }}>
+                  {coldReturnLine}
+                </p>
+              )}
               <button
-                onClick={() => navigate('/game')}
+                onClick={() => navigate('/new-game')}
                 style={{
                   width: '100%', padding: '14px 24px',
                   background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
@@ -254,16 +265,8 @@ export function IntroSequence() {
                   textTransform: 'uppercase', cursor: 'pointer',
                 }}
               >
-                FORTSÄTT KARRIÄREN
+                NY KARRIÄR
               </button>
-              {coldReturnLine && (
-                <p style={{
-                  fontSize: 11, color: 'rgba(245,241,235,0.6)', textAlign: 'center',
-                  letterSpacing: '0.5px', margin: 0,
-                }}>
-                  {coldReturnLine}
-                </p>
-              )}
             </div>
           )}
           {saveCount > 1 && (

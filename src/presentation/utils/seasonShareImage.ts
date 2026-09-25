@@ -351,7 +351,7 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
     ctx.fillStyle = 'rgba(245,241,235,0.2)'
     ctx.letterSpacing = '1px'
     ctx.textAlign = 'center'
-    ctx.fillText('bandymanager.se', W / 2, H - 60)
+    ctx.fillText('bandy-manager.se', W / 2, H - 60)
 
     return await new Promise<Blob | null>((resolve) => {
       canvas.toBlob((blob) => resolve(blob), 'image/png')

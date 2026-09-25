@@ -113,7 +113,7 @@ function getOrCreateIdentity(): InstallationIdentity {
 let installationRegistration: Promise<void> | null = null
 let registeredInstallationId: string | null = null
 
-async function ensureAttentionInstallation(identity: InstallationIdentity): Promise<void> {
+async function ensureAttentionInstallation(identity: InstallationIdentity, signal?: AbortSignal): Promise<void> {
   if (registeredInstallationId !== identity.installationId) {
     registeredInstallationId = identity.installationId
     installationRegistration = null
@@ -125,6 +125,9 @@ async function ensureAttentionInstallation(identity: InstallationIdentity): Prom
       body: JSON.stringify({
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
       }),
+      // Betafynd 2: ett avbrutet anrop nollar registreringen nedan, så att
+      // FÖRSÖK IGEN gör ett nytt i stället för att vänta på det hängande.
+      signal,
     }).then(() => undefined).catch(error => {
       installationRegistration = null
       throw error
@@ -403,13 +406,44 @@ export async function recordAnalyticsEvent(
 }
 
 /** Beta access is operational access control, not part of opt-out analytics. */
-export async function checkBetaAccess(): Promise<boolean> {
+const BETA_ACCESS_CACHE_KEY = 'bandy-beta-access-v1'
+
+/**
+ * Betafynd 2 (kodgranskning 2026-09-22): tillträdet cachas per installation,
+ * så en spelare som redan löst in sin kod startar spelet direkt även när
+ * Render-tjänsten sover (kallstart upp till en minut) eller telefonen är
+ * offline. Servern kontrolleras ändå i bakgrunden; bara ett uttryckligt nej
+ * (återkallad kod) tar bort cachen. Nätverksfel gör det aldrig.
+ */
+export function hasCachedBetaAccess(): boolean {
+  const identity = readIdentity()
+  if (!identity) return false
+  try {
+    return localStorage.getItem(BETA_ACCESS_CACHE_KEY) === identity.installationId
+  } catch {
+    return false
+  }
+}
+
+function writeBetaAccessCache(installationId: string | null): void {
+  try {
+    if (installationId) localStorage.setItem(BETA_ACCESS_CACHE_KEY, installationId)
+    else localStorage.removeItem(BETA_ACCESS_CACHE_KEY)
+  } catch {
+    // Privat läge eller full lagring: grinden fungerar som förut, utan cache.
+  }
+}
+
+export async function checkBetaAccess(timeoutMs?: number): Promise<boolean> {
   const identity = getOrCreateIdentity()
-  await ensureAttentionInstallation(identity)
+  const signal = timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined
+  await ensureAttentionInstallation(identity, signal)
   const response = await api(`/api/beta/access/${identity.installationId}`, {
-    headers: authHeaders(identity), cache: 'no-store',
+    headers: authHeaders(identity), cache: 'no-store', signal,
   })
-  return (await response.json() as { granted: boolean }).granted === true
+  const granted = (await response.json() as { granted: boolean }).granted === true
+  writeBetaAccessCache(granted ? identity.installationId : null)
+  return granted
 }
 
 export async function redeemBetaInvite(code: string): Promise<void> {
@@ -417,8 +451,22 @@ export async function redeemBetaInvite(code: string): Promise<void> {
   await ensureAttentionInstallation(identity)
   await api('/api/beta/invites/redeem', {
     method: 'POST', headers: authHeaders(identity),
-    body: JSON.stringify({ installationId: identity.installationId, code: code.trim() }),
+    body: JSON.stringify({ installationId: identity.installationId, code: normalizeBetaCode(code) }),
   })
+  writeBetaAccessCache(identity.installationId)
+}
+
+/**
+ * Betafynd 5: nya koder är tio tecken ur Crockfords base32, visade som
+ * XXXXX-XXXXX. Mellanslag och bindestreck tas bort, gemener blir versaler och
+ * de förväxlingsbara O/I/L läses som 0/1/1 — samma regel som servern.
+ * Äldre 32-teckenskoder (base64url, skiftlägeskänsliga) skickas oförändrade.
+ */
+export function normalizeBetaCode(code: string): string {
+  const trimmed = code.trim()
+  if (/^[A-Za-z0-9_-]{32}$/.test(trimmed)) return trimmed
+  return trimmed.replace(/[\s-]/g, '').toUpperCase()
+    .replace(/O/g, '0').replace(/[IL]/g, '1')
 }
 
 /**

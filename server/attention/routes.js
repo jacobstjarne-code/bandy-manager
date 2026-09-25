@@ -61,6 +61,35 @@ function betaCodeHash(code) {
   return createHash('sha256').update(code).digest('hex')
 }
 
+// Betafynd 5 (kodgranskning 2026-09-22): 32 skiftlägeskänsliga tecken gick
+// inte att skriva av på en telefon. Nya koder är tio tecken ur Crockfords
+// base32 (inga O/I/L/U), 50 bitar, visade som XXXXX-XXXXX. Äldre koder ligger
+// kvar som hash och fortsätter fungera — därför två format vid inlösen.
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
+const LEGACY_BETA_CODE = /^[A-Za-z0-9_-]{32}$/
+const SHORT_BETA_CODE = /^[0-9A-HJKMNP-TV-Z]{10}$/
+
+function newBetaCode() {
+  const bytes = randomBytes(10)
+  let code = ''
+  for (const byte of bytes) code += CROCKFORD[byte & 31]
+  return code
+}
+
+function displayBetaCode(code) {
+  return `${code.slice(0, 5)}-${code.slice(5)}`
+}
+
+/** Returnerar koden i den form som hashades vid utfärdandet, eller null. */
+export function normalizeBetaCode(value) {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (LEGACY_BETA_CODE.test(trimmed)) return trimmed
+  const short = trimmed.replace(/[\s-]/g, '').toUpperCase()
+    .replace(/O/g, '0').replace(/[IL]/g, '1')
+  return SHORT_BETA_CODE.test(short) ? short : null
+}
+
 function normalizeWaitlistEmail(value) {
   if (typeof value !== 'string') return null
   const email = value.trim().toLowerCase()
@@ -372,7 +401,7 @@ export function createAttentionRouter({
   router.post('/admin/beta-invites', asyncRoute(async (req, res) => {
     if (!betaAdminConfigured(env)) return res.status(503).json({ error: 'not_configured' })
     if (!betaAdminAuthorized(req, env)) return res.status(401).json({ error: 'unauthorized' })
-    const code = randomBytes(24).toString('base64url')
+    const code = newBetaCode()
     const id = randomUUID()
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     const waitlistEmail = req.body?.waitlistEmail === undefined
@@ -398,7 +427,7 @@ export function createAttentionRouter({
       })
     }
     res.set('Cache-Control', 'no-store')
-    return res.status(201).json({ id, code, expiresAt: expiresAt.toISOString() })
+    return res.status(201).json({ id, code: displayBetaCode(code), expiresAt: expiresAt.toISOString() })
   }))
 
   router.get('/admin/beta-waitlist', asyncRoute(async (req, res) => {
@@ -424,8 +453,9 @@ export function createAttentionRouter({
   }))
 
   router.post('/beta/invites/redeem', asyncRoute(async (req, res) => {
-    const { installationId, code } = req.body ?? {}
-    if (!validId(installationId) || typeof code !== 'string' || !/^[A-Za-z0-9_-]{32}$/.test(code)) {
+    const { installationId } = req.body ?? {}
+    const code = normalizeBetaCode(req.body?.code)
+    if (!validId(installationId) || !code) {
       return res.status(400).json({ error: 'invalid_invite' })
     }
     if (!await store.authenticateInstallation(installationId, tokenFrom(req))) {

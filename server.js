@@ -13,8 +13,13 @@ const app = express()
 // Render (och alla andra PaaS) terminerar TLS i en proxy framför processen.
 // Utan trust proxy ser express-rate-limit proxyns IP för VARJE klient, så
 // alla spelare delar en enda 100-req/min-hink — och `req.secure`/HSTS-
-// logiken tror att trafiken är okrypterad. Ett hopp (Renders edge) är rätt
-// värde; `true` skulle låta en klient förfalska X-Forwarded-For.
+// logiken tror att trafiken är okrypterad.
+//
+// Betafynd 8 (kodgranskning 2026-09-22), ÖPPET: bakom Vercels rewrite är det
+// troligen två hopp, och då delar alla spelare Vercels IP-hink. Värdet 2 är
+// ändå fel lösning — Render nås också direkt, och då väljer anroparen sin
+// egen hink via X-Forwarded-For och kringgår gränsen. Mät req.ips i drift
+// och nyckla gränsen på något bara Vercel kan sätta innan detta ändras.
 app.set('trust proxy', 1)
 
 // ── Säkerhetsheaders ───────────────────────────
